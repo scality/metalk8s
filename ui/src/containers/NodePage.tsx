@@ -10,9 +10,11 @@ import { useTypedSelector } from '../hooks';
 
 const NodePage = (props) => {
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
+  // @ts-expect-error - FIXME when you are working on it
   const { alerts } = useAlerts();
   const theme = useTheme();
   const nodeTableData = useSelector(
+    // @ts-expect-error - FIXME when you are working on it
     (state) => getNodeListData(alerts, theme)(state, props),
     (left, right) => {
       return JSON.stringify(left) === JSON.stringify(right);

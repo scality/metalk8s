@@ -67,6 +67,7 @@ const MetricsTab = (props) => {
     volumePVCName,
   } = props;
   const intl = useIntl();
+  // @ts-expect-error - FIXME when you are working on it
   const config = useSelector((state) => state.config);
   return (
     <VolumeTab>
@@ -92,6 +93,7 @@ const MetricsTab = (props) => {
         </MetricsActionContainer>
         {volumeCondition === VOLUME_CONDITION_LINK ? (
           <GraphGrid id="graph_container">
+            {/* @ts-expect-error - FIXME when you are working on it */}
             <SyncedCursorCharts>
               <GraphWrapper className="usage">
                 <VolumeUsageChart

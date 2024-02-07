@@ -7,8 +7,9 @@
     "target": "es5" /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
     "module": "commonjs" /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */,
     "lib": [
-      "es2019",
-      "DOM"
+      "es2021",
+      "DOM",
+      "dom.iterable"
     ] /* Specify library files to be included in the compilation. */,
     // "allowJs": true,                             /* Allow javascript files to be compiled. */
     // "checkJs": true,                             /* Report errors in .js files. */
@@ -73,6 +74,11 @@
     "skipLibCheck": true /* Skip type checking of declaration files. */,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */,
-    "types": ["node", "jest", "@testing-library/jest-dom"]
+    "types": [
+      "@scality/core-ui/types/styled.d.ts",
+      "node",
+      "jest",
+      "@testing-library/jest-dom"
+    ] /* The type definition files to be included in the compilation. */
   }
 }

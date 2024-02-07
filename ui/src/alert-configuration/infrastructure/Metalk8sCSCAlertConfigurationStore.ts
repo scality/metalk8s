@@ -1,11 +1,11 @@
+import { AlertManagerConfig, Receiver, Route } from './AlertManagerTypes';
 import {
   AlertConfiguration,
   AlertStoreLogLine,
   IAlertConfigurationStore,
 } from '../domain/AlertConfigurationDomain';
 import YAML from 'yaml';
-import { V1ConfigMap, V1NodeList } from '@kubernetes/client-node/';
-import { AlertManagerConfig, Receiver, Route } from './AlertManagerTypes';
+import { V1ConfigMap, V1NodeList } from '@kubernetes/client-node';
 
 type AlertmanagerConfigKind = 'AlertmanagerConfig';
 

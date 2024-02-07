@@ -122,25 +122,34 @@ function InternalRouter() {
         .filter((discoveredView) => discoveredView.isFederated)
         //Sort the exact and strict routes first, to make sure to match the exact first.
         .sort((a, b) => {
+          // @ts-expect-error - FIXME when you are working on it
           if (a.view.exact && !b.view.exact) {
             return -1;
           }
+          // @ts-expect-error - FIXME when you are working on it
           if (!a.view.exact && b.view.exact) {
             return 1;
           }
+          // @ts-expect-error - FIXME when you are working on it
           if (a.view.strict && !b.view.strict) {
             return -1;
           }
+          // @ts-expect-error - FIXME when you are working on it
           if (!a.view.strict && b.view.strict) {
             return 1;
           }
           return 0;
         })
 
+        // @ts-expect-error - FIXME when you are working on it
         .map(({ app, view, groups }) => ({
+          // @ts-expect-error - FIXME when you are working on it
           path: app.appHistoryBasePath + view.path,
+          // @ts-expect-error - FIXME when you are working on it
           exact: view.exact,
+          // @ts-expect-error - FIXME when you are working on it
           strict: view.strict,
+          // @ts-expect-error - FIXME when you are working on it
           sensitive: view.sensitive,
           component: () => {
             const federatedAppHistory = useMemo(
@@ -160,7 +169,9 @@ function InternalRouter() {
                       name: app.name,
                     }).spec.remoteEntryPath
                   }
+                  // @ts-expect-error - FIXME when you are working on it
                   module={view.module}
+                  // @ts-expect-error - FIXME when you are working on it
                   scope={view.scope}
                   app={app}
                   groups={groups}

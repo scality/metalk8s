@@ -13,6 +13,7 @@ export const getNodesCountQuery = (
   token?: string | null,
 ): typeof useQuery => {
   return {
+    // @ts-expect-error - FIXME when you are working on it
     queryKey: 'countNodes',
     queryFn: () =>
       fetch(`${k8sUrl}/api/v1/nodes`, {
@@ -37,6 +38,7 @@ export const getVolumesCountQuery = (
   token?: string | null,
 ): typeof useQuery => {
   return {
+    // @ts-expect-error - FIXME when you are working on it
     queryKey: 'countVolumes',
     queryFn: () =>
       fetch(`${k8sUrl}/api/v1/persistentvolumes`, {

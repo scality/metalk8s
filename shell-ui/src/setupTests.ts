@@ -5,6 +5,7 @@ import 'jest-localstorage-mock';
 
 const nodeCrypto = require('crypto');
 
+// @ts-expect-error - FIXME when you are working on it
 window.crypto = {
   getRandomValues: function (buffer) {
     return nodeCrypto.randomFillSync(buffer);
@@ -12,6 +13,7 @@ window.crypto = {
 };
 
 window.fetch = (url, ...rest) =>
+  // @ts-expect-error - FIXME when you are working on it
   fetch(/^https?:/.test(url) ? url : new URL(url, 'http://localhost'), ...rest);
 
 const DOMRect = jest.fn(() => ({

@@ -188,14 +188,17 @@ export type NodesState = {
   }[];
 };
 export default function reducer(state = defaultState, action = {}) {
+  // @ts-expect-error - FIXME when you are working on it
   switch (action.type) {
     case UPDATE_NODES:
+      // @ts-expect-error - FIXME when you are working on it
       return { ...state, ...action.payload };
 
     case CREATE_NODE_FAILED:
       return {
         ...state,
         errors: {
+          // @ts-expect-error - FIXME when you are working on it
           create_node: action.payload,
         },
       };
@@ -210,6 +213,7 @@ export default function reducer(state = defaultState, action = {}) {
 
     case UPDATE_NODES_IPS_INTERFACES:
     case UPDATE_NODE_OBJECT:
+      // @ts-expect-error - FIXME when you are working on it
       return { ...state, ...action.payload };
 
     default:
@@ -405,6 +409,7 @@ export function* createNode({ payload }) {
   );
 
   if (roleTaintMatched) {
+    // @ts-expect-error - FIXME when you are working on it
     body.spec.taints = roleTaintMatched.taints;
 
     // initialise the labels
@@ -604,13 +609,17 @@ export function* readNode({ payload }) {
 export function* nodesSaga() {
   yield all([
     takeLatest(FETCH_NODES, fetchNodes),
+    // @ts-expect-error - FIXME when you are working on it
     takeEvery(CREATE_NODE, createNode),
+    // @ts-expect-error - FIXME when you are working on it
     takeLatest(DEPLOY_NODE, deployNode),
     takeLatest(REFRESH_NODES, refreshNodes),
     takeLatest(STOP_REFRESH_NODES, stopRefreshNodes),
     takeLatest(FETCH_CLUSTER_VERSION, fetchClusterVersion),
+    // @ts-expect-error - FIXME when you are working on it
     takeEvery(JOB_COMPLETED, notifyDeployJobCompleted),
     takeLatest(FETCH_NODES_IPS_INTERFACES, fetchNodesIPsInterface),
+    // @ts-expect-error - FIXME when you are working on it
     takeEvery(READ_NODE, readNode),
   ]);
 }

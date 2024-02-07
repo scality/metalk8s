@@ -135,6 +135,7 @@ describe('alerts', () => {
     );
 
     //E
+    // @ts-expect-error - FIXME when you are working on it
     const { result, waitForNextUpdate } = renderHook(() => useAlerts(), {
       wrapper,
     });

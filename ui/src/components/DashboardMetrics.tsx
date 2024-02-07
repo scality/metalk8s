@@ -49,6 +49,7 @@ const DashboardMetrics = () => {
               placement="bottom"
               overlay={
                 <SmallerText
+                  // @ts-expect-error - FIXME when you are working on it
                   style={{
                     minWidth: '30rem',
                     display: 'block',

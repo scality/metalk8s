@@ -39,7 +39,10 @@ const SecondaryTitle = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${fontSize.bases};
+  font-size: ${
+    // @ts-expect-error - FIXME when you are working on it
+    fontSize.bases
+  };
   width: 250px;
   color: ${(props) => props.theme.textSecondary};
 `;
@@ -131,6 +134,7 @@ function AlertPageHeader({
               id: 'active_alerts',
             })}
           </>
+          {/* @ts-expect-error - FIXME when you are working on it */}
           <TextBadge variant="infoPrimary" text={activeAlerts} />
           <SeperationLine />
         </SecondaryTitle>
@@ -138,10 +142,12 @@ function AlertPageHeader({
         <TertiaryTitle>
           <div>
             Critical
+            {/* @ts-expect-error - FIXME when you are working on it */}
             <TextBadge variant="statusCritical" text={critical} />
           </div>
           <div>
             Warning
+            {/* @ts-expect-error - FIXME when you are working on it */}
             <TextBadge variant="statusWarning" text={warning} />
           </div>
         </TertiaryTitle>
@@ -160,6 +166,7 @@ function AlertPageHeader({
 }
 
 const ActiveAlertTab = React.memo(
+  // @ts-expect-error - FIXME when you are working on it
   ({ columns, data }) => {
     const sortTypes = React.useMemo(() => {
       return {
@@ -179,6 +186,7 @@ const ActiveAlertTab = React.memo(
         startsAt: (row1, row2) => {
           const a = row1?.values?.startsAt;
           const b = row2.values?.startsAt;
+          // @ts-expect-error - FIXME when you are working on it
           return new Date(a) - new Date(b);
         },
       };
@@ -213,6 +221,7 @@ const ActiveAlertTab = React.memo(
             separationLineVariant="backgroundLevel1"
             backgroundVariant="backgroundLevel3"
             customItemKey={(index, data) => {
+              // @ts-expect-error - FIXME when you are working on it
               return data[index].id;
             }}
           />
@@ -222,12 +231,12 @@ const ActiveAlertTab = React.memo(
   },
   (a, b) => {
     // compare the alert only on id and severity
+    // @ts-expect-error - FIXME when you are working on it
     return isEqual(a.columns, b.columns) && isEqualAlert(a.data, b.data);
   },
 );
 export default function AlertPage() {
   const alerts = useAlerts({});
-  const history = useHistory();
   const leafAlerts = useMemo(
     () => alerts?.alerts.filter((alert) => !alert.labels.children) || [],
     [JSON.stringify(alerts?.alerts)],
@@ -290,6 +299,7 @@ export default function AlertPage() {
         />
       </AppContainer.OverallSummary>
       <AppContainer.MainContent hasPadding>
+        {/* @ts-expect-error - FIXME when you are working on it */}
         <ActiveAlertTab data={leafAlerts} columns={columns} />
       </AppContainer.MainContent>
     </AppContainer>

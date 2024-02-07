@@ -14,16 +14,19 @@ type ThemeContextValues = {
 };
 
 if (!window.shellContexts) {
+  // @ts-expect-error - FIXME when you are working on it
   window.shellContexts = {};
 }
-
+// @ts-expect-error - FIXME when you are working on it
 if (!window.shellContexts.ShellThemeContext) {
+  // @ts-expect-error - FIXME when you are working on it
   window.shellContexts.ShellThemeContext =
     React.createContext<ThemeContextValues | null>(null);
 }
 
 export function useShellThemeSelector(): ThemeContextValues {
   const themeContext: ThemeContextValues = useContext(
+    // @ts-expect-error - FIXME when you are working on it
     window.shellContexts.ShellThemeContext,
   );
 
@@ -94,6 +97,7 @@ export function ShellThemeSelectorProvider({
   };
 
   return (
+    // @ts-expect-error - FIXME when you are working on it
     <window.shellContexts.ShellThemeContext.Provider
       value={{
         themeMode,
@@ -103,6 +107,7 @@ export function ShellThemeSelectorProvider({
       }}
     >
       {children(selectedTheme, themeMode)}
+      {/* @ts-expect-error - FIXME when you are working on it */}
     </window.shellContexts.ShellThemeContext.Provider>
   );
 }

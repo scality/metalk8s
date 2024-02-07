@@ -1,4 +1,5 @@
 import type { User } from 'oidc-react';
+// @ts-expect-error - FIXME when you are working on it
 import type { PathDescription } from '../index';
 import { UserGroupsMapping } from '../../initFederation/ShellConfigProvider';
 

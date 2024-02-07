@@ -8,6 +8,7 @@ import {
 } from './alertUtils';
 import { alerts } from './alertUtilsData';
 it('should return the alert list fitered the warning alert', () => {
+  // @ts-expect-error - FIXME when you are working on it
   const result = removeWarningAlerts(alerts);
   expect(result.some(({ id }) => id === '1')).toBe(true);
   expect(result.some(({ id }) => id === '3')).toBe(true);
@@ -66,6 +67,7 @@ it('filters the alert base on the labels', async () => {
     severity: 'warning',
     device: '/dev/vdc2',
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = await filterAlerts(alerts, filters);
   expect(result.some(({ id }) => id === '1')).toBe(false);
   expect(result.some(({ id }) => id === '3')).toBe(false);
@@ -83,6 +85,7 @@ it('should return warning for during the time when warning alert was firing', ()
       },
     },
   ];
+  // @ts-expect-error - FIXME when you are working on it
   const result = getHealthStatus(alerts, '2021-01-18T20:43:35.358Z');
   expect(result).toEqual('warning');
 });
@@ -107,6 +110,7 @@ it('should return warning status during the time when warning alert was firing b
       },
     },
   ];
+  // @ts-expect-error - FIXME when you are working on it
   const result = getHealthStatus(alerts, '2021-01-18T20:43:35.358Z');
   expect(result).toEqual('warning');
 });
@@ -131,6 +135,7 @@ it('should return critical status during the time when critical alert and warnin
       },
     },
   ];
+  // @ts-expect-error - FIXME when you are working on it
   const result = getHealthStatus(alerts, '2021-01-18T20:43:35.358Z');
   expect(result).toEqual('critical');
 });
@@ -146,6 +151,7 @@ it('should return healthy when only watchdog alert fired', () => {
       },
     },
   ];
+  // @ts-expect-error - FIXME when you are working on it
   const result = getHealthStatus(alerts, '2021-01-18T20:43:35.358Z');
   expect(result).toEqual('none');
 });
@@ -161,6 +167,7 @@ it('should return healthy for current status when all the alerts were on the pas
       },
     },
   ];
+  // @ts-expect-error - FIXME when you are working on it
   const result = getHealthStatus(alerts, new Date().toISOString());
   expect(result).toEqual('healthy');
 });
@@ -187,6 +194,7 @@ it('should format the history alert', () => {
       ],
     },
   ];
+  // @ts-expect-error - FIXME when you are working on it
   const result = formatHistoryAlerts(streamValue);
   const historyAlert = [
     {
@@ -275,6 +283,7 @@ it('filters the alerts and only get MetalK8s alerts', () => {
   const childrenJsonPath = [
     "$[?((@.labels.alertname === 'NodeAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'PlatformServicesAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'VolumeAtRisk' && @.labels.severity === 'critical'))]",
   ];
+  // @ts-expect-error - FIXME when you are working on it
   const metalK8sAlerts = getChildrenAlerts(childrenJsonPath, alerts);
   expect(metalK8sAlerts.length).toBe(1);
 });

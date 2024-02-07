@@ -3,10 +3,12 @@ import { setupMock as setupLocalStorageMock } from './tests/mocks/localStorage';
 import '@testing-library/jest-dom/extend-expect';
 import 'babel-polyfill';
 import { Alert } from './services/alertUtils';
+import React from 'react';
 setupLocalStorageMock();
 
 window.fetch = (url, ...rest) =>
   fetch(
+    // @ts-expect-error - FIXME when you are working on it
     /^https?:/.test(url) ? url : new URL(url, 'http://localhost').toString(),
     ...rest,
   );

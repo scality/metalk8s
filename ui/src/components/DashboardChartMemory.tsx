@@ -20,7 +20,9 @@ const DashboardChartMemory = () => {
     <>
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
+          // @ts-expect-error - FIXME when you are working on it
           getQuantileQuery={getNodesMemoryQuantileQuery}
+          // @ts-expect-error - FIXME when you are working on it
           getQuantileHoverQuery={getNodesMemoryOutpassingThresholdQuery}
           title={'Memory'}
           yAxisType={'percentage'}
@@ -35,6 +37,7 @@ const DashboardChartMemory = () => {
 const DashboardChartMemoryWithoutQuantiles = () => {
   const nodeAddresses = useNodeAddressesSelector(useNodes());
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
+    // @ts-expect-error - FIXME when you are working on it
     getQuery: (timeSpanProps) => getNodesMemoryQuery(timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) => {

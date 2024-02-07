@@ -29,7 +29,9 @@ export async function authenticate(user: User) {
 
   const payload = {
     eauth: 'kubernetes_rbac',
+    // @ts-expect-error - FIXME when you are working on it
     username: `oidc:${user.email}`,
+    // @ts-expect-error - FIXME when you are working on it
     token: user.token,
   };
   const result = await saltApiClient.post('/login', payload);
@@ -118,9 +120,7 @@ We may get error message instead of IPInterfaces Object
   ]
 }
 */
-export async function getNodesIPsInterfaces(
-  nodeNames: string[],
-): Promise<{
+export async function getNodesIPsInterfaces(nodeNames: string[]): Promise<{
   return: [Record<string, boolean | IPInterfaces | string>];
 }> {
   if (!saltApiClient) {
@@ -140,6 +140,7 @@ export async function getNodesIPsInterfaces(
   });
 
   if (result.error) {
+    // @ts-expect-error - FIXME when you are working on it
     return handleUnAuthorizedError({
       error: result.error,
     });

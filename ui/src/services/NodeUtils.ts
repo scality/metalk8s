@@ -26,6 +26,7 @@ export const createTypedSelector: <T>(
   selectorsResult: (...result: any) => T,
   ...selectors: ((state: RootState) => any)[]
 ) => T = (selectorsResult, ...selectors) =>
+  // @ts-expect-error - FIXME when you are working on it
   createSelector(...selectors, selectorsResult);
 type NodetableList = {
   name: {

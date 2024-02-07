@@ -144,6 +144,7 @@ describe('useNavbar', () => {
     await act(() => waitForNextUpdate());
     //E
     act(() =>
+      // @ts-expect-error - FIXME when you are working on it
       result.current.setMainLinks([expectedDefaultNavbarLinks.main[0]]),
     );
     //V
@@ -160,6 +161,7 @@ describe('useNavbar', () => {
     await waitForNextUpdate();
     //E
     act(() =>
+      // @ts-expect-error - FIXME when you are working on it
       result.current.setSecondaryLinks([expectedDefaultNavbarLinks.main[0]]),
     );
     //V
@@ -176,6 +178,7 @@ describe('useNavbar', () => {
     await waitForNextUpdate();
     //E
     act(() =>
+      // @ts-expect-error - FIXME when you are working on it
       result.current.setUserDropdownLinks([expectedDefaultNavbarLinks.main[0]]),
     );
     //V

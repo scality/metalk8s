@@ -30,6 +30,7 @@ const PodTableContainer = styled.div`
 //  Pod Unknown => Red
 const StatusText = styled.div`
   color: ${(props) => {
+    // @ts-expect-error - FIXME when you are working on it
     const { status, numContainer, numContainerRunning } = props;
 
     if (status === STATUS_RUNNING && numContainer === numContainerRunning) {
@@ -50,7 +51,9 @@ const ExternalLink = styled.a`
   color: ${(props) => props.theme.textSecondary};
 `;
 const NodePagePodsTab = React.memo((props) => {
+  // @ts-expect-error - FIXME when you are working on it
   const { pods } = props;
+  // @ts-expect-error - FIXME when you are working on it
   const config = useSelector((state) => state.config);
   const intl = useIntl();
   const columns = React.useMemo(
@@ -89,6 +92,7 @@ const NodePagePodsTab = React.memo((props) => {
           const { status, numContainer, numContainerRunning } = cellProps.value;
           return status === STATUS_RUNNING ? (
             <StatusText
+              // @ts-expect-error - FIXME when you are working on it
               status={status}
               numContainer={numContainer}
               numContainerRunning={numContainerRunning}
@@ -96,6 +100,7 @@ const NodePagePodsTab = React.memo((props) => {
               {`${status} (${numContainerRunning}/${numContainer})`}
             </StatusText>
           ) : (
+            // @ts-expect-error - FIXME when you are working on it
             <StatusText status={status}>{status}</StatusText>
           );
         },

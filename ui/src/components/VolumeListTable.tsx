@@ -62,7 +62,9 @@ const VolumeListTable = (props) => {
               size="large"
               percentage={value}
               buildinLabel={`${value}%`}
+              // @ts-expect-error - FIXME when you are working on it
               color={theme.infoSecondary}
+              // @ts-expect-error - FIXME when you are working on it
               backgroundColor={theme.buttonSecondary}
             />
           );
@@ -189,6 +191,7 @@ const VolumeListTable = (props) => {
         columns={columns}
         data={volumeListData}
         defaultSortingKey={'health'}
+        // @ts-expect-error - FIXME when you are working on it
         getRowId={(row) => row.name}
       >
         <Box

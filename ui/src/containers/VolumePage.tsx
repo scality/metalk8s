@@ -21,6 +21,7 @@ import { useTypedSelector, useVolumesWithAlerts } from '../hooks';
 const VolumePage = (props) => {
   const dispatch = useDispatch();
   const match = useRouteMatch();
+  // @ts-expect-error - FIXME when you are working on it
   const currentVolumeName = match.params.name;
   useFetchCurrentVolumeObject(currentVolumeName);
   useRefreshNodes();
@@ -30,6 +31,7 @@ const VolumePage = (props) => {
   useEffect(() => {
     dispatch(fetchPodsAction());
     dispatch(fetchNodesAction());
+    // @ts-expect-error - FIXME when you are working on it
     dispatch(fetchVolumeStatsAction());
     dispatch(fetchPersistentVolumeClaimAction());
   }, [dispatch]);

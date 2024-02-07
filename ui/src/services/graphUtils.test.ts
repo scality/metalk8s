@@ -47,6 +47,7 @@ const testNodesData = [
 ];
 it('returns the data set within series for multi resources chart', () => {
   const multiResourceSeries = getMultiResourceSeriesForChart(
+    // @ts-expect-error - FIXME when you are working on it
     testPromData,
     testNodesData,
   );
@@ -82,6 +83,7 @@ it('returns the data set within series for multi resources chart', () => {
 });
 it('returns the correct labels for tooltip and legend for multi resources chart', () => {
   const multiResourceSeries = getMultiResourceSeriesForChart(
+    // @ts-expect-error - FIXME when you are working on it
     testPromData,
     testNodesData,
   );
@@ -155,6 +157,7 @@ const promethusResultBelow = {
 };
 it('returns the series for multi resources symmetrical chart', () => {
   const series = getMultipleSymmetricalSeries(
+    // @ts-expect-error - FIXME when you are working on it
     promethusResultAbove,
     promethusResultBelow,
     'write',
@@ -223,6 +226,7 @@ it('returns the series for multi resources symmetrical chart', () => {
 });
 it('returns the correct labels for tooltip and legend for multi resources symmetrical chart', () => {
   const series = getMultipleSymmetricalSeries(
+    // @ts-expect-error - FIXME when you are working on it
     promethusResultAbove,
     promethusResultBelow,
     'write',
@@ -290,6 +294,7 @@ it('selects the result with the expected label', () => {
       ],
     },
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = fiterMetricValues(prometheusResult, label);
   expect(result).toEqual({
     metric: {
@@ -323,6 +328,7 @@ it('selects the result with the 2 expected labels', () => {
       ],
     },
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = fiterMetricValues(prometheusResult, label);
   expect(result).toEqual({
     metric: {

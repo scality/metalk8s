@@ -2,8 +2,8 @@ import React from 'react';
 import { IntlProvider } from 'react-intl';
 import { ErrorPage500 } from '@scality/core-ui';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
-import translations_en from '../translations/en';
-import translations_fr from '../translations/fr';
+import translations_en from '../translations/en.json';
+import translations_fr from '../translations/fr.json';
 const messages = {
   EN: translations_en,
   FR: translations_fr,
@@ -36,6 +36,7 @@ const FederatedIntlProvider = ({ children }: { children: React.ReactNode }) => {
         {
           scope: 'shell',
           module: './lang',
+          // @ts-expect-error - FIXME when you are working on it
           remoteEntryUrl: window.shellUIRemoteEntryUrl,
         },
       ]}

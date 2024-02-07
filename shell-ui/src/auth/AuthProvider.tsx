@@ -35,8 +35,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 function defaultDexConnectorMetadataService(connectorId: string) {
+  // @ts-expect-error - FIXME when you are working on it
   class DexDefaultConnectorMetadataService extends MetadataService {
     getAuthorizationEndpoint() {
+      // @ts-expect-error - FIXME when you are working on it
       return this._getMetadataProperty('authorization_endpoint').then(
         (authorizationEndpoint) => {
           const queryParamas = new URLSearchParams(window.location.search);
@@ -69,19 +71,29 @@ function getAbsoluteRedirectUrl(redirectUrl?: string) {
 function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   const { authConfig } = useAuthConfig();
   const userManager = new UserManager({
+    // @ts-expect-error - FIXME when you are working on it
     authority: authConfig.providerUrl,
+    // @ts-expect-error - FIXME when you are working on it
     client_id: authConfig.clientId,
+    // @ts-expect-error - FIXME when you are working on it
     redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
+    // @ts-expect-error - FIXME when you are working on it
     silent_redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
+    // @ts-expect-error - FIXME when you are working on it
     post_logout_redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
+    // @ts-expect-error - FIXME when you are working on it
     response_type: authConfig.responseType || 'code',
+    // @ts-expect-error - FIXME when you are working on it
     scope: authConfig.scopes,
     loadUserInfo: true,
     automaticSilentRenew: true,
     monitorSession: false,
+    // @ts-expect-error - FIXME when you are working on it
     MetadataServiceCtor: authConfig.defaultDexConnector
-      ? defaultDexConnectorMetadataService(authConfig.defaultDexConnector)
-      : MetadataService,
+      ? // @ts-expect-error - FIXME when you are working on it
+        defaultDexConnectorMetadataService(authConfig.defaultDexConnector)
+      : // @ts-expect-error - FIXME when you are working on it
+        MetadataService,
     userStore: new WebStorageStateStore({
       store: localStorage,
     }),
@@ -165,6 +177,7 @@ export function useAuth(): {
       // This query might be executed when useAuth is rendered simultaneously by 2 different components
       // react-query is supposed to prevent this but in practice under certain conditions a race condition might trigger it twice
       // We need to make sure we don't call removeUser twice in this case (which would cause a redirect loop)
+      // @ts-expect-error - FIXME when you are working on it
       window.loggingOut = true;
       return auth.userManager.removeUser().then(() => {
         location.reload();
@@ -175,6 +188,7 @@ export function useAuth(): {
       auth.userManager &&
       auth.userData &&
       (auth.userData.expired || !auth.userData.expires_at) &&
+      // @ts-expect-error - FIXME when you are working on it
       !window.loggingOut
     ),
   });
@@ -192,6 +206,7 @@ export function useAuth(): {
       email: auth.userData.profile?.email,
       groups: getUserGroups(auth.userData, config.userGroupsMapping),
       id: auth.userData.profile?.sub,
+      // @ts-expect-error - FIXME when you are working on it
       original: auth.userData,
     },
   };
@@ -199,6 +214,7 @@ export function useAuth(): {
 
 function useInternalLogout(
   userManager?: UserManager,
+  // @ts-expect-error - FIXME when you are working on it
   authConfig: OAuth2ProxyConfig | OIDCConfig | undefined,
 ) {
   return {

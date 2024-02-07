@@ -51,6 +51,7 @@ const VolumePageContent = (props) => {
   const [isFirstLoadingDone, setIsFirstLoadingDone] = useState(false);
   const previousLoading = usePrevious(loading);
   const intl = useIntl();
+  // @ts-expect-error - FIXME when you are working on it
   const currentVolumeName = match.params.name;
   // If data has been retrieved and no volume is selected yet we select the first one
   useEffect(() => {
@@ -96,8 +97,9 @@ const VolumePageContent = (props) => {
   );
   // prepare the data for <PerformanceGraphCard>
   const deviceName = volume?.status?.deviceName;
-  const instanceIp = nodes.find((node) => node.name === volume?.spec?.nodeName)
-    ?.internalIP;
+  const instanceIp = nodes.find(
+    (node) => node.name === volume?.spec?.nodeName,
+  )?.internalIP;
 
   /*
    ** Used to determine if a first loading has happened
@@ -204,6 +206,7 @@ const VolumePageContent = (props) => {
                       ? 'statusCritical'
                       : 'statusWarning'
                   }
+                  // @ts-expect-error - FIXME when you are working on it
                   text={alertlist.length}
                 />
               ) : null

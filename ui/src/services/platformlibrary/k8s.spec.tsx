@@ -51,6 +51,7 @@ describe('getNodesCount', () => {
   it('should return the number of nodes in the cluster', async () => {
     // S
     const { result, waitForNextUpdate } = renderHook(
+      // @ts-expect-error - FIXME when you are working on it
       () => useQuery(getNodesCountQuery(k8sUrl, token)),
       {
         wrapper,
@@ -64,6 +65,7 @@ describe('getNodesCount', () => {
   it('should return the number of volumes in the cluster', async () => {
     // S
     const { result, waitForNextUpdate } = renderHook(
+      // @ts-expect-error - FIXME when you are working on it
       () => useQuery(getVolumesCountQuery(k8sUrl, token)),
       {
         wrapper,

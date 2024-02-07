@@ -97,7 +97,9 @@ export function useAlerts(filters: FilterLabels) {
     throw new Error(
       'The useAlerts hook can only be used within AlertProvider.',
     );
+    // @ts-expect-error - FIXME when you are working on it
   } else if (query.status === 'success') {
+    // @ts-expect-error - FIXME when you are working on it
     const newQuery = { ...query, alerts: filterAlerts(query.data, filters) };
     delete newQuery.data;
     return newQuery;

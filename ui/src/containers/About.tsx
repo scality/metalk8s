@@ -16,6 +16,7 @@ const AboutContainer = styled.div`
 `;
 
 const About = (props) => {
+  // @ts-expect-error - FIXME when you are working on it
   const clusterVersion = useSelector((state) => state.app.nodes.clusterVersion);
   const intl = useIntl();
   const dispatch = useDispatch();

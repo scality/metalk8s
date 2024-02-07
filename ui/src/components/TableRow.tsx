@@ -17,11 +17,13 @@ const TableRowStyle = styled.div`
   box-sizing: border-box;
   border-right: 4px solid
     ${(props) =>
+      // @ts-expect-error - FIXME when you are working on it
       props.isSelected
         ? props.theme.selectedActive
         : props.theme.backgroundLevel2};
 
   background-color: ${(props) =>
+    // @ts-expect-error - FIXME when you are working on it
     props.isSelected ? props.theme.highlight : props.theme.backgroundLevel2};
 `;
 export const TooltipContent = styled.div`
@@ -35,6 +37,7 @@ export const UnknownIcon = ({ name }) => {
     <Icon
       name={name}
       color="textSecondary"
+      // @ts-expect-error - FIXME when you are working on it
       style={{
         height: 30,
         paddingTop: padding.base,

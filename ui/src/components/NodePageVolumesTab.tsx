@@ -45,17 +45,23 @@ const NodePageVolumesTab = (props) => {
     stopRefreshPersistentVolumesAction,
   );
   useEffect(() => {
+    // @ts-expect-error - FIXME when you are working on it
     dispatch(fetchVolumeStatsAction());
     dispatch(fetchPersistentVolumeClaimAction());
   }, [dispatch]);
-  useEffect(() => {
-    dispatch(refreshAlertsAction());
-    return () => dispatch(stopRefreshAlertsAction());
-  }, [dispatch]);
+  useEffect(
+    // @ts-expect-error - FIXME when you are working on it
+    () => {
+      dispatch(refreshAlertsAction());
+      return () => dispatch(stopRefreshAlertsAction());
+    },
+    [dispatch],
+  );
   return (
     <NodesVolumesTab>
       <TabContent>
         <NodePageVolumesTable
+          // @ts-expect-error - FIXME when you are working on it
           volumeListData={volumeListData}
           nodeName={nodeName}
         ></NodePageVolumesTable>

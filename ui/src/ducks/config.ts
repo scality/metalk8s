@@ -43,6 +43,7 @@ const defaultState: ConfigState = {
   language: EN_LANG,
   api: null,
   status: 'idle',
+  // @ts-expect-error - FIXME when you are working on it
   intl: {},
   coreApi: null,
   customObjectsApi: null,
@@ -148,7 +149,9 @@ export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
 
+  // @ts-expect-error - FIXME when you are working on it
   if (!result.error) {
+    // @ts-expect-error - FIXME when you are working on it
     yield put(setApiConfigAction(result));
   } else {
     yield put(setConfigStatusAction('error'));
@@ -177,6 +180,7 @@ export function* updateApiServerConfig({
   const api = yield select((state: RootState) => state.config.api);
 
   if (api) {
+    // @ts-expect-error - FIXME when you are working on it
     yield put(setUser(payload));
 
     const { appsV1, coreV1, customObjects, storage } =
@@ -192,7 +196,9 @@ export function* updateApiServerConfig({
 }
 export function* configSaga(): Generator<Effect, void, void> {
   yield takeEvery(FETCH_CONFIG, fetchConfig);
+  // @ts-expect-error - FIXME when you are working on it
   yield takeEvery(SET_API_CONFIG, setApiConfig);
+  // @ts-expect-error - FIXME when you are working on it
   yield takeEvery(UPDATE_API_CONFIG, updateApiServerConfig);
   yield takeEvery(LOGOUT, logOut);
 }

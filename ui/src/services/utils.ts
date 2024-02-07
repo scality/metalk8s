@@ -45,6 +45,7 @@ export function convertK8sMemoryToBytes(memory) {
   return parseInt(memory.slice(0, -2), 10) * 1024;
 }
 export const sortSelector = createSelector(
+  // @ts-expect-error - FIXME when you are working on it
   (list, sortBy, sortDirection) => {
     const sortedList = sortByArray(list, [
       (item) => {
@@ -88,11 +89,13 @@ export const getPods = (state) =>
 export const getVolumes = (state) =>
   (state && state.app && state.app.volumes && state.app.volumes.list) || [];
 export const makeGetPodsFromUrl = createSelector(
+  // @ts-expect-error - FIXME when you are working on it
   getNodeNameFromUrl,
   getPods,
   (nodeName, pods) => pods.filter((pod) => pod.nodeName === nodeName) || [],
 );
 export const makeGetVolumesFromUrl = createSelector(
+  // @ts-expect-error - FIXME when you are working on it
   getNodeNameFromUrl,
   getVolumes,
   (nodeName, volumes) =>
@@ -187,6 +190,7 @@ export function allSizeUnitsToBytes(size) {
         const tmpInternalUnitBase =
           sizeUnits.find((sizeUnit) => sizeUnit.value === tmpInternalUnit)
             ?.base ?? sizeUnits[0].value;
+        // @ts-expect-error - FIXME when you are working on it
         return parseFloat(tmpInternalSize) * tmpInternalUnitBase;
       }
     }
@@ -199,6 +203,7 @@ export function allSizeUnitsToBytes(size) {
 export function bytesToSize(bytes) {
   let sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
   if (bytes === 0) return '0 Byte';
+  // @ts-expect-error - FIXME when you are working on it
   let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
   return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
 }
@@ -293,6 +298,7 @@ export function getNaNSegments(points: [[number, number | null]]): {
     };
   });
   const nullSegments = segments.filter(
+    // @ts-expect-error - FIXME when you are working on it
     (segment) => segment.value === NAN_STRING,
   );
   return nullSegments.reduce((mergedNullSegments, segment) => {

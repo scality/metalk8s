@@ -6,7 +6,7 @@ USER node
 WORKDIR /home/node
 
 # Setup build dependencies
-COPY package.json package-lock.json /home/node/
+COPY package.json package-lock.json tsconfig.json /home/node/
 RUN npm ci --legacy-peer-deps
 
 COPY entrypoint.sh /entrypoint.sh

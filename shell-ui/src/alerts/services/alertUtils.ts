@@ -88,6 +88,7 @@ export const sortAlerts = (alerts: Alert[]): Alert[] => {
   Because we don't want to change the implementation because of any API changes.
   */
 export const formatActiveAlerts = (alerts: Array<PrometheusAlert>): Alert[] => {
+  // @ts-expect-error - FIXME when you are working on it
   return alerts.map((alert) => {
     return {
       id: alert.fingerprint,
@@ -132,6 +133,7 @@ export const isAlertSelected = (
       if (Array.isArray(filters[key])) {
         if (Array.isArray(labels[key])) {
           return (
+            // @ts-expect-error - FIXME when you are working on it
             filters[key].find((val) => {
               return labels[key].includes(val);
             }) !== undefined

@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { AUTHENTICATED_EVENT } from '../../navbar/events';
 export const useGetNodesCount = (
+  // @ts-expect-error - FIXME when you are working on it
   useEffect: typeof useEffect,
+  // @ts-expect-error - FIXME when you are working on it
   useQuery: typeof useQuery,
   k8sUrl: string,
 ): {
@@ -11,6 +13,7 @@ export const useGetNodesCount = (
 } => {
   const navbarElement = document.querySelector('solutions-navbar');
   const [token, setToken] = useState(null);
+  // @ts-expect-error - FIXME when you are working on it
   useQuery('initialToken', () => navbarElement.getIdToken(), {
     onSucces: (idToken) => setToken(idToken),
   });
@@ -20,6 +23,7 @@ export const useGetNodesCount = (
     }
 
     const onAuthenticated = (evt: Event) => {
+      // @ts-expect-error - FIXME when you are working on it
       setToken(evt.detail.id_token);
     };
 
@@ -33,7 +37,9 @@ export const useGetNodesCount = (
   return queryNodesResult;
 };
 export const useGetVolumesCount = (
+  // @ts-expect-error - FIXME when you are working on it
   useEffect: typeof useEffect,
+  // @ts-expect-error - FIXME when you are working on it
   useQuery: typeof useQuery,
   k8sUrl: string,
 ): {
@@ -42,6 +48,7 @@ export const useGetVolumesCount = (
 } => {
   const navbarElement = document.querySelector('solutions-navbar');
   const [token, setToken] = useState(null);
+  // @ts-expect-error - FIXME when you are working on it
   useQuery('initialToken', () => navbarElement.getIdToken(), {
     onSucces: (idToken) => setToken(idToken),
   });
@@ -51,6 +58,7 @@ export const useGetVolumesCount = (
     }
 
     const onAuthenticated = (evt: Event) => {
+      // @ts-expect-error - FIXME when you are working on it
       setToken(evt.detail.id_token);
     };
 
@@ -68,6 +76,7 @@ export const getNodesCountQuery = (
   token?: string | null,
 ): typeof useQuery => {
   return {
+    // @ts-expect-error - FIXME when you are working on it
     queryKey: 'countNodes',
     queryFn: () =>
       fetch(`${k8sUrl}/api/v1/nodes`, {
@@ -92,6 +101,7 @@ export const getVolumesCountQuery = (
   token?: string | null,
 ): typeof useQuery => {
   return {
+    // @ts-expect-error - FIXME when you are working on it
     queryKey: 'countVolumes',
     queryFn: () =>
       fetch(`${k8sUrl}/api/v1/persistentvolumes`, {

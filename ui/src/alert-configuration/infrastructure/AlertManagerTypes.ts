@@ -1,3 +1,4 @@
+import { URL } from 'url';
 export type AlertManagerConfig = {
   global?: GlobalConfig | null;
   route?: Route | null;

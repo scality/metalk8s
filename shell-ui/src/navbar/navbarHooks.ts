@@ -27,5 +27,6 @@ export const useNavbar = (): Navbar => {
     throw new Error("Can't use useNavbar outside of NavbarConfigProvider");
   }
 
+  // @ts-expect-error - FIXME when you are working on it
   return navbar;
 };

@@ -224,6 +224,7 @@ export class Metalk8sV1alpha1VolumeClient {
     Result<Metalk8sV1alpha1VolumeList>
   > {
     try {
+      // @ts-expect-error - FIXME when you are working on it
       return await this.customObjects.listClusterCustomObject(
         'storage.metalk8s.scality.com',
         'v1alpha1',
@@ -238,6 +239,7 @@ export class Metalk8sV1alpha1VolumeClient {
     Metalk8sV1alpha1VolumeName: string,
   ): Promise<Result<Metalk8sV1alpha1Volume>> {
     try {
+      // @ts-expect-error - FIXME when you are working on it
       return await this.customObjects.getClusterCustomObject(
         'storage.metalk8s.scality.com',
         'v1alpha1',
@@ -267,6 +269,7 @@ export class Metalk8sV1alpha1VolumeClient {
     body: Metalk8sV1alpha1Volume,
   ): Promise<Result<Metalk8sV1alpha1Volume>> {
     try {
+      // @ts-expect-error - FIXME when you are working on it
       return await this.customObjects.createClusterCustomObject(
         'storage.metalk8s.scality.com',
         'v1alpha1',
@@ -282,6 +285,7 @@ export class Metalk8sV1alpha1VolumeClient {
     body: Partial<Metalk8sV1alpha1Volume>,
   ): Promise<Result<Metalk8sV1alpha1Volume>> {
     try {
+      // @ts-expect-error - FIXME when you are working on it
       return await this.customObjects.patchClusterCustomObject(
         'storage.metalk8s.scality.com',
         'v1alpha1',

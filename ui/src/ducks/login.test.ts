@@ -1,35 +1,32 @@
 // TO BE FIXED: Mock import { store } from '../index' in 'config.js'
 // Otherwise we have some issues to initialize reducers for testing
+import { call, put } from 'redux-saga/effects';
+import * as ApiSalt from '../services/salt/api';
+import { CONNECT_SALT_API } from './app/salt';
+import { SALT_AUTHENTICATION_SUCCESS, authenticateSaltApi } from './login';
 jest.mock('../index.ts', () => {
   return {
     store: 'store',
   };
 });
-import uuidv1 from 'uuid/v1';
 jest.mock('uuid/v1', () => ({
   __esModule: true,
   default: () => 'uuidv1',
 }));
-import { call, put } from 'redux-saga/effects';
-import {
-  SALT_AUTHENTICATION_FAILED,
-  SALT_AUTHENTICATION_SUCCESS,
-  authenticateSaltApi,
-} from './login';
-import { CONNECT_SALT_API } from './app/salt';
-import * as ApiSalt from '../services/salt/api';
-import { LOGOUT } from './config';
 it.skip('Salt authentication success', () => {
   ApiSalt.initialize('url');
   const gen = authenticateSaltApi();
+  // @ts-expect-error - FIXME when you are working on it
   expect(gen.next().value.type).toEqual('SELECT');
   const api = {
     url_salt: 'url_salt',
   };
+  // @ts-expect-error - FIXME when you are working on it
   expect(gen.next(api).value.type).toEqual('SELECT');
   const user = {
     name: 'carlito',
   };
+  // @ts-expect-error - FIXME when you are working on it
   expect(gen.next(user).value).toEqual(call(ApiSalt.authenticate, user));
   const result = {
     return: [
@@ -63,14 +60,17 @@ it.skip('Salt authentication success', () => {
 it.skip('Salt authentication failed', () => {
   ApiSalt.initialize('url');
   const gen = authenticateSaltApi();
+  // @ts-expect-error - FIXME when you are working on it
   expect(gen.next().value.type).toEqual('SELECT');
   const api = {
     url_salt: 'url_salt',
   };
+  // @ts-expect-error - FIXME when you are working on it
   expect(gen.next(api).value.type).toEqual('SELECT');
   const user = {
     name: 'carlito',
   };
+  // @ts-expect-error - FIXME when you are working on it
   expect(gen.next(user).value).toEqual(call(ApiSalt.authenticate, user));
   const result = {
     error: 'error',

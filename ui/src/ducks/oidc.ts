@@ -20,6 +20,7 @@ export const setUser = (user: User | null | undefined): SetUserAction => {
 type Actions = SetUserAction;
 export function oidcReducer(
   state: UserState = defaultState,
+  // @ts-expect-error - FIXME when you are working on it
   action: Actions = {},
 ) {
   switch (action.type) {
@@ -31,5 +32,6 @@ export function oidcReducer(
   }
 }
 export function* logOut(): Generator<Effect, void, string> {
+  // @ts-expect-error - FIXME when you are working on it
   yield put(setUser());
 }

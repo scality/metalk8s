@@ -158,32 +158,40 @@ export type MonitoringState = {
   unameInfo: any[]; // todo, identify this type
 };
 export default function reducer(state = defaultState, action = {}) {
+  // @ts-expect-error - FIXME when you are working on it
   switch (action.type) {
     case SET_PROMETHEUS_API_AVAILABLE:
+      // @ts-expect-error - FIXME when you are working on it
       return { ...state, isPrometheusApiUp: action.payload };
 
     case UPDATE_ALERTS:
+      // @ts-expect-error - FIXME when you are working on it
       return { ...state, alert: { ...state.alert, ...action.payload } };
 
     case UPDATE_CLUSTER_STATUS:
+      // @ts-expect-error - FIXME when you are working on it
       return { ...state, cluster: { ...state.cluster, ...action.payload } };
 
     case UPDATE_VOLUMESTATS:
       return {
         ...state,
+        // @ts-expect-error - FIXME when you are working on it
         volumeStats: { ...state.volumeStats, ...action.payload },
       };
 
     case UPDATE_CURRENT_VOLUMESTATS:
       return {
         ...state,
+        // @ts-expect-error - FIXME when you are working on it
         volumeCurrentStats: { ...state.volumeCurrentStats, ...action.payload },
       };
 
     case UPDATE_NODESTATS_FETCH_ARG:
+      // @ts-expect-error - FIXME when you are working on it
       return { ...state, nodeStats: { ...state.nodeStats, ...action.payload } };
 
     case UPDATE_NODE_UNAME_INFO:
+      // @ts-expect-error - FIXME when you are working on it
       return { ...state, ...action.payload };
 
     default:

@@ -79,9 +79,12 @@ export function getJobStatusFromPrintJob(result, jid) {
 
   if (job && Object.keys(job['Result']).length) {
     status.completed = true;
+    // @ts-expect-error - FIXME when you are working on it
     const returner = Object.values(job['Result'])[0].return;
+    // @ts-expect-error - FIXME when you are working on it
     status.success = returner.success;
 
+    // @ts-expect-error - FIXME when you are working on it
     if (!status.success) {
       status = { ...status, ...parseJobError(returner) };
     }
@@ -90,6 +93,7 @@ export function getJobStatusFromPrintJob(result, jid) {
   // add error handling when indicating the error inside the JSON
   if (job && job['Error']) {
     status.completed = true;
+    // @ts-expect-error - FIXME when you are working on it
     const returner = Object.values(job['Result'])?.[0]?.return;
 
     if (!returner) {
@@ -105,8 +109,10 @@ export function getJobStatusFromEventRet(result) {
   let status = {
     completed: true,
   };
+  // @ts-expect-error - FIXME when you are working on it
   status.success = result.success;
 
+  // @ts-expect-error - FIXME when you are working on it
   if (!status.success) {
     status = { ...status, ...parseJobError(result) };
   }

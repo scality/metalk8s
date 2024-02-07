@@ -285,6 +285,7 @@ describe('the system partition table', () => {
   });
 
   test('displays the table', async () => {
+    // @ts-expect-error - FIXME when you are working on it
     useAlerts.mockImplementation(() => {
       const alerts = [
         {

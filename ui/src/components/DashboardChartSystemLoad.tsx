@@ -1,18 +1,17 @@
-import React, { useCallback } from 'react';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
+import { useCallback } from 'react';
 import {
   useNodeAddressesSelector,
   useNodes,
   useShowQuantileChart,
   useSingleChartSerie,
 } from '../hooks';
-import type { DashboardChartProps } from '../containers/DashboardPage';
+import { getMultiResourceSeriesForChart } from '../services/graphUtils';
 import {
   getNodesSystemLoadOutpassingThresholdQuery,
   getNodesSystemLoadQuantileQuery,
   getNodesSystemLoadQuery,
 } from '../services/platformlibrary/metrics';
-import { getMultiResourceSeriesForChart } from '../services/graphUtils';
 import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
 
 const DashboardChartSystemLoad = () => {
@@ -21,7 +20,9 @@ const DashboardChartSystemLoad = () => {
     <>
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
+          // @ts-expect-error - FIXME when you are working on it
           getQuantileQuery={getNodesSystemLoadQuantileQuery}
+          // @ts-expect-error - FIXME when you are working on it
           getQuantileHoverQuery={getNodesSystemLoadOutpassingThresholdQuery}
           title={'System Load'}
         />
@@ -32,12 +33,12 @@ const DashboardChartSystemLoad = () => {
   );
 };
 
-const DashboardChartSystemLoadWithoutQuantiles = (
-  props: DashboardChartProps,
-) => {
+const DashboardChartSystemLoadWithoutQuantiles = () => {
   const nodeAddresses = useNodeAddressesSelector(useNodes());
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
-    getQuery: (timeSpanProps) => getNodesSystemLoadQuery(timeSpanProps),
+    getQuery: (timeSpanProps) =>
+      // @ts-expect-error - FIXME when you are working on it
+      getNodesSystemLoadQuery(timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) =>
         getMultiResourceSeriesForChart(prometheusResult, nodeAddresses), // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -24,6 +24,7 @@ export const getMultiResourceSeriesForChart = (
   return nodes.map((node, index) => {
     const internalIP = node.internalIP;
     const matrixResult: RangeMatrixResult =
+      // @ts-expect-error - FIXME when you are working on it
       results?.data?.result?.find(
         (i) => i?.metric?.instance === `${internalIP}:${PORT_NODE_EXPORTER}`,
       ) || results[index];
@@ -38,6 +39,7 @@ export const fiterMetricValues = (
   },
 ): RangeMatrixResult => {
   if (Object.prototype.hasOwnProperty.call(labels, 'device')) {
+    // @ts-expect-error - FIXME when you are working on it
     return prometheusResult.data?.result.find(
       (item) =>
         item.metric.instance === labels.instance &&
@@ -45,6 +47,7 @@ export const fiterMetricValues = (
     );
   }
 
+  // @ts-expect-error - FIXME when you are working on it
   return prometheusResult.data.result.find(
     (item) => item.metric.instance === labels.instance,
   );
@@ -55,7 +58,7 @@ export const getQuantileSymmetricalSeries = (
   resultBelow: PrometheusQueryResult[],
   metricPrefixAbove: string,
   metricPrefixBelow: string,
-): Series[] => {
+) => {
   return [
     {
       ...convertPrometheusResultToSerie(resultAbove[2], 'Q90'),
@@ -149,6 +152,7 @@ export const getMultipleSymmetricalSeries = (
       };
 
       if (nodesPlaneInterface) {
+        // @ts-expect-error - FIXME when you are working on it
         filterLabels.device = nodesPlaneInterface?.[node.name]?.interface;
       }
 
@@ -195,6 +199,7 @@ const convertMatrixResultToSerie = (
   matrixResult: RangeMatrixResult,
   resource: string,
 ): Serie => {
+  // @ts-expect-error - FIXME when you are working on it
   const prometheusData = matrixResult?.values ?? [];
   return {
     data: prometheusData,
@@ -215,6 +220,7 @@ export const convertPrometheusResultToSerie = (
   serieName: string,
 ): Serie => {
   if (result && result.status === 'success') {
+    // @ts-expect-error - FIXME when you are working on it
     const matrixResult: RangeMatrixResult = result?.data?.result[0];
     return convertMatrixResultToSerie(matrixResult, serieName);
   }
@@ -222,6 +228,7 @@ export const convertPrometheusResultToSerie = (
   return convertMatrixResultToSerie(
     {
       result: [],
+      // @ts-expect-error - FIXME when you are working on it
       resultType: 'Matrix',
     },
     serieName,
@@ -265,6 +272,7 @@ export const getSeriesForSymmetricalChart = (
   if (resultAbove && resultAbove.status === 'success') {
     const serieAbove = {
       metricPrefix: metricPrefixAbove,
+      // @ts-expect-error - FIXME when you are working on it
       data: resultAbove?.data?.result[0]?.values || [],
       resource,
       getTooltipLabel: (metricPrefix, resource) => {
@@ -278,6 +286,7 @@ export const getSeriesForSymmetricalChart = (
   if (resultBelow && resultBelow.status === 'success') {
     const serieBelow = {
       metricPrefix: metricPrefixBelow,
+      // @ts-expect-error - FIXME when you are working on it
       data: resultBelow?.data?.result[0]?.values || [],
       resource,
       getTooltipLabel: (metricPrefix, resource) => {
@@ -296,6 +305,7 @@ export const getSeriesForSymmetricalChart = (
   if (resultAvgAbove && resultAvgAbove.status === 'success') {
     const serieAvgAbove = {
       metricPrefix: metricPrefixAbove,
+      // @ts-expect-error - FIXME when you are working on it
       data: resultAvgAbove?.data?.result[0]?.values || [],
       resource: 'Cluster Avg.',
       getTooltipLabel: (metricPrefix, resource) => {
@@ -314,6 +324,7 @@ export const getSeriesForSymmetricalChart = (
     // the negative value
     const serieAvgBelow = {
       metricPrefix: metricPrefixBelow,
+      // @ts-expect-error - FIXME when you are working on it
       data: resultAvgBelow?.data?.result[0]?.values || [],
       resource: 'Cluster Avg.',
       getTooltipLabel: (metricPrefix, resource) => {
@@ -329,10 +340,13 @@ export const getSeriesForSymmetricalChart = (
 };
 export const getNodesInterfacesString = (nodeIPsInfo): [] => {
   const interfaces = Object.values(nodeIPsInfo).flatMap((plane) => [
+    // @ts-expect-error - FIXME when you are working on it
     plane?.controlPlane?.interface,
+    // @ts-expect-error - FIXME when you are working on it
     plane?.workloadPlane?.interface,
   ]);
   const uniqueInterfaces = [...new Set(interfaces)];
+  // @ts-expect-error - FIXME when you are working on it
   return uniqueInterfaces;
 };
 export function renderTooltipSerie({
@@ -384,10 +398,12 @@ export const renderQuantileData = (
 ) => {
   const hoverQuantileValue = (data) => {
     return unitLabel
-      ? `${parseFloat(data.value[1] / (valueBase || 1)).toFixed(
+      ? // @ts-expect-error - FIXME when you are working on it
+        `${parseFloat(data.value[1] / (valueBase || 1)).toFixed(
           2,
         )} ${unitLabel}`
-      : `${parseFloat(data.value[1] / (valueBase || 1)).toFixed(2)}`;
+      : // @ts-expect-error - FIXME when you are working on it
+        `${parseFloat(data.value[1] / (valueBase || 1)).toFixed(2)}`;
   };
 
   return `${

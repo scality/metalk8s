@@ -20,6 +20,7 @@ export const setHistory = (
 type Actions = SetHistoryAction;
 export function historyReducer(
   state: HistoryState = defaultState,
+  // @ts-expect-error - FIXME when you are working on it
   action: Actions = {},
 ) {
   switch (action.type) {

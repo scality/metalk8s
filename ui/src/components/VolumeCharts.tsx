@@ -29,9 +29,11 @@ export const VolumeThroughputChart = ({
   volumeName: string;
 }) => {
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
+    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeThroughputWriteQuery(instanceIp, deviceName, timeSpanProps),
     ],
+    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeThroughputReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
@@ -56,6 +58,7 @@ export const VolumeThroughputChart = ({
       yAxisType={'symmetrical'}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
       unitRange={UNIT_RANGE_BS}
+      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
       isLegendHidden={false}
     />
@@ -71,9 +74,11 @@ export const VolumeLatencyChart = ({
   volumeName: string;
 }) => {
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
+    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeLatencyWriteQuery(instanceIp, deviceName, timeSpanProps),
     ],
+    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeLatencyReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
@@ -115,6 +120,7 @@ export const VolumeLatencyChart = ({
           label: 'm',
         },
       ]}
+      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
       isLegendHidden={false}
     />
@@ -130,9 +136,11 @@ export const VolumeIOPSChart = ({
   volumeName: string;
 }) => {
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
+    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeIOPSWriteQuery(instanceIp, deviceName, timeSpanProps),
     ],
+    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeIOPSReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
@@ -156,6 +164,7 @@ export const VolumeIOPSChart = ({
       startingTimeStamp={startingTimeStamp}
       yAxisType={'symmetrical'}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
+      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
       isLegendHidden={false}
     />
@@ -171,6 +180,7 @@ export const VolumeUsageChart = ({
   volumeName: string;
 }) => {
   const { series, startingTimeStamp, isLoading } = useSingleChartSerie({
+    // @ts-expect-error - FIXME when you are working on it
     getQuery: (timeSpanProps: TimeSpanProps) =>
       getVolumeUsageQuery(pvcName, namespace, timeSpanProps),
     transformPrometheusDataToSeries: useCallback(

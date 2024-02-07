@@ -6,6 +6,7 @@ import { injectIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import * as yup from 'yup';
+// @ts-expect-error - FIXME when you are working on it
 import { authenticateAction } from '../ducks/login';
 const LoginFormContainer = styled.div`
   height: 100vh;
@@ -114,6 +115,7 @@ const validationSchema = yup.object().shape({
 });
 
 const Login = (props) => {
+  // @ts-expect-error - FIXME when you are working on it
   const asyncErrors = useSelector((state) => state.login.errors);
   const dispatch = useDispatch();
 

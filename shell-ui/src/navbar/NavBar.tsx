@@ -1,32 +1,31 @@
-import React, { useEffect, useCallback, useMemo } from 'react';
-import styled, { createGlobalStyle } from 'styled-components';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { RouteProps, matchPath } from 'react-router';
 import { useLocation } from 'react-router-dom';
-import { matchPath, RouteProps } from 'react-router';
+import styled, { createGlobalStyle } from 'styled-components';
 
-import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { Layout } from '@scality/core-ui/dist/components/layout/v2/index';
+import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
 
-import { normalizePath } from './auth/permissionUtils';
-import { useTheme } from 'styled-components';
-import { useLanguage } from './lang';
-import { useShellThemeSelector } from '../initFederation/ShellThemeSelectorProvider';
+import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
 import { useIntl } from 'react-intl';
+import { useTheme } from 'styled-components';
 import { UserData, useAuth, useLogOut } from '../auth/AuthProvider';
 import {
-  ViewDefinition,
   BuildtimeWebFinger,
+  ViewDefinition,
   useConfigRetriever,
-  useLinkOpener,
   useDiscoveredViews,
+  useLinkOpener,
 } from '../initFederation/ConfigurationProviders';
+import { useShellConfig } from '../initFederation/ShellConfigProvider';
+import { useShellThemeSelector } from '../initFederation/ShellThemeSelectorProvider';
+import { InstanceName, useInstanceName } from './InstanceName';
+import NotificationCenter from './NotificationCenter';
+import { normalizePath } from './auth/permissionUtils';
+import { useLanguage } from './lang';
 import type { Link as TypeLink } from './navbarHooks';
 import { useNavbar } from './navbarHooks';
-import { useShellConfig } from '../initFederation/ShellConfigProvider';
-import NotificationCenter from './NotificationCenter';
-import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
-import { Text } from '@scality/core-ui/dist/components/text/Text.component';
-import { InstanceName, useInstanceName } from './InstanceName';
 
 const Logo = styled.img`
   height: 2.143rem;
@@ -34,6 +33,7 @@ const Logo = styled.img`
 export const LoadingNavbar = ({ logo }: { logo: string }) => (
   <CoreUINavbar
     logo={<Logo src={logo} alt="logo" />}
+    // @ts-expect-error - FIXME when you are working on it
     role="navigation"
     tabs={[
       {
@@ -99,7 +99,9 @@ const Link = ({
   to:
     | {
         isExternal: boolean;
+        // @ts-expect-error - FIXME when you are working on it
         app: SolutionUI;
+        // @ts-expect-error - FIXME when you are working on it
         view: View;
         isFederated: true;
       }
@@ -121,9 +123,11 @@ function prefetch(url: string) {
   return new Promise((resolve, reject) => {
     const existingElement = [
       ...(document.head?.querySelectorAll('script') || []),
+      // @ts-expect-error - FIXME when you are working on it
     ].find((scriptElement) => scriptElement.attributes.src?.value === url);
 
     if (existingElement) {
+      // @ts-expect-error - FIXME when you are working on it
       resolve();
     }
 
@@ -152,6 +156,7 @@ export const useNavbarLinksToActions = (
   const selectedTab = links.find((link) =>
     link.view.isFederated
       ? doesRouteMatch({
+          // @ts-expect-error - FIXME when you are working on it
           path: link.view.view.activeIfMatches
             ? new RegExp(
                 link.view.app.appHistoryBasePath +
@@ -163,7 +168,8 @@ export const useNavbarLinksToActions = (
           strict: link.view.view.strict,
           sensitive: link.view.view.sensitive,
         })
-      : normalizePath(link.view.url) ===
+      : // @ts-expect-error - FIXME when you are working on it
+        normalizePath(link.view.url) ===
         window.location.origin + window.location.pathname,
   );
   //Preload non current route
@@ -183,6 +189,7 @@ export const useNavbarLinksToActions = (
         return;
       }
 
+      // @ts-expect-error - FIXME when you are working on it
       const microAppConfiguration: BuildtimeWebFinger = retrieveConfiguration({
         configType: 'build',
         name: link.view.app.name,
@@ -212,7 +219,8 @@ export const useNavbarLinksToActions = (
           : selectedTab &&
             !selectedTab.view.isFederated &&
             !link.view.isFederated
-          ? selectedTab.view.url === link.view.url
+          ? // @ts-expect-error - FIXME when you are working on it
+            selectedTab.view.url === link.view.url
           : false,
     };
   });
@@ -293,6 +301,7 @@ export const Navbar = ({
     link: action.link.render ? (
       <action.link.render selected={action.selected} />
     ) : (
+      // @ts-expect-error - FIXME when you are working on it
       <Link to={action.link.view}>{action.link.view.view.label[language]}</Link>
     ),
     selected: action.selected,
@@ -304,6 +313,7 @@ export const Navbar = ({
       action.link.render ? (
         <action.link.render selected={action.selected} />
       ) : (
+        // @ts-expect-error - FIXME when you are working on it
         <Link to={action.link.view}>
           {action.link.view.view.label[language]}
         </Link>
@@ -364,6 +374,7 @@ export const Navbar = ({
             <Item
               icon={action.link.view.icon}
               isExternal={
+                // @ts-expect-error - FIXME when you are working on it
                 !action.link.view.isFederated && action.link.view.isExternal
               }
               label={action.link.view.view.label[language]}
@@ -371,6 +382,7 @@ export const Navbar = ({
           ),
           selected: action.selected,
           onClick: () => {
+            // @ts-expect-error - FIXME when you are working on it
             openLink(action.link.view);
           },
         })),
@@ -392,6 +404,7 @@ export const Navbar = ({
   ];
 
   if (isPlatformAdmin(userData)) {
+    // @ts-expect-error - FIXME when you are working on it
     rightTabs.splice(secondaryTabs.length - 1, 0, notificationTab);
   }
   if (canChangeLanguage) {
@@ -413,6 +426,7 @@ export const Navbar = ({
       onClick: () => {
         setThemeMode(themeMode === 'dark' ? 'light' : 'dark');
       },
+      // @ts-expect-error - FIXME when you are working on it
       type: 'button',
     });
   }
@@ -443,6 +457,7 @@ export const Navbar = ({
                   <Logo src={logo} alt={config.productName + ' logo'} />
                 </a>
               }
+              // @ts-expect-error - FIXME when you are working on it
               rightActions={rightTabs}
               tabs={[
                 {
@@ -456,6 +471,7 @@ export const Navbar = ({
           </>
         }
       >
+        {/* @ts-expect-error - FIXME when you are working on it */}
         {children}
       </Layout>
     </>

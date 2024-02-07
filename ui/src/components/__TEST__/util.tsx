@@ -20,8 +20,10 @@ import { ConfigContext } from '../../FederableApp';
 import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
 
 const composeEnhancers =
+  // @ts-expect-error - FIXME when you are working on it
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
-    ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({})
+    ? // @ts-expect-error - FIXME when you are working on it
+      window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({})
     : compose;
 const sagaMiddleware = createSagaMiddleware();
 const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware));
@@ -139,6 +141,7 @@ export const AllTheProviders = (
 };
 
 const customRender = (ui: React.ReactNode, options = {}) =>
+  // @ts-expect-error - FIXME when you are working on it
   render(ui, {
     wrapper: AllTheProviders(),
     ...options,

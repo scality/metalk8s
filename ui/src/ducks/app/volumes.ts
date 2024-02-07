@@ -278,6 +278,7 @@ export function* fetchVolumes(): Generator<
   );
 
   const result = yield call(() =>
+    // @ts-expect-error - FIXME when you are working on it
     customObjectsApi.getMetalk8sV1alpha1VolumeList(),
   );
 
@@ -314,8 +315,10 @@ export function* fetchPersistentVolumes(): Generator<
   const storageApi = yield select(
     (state: RootState) => state.config.storageApi,
   );
+  // @ts-expect-error - FIXME when you are working on it
   const result = yield call(() => storageApi.getPersistentVolumes());
 
+  // @ts-expect-error - FIXME when you are working on it
   if (!result.error) {
     //the storage capacity in the spec may not contain the reasonable/correct unit size
     const pvs = result?.body?.items?.map((item) => {
@@ -344,6 +347,7 @@ export function* fetchStorageClass(): Generator<
   const storageApi = yield select(
     (state: RootState) => state.config.storageApi,
   );
+  // @ts-expect-error - FIXME when you are working on it
   const result = yield call(() => storageApi.getStorageClass());
 
   if (result.body) {
@@ -465,7 +469,9 @@ export function* createVolumes({
           },
         };
 
+        // @ts-expect-error - FIXME when you are working on it
         if (newVolumes[i].forceLVCreate) {
+          // @ts-expect-error - FIXME when you are working on it
           body.metadata.annotations = {
             'metalk8s.scality.com/force-lvcreate': '',
           };
@@ -475,11 +481,14 @@ export function* createVolumes({
         (state: RootState) => state.config.customObjectsApi,
       );
       const result = yield call(() =>
+        // @ts-expect-error - FIXME when you are working on it
         customObjectsApi.createMetalk8sV1alpha1Volume(body),
       );
       const intl = yield select(intlSelector);
 
+      // @ts-expect-error - FIXME when you are working on it
       if (!result.error) {
+        // @ts-expect-error - FIXME when you are working on it
         const { history } = yield select((state: RootState) => state.history);
         yield call(
           history.push,
@@ -487,9 +496,11 @@ export function* createVolumes({
         );
         yield put(
           addNotificationSuccessAction({
+            // @ts-expect-error - FIXME when you are working on it
             title: intl.formatMessage({
               id: 'volume_creation',
             }),
+            // @ts-expect-error - FIXME when you are working on it
             message: intl.formatMessage(
               {
                 id: 'volume_creation_success',
@@ -503,9 +514,11 @@ export function* createVolumes({
       } else {
         yield put(
           addNotificationErrorAction({
+            // @ts-expect-error - FIXME when you are working on it
             title: intl.formatMessage({
               id: 'volume_creation',
             }),
+            // @ts-expect-error - FIXME when you are working on it
             message: intl.formatMessage(
               {
                 id: 'volume_creation_failed',
@@ -542,6 +555,7 @@ export function* refreshVolumes(): Generator<
   yield put(updateVolumesRefreshingAction(true));
   const result = yield call(fetchVolumes);
 
+  // @ts-expect-error - FIXME when you are working on it
   if (!result.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(volumesRefreshingSelector);
@@ -568,8 +582,10 @@ export function* fetchPersistentVolumeClaims(): Generator<
   const storageApi = yield select(
     (state: RootState) => state.config.storageApi,
   );
+  // @ts-expect-error - FIXME when you are working on it
   const result = yield call(() => storageApi.getPersistentVolumeClaims());
 
+  // @ts-expect-error - FIXME when you are working on it
   if (!result.error) {
     yield put(setPersistentVolumeClaimAction(result.body.items));
   }
@@ -593,9 +609,11 @@ export function* fetchCurrentVolumeObject({
     (state: RootState) => state.config.customObjectsApi,
   );
   const result = yield call(() =>
+    // @ts-expect-error - FIXME when you are working on it
     customObjectsApi.getMetalk8sV1alpha1Volume(volumeName),
   );
 
+  // @ts-expect-error - FIXME when you are working on it
   if (!result.error) {
     yield put(
       setCurrentVolumeObjectAction({
@@ -625,6 +643,7 @@ export function* refreshPersistentVolumes(): Generator<
   yield put(updatePersistentVolumesRefreshingAction(true));
   const result = yield call(fetchPersistentVolumes);
 
+  // @ts-expect-error - FIXME when you are working on it
   if (!result.error) {
     yield delay(REFRESH_TIMEOUT);
     const isPVRefreshing = yield select(persistentVolumesRefreshingSelector);
@@ -657,16 +676,20 @@ export function* deleteVolume({ payload }: { payload: string }): Generator<
     (state: RootState) => state.config.customObjectsApi,
   );
   const result = yield call(() =>
+    // @ts-expect-error - FIXME when you are working on it
     customObjectsApi.deleteMetalk8sV1alpha1Volume(payload),
   );
   const intl = yield select(intlSelector);
 
+  // @ts-expect-error - FIXME when you are working on it
   if (!result.error) {
     yield put(
       addNotificationSuccessAction({
+        // @ts-expect-error - FIXME when you are working on it
         title: intl.formatMessage({
           id: 'volume_deletion',
         }),
+        // @ts-expect-error - FIXME when you are working on it
         message: intl.formatMessage(
           {
             id: 'volume_delete_success',
@@ -680,9 +703,11 @@ export function* deleteVolume({ payload }: { payload: string }): Generator<
   } else {
     yield put(
       addNotificationErrorAction({
+        // @ts-expect-error - FIXME when you are working on it
         title: intl.formatMessage({
           id: 'volume_deletion',
         }),
+        // @ts-expect-error - FIXME when you are working on it
         message: intl.formatMessage(
           {
             id: 'volume_delete_failed',
@@ -700,7 +725,9 @@ export function* deleteVolume({ payload }: { payload: string }): Generator<
 export function* volumesSaga(): Generator<Effect, void, void> {
   yield takeLatest(FETCH_VOLUMES, fetchVolumes);
   yield takeLatest(FETCH_STORAGECLASS, fetchStorageClass);
+  // @ts-expect-error - FIXME when you are working on it
   yield takeLatest(CREATE_VOLUMES, createVolumes);
+  // @ts-expect-error - FIXME when you are working on it
   yield takeLatest(DELETE_VOLUME, deleteVolume);
   yield takeLatest(FETCH_PERSISTENT_VOLUMES, fetchPersistentVolumes);
   yield takeLatest(REFRESH_VOLUMES, refreshVolumes);
@@ -711,5 +738,6 @@ export function* volumesSaga(): Generator<Effect, void, void> {
     STOP_REFRESH_PERSISTENT_VOLUMES,
     stopRefreshPersistentVolumes,
   );
+  // @ts-expect-error - FIXME when you are working on it
   yield takeLatest(FETCH_CURRENT_VOLUME_OBJECT, fetchCurrentVolumeObject);
 }

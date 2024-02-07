@@ -77,6 +77,7 @@ export function prepareRenderMultipleHooks(options: {
   const values: { key: string; value: unknown }[] = [];
   render(
     <ErrorBoundary onError={console.error} fallbackRender={() => <>error</>}>
+      {/* @ts-expect-error - FIXME when you are working on it */}
       <options.wrapper>
         <TestComponents
           addValues={(vals) => {

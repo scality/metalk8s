@@ -64,8 +64,10 @@ const LogsBanner = ({ logs }: { logs: PromiseResult<AlertStoreLogLine[]> }) => {
 };
 
 const emailRegex =
+  // eslint-disable-next-line no-useless-escape
   /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i;
 const rfc5322EmailAddressRegex =
+  // eslint-disable-next-line no-useless-escape
   /^((([^ ]+ )+<[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*>|[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*|<[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*>)(, ?)?)+$/i;
 
 const schema = Joi.object({
@@ -204,6 +206,7 @@ export default function ConfigureAlerting() {
   return (
     <AppContainer hasPadding>
       <AppContainer.MainContent background="backgroundLevel1">
+        {/* @ts-expect-error - FIXME when you are working on it */}
         <Box margin="0 auto" background={theme.backgroundLevel4} flex="1">
           <Form
             onSubmit={handleSubmit((data) => {
@@ -391,6 +394,7 @@ export default function ConfigureAlerting() {
                     required
                     id="username"
                     label="Username"
+                    // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.username?.message ?? ''}
                     helpErrorPosition="bottom"
                     content={
@@ -405,6 +409,7 @@ export default function ConfigureAlerting() {
                     required
                     id="secret"
                     label="Secret"
+                    // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.secret?.message ?? ''}
                     helpErrorPosition="bottom"
                     content={
@@ -427,6 +432,7 @@ export default function ConfigureAlerting() {
                     required
                     id="identity"
                     label="Identity"
+                    // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.identity?.message ?? ''}
                     helpErrorPosition="bottom"
                     content={
@@ -441,6 +447,7 @@ export default function ConfigureAlerting() {
                     required
                     id="username"
                     label="Username"
+                    // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.username?.message ?? ''}
                     helpErrorPosition="bottom"
                     content={
@@ -455,6 +462,7 @@ export default function ConfigureAlerting() {
                     required
                     id="password"
                     label="Password"
+                    // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.password?.message ?? ''}
                     helpErrorPosition="bottom"
                     content={
@@ -477,6 +485,7 @@ export default function ConfigureAlerting() {
                     required
                     id="username"
                     label="Username"
+                    // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.username?.message ?? ''}
                     helpErrorPosition="bottom"
                     content={
@@ -491,6 +500,7 @@ export default function ConfigureAlerting() {
                     required
                     id="password"
                     label="Password"
+                    // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.password?.message ?? ''}
                     helpErrorPosition="bottom"
                     content={

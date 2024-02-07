@@ -31,10 +31,10 @@ const SymmetricalQuantileChart = ({
   yAxisTitle,
   isLegendHidden,
 }: {
-  getAboveQuantileQuery: UseQueryOptions;
-  getBelowQuantileQuery: UseQueryOptions;
-  getAboveQuantileHoverQuery: UseQueryOptions;
-  getBelowQuantileHoverQuery: UseQueryOptions;
+  getAboveQuantileQuery;
+  getBelowQuantileQuery;
+  getAboveQuantileHoverQuery;
+  getBelowQuantileHoverQuery;
   metricPrefixAbove: string;
   metricPrefixBelow: string;
   title: string;
@@ -44,6 +44,7 @@ const SymmetricalQuantileChart = ({
   const theme = useTheme();
   const intl = useIntl();
   const nodeAddresses = useNodeAddressesSelector(useNodes());
+  // @ts-expect-error - FIXME when you are working on it
   const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const devices = getNodesInterfacesString(nodeIPsInfo);
   const nodeMapPerIp = nodeAddresses.reduce(
@@ -182,6 +183,7 @@ const SymmetricalQuantileChart = ({
       height={150}
       title={title}
       startingTimeStamp={startingTimeStampQuantile}
+      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoadingQuantile}
       yAxisType={'symmetrical'}
       onHover={useCallback(
@@ -192,6 +194,7 @@ const SymmetricalQuantileChart = ({
         [onHoverIn, onHoverOut],
       )}
       yAxisTitle={yAxisTitle}
+      // @ts-expect-error - FIXME when you are working on it
       isLegendHidden={isLegendHidden}
       unitRange={UNIT_RANGE_BS}
       renderTooltipSerie={useCallback(
@@ -219,6 +222,7 @@ const SymmetricalQuantileChart = ({
               quantile5Data,
               'below',
               false,
+              // @ts-expect-error - FIXME when you are working on it
             )}${renderTooltipSeperationLine(theme.border)}
             `;
           }
@@ -264,9 +268,13 @@ const SymmetricalQuantileChart = ({
           isIdleQuantile5Out,
           isLoadingQuantile5Out,
           isSuccessQuantile5Out,
+          // @ts-expect-error - FIXME when you are working on it
           JSON.stringify(quantile5Data?.data),
+          // @ts-expect-error - FIXME when you are working on it
           JSON.stringify(quantile90InData?.data),
+          // @ts-expect-error - FIXME when you are working on it
           JSON.stringify(quantile90OutData?.data),
+          // @ts-expect-error - FIXME when you are working on it
           JSON.stringify(quantile5OutData?.data),
           JSON.stringify(nodeMapPerIp),
           metricPrefixAbove,

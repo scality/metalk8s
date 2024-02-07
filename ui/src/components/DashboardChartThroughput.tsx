@@ -53,12 +53,15 @@ const DashboardChartThroughputWithoutQuantile = () => {
   const theme = useTheme();
   const nodes = useNodes();
   const nodeAddresses = useNodeAddressesSelector(nodes);
+  // @ts-expect-error - FIXME when you are working on it
   const lastNodeName = nodes?.slice(-1)[0]?.metadata?.name;
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: (timeSpanProps) => [
+      // @ts-expect-error - FIXME when you are working on it
       getNodesThroughputWriteQuery(timeSpanProps),
     ],
     getBelowQueries: (timeSpanProps) => [
+      // @ts-expect-error - FIXME when you are working on it
       getNodesThroughputReadQuery(timeSpanProps),
     ],
     transformPrometheusDataToSeries: useCallback(
@@ -84,12 +87,16 @@ const DashboardChartThroughputWithoutQuantile = () => {
       startingTimeStamp={startingTimeStamp}
       isLegendHidden={false}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
+      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
       renderTooltipSerie={useCallback(
         (serie) => {
           if (serie.key === `${lastNodeName}-write`) {
             return `${defaultRenderTooltipSerie(serie)}</table>
-            <hr style="border-color: ${theme.border};"/><table>`;
+            <hr style="border-color: ${
+              // @ts-expect-error - FIXME when you are working on it
+              theme.border
+            };"/><table>`;
           } else {
             return defaultRenderTooltipSerie(serie);
           }

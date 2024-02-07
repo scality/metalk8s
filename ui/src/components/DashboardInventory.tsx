@@ -67,12 +67,15 @@ const DashboardInventory = () => {
     alertsLibrary.getVolumesAlertSelectors(),
   );
   const volumesStatus = highestAlertToStatus(volumesAlerts);
+  // @ts-expect-error - FIXME when you are working on it
   const token = useTypedSelector((state) => state.oidc?.user?.token);
   const config = useTypedSelector((state) => state.config.api?.url);
   const { data: volumesCount } = useQuery(
+    // @ts-expect-error - FIXME when you are working on it
     getVolumesCountQuery(config || '', token),
   );
   const { data: nodesCount } = useQuery(
+    // @ts-expect-error - FIXME when you are working on it
     getNodesCountQuery(config || '', token),
   );
   const history = useHistory();
@@ -85,6 +88,7 @@ const DashboardInventory = () => {
       </PageSubtitle>
       <CardsWrapper>
         {(nodesCount || nodesCount === 0) && nodesStatus ? (
+          // @ts-expect-error - FIXME when you are working on it
           <Card
             width="46%"
             headerBackgroundColor="backgroundLevel1"
@@ -122,6 +126,7 @@ const DashboardInventory = () => {
           <Loader aria-label="loading" />
         )}
         {(volumesCount || volumesCount === 0) && volumesStatus ? (
+          // @ts-expect-error - FIXME when you are working on it
           <Card
             width="46%"
             headerBackgroundColor="backgroundLevel1"

@@ -68,6 +68,7 @@ describe('useTableSortURLSync hook', () => {
     expect(mockHistoryReplace).toHaveBeenCalledWith('?sort=name');
   });
   it('should set a status sorting in the URL with a desc parameter', () => {
+    // @ts-expect-error - FIXME when you are working on it
     renderHook(() => useTableSortURLSync('status', true, ['foo']), 'key');
     expect(mockHistoryReplace).toHaveBeenCalledWith('?sort=status&desc=true');
   });
@@ -118,6 +119,7 @@ it('should return the formatted local time', () => {
     .mockImplementationOnce(() =>
       new Date('2019-05-14T11:01:58.135').valueOf(),
     );
+  // @ts-expect-error - FIXME when you are working on it
   const result = formatDateToMid1(Date.now());
   expect(result).toEqual('2019-05-14 11:01');
 });
@@ -127,6 +129,7 @@ it('should return 00:00', () => {
     .mockImplementationOnce(() =>
       new Date('2019-05-14T00:00:58.135').valueOf(),
     );
+  // @ts-expect-error - FIXME when you are working on it
   const result = formatDateToMid1(Date.now());
   expect(result).toEqual('2019-05-14 00:00');
 });
@@ -138,6 +141,7 @@ describe('getNaNSegments', () => {
       [1, 2],
     ];
     //E
+    // @ts-expect-error - FIXME when you are working on it
     const nullSegments = getNaNSegments(segments);
     //V
     expect(nullSegments).toHaveLength(0);
@@ -146,6 +150,7 @@ describe('getNaNSegments', () => {
     //S
     const segments = [];
     //E
+    // @ts-expect-error - FIXME when you are working on it
     const nullSegments = getNaNSegments(segments);
     //V
     expect(nullSegments).toHaveLength(0);
@@ -167,6 +172,7 @@ describe('getNaNSegments', () => {
       null,
     ];
     //E + V
+    // @ts-expect-error - FIXME when you are working on it
     expect(() => getNaNSegments(segments)).toThrow();
   });
   it('should return 1 segment when given array contains one null point in the middle', () => {
@@ -178,6 +184,7 @@ describe('getNaNSegments', () => {
       [4, 2],
     ];
     //E
+    // @ts-expect-error - FIXME when you are working on it
     const nullSegments = getNaNSegments(segments);
     //V
     expect(nullSegments).toHaveLength(1);
@@ -195,6 +202,7 @@ describe('getNaNSegments', () => {
       [4, 2],
     ];
     //E
+    // @ts-expect-error - FIXME when you are working on it
     const nullSegments = getNaNSegments(segments);
     //V
     expect(nullSegments).toHaveLength(1);
@@ -212,6 +220,7 @@ describe('getNaNSegments', () => {
       [4, NAN_STRING],
     ];
     //E
+    // @ts-expect-error - FIXME when you are working on it
     const nullSegments = getNaNSegments(segments);
     //V
     expect(nullSegments).toHaveLength(1);
@@ -229,6 +238,7 @@ describe('getNaNSegments', () => {
       [4, NAN_STRING],
     ];
     //E
+    // @ts-expect-error - FIXME when you are working on it
     const nullSegments = getNaNSegments(segments);
     //V
     expect(nullSegments).toHaveLength(2);

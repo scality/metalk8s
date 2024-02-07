@@ -36,22 +36,27 @@ const DashboardBandwidthChartWithoutQuantile = ({
   const theme = useTheme();
   const nodes = useNodes();
   const nodeAddresses = useNodeAddressesSelector(nodes);
+  // @ts-expect-error - FIXME when you are working on it
   const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const devices = getNodesInterfacesString(nodeIPsInfo);
   const nodesPlaneInterface = {};
 
   for (const [key, value] of Object.entries(nodeIPsInfo)) {
     nodesPlaneInterface[key] =
+      // @ts-expect-error - FIXME when you are working on it
       plane === 'controlPlane' ? value.controlPlane : value.workloadPlane;
   }
 
   // will be used to draw the line speration lines
+  // @ts-expect-error - FIXME when you are working on it
   const lastNodeName = nodes?.slice(-1)[0]?.metadata?.name;
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: (timeSpanProps) => [
+      // @ts-expect-error - FIXME when you are working on it
       getNodesPlanesBandwidthInQuery(timeSpanProps, devices),
     ],
     getBelowQueries: (timeSpanProps) => [
+      // @ts-expect-error - FIXME when you are working on it
       getNodesPlanesBandwidthOutQuery(timeSpanProps, devices),
     ],
     transformPrometheusDataToSeries: useCallback(
@@ -81,6 +86,7 @@ const DashboardBandwidthChartWithoutQuantile = ({
       yAxisType={'symmetrical'}
       yAxisTitle={'in(+) / out(-)'}
       isLegendHidden={false}
+      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
       unitRange={UNIT_RANGE_BS}
       renderTooltipSerie={useCallback(
@@ -88,6 +94,7 @@ const DashboardBandwidthChartWithoutQuantile = ({
           if (serie.key === `${lastNodeName}-in`) {
             return `${defaultRenderTooltipSerie(
               serie,
+              // @ts-expect-error - FIXME when you are working on it
             )}${renderTooltipSeperationLine(theme.border)}`;
           } else {
             return defaultRenderTooltipSerie(serie);

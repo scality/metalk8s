@@ -20,7 +20,9 @@ const DashboardChartCpuUsage = () => {
     <>
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
+          // @ts-expect-error - FIXME when you are working on it
           getQuantileQuery={getNodesCPUUsageQuantileQuery}
+          // @ts-expect-error - FIXME when you are working on it
           getQuantileHoverQuery={getNodesCPUUsageOutpassingThresholdQuery}
           title={'CPU Usage'}
           yAxisType={'percentage'}
@@ -35,6 +37,7 @@ const DashboardChartCpuUsage = () => {
 const DashboardChartCpuUsageWithoutQuantils = () => {
   const nodeAddresses = useNodeAddressesSelector(useNodes());
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
+    // @ts-expect-error - FIXME when you are working on it
     getQuery: (timeSpanProps) => getNodesCPUUsageQuery(timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) =>

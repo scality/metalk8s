@@ -1,14 +1,13 @@
-import React from 'react';
-import styled from 'styled-components';
-import DashboardMetrics from '../components/DashboardMetrics';
-import DashboardInventory from '../components/DashboardInventory';
-import DashboardServices from '../components/DashboardServices';
-import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
-import { spacing } from '@scality/core-ui/dist/style/theme';
+import { AppContainer } from '@scality/core-ui';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
-import TimespanSelector from './TimespanSelector';
+import { spacing } from '@scality/core-ui/dist/style/theme';
+import styled from 'styled-components';
+import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
+import DashboardInventory from '../components/DashboardInventory';
+import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardNetwork from '../components/DashboardNetwork';
-import { AppContainer, Wrap } from '@scality/core-ui';
+import DashboardServices from '../components/DashboardServices';
+import TimespanSelector from './TimespanSelector';
 const DashboardGrid = styled.div`
   display: grid;
   gap: ${AppContainer.sectionDistance};
@@ -74,6 +73,7 @@ const DashboardPage = () => {
       <SelectorPositioning>
         <TimespanSelector />
       </SelectorPositioning>
+      {/* @ts-expect-error - FIXME when you are working on it */}
       <SyncedCursorCharts>
         <AppContainer.OverallSummary>
           <DashboardGlobalHealth />

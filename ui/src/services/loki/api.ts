@@ -30,6 +30,7 @@ export function getLast7DaysAlerts(): Promise<Alert[]> {
     new Date().getTime() - 7 * 24 * 60 * 60 * 1000,
   ).toISOString();
   const end = new Date().toISOString();
+  // @ts-expect-error - FIXME when you are working on it
   return getAlertsLoki(start, end);
 }
 // WARNING:
@@ -52,6 +53,7 @@ export function getAlertsLoki(
     ).toISOString();
   }
 
+  // @ts-expect-error - FIXME when you are working on it
   return lokiApiClient
     .get(
       //We set limit to 4999 because the default number of lines retrievable is 100 which is

@@ -496,7 +496,7 @@ spec:
           - group_by:
               - ...
             matchers:
-              - severity !~ \"info|none\"
+              - severity !~ \"info|none"
             receiver: default
             continue: true
       receivers:
@@ -843,7 +843,7 @@ spec:
             group_wait: 1s
             group_interval: 1s
             matchers:
-              - alertname = \"dummy_alert\"
+              - alertname = "dummy_alert"
             receiver: test-receiver-config-from-ui
       receivers:
         - name: test-receiver-config-from-ui
@@ -915,7 +915,7 @@ spec:
             group_wait: 1s
             group_interval: 1s
             matchers:
-              - alertname = \"dummy_alert\"
+              - alertname = "dummy_alert"
             receiver: test-receiver-config-from-ui
       receivers:
         - name: test-receiver-config-from-ui
@@ -990,7 +990,7 @@ spec:
             group_wait: 1s
             group_interval: 1s
             matchers:
-              - alertname = \"dummy_alert\"
+              - alertname = "dummy_alert"
             receiver: test-receiver-config-from-ui
       receivers:
         - name: test-receiver-config-from-ui
@@ -1070,7 +1070,7 @@ spec:
             group_wait: 1s
             group_interval: 1s
             matchers:
-              - alertname = \"dummy_alert\"
+              - alertname = "dummy_alert"
             receiver: test-receiver-config-from-ui
       receivers:
         - name: test-receiver-config-from-ui

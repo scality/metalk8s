@@ -258,6 +258,7 @@ const testcaseVolumeReadyWithoutPv = {
 // Test cases {{{
 it('should return false when volume is unknown', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeUnknown.status,
     testcaseVolumeUnknown.name,
     testcaseVolumeUnknown.persistentVolumes,
@@ -266,6 +267,7 @@ it('should return false when volume is unknown', () => {
 });
 it('should return false when volume is pending', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumePending.status,
     testcaseVolumePending.name,
     testcaseVolumePending.persistentVolumes,
@@ -274,6 +276,7 @@ it('should return false when volume is pending', () => {
 });
 it('should return false when volume is terminating', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeTerminating.status,
     testcaseVolumeTerminating.name,
     testcaseVolumeTerminating.persistentVolumes,
@@ -282,6 +285,7 @@ it('should return false when volume is terminating', () => {
 });
 it('should return false when volume is failed and there is no PV', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeFailedWithoutPv.status,
     testcaseVolumeFailedWithoutPv.name,
     testcaseVolumeFailedWithoutPv.persistentVolumes,
@@ -290,6 +294,7 @@ it('should return false when volume is failed and there is no PV', () => {
 });
 it('should return true when volume is failed and PV is failed', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeFailedPvFailed.status,
     testcaseVolumeFailedPvFailed.name,
     testcaseVolumeFailedPvFailed.persistentVolumes,
@@ -298,6 +303,7 @@ it('should return true when volume is failed and PV is failed', () => {
 });
 it('should return true when volume is failed and PV is available', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeFailedPvAvailable.status,
     testcaseVolumeFailedPvAvailable.name,
     testcaseVolumeFailedPvAvailable.persistentVolumes,
@@ -306,6 +312,7 @@ it('should return true when volume is failed and PV is available', () => {
 });
 it('should return true when volume is failed and PV is released', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeFailedPvReleased.status,
     testcaseVolumeFailedPvReleased.name,
     testcaseVolumeFailedPvReleased.persistentVolumes,
@@ -314,6 +321,7 @@ it('should return true when volume is failed and PV is released', () => {
 });
 it('should return false when volume is failed and PV is pending', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeFailedPvPending.status,
     testcaseVolumeFailedPvPending.name,
     testcaseVolumeFailedPvPending.persistentVolumes,
@@ -322,6 +330,7 @@ it('should return false when volume is failed and PV is pending', () => {
 });
 it('should return false when volume is failed and PV is bound', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeFailedPvBound.status,
     testcaseVolumeFailedPvBound.name,
     testcaseVolumeFailedPvBound.persistentVolumes,
@@ -330,6 +339,7 @@ it('should return false when volume is failed and PV is bound', () => {
 });
 it('should return false when volume is failed and PV is unknown', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeFailedPvUnknown.status,
     testcaseVolumeFailedPvUnknown.name,
     testcaseVolumeFailedPvUnknown.persistentVolumes,
@@ -338,6 +348,7 @@ it('should return false when volume is failed and PV is unknown', () => {
 });
 it('should return true when volume is ready and PV is failed', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeReadyPvFailed.status,
     testcaseVolumeReadyPvFailed.name,
     testcaseVolumeReadyPvFailed.persistentVolumes,
@@ -346,6 +357,7 @@ it('should return true when volume is ready and PV is failed', () => {
 });
 it('should return true when volume is ready and PV is available', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeReadyPvAvailable.status,
     testcaseVolumeReadyPvAvailable.name,
     testcaseVolumeReadyPvAvailable.persistentVolumes,
@@ -354,6 +366,7 @@ it('should return true when volume is ready and PV is available', () => {
 });
 it('should return true when volume is ready and PV is released', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeReadyPvReleased.status,
     testcaseVolumeReadyPvReleased.name,
     testcaseVolumeReadyPvReleased.persistentVolumes,
@@ -362,6 +375,7 @@ it('should return true when volume is ready and PV is released', () => {
 });
 it('should return false when volume is ready and PV is pending', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeAvailablePvPending.status,
     testcaseVolumeAvailablePvPending.name,
     testcaseVolumeAvailablePvPending.persistentVolumes,
@@ -370,6 +384,7 @@ it('should return false when volume is ready and PV is pending', () => {
 });
 it('should return false when volume is ready and PV is bound', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeReadyPvBound.status,
     testcaseVolumeReadyPvBound.name,
     testcaseVolumeReadyPvBound.persistentVolumes,
@@ -378,6 +393,7 @@ it('should return false when volume is ready and PV is bound', () => {
 });
 it('should return false when volume is ready and PV is unknown', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeReadyPvUnknown.status,
     testcaseVolumeReadyPvUnknown.name,
     testcaseVolumeReadyPvUnknown.persistentVolumes,
@@ -386,6 +402,7 @@ it('should return false when volume is ready and PV is unknown', () => {
 });
 it('should return false when volume is ready and there is no PV', () => {
   const result = isVolumeDeletable(
+    // @ts-expect-error - FIXME when you are working on it
     testcaseVolumeReadyWithoutPv.status,
     testcaseVolumeReadyWithoutPv.name,
     testcaseVolumeReadyWithoutPv.persistentVolumes,
@@ -401,6 +418,7 @@ it('should return Unkown when called with wrong input', () => {
       conditions: [],
     },
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = computeVolumeGlobalStatus('test', volume);
   expect(result).toEqual(STATUS_UNKNOWN);
 });
@@ -423,6 +441,7 @@ it('should return Unkown when volume has no Ready condition', () => {
       },
     ],
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_UNKNOWN);
 });
@@ -435,6 +454,7 @@ it('should return Ready when Ready condition is True', () => {
       },
     ],
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_READY);
 });
@@ -447,6 +467,7 @@ it('should return Failed when Ready condition is False', () => {
       },
     ],
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_FAILED);
 });
@@ -460,6 +481,7 @@ it('should return Pending when Ready condition is Unknown/Pending', () => {
       },
     ],
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_PENDING);
 });
@@ -473,6 +495,7 @@ it('should return Pending when Ready condition is Unknown/Terminating', () => {
       },
     ],
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_TERMINATING);
 });
@@ -485,6 +508,7 @@ it('should return no error when called with wrong input', () => {
       conditions: [],
     },
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = volumeGetError(volume);
   expect(result).toEqual(NO_ERROR);
 });
@@ -507,6 +531,7 @@ it('should return no error when called with no Ready conditions', () => {
       },
     ],
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(NO_ERROR);
 });
@@ -519,6 +544,7 @@ it('should return no error when called with successful Ready condition', () => {
       },
     ],
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(NO_ERROR);
 });
@@ -531,6 +557,7 @@ it('should return no error when called with pending Ready condition', () => {
       },
     ],
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(NO_ERROR);
 });
@@ -545,6 +572,7 @@ it('should return error when called with failed Ready condition', () => {
       },
     ],
   };
+  // @ts-expect-error - FIXME when you are working on it
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(['CreationError', 'BOOM']);
 });

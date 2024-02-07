@@ -1,26 +1,13 @@
 // TO BE FIXED: Mock import { store } from '../index' in 'config.js'
 // Otherwise we have some issues to initialize reducers for testing
+import * as Api from '../services/api';
+import { SET_API_CONFIG, fetchConfig, setConfigStatusAction } from './config';
+import { call, put } from 'redux-saga/effects';
 jest.mock('../index.ts', () => {
   return {
     store: 'store',
   };
 });
-import { call, put, select } from 'redux-saga/effects';
-import {
-  fetchConfig,
-  SET_API_CONFIG,
-  setUserManagerAction,
-  SET_USER_LOADED,
-  setConfigStatusAction,
-} from './config';
-import { fetchUserInfo } from './login';
-import { LANGUAGE, FR_LANG, EN_LANG } from '../constants';
-import * as Api from '../services/api';
-import * as ApiK8s from '../services/k8s/api';
-import * as ApiSalt from '../services/salt/api';
-import * as ApiPrometheus from '../services/prometheus/api';
-import * as ApiAlertmanager from '../services/alertmanager/api';
-import * as ApiLoki from '../services/loki/api';
 it('update the config state when fetchConfig', () => {
   const gen = fetchConfig();
   expect(gen.next().value).toEqual(put(setConfigStatusAction('loading')));
@@ -33,6 +20,7 @@ it('update the config state when fetchConfig', () => {
     url_alertmanager: 'http://172.21.254.46:8443',
     url_loki: 'http://172.21.254.46:8080',
   };
+  // @ts-expect-error - FIXME when you are working on it
   expect(gen.next(result).value).toEqual(
     put({
       type: SET_API_CONFIG,

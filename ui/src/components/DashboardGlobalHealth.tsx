@@ -51,6 +51,7 @@ const DashboardGlobalHealth = () => {
   const platformStatus = highestAlertToStatus(platformHighestSeverityAlert);
   return (
     <AppContainer.OverallSummary>
+      {/* @ts-expect-error - FIXME when you are working on it  */}
       <Stack alignItems="center">
         <Box flex="1" display="flex">
           <PlatformStatusIcon>
@@ -82,6 +83,7 @@ const DashboardGlobalHealth = () => {
               >
                 <SpacedBox mr={8}>
                   <EmphaseText
+                    // @ts-expect-error - FIXME when you are working on it
                     style={{
                       letterSpacing: spacing.sp2,
                     }}
@@ -94,6 +96,7 @@ const DashboardGlobalHealth = () => {
                   placement="bottom"
                   overlay={
                     <SmallerText
+                      // @ts-expect-error - FIXME when you are working on it
                       style={{
                         minWidth: '30rem',
                         display: 'block',

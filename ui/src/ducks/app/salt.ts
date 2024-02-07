@@ -39,13 +39,16 @@ export type SaltState = {
   connected: boolean;
 };
 export default function reducer(state: SaltState = defaultState, action = {}) {
+  // @ts-expect-error - FIXME when you are working on it
   switch (action.type) {
     case ADD_JOB:
+      // @ts-expect-error - FIXME when you are working on it
       return { ...state, jobs: [...state.jobs, action.payload] };
 
     case REMOVE_JOB:
       return {
         ...state,
+        // @ts-expect-error - FIXME when you are working on it
         jobs: state.jobs.filter((job) => job.jid !== action.payload.jid),
       };
 
@@ -53,8 +56,10 @@ export default function reducer(state: SaltState = defaultState, action = {}) {
       return {
         ...state,
         jobs: state.jobs.map((job) =>
+          // @ts-expect-error - FIXME when you are working on it
           job.jid === action.payload.jid
-            ? { ...job, events: [...job.events, action.payload.event] }
+            ? // @ts-expect-error - FIXME when you are working on it
+              { ...job, events: [...job.events, action.payload.event] }
             : job,
         ),
       };
@@ -63,11 +68,14 @@ export default function reducer(state: SaltState = defaultState, action = {}) {
       return {
         ...state,
         jobs: state.jobs.map((job) =>
+          // @ts-expect-error - FIXME when you are working on it
           job.jid === action.payload.jid
             ? {
                 ...job,
                 completed: true,
+                // @ts-expect-error - FIXME when you are working on it
                 completedAt: action.payload.completedAt,
+                // @ts-expect-error - FIXME when you are working on it
                 status: action.payload.status,
               }
             : job,
@@ -78,8 +86,10 @@ export default function reducer(state: SaltState = defaultState, action = {}) {
       return {
         ...state,
         jobs: state.jobs.map((job) =>
+          // @ts-expect-error - FIXME when you are working on it
           job.jid === action.payload.jid
-            ? { ...job, status: action.payload.status }
+            ? // @ts-expect-error - FIXME when you are working on it
+              { ...job, status: action.payload.status }
             : job,
         ),
       };

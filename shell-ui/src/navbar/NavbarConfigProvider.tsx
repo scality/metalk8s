@@ -1,4 +1,4 @@
-import type { Context, Element } from 'react';
+import { ReactElement } from 'react';
 import { createContext, useEffect, useState } from 'react';
 import { useFederatedNavbarEntries } from './NavBar';
 import type { NavbarLinks, Navbar, Link } from './navbarHooks';
@@ -7,8 +7,8 @@ import { NavbarContext } from './navbarContext';
 export const NavbarConfigProvider = ({
   children,
 }: {
-  children: Element<any>;
-}): Element<any> => {
+  children: ReactElement<any>;
+}): ReactElement<any> => {
   const { accessibleViews } = useFederatedNavbarEntries();
   const [logoLink, setLogoLink] = useState<string>('');
   const [mainLinks, setMainLinks] = useState<Link[]>([]);

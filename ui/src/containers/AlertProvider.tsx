@@ -16,12 +16,15 @@ const alertGlobal = {};
 export const useAlerts = (
   filters: FilterLabels,
 ): Omit<QueryObserverResult<Alert[]>, 'data'> & { alerts?: Alert[] } => {
+  // @ts-expect-error - FIXME when you are working on it
   return alertGlobal.hooks.useAlerts(filters);
 };
 export const useHighestSeverityAlerts = (filters: FilterLabels) => {
+  // @ts-expect-error - FIXME when you are working on it
   return alertGlobal.hooks.useHighestSeverityAlerts(filters);
 };
 export const useAlertLibrary = () => {
+  // @ts-expect-error - FIXME when you are working on it
   return alertGlobal.hooks;
 };
 
@@ -47,6 +50,7 @@ const InternalAlertProvider = ({
   moduleExports: {};
   children: React.ReactNode;
 }) => {
+  // @ts-expect-error - FIXME when you are working on it
   alertGlobal.hooks = moduleExports['./alerts/alertHooks'];
 
   const { url_alertmanager } = useConfig();
@@ -54,6 +58,7 @@ const InternalAlertProvider = ({
     <FederatedComponent
       module={'./alerts/AlertProvider'}
       scope={'shell'}
+      // @ts-expect-error - FIXME when you are working on it
       url={window.shellUIRemoteEntryUrl}
       props={{
         alertManagerUrl: url_alertmanager,
@@ -89,6 +94,7 @@ const AlertProvider = ({ children }: { children: React.ReactNode }) => {
           {
             scope: 'shell',
             module: './alerts/alertHooks',
+            // @ts-expect-error - FIXME when you are working on it
             remoteEntryUrl: window.shellUIRemoteEntryUrl,
           },
         ]}

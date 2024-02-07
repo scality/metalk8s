@@ -8,10 +8,12 @@ import React, { createContext, useContext } from 'react';
 import { useQuery } from 'react-query';
 
 if (!window.shellContexts) {
+  // @ts-expect-error - FIXME when you are working on it
   window.shellContexts = {};
 }
-
+// @ts-expect-error - FIXME when you are working on it
 if (!window.shellContexts.ShellConfigContext) {
+  // @ts-expect-error - FIXME when you are working on it
   window.shellContexts.ShellConfigContext = createContext(null);
 }
 
@@ -77,6 +79,7 @@ export type ShellConfig = {
 
 export const useShellConfig = () => {
   const contextValue = useContext<ShellConfig>(
+    // @ts-expect-error - FIXME when you are working on it
     window.shellContexts.ShellConfigContext,
   );
 
@@ -111,6 +114,7 @@ export const ShellConfigProvider = ({ shellConfigUrl, children }) => {
   );
 
   return (
+    // @ts-expect-error - FIXME when you are working on it
     <window.shellContexts.ShellConfigContext.Provider
       value={{
         config,
@@ -122,6 +126,7 @@ export const ShellConfigProvider = ({ shellConfigUrl, children }) => {
       )}
       {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
       {status === 'success' && children}
+      {/* @ts-expect-error - FIXME when you are working on it */}
     </window.shellContexts.ShellConfigContext.Provider>
   );
 };

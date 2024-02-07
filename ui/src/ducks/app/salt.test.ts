@@ -1,32 +1,30 @@
 import { channel } from 'redux-saga';
 import {
+  actionChannel,
   all,
   call,
-  put,
-  actionChannel,
-  take,
-  select,
   delay,
+  put,
+  select,
+  take,
 } from 'redux-saga/effects';
 import { JOBS } from '../../services/salt/utils';
 import {
+  ADD_JOB,
+  JOB_COMPLETED,
+  JOB_GC_DELAY,
+  REMOVE_JOB, // action creators to test
+  addJobAction,
+  allJobsSelector,
+  garbageCollectJobs,
   // sagas to test
   initialize,
   manageLocalStorage,
-  garbageCollectJobs,
-  updateJobStatus,
-  watchSaltEvents, // action creators to test
-  addJobAction, // values to check in tests
-  ADD_JOB,
-  REMOVE_JOB,
-  JOB_COMPLETED,
-  JOB_GC_DELAY,
+  refreshJobStatus,
   removeJobAction,
   setJobCompletedAction,
   setJobStatusAction,
-  allJobsSelector,
-  refreshJobStatus,
-  createChannelFromSource,
+  updateJobStatus,
 } from './salt';
 const exampleJob = {
   type: 'example',
@@ -75,6 +73,7 @@ describe('`initialize` saga', () => {
   });
   test('has the expected nominal flow', () => {
     localStorage.setItem(JOBS, JSON.stringify([exampleJob]));
+    // @ts-expect-error - FIXME when you are working on it
     const gen = initialize();
     // Add all jobs to state
     expect(gen.next().value).toEqual(all([put(addJobAction(exampleJob))]));
@@ -92,6 +91,7 @@ describe('`manageLocalStorage` saga', () => {
     expect(gen.next().value).toEqual(
       actionChannel([ADD_JOB, REMOVE_JOB, JOB_COMPLETED]),
     );
+    // @ts-expect-error - FIXME when you are working on it
     expect(gen.next(testChan).value).toEqual(take(testChan));
     let nextAction = addJobAction(exampleJob);
     expect(gen.next(nextAction).value).toEqual(take(testChan));
@@ -136,6 +136,7 @@ describe('`updateJobStatus` saga', () => {
     };
     const gen = updateJobStatus({ ...exampleJob, completedAt: 'now' }, status);
     expect(gen.next().value).toEqual(
+      // @ts-expect-error - FIXME when you are working on it
       put(setJobStatusAction(exampleJob.jid, status, exampleJob.name)),
     );
     expect(gen.next().done).toBe(true);

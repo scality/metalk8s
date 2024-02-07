@@ -28,8 +28,10 @@ import { authErrorAction } from './ducks/app/authError';
 import { AuthError } from './services/errorhandler';
 import { Config } from './services/api';
 const composeEnhancers =
+  // @ts-expect-error - FIXME when you are working on it
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
-    ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({})
+    ? // @ts-expect-error - FIXME when you are working on it
+      window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({})
     : compose;
 const sagaMiddleware = createSagaMiddleware({
   onError: (error) => {
@@ -40,6 +42,7 @@ const sagaMiddleware = createSagaMiddleware({
 });
 const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware));
 export const store = createStore(reducer, enhancer);
+// @ts-expect-error - FIXME when you are working on it
 if (window.Cypress) window.__store__ = store;
 sagaMiddleware.run(sagas);
 
@@ -55,11 +58,14 @@ const RouterWithBaseName = ({ children }) => {
         basename,
       });
       history = historyWithBasename;
+      // @ts-expect-error - FIXME when you are working on it
       dispatch(setReduxHistory(historyWithBasename));
     } else {
+      // @ts-expect-error - FIXME when you are working on it
       dispatch(setReduxHistory(history));
     }
 
+    // @ts-expect-error - FIXME when you are working on it
     if (window.Cypress) window.__history__ = history;
     return history; // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [basename]);
@@ -156,6 +162,7 @@ export const AppConfigProvider = ({
         {
           scope: 'shell',
           module: './moduleFederation/ConfigurationProvider',
+          // @ts-expect-error - FIXME when you are working on it
           remoteEntryUrl: window.shellUIRemoteEntryUrl,
         },
       ]}

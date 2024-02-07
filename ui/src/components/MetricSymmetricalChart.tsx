@@ -48,7 +48,9 @@ const MetricSymmetricalChart = ({
       (timeSpanProps) => {
         if (showAvg) {
           return [
+            // @ts-expect-error - FIXME when you are working on it
             getMetricAboveQuery(instanceIP, timeSpanProps, planeInterface),
+            // @ts-expect-error - FIXME when you are working on it
             getMetricAboveAvgQuery(
               timeSpanProps,
               showAvg,
@@ -58,6 +60,7 @@ const MetricSymmetricalChart = ({
           ];
         } else {
           return [
+            // @ts-expect-error - FIXME when you are working on it
             getMetricAboveQuery(instanceIP, timeSpanProps, planeInterface),
           ];
         }
@@ -68,7 +71,9 @@ const MetricSymmetricalChart = ({
       (timeSpanProps) => {
         if (showAvg) {
           return [
+            // @ts-expect-error - FIXME when you are working on it
             getMetricBelowQuery(instanceIP, timeSpanProps, planeInterface),
+            // @ts-expect-error - FIXME when you are working on it
             getMetricBelowAvgQuery(
               timeSpanProps,
               showAvg,
@@ -78,6 +83,7 @@ const MetricSymmetricalChart = ({
           ];
         } else {
           return [
+            // @ts-expect-error - FIXME when you are working on it
             getMetricBelowQuery(instanceIP, timeSpanProps, planeInterface),
           ];
         }
@@ -121,6 +127,7 @@ const MetricSymmetricalChart = ({
       startingTimeStamp={startingTimeStamp}
       yAxisType={'symmetrical'}
       yAxisTitle={yAxisTitle}
+      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
       isLegendHidden={false}
       unitRange={unitRange}

@@ -6,10 +6,12 @@ import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/Error
 import type { SolutionUI } from '@scality/module-federation';
 
 if (!window.shellContexts) {
+  // @ts-expect-error - FIXME when you are working on it
   window.shellContexts = {};
 }
-
+// @ts-expect-error - FIXME when you are working on it
 if (!window.shellContexts.UIListContext) {
+  // @ts-expect-error - FIXME when you are working on it
   window.shellContexts.UIListContext = createContext(null);
 }
 
@@ -19,6 +21,7 @@ export function useDeployedAppsRetriever(): {
     name?: string;
   }) => SolutionUI[];
 } {
+  // @ts-expect-error - FIXME when you are working on it
   const uiListContext = useContext(window.shellContexts.UIListContext);
 
   if (!uiListContext) {
@@ -29,7 +32,9 @@ export function useDeployedAppsRetriever(): {
 
   return {
     retrieveDeployedApps: (selectors) => {
+      // @ts-expect-error - FIXME when you are working on it
       if (selectors && uiListContext.uis) {
+        // @ts-expect-error - FIXME when you are working on it
         return uiListContext.uis.filter((ui) => {
           return (
             ((selectors.kind && selectors.kind === ui.kind) ||
@@ -38,7 +43,7 @@ export function useDeployedAppsRetriever(): {
           );
         });
       }
-
+      // @ts-expect-error - FIXME when you are working on it
       return uiListContext.uis || [];
     },
   };
@@ -47,6 +52,7 @@ export const useDeployedApps = (selectors?: {
   kind?: string;
   name?: string;
 }): SolutionUI[] => {
+  // @ts-expect-error - FIXME when you are working on it
   const uiListContext = useContext(window.shellContexts.UIListContext);
 
   if (!uiListContext) {
@@ -79,6 +85,7 @@ export const UIListProvider = ({
     },
   );
   return (
+    // @ts-expect-error - FIXME when you are working on it
     <window.shellContexts.UIListContext.Provider
       value={{
         uis: data,
@@ -89,6 +96,7 @@ export const UIListProvider = ({
       )}
       {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
       {status === 'success' && children}
+      {/* @ts-expect-error - FIXME when you are working on it */}
     </window.shellContexts.UIListContext.Provider>
   );
 };

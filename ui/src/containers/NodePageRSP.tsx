@@ -41,15 +41,18 @@ const NodePageRSP = (props) => {
   const dispatch = useDispatch();
   const intl = useIntl();
   const { url } = useRouteMatch();
+  // @ts-expect-error - FIXME when you are working on it
   const { name } = useParams();
   const [memoCacheReset, setMemoCacheReset] = useState(0);
   // Initialize the `metricsTimeSpan` in saga state base on the URL query.
   // In order to keep the selected timespan for metrics tab when switch between the tabs.
   const query = useURLQuery();
   const nodeMetricsTimeSpan = useSelector(
+    // @ts-expect-error - FIXME when you are working on it
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
   const nodeMetricsShowAvg = useSelector(
+    // @ts-expect-error - FIXME when you are working on it
     (state) => state.app.monitoring.nodeStats.showAvg,
   );
   let metricsTimeSpan;
@@ -60,6 +63,7 @@ const NodePageRSP = (props) => {
     // If timespan query specified in query string
     metricsTimeSpan = queryTimeSpansCodes?.find(
       (timespan) => timespan.label === queryTimespan,
+      // @ts-expect-error - FIXME when you are working on it
     )?.value;
   } else {
     metricsTimeSpan = nodeMetricsTimeSpan;
@@ -68,12 +72,16 @@ const NodePageRSP = (props) => {
   const showAvg = queryShowAvg === 'true' ? true : nodeMetricsShowAvg;
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   // Retrieve the podlist data
+  // @ts-expect-error - FIXME when you are working on it
   const pods = useSelector((state) => state.app.pods.list);
   const podsListData = useMemo(
+    // @ts-expect-error - FIXME when you are working on it
     () => getPodsListData(name, pods, memoCacheReset),
     [name, pods, memoCacheReset],
   );
+  // @ts-expect-error - FIXME when you are working on it
   const nodes = useSelector((state) => state.app.nodes.list);
+  // @ts-expect-error - FIXME when you are working on it
   const volumes = useSelector((state) => state.app.volumes.list);
   useEffect(() => {
     const interval = setInterval(() => {
@@ -81,6 +89,7 @@ const NodePageRSP = (props) => {
     }, THREE_MINUTES);
     return () => clearInterval(interval);
   }, []);
+  // @ts-expect-error - FIXME when you are working on it
   const nodesIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const instanceIP =
     nodes?.find((node) => node.name === name)?.internalIP ?? '';
@@ -155,6 +164,7 @@ const NodePageRSP = (props) => {
                 variant={
                   criticalAlerts.length > 0 ? 'statusCritical' : 'statusWarning'
                 }
+                // @ts-expect-error - FIXME when you are working on it
                 text={alertsNode.length}
               />
             ) : null
@@ -209,6 +219,7 @@ const NodePageRSP = (props) => {
             id: 'pods',
           })}
         >
+          {/* @ts-expect-error - FIXME when you are working on it */}
           <NodePagePodsTab pods={podsListData} />
         </Tabs.Tab>
         <Tabs.Tab

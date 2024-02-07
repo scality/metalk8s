@@ -79,6 +79,7 @@ describe('NodePagePodsTab', () => {
   });
 
   it('should render the pods tabs with healthy status when all containers are ready', () => {
+    // @ts-expect-error - FIXME when you are working on it
     render(<NodePagePodsTab pods={[mockResult(3)]} />, {
       wrapper: CustomWrapper,
     });
@@ -95,6 +96,7 @@ describe('NodePagePodsTab', () => {
   });
 
   it('should render the pods tabs with warning status when some containers are not ready', () => {
+    // @ts-expect-error - FIXME when you are working on it
     render(<NodePagePodsTab pods={[mockResult(2)]} />, {
       wrapper: CustomWrapper,
     });
@@ -111,6 +113,7 @@ describe('NodePagePodsTab', () => {
   });
 
   it('should render the pods tabs with warning status when containers not running', () => {
+    // @ts-expect-error - FIXME when you are working on it
     render(<NodePagePodsTab pods={[mockResult(1, 'Failed')]} />, {
       wrapper: CustomWrapper,
     });

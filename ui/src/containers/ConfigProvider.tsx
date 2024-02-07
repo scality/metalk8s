@@ -1,17 +1,18 @@
+import { ErrorPage500 } from '@scality/core-ui';
+import { ComponentWithFederatedImports } from '@scality/module-federation';
 import React from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { ComponentWithFederatedImports } from '@scality/module-federation';
-import { ErrorPage500 } from '@scality/core-ui';
 import { useIntl } from 'react-intl';
-import { useTypedSelector } from '../hooks';
 export type ConfigProps = {
   children: React.ReactNode;
 };
 const configGlobal = {};
 export function useLinkOpener() {
+  // @ts-expect-error - FIXME when you are working on it
   return configGlobal.hooks.useLinkOpener();
 }
 export function useDiscoveredViews() {
+  // @ts-expect-error - FIXME when you are working on it
   return configGlobal.hooks.useDiscoveredViews();
 }
 
@@ -22,6 +23,7 @@ const InternalConfigProvider = ({
   moduleExports: {};
   children: React.ReactNode;
 }) => {
+  // @ts-expect-error - FIXME when you are working on it
   configGlobal.hooks =
     moduleExports['./moduleFederation/ConfigurationProvider'];
   return <>{children}</>;
@@ -47,6 +49,7 @@ function ConfigProvider({ children }: ConfigProps) {
           {
             scope: 'shell',
             module: './moduleFederation/ConfigurationProvider',
+            // @ts-expect-error - FIXME when you are working on it
             remoteEntryUrl: window.shellUIRemoteEntryUrl,
           },
         ]}

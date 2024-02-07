@@ -7,6 +7,7 @@ ReactDOM.render(
   <FederatedComponent
     module={'./App'}
     scope={'shell'}
+    // @ts-expect-error - FIXME when you are working on it
     url={window.shellUIRemoteEntryUrl}
   />,
   document.getElementById('root'),

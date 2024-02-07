@@ -109,6 +109,7 @@ export const getTooltipConfig = (
   if (fields.length) {
     const newFields = [...tooltipConfigBase.encoding.tooltip, ...fields];
     const newConfig = Object.assign({}, tooltipConfigBase);
+    // @ts-expect-error - FIXME when you are working on it
     newConfig.encoding.tooltip = newFields;
     return newConfig;
   }

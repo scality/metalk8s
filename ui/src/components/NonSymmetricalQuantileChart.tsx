@@ -15,6 +15,7 @@ import {
   renderTooltipSerie,
 } from '../services/graphUtils';
 import { useIntl } from 'react-intl';
+import { UseQueryOptions } from 'react-query';
 
 const NonSymmetricalQuantileChart = ({
   getQuantileQuery,
@@ -22,10 +23,11 @@ const NonSymmetricalQuantileChart = ({
   title,
   yAxisType,
   isLegendHidden,
+  // @ts-expect-error - FIXME when you are working on it
   helpText,
 }: {
-  getQuantileQuery: UseQueryOptions;
-  getQuantileHoverQuery: UseQueryOptions;
+  getQuantileQuery: UseQueryOptions['queryFn'];
+  getQuantileHoverQuery: UseQueryOptions['queryFn'];
   title: string;
   yAxisType: string;
   isLegendHidden: boolean;
@@ -46,8 +48,11 @@ const NonSymmetricalQuantileChart = ({
     startingTimeStamp: startingTimeStampQuantile,
   } = useChartSeries({
     getQueries: (timeSpanProps) => [
+      // @ts-expect-error - FIXME when you are working on it
       getQuantileQuery(timeSpanProps, 0.9),
+      // @ts-expect-error - FIXME when you are working on it
       getQuantileQuery(timeSpanProps, 0.5),
+      // @ts-expect-error - FIXME when you are working on it
       getQuantileQuery(timeSpanProps, 0.05),
     ],
     transformPrometheusDataToSeries: useCallback(
@@ -83,6 +88,7 @@ const NonSymmetricalQuantileChart = ({
     },
     isOnHoverFetchingNeeded,
   } = useQuantileOnHover({
+    // @ts-expect-error - FIXME when you are working on it
     getQuantileHoverQuery,
   });
   return (
@@ -92,8 +98,10 @@ const NonSymmetricalQuantileChart = ({
       title={title}
       helpText={helpText}
       startingTimeStamp={startingTimeStampQuantile}
+      // @ts-expect-error - FIXME when you are working on it
       yAxisType={yAxisType}
       isLegendHidden={isLegendHidden}
+      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoadingQuantile}
       onHover={onHover}
       renderTooltipSerie={useCallback(
@@ -107,7 +115,8 @@ const NonSymmetricalQuantileChart = ({
                 theme,
               ) +
               (isOnHoverFetchingNeeded
-                ? `${renderQuantileData(
+                ? // @ts-expect-error - FIXME when you are working on it
+                  `${renderQuantileData(
                     isIdleQuantile90,
                     isLoadingQuantile90,
                     isSuccessQuantile90,
@@ -160,7 +169,9 @@ const NonSymmetricalQuantileChart = ({
           isLoadingQuantile5,
           isSuccessQuantile5,
           isErrorQuanile5,
+          // @ts-expect-error - FIXME when you are working on it
           JSON.stringify(quantile5Data?.data),
+          // @ts-expect-error - FIXME when you are working on it
           JSON.stringify(quantile90Data?.data),
           JSON.stringify(nodeMapPerIp),
           isOnHoverFetchingNeeded,

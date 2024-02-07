@@ -1,30 +1,35 @@
-import React, { useRef, useCallback } from 'react';
-import { useEffect, useState, createContext } from 'react';
-import { useSelector } from 'react-redux';
+import type { V1NodeList } from '@kubernetes/client-node';
+import '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
+import type { Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
+import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import type { UseQueryOptions, UseQueryResult } from 'react-query';
 import { useQueries, useQuery } from 'react-query';
-import type { RootState } from './ducks/reducer';
-import { coreV1, useK8sApiConfig } from './services/k8s/api';
+import { useSelector } from 'react-redux';
 import {
+  NODES_LIMIT_QUANTILE,
   REFRESH_METRICS_GRAPH,
   SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
-  VOLUME_CONDITION_LINK,
   STATUS_NONE,
-  NODES_LIMIT_QUANTILE,
+  VOLUME_CONDITION_LINK,
 } from './constants';
-import { compareHealth } from './services/utils';
-import type { V1NodeList } from '@kubernetes/client-node';
 import { useAlerts } from './containers/AlertProvider';
+import { useAuth } from './containers/PrivateRoute';
+import { useStartingTimeStamp } from './containers/StartTimeProvider';
+import type { RootState } from './ducks/reducer';
 import { getVolumeListData } from './services/NodeVolumesUtils';
 import { filterAlerts, getHealthStatus } from './services/alertUtils';
-import { useStartingTimeStamp } from './containers/StartTimeProvider';
-import type { PrometheusQueryResult } from './services/prometheus/api';
-import type { TimeSpanProps } from './services/platformlibrary/metrics';
-import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
-import type { Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-import '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-import type { UseQueryResult, UseQueryOptions } from 'react-query';
 import { getNodesInterfacesString } from './services/graphUtils';
-import { useAuth } from './containers/PrivateRoute';
+import { useK8sApiConfig } from './services/k8s/api';
+import type { TimeSpanProps } from './services/platformlibrary/metrics';
+import type { PrometheusQueryResult } from './services/prometheus/api';
+import { compareHealth } from './services/utils';
 
 /**
  * It brings automatic strong typing to native useSelector by anotating state with RootState.
@@ -56,6 +61,7 @@ export const useNodes = (): V1NodeList => {
       refetchInterval: REFRESH_METRICS_GRAPH,
     },
   );
+  // @ts-expect-error - FIXME when you are working on it
   return nodesQuery.data || [];
 };
 export const useNodeAddressesSelector = (
@@ -64,6 +70,7 @@ export const useNodeAddressesSelector = (
   internalIP: string;
   name: string;
 }> => {
+  // @ts-expect-error - FIXME when you are working on it
   return nodes.map((item) => {
     return {
       internalIP: item?.status?.addresses?.find(
@@ -101,14 +108,17 @@ export const MetricsTimeSpanProvider = ({
   );
 };
 export const useVolumesWithAlerts = (nodeName?: string) => {
+  // @ts-expect-error - FIXME when you are working on it
   const { alerts } = useAlerts();
   const volumeListData = useTypedSelector((state) =>
+    // @ts-expect-error - FIXME when you are working on it
     getVolumeListData(state, null, nodeName),
   );
   //This forces alerts to have been fetched at least once (watchdog alert should be present)
   // before rendering volume list
   // TODO enhance this using useAlerts status
   if (!alerts || alerts.length === 0) return [];
+  // @ts-expect-error - FIXME when you are working on it
   const volumeListWithStatus = volumeListData.map((volume) => {
     const volumeAlerts = filterAlerts(alerts, {
       persistentvolumeclaim: volume.persistentvolumeclaim,
@@ -139,6 +149,7 @@ export const useSingleChartSerie = ({
   const [series, setSeries] = useState([]);
   startTimeRef.current = startingTimeISO;
   const query = useQuery(
+    // @ts-expect-error - FIXME when you are working on it
     getQuery({
       startingTimeISO,
       currentTimeISO,
@@ -149,6 +160,7 @@ export const useSingleChartSerie = ({
   useEffect(() => {
     if (!isLoading && query.data) {
       chartStartTimeRef.current = startTimeRef.current;
+      // @ts-expect-error - FIXME when you are working on it
       setSeries(transformPrometheusDataToSeries(query.data));
     }
   }, [isLoading, transformPrometheusDataToSeries, JSON.stringify(query.data)]);
@@ -192,10 +204,12 @@ export const useChartSeries = ({
      * That is achieved by giving a key param to the response object (e.g. 'cpuUsage' and 'cpuUsageAvg')
      * and sorting the array alphanumerically on its 'key' property
      */
+    // @ts-expect-error - FIXME when you are working on it
     .sort((query1, query2) => (query1.key > query2.key ? 1 : -1));
   useEffect(() => {
     if (!isLoading && !queries.find((query) => !query.data)) {
       chartStartTimeRef.current = startTimeRef.current;
+      // @ts-expect-error - FIXME when you are working on it
       setSeries(transformPrometheusDataToSeries(queriesData));
     }
   }, [isLoading, transformPrometheusDataToSeries, JSON.stringify(queriesData)]);
@@ -224,6 +238,7 @@ export const useSymetricalChartSeries = ({
   const [series, setSeries] = useState([]);
   startTimeRef.current = startingTimeISO;
   const aboveQueries = useQueries(
+    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries({
       startingTimeISO,
       currentTimeISO,
@@ -231,6 +246,7 @@ export const useSymetricalChartSeries = ({
     }),
   );
   const belowQueries = useQueries(
+    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries({
       startingTimeISO,
       currentTimeISO,
@@ -249,9 +265,11 @@ export const useSymetricalChartSeries = ({
      * That is achieved by giving a key param to the response object (e.g. 'IOPSRead' and 'IOPSReadAvg')
      * and sorting the array alphanumerically on its 'key' property
      */
+    // @ts-expect-error - FIXME when you are working on it
     .sort((query1, query2) => (query1.key > query2.key ? 1 : -1));
   const queriesBelowData = belowQueries
     .map((query) => query.data)
+    // @ts-expect-error - FIXME when you are working on it
     .sort((query1, query2) => (query1.key > query2.key ? 1 : -1));
   useEffect(() => {
     if (
@@ -261,6 +279,7 @@ export const useSymetricalChartSeries = ({
     ) {
       chartStartTimeRef.current = startTimeRef.current;
       setSeries(
+        // @ts-expect-error - FIXME when you are working on it
         transformPrometheusDataToSeries(queriesAboveData, queriesBelowData),
       );
     }
@@ -283,6 +302,7 @@ export const useQuantileOnHover = ({
   getQuantileHoverQuery: (
     timestamp?: string, // to be check the type
     threshold?: number,
+    // @ts-expect-error - FIXME when you are working on it
     operator: '>' | '<',
     isOnHoverFetchingRequired: boolean,
     devices?: string,
@@ -294,6 +314,7 @@ export const useQuantileOnHover = ({
   const [threshold5, setThreshold5] = useState();
   const [median, setMedian] = useState();
   const [valueBase, setValueBase] = useState(1);
+  // @ts-expect-error - FIXME when you are working on it
   const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const devices = getNodesInterfacesString(nodeIPsInfo);
   // If the median value is the same as Q90 and Q5, then onHover fetching is not needed.
@@ -301,6 +322,7 @@ export const useQuantileOnHover = ({
     median !== threshold90 && median !== threshold5;
   const quantile90Result = useQuery(
     getQuantileHoverQuery(
+      // @ts-expect-error - FIXME when you are working on it
       hoverTimestamp / 1000,
       threshold90,
       '>',
@@ -310,6 +332,7 @@ export const useQuantileOnHover = ({
   );
   const quantile5Result = useQuery(
     getQuantileHoverQuery(
+      // @ts-expect-error - FIXME when you are working on it
       hoverTimestamp / 1000,
       threshold5,
       '<',
@@ -322,16 +345,19 @@ export const useQuantileOnHover = ({
       if (!hoverTimestamp || datum.timestamp !== hoverTimestamp) {
         setHoverTimestamp(datum.timestamp);
         setThreshold90(
+          // @ts-expect-error - FIXME when you are working on it
           metricPrefix
             ? Math.abs(datum.originalData[`Q90-${metricPrefix}`])
             : Math.abs(datum.originalData['Q90']),
         );
         setThreshold5(
+          // @ts-expect-error - FIXME when you are working on it
           metricPrefix
             ? Math.abs(datum.originalData[`Q5-${metricPrefix}`])
             : Math.abs(datum.originalData['Q5']),
         );
         setMedian(
+          // @ts-expect-error - FIXME when you are working on it
           metricPrefix
             ? Math.abs(datum.originalData[`Median-${metricPrefix}`])
             : Math.abs(datum.originalData['Median']),
@@ -357,6 +383,7 @@ export const useShowQuantileChart = (): {
   return {
     isShowQuantileChart:
       (flags && flags.includes('force_quantile_chart')) ||
+      // @ts-expect-error - FIXME when you are working on it
       nodes?.length > NODES_LIMIT_QUANTILE,
   };
 };
@@ -381,7 +408,7 @@ export type UserAccessRight = {
   canConfigureEmailNotification: boolean;
 };
 export const useUserAccessRight = (): UserAccessRight => {
-  const { isUser, isPlatformAdmin, isStorageManager } = useUserRoles();
+  const { isPlatformAdmin } = useUserRoles();
 
   return {
     canConfigureEmailNotification: isPlatformAdmin,

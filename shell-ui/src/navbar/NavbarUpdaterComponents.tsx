@@ -44,6 +44,7 @@ export const NavbarUpdaterComponents = () => {
             return window[component.scope];
           })
           .filter((scope) => !!scope).length === componentsToFederate.length &&
+        // @ts-expect-error - FIXME when you are working on it
         window.shell
       );
     }

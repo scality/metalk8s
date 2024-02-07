@@ -1,11 +1,10 @@
-import '../library';
-import React, { createContext, useContext } from 'react';
-import { setupServer } from 'msw/node';
-import { rest } from 'msw';
-import { renderHook } from '@testing-library/react-hooks';
-import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
-import { getNodesCountQuery, getVolumesCountQuery } from './k8s';
 import { afterAll, beforeAll, jest } from '@jest/globals';
+import { renderHook } from '@testing-library/react-hooks';
+import { rest } from 'msw';
+import { setupServer } from 'msw/node';
+import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
+import '../library';
+import { getNodesCountQuery, getVolumesCountQuery } from './k8s';
 const k8sUrl = 'https://10.0.0.1:8443/api/kubernetes';
 const nodes = {
   kind: 'NodeList',
@@ -52,6 +51,7 @@ describe('getNodesCount', () => {
   it('should return the number of nodes in the cluster', async () => {
     // S
     const { result, waitForNextUpdate } = renderHook(
+      // @ts-expect-error - FIXME when you are working on it
       () => useQuery(getNodesCountQuery(k8sUrl, token)),
       {
         wrapper,
@@ -65,6 +65,7 @@ describe('getNodesCount', () => {
   it('should return the number of volumes in the cluster', async () => {
     // S
     const { result, waitForNextUpdate } = renderHook(
+      // @ts-expect-error - FIXME when you are working on it
       () => useQuery(getVolumesCountQuery(k8sUrl, token)),
       {
         wrapper,

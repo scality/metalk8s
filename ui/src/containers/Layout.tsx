@@ -38,6 +38,7 @@ export const NotificationDisplayer = () => {
     dispatch(removeNotificationAction(uid));
   return (
     <Notifications
+      // @ts-expect-error - FIXME when you are working on it
       notifications={notifications}
       onDismiss={(uid) => removeNotification(uid)}
     />

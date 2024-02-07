@@ -1,30 +1,29 @@
-import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import styled from 'styled-components';
-import { Formik } from 'formik';
-import * as yup from 'yup';
-import { useHistory } from 'react-router';
 import {
+  Banner,
   Checkbox,
   Form,
-  FormSection,
   FormGroup,
-  Toggle,
-  Stack,
+  FormSection,
   Icon,
-  Banner,
+  Stack,
   Text,
+  Toggle,
 } from '@scality/core-ui';
 import { Button, Input } from '@scality/core-ui/dist/next';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
+import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import { Formik } from 'formik';
 import isEmpty from 'lodash.isempty';
+import { useEffect } from 'react';
+import { useIntl } from 'react-intl';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router';
+import styled from 'styled-components';
+import * as yup from 'yup';
 import {
-  createNodeAction,
   clearCreateNodeErrorAction,
+  createNodeAction,
   fetchClusterVersionAction,
 } from '../ducks/app/nodes';
-import { useIntl } from 'react-intl';
-import { useTypedSelector } from '../hooks';
 import { useShellConfig } from './PrivateRoute';
 const CheckboxGroup = styled.div`
   display: flex;
@@ -50,7 +49,9 @@ const validationSchema = yup.object().shape({
 });
 
 const NodeCreateForm = () => {
+  // @ts-expect-error - FIXME when you are working on it
   const asyncErrors = useSelector((state) => state.app.nodes.errors);
+  // @ts-expect-error - FIXME when you are working on it
   const clusterVersion = useSelector((state) => state.app.nodes.clusterVersion);
   const dispatch = useDispatch();
 
@@ -84,6 +85,7 @@ const NodeCreateForm = () => {
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
+      // @ts-expect-error - FIXME when you are working on it
       onSubmit={createNode}
     >
       {(props) => {
@@ -168,6 +170,7 @@ const NodeCreateForm = () => {
                 })}
                 required
                 id="name"
+                // @ts-expect-error - FIXME when you are working on it
                 error={touched.name && errors.name}
                 helpErrorPosition="bottom"
                 content={
@@ -263,6 +266,7 @@ const NodeCreateForm = () => {
                 required
                 id="ssh_user"
                 helpErrorPosition="bottom"
+                // @ts-expect-error - FIXME when you are working on it
                 error={touched.ssh_user && errors.ssh_user}
                 content={
                   <Input
@@ -283,6 +287,7 @@ const NodeCreateForm = () => {
                 required
                 id="hostName_ip"
                 helpErrorPosition="bottom"
+                // @ts-expect-error - FIXME when you are working on it
                 error={touched.hostName_ip && errors.hostName_ip}
                 content={
                   <Input
@@ -302,6 +307,7 @@ const NodeCreateForm = () => {
                 required
                 id="ssh_port"
                 helpErrorPosition="bottom"
+                // @ts-expect-error - FIXME when you are working on it
                 error={touched.ssh_port && errors.ssh_port}
                 content={
                   <Input
@@ -321,6 +327,7 @@ const NodeCreateForm = () => {
                 required
                 id="ssh_key_path"
                 helpErrorPosition="bottom"
+                // @ts-expect-error - FIXME when you are working on it
                 error={touched.ssh_key_path && errors.ssh_key_path}
                 content={
                   <Input

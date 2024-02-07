@@ -9,6 +9,7 @@ import { useShellHistory } from './ShellHistoryProvider';
 import type { SolutionUI } from '@scality/module-federation';
 
 if (!window.shellContexts) {
+  // @ts-expect-error - FIXME when you are working on it
   window.shellContexts = {};
 }
 
@@ -110,13 +111,17 @@ export function useConfigRetriever(): {
       const configs = webFingerContextValue
         .filter((webFinger) => {
           return (
+            // @ts-expect-error - FIXME when you are working on it
             webFinger.status === 'success' &&
             ((configType === 'build' &&
+              // @ts-expect-error - FIXME when you are working on it
               webFinger.data.kind === 'MicroAppConfiguration') ||
               (configType === 'run' &&
+                // @ts-expect-error - FIXME when you are working on it
                 webFinger.data.kind === 'MicroAppRuntimeConfiguration'))
           );
         })
+        // @ts-expect-error - FIXME when you are working on it
         .map((webFinger) => webFinger.data);
       ///TODO validate web fingers against JsonSchemas
       return configs.find(
@@ -187,6 +192,7 @@ export function useDiscoveredViews(): ViewDefinition[] {
       ...entry,
       navbarGroup: 'subLogin',
     })),
+    // @ts-expect-error - FIXME when you are working on it
   ].flatMap((navbarEntry) => {
     if (!navbarEntry.kind || !navbarEntry.view) {
       return [
@@ -238,6 +244,7 @@ export function useDiscoveredViews(): ViewDefinition[] {
 
     return [];
   });
+  // @ts-expect-error - FIXME when you are working on it
   return discoveredViews;
 }
 export const useLinkOpener = () => {
@@ -261,11 +268,13 @@ export const useLinkOpener = () => {
         if (to.isFederated) {
           window.open(to.app.appHistoryBasePath + to.view.path, '_blank');
         } else {
+          // @ts-expect-error - FIXME when you are working on it
           window.open(to.url, '_blank');
         }
       } else if (to.isFederated) {
         history.push(to.app.appHistoryBasePath + to.view.path);
       } else {
+        // @ts-expect-error - FIXME when you are working on it
         window.location.href = to.url;
       }
     },
@@ -322,6 +331,7 @@ export const ConfigurationProvider = ({
     ? 'loading'
     : 'success';
   return (
+    // @ts-expect-error - FIXME when you are working on it
     <window.shellContexts.WebFingersContext.Provider value={results}>
       {(globalStatus === 'loading' || globalStatus === 'idle') && (
         <Loader size="massive" centered={true} aria-label="loading" />

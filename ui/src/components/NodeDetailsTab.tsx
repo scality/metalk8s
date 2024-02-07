@@ -17,6 +17,7 @@ const ErrorText = styled.div`
 
 const NodePageDetailsTab = (props) => {
   const currentNodeObject = useSelector(
+    // @ts-expect-error - FIXME when you are working on it
     (state) => state.app.nodes.currentNodeObject,
   );
   const intl = useIntl();

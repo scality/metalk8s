@@ -8,9 +8,10 @@ COPY package*.json /home/node/
 
 # `npm config set unsafe-perm true` is needed in order to let npm run core-ui prepare script when installing dependencies in a context with root access
 # Ref : https://npm.community/t/npm-ci-not-running-prepare-for-git-dependencies-when-run-as-root-in-docker/4485/2
+ENV npm_config_cache /home/node/app/.npm
 RUN npm config set unsafe-perm true && npm ci --legacy-peer-deps
 
-COPY index-template.html webpack.*.js babel.config.js .flowconfig /home/node/
+COPY index-template.html webpack.*.js babel.config.js tsconfig.json .flowconfig /home/node/
 COPY public /home/node/public
 COPY src /home/node/src
 

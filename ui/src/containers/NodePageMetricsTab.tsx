@@ -95,6 +95,7 @@ export const RenderNoDataAvailable = () => {
       <BasicText>
         <Icon
           name="Exclamation-triangle"
+          // @ts-expect-error - FIXME when you are working on it
           style={{
             paddingRight: `${spacing.sp4}`,
           }}
@@ -156,6 +157,7 @@ const NodePageMetricsTab = ({
                 id: 'show_cluster_avg',
               })}
               toggle={showAvg}
+              // @ts-expect-error - FIXME when you are working on it
               value={showAvg}
               onChange={(e: React.SyntheticEvent<HTMLInputElement>) => {
                 writeShowAvg(e.currentTarget.checked);
@@ -197,7 +199,9 @@ const NodePageMetricsTab = ({
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricQuery={getCPUUsageQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getCPUUsageAvgQuery}
               ></MetricChart>
             </GraphWrapper>
@@ -208,7 +212,9 @@ const NodePageMetricsTab = ({
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricQuery={getSystemLoadQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getSystemLoadAvgQuery}
               ></MetricChart>
             </GraphWrapper>
@@ -219,7 +225,9 @@ const NodePageMetricsTab = ({
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricQuery={getMemoryQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getMemoryAvgQuery}
               ></MetricChart>
             </GraphWrapper>
@@ -231,9 +239,13 @@ const NodePageMetricsTab = ({
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveQuery={getIOPSWriteQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowQuery={getIOPSReadQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveAvgQuery={getIOPSWriteAvgQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowAvgQuery={getIOPSReadAvgQuery}
                 metricPrefixAbove={'write'}
                 metricPrefixBelow={'read'}
@@ -249,9 +261,13 @@ const NodePageMetricsTab = ({
                 instanceIP={instanceIP}
                 showAvg={showAvg}
                 nodesIPsInfo={nodesIPsInfo}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveQuery={getControlPlaneBandWidthInQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowQuery={getControlPlaneBandWidthOutQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveAvgQuery={getControlPlaneBandWidthAvgInQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowAvgQuery={getControlPlaneBandWidthAvgOutQuery}
                 metricPrefixAbove={'in'}
                 metricPrefixBelow={'out'}
@@ -269,9 +285,13 @@ const NodePageMetricsTab = ({
                 instanceIP={instanceIP}
                 showAvg={showAvg}
                 nodesIPsInfo={nodesIPsInfo}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveQuery={getWorkloadPlaneBandWidthInQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowQuery={getWorkloadPlaneBandWidthOutQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveAvgQuery={getWorkloadPlaneBandWidthAvgInQuery}
+                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowAvgQuery={getWorkloadPlaneBandWidthAvgOutQuery}
                 metricPrefixAbove={'in'}
                 metricPrefixBelow={'out'}

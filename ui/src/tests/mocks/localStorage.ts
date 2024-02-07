@@ -12,6 +12,7 @@ export class LocalStorageMock {
   };
 }
 export const setupMock = () => {
+  // @ts-expect-error - FIXME when you are working on it
   if (typeof global._localStorage !== 'undefined') {
     // Special case where `jsdom` sets localStorage and we can't overwrite it
     // See: https://github.com/jsdom/jsdom/commit/4d26c6773f011205d9c703cc5988e7c117efea31#diff-9b8fab691c00b9e5380b19ce882f3271R1
@@ -21,6 +22,7 @@ export const setupMock = () => {
       writable: false,
     });
   } else {
+    // @ts-expect-error - FIXME when you are working on it
     global.localStorage = new LocalStorageMock();
   }
 };

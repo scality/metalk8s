@@ -53,14 +53,18 @@ export function* authenticateSaltApi(): Generator<Effect, void, any> {
     | ApiSalt.SaltToken = yield call(ApiSalt.authenticate, user);
   const intl = yield select(intlSelector);
 
+  // @ts-expect-error - FIXME when you are working on it
   if (api && result && !result.error) {
     yield call(ApiSalt.getClient().setHeaders, {
+      // @ts-expect-error - FIXME when you are working on it
       'X-Auth-Token': result.return[0].token,
     });
+    // @ts-expect-error - FIXME when you are working on it
     yield put(setSaltAuthenticationSuccessAction(result));
     yield put(
       connectSaltApiAction({
         url: api.url_salt,
+        // @ts-expect-error - FIXME when you are working on it
         token: result.return[0].token,
       }),
     );

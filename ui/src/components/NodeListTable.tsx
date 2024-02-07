@@ -9,6 +9,7 @@ import { useURLQuery } from '../services/utils';
 import CircleStatus from './CircleStatus';
 const StatusText = styled.div`
   color: ${(props) => {
+    // @ts-expect-error - FIXME when you are working on it
     return props.textColor;
   }};
 `;
@@ -81,6 +82,7 @@ const NodeListTable = ({ nodeTableData }) => {
           const { statusTextColor, computedStatus } = cellProps.value;
           return computedStatus.map((status) => {
             return (
+              // @ts-expect-error - FIXME when you are working on it
               <StatusText key={status} textColor={statusTextColor}>
                 {intl.formatMessage({
                   id: `${status}`,
@@ -130,6 +132,7 @@ const NodeListTable = ({ nodeTableData }) => {
         columns={columns}
         data={nodeTableData}
         defaultSortingKey={'health'}
+        // @ts-expect-error - FIXME when you are working on it
         getRowId={(row) => row.name.name}
       >
         <Box

@@ -146,6 +146,7 @@ const NotificationCenter = () => {
                   : 'infoPrimary'
               }
               size="lg"
+              // @ts-expect-error - FIXME when you are working on it
               style={
                 isOpen
                   ? {
@@ -158,6 +159,7 @@ const NotificationCenter = () => {
               <Icon
                 name="Circle-health"
                 color="selectedActive"
+                // @ts-expect-error - FIXME when you are working on it
                 transform={{ x: 13, y: 10 }}
                 size="xs"
               />
@@ -179,6 +181,7 @@ const NotificationCenter = () => {
                 {isAtLeastOneNotificationUnread && (
                   <TextBadge
                     text={`${notifications.filter((n) => !n.readOn).length}`}
+                    // @ts-expect-error - FIXME when you are working on it
                     variant="selectedActive"
                   />
                 )}
@@ -224,6 +227,7 @@ const NotificationCenter = () => {
                 <Stack
                   direction="vertical"
                   flex={1}
+                  // @ts-expect-error - FIXME when you are working on it
                   gap="0.1rem"
                   style={{
                     width: `calc(25vw - 5.75rem)`,

@@ -40,6 +40,7 @@ const NodeNameContainer = styled.div`
 `;
 const StatusText = styled.span`
   color: ${(props) => {
+    // @ts-expect-error - FIXME when you are working on it
     return props.textColor;
   }};
 `;
@@ -86,6 +87,7 @@ const NodePageOverviewTab = (props) => {
     dispatch(fetchClusterVersionAction());
   }, [dispatch]);
   const jobs = useSelector((state) =>
+    // @ts-expect-error - FIXME when you are working on it
     state.app.salt.jobs.filter(
       (job) => job.type === 'deploy-node' && job.node === nodeName,
     ),
@@ -95,6 +97,7 @@ const NodePageOverviewTab = (props) => {
   if (activeJob === undefined) {
     // Pick most recent one
     const sortedJobs = jobs.sort(
+      // @ts-expect-error - FIXME when you are working on it
       (jobA, jobB) => Date(jobA.completedAt) >= Date(jobB.completedAt),
     );
     activeJob = sortedJobs[0];
@@ -124,6 +127,7 @@ const NodePageOverviewTab = (props) => {
         title: intl.formatMessage({
           id: 'completed',
         }),
+        // @ts-expect-error - FIXME when you are working on it
         content: (
           <span>
             {!status.success && (
@@ -142,6 +146,7 @@ const NodePageOverviewTab = (props) => {
         title: intl.formatMessage({
           id: 'deploying',
         }),
+        // @ts-expect-error - FIXME when you are working on it
         content: <Loader size="larger" />,
       });
     }
@@ -232,6 +237,7 @@ const NodePageOverviewTab = (props) => {
                   return (
                     <StatusText
                       key={cond}
+                      // @ts-expect-error - FIXME when you are working on it
                       textColor={currentNode?.status?.statusColor}
                     >
                       {intl.formatMessage({

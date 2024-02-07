@@ -31,11 +31,11 @@ const ActionContainer = styled.span`
   padding: ${padding.large} ${padding.base} 26px 20px;
 `;
 const VolumeListTable = React.memo((props) => {
+  // @ts-expect-error - FIXME when you are working on it
   const { nodeName, volumeListData } = props;
   const history = useHistory();
   const theme = useTheme();
   const intl = useIntl();
-
   const columns = React.useMemo(() => {
     const onClickCell = (name) => {
       history.push(`/volumes/${name}/overview`);
@@ -101,7 +101,9 @@ const VolumeListTable = React.memo((props) => {
               size="large"
               percentage={value}
               buildinLabel={`${value}%`}
+              // @ts-expect-error - FIXME when you are working on it
               color={theme.infoSecondary}
+              // @ts-expect-error - FIXME when you are working on it
               backgroundColor={theme.buttonSecondary}
             />
           );

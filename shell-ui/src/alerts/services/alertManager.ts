@@ -23,7 +23,9 @@ export type PrometheusAlert = {
   generatorURL: string;
 };
 export type AlertLabels = {
+  // @ts-expect-error - FIXME when you are working on it
   parents?: string[];
+  // @ts-expect-error - FIXME when you are working on it
   selectors?: string[];
   [labelName: string]: string;
 };
@@ -52,6 +54,7 @@ export const checkActiveAlertProvider = (): Promise<{
   status: 'healthy' | 'critical';
 }> => {
   // depends on Watchdog to see the if Alertmanager is up
+  // @ts-expect-error - FIXME when you are working on it
   return getAlerts().then((result) => {
     const watchdog = result.find(
       (alert) => alert.labels.alertname === 'Watchdog',

@@ -5,8 +5,10 @@ import {
 } from './events';
 import packageJson from '../../package.json';
 const { version } = packageJson;
+// @ts-expect-error - FIXME when you are working on it
 window.shellUINavbar = {
   ///spread shellUI to keep all versions libraries
+  // @ts-expect-error - FIXME when you are working on it
   ...window.shellUINavbar,
   [version]: {
     isAuthenticatedEvent: (evt) => evt.detail && evt.detail.profile,

@@ -1,11 +1,10 @@
+import '../index';
 import {
   getUserGroups,
   isEntryAccessibleByTheUser,
   isPathAccessible,
   normalizePath,
 } from './permissionUtils';
-import '../index';
-import { Options } from '../../initFederation/ShellConfigProvider';
 describe('permission utils - isEntryAccessibleByTheUser', () => {
   it('should return true if the user has explicit access', () => {
     //E
@@ -93,6 +92,7 @@ describe('permission utils - getUserGroups', () => {
     const oidcGroups = ['oidcGroup'];
     const groups = getUserGroups(
       {
+        // @ts-expect-error - FIXME when you are working on it
         profile: {
           email: 'test@test.com',
           groups: oidcGroups,
@@ -109,6 +109,7 @@ describe('permission utils - getUserGroups', () => {
     //E
     const groups = getUserGroups(
       {
+        // @ts-expect-error - FIXME when you are working on it
         profile: {
           email: 'test@test.com',
         },
@@ -128,6 +129,7 @@ describe('permission utils - getUserGroups', () => {
     //E
     const groups = getUserGroups(
       {
+        // @ts-expect-error - FIXME when you are working on it
         profile: {
           email: 'test@test.com',
           groups: [...oidcAndStaticGroups, ...oidcOnlyGroups],

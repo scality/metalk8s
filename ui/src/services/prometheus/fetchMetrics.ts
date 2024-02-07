@@ -42,7 +42,9 @@ export function queryPromtheusMetrics(
 
   if (promPromise) {
     return promPromise.then((resolve) => {
+      // @ts-expect-error - FIXME when you are working on it
       if (resolve.error) {
+        // @ts-expect-error - FIXME when you are working on it
         throw resolve.error;
       }
 

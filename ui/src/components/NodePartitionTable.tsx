@@ -54,9 +54,11 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
         return (
           <ProgressBar
             size="large"
+            // @ts-expect-error - FIXME when you are working on it
             color={theme.infoSecondary}
             percentage={value}
             buildinLabel={`${value}%`}
+            // @ts-expect-error - FIXME when you are working on it
             backgroundColor={theme.buttonSecondary}
             aria-label={`${value}%`}
           />

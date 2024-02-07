@@ -89,9 +89,11 @@ const CreateVolume = (props) => {
 
   const createVolumes = (newVolumes) =>
     dispatch(createVolumesAction(newVolumes));
-
+  // @ts-expect-error - FIXME when you are working on it
   const nodes = useSelector((state) => state.app.nodes.list);
+  // @ts-expect-error - FIXME when you are working on it
   const storageClass = useSelector((state) => state.app.volumes.storageClass);
+  // @ts-expect-error - FIXME when you are working on it
   const api = useSelector((state) => state.config.api);
   useEffect(() => {
     dispatch(fetchNodesAction());
@@ -101,6 +103,7 @@ const CreateVolume = (props) => {
   const nodeName = query.get('node');
   const storageClassesName = storageClass.map((item) => item.metadata.name);
   const isStorageClassLoading = useSelector(
+    // @ts-expect-error - FIXME when you are working on it
     (state) => state.app.volumes.isSCLoading,
   );
   // Hardcoded
@@ -152,18 +155,26 @@ const CreateVolume = (props) => {
         // Set the defaults when the field is empty, means even if we change the global value afterwards,
         // the field of batch volumes will not be override.
         if (
+          // @ts-expect-error - FIXME when you are working on it
           values.name.trim() !== '' &&
+          // @ts-expect-error - FIXME when you are working on it
           touched.name &&
+          // @ts-expect-error - FIXME when you are working on it
           values.volumes[index].name === ''
         ) {
+          // @ts-expect-error - FIXME when you are working on it
           setFieldValue(name, formatBatchName(values.name, index + 1));
         }
       } else if (fieldname === 'path') {
         if (
+          // @ts-expect-error - FIXME when you are working on it
           values.path.trim() !== '' &&
+          // @ts-expect-error - FIXME when you are working on it
           touched.path &&
+          // @ts-expect-error - FIXME when you are working on it
           values.volumes[index].path === ''
         ) {
+          // @ts-expect-error - FIXME when you are working on it
           setFieldValue(name, linuxDrivesNamingIncrement(values.path, index));
         }
       }
@@ -172,10 +183,15 @@ const CreateVolume = (props) => {
       fieldname,
       name,
       index,
+      // @ts-expect-error - FIXME when you are working on it
       values.name,
+      // @ts-expect-error - FIXME when you are working on it
       values.path,
+      // @ts-expect-error - FIXME when you are working on it
       touched.path,
+      // @ts-expect-error - FIXME when you are working on it
       touched.name,
+      // @ts-expect-error - FIXME when you are working on it
       values.volumes,
     ]);
     return (
@@ -188,12 +204,15 @@ const CreateVolume = (props) => {
     );
   };
 
-  const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  const volumeNameRegex =
+    /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
 
   /* Valid label keys have two segments: an optional prefix and name, separated by a slash (/).
     https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set  */
-  const labelFullNameRegex = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*\/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$/;
-  const labelNamePrefixRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  const labelFullNameRegex =
+    /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*\/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$/;
+  const labelNamePrefixRegex =
+    /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
   const labelValueRegex = /^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$/;
   const positiveIntegerRegex = /^[1-9][0-9]*$/;
   const validationSchema = yup.object().shape({
@@ -347,6 +366,7 @@ const CreateVolume = (props) => {
       validationSchema={validationSchema}
       onSubmit={(values) => {
         const newVolumes = { ...values };
+        // @ts-expect-error - FIXME when you are working on it
         newVolumes.size = `${values.sizeInput}${values.selectedUnit}`;
         const formattedVolumes = formatVolumeCreationData(newVolumes);
         createVolumes(formattedVolumes);
@@ -522,6 +542,7 @@ const CreateVolume = (props) => {
 
                   <Select
                     id="selectedUnit"
+                    // @ts-expect-error - FIXME when you are working on it
                     name="selectedUnit"
                     size="1/3"
                     placeholder={intl.formatMessage({
@@ -646,6 +667,7 @@ const CreateVolume = (props) => {
                   })}
                   type="submit"
                   variant={'primary'}
+                  // @ts-expect-error - FIXME when you are working on it
                   disabled={!dirty || !isEmpty(errors) || values.labelName}
                   data-cy="submit-create-volume"
                 />
@@ -692,6 +714,7 @@ const CreateVolume = (props) => {
                 error={touched.name && errors.name}
                 id="name"
                 content={
+                  // @ts-expect-error - FIXME when you are working on it
                   <InputV2
                     name="name"
                     value={values.name}
@@ -708,11 +731,13 @@ const CreateVolume = (props) => {
                 })}
                 required
                 helpErrorPosition="bottom"
+                // @ts-expect-error - FIXME when you are working on it
                 error={touched.node && errors.node}
                 id="node_input"
                 content={
                   <Select
                     id="node_input"
+                    // @ts-expect-error - FIXME when you are working on it
                     name="node"
                     placeholder={intl.formatMessage({
                       id: 'select_a_node',
@@ -756,6 +781,7 @@ const CreateVolume = (props) => {
                         onChange={handleChange('labelName')}
                         validate={validataLabelName}
                       />
+                      {/* @ts-expect-error - FIXME when you are working on it */}
                       <InputV2
                         name="labelValue"
                         size="1/2"
@@ -774,6 +800,7 @@ const CreateVolume = (props) => {
                         onClick={addLabel}
                         data-cy="add-volume-labels-button"
                         variant={'secondary'}
+                        // @ts-expect-error - FIXME when you are working on it
                         disabled={
                           errors.labelValue ||
                           errors.labelName ||
@@ -811,6 +838,7 @@ const CreateVolume = (props) => {
                 content={
                   <Select
                     id="storageClass_input"
+                    // @ts-expect-error - FIXME when you are working on it
                     name="storageClass"
                     placeholder={intl.formatMessage({
                       id: 'select_a_storageClass',
@@ -839,6 +867,7 @@ const CreateVolume = (props) => {
                 content={
                   <Select
                     id="type_input"
+                    // @ts-expect-error - FIXME when you are working on it
                     name="type"
                     placeholder={intl.formatMessage({
                       id: 'select_a_type',
@@ -863,6 +892,7 @@ const CreateVolume = (props) => {
                     id: 'create_multiple_volumes',
                   })}
                   checked={values.multiVolumeCreation}
+                  // @ts-expect-error - FIXME when you are working on it
                   value={values.multiVolumeCreation}
                   onChange={handleCheckboxChange('multiVolumeCreation')}
                   onBlur={handleOnBlur}

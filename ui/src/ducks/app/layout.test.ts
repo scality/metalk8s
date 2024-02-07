@@ -12,12 +12,14 @@ it('should toggleSideBar', () => {
       type: SET_TOGGLE_SIDEBAR,
     }),
   );
+  // @ts-expect-error - FIXME when you are working on it
   expect(gen.next().value.type).toEqual('SELECT');
   expect(gen.next().done).toEqual(true);
 });
 it('should initToggleSideBar', () => {
   localStorage.setItem(SIDEBAR_EXPANDED, 'true');
   const gen = initToggleSideBar();
+  // @ts-expect-error - FIXME when you are working on it
   expect(gen.next().value.type).toEqual('SELECT');
   expect(gen.next().value).toEqual(
     put({

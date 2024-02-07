@@ -1,14 +1,13 @@
-import React from 'react';
 import { Icon } from '@scality/core-ui';
 import {
-  STATUS_WARNING,
-  STATUS_CRITICAL,
-  STATUS_SUCCESS,
-  STATUS_NONE,
-  STATUS_HEALTH,
-  CIRCLE_BASE_SIZE,
   CIRCLE_DOUBLE_SIZE,
+  STATUS_CRITICAL,
+  STATUS_HEALTH,
+  STATUS_NONE,
+  STATUS_SUCCESS,
+  STATUS_WARNING,
 } from '../constants';
+import { IconName } from '@scality/core-ui/dist/components/icon/Icon.component';
 
 const getStyle = (status) => {
   switch (status) {
@@ -47,7 +46,7 @@ const CircleStatus = (props) => {
   return (
     <i>
       <Icon
-        name={name}
+        name={name as IconName}
         color={color}
         size={size === CIRCLE_DOUBLE_SIZE ? '2x' : '1x'}
         ariaLabel={`status ${status}`}

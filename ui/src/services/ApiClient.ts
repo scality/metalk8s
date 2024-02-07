@@ -2,13 +2,16 @@ import axios from 'axios';
 
 class ApiClient {
   constructor({ apiUrl, headers = {} }) {
+    // @ts-expect-error - FIXME when you are working on it
     this.headers = headers;
+    // @ts-expect-error - FIXME when you are working on it
     this.settings = {
       baseURL: apiUrl,
     };
   }
 
   setHeaders = (headers) => {
+    // @ts-expect-error - FIXME when you are working on it
     this.headers = headers;
   };
 
@@ -69,10 +72,12 @@ class ApiClient {
     try {
       const response = await axios({
         method,
+        // @ts-expect-error - FIXME when you are working on it
         headers: { ...this.headers, ...headers },
         params,
         url: endpoint,
         data: payload,
+        // @ts-expect-error - FIXME when you are working on it
         ...this.settings,
       });
       return response.data;

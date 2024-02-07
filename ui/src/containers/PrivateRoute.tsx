@@ -196,11 +196,13 @@ const PrivateRoute = (props: PrivateRouteProps) => {
       renderOnError={<ErrorPage500 data-cy="sc-error-page500" />}
       federatedImports={[
         {
+          // @ts-expect-error - FIXME when you are working on it
           remoteEntryUrl: window.shellUIRemoteEntryUrl,
           scope: 'shell',
           module: './auth/AuthProvider',
         },
         {
+          // @ts-expect-error - FIXME when you are working on it
           remoteEntryUrl: window.shellUIRemoteEntryUrl,
           scope: 'shell',
           module: './moduleFederation/ShellConfigurationProvider',

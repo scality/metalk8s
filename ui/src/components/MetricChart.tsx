@@ -33,11 +33,16 @@ const MetricChart = ({
       (timeSpanProps) => {
         if (showAvg) {
           return [
+            // @ts-expect-error - FIXME when you are working on it
             getMetricQuery(instanceIP, timeSpanProps),
+            // @ts-expect-error - FIXME when you are working on it
             getMetricAvgQuery(timeSpanProps, showAvg),
           ];
         } else {
-          return [getMetricQuery(instanceIP, timeSpanProps)];
+          return [
+            // @ts-expect-error - FIXME when you are working on it
+            getMetricQuery(instanceIP, timeSpanProps),
+          ];
         }
       },
       [instanceIP, showAvg],
@@ -64,6 +69,7 @@ const MetricChart = ({
       title={title}
       startingTimeStamp={startingTimeStamp}
       yAxisType={yAxisType}
+      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
       unitRange={unitRange}
     />
