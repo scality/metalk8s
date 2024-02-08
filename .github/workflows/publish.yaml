@@ -146,14 +146,17 @@ jobs:
           "${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/shell-ui"
 
       - name: Get tag message
+        if: inputs.is_production
         id: get_tag_message
         run: echo "::set-output name=message::$(git tag -l --format='%(contents)' ${{ env.SHELL_UI_VERSION }})"
 
       - uses: softprops/action-gh-release@v1
+        if: inputs.is_production
         with:
           name: Metalk8s ${{ env.SHELL_UI_VERSION }}
           tag_name: ${{ env.SHELL_UI_VERSION }}
           body: ${{ steps.get_tag_message.outputs.message }}
+          prerelease: "! fromJSON(env.IS_STABLE)"
           draft: false
           files: |
             shell.tar
