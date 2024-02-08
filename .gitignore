@@ -9,6 +9,7 @@ __pycache__/
 buildchain/.venv/
 
 .doit.db
+buildchain/.doit.db.*
 
 *.pyc
 *.log
