@@ -22,8 +22,6 @@ on:
         required: true
       HARBOR_DEV_PROJECT:
         required: true
-      GITHUB_TOKEN:
-        required: true
 
   # Push on development branch = PR merge
   push:
