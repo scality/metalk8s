@@ -409,7 +409,11 @@ export const Navbar = ({
       <Layout
         headerNavigation={
           <CoreUINavbar
-            logo={<Logo src={logo} alt="logo" />}
+            logo={
+              <a href="/" aria-label="Visit the landing page">
+                <Logo src={logo} alt={config.productName + ' logo'} />
+              </a>
+            }
             rightActions={rightTabs}
             tabs={mainTabs}
             role="navigation"
