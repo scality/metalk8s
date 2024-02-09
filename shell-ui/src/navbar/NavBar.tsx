@@ -24,6 +24,7 @@ import type { Link as TypeLink } from './navbarHooks';
 import { useNavbar } from './navbarHooks';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import NotificationCenter from './NotificationCenter';
+import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
 
 const Logo = styled.img`
   height: 2.143rem;
@@ -231,6 +232,18 @@ export const useFederatedNavbarEntries = (): {
     accessibleViews,
   };
 };
+
+const SkipToContentLink = styled(Button)`
+  left: 50%;
+  width: max-content;
+  position: absolute;
+  transform: translateY(-100%);
+  transition: transform 0.3s;
+  &:focus {
+    transform: translateY(0);
+  }
+`;
+
 export const Navbar = ({
   logo,
   canChangeLanguage,
@@ -406,18 +419,35 @@ export const Navbar = ({
   return (
     <>
       <GlobalStyle />
+
+      <SkipToContentLink
+        type="submit"
+        label="Skip to content"
+        variant="primary"
+        onClick={() => {
+          const link = document.createElement('a');
+          link.href = '#main';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }}
+      />
+
       <Layout
         headerNavigation={
-          <CoreUINavbar
-            logo={
-              <a href="/" aria-label="Visit the landing page">
-                <Logo src={logo} alt={config.productName + ' logo'} />
-              </a>
-            }
-            rightActions={rightTabs}
-            tabs={mainTabs}
-            role="navigation"
-          />
+          <>
+            <CoreUINavbar
+              logo={
+                <a href="/" aria-label="Visit the landing page">
+                  <Logo src={logo} alt={config.productName + ' logo'} />
+                </a>
+              }
+              rightActions={rightTabs}
+              tabs={mainTabs}
+              role="navigation"
+            />
+            <div id="main"></div>
+          </>
         }
       >
         {children}
