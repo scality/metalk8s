@@ -79,7 +79,6 @@ def fixture_environment(template_loader: jinja2.BaseLoader) -> jinja2.Environmen
         loader=template_loader,
         extensions=[
             "jinja2.ext.do",
-            "jinja2.ext.with_",
             "jinja2.ext.loopcontrols",
             salt.utils.jinja.SerializerExtension,
         ],
