@@ -1,4 +1,4 @@
 -c platform-requirements.txt
-doit ~= 0.34.0
-docker ~= 4.1.0
-PyYAML ~= 5.3.1
+doit ~= 0.36.0
+docker ~= 7.0.0
+PyYAML ~= 6.0.1
