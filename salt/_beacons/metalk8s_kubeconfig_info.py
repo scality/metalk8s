@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
-from salt.ext import six
+import six
 
 __virtualname__ = "metalk8s_kubeconfig_info"
 

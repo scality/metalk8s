@@ -7,13 +7,13 @@ import itertools
 import logging
 import os.path
 import re
+import six
 import socket
 import tempfile
 import textwrap
 import time
 
 from salt.pillar import get_pillar
-from salt.ext import six
 from salt.exceptions import CommandExecutionError
 import salt.loader
 import salt.template

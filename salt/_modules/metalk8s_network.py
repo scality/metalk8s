@@ -1,5 +1,6 @@
 """Metalk8s network related utilities."""
 
+import ipaddress
 import itertools
 import logging
 
@@ -7,7 +8,6 @@ import logging
 #       always use RPMs to install Salt
 import psutil  # pylint: disable=3rd-party-module-not-gated
 
-from salt._compat import ipaddress
 from salt.exceptions import CommandExecutionError
 
 K8S_CLUSTER_ADDRESS_NUMBER = 0
