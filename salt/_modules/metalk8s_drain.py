@@ -546,7 +546,7 @@ def evict_pod(name, namespace="default", grace_period=1, **kwargs):
             if exc.status == 429:
                 # Too Many Requests: the eviction is rejected, but indicates
                 # we should retry later (probably due to a disruption budget)
-                status = json.loads(exc.body, encoding="utf-8")
+                status = json.loads(exc.body)
                 log.info(
                     "Cannot evict %s at the moment: %s",
                     name,
