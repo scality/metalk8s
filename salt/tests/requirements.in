@@ -1,6 +1,6 @@
 pytest
 pytest-cov
-salt == 3002.9
+salt == 3006.6
 mock == 3.0.5
 parameterized == 0.7.4
 etcd3 != 0.11.0
@@ -8,3 +8,5 @@ kubernetes == 18.20.0
 urllib3
 pyfakefs
 psutil
+# because etcd3 package 
+protobuf <= 3.20.1
