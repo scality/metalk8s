@@ -2,12 +2,12 @@
 
 import copy
 import logging
+import six
 import time
 import traceback
 import re
 
 from salt.exceptions import CommandExecutionError
-from salt.ext import six
 
 
 __virtualname__ = "metalk8s"
