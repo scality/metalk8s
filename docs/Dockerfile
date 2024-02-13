@@ -3,19 +3,19 @@
 # NOTE: the MetalK8s repository root is supposed to be mounted at
 # `/usr/src/metalk8s` when running the container
 
-FROM docker.io/ubuntu:20.04
+FROM docker.io/ubuntu:22.04
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get install --no-install-recommends -y \
         sudo \
-        enchant \
+        enchant-2 \
         curl \
         git \
         make \
         plantuml \
         graphviz \
-        python3 \
+        python3.10 \
         python3-pip \
         python3-setuptools \
         && \
@@ -24,7 +24,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 
 # NOTE: the tox package available is too old; we want tox >= 3.4, for the
 # `commands_pre` syntax
-RUN python3 -m pip install six==1.14.0 tox~=4.0.19 && \
+RUN python3 -m pip install six==1.16.0 tox~=4.12.1 && \
     rm -rf ~/.cache/pip
 
 WORKDIR /usr/src/metalk8s

@@ -4,7 +4,7 @@
 #
 #    tox -e pip-compile
 #
--e git+https://github.com/scality/sphinx-tools.git@v3.0#egg=sphinx_scality  # via -r docs/requirements.in
+-e git+https://github.com/scality/sphinx-tools.git@v5.5.0#egg=sphinx_scality  # via -r docs/requirements.in
 alabaster==0.7.16         # via sphinx
 babel==2.14.0             # via sphinx
 certifi==2024.2.2         # via requests
