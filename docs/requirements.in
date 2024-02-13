@@ -10,7 +10,7 @@ sphinxcontrib-plantuml >= 0.16.1
 sphinxcontrib-spelling >= 4.1
 sphinx-autobuild >= 2024.2.4
 sphinx-jinja ~= 2.0
--e git+https://github.com/scality/sphinx-tools.git@v3.0#egg=sphinx_scality
+-e git+https://github.com/scality/sphinx-tools.git@v5.5.0#egg=sphinx_scality
 
 doc8 >= 0.8.0
 
