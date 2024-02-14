@@ -12,7 +12,7 @@ charset-normalizer==3.3.2  # via requests
 click==8.0.4 ; python_version >= "3.6"  # via -r docs/../tools/lib-alert-tree/requirements.txt
 colorama==0.4.6           # via -r docs/requirements.in, sphinx-autobuild
 doc8==1.1.1               # via -r docs/requirements.in
-docutils==0.20.1          # via doc8, restructuredtext-lint, sphinx, sphinx-jinja, sphinx-rtd-theme, sphinxcontrib-github-alt
+docutils==0.19            # via doc8, restructuredtext-lint, sphinx, sphinx-jinja, sphinx-rtd-theme, sphinxcontrib-github-alt
 httplib2==0.22.0          # via plantuml
 idna==3.6                 # via requests
 imagesize==1.4.1          # via sphinx
@@ -33,7 +33,7 @@ snowballstemmer==2.2.0    # via sphinx
 sphinx-autobuild==2024.2.4  # via -r docs/requirements.in
 sphinx-jinja==2.0.2       # via -r docs/requirements.in
 sphinx-rtd-theme==2.0.0   # via -r docs/requirements.in
-sphinx==7.2.6             # via -r docs/requirements.in, sphinx-autobuild, sphinx-jinja, sphinx-rtd-theme, sphinx-scality, sphinxcontrib-github-alt, sphinxcontrib-jquery, sphinxcontrib-plantuml, sphinxcontrib-spelling
+sphinx==6.2.1             # via -r docs/requirements.in, sphinx-autobuild, sphinx-jinja, sphinx-rtd-theme, sphinx-scality, sphinxcontrib-github-alt, sphinxcontrib-jquery, sphinxcontrib-plantuml, sphinxcontrib-spelling
 sphinxcontrib-applehelp==1.0.8  # via sphinx
 sphinxcontrib-devhelp==1.0.6  # via sphinx
 sphinxcontrib-github-alt==1.2  # via -r docs/requirements.in
