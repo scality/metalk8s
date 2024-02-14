@@ -3,7 +3,9 @@
 colorama >= 0.3.9
 plantuml >= 0.2
 PyYAML ~= 6.0
-Sphinx >= 7.2.6
+# keep sphinx under 7.0.0 because it removes 
+# the usage of 'style' key here https://github.com/sphinx-doc/sphinx/pull/11381
+Sphinx <= 6.2.1
 sphinx_rtd_theme ~= 2.0
 sphinxcontrib_github_alt >= 1.0
 sphinxcontrib-plantuml >= 0.16.1
