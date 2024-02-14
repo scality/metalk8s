@@ -113,6 +113,7 @@ for root in alert_tree_roots:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx_jinja",
     "sphinx.ext.autodoc",
     "sphinx.ext.todo",
     "sphinx.ext.ifconfig",
@@ -120,7 +121,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinxcontrib.spelling",
     "sphinxcontrib.plantuml",
-    "sphinxcontrib.jinja",
     "sphinxcontrib_github_alt",
 ]
 
