@@ -10,22 +10,19 @@ ARG SALT_VERSION
 # Install Saltstack and other dependencies
 RUN printf "[saltstack-repo]\n\
 name=SaltStack repo for RHEL/CentOS \$releasever\n\
-baseurl=https://repo.saltproject.io/py3/redhat/\$releasever/\$basearch/archive/%s\n\
+baseurl=https://repo.saltproject.io/salt/py3/redhat/\$releasever/\$basearch/minor/%s/\n\
 enabled=1\n\
 gpgcheck=1\n\
-gpgkey=https://repo.saltproject.io/py3/redhat/\$releasever/\$basearch/archive/%s/SALTSTACK-GPG-KEY.pub\n" ${SALT_VERSION} ${SALT_VERSION} >/etc/yum.repos.d/saltstack.repo \
- && rpm --import https://repo.saltproject.io/py3/redhat/8/x86_64/archive/${SALT_VERSION}/SALTSTACK-GPG-KEY.pub \
+gpgkey=https://repo.saltproject.io/salt/py3/redhat/\$releasever/\$basearch/minor/%s/SALT-PROJECT-GPG-PUBKEY-2023.pub\n" ${SALT_VERSION} ${SALT_VERSION} >/etc/yum.repos.d/saltstack.repo \
+ && rpm --import https://repo.saltproject.io/salt/py3/redhat/8/x86_64/minor/${SALT_VERSION}/SALT-PROJECT-GPG-PUBKEY-2023.pub \
  && dnf clean expire-cache \
  && dnf update -y \
- && dnf install -y glibc-all-langpacks langpacks-en \
- && dnf install -y epel-release \
- && dnf install -y python3-pip \
- && pip3 install "pip == 20.1" \
- && pip3 install "protobuf ~= 3.19.4" "etcd3 != 0.11.0" \
- && dnf install -y git \
- && pip3 install "git+https://github.com/kubernetes-client/python.git@cef5e9bd10a6d5ca4d9c83da46ccfe2114cdaaf8#egg=kubernetes" \
- && dnf remove -y git \
  && dnf install -y salt-master salt-api salt-ssh openssh-clients procps-ng \
+ && salt-pip install "protobuf ~= 3.19.4" "etcd3 != 0.11.0" \
+ && dnf install -y git \
+ && salt-pip install "git+https://github.com/kubernetes-client/python.git@aab72fdeb4122337e0e3e27ad4b489dcdb7bd00d#egg=kubernetes" \
+ && dnf remove -y git \
+ && dnf install -y glibc-all-langpacks langpacks-en \
  && dnf clean all
 
 # Set up locale
