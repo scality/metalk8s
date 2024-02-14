@@ -17,7 +17,6 @@ ENV GOROOT /usr/local/go
 RUN yum install -y --setopt=skip_missing_names_on_install=False \
         createrepo \
         epel-release \
-        python36-rpm \
         rpm-build \
         rpmdevtools \
         rpmlint \
