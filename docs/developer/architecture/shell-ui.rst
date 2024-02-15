@@ -12,16 +12,19 @@ To achieve this goal the current implementation is based on several components:
  - A configuration for Shell UI to define theme, navbar entries and enable
    additional features
  - A deployedUIApps list which later on would be automatically populated when a
-   new solution is deployed. For now it is updated manually thanks to a salt state
+   new solution is deployed. For now it is updated manually thanks to a salt
+   state
  - Each solution UI contains 2 configuration files:
-   - ``/.well-known/micro-app-configuration`` to define the solution views and features
-     it exposes
-   - ``/.well-known/runtime-app-configuration`` to define solution environment specific
-     configuration as well as the solution authentication supported method
+   - ``/.well-known/micro-app-configuration`` to define the solution views and
+    features  it exposes
+   - ``/.well-known/runtime-app-configuration`` to define solution environment
+    specific configuration as well as the solution authentication supported
+    method
 
 Shell UI supported authentication method is for now only based on OIDC.
 For a Solution to define it's supported authentication method it should include
-a section similar to the following in its ``/.well-known/runtime-app-configuration``:
+a section similar to the following in its
+``/.well-known/runtime-app-configuration``:
 
 .. code-block:: json
 
