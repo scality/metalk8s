@@ -126,6 +126,7 @@ export const configurationHandlers = [
         },
         discoveryUrl: '/shell/deployed-ui-apps.json',
         canChangeTheme: true,
+        canChangeInstanceName: true,
         themes: {
           dark: {
             type: 'core-ui',

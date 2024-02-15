@@ -29,6 +29,7 @@ import { LanguageProvider, useLanguage } from './navbar/lang';
 import './index.css';
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
 import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
+import { ToastProvider } from '@scality/core-ui/dist/components/toast/ToastProvider';
 import {
   ShellThemeSelectorProvider,
   useShellThemeSelector,
@@ -267,7 +268,9 @@ export default function App() {
                   }}
                 >
                   <LanguageProvider>
-                    <AppProviderWrapper />
+                    <ToastProvider>
+                      <AppProviderWrapper />
+                    </ToastProvider>
                   </LanguageProvider>
                 </div>
               </ScrollbarWrapper>

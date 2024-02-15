@@ -25,6 +25,8 @@ import { useNavbar } from './navbarHooks';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import NotificationCenter from './NotificationCenter';
 import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
+import { Text } from '@scality/core-ui/dist/components/text/Text.component';
+import { InstanceName, useInstanceName } from './InstanceName';
 
 const Logo = styled.img`
   height: 2.143rem;
@@ -275,9 +277,11 @@ export const Navbar = ({
     navbarSecondaryActions.find((act) => act.selected) ||
     navbarSubloginActions.find((act) => act.selected);
   const { config } = useShellConfig();
+  const instanceName = useInstanceName();
   const title =
     config.productName +
     ' ' +
+    (instanceName ? `- ${instanceName} - ` : '') +
     (navbarEntrySelected?.link.view.view.label.en || '');
   useEffect(() => {
     if (title) {
@@ -405,14 +409,11 @@ export const Navbar = ({
 
   if (canChangeTheme) {
     rightTabs.unshift({
-      type: 'dropdown',
-      text: themeMode,
-      items: (['light', 'dark'] as const).map((theme) => ({
-        label: theme,
-        onClick: () => {
-          setThemeMode(theme);
-        },
-      })),
+      icon: <i className={`fas fa-${themeMode === 'dark' ? 'sun' : 'moon'}`} />,
+      onClick: () => {
+        setThemeMode(themeMode === 'dark' ? 'light' : 'dark');
+      },
+      type: 'button',
     });
   }
 
@@ -443,7 +444,12 @@ export const Navbar = ({
                 </a>
               }
               rightActions={rightTabs}
-              tabs={mainTabs}
+              tabs={[
+                {
+                  render: <InstanceName />,
+                },
+                ...mainTabs,
+              ]}
               role="navigation"
             />
             <div id="main"></div>
