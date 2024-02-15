@@ -150,7 +150,7 @@ def read_and_render_yaml_file(source, template, context=None, saltenv="base"):
         return salt.utils.yaml.safe_load(contents)
 
 
-def get_service_endpoints(service, namespace, kubeconfig):
+def get_service_endpoints(service, namespace, **kwargs):
     error_tpl = "Unable to get kubernetes endpoints for {} in namespace {}"
 
     try:
@@ -159,7 +159,7 @@ def get_service_endpoints(service, namespace, kubeconfig):
             kind="Endpoints",
             apiVersion="v1",
             namespace=namespace,
-            kubeconfig=kubeconfig,
+            **kwargs,
         )
         if not endpoint:
             raise CommandExecutionError("Endpoint not found")
@@ -182,5 +182,60 @@ def get_service_endpoints(service, namespace, kubeconfig):
             result.append(res_ep)
     except (AttributeError, IndexError, KeyError, TypeError) as exc:
         raise CommandExecutionError(error_tpl.format(service, namespace)) from exc
+
+    return result
+
+
+def get_service_ips_and_ports(service, namespace, **kwargs):
+    try:
+        service_object = __salt__["metalk8s_kubernetes.get_object"](
+            name=service,
+            kind="Service",
+            apiVersion="v1",
+            namespace=namespace,
+            **kwargs,
+        )
+        if not service_object:
+            raise CommandExecutionError("Service not found")
+    except CommandExecutionError as exc:
+        raise CommandExecutionError(
+            f"Unable to get kubernetes service {service} in namespace {namespace}"
+        ) from exc
+
+    cip = service_object["spec"].get("clusterIP")
+    cips = [cip] if cip else []
+    cips.extend(
+        [ip for ip in service_object["spec"].get("clusterIPs", []) if ip != cip]
+    )
+
+    try:
+        unamed = 0
+        ports = {}
+        service_ports = service_object["spec"]["ports"]
+
+        for port in service_ports:
+            if port.get("name"):
+                ports[port["name"]] = port["port"]
+            else:
+                ports[f"unnamed-{unamed}"] = port["port"]
+                unamed += 1
+
+        if not ports:
+            raise CommandExecutionError("No ports")
+    except (
+        AttributeError,
+        IndexError,
+        KeyError,
+        TypeError,
+        CommandExecutionError,
+    ) as exc:
+        raise CommandExecutionError(
+            f"No ports for service {service} in namespace {namespace}",
+        ) from exc
+
+    result = {}
+    if cips:
+        result["ips"] = cips
+    result["ports"] = ports
 
     return result

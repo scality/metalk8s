@@ -38,7 +38,7 @@ def ext_pillar(minion_id, pillar, kubeconfig):  # pylint: disable=unused-argumen
                 try:
                     service_endpoints = __salt__[
                         "metalk8s_kubernetes.get_service_endpoints"
-                    ](service, namespace, kubeconfig)
+                    ](service, namespace, kubeconfig=kubeconfig)
                 except CommandExecutionError as exc:
                     errors.append(str(exc))
 

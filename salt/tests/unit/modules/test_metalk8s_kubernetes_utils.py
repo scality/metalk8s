@@ -230,3 +230,38 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
                         "my_service", namespace="my_namespace", kubeconfig="my-kubeconf"
                     ),
                 )
+
+    @parameterized.expand(
+        param.explicit(kwargs=test_case)
+        for test_case in YAML_TESTS_CASES["get_service_ips_and_ports"]
+    )
+    def test_get_service_ips_and_ports(self, obj, result, raises=False):
+        """
+        Tests the return of `get_service_ips_and_ports` function
+        """
+        get_object_mock = MagicMock()
+
+        if obj is False:
+            get_object_mock.side_effect = CommandExecutionError("An error has occurred")
+        else:
+            get_object_mock.return_value = obj
+
+        salt_dict = {"metalk8s_kubernetes.get_object": get_object_mock}
+
+        with patch.dict(metalk8s_kubernetes_utils.__salt__, salt_dict):
+            if raises:
+                self.assertRaisesRegex(
+                    CommandExecutionError,
+                    result,
+                    metalk8s_kubernetes_utils.get_service_ips_and_ports,
+                    "my_service",
+                    namespace="my_namespace",
+                    kubeconfig="my-kubeconf",
+                )
+            else:
+                self.assertEqual(
+                    result,
+                    metalk8s_kubernetes_utils.get_service_ips_and_ports(
+                        "my_service", namespace="my_namespace", kubeconfig="my-kubeconf"
+                    ),
+                )
