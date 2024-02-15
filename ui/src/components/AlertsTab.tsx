@@ -5,6 +5,7 @@ import ActiveAlertsFilter from './ActiveAlertsFilters';
 import { useURLQuery, formatDateToMid1 } from '../services/utils';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
 import { Alert } from '../services/alertUtils';
+import CircleStatus from './CircleStatus';
 
 const AlertsTab = ({
   alerts,
@@ -50,12 +51,7 @@ const AlertsTab = ({
         width: '4.5rem',
       },
       Cell: ({ value }) => {
-        return (
-          <Chips
-            text={value}
-            variant={value === 'warning' ? 'statusWarning' : 'statusCritical'}
-          />
-        );
+        return <CircleStatus name="Circle-health" status={value} />;
       },
     },
     {
