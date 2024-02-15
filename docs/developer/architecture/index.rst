@@ -14,6 +14,7 @@ Architecture Documents
    deployment
    interaction-with-k8s-from-salt
    logs
+   shell-ui
    metalk8s-ui
    monitoring
    requirements
