@@ -42,14 +42,15 @@ a section similar to the following in its
 Navbar Updater Components
 -------------------------
 
-In the ``.well-known/micro-app-configuration`` file, a solution can define a list of
-``navbarUpdaterComponents``.
+In the ``.well-known/micro-app-configuration`` file, a solution can define a
+list of ``navbarUpdaterComponents``.
 
-A ``navbarUpdaterComponent`` is desgined to be headless component that will be rendered by Shell UI to
-update the navbar entries from the Solution UI code base.
-An example of it's usage can be found in the ``metalk8s-ui`` solution. For eg. it
-powers the ``Notification Center`` feature where each of the solution UI can
-notify the user about new events.
+A ``navbarUpdaterComponent`` is desgined to be headless component that will be
+rendered by Shell UI to update the navbar entries from the Solution UI code
+base.
+An example of it's usage can be found in the ``metalk8s-ui`` solution.
+For eg. it powers the ``Notification Center`` feature where each of the
+solution UI can notify the user about new events.
 
 Instance Name
 -------------
@@ -74,8 +75,8 @@ To implement it, the "main" solution UI (being the one with
         }
     }
 
-The module ``./InstanceNameAdapter`` should export 2 functions allowing to get and
-set the instance name.
+The module ``./InstanceNameAdapter`` should export 2 functions allowing to
+get and set the instance name.
 
 You can find a sample in memory implementation below:
 
