@@ -13,7 +13,9 @@ if (!window.shellContexts) {
 }
 
 if (!window.shellContexts.WebFingersContext) {
-  window.shellContexts.WebFingersContext = createContext(null);
+  window.shellContexts.WebFingersContext = createContext<
+    null | (BuildtimeWebFinger | RuntimeWebFinger)[]
+  >(null);
 }
 
 export type OAuth2ProxyConfig = {
@@ -69,13 +71,14 @@ export type BuildtimeWebFinger = {
     hooks: Record<string, FederatedModuleInfo>;
     components: Record<string, FederatedModuleInfo>;
     navbarUpdaterComponents?: FederatedModuleInfo[];
+    instanceNameAdapter?: FederatedModuleInfo;
   };
 };
 export function useConfigRetriever(): {
-  retrieveConfiguration: (arg0: {
-    configType: 'build' | 'run';
+  retrieveConfiguration: <T extends 'build' | 'run'>(arg0: {
+    configType: T;
     name: string;
-  }) => RuntimeWebFinger | BuildtimeWebFinger | null;
+  }) => (T extends 'run' ? RuntimeWebFinger : BuildtimeWebFinger) | null;
 } {
   const { retrieveDeployedApps } = useDeployedAppsRetriever();
   const webFingerContextValue = useContext(

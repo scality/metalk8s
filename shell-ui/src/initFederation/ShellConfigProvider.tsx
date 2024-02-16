@@ -63,6 +63,7 @@ export type ShellJSONFileConfig = {
   userGroupsMapping?: UserGroupsMapping;
 
   canChangeTheme?: boolean;
+  canChangeInstanceName?: boolean;
   // Not yet used and working
   canChangeLanguage?: boolean;
 };

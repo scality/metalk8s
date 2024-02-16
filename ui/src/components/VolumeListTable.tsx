@@ -8,6 +8,7 @@ import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
 import { useIntl } from 'react-intl';
 import CircleStatus from './CircleStatus';
 import { UnknownIcon, TooltipContent } from './TableRow';
+import { Latency } from './Latency';
 
 const VolumeListTable = (props) => {
   const { volumeListData, volumeName } = props;
@@ -149,7 +150,9 @@ const VolumeListTable = (props) => {
           paddingRight: '1rem',
         },
         Cell: (cellProps) => {
-          return cellProps.value !== undefined ? cellProps.value + ' µs' : null;
+          return cellProps.value !== undefined ? (
+            <Latency latencyInMicroSeconds={cellProps.value} />
+          ) : null;
         },
       },
     ]; // eslint-disable-next-line react-hooks/exhaustive-deps

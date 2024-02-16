@@ -19,7 +19,7 @@ import {
   STATUS_WARNING,
   LVM_LOGICAL_VOLUME,
 } from '../constants';
-import { Banner, Modal, ProgressBar } from '@scality/core-ui';
+import { Banner, Link, Modal, ProgressBar } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import {
@@ -117,10 +117,8 @@ const VolumeDetailCard = (props) => {
   const deleteVolume = (deleteVolumeName) =>
     dispatch(deleteVolumeAction(deleteVolumeName));
 
-  const [
-    isDeleteConfirmationModalOpen,
-    setisDeleteConfirmationModalOpen,
-  ] = useState(false);
+  const [isDeleteConfirmationModalOpen, setisDeleteConfirmationModalOpen] =
+    useState(false);
 
   // Confirm the deletion
   const onClickDeleteButton = (deleteVolumeName, nodeName) => {
@@ -175,6 +173,7 @@ const VolumeDetailCard = (props) => {
         </div>
         <Button
           variant="danger"
+          style={{ width: 'max-content' }}
           icon={<Icon size="sm" name="Delete" />}
           label={intl.formatMessage({
             id: 'delete_volume',
@@ -217,9 +216,7 @@ const VolumeDetailCard = (props) => {
                 id: 'node',
               })}
             </OverviewInformationLabel>
-            <OverviewClickableInformationValue onClick={onClickNodeName}>
-              {nodeName}
-            </OverviewClickableInformationValue>
+            <Link onClick={onClickNodeName}>{nodeName}</Link>
           </OverviewInformationSpan>
           <OverviewInformationSpan>
             <OverviewInformationLabel>
@@ -370,21 +367,22 @@ const VolumeDetailCard = (props) => {
               })}
             </VolumeSectionTitle>
             {!isVolumeUsageRetrievable && <RenderNoDataAvailable />}
-            {isVolumeUsageRetrievable && condition === VOLUME_CONDITION_LINK && (
-              <ProgressBarContainer>
-                <ProgressBar
-                  size="large"
-                  percentage={volumeUsagePercentage}
-                  topRightLabel={`${volumeUsagePercentage}%`}
-                  bottomLeftLabel={`${volumeUsageBytes} USED`}
-                  bottomRightLabel={`${formatSizeForDisplay(
-                    storageCapacity,
-                  )} TOTAL`}
-                  color={theme.infoSecondary}
-                  backgroundColor={theme.buttonSecondary}
-                />
-              </ProgressBarContainer>
-            )}
+            {isVolumeUsageRetrievable &&
+              condition === VOLUME_CONDITION_LINK && (
+                <ProgressBarContainer>
+                  <ProgressBar
+                    size="large"
+                    percentage={volumeUsagePercentage}
+                    topRightLabel={`${volumeUsagePercentage}%`}
+                    bottomLeftLabel={`${volumeUsageBytes} USED`}
+                    bottomRightLabel={`${formatSizeForDisplay(
+                      storageCapacity,
+                    )} TOTAL`}
+                    color={theme.infoSecondary}
+                    backgroundColor={theme.buttonSecondary}
+                  />
+                </ProgressBarContainer>
+              )}
           </VolumeUsage>
         </VolumeGraph>
         <Modal

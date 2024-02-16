@@ -4,7 +4,7 @@ import '../initFederation/ConfigurationProviders';
 import { NavbarContext } from './navbarContext';
 
 export type Link = {
-  render?: (props: { selected?: boolean }) => React.ReactNode;
+  render?: (props: { selected?: boolean }) => JSX.Element;
   view: ViewDefinition;
 };
 export type NavbarLinks = {

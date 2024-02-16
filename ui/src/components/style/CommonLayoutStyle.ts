@@ -128,8 +128,6 @@ export const PageSubtitle = styled.h3`
 export const OverviewInformationLabel = styled.span`
   display: inline-block;
   min-width: 10.714rem;
-  font-weight: ${fontWeight.bold};
-  font-size: ${fontSize.base};
   color: ${(props) => props.theme.textSecondary};
 `;
 export const OverviewInformationSpan = styled.div`

@@ -4,7 +4,7 @@ import styled, { useTheme } from 'styled-components';
 import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import isEqual from 'lodash.isequal';
 import CircleStatus from './CircleStatus';
-import { ProgressBar, Tooltip, ConstrainedText } from '@scality/core-ui';
+import { ProgressBar, Tooltip, ConstrainedText, Link } from '@scality/core-ui';
 import { Table } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import { formatSizeForDisplay } from '../services/utils';
@@ -16,6 +16,7 @@ import {
   VOLUME_CONDITION_EXCLAMATION,
 } from '../constants';
 import { Icon } from '@scality/core-ui';
+import { Latency } from './Latency';
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.textPrimary};
   height: 100%;
@@ -34,11 +35,7 @@ const VolumeListTable = React.memo((props) => {
   const history = useHistory();
   const theme = useTheme();
   const intl = useIntl();
-  const NameLinkContaner = styled.div`
-    cursor: pointer;
-    padding-right: ${padding.small};
-    color: ${theme.selectedActive};
-  `;
+
   const columns = React.useMemo(() => {
     const onClickCell = (name) => {
       history.push(`/volumes/${name}/overview`);
@@ -70,20 +67,22 @@ const VolumeListTable = React.memo((props) => {
         },
         Cell: ({ value, row }) => {
           return (
-            <NameLinkContaner
-              data-cy="volume_table_name_cell"
-              onClick={() => {
-                onClickCell(value);
-              }}
-            >
-              <ConstrainedText
-                text={value}
-                tooltipStyle={{
-                  width: '150px',
+            <div>
+              <Link
+                data-cy="volume_table_name_cell"
+                onClick={() => {
+                  onClickCell(value);
                 }}
-                tooltipPlacement={row.index === 0 ? 'bottom' : 'top'}
-              ></ConstrainedText>
-            </NameLinkContaner>
+              >
+                <ConstrainedText
+                  text={value}
+                  tooltipStyle={{
+                    width: '150px',
+                  }}
+                  tooltipPlacement={row.index === 0 ? 'bottom' : 'top'}
+                ></ConstrainedText>
+              </Link>
+            </div>
           );
         },
       },
@@ -94,6 +93,7 @@ const VolumeListTable = React.memo((props) => {
           textAlign: 'center',
           width: '8.571rem',
           marginRight: spacing.sp8,
+          marginLeft: spacing.sp8,
         },
         Cell: ({ value }) => {
           return (
@@ -204,7 +204,9 @@ const VolumeListTable = React.memo((props) => {
           paddingRight: '1rem',
         },
         Cell: (cellProps) => {
-          return cellProps.value !== undefined ? cellProps.value + ' µs' : null;
+          return cellProps.value !== undefined ? (
+            <Latency latencyInMicroSeconds={cellProps.value} />
+          ) : null;
         },
       },
     ]; // eslint-disable-next-line react-hooks/exhaustive-deps
