@@ -172,9 +172,9 @@ exceptiongroup==1.2.0 \
     --hash=sha256:4bfd3996ac73b41e9b9628b04e079f193850720ea5945fc96a08633c66912f14 \
     --hash=sha256:91f5c769735f051a4290d52edd0858999b57e5876e9f85937691bd4c9fa3ed68 \
     # via pytest
-google-auth==2.27.0 \
-    --hash=sha256:8e4bad367015430ff253fe49d500fdc3396c1a434db5740828c728e45bcce245 \
-    --hash=sha256:e863a56ccc2d8efa83df7a80272601e43487fa9a728a376205c86c26aaefa821 \
+google-auth==2.28.0 \
+    --hash=sha256:3cfc1b6e4e64797584fb53fc9bd0b7afa9b7c0dba2004fa7dcc9349e58cc3195 \
+    --hash=sha256:7634d29dcd1e101f5226a23cbc4a0c6cda6394253bf80e281d9c5c6797869c53 \
     # via kubernetes
 grpcio==1.60.1 \
     --hash=sha256:0250a7a70b14000fa311de04b169cc7480be6c1a769b190769d347939d3232a8 \
@@ -701,8 +701,8 @@ rsa==4.9 \
     --hash=sha256:90260d9058e514786967344d0ef75fa8727eed8a7d2e43ce9f4bcf1b536174f7 \
     --hash=sha256:e38464a49c6c85d7f1351b0126661487a7e0a14a50f1675ec50eb34d4f20ef21 \
     # via google-auth
-salt==3006.6 \
-    --hash=sha256:5fab688d86b70e1e84c51b4caa565f3671950506813c3729d44408cc2f5afbc3 \
+salt==3006.4 \
+    --hash=sha256:d097885c33c2cfaa0ccdc627ca570d67690c8d037dc7801be88788bcca1036ae \
     # via -r salt/tests/requirements.in
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
