@@ -3,7 +3,6 @@
 
 import time
 from salt.exceptions import CommandExecutionError
-import yaml
 
 __virtualname__ = "metalk8s_kubernetes_cronjob"
 
