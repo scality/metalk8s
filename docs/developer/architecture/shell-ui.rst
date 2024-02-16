@@ -57,8 +57,8 @@ Instance Name
 
 When several instances of Metalk8s are deployed it can be hard to distinguish
 the different UIs for each site.
-To help the user to know which UI they are currently using we have implemented an
-optional ``instanceName`` feature that will be displayed in the navbar.
+To help the user to know which UI they are currently using we have implemented
+an optional ``instanceName`` feature that will be displayed in the navbar.
 
 The instance name storage is delegated to the main solution UI deployed and
 is currently not implemented by Metalk8s UI.
