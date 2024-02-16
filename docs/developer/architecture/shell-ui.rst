@@ -57,13 +57,13 @@ Instance Name
 
 When several instances of Metalk8s are deployed it can be hard to distinguish
 the different UIs for each site.
-To help the user to know which UI he is currently using we have implemented an
+To help the user to know which UI they are currently using we have implemented an
 optional ``instanceName`` feature that will be displayed in the navbar.
 
 The instance name storage is delegated to the main solution UI deployed and
 is currently not implemented by Metalk8s UI.
 To implement it, the "main" solution UI (being the one with
-``historyBasePath == ""`` in the deployedUIApps list) should expose a
+``appHistoryBasePath == ""`` in the deployedUIApps list) should expose a
 ``/.well-known/micro-app-configuration`` file with the following content:
 
 .. code-block:: json
