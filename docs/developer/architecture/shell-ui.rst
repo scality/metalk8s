@@ -15,11 +15,12 @@ To achieve this goal the current implementation is based on several components:
    new solution is deployed. For now it is updated manually thanks to a salt
    state
  - Each solution UI contains 2 configuration files:
+
    - ``/.well-known/micro-app-configuration`` to define the solution views and
-    features  it exposes
+     features it exposes
    - ``/.well-known/runtime-app-configuration`` to define solution environment
-    specific configuration as well as the solution authentication supported
-    method
+     specific configuration as well as the solution authentication supported
+     method
 
 Shell UI supported authentication method is for now only based on OIDC.
 For a Solution to define it's supported authentication method it should include
@@ -42,11 +43,11 @@ Navbar Updater Components
 -------------------------
 
 In the ``.well-known/micro-app-configuration`` file, a solution can define a list of
-``navbarUpdaterComponents``. 
+``navbarUpdaterComponents``.
 
 A ``navbarUpdaterComponent`` is desgined to be headless component that will be rendered by Shell UI to
 update the navbar entries from the Solution UI code base.
-An example of it's usage can be found in the ``metalk8s-ui`` solution. For eg. it 
+An example of it's usage can be found in the ``metalk8s-ui`` solution. For eg. it
 powers the ``Notification Center`` feature where each of the solution UI can
 notify the user about new events.
 
@@ -54,14 +55,14 @@ Instance Name
 -------------
 
 When several instances of Metalk8s are deployed it can be hard to distinguish
-the different UIs for each site. 
+the different UIs for each site.
 To help the user to know which UI he is currently using we have implemented an
 optional ``instanceName`` feature that will be displayed in the navbar.
 
 The instance name storage is delegated to the main solution UI deployed and
 is currently not implemented by Metalk8s UI.
-To implement it, the "main" solution UI (being the one with 
-``historyBasePath == ""`` in the deployedUIApps list) should expose a 
+To implement it, the "main" solution UI (being the one with
+``historyBasePath == ""`` in the deployedUIApps list) should expose a
 ``/.well-known/micro-app-configuration`` file with the following content:
 
 .. code-block:: json
