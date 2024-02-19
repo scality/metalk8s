@@ -34,6 +34,14 @@ jest.mock('../initFederation/UIListProvider', () => ({
   ],
 }));
 
+jest.mock('../auth/AuthProvider', () => ({
+  useAuth: () => ({
+    userData: {
+      token: 'test',
+    },
+  }),
+}));
+
 const Wrapper = ({ children }: PropsWithChildren<{}>) => (
   <ToastProvider>
     <InstanceNameProvider>
@@ -88,6 +96,9 @@ describe('InstanceName', () => {
     await waitFor(() => expect(setInstanceName).toHaveBeenCalledTimes(1));
     //V
     expect(getInstanceName).toHaveBeenCalledTimes(1);
-    expect(setInstanceName).toHaveBeenCalledWith('defaulttest');
+    expect(setInstanceName).toHaveBeenCalledWith(
+      { token: 'test' },
+      'defaulttest',
+    );
   });
 });
