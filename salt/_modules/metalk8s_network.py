@@ -23,6 +23,26 @@ __virtualname__ = "metalk8s_network"
 def __virtual__():
     return __virtualname__
 
+def _extract_process_name(process: psutil.Process):
+    """
+    The process name in /proc/$pid/stat is truncated to 15 characters.
+    As psutil uses these files, sometimes we get an erroneous process
+    name.
+    Here, we use process.cmdline to extrapolate the correct name.
+    """
+    name = process.name()
+    # detect that the name may have been truncated
+    if len(name) >= 15:
+        cmd = process.cmdline()
+        # known cases:
+        # 1 - salt process running from onedir python binary
+        # truncated from /opt/saltstack/bin/pythonA.B /some/binary
+        if name == "/opt/saltstack":
+            for salt_process in ["salt-api", "salt-master"]:
+                if f"/usr/bin/{salt_process}" in cmd:
+                    return salt_process
+    return name
+
 
 def _pick_nth_service_ip(n):
     """
@@ -159,7 +179,7 @@ def get_listening_processes():
             {
                 ip: {
                     "pid": sconn.pid,
-                    "name": psutil.Process(sconn.pid).name(),
+                    "name": _extract_process_name(psutil.Process(sconn.pid)),
                 }
             }
         )
