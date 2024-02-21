@@ -69,7 +69,7 @@ describe('Volume list', () => {
     //E
     cy.findAllByLabelText('Check-circle status healthy');
     cy.findByText(/delete volume/i);
-    cy.findByRole('textbox').type('hello');
+    cy.findByRole('searchbox').type('hello');
     //V
     cy.url().should(
       'include',
@@ -80,7 +80,7 @@ describe('Volume list', () => {
   it('keeps warning severity for the alert while searching the node', () => {
     cy.visit('/volumes/master-1-prometheus/alerts?severity=warning');
 
-    cy.findByRole('textbox').type('hello');
+    cy.findByRole('searchbox').type('hello');
     cy.url().should(
       'include',
       '/volumes/master-1-prometheus/alerts?severity=warning&search=hello',
