@@ -91,8 +91,6 @@ const DashboardInventory = () => {
           // @ts-expect-error - FIXME when you are working on it
           <Card
             width="46%"
-            headerBackgroundColor="backgroundLevel1"
-            bodyBackgroundColor="backgroundLevel2"
             aria-label="nodes"
             onClick={() => {
               history.push('/nodes');
@@ -129,8 +127,6 @@ const DashboardInventory = () => {
           // @ts-expect-error - FIXME when you are working on it
           <Card
             width="46%"
-            headerBackgroundColor="backgroundLevel1"
-            bodyBackgroundColor="backgroundLevel2"
             aria-label="volumes"
             onClick={() => {
               history.push('/volumes');
