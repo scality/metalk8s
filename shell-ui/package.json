@@ -53,7 +53,7 @@
     "webpack-dev-server": "^4.1.0"
   },
   "dependencies": {
-    "@scality/core-ui": "^0.118.0",
+    "@scality/core-ui": "^0.119.0",
     "@scality/module-federation": "github:scality/module-federation.git#1.2.0",
     "canvas": "^2.9.3",
     "downshift": "^8.0.0",
