@@ -1,13 +1,15 @@
-import { AppContainer } from '@scality/core-ui';
+import React from 'react';
+import { AppContainer, Wrap, spacing } from '@scality/core-ui';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
-import { spacing } from '@scality/core-ui/dist/style/theme';
+
 import styled from 'styled-components';
-import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
-import DashboardInventory from '../components/DashboardInventory';
 import DashboardMetrics from '../components/DashboardMetrics';
-import DashboardNetwork from '../components/DashboardNetwork';
+import DashboardInventory from '../components/DashboardInventory';
 import DashboardServices from '../components/DashboardServices';
+import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
 import TimespanSelector from './TimespanSelector';
+import DashboardNetwork from '../components/DashboardNetwork';
+
 const DashboardGrid = styled.div`
   display: grid;
   gap: ${AppContainer.sectionDistance};
@@ -21,14 +23,14 @@ const DashboardGrid = styled.div`
       return props.theme.backgroundLevel3;
     }};
     color: ${(props) => props.theme.textPrimary};
-    padding: 2px ${spacing.sp4};
+    padding: 2px ${spacing.r4};
     .sc-vegachart svg {
       background-color: inherit !important;
     }
   }
   .inventory {
     grid-area: inventory;
-    padding: ${spacing.sp8} ${spacing.sp12};
+    padding: ${spacing.r8} ${spacing.r12};
   }
   .alerts {
     grid-area: alerts;
@@ -60,7 +62,6 @@ const SelectorPositioning = styled.div`
   .sc-dropdown {
     position: absolute;
     right: 1rem;
-    top: 3rem;
   }
 `;
 
@@ -68,12 +69,13 @@ const DashboardPage = () => {
   return (
     <>
       <AppContainer.ContextContainer>
-        <div />
+        <Wrap>
+          <p></p>
+          <SelectorPositioning>
+            <TimespanSelector />
+          </SelectorPositioning>
+        </Wrap>
       </AppContainer.ContextContainer>
-      <SelectorPositioning>
-        <TimespanSelector />
-      </SelectorPositioning>
-      {/* @ts-expect-error - FIXME when you are working on it */}
       <SyncedCursorCharts>
         <AppContainer.OverallSummary>
           <DashboardGlobalHealth />
