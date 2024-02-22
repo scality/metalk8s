@@ -11,8 +11,6 @@ import authError from './app/authError';
 import type { AuthErrorState } from './app/authError';
 import login from './login';
 import type { LoginState } from './login';
-import layout from './app/layout';
-import type { LayoutState } from './app/layout';
 import notifications from './app/notifications';
 import type { NotificationsState } from './app/notifications';
 import salt, { SaltState } from './app/salt';
@@ -26,7 +24,6 @@ const rootReducer = combineReducers({
   login,
   app: combineReducers({
     nodes,
-    layout,
     pods,
     notifications,
     salt,
@@ -47,7 +44,6 @@ export type RootState = {
     pods: PodsState;
     notifications: NotificationsState;
     volumes: VolumesState;
-    layout: LayoutState;
     salt: SaltState;
     monitoring: MonitoringState;
     authError: AuthErrorState;

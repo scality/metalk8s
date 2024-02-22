@@ -23,7 +23,6 @@ import { createBrowserHistory } from 'history';
 import { useTypedSelector } from './hooks';
 import { setHistory as setReduxHistory } from './ducks/history';
 import { setApiConfigAction } from './ducks/config';
-import { initToggleSideBarAction } from './ducks/app/layout';
 import { authErrorAction } from './ducks/app/authError';
 import { AuthError } from './services/errorhandler';
 import { Config } from './services/api';
@@ -108,7 +107,6 @@ function InternalAppConfigProvider({ children, moduleExports }) {
   useEffect(() => {
     if (status === 'idle') {
       dispatch(setApiConfigAction(runtimeConfiguration.spec.selfConfiguration));
-      dispatch(initToggleSideBarAction());
     } // eslint-disable-next-line
   }, [status]);
 
