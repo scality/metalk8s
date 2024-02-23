@@ -3,8 +3,11 @@ ARG NODE_IMAGE_VERSION=16.14.0
 
 FROM node:${NODE_IMAGE_VERSION} AS build-step
 
-WORKDIR /home/node
-COPY package*.json /home/node/
+USER node
+RUN mkdir -p /home/node/app
+WORKDIR /home/node/app
+
+COPY package.json package-lock.json tsconfig.json /home/node/
 
 # `npm config set unsafe-perm true` is needed in order to let npm run core-ui prepare script when installing dependencies in a context with root access
 # Ref : https://npm.community/t/npm-ci-not-running-prepare-for-git-dependencies-when-run-as-root-in-docker/4485/2
