@@ -278,3 +278,132 @@ get_service_endpoints:
       subsets: null
     raises: True
     result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace"
+
+get_service_ips_and_ports:
+  # Multiples IPs and multiple ports
+  - obj:
+      spec:
+        clusterIPs:
+          - 10.0.0.1
+          - 10.0.0.2
+        clusterIP: 10.0.0.1
+        ports:
+          - name: http-web
+            port: 1234
+          - name: reloader-web
+            port: 1235
+    result:
+      ips:
+        - 10.0.0.1
+        - 10.0.0.2
+      ports:
+        http-web: 1234
+        reloader-web: 1235
+  # ClusterIP not in clusterIPs and multiple ports
+  - obj:
+      spec:
+        clusterIPs:
+          - 10.0.0.2
+          - 10.0.0.3
+        clusterIP: 10.0.0.1
+        ports:
+          - name: http-web
+            port: 1234
+          - name: reloader-web
+            port: 1235
+    result:
+      ips:
+        - 10.0.0.1
+        - 10.0.0.2
+        - 10.0.0.3
+      ports:
+        http-web: 1234
+        reloader-web: 1235
+  # Single IP and multiple ports
+  - obj:
+      spec:
+        clusterIPs:
+          - 10.0.0.1
+        clusterIP: 10.0.0.1
+        ports:
+          - name: http-web
+            port: 2345
+          - name: reloader-web
+            port: 2346
+    result:
+      ips:
+        - 10.0.0.1
+      ports:
+        http-web: 2345
+        reloader-web: 2346
+  # Only clusterIP and multiple ports
+  - obj:
+      spec:
+        clusterIP: 10.0.0.1
+        ports:
+          - name: http-web
+            port: 2345
+          - name: reloader-web
+            port: 2346
+    result:
+      ips:
+        - 10.0.0.1
+      ports:
+        http-web: 2345
+        reloader-web: 2346
+  # No IPs and multiple ports
+  - obj:
+      spec:
+        ports:
+          - name: http-web
+            port: 1234
+          - name: reloader-web
+            port: 1235
+    result:
+      ports:
+        http-web: 1234
+        reloader-web: 1235
+  # Named and unnamed ports
+  - obj:
+      spec:
+        ports:
+          - name: http-web
+            port: 1234
+          - port: 1235
+    result:
+      ports:
+        http-web: 1234
+        unnamed-0: 1235
+  # Unnamed ports
+  - obj:
+      spec:
+        ports:
+          - port: 1234
+          - port: 1235
+    result:
+      ports:
+        unnamed-0: 1234
+        unnamed-1: 1235
+  # No ports
+  - obj:
+      spec:
+        ports: []
+    result: "No ports for service my_service in namespace my_namespace"
+    raises: True
+  # Empty spec
+  - obj:
+      spec: {}
+    result: "No ports for service my_service in namespace my_namespace"
+    raises: True
+  # Empty object returned
+  - obj: {}
+    result: "Unable to get kubernetes service my_service in namespace my_namespace"
+    raises: True
+  # Object is False
+  - obj: False
+    result: "Unable to get kubernetes service my_service in namespace my_namespace"
+    raises: True
+  # No object returned
+  - obj: null
+    result: "Unable to get kubernetes service my_service in namespace my_namespace"
+    raises: True

@@ -89,13 +89,18 @@
   Workload Plane/Control Plane CIDRs.
   (PR[#4217](https://github.com/scality/metalk8s/pull/4217))
 
+### Bug fixes
+
+- Salt module metalk8s_monitoring fixed and improved
+  (PR[#4238](https://github.com/scality/metalk8s/pull/4238))
+
 ## Release 126.0.2
 
 ### Bug fixes
 
 - [2137](https://github.com/scality/metalk8s/issues/2137) - Fix a bug
   that prevents re-run of the bootstrap script if it fails at a specific point
-  (PR[4196](https://github.com/scality/metalk8s/pull/4196))
+  (PR[#4196](https://github.com/scality/metalk8s/pull/4196))
 
 - Bump the attempts to wait for the Operator and ClusterConfig
   to be Ready

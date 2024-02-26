@@ -162,13 +162,21 @@ def get_alerts(state=None, **kwargs):
 
 
 def _requests_alertmanager_api(route, method="GET", **kwargs):
-    endpoint = __salt__["metalk8s_kubernetes.get_service_endpoints"](
+    endpoints = __salt__["metalk8s_kubernetes.get_service_ips_and_ports"](
         "prometheus-operator-alertmanager",
         "metalk8s-monitoring",
-        kwargs.pop("kubeconfig", None),
+        **kwargs,
     )
 
-    url = f"http://{endpoint['ip']}:{endpoint['ports']['web']}/{route}"
+    try:
+        ip = endpoints["ips"][0]
+        port = endpoints["ports"]["http-web"]
+        url = f"http://{ip}:{port}/{route}"
+    except (IndexError, KeyError) as exc:
+        raise CommandExecutionError(
+            "Unable to get proper Alertmanager API endpoint: "
+            f"Available endpoints: {endpoints}"
+        ) from exc
 
     try:
         session = __utils__["metalk8s.requests_retry_session"]()
@@ -187,7 +195,10 @@ def _requests_alertmanager_api(route, method="GET", **kwargs):
                 f"querying Alertmanager API on {url}"
             )
         else:
-            error = f"Malformed response returned from Alertmanager API: {exc}: {response.text}"
+            error = (
+                "Malformed response returned from Alertmanager API: "
+                f"{exc}: {response.text}"
+            )
         raise CommandExecutionError(error) from exc
 
     if json["status"] == "error":
