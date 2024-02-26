@@ -77,25 +77,27 @@ const DashboardPage = () => {
         </Wrap>
       </AppContainer.ContextContainer>
       <SyncedCursorCharts>
-        <AppContainer.OverallSummary>
-          <DashboardGlobalHealth />
-        </AppContainer.OverallSummary>
-        <AppContainer.MainContent background="backgroundLevel1">
-          <DashboardGrid>
-            <DashboardScrollableArea className="inventory">
-              <DashboardInventory />
-              <DashboardServices />
-            </DashboardScrollableArea>
+        <>
+          <AppContainer.OverallSummary>
+            <DashboardGlobalHealth />
+          </AppContainer.OverallSummary>
+          <AppContainer.MainContent background="backgroundLevel1">
+            <DashboardGrid>
+              <DashboardScrollableArea className="inventory">
+                <DashboardInventory />
+                <DashboardServices />
+              </DashboardScrollableArea>
 
-            <DashboardScrollableArea className="network">
-              <DashboardNetwork />
-            </DashboardScrollableArea>
+              <DashboardScrollableArea className="network">
+                <DashboardNetwork />
+              </DashboardScrollableArea>
 
-            <div className="metrics">
-              <DashboardMetrics />
-            </div>
-          </DashboardGrid>
-        </AppContainer.MainContent>
+              <div className="metrics">
+                <DashboardMetrics />
+              </div>
+            </DashboardGrid>
+          </AppContainer.MainContent>
+        </>
       </SyncedCursorCharts>
     </>
   );
