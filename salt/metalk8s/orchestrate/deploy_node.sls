@@ -16,7 +16,7 @@
 # manually using raw ssh
 Install python36:
   metalk8s.saltutil_cmd:
-    - name: '[ "$EUID" -eq 0 ] && yum install -y python3 || sudo yum install -y python3'
+    - name: '[ "$EUID" -eq 0 ] && yum install -y python3 python3-psutil || sudo yum install -y python3 python3-psutil'
     - tgt: {{ node_name }}
     - ssh: true
     - raw_shell: true
