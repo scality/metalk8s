@@ -13,6 +13,7 @@ import { FederatedComponent } from '@scality/module-federation';
 import { UIListProvider } from './initFederation/UIListProvider';
 import {
   ConfigurationProvider,
+  FederatedView,
   useConfigRetriever,
   useDiscoveredViews,
 } from './initFederation/ConfigurationProviders';
@@ -102,8 +103,9 @@ function ProtectedFederatedRoute({
     });
     return (
       <FederatedComponent
-        url={`${app.url}${appBuildConfig.spec.remoteEntryPath}?version=${app.version}`}
+        url={`${app.url}${appBuildConfig?.spec.remoteEntryPath}?version=${app.version}`}
         module={module}
+        props={{}}
         scope={scope}
         app={app}
       />
@@ -118,38 +120,35 @@ function InternalRouter() {
   const { retrieveConfiguration } = useConfigRetriever();
   const routes = useMemo(
     () =>
-      discoveredViews
-        .filter((discoveredView) => discoveredView.isFederated)
+      (
+        discoveredViews.filter(
+          (discoveredView) => discoveredView.isFederated,
+        ) as FederatedView[]
+      )
         //Sort the exact and strict routes first, to make sure to match the exact first.
         .sort((a, b) => {
-          // @ts-expect-error - FIXME when you are working on it
+          if (a.view.path === '/') {
+            return -1;
+          }
           if (a.view.exact && !b.view.exact) {
             return -1;
           }
-          // @ts-expect-error - FIXME when you are working on it
           if (!a.view.exact && b.view.exact) {
             return 1;
           }
-          // @ts-expect-error - FIXME when you are working on it
           if (a.view.strict && !b.view.strict) {
             return -1;
           }
-          // @ts-expect-error - FIXME when you are working on it
           if (!a.view.strict && b.view.strict) {
             return 1;
           }
           return 0;
         })
 
-        // @ts-expect-error - FIXME when you are working on it
         .map(({ app, view, groups }) => ({
-          // @ts-expect-error - FIXME when you are working on it
           path: app.appHistoryBasePath + view.path,
-          // @ts-expect-error - FIXME when you are working on it
           exact: view.exact,
-          // @ts-expect-error - FIXME when you are working on it
           strict: view.strict,
-          // @ts-expect-error - FIXME when you are working on it
           sensitive: view.sensitive,
           component: () => {
             const federatedAppHistory = useMemo(
@@ -167,11 +166,9 @@ function InternalRouter() {
                     retrieveConfiguration({
                       configType: 'build',
                       name: app.name,
-                    }).spec.remoteEntryPath
+                    })?.spec.remoteEntryPath
                   }
-                  // @ts-expect-error - FIXME when you are working on it
                   module={view.module}
-                  // @ts-expect-error - FIXME when you are working on it
                   scope={view.scope}
                   app={app}
                   groups={groups}

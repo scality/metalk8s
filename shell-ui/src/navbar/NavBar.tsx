@@ -13,6 +13,7 @@ import { useTheme } from 'styled-components';
 import { UserData, useAuth, useLogOut } from '../auth/AuthProvider';
 import {
   BuildtimeWebFinger,
+  NonFederatedView,
   ViewDefinition,
   useConfigRetriever,
   useDiscoveredViews,
@@ -153,25 +154,47 @@ export const useNavbarLinksToActions = (
     },
     [location],
   );
-  const selectedTab = links.find((link) =>
-    link.view.isFederated
-      ? doesRouteMatch({
-          // @ts-expect-error - FIXME when you are working on it
-          path: link.view.view.activeIfMatches
-            ? new RegExp(
-                link.view.app.appHistoryBasePath +
-                  link.view.view.activeIfMatches,
-                'i',
-              )
-            : link.view.app.appHistoryBasePath + link.view.view.path,
-          exact: link.view.view.exact,
-          strict: link.view.view.strict,
-          sensitive: link.view.view.sensitive,
-        })
-      : // @ts-expect-error - FIXME when you are working on it
-        normalizePath(link.view.url) ===
-        window.location.origin + window.location.pathname,
-  );
+  const selectedTab = [...links]
+    //Sort the exact and strict routes first, to make sure to match the exact first.
+    .sort((a, b) => {
+      if (!a.view.isFederated || !b.view.isFederated) {
+        return 0;
+      }
+      if (a.view.view.path === '/') {
+        return -1;
+      }
+      if (a.view.view.exact && !b.view.view.exact) {
+        return -1;
+      }
+      if (!a.view.view.exact && b.view.view.exact) {
+        return 1;
+      }
+      if (a.view.view.strict && !b.view.view.strict) {
+        return -1;
+      }
+      if (!a.view.view.strict && b.view.view.strict) {
+        return 1;
+      }
+      return 0;
+    })
+    .find((link) =>
+      link.view.isFederated
+        ? doesRouteMatch({
+            //@ts-expect-error - FIXME when you are working on it
+            path: link.view.view.activeIfMatches
+              ? new RegExp(
+                  link.view.app.appHistoryBasePath +
+                    link.view.view.activeIfMatches,
+                  'i',
+                )
+              : link.view.app.appHistoryBasePath + link.view.view.path,
+            exact: link.view.view.exact,
+            strict: link.view.view.strict,
+            sensitive: link.view.view.sensitive,
+          })
+        : normalizePath((link.view as NonFederatedView).url) ===
+          window.location.origin + window.location.pathname,
+    );
   //Preload non current route
   const { retrieveConfiguration } = useConfigRetriever();
   useEffect(() => {

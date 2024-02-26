@@ -11,6 +11,9 @@
     "build": "npm run check-types && webpack --config webpack.config.prd.js",
     "jest-preview": "jest-preview"
   },
+  "resolutions": {
+    "@types/react": "^17.0.0"
+  },
   "devDependencies": {
     "@babel/core": "^7.12.10",
     "@babel/plugin-proposal-class-properties": "^7.18.6",

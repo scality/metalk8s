@@ -243,8 +243,8 @@ export function useDiscoveredViews(): ViewDefinition[] {
     }
 
     return [];
-  });
-  // @ts-expect-error - FIXME when you are working on it
+  }) as ViewDefinition[];
+
   return discoveredViews;
 }
 export const useLinkOpener = () => {
