@@ -19,11 +19,12 @@ Register host as part of etcd cluster:
        - {{ peer_url }}
 
 Check etcd cluster health:
-  metalk8s.module_run:
+  module.run:
     - metalk8s_etcd.check_etcd_health:
       - minion_id: {{ nodename }}
-    # Wait at most (31 - 1) * 10s = 300s = 5mn
-    - attempts: 31
-    - sleep_time: 10
+    - retry:
+        attempts: 5
+        until: "cluster is healthy"
+        interval: 10
     - require:
       - metalk8s_etcd: Register host as part of etcd cluster
