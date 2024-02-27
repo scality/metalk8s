@@ -142,6 +142,14 @@ def check_prometheus_api(prometheus_api):
         pytest.fail(str(exc))
 
 
+@given("the Salt Master is available")
+def check_salt_master(host):
+    try:
+        utils.run_salt_command(host, ["test.ping"])
+    except Exception as exc:
+        pytest.fail(str(exc))
+
+
 # }}}
 
 # Then {{{
