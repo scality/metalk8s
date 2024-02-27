@@ -1,9 +1,12 @@
 alertmanager_api_helper:
   - _id: nominal
-    endpoint: &alertmanager_endpoint
-      ip: '10.0.0.1'
+    ips_and_ports: &alertmanager_ips_and_ports
+      ips:
+        - 10.0.0.1
+        - 10.0.0.2
       ports:
-        web: 1234
+        http-web: 1234
+        reloader-web: 1235
     route: api/v1/alerts
     resp_body:
       status: success
@@ -12,8 +15,30 @@ alertmanager_api_helper:
     called_with:
       args: [GET, 'http://10.0.0.1:1234/api/v1/alerts']
 
+  - _id: bad-endpoint
+    ips_and_ports:
+      ips:
+        - 10.0.0.1
+        - 10.0.0.2
+      ports:
+        web: 1234
+        reloader-web: 1235
+    route: api/v1/alerts
+    raises: True
+    request_called_once: False
+    result: >-
+      Unable to get proper Alertmanager API endpoint: Available endpoints:
+
+  - _id: empty-endpoint
+    ips_and_ports: {}
+    route: api/v1/alerts
+    raises: True
+    request_called_once: False
+    result: >-
+      Unable to get proper Alertmanager API endpoint: Available endpoints:
+
   - _id: custom-method
-    endpoint: *alertmanager_endpoint
+    ips_and_ports: *alertmanager_ips_and_ports
     route: my-route
     method: POST
     json:
@@ -28,7 +53,7 @@ alertmanager_api_helper:
         json: {my-data: my-value}
 
   - _id: request-error
-    endpoint: *alertmanager_endpoint
+    ips_and_ports: *alertmanager_ips_and_ports
     route: api/v1/alerts
     request_raises: 'some request error'
     raises: True
@@ -36,7 +61,7 @@ alertmanager_api_helper:
       Unable to query Alertmanager API on http://10.0.0.1:1234/api/v1/alerts
 
   - _id: response-error
-    endpoint: *alertmanager_endpoint
+    ips_and_ports: *alertmanager_ips_and_ports
     route: api/v1/alerts
     resp_body:
       status: error
@@ -46,7 +71,7 @@ alertmanager_api_helper:
     result: 'IMPOSSIBRU: some error happened'
 
   - _id: response-bad-format
-    endpoint: *alertmanager_endpoint
+    ips_and_ports: *alertmanager_ips_and_ports
     route: api/v1/alerts
     resp_body: 'wrong format'
     resp_status: 200
@@ -55,7 +80,7 @@ alertmanager_api_helper:
       Malformed response returned from Alertmanager API: .*: wrong format
 
   - _id: response-bad-status
-    endpoint: *alertmanager_endpoint
+    ips_and_ports: *alertmanager_ips_and_ports
     route: api/v1/alerts
     resp_body: null
     resp_status: 401

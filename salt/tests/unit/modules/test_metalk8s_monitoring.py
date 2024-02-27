@@ -55,18 +55,19 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
     def test_alertmanager_api_helper(
         self,
         _id,
-        endpoint,
+        ips_and_ports,
         route,
         result,
         raises=False,
         called_with=None,
+        request_called_once=True,
         request_raises=False,
         resp_body=None,
         resp_status=200,
         **kwargs
     ):
         """Test the private `_requests_alertmanager_api` helper."""
-        get_endpoint_mock = MagicMock(return_value=endpoint)
+        get_service_ips_and_ports_mock = MagicMock(return_value=ips_and_ports)
 
         get_session_mock = MagicMock()
         session_mock = get_session_mock.return_value
@@ -87,7 +88,7 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
             "metalk8s.requests_retry_session": get_session_mock,
         }
         salt_mocks = {
-            "metalk8s_kubernetes.get_service_endpoints": get_endpoint_mock,
+            "metalk8s_kubernetes.get_service_ips_and_ports": get_service_ips_and_ports_mock,
         }
         with patch.dict(metalk8s_monitoring.__utils__, utils_mocks), patch.dict(
             metalk8s_monitoring.__salt__, salt_mocks
@@ -98,7 +99,7 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     result,
                     metalk8s_monitoring._requests_alertmanager_api,
                     route,
-                    **kwargs
+                    **kwargs,
                 )
             else:
                 self.assertEqual(
@@ -106,7 +107,9 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     result,
                 )
 
-            session_mock.request.assert_called_once()
+            if request_called_once:
+                session_mock.request.assert_called_once()
+
             if called_with:
                 args, kwargs = session_mock.request.call_args
                 self.assertEqual(args, tuple(called_with["args"]))
