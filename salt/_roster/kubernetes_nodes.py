@@ -46,6 +46,5 @@ def targets(tgt, tgt_type="glob", **_kwargs):
                 "user": annotations.get(prefix + "user", "root"),
                 "priv": annotations.get(prefix + "key-path", "salt-ssh.rsa"),
                 "sudo": bool(annotations.get(prefix + "sudo", False)),
-                "minion_opts": {"use_superseded": ["module.run"]},
             }
     return targets

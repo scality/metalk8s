@@ -3,10 +3,6 @@ id: {{ minion_id }}
 
 retry_dns_count: 5
 
-# use new module.run format
-use_superseded:
-  - module.run
-
 log_level_logfile: {{ 'debug' if debug else 'info' }}
 
 saltenv: {{ saltenv }}
