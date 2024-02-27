@@ -138,9 +138,10 @@ def module_run(name, attempts=1, sleep_time=10, **kwargs):
     """
     retry = attempts
     ret = {"name": name, "changes": {}, "result": False, "comment": ""}
+    kwargs = {name: kwargs}
     while retry > 0 and not ret["result"]:
         try:
-            ret = __states__["module.run"](name, **kwargs)
+            ret = __states__["module.run"](**kwargs)
         except Exception as exc:  # pylint: disable=broad-except
             ret["comment"] = str(exc)
 
