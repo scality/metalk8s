@@ -325,7 +325,8 @@ export const Navbar = ({
   }, [title]);
 
   useEffect(() => {
-    if (navbarMainActions?.[0]?.selected === false) {
+    const navbarMainSelected = navbarMainActions.find((act) => act.selected);
+    if (navbarMainActions.length && !navbarMainSelected) {
       const link = navbarMainActions?.[0]?.link;
       const url = link.view.isFederated
         ? link.view.app.appHistoryBasePath + link.view.view.path
