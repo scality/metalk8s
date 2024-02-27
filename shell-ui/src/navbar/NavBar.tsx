@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { RouteProps, matchPath } from 'react-router';
+import { RouteProps, matchPath, useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 
@@ -180,13 +180,12 @@ export const useNavbarLinksToActions = (
     .find((link) =>
       link.view.isFederated
         ? doesRouteMatch({
-            //@ts-expect-error - FIXME when you are working on it
             path: link.view.view.activeIfMatches
               ? new RegExp(
                   link.view.app.appHistoryBasePath +
                     link.view.view.activeIfMatches,
                   'i',
-                )
+                ).toString()
               : link.view.app.appHistoryBasePath + link.view.view.path,
             exact: link.view.view.exact,
             strict: link.view.view.strict,
@@ -205,15 +204,17 @@ export const useNavbarLinksToActions = (
 
       //Check if it is the current route
       if (
-        selectedTab?.view.isFederated &&
-        link.view.app.name === selectedTab.view.app.name &&
-        link.view.view.path === selectedTab.view.view.path
+        !selectedTab ||
+        (selectedTab?.view.isFederated &&
+          link.view.app.name === selectedTab.view.app.name &&
+          link.view.view.path === selectedTab.view.view.path)
       ) {
         return;
       }
 
-      // @ts-expect-error - FIXME when you are working on it
-      const microAppConfiguration: BuildtimeWebFinger = retrieveConfiguration({
+      const microAppConfiguration:
+        | BuildtimeWebFinger
+        | { spec: { remoteEntryPath: string } } = retrieveConfiguration({
         configType: 'build',
         name: link.view.app.name,
       }) || {
@@ -227,11 +228,13 @@ export const useNavbarLinksToActions = (
           '?version=' +
           link.view.app.version
         : '';
+
       prefetch(remoteEntryUrl).catch((e) =>
         console.error(`Failed to preload ${remoteEntryUrl}`, e),
       );
     });
   }, [JSON.stringify(links)]);
+
   return links.map((link) => {
     return {
       link,
@@ -242,8 +245,8 @@ export const useNavbarLinksToActions = (
           : selectedTab &&
             !selectedTab.view.isFederated &&
             !link.view.isFederated
-          ? // @ts-expect-error - FIXME when you are working on it
-            selectedTab.view.url === link.view.url
+          ? normalizePath((selectedTab.view as NonFederatedView).url) ===
+            normalizePath((link.view as NonFederatedView).url)
           : false,
     };
   });
@@ -297,6 +300,7 @@ export const Navbar = ({
   const { openLink } = useLinkOpener();
   const { logOut } = useLogOut();
   const { getLinks } = useNavbar();
+  const history = useHistory();
   const navbarLinks = useMemo(() => getLinks(), [getLinks]);
   const navbarMainActions = useNavbarLinksToActions(navbarLinks.main);
   const navbarSecondaryActions = useNavbarLinksToActions(navbarLinks.secondary);
@@ -319,6 +323,16 @@ export const Navbar = ({
       document.title = title;
     }
   }, [title]);
+
+  useEffect(() => {
+    if (navbarMainActions?.[0]?.selected === false) {
+      const link = navbarMainActions?.[0]?.link;
+      const url = link.view.isFederated
+        ? link.view.app.appHistoryBasePath + link.view.view.path
+        : (link.view as NonFederatedView).url;
+      history.replace(url);
+    }
+  }, [navbarMainActions]);
 
   const mainTabs = navbarMainActions.map((action) => ({
     link: action.link.render ? (
