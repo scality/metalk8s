@@ -22,8 +22,6 @@ Configure salt minion for local mode:
           {{ env }}:
             - {{ salt.file.join(info.path, 'pillar') }}
         {%- endfor %}
-        use_superseded:
-          - module.run
         ext_pillar_first: true
         ext_pillar:
           - metalk8s: /etc/metalk8s/bootstrap.yaml
