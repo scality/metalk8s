@@ -3,12 +3,8 @@ import { useQuery } from 'react-query';
 import styled from 'styled-components';
 import { Card } from '@scality/core-ui';
 import { Loader } from '@scality/core-ui';
-import { StatusWrapper, Icon } from '@scality/core-ui';
-import {
-  spacing,
-  fontSize,
-  fontWeight,
-} from '@scality/core-ui/dist/style/theme';
+import { StatusWrapper, Icon, spacing } from '@scality/core-ui';
+import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
@@ -24,7 +20,7 @@ import {
 } from '../containers/AlertProvider';
 import { useHistory } from 'react-router';
 const InventoryContainer = styled.div`
-  padding: 0px ${spacing.sp2};
+  padding: 0px ${spacing.r2};
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -33,7 +29,7 @@ const CardsWrapper = styled.div`
   display: flex;
   justify-content: space-around;
   font-size: ${fontSize.base};
-  margin: ${spacing.sp4} 0px;
+  margin: ${spacing.r4} 0px;
 `;
 const InventoryIcon = styled.i`
   font-size: ${fontSize.larger};
@@ -88,11 +84,8 @@ const DashboardInventory = () => {
       </PageSubtitle>
       <CardsWrapper>
         {(nodesCount || nodesCount === 0) && nodesStatus ? (
-          // @ts-expect-error - FIXME when you are working on it
           <Card
             width="46%"
-            headerBackgroundColor="backgroundLevel1"
-            bodyBackgroundColor="backgroundLevel2"
             aria-label="nodes"
             onClick={() => {
               history.push('/nodes');
@@ -126,11 +119,8 @@ const DashboardInventory = () => {
           <Loader aria-label="loading" />
         )}
         {(volumesCount || volumesCount === 0) && volumesStatus ? (
-          // @ts-expect-error - FIXME when you are working on it
           <Card
             width="46%"
-            headerBackgroundColor="backgroundLevel1"
-            bodyBackgroundColor="backgroundLevel2"
             aria-label="volumes"
             onClick={() => {
               history.push('/volumes');

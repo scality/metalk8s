@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, Suspense } from 'react';
+import React, { useCallback, useEffect, Suspense, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { matchPath, RouteProps, Route, Redirect } from 'react-router';
 import { useHistory, useLocation, Switch } from 'react-router-dom';
@@ -11,8 +11,6 @@ import {
   Sidebar,
 } from '@scality/core-ui';
 import { useIntl } from 'react-intl';
-
-import { toggleSideBarAction } from '../ducks/app/layout';
 import { removeNotificationAction } from '../ducks/app/notifications';
 import { setIntlAction } from '../ducks/config';
 import CreateVolume from './CreateVolume';
@@ -46,7 +44,6 @@ export const NotificationDisplayer = () => {
 };
 
 const Layout = () => {
-  const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
   const intl = useIntl();
   const language = intl.locale;
 
@@ -56,7 +53,16 @@ const Layout = () => {
   useEffect(() => {
     dispatch(setIntlAction(intl)); // eslint-disable-next-line
   }, [language]);
-  const toggleSidebar = () => dispatch(toggleSideBarAction());
+  const [isSideMenuExpanded, setIsSideMenuExpanded] = useState(
+    () =>
+      localStorage.getItem('sidebar_expanded') === 'true' ||
+      localStorage.getItem('sidebar_expanded') === null,
+  );
+
+  const toggleSideMenu = () => {
+    setIsSideMenuExpanded(!isSideMenuExpanded);
+    localStorage.setItem('sidebar_expanded', String(!isSideMenuExpanded));
+  };
 
   const history = useHistory();
   const location = useLocation();
@@ -100,10 +106,10 @@ const Layout = () => {
   const hideSideBar = doesRouteMatch(routeWithoutSideBars);
 
   const sidebarConfig = {
-    onToggleClick: toggleSidebar,
+    onToggleClick: toggleSideMenu,
     hoverable: true,
-    expanded: sidebar.expanded,
-    'data-cy-state-isexpanded': sidebar.expanded,
+    expanded: isSideMenuExpanded,
+    'data-cy-state-isexpanded': isSideMenuExpanded,
     actions: [
       {
         label: intl.formatMessage({

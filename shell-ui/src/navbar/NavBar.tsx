@@ -62,7 +62,7 @@ const NavbarDropDownItemLabel = styled.div`
 `;
 const NavbarDropDownItemExternal = styled.div`
   padding-left: 10px;
-  color: ${(props) => props.theme.selectedActive};
+  color: ${(props) => props.theme.textLink};
 `;
 
 const Item = ({
@@ -380,15 +380,7 @@ export const Navbar = ({
     {
       type: 'dropdown',
       text: userData?.username || '',
-      icon: (
-        <span
-          style={{
-            color: theme.textTertiary,
-          }}
-        >
-          <Icon name="User" />
-        </span>
-      ),
+      icon: <Icon name="User" color={theme.textPrimary} />,
       items: [
         ...navbarSubloginActions.map((action) => ({
           label: action.link.render ? (

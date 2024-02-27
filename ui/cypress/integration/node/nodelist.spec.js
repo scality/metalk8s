@@ -53,7 +53,7 @@ describe('Node list', () => {
     cy.visit('/nodes');
     cy.stubHistory();
 
-    cy.findByRole('textbox').type('hello');
+    cy.findByRole('searchbox').type('hello');
     cy.url().should('include', '/nodes/test/overview?search=hello');
   });
 
@@ -61,7 +61,7 @@ describe('Node list', () => {
     cy.visit('/nodes/master-0/alerts?severity=warning');
     cy.stubHistory();
 
-    cy.findByRole('textbox').type('hello');
+    cy.findByRole('searchbox').type('hello');
     cy.url().should(
       'include',
       '/nodes/master-0/alerts?severity=warning&search=hello',
