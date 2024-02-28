@@ -1,50 +1,49 @@
 {
-    "kind": "MicroAppConfiguration",
-    "apiVersion": "ui.scality.com/v1alpha1",
-    "metadata": {
-        "kind": "metalk8s-ui"
+  "kind": "MicroAppConfiguration",
+  "apiVersion": "ui.scality.com/v1alpha1",
+  "metadata": {
+    "kind": "metalk8s-ui"
+  },
+  "spec": {
+    "remoteEntryPath": "/static/js/remoteEntry.js",
+    "views": {
+      "platform": {
+        "path": "/",
+        "label": {
+          "en": "Platform",
+          "fr": "Plateforme"
+        },
+        "module": "./FederableApp",
+        "scope": "metalk8s"
+      },
+      "alerts": {
+        "path": "/alerts",
+        "exact": true,
+        "label": {
+          "en": "Alerts",
+          "fr": "Alertes"
+        },
+        "module": "./FederableApp",
+        "scope": "metalk8s"
+      }
     },
-    "spec": {
-        "remoteEntryPath": "/static/js/remoteEntry.js",
-        "views": {
-            "platform": {
-                "path": "/",
-                "activeIfMatches": "(?!\\/alerts|\\/docs)",
-                "label": {
-                    "en": "Platform",
-                    "fr": "Plateforme"
-                },
-                "module": "./FederableApp",
-                "scope": "metalk8s"
-            },
-            "alerts": {
-                "path": "/alerts",
-                "exact": true,
-                "label": {
-                    "en": "Alerts",
-                    "fr": "Alertes"
-                },
-                "module": "./FederableApp",
-                "scope": "metalk8s"
-            }
-        },
-        "hooks": {
-            "platform_library": {
-                "module": "./platformLibrary",
-                "scope": "metalk8s"
-            }
-        },
-        "components": {
-            "TODO_AlertProvider": {
-                "module": "",
-                "scope": ""
-            }
-        },
-        "navbarUpdaterComponents": [
-            {
-              "module": "./AlertsNavbarUpdater",
-              "scope": "metalk8s"
-            }
-        ]
-    }
+    "hooks": {
+      "platform_library": {
+        "module": "./platformLibrary",
+        "scope": "metalk8s"
+      }
+    },
+    "components": {
+      "TODO_AlertProvider": {
+        "module": "",
+        "scope": ""
+      }
+    },
+    "navbarUpdaterComponents": [
+      {
+        "module": "./AlertsNavbarUpdater",
+        "scope": "metalk8s"
+      }
+    ]
+  }
 }
