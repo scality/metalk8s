@@ -37,7 +37,7 @@ def _extract_process_name(process: psutil.Process):
         # known cases:
         # 1 - salt process running from onedir python binary
         # truncated from /opt/saltstack/bin/pythonA.B /some/binary
-        if name == "/opt/saltstack":
+        if name == "/opt/saltstack/":
             for salt_process in ["salt-api", "salt-master"]:
                 if f"/usr/bin/{salt_process}" in cmd:
                     return salt_process
