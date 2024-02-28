@@ -19,10 +19,9 @@ gpgkey=https://repo.saltproject.io/salt/py3/redhat/\$releasever/\$basearch/minor
  && dnf update -y \
  && dnf install -y salt-master salt-api salt-ssh openssh-clients procps-ng \
  && dnf install -y git \
- && salt-pip install "git+https://github.com/kubernetes-client/python.git@aab72fdeb4122337e0e3e27ad4b489dcdb7bd00d#egg=kubernetes" \
- && salt-pip install "protobuf ~= 3.19.4" --target /opt/saltstack/salt/extras-3.10/protobuf_dir \
- && ln -s /opt/saltstack/salt/extras-3.10/protobuf_dir/google/protobuf /opt/saltstack/salt/extras-3.10/google/protobuf\
- && salt-pip install "etcd3 != 0.11.0" \
+ && salt-pip install --upgrade pip \
+ && salt-pip install "git+https://github.com/kubernetes-client/python.git@v27.2.0#egg=kubernetes" \
+ && salt-pip install "protobuf ~= 3.19.4" "etcd3 == 0.12.0" \
  && dnf remove -y git \
  && dnf install -y glibc-all-langpacks langpacks-en \
  && dnf clean all
