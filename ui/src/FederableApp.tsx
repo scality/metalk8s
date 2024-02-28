@@ -14,7 +14,7 @@ import {
   ComponentWithFederatedImports,
   useCurrentApp,
 } from '@scality/module-federation';
-import { Loader } from '@scality/core-ui';
+import { Loader, ToastProvider } from '@scality/core-ui';
 import { ErrorPage500 } from '@scality/core-ui';
 import App from './containers/App';
 import reducer from './ducks/reducer';
@@ -172,9 +172,11 @@ export default function FederableApp() {
   return (
     <Provider store={store}>
       <AppConfigProvider>
-        <RouterWithBaseName>
-          <App />
-        </RouterWithBaseName>
+        <ToastProvider>
+          <RouterWithBaseName>
+            <App />
+          </RouterWithBaseName>
+        </ToastProvider>
       </AppConfigProvider>
     </Provider>
   );

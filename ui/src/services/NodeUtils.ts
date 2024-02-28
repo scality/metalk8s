@@ -124,10 +124,12 @@ export const getNodeListData = (alerts: Array<Alert>, theme: CoreUITheme) =>
 
           return {
             // According to the design, the IPs of Control Plane and Workload Plane are in the same Cell with Name
+            id: node.id,
             name: {
               name: node.name,
               controlPlaneIP: IPsInfo?.controlPlane?.ip,
               workloadPlaneIP: IPsInfo?.workloadPlane?.ip,
+              displayName: node?.displayName,
             },
             status: {
               status: node.status,

@@ -18,6 +18,7 @@ import translations_en from '../../translations/en.json';
 import StartTimeProvider from '../../containers/StartTimeProvider';
 import { ConfigContext } from '../../FederableApp';
 import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
+import { ToastProvider } from '@scality/core-ui';
 
 const composeEnhancers =
   // @ts-expect-error - FIXME when you are working on it
@@ -91,21 +92,23 @@ export const AllTheProviders = (
       return (
         <Router history={history}>
           <IntlProvider locale="en" messages={translations_en}>
-            <Provider store={buildStore()}>
-              <QueryClientProvider client={queryClient}>
-                <MetricsTimeSpanProvider>
-                  <StartTimeProvider>
-                    <AlertProvider>
-                      <ThemeProvider theme={theme}>
-                        <ConfigContext.Provider value={metalk8sConfig}>
-                          {children}
-                        </ConfigContext.Provider>
-                      </ThemeProvider>
-                    </AlertProvider>
-                  </StartTimeProvider>
-                </MetricsTimeSpanProvider>
-              </QueryClientProvider>
-            </Provider>
+            <ToastProvider>
+              <Provider store={buildStore()}>
+                <QueryClientProvider client={queryClient}>
+                  <MetricsTimeSpanProvider>
+                    <StartTimeProvider>
+                      <AlertProvider>
+                        <ThemeProvider theme={theme}>
+                          <ConfigContext.Provider value={metalk8sConfig}>
+                            {children}
+                          </ConfigContext.Provider>
+                        </ThemeProvider>
+                      </AlertProvider>
+                    </StartTimeProvider>
+                  </MetricsTimeSpanProvider>
+                </QueryClientProvider>
+              </Provider>
+            </ToastProvider>
           </IntlProvider>
         </Router>
       );
@@ -118,21 +121,23 @@ export const AllTheProviders = (
       >
         <Router history={history}>
           <IntlProvider locale="en" messages={translations_en}>
-            <Provider store={buildStore()}>
-              <QueryClientProvider client={queryClient}>
-                <MetricsTimeSpanProvider>
-                  <StartTimeProvider>
-                    <AlertProvider>
-                      <ThemeProvider theme={theme}>
-                        <ConfigContext.Provider value={metalk8sConfig}>
-                          {children}
-                        </ConfigContext.Provider>
-                      </ThemeProvider>
-                    </AlertProvider>
-                  </StartTimeProvider>
-                </MetricsTimeSpanProvider>
-              </QueryClientProvider>
-            </Provider>
+            <ToastProvider>
+              <Provider store={buildStore()}>
+                <QueryClientProvider client={queryClient}>
+                  <MetricsTimeSpanProvider>
+                    <StartTimeProvider>
+                      <AlertProvider>
+                        <ThemeProvider theme={theme}>
+                          <ConfigContext.Provider value={metalk8sConfig}>
+                            {children}
+                          </ConfigContext.Provider>
+                        </ThemeProvider>
+                      </AlertProvider>
+                    </StartTimeProvider>
+                  </MetricsTimeSpanProvider>
+                </QueryClientProvider>
+              </Provider>
+            </ToastProvider>
           </IntlProvider>
         </Router>
       </StyleSheetManager>

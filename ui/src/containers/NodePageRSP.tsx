@@ -4,7 +4,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useRouteMatch } from 'react-router';
 import { Tabs } from '@scality/core-ui/dist/next';
 import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
-import { TextBadge } from '@scality/core-ui';
+import {
+  AppContainer,
+  Icon,
+  Stack,
+  TextBadge,
+  Text,
+  ConstrainedText,
+} from '@scality/core-ui';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
 import { useURLQuery, useRefreshEffect } from '../services/utils';
@@ -32,6 +39,7 @@ import { NODE_ALERTS_GROUP, PORT_NODE_EXPORTER } from '../constants';
 import { useAlerts } from './AlertProvider';
 import { useIntl } from 'react-intl';
 import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
+import { getStyle } from '../components/CircleStatus';
 const THREE_MINUTES = 3 * 60 * 1000;
 
 // <NodePageRSP> fetches the data for all the tabs given the current selected Node
@@ -135,8 +143,27 @@ const NodePageRSP = (props) => {
   const criticalAlerts = alertsNode.filter(
     (alert) => alert.severity === 'critical',
   );
+
+  const { color } = getStyle(currentNode?.health?.health);
+
   return name && currentNode ? (
     <RightSidePanel>
+      <AppContainer.OverallSummary background="backgroundLevel3">
+        <Stack gap="r16">
+          <div style={{ flex: 'none' }}>
+            <Icon name="Node-backend" size="2x" color={color} withWrapper />
+          </div>
+
+          <div style={{ overflow: 'hidden', width: '40rem' }}>
+            <Text color="textPrimary" variant="Large">
+              <ConstrainedText
+                text={currentNode.name.displayName || name}
+                lineClamp={2}
+              />
+            </Text>
+          </div>
+        </Stack>
+      </AppContainer.OverallSummary>
       <Tabs>
         <Tabs.Tab
           path={`${url}/overview`}

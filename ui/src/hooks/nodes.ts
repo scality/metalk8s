@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { nodeKey } from '../services/k8s/core.key';
 import {
@@ -13,8 +13,12 @@ import {
   ROLE_PREFIX,
   FETCH_NODES_IPS_INTERFACES,
   updateNodesAction,
+  fetchNodes,
+  fetchNodesAction,
 } from '../ducks/app/nodes';
 import { useK8sApiConfig } from '../services/k8s/api';
+import { useConfig } from '../FederableApp';
+import { useTypedSelector } from '../hooks';
 const FIVE_SECOND_IN_MS = 5000;
 export function useAllNodesQueryOption(deployingNodes) {
   const { coreV1 } = useK8sApiConfig();
@@ -109,3 +113,35 @@ export function useRefreshNodes() {
   }, [data, dispatch, isLoading]);
   return result;
 }
+
+export const useUpdateNodeDisplayName = (name: string) => {
+  const dispatch = useDispatch();
+  const { url: kubernetesApiUrl } = useConfig();
+  const token = useTypedSelector((state) => state.oidc?.user?.token);
+
+  return useMutation({
+    mutationFn: async ({ value }: { value: string }) => {
+      const res = await fetch(`${kubernetesApiUrl}/api/v1/nodes/${name}`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          'content-type': 'application/merge-patch+json',
+        },
+        method: 'PATCH',
+        body: JSON.stringify({
+          metadata: {
+            labels: {
+              'metalk8s.scality.com/name': value,
+            },
+          },
+        }),
+      });
+
+      if (!res.ok) throw res.statusText;
+
+      return await res.json();
+    },
+    onSuccess: () => {
+      dispatch(fetchNodesAction());
+    },
+  });
+};

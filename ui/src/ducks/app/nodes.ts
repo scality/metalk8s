@@ -170,6 +170,8 @@ export type NodesState = {
   currentNodeObject: any;
   // TODO: define the type of this
   list: {
+    id: string;
+    displayName?: string;
     name: string;
     metalk8s_version: string;
     status: 'ready' | 'not_ready' | 'unknown';
@@ -354,6 +356,8 @@ export function* fetchNodes() {
           );
           const nodeRoles = nodeRolesLabels?.map((nRL) => nRL.split('/')[1]);
           return {
+            id: node.metadata.uid,
+            displayName: node.metadata.labels['metalk8s.scality.com/name'],
             name: node.metadata.name,
             metalk8s_version:
               node.metadata.labels['metalk8s.scality.com/version'],

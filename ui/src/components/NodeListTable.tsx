@@ -36,7 +36,7 @@ const NodeListTable = ({ nodeTableData }) => {
         },
       },
       {
-        Header: 'Name',
+        Header: 'Description',
         accessor: 'name',
         cellStyle: {
           flex: 1,
@@ -46,7 +46,7 @@ const NodeListTable = ({ nodeTableData }) => {
           return (
             <>
               <Text data-cy="node_table_name_cell" variant="Basic" isEmphazed>
-                {name}
+                {value.displayName || name}
               </Text>
               <Stack>
                 {controlPlaneIP ? (

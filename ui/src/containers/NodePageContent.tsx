@@ -1,20 +1,17 @@
 /* eslint no-unused-vars: 0 */
-import React, { useEffect, useState, Fragment } from 'react';
+import { AppContainer, EmptyState, TwoPanelLayout } from '@scality/core-ui';
+import { useEffect, useState } from 'react';
 import {
-  Route,
-  useRouteMatch,
-  Switch,
   Redirect,
+  Route,
+  Switch,
   useHistory,
+  useRouteMatch,
 } from 'react-router-dom';
 import NodeListTable from '../components/NodeListTable';
-import NodePageRSP from './NodePageRSP';
-import {
-  LeftSideInstanceList,
-  RightSidePanel,
-} from '../components/style/CommonLayoutStyle';
+import { LeftSideInstanceList } from '../components/style/CommonLayoutStyle';
 import { usePrevious } from '../services/utils';
-import { AppContainer, EmptyState, TwoPanelLayout } from '@scality/core-ui';
+import NodePageRSP from './NodePageRSP';
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
 const NodePageContent = (props) => {

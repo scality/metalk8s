@@ -63,7 +63,6 @@ const DashboardInventory = () => {
     alertsLibrary.getVolumesAlertSelectors(),
   );
   const volumesStatus = highestAlertToStatus(volumesAlerts);
-  // @ts-expect-error - FIXME when you are working on it
   const token = useTypedSelector((state) => state.oidc?.user?.token);
   const config = useTypedSelector((state) => state.config.api?.url);
   const { data: volumesCount } = useQuery(
