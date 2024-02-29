@@ -3,7 +3,6 @@
 declare OS OS_FAMILY
 
 declare -A GPGCHECK_YUM_REPOSITORIES=(
-    [metalk8s-epel]=1
     [metalk8s-kubernetes]=1
     [metalk8s-saltstack]=1
     [metalk8s-scality]=0

@@ -28,3 +28,5 @@ Configure salt minion for local mode:
         retry_dns_count: 3
         enable_fqdns_grains: false
         grains_cache: true
+        features:
+          x509_v2: true

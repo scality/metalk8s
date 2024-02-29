@@ -74,3 +74,6 @@ reactor:
     - salt://metalk8s/reactor/certs/renew.sls?saltenv={{ saltenv }}
   - 'salt/beacon/*/metalk8s_watch_kubeconfig_expiry/':
     - salt://metalk8s/reactor/certs/renew.sls?saltenv={{ saltenv }}
+
+features:
+  x509_v2: true
