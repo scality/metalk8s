@@ -1,0 +1,305 @@
+list_cronjobs:
+  # Single namespace : default
+  - list_objects: &_list_objects_default
+      - name: my_cronjob
+        namespace: default
+        spec:
+          suspend: false
+      - name: my_cronjob2
+        namespace: default
+        spec:
+          suspend: true
+    all_namespaces: true
+    namespace: default
+    result: *_list_objects_default
+
+  # my-namespace
+  - list_objects: &_list_objects_my_namespace
+      - name: my_cronjob3
+        namespace: my-namespace
+        spec:
+          suspend: false
+      - name: my_cronjob4
+        namespace: my-namespace
+        spec:
+          suspend: true
+    all_namespaces: false
+    namespace: my-namespace
+    result: *_list_objects_my_namespace
+
+  # All namespaces
+  - list_objects: &_list_objects_all
+      - name: my_cronjob
+        namespace: default
+        spec:
+          suspend: false
+      - name: my_cronjob2
+        namespace: default
+        spec:
+          suspend: true
+      - name: my_cronjob3
+        namespace: my-namespace
+        spec:
+          suspend: false
+      - name: my_cronjob4
+        namespace: my-namespace
+        spec:
+          suspend: true
+    all_namespaces: true
+    result: *_list_objects_all
+
+  # suspended true
+  - list_objects: *_list_objects_all
+    all_namespaces: true
+    suspended: true
+    result:
+      - name: my_cronjob2
+        namespace: default
+        spec:
+          suspend: true
+      - name: my_cronjob4
+        namespace: my-namespace
+        spec:
+          suspend: true
+
+  # suspended false
+  - list_objects: *_list_objects_all
+    all_namespaces: true
+    suspended: false
+    result:
+      - name: my_cronjob
+        namespace: default
+        spec:
+          suspend: false
+      - name: my_cronjob3
+        namespace: my-namespace
+        spec:
+          suspend: false
+
+  # No cronjobs
+  - raises: True
+    suspended: true
+    namespace: infinity
+    all_namespaces: false
+    result: >-
+      No CronJobs found using the given criteria:
+      suspended=True, all_namespaces=False, namespace=infinity
+
+get_cronjob:
+  # default
+  - get_object: &get_cronjob_default
+      name: my_cronjob
+      namespace: default
+      spec:
+        suspend: true
+      metadata:
+        uid: 1234
+    name: my_cronjob
+    namespace: default
+    result: *get_cronjob_default
+
+  # my-namespace
+  - get_object: &get_cronjob_my_namespace
+      name: my_cronjob3
+      namespace: my-namespace
+      spec:
+        suspend: false
+      metadata:
+        uid: 5678
+    name: my_cronjob3
+    namespace: my-namespace
+    result: *get_cronjob_my_namespace
+
+  # Exception
+  - name: my_cronjob99
+    namespace: infinity
+    raises: True
+    result: "CronJob my_cronjob99 not found in namespace infinity"
+
+_set_cronjob_suspend:
+  # default set to false
+  - name: my_cronjob
+    namespace: default
+    suspend: false
+    spec_suspend: true
+    result: True
+
+  # my-namespace set to true
+  - name: my_cronjob
+    namespace: my_namespace
+    suspend: true
+    spec_suspend: false
+    result: True
+
+  # Already in the wanted state
+  - name: my_cronjob
+    namespace: my_namespace
+    suspend: true
+    spec_suspend: true
+    result: True
+
+suspend_cronjob:
+  # Nominal case - already tested in set_cronjob_suspend
+  - result: True
+
+activate_cronjob:
+  # Nominal case - already tested in set_cronjob_suspend
+  - result: True
+
+get_jobs:
+  # Nominal case
+  - list_objects: &_get_jobs
+      - name: my_job
+        namespace: default
+        spec:
+          suspend: false
+        metadata:
+          name: my_cronjob
+          ownerReferences:
+            - uid: 1234
+      - name: my_job2
+        namespace: default
+        spec:
+          suspend: true
+        metadata:
+          name: my_other_cronjob
+          ownerReferences:
+            - uid: 5678
+    get_cronjob: *get_cronjob_default
+    cronjob_name: my_cronjob
+    namespace: default
+    result:
+      - name: my_job
+        namespace: default
+        spec:
+          suspend: false
+        metadata:
+          name: my_cronjob
+          ownerReferences:
+            - uid: 1234
+
+  # Multiple jobs - 1-3-6
+  - list_objects: 
+      - name: my_job
+        namespace: default
+        spec:
+          suspend: false
+        metadata:
+          name: my_cronjob
+          ownerReferences:
+            - uid: 1234
+      - name: my_job2
+        namespace: default
+        spec:
+          suspend: true
+        metadata:
+          name: my_other_cronjob
+          ownerReferences:
+            - uid: 5678
+      - name: my_job3
+        namespace: default
+        spec:
+          suspend: false
+        metadata:
+          name: my_cronjob
+          ownerReferences:
+            - uid: 1234
+      - name: my_job4
+        namespace: default
+        spec:
+          suspend: true
+        metadata:
+          name: my_other_cronjob
+          ownerReferences:
+            - uid: 5678
+      - name: my_job5
+        namespace: default
+        spec:
+          suspend: false
+        metadata:
+          name: my_other_cronjob
+          ownerReferences:
+            - uid: 5678
+      - name: my_job6
+        namespace: default
+        spec:
+          suspend: true
+        metadata:
+          name: my_cronjob
+          ownerReferences:
+            - uid: 1234
+    get_cronjob: *get_cronjob_default
+    cronjob_name: my_cronjob
+    namespace: default
+    result:
+      - name: my_job
+        namespace: default
+        spec:
+          suspend: false
+        metadata:
+          name: my_cronjob
+          ownerReferences:
+            - uid: 1234
+      - name: my_job3
+        namespace: default
+        spec:
+          suspend: false
+        metadata:
+          name: my_cronjob
+          ownerReferences:
+            - uid: 1234
+      - name: my_job6
+        namespace: default
+        spec:
+          suspend: true
+        metadata:
+          name: my_cronjob
+          ownerReferences:
+            - uid: 1234
+
+  # No jobs
+  - get_cronjob: *get_cronjob_default
+    cronjob_name: my_cronjob
+    namespace: default
+    result: []
+
+stop_jobs:
+  # Nominal case
+  - get_jobs: &_get_jobs_my_cronjob
+      - name: my_job
+        namespace: default
+        spec:
+          suspend: false
+        metadata:
+          name: my_cronjob
+          ownerReferences:
+            - uid: 1234
+    cronjob_name: my_cronjob
+    namespace: default
+    result: *_get_jobs_my_cronjob
+
+  # No jobs
+  - get_jobs: []
+    cronjob_name: my_cronjob
+    namespace: default
+    result: []
+
+  # Wait for jobs to be deleted
+  - get_jobs: *_get_jobs_my_cronjob
+    cronjob_name: my_cronjob
+    namespace: default
+    wait: true
+    delete_jobs_delay: 1
+    result: *_get_jobs_my_cronjob
+
+  # Timeout exceeded
+  - get_jobs: *_get_jobs
+    cronjob_name: my_cronjob
+    namespace: default
+    wait: true
+    timeout_seconds: 1
+    delete_jobs_delay: 2
+    raises: True
+    result: >-
+      Wait timeout exceeded while deleting the following Jobs
+      my_job, my_job2 for CronJob my_cronjob in namespace default
