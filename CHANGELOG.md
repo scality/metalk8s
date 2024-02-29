@@ -89,9 +89,13 @@
   Workload Plane/Control Plane CIDRs.
   (PR[#4217](https://github.com/scality/metalk8s/pull/4217))
 
+- Add a new salt module `metalk8s_kubernetes_cronjob`
+  to manage Kubernetes CronJobs objects.
+  (PR[#4240](https://github.com/scality/metalk8s/pull/4240))
+
 ### Bug fixes
 
-- Salt module metalk8s_monitoring fixed and improved
+- Salt module `metalk8s_monitoring` fixed and improved
   (PR[#4238](https://github.com/scality/metalk8s/pull/4238))
 
 ## Release 126.0.2
