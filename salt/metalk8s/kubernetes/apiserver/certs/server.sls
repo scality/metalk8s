@@ -5,21 +5,15 @@
 {%- set kubernetes_service_ip = salt.metalk8s_network.get_kubernetes_service_ip() %}
 {%- set private_key_path = "/etc/kubernetes/pki/apiserver.key" %}
 
-include:
-  - metalk8s.internal.m2crypto
-
 Create kube-apiserver private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-    - bits: 2048
-    - verbose: False
+    - keysize: 2048
     - user: root
     - group: root
     - mode: '0600'
     - makedirs: True
     - dir_mode: '0755'
-    - require:
-      - metalk8s_package_manager: Install m2crypto
     - unless:
       - test -f "{{ private_key_path }}"
 
@@ -38,7 +32,7 @@ Create kube-apiserver private key:
 Generate kube-apiserver certificate:
   x509.certificate_managed:
     - name: {{ certificates.server.files.apiserver.path }}
-    - public_key: {{ private_key_path }}
+    - private_key: {{ private_key_path }}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ kube_api.cert.server_signing_policy }}
     - CN: kube-apiserver
