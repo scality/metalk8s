@@ -4,6 +4,10 @@
 
 ### Enhancements
 
+- Bump thanos version to
+  [0.34.1](https://github.com/thanos-io/thanos/releases/tag/v0.34.1)
+  (PR[#4250](https://github.com/scality/metalk8s/pull/4250))
+
 - Bump Kubernetes version to
   [1.27.6](https://github.com/kubernetes/kubernetes/releases/tag/v1.27.6)
   (PR[#4162](https://github.com/scality/metalk8s/pull/4162))

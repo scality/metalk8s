@@ -217,8 +217,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="thanos",
-        version="v0.34.0",
-        digest="sha256:2356a5f131fd80965d7a0617b70b14e4facae1aee5ec43f117f8bfbe20d987fc",
+        version="v0.34.1",
+        digest="sha256:3da22be605f29ddd83dd8b2daf98890fb5644717b778d9ca466bd68b706b742e",
     ),
     # Local images
     Image(
