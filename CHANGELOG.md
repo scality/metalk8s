@@ -4,10 +4,6 @@
 
 ### Enhancements
 
-- Bump thanos version to
-  [0.34.1](https://github.com/thanos-io/thanos/releases/tag/v0.34.1)
-  (PR[#4250](https://github.com/scality/metalk8s/pull/4250))
-
 - Bump Kubernetes version to
   [1.27.6](https://github.com/kubernetes/kubernetes/releases/tag/v1.27.6)
   (PR[#4162](https://github.com/scality/metalk8s/pull/4162))
@@ -22,17 +18,18 @@
   (PR[#4164](https://github.com/scality/metalk8s/pull/4164))
 
 - Bump kube-prometheus-stack chart version to
-  [56.6.2](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-56.6.2)
+  [56.19.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-56.19.0)
   (PR[#4234](https://github.com/scality/metalk8s/pull/4234))
+  (PR[#4250](https://github.com/scality/metalk8s/pull/4250))
 
   This change includes:
 
   - Bump Prometheus container version to
-    [2.49.1](https://github.com/prometheus/prometheus/releases/tag/v2.49.1)
+    [2.50.1](https://github.com/prometheus/prometheus/releases/tag/v2.50.1)
   - Bump AlertManager container version to
-    [0.26.0](https://github.com/prometheus/alertmanager/releases/tag/v0.26.0)
+    [0.27.0](https://github.com/prometheus/alertmanager/releases/tag/v0.27.0)
   - Bump Thanos container version to
-    [0.34.0](https://github.com/thanos-io/thanos/releases/tag/v0.34.0)
+    [0.34.1](https://github.com/thanos-io/thanos/releases/tag/v0.34.1)
   - Bump grafana chart version to
     [7.3.0](https://github.com/grafana/helm-charts/releases/tag/grafana-7.3.0),
     Grafana container version to

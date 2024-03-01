@@ -105,8 +105,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="alertmanager",
-        version="v0.26.0",
-        digest="sha256:361db356b33041437517f1cd298462055580585f26555c317df1a3caf2868552",
+        version="v0.27.0",
+        digest="sha256:3053afcdc74adc4ee5f30634454784b7ba96ce7a81f5d998e8f9507cb80bf505",
     ),
     Image(
         name="calico-cni",
@@ -197,8 +197,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus",
-        version="v2.49.1",
-        digest="sha256:beb5e30ffba08d9ae8a7961b9a2145fc8af6296ff2a4f463df7cd722fcbfc789",
+        version="v2.50.1",
+        digest="sha256:4371844079427965a14011f20e6d76283059d637775c663c57a5ea3f8d00ef9a",
     ),
     Image(
         name="prometheus-adapter",
