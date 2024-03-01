@@ -326,7 +326,18 @@ export const Navbar = ({
 
   useEffect(() => {
     const navbarMainSelected = navbarMainActions.find((act) => act.selected);
-    if (navbarMainActions.length && !navbarMainSelected) {
+    const navbarSecondarySelected = navbarSecondaryActions.find(
+      (act) => act.selected,
+    );
+    const navbarSubloginSelected = navbarSubloginActions.find(
+      (act) => act.selected,
+    );
+    if (
+      navbarMainActions.length &&
+      !navbarMainSelected &&
+      !navbarSecondarySelected &&
+      !navbarSubloginSelected
+    ) {
       const link = navbarMainActions?.[0]?.link;
       const url = link.view.isFederated
         ? link.view.app.appHistoryBasePath + link.view.view.path
