@@ -1,24 +1,23 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
-import { nodeKey } from '../services/k8s/core.key';
+import { useConfig } from '../FederableApp';
 import {
-  API_STATUS_READY,
   API_STATUS_NOT_READY,
+  API_STATUS_READY,
   API_STATUS_UNKNOWN,
   REFRESH_TIMEOUT,
 } from '../constants';
-import { allJobsSelector } from '../ducks/app/salt';
 import {
-  ROLE_PREFIX,
   FETCH_NODES_IPS_INTERFACES,
-  updateNodesAction,
-  fetchNodes,
+  ROLE_PREFIX,
   fetchNodesAction,
+  updateNodesAction,
 } from '../ducks/app/nodes';
-import { useK8sApiConfig } from '../services/k8s/api';
-import { useConfig } from '../FederableApp';
+import { allJobsSelector } from '../ducks/app/salt';
 import { useTypedSelector } from '../hooks';
+import { useK8sApiConfig } from '../services/k8s/api';
+import { nodeKey } from '../services/k8s/core.key';
 const FIVE_SECOND_IN_MS = 5000;
 export function useAllNodesQueryOption(deployingNodes) {
   const { coreV1 } = useK8sApiConfig();
