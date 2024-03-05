@@ -135,6 +135,9 @@ export const OverviewInformationSpan = styled.div`
   padding-left: ${padding.large};
   display: flex;
 `;
+export const OverviewInformationWrapper = styled.div`
+  padding-left: 0.313rem;
+`;
 export const OverviewInformationValue = styled.span`
   color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};

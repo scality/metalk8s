@@ -9,7 +9,7 @@ import {
 } from '../constants';
 import { IconName } from '@scality/core-ui/dist/components/icon/Icon.component';
 
-const getStyle = (status) => {
+export const getStyle = (status) => {
   switch (status) {
     case STATUS_SUCCESS:
     case STATUS_HEALTH:

@@ -5,7 +5,7 @@ const defaultState = {
   user: null,
 };
 export type UserState = {
-  user: User | null | undefined;
+  user: (User | null | undefined) & { token: string };
 };
 type SetUserAction = {
   type: 'SET_USER';

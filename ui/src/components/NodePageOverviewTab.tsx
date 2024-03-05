@@ -1,32 +1,31 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { FormattedDate, FormattedTime } from 'react-intl';
-import styled from 'styled-components';
+import { InlineInput, Loader, Stack, Steppers } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import {
-  padding,
   fontSize,
   fontWeight,
+  padding,
 } from '@scality/core-ui/dist/style/theme';
-import ActiveAlertsCounter from './ActiveAlertsCounter';
-import { Steppers, Loader } from '@scality/core-ui';
-import { Button } from '@scality/core-ui/dist/next';
 import isEmpty from 'lodash.isempty';
+import { useEffect } from 'react';
+import { FormattedDate, FormattedTime, useIntl } from 'react-intl';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+import { API_STATUS_UNKNOWN } from '../constants';
 import {
   deployNodeAction,
   fetchClusterVersionAction,
 } from '../ducks/app/nodes';
+import { useUpdateNodeDisplayName } from '../hooks/nodes';
+import ActiveAlertsCounter from './ActiveAlertsCounter';
 import {
+  ActiveAlertTitle,
+  ActiveAlertWrapper,
   NodeTab,
   OverviewInformationLabel,
   OverviewInformationSpan,
   OverviewInformationValue,
-  OverviewResourceName,
-  ActiveAlertTitle,
-  ActiveAlertWrapper,
+  OverviewInformationWrapper,
 } from './style/CommonLayoutStyle';
-import CircleStatus from './CircleStatus';
-import { API_STATUS_UNKNOWN } from '../constants';
-import { useIntl } from 'react-intl';
 const TabContentContainer = styled.div`
   overflow-y: auto;
   // 100vh subtract the height of navbar and tab header
@@ -92,6 +91,7 @@ const NodePageOverviewTab = (props) => {
       (job) => job.type === 'deploy-node' && job.node === nodeName,
     ),
   );
+
   let activeJob = jobs.find((job) => !job.completed);
 
   if (activeJob === undefined) {
@@ -169,14 +169,14 @@ const NodePageOverviewTab = (props) => {
   const podsScheduledOnCurrentNode = pods?.filter(
     (pod) => pod.nodeName === nodeName,
   );
+
+  const mutation = useUpdateNodeDisplayName(nodeName);
+
   return (
     <NodeTab>
       <TabContentContainer>
         <NodeNameContainer>
-          <div>
-            <CircleStatus status={currentNode?.health?.health}></CircleStatus>
-            <OverviewResourceName>{nodeName}</OverviewResourceName>
-          </div>
+          <p></p>
           {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN &&
           !currentNodeReturnByK8S.internalIP ? (
             !currentNodeReturnByK8S?.deploying ? (
@@ -209,44 +209,81 @@ const NodePageOverviewTab = (props) => {
         <Detail>
           <div>
             <OverviewInformationSpan>
+              <OverviewInformationLabel>Node ID</OverviewInformationLabel>
+              <OverviewInformationWrapper>
+                <OverviewInformationValue>
+                  {currentNode?.id}
+                </OverviewInformationValue>
+              </OverviewInformationWrapper>
+            </OverviewInformationSpan>
+            <Stack
+              direction="horizontal"
+              style={{ paddingLeft: 20, paddingBottom: 20 }}
+            >
+              <OverviewInformationLabel>Display Name</OverviewInformationLabel>
+              <InlineInput
+                key={currentNode?.name?.displayName}
+                id="node-name-input"
+                autoFocus
+                changeMutation={mutation}
+                defaultValue={currentNode?.name?.displayName}
+              />
+            </Stack>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>Name</OverviewInformationLabel>
+              <OverviewInformationWrapper>
+                <OverviewInformationValue>
+                  {currentNode?.name?.name}
+                </OverviewInformationValue>
+              </OverviewInformationWrapper>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
               <OverviewInformationLabel>
                 Control Plane IP
               </OverviewInformationLabel>
-              <OverviewInformationValue>
-                {currentNode?.name?.controlPlaneIP}
-              </OverviewInformationValue>
+              <OverviewInformationWrapper>
+                <OverviewInformationValue>
+                  {currentNode?.name?.controlPlaneIP}
+                </OverviewInformationValue>
+              </OverviewInformationWrapper>
             </OverviewInformationSpan>
             <OverviewInformationSpan>
               <OverviewInformationLabel>
                 Workload Plane IP
               </OverviewInformationLabel>
-              <OverviewInformationValue>
-                {currentNode?.name?.workloadPlaneIP}
-              </OverviewInformationValue>
+              <OverviewInformationWrapper>
+                <OverviewInformationValue>
+                  {currentNode?.name?.workloadPlaneIP}
+                </OverviewInformationValue>
+              </OverviewInformationWrapper>
             </OverviewInformationSpan>
             <OverviewInformationSpan>
               <OverviewInformationLabel>Roles</OverviewInformationLabel>
-              <OverviewInformationValue>
-                {currentNode?.roles}
-              </OverviewInformationValue>
+              <OverviewInformationWrapper>
+                <OverviewInformationValue>
+                  {currentNode?.roles}
+                </OverviewInformationValue>
+              </OverviewInformationWrapper>
             </OverviewInformationSpan>
             <OverviewInformationSpan>
               <OverviewInformationLabel>Status</OverviewInformationLabel>
-              <OverviewInformationValue>
-                {currentNode?.status?.computedStatus?.map((cond) => {
-                  return (
-                    <StatusText
-                      key={cond}
-                      // @ts-expect-error - FIXME when you are working on it
-                      textColor={currentNode?.status?.statusColor}
-                    >
-                      {intl.formatMessage({
-                        id: `${cond}`,
-                      })}
-                    </StatusText>
-                  );
-                })}
-              </OverviewInformationValue>
+              <OverviewInformationWrapper>
+                <OverviewInformationValue>
+                  {currentNode?.status?.computedStatus?.map((cond) => {
+                    return (
+                      <StatusText
+                        key={cond}
+                        // @ts-expect-error - FIXME when you are working on it
+                        textColor={currentNode?.status?.statusColor}
+                      >
+                        {intl.formatMessage({
+                          id: `${cond}`,
+                        })}
+                      </StatusText>
+                    );
+                  })}
+                </OverviewInformationValue>
+              </OverviewInformationWrapper>
             </OverviewInformationSpan>
             <OverviewInformationSpan>
               <OverviewInformationLabel>
@@ -255,47 +292,55 @@ const NodePageOverviewTab = (props) => {
                 })}
               </OverviewInformationLabel>
               {creationTimestamp ? (
-                <OverviewInformationValue>
-                  <FormattedDate
-                    value={creationTimestamp}
-                    year="numeric"
-                    month="short"
-                    day="2-digit"
-                  />{' '}
-                  <FormattedTime
-                    hour="2-digit"
-                    minute="2-digit"
-                    second="2-digit"
-                    value={creationTimestamp}
-                  />
-                </OverviewInformationValue>
+                <OverviewInformationWrapper>
+                  <OverviewInformationValue>
+                    <FormattedDate
+                      value={creationTimestamp}
+                      year="numeric"
+                      month="short"
+                      day="2-digit"
+                    />{' '}
+                    <FormattedTime
+                      hour="2-digit"
+                      minute="2-digit"
+                      second="2-digit"
+                      value={creationTimestamp}
+                    />
+                  </OverviewInformationValue>
+                </OverviewInformationWrapper>
               ) : (
                 ''
               )}
             </OverviewInformationSpan>
             <OverviewInformationSpan>
               <OverviewInformationLabel>K8s Version</OverviewInformationLabel>
-              <OverviewInformationValue>
-                {currentNodeReturnByK8S?.kubeletVersion}
-              </OverviewInformationValue>
+              <OverviewInformationWrapper>
+                <OverviewInformationValue>
+                  {currentNodeReturnByK8S?.kubeletVersion}
+                </OverviewInformationValue>
+              </OverviewInformationWrapper>
             </OverviewInformationSpan>
             <OverviewInformationSpan>
               <OverviewInformationLabel>Volumes</OverviewInformationLabel>
-              <OverviewInformationValue>
-                {volumesAttachedCurrentNode?.length ??
-                  intl.formatMessage({
-                    id: 'unknown',
-                  })}
-              </OverviewInformationValue>
+              <OverviewInformationWrapper>
+                <OverviewInformationValue>
+                  {volumesAttachedCurrentNode?.length ??
+                    intl.formatMessage({
+                      id: 'unknown',
+                    })}
+                </OverviewInformationValue>
+              </OverviewInformationWrapper>
             </OverviewInformationSpan>
             <OverviewInformationSpan>
               <OverviewInformationLabel>Pods</OverviewInformationLabel>
-              <OverviewInformationValue>
-                {podsScheduledOnCurrentNode?.length ??
-                  intl.formatMessage({
-                    id: 'unknown',
-                  })}
-              </OverviewInformationValue>
+              <OverviewInformationWrapper>
+                <OverviewInformationValue>
+                  {podsScheduledOnCurrentNode?.length ??
+                    intl.formatMessage({
+                      id: 'unknown',
+                    })}
+                </OverviewInformationValue>
+              </OverviewInformationWrapper>
             </OverviewInformationSpan>
           </div>
           <ActiveAlertWrapper>
