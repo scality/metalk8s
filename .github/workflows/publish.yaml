@@ -36,6 +36,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-tags: true
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -134,7 +136,13 @@ jobs:
       - name: Get tag message
         if: inputs.is_production
         id: get_tag_message
-        run: echo "::set-output name=message::$(git tag -l --format='%(contents)' ${{ env.SHELL_UI_VERSION }})"
+        # Explicitly fetching tags since checkout fetch-tags does not works well
+        # Sees: https://github.com/actions/checkout/issues/1471
+        run: |-
+          git fetch --tags
+          echo "message=<<EOF" >> $GITHUB_OUTPUT
+          git tag -l --format='%(contents)' "${{ env.SHELL_UI_VERSION }}" | tail -n +4 >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - uses: softprops/action-gh-release@v1
         if: inputs.is_production
@@ -142,7 +150,7 @@ jobs:
           name: Metalk8s ${{ env.SHELL_UI_VERSION }}
           tag_name: ${{ env.SHELL_UI_VERSION }}
           body: ${{ steps.get_tag_message.outputs.message }}
-          prerelease: "! fromJSON(env.IS_STABLE)"
+          prerelease: "${{ ! fromJSON(env.IS_STABLE) }}"
           draft: false
           files: |
             shell.tar
