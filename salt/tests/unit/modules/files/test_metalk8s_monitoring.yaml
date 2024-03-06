@@ -96,6 +96,7 @@ add_silence:
     call_body:
       matchers:
         - name: alertname
+          isEqual: true
           isRegex: false
           value: SomeAlertName
       startsAt: "2020-06-01T00:00:00Z"
@@ -108,10 +109,12 @@ add_silence:
   - _id: custom-matcher
     name: namespace
     value: metalk8s.*
+    is_equal: false
     is_regex: true
     call_body:
       matchers:
         - name: namespace
+          isEqual: false
           isRegex: true
           value: metalk8s.*
 

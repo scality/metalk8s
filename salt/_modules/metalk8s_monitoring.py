@@ -26,6 +26,7 @@ def __virtual__():
 def add_silence(
     value,
     name="alertname",
+    is_equal=True,
     is_regex=False,
     starts_at=None,
     duration=3600,
@@ -74,6 +75,7 @@ def add_silence(
         "matchers": [
             {
                 "name": name,
+                "isEqual": is_equal,
                 "isRegex": is_regex,
                 "value": value,
             }
