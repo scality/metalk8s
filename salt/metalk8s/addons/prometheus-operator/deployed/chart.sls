@@ -43090,8 +43090,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.1
-    helm.sh/chart: grafana-7.3.0
+    app.kubernetes.io/version: 10.3.3
+    helm.sh/chart: grafana-7.3.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -43106,7 +43106,7 @@ metadata:
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.0
+    helm.sh/chart: kube-state-metrics-5.16.4
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -43122,7 +43122,7 @@ metadata:
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 1.7.0
-    helm.sh/chart: prometheus-node-exporter-4.26.1
+    helm.sh/chart: prometheus-node-exporter-4.30.3
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -43140,8 +43140,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -43149,6 +43149,7 @@ metadata:
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1
+automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
   labels:
@@ -43158,8 +43159,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -43167,6 +43168,7 @@ metadata:
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1
+automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
   labels:
@@ -43176,8 +43178,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -43196,8 +43198,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.1
-    helm.sh/chart: grafana-7.3.0
+    app.kubernetes.io/version: 10.3.3
+    helm.sh/chart: grafana-7.3.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -43214,8 +43216,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -43243,8 +43245,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.1
-    helm.sh/chart: grafana-7.3.0
+    app.kubernetes.io/version: 10.3.3
+    helm.sh/chart: grafana-7.3.3
     heritage: metalk8s
   name: prometheus-operator-grafana-config-dashboards
   namespace: metalk8s-monitoring
@@ -43270,8 +43272,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_datasource: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43320,8 +43322,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43425,8 +43427,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43468,7 +43470,7 @@ data:
     of Transmitted Packets Dropped","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":false,"linkTooltip":"Drill down","linkUrl":"","pattern":"Value
     #H","thresholds":[],"type":"number","unit":"pps"},{"alias":"Namespace","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
-    HH:mm:ss","decimals":2,"link":true,"linkTooltip":"Drill down","linkUrl":"d/8b7a8b326d7a6f1f04244066368c67af/kubernetes-networking-namespace-pods?orgId=1&refresh=30s&var-namespace=${__value.text}","pattern":"namespace","thresholds":[],"type":"number","unit":"short"}],"targets":[{"expr":"sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution]))
+    HH:mm:ss","decimals":2,"link":true,"linkTooltip":"Drill down","linkUrl":"d/8b7a8b326d7a6f1f04244066368c67af/kubernetes-networking-namespace-pods?orgId=1&refresh=30s&var-namespace=$__cell","pattern":"namespace","thresholds":[],"type":"number","unit":"short"}],"targets":[{"expr":"sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution]))
     by (namespace))","format":"table","instant":true,"intervalFactor":2,"legendFormat":"","refId":"A","step":10},{"expr":"sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution]))
     by (namespace))","format":"table","instant":true,"intervalFactor":2,"legendFormat":"","refId":"B","step":10},{"expr":"sort_desc(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution]))
     by (namespace))","format":"table","instant":true,"intervalFactor":2,"legendFormat":"","refId":"C","step":10},{"expr":"sort_desc(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution]))
@@ -43516,8 +43518,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43580,8 +43582,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44142,8 +44144,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44185,8 +44187,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44196,77 +44198,78 @@ metadata:
 ---
 apiVersion: v1
 data:
-  k8s-coredns.json: '{"annotations":{"list":[{"builtIn":1,"datasource":"-- Grafana
-    --","enable":true,"hide":true,"iconColor":"rgba(0, 211, 255, 1)","name":"Annotations
-    & Alerts","type":"dashboard"}]},"description":"A dashboard for the CoreDNS DNS
-    server with updated metrics for version 1.7.0+.  Based on the CoreDNS dashboard
-    by buhay.","editable":true,"gnetId":12539,"graphTooltip":0,"iteration":1603798405693,"links":[{"icon":"external
-    link","tags":[],"targetBlank":true,"title":"CoreDNS.io","type":"link","url":"https://coredns.io"}],"panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[],"mappings":[],"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]}},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":8,"x":0,"y":0},"hiddenSeries":false,"id":2,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (proto) or\nsum(rate(coredns_dns_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
+  k8s-coredns.json: '{"annotations":{"list":[{"builtIn":1,"datasource":{"type":"datasource","uid":"grafana"},"enable":true,"hide":true,"iconColor":"rgba(0,
+    211, 255, 1)","name":"Annotations & Alerts","type":"dashboard"}]},"description":"A
+    dashboard for the CoreDNS DNS server with updated metrics for version 1.7.0+.  Based
+    on the CoreDNS dashboard by buhay.","editable":true,"fiscalYearStartMonth":0,"gnetId":12539,"graphTooltip":0,"id":7,"links":[{"icon":"external
+    link","tags":[],"targetBlank":true,"title":"CoreDNS.io","type":"link","url":"https://coredns.io"}],"liveNow":false,"panels":[{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"normal"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"pps","unitScale":true},"overrides":[]},"gridPos":{"h":7,"w":8,"x":0,"y":0},"id":2,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"desc"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"sum(rate(coredns_dns_request_count_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (proto) or\nsum(rate(coredns_dns_requests_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
     by (proto)","format":"time_series","interval":"","intervalFactor":2,"legendFormat":"{{
-    proto }}","refId":"A","step":60}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
-    (total)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":8,"x":8,"y":0},"hiddenSeries":false,"id":4,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2},{"alias":"other","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_type_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (type) or \nsum(rate(coredns_dns_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (type)","interval":"","intervalFactor":2,"legendFormat":"{{ type }}","refId":"A","step":60}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
-    (by qtype)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":8,"x":16,"y":0},"hiddenSeries":false,"id":6,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (zone) or\nsum(rate(coredns_dns_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (zone)","interval":"","intervalFactor":2,"legendFormat":"{{ zone }}","refId":"A","step":60}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
-    (by zone)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":0,"y":7},"hiddenSeries":false,"id":8,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2}],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_do_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    or\nsum(rate(coredns_dns_do_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m]))","interval":"","intervalFactor":2,"legendFormat":"DO","refId":"A","step":40},{"expr":"sum(rate(coredns_dns_request_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    or\nsum(rate(coredns_dns_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m]))","interval":"","intervalFactor":2,"legendFormat":"total","refId":"B","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
-    (DO bit)","tooltip":{"shared":true,"sort":2,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":null,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":6,"x":12,"y":7},"hiddenSeries":false,"id":10,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"tcp:90","yaxis":2},{"alias":"tcp:99
-    ","yaxis":2},{"alias":"tcp:50","yaxis":2}],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"histogram_quantile(0.99,
-    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    proto }}","refId":"A","step":60}],"title":"Requests (total)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"normal"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"pps","unitScale":true},"overrides":[]},"gridPos":{"h":7,"w":8,"x":8,"y":0},"id":4,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"desc"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"sum(rate(coredns_dns_request_type_count_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (type) or \nsum(rate(coredns_dns_requests_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (type)","interval":"","intervalFactor":2,"legendFormat":"{{ type }}","refId":"A","step":60}],"title":"Requests
+    (by qtype)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"normal"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"pps","unitScale":true},"overrides":[]},"gridPos":{"h":7,"w":8,"x":16,"y":0},"id":6,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"desc"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"sum(rate(coredns_dns_request_count_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (zone) or\nsum(rate(coredns_dns_requests_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (zone)","interval":"","intervalFactor":2,"legendFormat":"{{ zone }}","refId":"A","step":60}],"title":"Requests
+    (by zone)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"none"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"pps","unitScale":true},"overrides":[]},"gridPos":{"h":7,"w":12,"x":0,"y":7},"id":8,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"desc"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"sum(rate(coredns_dns_request_do_count_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    or\nsum(rate(coredns_dns_do_requests_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))","interval":"","intervalFactor":2,"legendFormat":"DO","refId":"A","step":40},{"datasource":{"uid":"$datasource"},"expr":"sum(rate(coredns_dns_request_count_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    or\nsum(rate(coredns_dns_requests_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))","interval":"","intervalFactor":2,"legendFormat":"total","refId":"B","step":40}],"title":"Requests
+    (DO bit)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"none"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"bytes","unitScale":true},"overrides":[{"matcher":{"id":"byName","options":"tcp:90"},"properties":[{"id":"unit","value":"short"}]},{"matcher":{"id":"byName","options":"tcp:99
+    "},"properties":[{"id":"unit","value":"short"}]},{"matcher":{"id":"byName","options":"tcp:50"},"properties":[{"id":"unit","value":"short"}]}]},"gridPos":{"h":7,"w":6,"x":12,"y":7},"id":10,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"none"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.99,
+    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"udp\"}[5m]))
     by (le,proto))","interval":"","intervalFactor":2,"legendFormat":"{{ proto }}:99
-    ","refId":"A","step":60},{"expr":"histogram_quantile(0.90, sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
-    by (le,proto))","intervalFactor":2,"legendFormat":"{{ proto }}:90","refId":"B","step":60},{"expr":"histogram_quantile(0.50,
-    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
-    by (le,proto))","intervalFactor":2,"legendFormat":"{{ proto }}:50","refId":"C","step":60}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
-    (size, udp)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":6,"x":18,"y":7},"hiddenSeries":false,"id":12,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"tcp:90","yaxis":1},{"alias":"tcp:99
-    ","yaxis":1},{"alias":"tcp:50","yaxis":1}],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"histogram_quantile(0.99,
-    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    ","refId":"A","step":60},{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.90,
+    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    by (le,proto))","intervalFactor":2,"legendFormat":"{{ proto }}:90","refId":"B","step":60},{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.50,
+    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    by (le,proto))","intervalFactor":2,"legendFormat":"{{ proto }}:50","refId":"C","step":60}],"title":"Requests
+    (size, udp)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"none"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"bytes","unitScale":true},"overrides":[]},"gridPos":{"h":7,"w":6,"x":18,"y":7},"id":12,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"none"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.99,
+    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le,proto))","format":"time_series","interval":"","intervalFactor":2,"legendFormat":"{{
-    proto }}:99 ","refId":"A","step":60},{"expr":"histogram_quantile(0.90, sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    proto }}:99 ","refId":"A","step":60},{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.90,
+    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le,proto))","format":"time_series","interval":"","intervalFactor":2,"legendFormat":"{{
-    proto }}:90","refId":"B","step":60},{"expr":"histogram_quantile(0.50, sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    proto }}:90","refId":"B","step":60},{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.50,
+    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le,proto))","format":"time_series","interval":"","intervalFactor":2,"legendFormat":"{{
-    proto }}:50","refId":"C","step":60}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
-    (size,tcp)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":0,"y":14},"hiddenSeries":false,"id":14,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_response_rcode_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (rcode) or\nsum(rate(coredns_dns_responses_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (rcode)","interval":"","intervalFactor":2,"legendFormat":"{{ rcode }}","refId":"A","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Responses
-    (by rcode)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":null,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":12,"y":14},"hiddenSeries":false,"id":32,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"histogram_quantile(0.99,
-    sum(rate(coredns_dns_request_duration_seconds_bucket{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (le, job))","format":"time_series","intervalFactor":2,"legendFormat":"99%","refId":"A","step":40},{"expr":"histogram_quantile(0.90,
-    sum(rate(coredns_dns_request_duration_seconds_bucket{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (le))","format":"time_series","intervalFactor":2,"legendFormat":"90%","refId":"B","step":40},{"expr":"histogram_quantile(0.50,
-    sum(rate(coredns_dns_request_duration_seconds_bucket{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (le))","format":"time_series","intervalFactor":2,"legendFormat":"50%","refId":"C","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Responses
-    (duration)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"s","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":null,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":0,"y":21},"hiddenSeries":false,"id":18,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"udp:50%","yaxis":1},{"alias":"tcp:50%","yaxis":2},{"alias":"tcp:90%","yaxis":2},{"alias":"tcp:99%","yaxis":2}],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"histogram_quantile(0.99,
-    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
-    by (le,proto)) ","interval":"","intervalFactor":2,"legendFormat":"{{ proto }}:99%","refId":"A","step":40},{"expr":"histogram_quantile(0.90,
-    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
-    by (le,proto)) ","interval":"","intervalFactor":2,"legendFormat":"{{ proto }}:90%","refId":"B","step":40},{"expr":"histogram_quantile(0.50,
-    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
-    by (le,proto)) ","hide":false,"intervalFactor":2,"legendFormat":"{{ proto }}:50%","metric":"","refId":"C","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Responses
-    (size, udp)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":12,"y":21},"hiddenSeries":false,"id":20,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"udp:50%","yaxis":1},{"alias":"tcp:50%","yaxis":1},{"alias":"tcp:90%","yaxis":1},{"alias":"tcp:99%","yaxis":1}],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"histogram_quantile(0.99,
-    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    proto }}:50","refId":"C","step":60}],"title":"Requests (size,tcp)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"normal"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"pps","unitScale":true},"overrides":[]},"gridPos":{"h":7,"w":12,"x":0,"y":14},"id":14,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"desc"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"sum(rate(coredns_dns_response_rcode_count_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (rcode) or\nsum(rate(coredns_dns_responses_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (rcode)","interval":"","intervalFactor":2,"legendFormat":"{{ rcode }}","refId":"A","step":40}],"title":"Responses
+    (by rcode)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"none"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"s","unitScale":true},"overrides":[]},"gridPos":{"h":7,"w":12,"x":12,"y":14},"id":32,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"none"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.99,
+    sum(rate(coredns_dns_request_duration_seconds_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (le, job))","format":"time_series","intervalFactor":2,"legendFormat":"99%","refId":"A","step":40},{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.90,
+    sum(rate(coredns_dns_request_duration_seconds_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (le))","format":"time_series","intervalFactor":2,"legendFormat":"90%","refId":"B","step":40},{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.50,
+    sum(rate(coredns_dns_request_duration_seconds_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (le))","format":"time_series","intervalFactor":2,"legendFormat":"50%","refId":"C","step":40}],"title":"Responses
+    (duration)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"none"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"bytes","unitScale":true},"overrides":[{"matcher":{"id":"byName","options":"tcp:50%"},"properties":[{"id":"unit","value":"short"}]},{"matcher":{"id":"byName","options":"tcp:90%"},"properties":[{"id":"unit","value":"short"}]},{"matcher":{"id":"byName","options":"tcp:99%"},"properties":[{"id":"unit","value":"short"}]}]},"gridPos":{"h":7,"w":12,"x":0,"y":21},"id":18,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"none"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.99,
+    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    by (le,proto)) ","interval":"","intervalFactor":2,"legendFormat":"{{ proto }}:99%","refId":"A","step":40},{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.90,
+    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    by (le,proto)) ","interval":"","intervalFactor":2,"legendFormat":"{{ proto }}:90%","refId":"B","step":40},{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.50,
+    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    by (le,proto)) ","hide":false,"intervalFactor":2,"legendFormat":"{{ proto }}:50%","metric":"","refId":"C","step":40}],"title":"Responses
+    (size, udp)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"none"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"bytes","unitScale":true},"overrides":[]},"gridPos":{"h":7,"w":12,"x":12,"y":21},"id":20,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"none"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.99,
+    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le,proto)) ","format":"time_series","intervalFactor":2,"legendFormat":"{{
-    proto }}:99%","refId":"A","step":40},{"expr":"histogram_quantile(0.90, sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    proto }}:99%","refId":"A","step":40},{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.90,
+    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le,proto)) ","format":"time_series","intervalFactor":2,"legendFormat":"{{
-    proto }}:90%","refId":"B","step":40},{"expr":"histogram_quantile(0.50, sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    proto }}:90%","refId":"B","step":40},{"datasource":{"uid":"$datasource"},"expr":"histogram_quantile(0.50,
+    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le, proto)) ","format":"time_series","intervalFactor":2,"legendFormat":"{{
-    proto }}:50%","metric":"","refId":"C","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Responses
-    (size, tcp)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":0,"y":28},"hiddenSeries":false,"id":22,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(coredns_cache_size{job=~\"$job\",instance=~\"$instance\"})
-    by (type) or\nsum(coredns_cache_entries{job=~\"$job\",instance=~\"$instance\"})
-    by (type)","interval":"","intervalFactor":2,"legendFormat":"{{ type }}","refId":"A","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Cache
-    (size)","tooltip":{"shared":true,"sort":2,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"decbytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":12,"y":28},"hiddenSeries":false,"id":24,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"misses","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_cache_hits_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (type)","hide":false,"intervalFactor":2,"legendFormat":"hits:{{ type }}","refId":"A","step":40},{"expr":"sum(rate(coredns_cache_misses_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
-    by (type)","hide":false,"intervalFactor":2,"legendFormat":"misses","refId":"B","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Cache
-    (hitrate)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}}],"refresh":"10s","schemaVersion":26,"style":"dark","tags":["dns","coredns"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"includeAll":false,"label":null,"multi":false,"name":"datasource","options":[],"query":"prometheus","queryValue":"","refresh":1,"regex":"","skipUrlSync":false,"type":"datasource"},{"allValue":".*","current":{"selected":false,"text":"coredns","value":"coredns"},"datasource":{"type":"prometheus","uid":"${datasource}"},"definition":"label_values(coredns_dns_requests_total,
-    job)","hide":0,"includeAll":true,"label":"Job","multi":false,"name":"job","options":[],"query":{"query":"label_values(coredns_dns_requests_total,
-    job)","refId":"StandardVariableQuery"},"refresh":1,"regex":"","skipUrlSync":false,"sort":1,"type":"query"},{"allValue":".*","current":{"selected":true,"text":"All","value":"$__all"},"datasource":"$datasource","definition":"label_values(coredns_dns_requests_total{job=~\"$job\"},
-    instance)","hide":0,"includeAll":true,"label":"Instance","multi":false,"name":"instance","options":[],"query":"label_values(coredns_dns_requests_total{job=~\"$job\"},
-    instance)","refresh":1,"regex":"","skipUrlSync":false,"sort":3,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-3h","to":"now"},"timepicker":{"refresh_intervals":["10s","30s","1m","5m","15m","30m","1h","2h","1d"]},"timezone":"utc","title":"CoreDNS","uid":"vkQ0UHxik","version":3}'
+    proto }}:50%","metric":"","refId":"C","step":40}],"title":"Responses (size, tcp)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"normal"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"decbytes","unitScale":true},"overrides":[]},"gridPos":{"h":7,"w":12,"x":0,"y":28},"id":22,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"desc"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"sum(coredns_cache_size{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"})
+    by (type) or\nsum(coredns_cache_entries{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"})
+    by (type)","interval":"","intervalFactor":2,"legendFormat":"{{ type }}","refId":"A","step":40}],"title":"Cache
+    (size)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"normal"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"pps","unitScale":true},"overrides":[]},"gridPos":{"h":7,"w":12,"x":12,"y":28},"id":24,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"desc"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"sum(rate(coredns_cache_hits_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (type)","hide":false,"intervalFactor":2,"legendFormat":"hits:{{ type }}","refId":"A","step":40},{"datasource":{"uid":"$datasource"},"expr":"sum(rate(coredns_cache_misses_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
+    by (type)","hide":false,"intervalFactor":2,"legendFormat":"misses","refId":"B","step":40}],"title":"Cache
+    (hitrate)","type":"timeseries"}],"refresh":"10s","schemaVersion":39,"tags":["dns","coredns"],"templating":{"list":[{"current":{},"hide":0,"includeAll":false,"multi":false,"name":"datasource","options":[],"query":"prometheus","queryValue":"","refresh":1,"regex":"","skipUrlSync":false,"type":"datasource"},{"allValue":".*","current":{"selected":false,"text":"All","value":"$__all"},"datasource":{"type":"prometheus","uid":"$datasource"},"definition":"label_values(up{job=~\"$job\"},
+    cluster)","hide":2,"includeAll":true,"label":"Cluster","multi":false,"name":"cluster","options":[],"query":"label_values(up{job=~\"$job\"},
+    cluster)","refresh":1,"regex":"","skipUrlSync":false,"sort":1,"tagValuesQuery":"","tagsQuery":"","type":"query","useTags":false},{"allValue":".*","current":{"selected":false,"text":"All","value":"$__all"},"datasource":{"type":"prometheus","uid":"${datasource}"},"definition":"label_values(coredns_dns_requests_total{cluster=~\"$cluster\"},job)","hide":0,"includeAll":true,"label":"Job","multi":false,"name":"job","options":[],"query":{"qryType":1,"query":"label_values(coredns_dns_requests_total{cluster=~\"$cluster\"},job)","refId":"PrometheusVariableQueryEditor-VariableQuery"},"refresh":1,"regex":"","skipUrlSync":false,"sort":1,"type":"query"},{"allValue":".*","current":{"selected":false,"text":"All","value":"$__all"},"datasource":{"type":"prometheus","uid":"$datasource"},"definition":"label_values(coredns_dns_requests_total{job=~\"$job\",cluster=~\"$cluster\"},
+    instance)","hide":0,"includeAll":true,"label":"Instance","multi":false,"name":"instance","options":[],"query":"label_values(coredns_dns_requests_total{job=~\"$job\",cluster=~\"$cluster\"},
+    instance)","refresh":1,"regex":"","skipUrlSync":false,"sort":3,"tagValuesQuery":"","tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-3h","to":"now"},"timepicker":{"refresh_intervals":["10s","30s","1m","5m","15m","30m","1h","2h","1d"]},"timezone":
+    "utc","title":"CoreDNS","uid":"vkQ0UHxik","version":3,"weekStart":""}'
 kind: ConfigMap
 metadata:
   annotations: {}
@@ -44276,8 +44279,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44311,10 +44314,10 @@ data:
     as zero","percentage":false,"pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"span":12,"stack":false,"steppedLine":false,"styles":[{"alias":"Time","dateFormat":"YYYY-MM-DD
     HH:mm:ss","pattern":"Time","type":"hidden"},{"alias":"Pods","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":0,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=${__data.fields.namespace}","pattern":"Value
+    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1","pattern":"Value
     #A","thresholds":[],"type":"number","unit":"short"},{"alias":"Workloads","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":0,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down to workloads","linkUrl":"/d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=${__data.fields.namespace}","pattern":"Value
+    down to workloads","linkUrl":"/d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1","pattern":"Value
     #B","thresholds":[],"type":"number","unit":"short"},{"alias":"CPU Usage","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #C","thresholds":[],"type":"number","unit":"short"},{"alias":"CPU
@@ -44327,7 +44330,7 @@ data:
     Limits %","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #G","thresholds":[],"type":"number","unit":"percentunit"},{"alias":"Namespace","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=${__value.text}","pattern":"namespace","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell","pattern":"namespace","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum(kube_pod_owner{job=\"kube-state-metrics\",
     cluster=\"$cluster\"}) by (namespace)","format":"table","instant":true,"legendFormat":"","refId":"A"},{"expr":"count(avg(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\"})
     by (workload, namespace)) by (namespace)","format":"table","instant":true,"legendFormat":"","refId":"B"},{"expr":"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\"})
@@ -44347,10 +44350,10 @@ data:
     as zero","percentage":false,"pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"span":12,"stack":false,"steppedLine":false,"styles":[{"alias":"Time","dateFormat":"YYYY-MM-DD
     HH:mm:ss","pattern":"Time","type":"hidden"},{"alias":"Pods","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":0,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=${__data.fields.namespace}","pattern":"Value
+    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1","pattern":"Value
     #A","thresholds":[],"type":"number","unit":"short"},{"alias":"Workloads","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":0,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down to workloads","linkUrl":"/d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=${__data.fields.namespace}","pattern":"Value
+    down to workloads","linkUrl":"/d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1","pattern":"Value
     #B","thresholds":[],"type":"number","unit":"short"},{"alias":"Memory Usage","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #C","thresholds":[],"type":"number","unit":"bytes"},{"alias":"Memory
@@ -44363,7 +44366,7 @@ data:
     Limits %","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #G","thresholds":[],"type":"number","unit":"percentunit"},{"alias":"Namespace","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=${__value.text}","pattern":"namespace","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell","pattern":"namespace","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum(kube_pod_owner{job=\"kube-state-metrics\",
     cluster=\"$cluster\"}) by (namespace)","format":"table","instant":true,"legendFormat":"","refId":"A"},{"expr":"count(avg(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\"})
     by (workload, namespace)) by (namespace)","format":"table","instant":true,"legendFormat":"","refId":"B"},{"expr":"sum(container_memory_rss{job=\"kubelet\",
@@ -44397,7 +44400,7 @@ data:
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #F","thresholds":[],"type":"number","unit":"pps"},{"alias":"Namespace","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=${__value.text}","pattern":"namespace","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell","pattern":"namespace","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum(irate(container_network_receive_bytes_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))
     by (namespace)","format":"table","instant":true,"legendFormat":"","refId":"A"},{"expr":"sum(irate(container_network_transmit_bytes_total{job=\"kubelet\",
@@ -44474,7 +44477,7 @@ data:
     + Write)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #F","thresholds":[],"type":"number","unit":"Bps"},{"alias":"Namespace","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=${__value.text}","pattern":"namespace","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down to pods","linkUrl":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell","pattern":"namespace","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum
     by(namespace) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
@@ -44512,8 +44515,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44561,7 +44564,7 @@ data:
     Limits %","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #E","thresholds":[],"type":"number","unit":"percentunit"},{"alias":"Cluster","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"/d/efa86fd1d0c121a26444b636a3f509a8/k8s-resources-cluster?var-datasource=$datasource&var-cluster=${__value.text}","pattern":"cluster","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down","linkUrl":"/d/efa86fd1d0c121a26444b636a3f509a8/k8s-resources-cluster?var-datasource=$datasource&var-cluster=$__cell","pattern":"cluster","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate)
     by (cluster)","format":"table","instant":true,"legendFormat":"","refId":"A"},{"expr":"sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     resource=\"cpu\"}) by (cluster)","format":"table","instant":true,"legendFormat":"","refId":"B"},{"expr":"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate)
@@ -44588,7 +44591,7 @@ data:
     Limits %","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #E","thresholds":[],"type":"number","unit":"percentunit"},{"alias":"Cluster","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"/d/efa86fd1d0c121a26444b636a3f509a8/k8s-resources-cluster?var-datasource=$datasource&var-cluster=${__value.text}","pattern":"cluster","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down","linkUrl":"/d/efa86fd1d0c121a26444b636a3f509a8/k8s-resources-cluster?var-datasource=$datasource&var-cluster=$__cell","pattern":"cluster","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum(container_memory_rss{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", container!=\"\"}) by (cluster)","format":"table","instant":true,"legendFormat":"","refId":"A"},{"expr":"sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     resource=\"memory\"}) by (cluster)","format":"table","instant":true,"legendFormat":"","refId":"B"},{"expr":"sum(container_memory_rss{job=\"kubelet\",
@@ -44610,8 +44613,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44663,7 +44666,7 @@ data:
     Limits %","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #E","thresholds":[],"type":"number","unit":"percentunit"},{"alias":"Pod","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__value.text}","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\",
     namespace=\"$namespace\"}) by (pod)","format":"table","instant":true,"legendFormat":"","refId":"A"},{"expr":"sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\",
     namespace=\"$namespace\"}) by (pod)","format":"table","instant":true,"legendFormat":"","refId":"B"},{"expr":"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\",
@@ -44704,7 +44707,7 @@ data:
     Usage (Swap)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #H","thresholds":[],"type":"number","unit":"bytes"},{"alias":"Pod","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__value.text}","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum(container_memory_working_set_bytes{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\",
     image!=\"\"}) by (pod)","format":"table","instant":true,"legendFormat":"","refId":"A"},{"expr":"sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\",
@@ -44742,7 +44745,7 @@ data:
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #F","thresholds":[],"type":"number","unit":"pps"},{"alias":"Pod","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down to pods","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__value.text}","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down to pods","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum(irate(container_network_receive_bytes_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))
     by (pod)","format":"table","instant":true,"legendFormat":"","refId":"A"},{"expr":"sum(irate(container_network_transmit_bytes_total{job=\"kubelet\",
@@ -44804,7 +44807,7 @@ data:
     + Write)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #F","thresholds":[],"type":"number","unit":"Bps"},{"alias":"Pod","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down to pods","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__value.text}","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down to pods","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum
     by(pod) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
@@ -44845,8 +44848,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44941,8 +44944,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45144,8 +45147,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45175,7 +45178,7 @@ data:
     Limits %","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #E","thresholds":[],"type":"number","unit":"percentunit"},{"alias":"Pod","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__value.text}","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum(\n    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\",
     namespace=\"$namespace\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type)
     namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\",
@@ -45224,7 +45227,7 @@ data:
     Limits %","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #E","thresholds":[],"type":"number","unit":"percentunit"},{"alias":"Pod","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__value.text}","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"sum(\n    container_memory_working_set_bytes{cluster=\"$cluster\",
     namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload,
     workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -45274,7 +45277,7 @@ data:
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #F","thresholds":[],"type":"number","unit":"pps"},{"alias":"Pod","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__value.text}","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    down","linkUrl":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell","pattern":"pod","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"(sum(irate(container_network_receive_bytes_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n*
     on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -45368,8 +45371,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45408,7 +45411,7 @@ data:
     Limits %","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #F","thresholds":[],"type":"number","unit":"percentunit"},{"alias":"Workload","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=${__value.text}&var-type=${__data.fields.workload_type}","pattern":"workload","thresholds":[],"type":"number","unit":"short"},{"alias":"Workload
+    down","linkUrl":"/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$__cell_2","pattern":"workload","thresholds":[],"type":"number","unit":"short"},{"alias":"Workload
     Type","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"workload_type","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"count(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -45465,7 +45468,7 @@ data:
     Limits %","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #F","thresholds":[],"type":"number","unit":"percentunit"},{"alias":"Workload","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=${__value.text}&var-type=${__data.fields.workload_type}","pattern":"workload","thresholds":[],"type":"number","unit":"short"},{"alias":"Workload
+    down","linkUrl":"/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$__cell_2","pattern":"workload","thresholds":[],"type":"number","unit":"short"},{"alias":"Workload
     Type","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"workload_type","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"count(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -45514,7 +45517,7 @@ data:
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #F","thresholds":[],"type":"number","unit":"pps"},{"alias":"Workload","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":true,"linkTargetBlank":false,"linkTooltip":"Drill
-    down to pods","linkUrl":"/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=${__value.text}&var-type=$type","pattern":"workload","thresholds":[],"type":"number","unit":"short"},{"alias":"Workload
+    down to pods","linkUrl":"/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$type","pattern":"workload","thresholds":[],"type":"number","unit":"short"},{"alias":"Workload
     Type","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"workload_type","thresholds":[],"type":"number","unit":"short"},{"alias":"","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"pattern":"/.*/","thresholds":[],"type":"string","unit":"short"}],"targets":[{"expr":"(sum(irate(container_network_receive_bytes_total{job=\"kubelet\",
@@ -45596,8 +45599,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45707,8 +45710,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45749,7 +45752,7 @@ data:
     of Transmitted Packets Dropped","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":false,"linkTooltip":"Drill down","linkUrl":"","pattern":"Value
     #F","thresholds":[],"type":"number","unit":"pps"},{"alias":"Pod","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
-    HH:mm:ss","decimals":2,"link":true,"linkTooltip":"Drill down","linkUrl":"d/7a18067ce943a40ae25454675c19ff5c/kubernetes-networking-pod?orgId=1&refresh=30s&var-namespace=$namespace&var-pod=${__value.text}","pattern":"pod","thresholds":[],"type":"number","unit":"short"}],"targets":[{"expr":"sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution]))
+    HH:mm:ss","decimals":2,"link":true,"linkTooltip":"Drill down","linkUrl":"d/7a18067ce943a40ae25454675c19ff5c/kubernetes-networking-pod?orgId=1&refresh=30s&var-namespace=$namespace&var-pod=$__cell","pattern":"pod","thresholds":[],"type":"number","unit":"short"}],"targets":[{"expr":"sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution]))
     by (pod)","format":"table","instant":true,"intervalFactor":2,"legendFormat":"","refId":"A","step":10},{"expr":"sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution]))
     by (pod)","format":"table","instant":true,"intervalFactor":2,"legendFormat":"","refId":"B","step":10},{"expr":"sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution]))
     by (pod)","format":"table","instant":true,"intervalFactor":2,"legendFormat":"","refId":"C","step":10},{"expr":"sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution]))
@@ -45783,8 +45786,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45830,7 +45833,7 @@ data:
     of Transmitted Packets Dropped","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":false,"linkTooltip":"Drill down","linkUrl":"","pattern":"Value
     #H","thresholds":[],"type":"number","unit":"pps"},{"alias":"Workload","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
-    HH:mm:ss","decimals":2,"link":true,"linkTooltip":"Drill down","linkUrl":"d/728bf77cc1166d2f3133bf25846876cc/kubernetes-networking-workload?orgId=1&refresh=30s&var-namespace=$namespace&var-type=$type&var-workload=${__value.text}","pattern":"workload","thresholds":[],"type":"number","unit":"short"}],"targets":[{"expr":"sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n*
+    HH:mm:ss","decimals":2,"link":true,"linkTooltip":"Drill down","linkUrl":"d/728bf77cc1166d2f3133bf25846876cc/kubernetes-networking-workload?orgId=1&refresh=30s&var-namespace=$namespace&var-type=$type&var-workload=$__cell","pattern":"workload","thresholds":[],"type":"number","unit":"short"}],"targets":[{"expr":"sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n*
     on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","format":"table","instant":true,"intervalFactor":2,"legendFormat":"","refId":"A","step":10},{"expr":"sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n*
     on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
@@ -45892,8 +45895,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -46836,8 +46839,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -47800,8 +47803,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48763,8 +48766,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48825,8 +48828,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48880,8 +48883,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -49984,8 +49987,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -50045,8 +50048,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -50123,8 +50126,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -50202,8 +50205,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -50219,8 +50222,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.1
-    helm.sh/chart: grafana-7.3.0
+    app.kubernetes.io/version: 10.3.3
+    helm.sh/chart: grafana-7.3.3
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrole
   namespace: metalk8s-monitoring
@@ -50245,7 +50248,7 @@ metadata:
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.0
+    helm.sh/chart: kube-state-metrics-5.16.4
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -50462,8 +50465,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50570,8 +50573,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50612,8 +50615,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.1
-    helm.sh/chart: grafana-7.3.0
+    app.kubernetes.io/version: 10.3.3
+    helm.sh/chart: grafana-7.3.3
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrolebinding
   namespace: metalk8s-monitoring
@@ -50636,7 +50639,7 @@ metadata:
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.0
+    helm.sh/chart: kube-state-metrics-5.16.4
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -50660,8 +50663,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50685,8 +50688,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50709,8 +50712,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.1
-    helm.sh/chart: grafana-7.3.0
+    app.kubernetes.io/version: 10.3.3
+    helm.sh/chart: grafana-7.3.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -50724,8 +50727,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.1
-    helm.sh/chart: grafana-7.3.0
+    app.kubernetes.io/version: 10.3.3
+    helm.sh/chart: grafana-7.3.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -50746,8 +50749,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.1
-    helm.sh/chart: grafana-7.3.0
+    app.kubernetes.io/version: 10.3.3
+    helm.sh/chart: grafana-7.3.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -50774,7 +50777,7 @@ metadata:
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.0
+    helm.sh/chart: kube-state-metrics-5.16.4
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -50802,7 +50805,7 @@ metadata:
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 1.7.0
-    helm.sh/chart: prometheus-node-exporter-4.26.1
+    helm.sh/chart: prometheus-node-exporter-4.30.3
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -50828,8 +50831,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50861,8 +50864,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     jobLabel: coredns
     metalk8s.scality.com/monitor: ''
@@ -50888,8 +50891,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     jobLabel: kube-controller-manager
     metalk8s.scality.com/monitor: ''
@@ -50916,8 +50919,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     jobLabel: kube-etcd
     metalk8s.scality.com/monitor: ''
@@ -50944,8 +50947,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     jobLabel: kube-proxy
     metalk8s.scality.com/monitor: ''
@@ -50972,8 +50975,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     jobLabel: kube-scheduler
     metalk8s.scality.com/monitor: ''
@@ -51001,8 +51004,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51027,8 +51030,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51060,8 +51063,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-thanos-discovery
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51091,7 +51094,7 @@ metadata:
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 1.7.0
-    helm.sh/chart: prometheus-node-exporter-4.26.1
+    helm.sh/chart: prometheus-node-exporter-4.30.3
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -51114,7 +51117,7 @@ spec:
         app.kubernetes.io/name: prometheus-node-exporter
         app.kubernetes.io/part-of: metalk8s
         app.kubernetes.io/version: 1.7.0
-        helm.sh/chart: prometheus-node-exporter-4.26.1
+        helm.sh/chart: prometheus-node-exporter-4.30.3
         heritage: metalk8s
         jobLabel: node-exporter
         release: prometheus-operator
@@ -51214,8 +51217,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.1
-    helm.sh/chart: grafana-7.3.0
+    app.kubernetes.io/version: 10.3.3
+    helm.sh/chart: grafana-7.3.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -51346,7 +51349,7 @@ spec:
           value: /var/lib/grafana/plugins
         - name: GF_PATHS_PROVISIONING
           value: /etc/grafana/provisioning
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:10.3.1
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:10.3.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -51430,7 +51433,7 @@ metadata:
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.0
+    helm.sh/chart: kube-state-metrics-5.16.4
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -51453,7 +51456,7 @@ spec:
         app.kubernetes.io/name: kube-state-metrics
         app.kubernetes.io/part-of: metalk8s
         app.kubernetes.io/version: 2.10.1
-        helm.sh/chart: kube-state-metrics-5.16.0
+        helm.sh/chart: kube-state-metrics-5.16.4
         heritage: metalk8s
         release: prometheus-operator
     spec:
@@ -51494,6 +51497,7 @@ spec:
           capabilities:
             drop:
             - ALL
+          readOnlyRootFilesystem: true
       hostNetwork: false
       nodeSelector:
         node-role.kubernetes.io/infra: ''
@@ -51523,8 +51527,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51546,12 +51550,13 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-operator-operator
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 56.6.2
-        chart: kube-prometheus-stack-56.6.2
+        app.kubernetes.io/version: 56.21.2
+        chart: kube-prometheus-stack-56.21.2
         heritage: metalk8s
         metalk8s.scality.com/monitor: ''
         release: prometheus-operator
     spec:
+      automountServiceAccountToken: true
       containers:
       - args:
         - --kubelet-service=kube-system/prometheus-operator-kubelet
@@ -51561,7 +51566,7 @@ spec:
         - --config-reloader-cpu-limit=0
         - --config-reloader-memory-request=0
         - --config-reloader-memory-limit=0
-        - --thanos-default-base-image={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("thanos", False, False) }}{%- raw %}:v0.34.0
+        - --thanos-default-base-image={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("thanos", False, False) }}{%- raw %}:v0.34.1
         - --secret-field-selector=type!=kubernetes.io/dockercfg,type!=kubernetes.io/service-account-token,type!=helm.sh/release.v1
         env:
         - name: GOGC
@@ -51579,6 +51584,7 @@ spec:
             drop:
             - ALL
           readOnlyRootFilesystem: true
+        volumeMounts: null
       nodeSelector:
         node-role.kubernetes.io/infra: ''
       securityContext:
@@ -51596,6 +51602,7 @@ spec:
       - effect: NoSchedule
         key: node-role.kubernetes.io/infra
         operator: Exists
+      volumes: null
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -51607,8 +51614,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.1
-    helm.sh/chart: grafana-7.3.0
+    app.kubernetes.io/version: 10.3.3
+    helm.sh/chart: grafana-7.3.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -51635,8 +51642,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51661,8 +51668,9 @@ spec:
         weight: 100
   alertmanagerConfigNamespaceSelector: {}
   alertmanagerConfigSelector: {}
+  automountServiceAccountToken: true
   externalUrl: http://prometheus-operator-alertmanager.metalk8s-monitoring:9093
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("alertmanager", False, False) }}{%- raw %}:v0.26.0
+  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("alertmanager", False, False) }}{%- raw %}:v0.27.0
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -51707,7 +51715,7 @@ spec:
   - effect: NoSchedule
     key: node-role.kubernetes.io/infra
     operator: Exists
-  version: v0.26.0
+  version: v0.27.0
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
@@ -51718,8 +51726,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51752,7 +51760,7 @@ spec:
   enableAdminAPI: {% endraw -%}{{ prometheus.spec.config.enable_admin_api }}{%- raw %}
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
   hostNetwork: false
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v2.49.1
+  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v2.50.1
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -51816,7 +51824,7 @@ spec:
     operator: Exists
   tsdb:
     outOfOrderTimeWindow: 0s
-  version: v2.49.1
+  version: v2.50.1
   walCompression: true
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -51828,8 +51836,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51989,8 +51997,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52022,8 +52030,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52210,8 +52218,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52272,8 +52280,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52300,8 +52308,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52327,8 +52335,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52354,8 +52362,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52381,8 +52389,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52408,8 +52416,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52497,8 +52505,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52565,8 +52573,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52698,8 +52706,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53020,8 +53028,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53053,8 +53061,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53130,8 +53138,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53155,8 +53163,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53192,8 +53200,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53258,8 +53266,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53335,8 +53343,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53374,8 +53382,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53643,8 +53651,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53776,8 +53784,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53790,8 +53798,8 @@ spec:
     - alert: KubePersistentVolumeFillingUp
       annotations:
         description: The PersistentVolume claimed by {{ $labels.persistentvolumeclaim
-          }} in Namespace {{ $labels.namespace }} on Cluster {{ $labels.cluster }}
-          is only {{ $value | humanizePercentage }} free.
+          }} in Namespace {{ $labels.namespace }} {{ with $labels.cluster -}} on Cluster
+          {{ . }} {{- end }} is only {{ $value | humanizePercentage }} free.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumefillingup
         summary: PersistentVolume is filling up.
       expr: |-
@@ -53812,9 +53820,9 @@ spec:
     - alert: KubePersistentVolumeFillingUp
       annotations:
         description: Based on recent sampling, the PersistentVolume claimed by {{
-          $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} on
-          Cluster {{ $labels.cluster }} is expected to fill up within four days. Currently
-          {{ $value | humanizePercentage }} is available.
+          $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} {{
+          with $labels.cluster -}} on Cluster {{ . }} {{- end }} is expected to fill
+          up within four days. Currently {{ $value | humanizePercentage }} is available.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumefillingup
         summary: PersistentVolume is filling up.
       expr: |-
@@ -53837,8 +53845,8 @@ spec:
     - alert: KubePersistentVolumeInodesFillingUp
       annotations:
         description: The PersistentVolume claimed by {{ $labels.persistentvolumeclaim
-          }} in Namespace {{ $labels.namespace }} on Cluster {{ $labels.cluster }}
-          only has {{ $value | humanizePercentage }} free inodes.
+          }} in Namespace {{ $labels.namespace }} {{ with $labels.cluster -}} on Cluster
+          {{ . }} {{- end }} only has {{ $value | humanizePercentage }} free inodes.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumeinodesfillingup
         summary: PersistentVolumeInodes are filling up.
       expr: |-
@@ -53859,9 +53867,10 @@ spec:
     - alert: KubePersistentVolumeInodesFillingUp
       annotations:
         description: Based on recent sampling, the PersistentVolume claimed by {{
-          $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} on
-          Cluster {{ $labels.cluster }} is expected to run out of inodes within four
-          days. Currently {{ $value | humanizePercentage }} of its inodes are free.
+          $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} {{
+          with $labels.cluster -}} on Cluster {{ . }} {{- end }} is expected to run
+          out of inodes within four days. Currently {{ $value | humanizePercentage
+          }} of its inodes are free.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumeinodesfillingup
         summary: PersistentVolumeInodes are filling up.
       expr: |-
@@ -53883,8 +53892,9 @@ spec:
         severity: warning
     - alert: KubePersistentVolumeErrors
       annotations:
-        description: The persistent volume {{ $labels.persistentvolume }} on Cluster
-          {{ $labels.cluster }} has status {{ $labels.phase }}.
+        description: The persistent volume {{ $labels.persistentvolume }} {{ with
+          $labels.cluster -}} on Cluster {{ . }} {{- end }} has status {{ $labels.phase
+          }}.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumeerrors
         summary: PersistentVolume is having issues with provisioning.
       expr: kube_persistentvolume_status_phase{phase=~"Failed|Pending",job="kube-state-metrics"}
@@ -53902,8 +53912,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53991,8 +54001,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54022,8 +54032,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54052,8 +54062,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54213,8 +54223,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54243,8 +54253,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54289,8 +54299,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54372,8 +54382,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54432,7 +54442,7 @@ spec:
     - alert: NodeDiskIOSaturation
       annotations:
         description: |-
-          Disk IO queue (aqu-sq) is high on {{ $labels.device }} at {{ $labels.instance }}, has been above 10 for the last 15 minutes, is currently at {{ printf "%.2f" $value }}.
+          Disk IO queue (aqu-sq) is high on {{ $labels.device }} at {{ $labels.instance }}, has been above 10 for the last 30 minutes, is currently at {{ printf "%.2f" $value }}.
           This symptom might indicate disk saturation.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/node/nodediskiosaturation
         summary: Disk IO queue is high.
@@ -54471,8 +54481,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54502,8 +54512,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54559,8 +54569,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54675,8 +54685,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54789,7 +54799,7 @@ spec:
         summary: Prometheus is not ingesting samples.
       expr: |-
         (
-          rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[5m]) <= 0
+          sum without(type) (rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[5m])) <= 0
         and
           (
             sum without(scrape_job) (prometheus_target_metadata_cache_entries{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}) > 0
@@ -55007,8 +55017,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.1
-    helm.sh/chart: grafana-7.3.0
+    app.kubernetes.io/version: 10.3.3
+    helm.sh/chart: grafana-7.3.3
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
   name: prometheus-operator-grafana
@@ -55039,7 +55049,7 @@ metadata:
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.0
+    helm.sh/chart: kube-state-metrics-5.16.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55065,7 +55075,7 @@ metadata:
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 1.7.0
-    helm.sh/chart: prometheus-node-exporter-4.26.1
+    helm.sh/chart: prometheus-node-exporter-4.30.3
     heritage: metalk8s
     jobLabel: node-exporter
     metalk8s.scality.com/monitor: ''
@@ -55093,8 +55103,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55107,7 +55117,6 @@ spec:
     port: http-web
   - path: /metrics
     port: reloader-web
-    scheme: http
   namespaceSelector:
     matchNames:
     - metalk8s-monitoring
@@ -55126,8 +55135,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55155,8 +55164,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-apiserver
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55195,8 +55204,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55228,8 +55237,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55257,8 +55266,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55286,8 +55295,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55319,8 +55328,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kubelet
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55414,8 +55423,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55442,8 +55451,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.6.2
-    chart: kube-prometheus-stack-56.6.2
+    app.kubernetes.io/version: 56.21.2
+    chart: kube-prometheus-stack-56.21.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55455,7 +55464,6 @@ spec:
     port: http-web
   - path: /metrics
     port: reloader-web
-    scheme: http
   namespaceSelector:
     matchNames:
     - metalk8s-monitoring

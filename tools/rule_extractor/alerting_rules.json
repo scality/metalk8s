@@ -648,6 +648,18 @@
         "severity": "warning"
     },
     {
+        "message": "Kubernetes API server client is experiencing errors.",
+        "name": "KubeClientErrors",
+        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{job=\"apiserver\"}[5m]))) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "Different semantic versions of Kubernetes components running.",
+        "name": "KubeVersionMismatch",
+        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
+        "severity": "warning"
+    },
+    {
         "message": "Target disappeared from Prometheus target discovery.",
         "name": "KubeAPIDown",
         "query": "absent(up{job=\"apiserver\"} == 1)",
@@ -688,18 +700,6 @@
         "name": "KubeControllerManagerDown",
         "query": "absent(up{job=\"kube-controller-manager\"} == 1)",
         "severity": "critical"
-    },
-    {
-        "message": "Kubernetes API server client is experiencing errors.",
-        "name": "KubeClientErrors",
-        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{job=\"apiserver\"}[5m]))) > 0.01",
-        "severity": "warning"
-    },
-    {
-        "message": "Different semantic versions of Kubernetes components running.",
-        "name": "KubeVersionMismatch",
-        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
-        "severity": "warning"
     },
     {
         "message": "Target disappeared from Prometheus target discovery.",
@@ -890,7 +890,7 @@
     {
         "message": "Prometheus is not ingesting samples.",
         "name": "PrometheusNotIngestingSamples",
-        "query": "(rate(prometheus_tsdb_head_samples_appended_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) <= 0 and (sum without (scrape_job) (prometheus_target_metadata_cache_entries{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}) > 0 or sum without (rule_group) (prometheus_rule_group_rules{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}) > 0))",
+        "query": "(sum without (type) (rate(prometheus_tsdb_head_samples_appended_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) <= 0 and (sum without (scrape_job) (prometheus_target_metadata_cache_entries{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}) > 0 or sum without (rule_group) (prometheus_rule_group_rules{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}) > 0))",
         "severity": "warning"
     },
     {
