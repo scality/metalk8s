@@ -13,6 +13,7 @@ def __virtual__():
 
 def list_cronjobs(
     suspended=None,
+    mark=None,
     all_namespaces=False,
     namespace="default",
     **kwargs,
@@ -51,6 +52,16 @@ def list_cronjobs(
             cronjob for cronjob in results if cronjob["spec"]["suspend"] == suspended
         ]
 
+    if mark is not None:
+        results = [
+            cronjob
+            for cronjob in results
+            if cronjob.get("metadata", {})
+            .get("annotations", {})
+            .get("metalk8s.scality.com/suspend_mark")
+            == mark
+        ]
+
     return results
 
 
@@ -83,7 +94,7 @@ def get_cronjob(name, namespace, **kwargs):
     return cronjob
 
 
-def _set_cronjob_suspend(name, namespace, suspend, **kwargs):
+def _set_cronjob_suspend(name, namespace, suspend, mark=None, **kwargs):
     """Set the suspend state of a CronJob.
 
     Args:
@@ -95,6 +106,15 @@ def _set_cronjob_suspend(name, namespace, suspend, **kwargs):
         True: if the suspend state has been updated.
     """
     cronjob = get_cronjob(name, namespace, **kwargs)
+    patch = {
+        "spec": {"suspend": suspend},
+        "metadata": {"annotations": {}},
+    }
+
+    if suspend and mark is not None:
+        patch["metadata"]["annotations"]["metalk8s.scality.com/suspend_mark"] = mark
+    else:
+        patch["metadata"]["annotations"]["metalk8s.scality.com/suspend_mark"] = None
 
     if cronjob["spec"]["suspend"] != suspend:
         __salt__["metalk8s_kubernetes.update_object"](
@@ -102,7 +122,7 @@ def _set_cronjob_suspend(name, namespace, suspend, **kwargs):
             apiVersion="batch/v1",
             name=name,
             namespace=namespace,
-            patch={"spec": {"suspend": suspend}},
+            patch=patch,
             old_object=cronjob,
             **kwargs,
         )
@@ -110,7 +130,7 @@ def _set_cronjob_suspend(name, namespace, suspend, **kwargs):
     return True
 
 
-def suspend_cronjob(name, namespace, **kwargs):
+def suspend_cronjob(name, namespace, mark=None, **kwargs):
     """Suspend a CronJob.
 
     Args:
@@ -120,7 +140,13 @@ def suspend_cronjob(name, namespace, **kwargs):
     Returns:
         True: if the suspend state has been updated.
     """
-    return _set_cronjob_suspend(name, namespace, suspend=True, **kwargs)
+    return _set_cronjob_suspend(
+        name,
+        namespace,
+        suspend=True,
+        mark=mark,
+        **kwargs,
+    )
 
 
 def activate_cronjob(name, namespace, **kwargs):
@@ -168,7 +194,14 @@ def get_jobs(cronjob_name, namespace, **kwargs):
     return filtered_jobs
 
 
-def stop_jobs(cronjob_name, namespace, wait=False, timeout_seconds=60, **kwargs):
+def stop_jobs(
+    cronjob_name,
+    namespace,
+    mark=None,
+    wait=False,
+    timeout_seconds=60,
+    **kwargs,
+):
     """Stop all Jobs created by a CronJob.
 
     Args:
@@ -183,7 +216,7 @@ def stop_jobs(cronjob_name, namespace, wait=False, timeout_seconds=60, **kwargs)
     Returns:
         list: list of Jobs that have been deleted.
     """
-    suspend_cronjob(cronjob_name, namespace, **kwargs)
+    suspend_cronjob(cronjob_name, namespace, mark, **kwargs)
 
     jobs = get_jobs(cronjob_name, namespace, **kwargs)
 
