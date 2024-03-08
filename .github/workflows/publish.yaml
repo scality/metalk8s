@@ -143,7 +143,7 @@ jobs:
           git tag -l --format='%(contents)' "${{ env.SHELL_UI_VERSION }}" | tail -n +4 >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v2
         if: inputs.is_production
         with:
           name: Metalk8s ${{ env.SHELL_UI_VERSION }}
