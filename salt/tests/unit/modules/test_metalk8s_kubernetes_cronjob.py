@@ -49,6 +49,7 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
         list_objects=None,
         namespace="default",
         suspended=None,
+        mark=None,
         all_namespaces=False,
         raises=False,
     ):
@@ -64,6 +65,7 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     result,
                     metalk8s_kubernetes_cronjob.list_cronjobs,
                     suspended=suspended,
+                    mark=mark,
                     all_namespaces=all_namespaces,
                     namespace=namespace,
                 )
@@ -72,6 +74,7 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertEqual(
                     metalk8s_kubernetes_cronjob.list_cronjobs(
                         suspended=suspended,
+                        mark=mark,
                         all_namespaces=all_namespaces,
                         namespace=namespace,
                     ),
@@ -113,14 +116,19 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
         name,
         namespace,
         suspend,
+        mark,
         spec_suspend,
+        mark_suspend,
     ):
         mock_get_object = MagicMock(
             return_value={
                 "name": name,
                 "namespace": namespace,
                 "spec": {"suspend": spec_suspend},
-                "metadata": {"uid": "1234"},
+                "metadata": {
+                    "uid": "1234",
+                    "annotations": {"metalk8s.scality.com/suspend_mark": mark_suspend},
+                },
             }
         )
         mock_update_object = MagicMock(return_value=None)
@@ -135,17 +143,17 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
             self.assertEqual(
                 metalk8s_kubernetes_cronjob._set_cronjob_suspend(
-                    name, namespace, suspend
+                    name,
+                    namespace,
+                    suspend,
+                    mark,
                 ),
                 result,
             )
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["suspend_cronjob"])
     def test_suspend_cronjob(
-        self,
-        result,
-        name="my_cronjob",
-        namespace="default",
+        self, result, name="my_cronjob", namespace="default", mark=None
     ):
         mock__set_cronjob_suspend = MagicMock(return_value=True)
 
@@ -156,7 +164,8 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
         ):
 
             self.assertEqual(
-                metalk8s_kubernetes_cronjob.suspend_cronjob(name, namespace), result
+                metalk8s_kubernetes_cronjob.suspend_cronjob(name, namespace, mark),
+                result,
             )
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["activate_cronjob"])
@@ -211,6 +220,7 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
         result,
         cronjob_name,
         namespace,
+        mark=None,
         wait=False,
         timeout_seconds=60,
         get_jobs=None,
@@ -247,6 +257,7 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     metalk8s_kubernetes_cronjob.stop_jobs,
                     cronjob_name,
                     namespace,
+                    mark,
                     wait,
                     timeout_seconds,
                 )
@@ -255,6 +266,7 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     metalk8s_kubernetes_cronjob.stop_jobs(
                         cronjob_name,
                         namespace,
+                        mark,
                         wait,
                         timeout_seconds,
                     ),

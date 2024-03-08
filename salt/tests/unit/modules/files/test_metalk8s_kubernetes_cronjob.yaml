@@ -5,10 +5,16 @@ list_cronjobs:
         namespace: default
         spec:
           suspend: false
+        metadata:
+          annotations:
+            metalk8s.scality.com/suspend_mark: null
       - name: my_cronjob2
         namespace: default
         spec:
           suspend: true
+        metadata:
+          annotations:
+            metalk8s.scality.com/suspend_mark: marked
     all_namespaces: true
     namespace: default
     result: *_list_objects_default
@@ -76,6 +82,20 @@ list_cronjobs:
         spec:
           suspend: false
 
+  # marked
+  - list_objects: *_list_objects_default
+    all_namespaces: true
+    suspended: true
+    mark: marked
+    result:
+      - name: my_cronjob2
+        namespace: default
+        spec:
+          suspend: true
+        metadata:
+          annotations:
+            metalk8s.scality.com/suspend_mark: marked
+
   # No cronjobs
   - raises: True
     suspended: true
@@ -121,21 +141,36 @@ _set_cronjob_suspend:
   - name: my_cronjob
     namespace: default
     suspend: false
+    mark: null
     spec_suspend: true
+    mark_suspend: null
     result: True
 
   # my-namespace set to true
   - name: my_cronjob
     namespace: my_namespace
     suspend: true
+    mark: null
     spec_suspend: false
+    mark_suspend: null
+    result: True
+
+  # mark
+  - name: my_cronjob
+    namespace: my_namespace
+    suspend: true
+    mark: marked
+    spec_suspend: false
+    mark_suspend: marked
     result: True
 
   # Already in the wanted state
   - name: my_cronjob
     namespace: my_namespace
     suspend: true
+    mark: null
     spec_suspend: true
+    mark_suspend: null
     result: True
 
 suspend_cronjob:
