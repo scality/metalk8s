@@ -19,8 +19,7 @@
 
 - Bump kube-prometheus-stack chart version to
   [56.19.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-56.19.0)
-  (PR[#4234](https://github.com/scality/metalk8s/pull/4234))
-  (PR[#4250](https://github.com/scality/metalk8s/pull/4250))
+  (PR[#4259](https://github.com/scality/metalk8s/pull/4259))
 
   This change includes:
 
@@ -33,7 +32,7 @@
   - Bump grafana chart version to
     [7.3.0](https://github.com/grafana/helm-charts/releases/tag/grafana-7.3.0),
     Grafana container version to
-    [10.3.1](https://github.com/grafana/grafana/releases/tag/v10.3.1),
+    [10.3.3](https://github.com/grafana/grafana/releases/tag/v10.3.3),
     and kiwigrid/k8s-sidecar container version to
     [1.25.2](https://github.com/kiwigrid/k8s-sidecar/releases/tag/1.25.2)
   - Bump kube-state-metrics chart version to
