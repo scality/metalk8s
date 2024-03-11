@@ -24,6 +24,7 @@ def list_cronjobs(
         suspended (bool, optional): filter on the suspended state. Defaults to None.
         all_namespaces (bool, optional): filter to get all namespaces at once. Defaults to False.
         namespace (str, optional): filter on a specific namespace. Defaults to "default".
+        mark (str, optional): filter on the mark set in the annotation of the CronJob. Defaults to None.
 
     Raises:
         CommandExecutionError: if there is no result for the given criteria.
@@ -101,6 +102,7 @@ def _set_cronjob_suspend(name, namespace, suspend, mark=None, **kwargs):
         name (str): name of the CronJob.
         namespace (str): namespace of the CronJob.
         suspend (bool): the new suspend state.
+        mark (str, optional): a mark to set in the annotation of the CronJob. Defaults to None.
 
     Returns:
         True: if the suspend state has been updated.
@@ -136,6 +138,7 @@ def suspend_cronjob(name, namespace, mark=None, **kwargs):
     Args:
         name (str): name of the CronJob.
         namespace (str): namespace of the CronJob.
+        mark (str, optional): a mark to set in the annotation of the CronJob. Defaults to None.
 
     Returns:
         True: if the suspend state has been updated.
@@ -149,17 +152,18 @@ def suspend_cronjob(name, namespace, mark=None, **kwargs):
     )
 
 
-def activate_cronjob(name, namespace, **kwargs):
+def activate_cronjob(name, namespace, mark=None, **kwargs):
     """Activate a CronJob.
 
     Args:
         name (str): name of the CronJob.
         namespace (str): namespace of the CronJob.
+        mark (str, optional): a mark to set in the annotation of the CronJob. Defaults to None.
 
     Returns:
         True: if the suspend state has been updated.
     """
-    return _set_cronjob_suspend(name, namespace, suspend=False, **kwargs)
+    return _set_cronjob_suspend(name, namespace, suspend=False, mark=mark, **kwargs)
 
 
 def get_jobs(cronjob_name, namespace, **kwargs):
@@ -202,7 +206,7 @@ def stop_jobs(
     timeout_seconds=60,
     **kwargs,
 ):
-    """Stop all Jobs created by a CronJob.
+    """Suspend the CronJob and delete all its Jobs.
 
     Args:
         cronjob_name (str): name of the CronJob.
@@ -247,4 +251,5 @@ def stop_jobs(
                 f"for CronJob {cronjob_name} in namespace {namespace}"
             )
 
+    # Return the list of deleted jobs
     return jobs
