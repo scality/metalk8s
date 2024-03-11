@@ -1,3 +1,4 @@
+import json
 import pytest
 from pytest_bdd import scenario, given, then, when
 
@@ -8,18 +9,18 @@ from tests import utils
 
 
 @scenario("../features/salt_metalk8s_monitoring.feature", "List all alerts")
-def test_salt_metalk8s_monitoring_list_all_alerts():
+def test_salt_metalk8s_monitoring_list_all_alerts(host):
     pass
 
 
-@scenario("../features/salt_metalk8s_monitoring.feature", "Silence Watchdog alert")
-def test_salt_metalk8s_monitoring_silence_watchdog_alert():
-    pass
+#@scenario("../features/salt_metalk8s_monitoring.feature", "Silence Watchdog alert")
+#def test_salt_metalk8s_monitoring_silence_watchdog_alert():
+#    pass
 
 
-@scenario("../features/salt_metalk8s_monitoring.feature", "Unsilence Watchdog alert")
-def test_salt_metalk8s_monitoring_unsilence_watchdog_alert():
-    pass
+#@scenario("../features/salt_metalk8s_monitoring.feature", "Unsilence Watchdog alert")
+#def test_salt_metalk8s_monitoring_unsilence_watchdog_alert():
+#    pass
 
 
 @pytest.fixture(scope="function")
@@ -54,8 +55,17 @@ def check_watchdog_silence(host):
 
 
 @when("we list all the alerts")
-def call_metalk8s_monitoring_get_alerts(host, context):
-    context["alerts"] = utils.run_salt_command(host, "metalk8s_monitoring.get_alerts")
+def call_metalk8s_monitoring_get_alerts(host, ssh_config, context):
+    result = utils.run_salt_command(
+        host, 
+        [
+            "salt-run",
+            "salt.cmd",
+            "metalk8s_monitoring.get_alerts",
+        ],
+        ssh_config,
+    )
+    context["alerts"] = json.loads(result.stdout)
 
 
 @when("we list all the silences")

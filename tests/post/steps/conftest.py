@@ -143,9 +143,9 @@ def check_prometheus_api(prometheus_api):
 
 
 @given("the Salt Master is available")
-def check_salt_master(host):
+def check_salt_master(host, ssh_config):
     try:
-        utils.run_salt_command(host, ["test.ping"])
+        utils.run_salt_command(host, ["salt-run", "test.ping"], ssh_config)
     except Exception as exc:
         pytest.fail(str(exc))
 
