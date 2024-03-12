@@ -134,6 +134,14 @@ def node_control_plane_ip_is_not_equal_to_its_workload_plane_ip(host):
         pytest.skip("Node control-plane IP is equal to node workload-plane IP")
 
 
+@given("the Prometheus API is available")
+def check_prometheus_api(prometheus_api):
+    try:
+        prometheus_api.get_targets()
+    except utils.PrometheusApiError as exc:
+        pytest.fail(str(exc))
+
+
 # }}}
 
 # Then {{{
