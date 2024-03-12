@@ -89,6 +89,15 @@ alertmanager_api_helper:
       Received HTTP code 401 when querying Alertmanager API on
       http://10.0.0.1:1234/api/v1/alerts
 
+  - _id: nominal-delete
+    ips_and_ports: *alertmanager_ips_and_ports
+    route: api/v1/alerts
+    resp_body:
+      status: success
+    result: True
+    called_with:
+      args: [GET, 'http://10.0.0.1:1234/api/v1/alerts']
+
 add_silence:
   - _id: nominal
     value: SomeAlertName

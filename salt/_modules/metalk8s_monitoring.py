@@ -108,7 +108,9 @@ def delete_silence(silence_id, **kwargs):
         salt-call metalk8s_monitoring.delete_silence \
             64d84a9e-cc6e-41ce-83ff-e84771ff6872
     """
-    _requests_alertmanager_api(f"api/v1/silence/{silence_id}", "DELETE", **kwargs)
+    return _requests_alertmanager_api(
+        f"api/v1/silence/{silence_id}", "DELETE", **kwargs
+    )
 
 
 def get_silences(state=None, **kwargs):
@@ -205,5 +207,10 @@ def _requests_alertmanager_api(route, method="GET", **kwargs):
 
     if json["status"] == "error":
         raise CommandExecutionError(f"{json['errorType']}: {json['error']}")
+
+    # When we successfully delete a silence, the API returns a 200 with a
+    # `status` key set to `success` and no `data` key.
+    if json["status"] == "success" and json.get("data") is None:
+        return True
 
     return json.get("data")
