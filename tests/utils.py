@@ -211,6 +211,16 @@ def patch_bootstrap_config(context, host, patch):
         )
 
 
+def negation(value):
+    """Parse an optional negation after a verb (in a Gherkin feature spec)."""
+    if value == "":
+        return False
+    elif value in [" not", "not"]:
+        return True
+    else:
+        raise ValueError("Cannot parse '{}' as an optional negation".format(value))
+
+
 class BaseAPIError(Exception):
     """Some error occurred when using a `BaseAPI` subclass."""
 
