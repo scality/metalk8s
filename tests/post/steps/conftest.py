@@ -1,5 +1,7 @@
 # coding: utf-8
 
+import json
+
 from kubernetes.client import CustomObjectsApi
 from kubernetes.client import StorageV1Api
 import pytest
@@ -145,9 +147,23 @@ def check_prometheus_api(prometheus_api):
 @given("the Salt Master is available")
 def check_salt_master(host, ssh_config):
     try:
-        utils.run_salt_command(host, ["salt-run", "test.ping"], ssh_config)
+        result = utils.run_salt_command(
+            host,
+            [
+                "salt-run",
+                "salt.cmd",
+                "test.ping",
+                "--out=json",
+                "--log-level=quiet",
+            ],
+            ssh_config,
+        )
+        if not json.loads(result.stdout):
+            pytest.fail("Salt Master is not available")
     except Exception as exc:
-        pytest.fail(str(exc))
+        pytest.fail(f"Salt Master is not available: {exc!s}")
+
+    
 
 
 # }}}
