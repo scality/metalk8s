@@ -419,11 +419,13 @@ SCALITY_REDHAT_8_REPOSITORY: targets.RPMRepository = _rpm_repository(
 REDHAT_REPOSITORIES: Dict[str, Tuple[targets.RPMRepository, ...]] = {
     "7": (
         SCALITY_REDHAT_7_REPOSITORY,
+        _rpm_repository(name="epel", releasever="7"),
         _rpm_repository(name="kubernetes", releasever="7"),
         _rpm_repository(name="saltstack", releasever="7"),
     ),
     "8": (
         SCALITY_REDHAT_8_REPOSITORY,
+        _rpm_repository(name="epel", releasever="8"),
         _rpm_repository(name="kubernetes", releasever="8"),
         _rpm_repository(name="saltstack", releasever="8"),
     ),

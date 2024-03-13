@@ -2,6 +2,9 @@
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 {%- from "metalk8s/map.jinja" import kubernetes with context %}
 
+include:
+  - metalk8s.internal.m2crypto
+
 {%- if pillar.get('apiserver_ip') %}
 {%-     set apiserver_ip = pillar.apiserver_ip %}
 {%- else %}
@@ -26,3 +29,5 @@ Create kubeconfig file for admin:
     - days_remaining: {{
         certificates.kubeconfig.files.admin.days_remaining |
         default(certificates.kubeconfig.days_remaining) }}
+    - require:
+      - metalk8s_package_manager: Install m2crypto

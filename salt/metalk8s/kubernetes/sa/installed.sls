@@ -1,14 +1,20 @@
 {%- set private_key_path = "/etc/kubernetes/pki/sa.key" %}
 
+include:
+  - metalk8s.internal.m2crypto
+
 Create SA private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-    - keysize: 2048
+    - bits: 2048
+    - verbose: False
     - user: root
     - group: root
     - mode: '0600'
     - makedirs: True
     - dir_mode: '0755'
+    - require:
+      - metalk8s_package_manager: Install m2crypto
     - unless:
       - test -f "{{ private_key_path }}"
 

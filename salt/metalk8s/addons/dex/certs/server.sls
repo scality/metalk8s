@@ -7,15 +7,21 @@
 {%- set oidc_service_ip = salt.metalk8s_network.get_oidc_service_ip() %}
 {%- set private_key_path = "/etc/metalk8s/pki/dex/server.key" %}
 
+include:
+  - metalk8s.internal.m2crypto
+
 Create Dex server private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-    - keysize: 4096
+    - bits: 4096
+    - verbose: False
     - user: root
     - group: root
     - mode: '0600'
     - makedirs: True
     - dir_mode: '0755'
+    - require:
+      - metalk8s_package_manager: Install m2crypto
     - unless:
       - test -f "{{ private_key_path }}"
 
@@ -34,7 +40,7 @@ Create Dex server private key:
 Generate Dex server certificate:
   x509.certificate_managed:
     - name: {{ certificates.server.files.dex.path }}
-    - private_key: {{ private_key_path }}
+    - public_key: {{ private_key_path }}
     - ca_server: {{ pillar.metalk8s.ca.minion }}
     - signing_policy: {{ dex.cert.server_signing_policy }}
     - CN: dex-server
