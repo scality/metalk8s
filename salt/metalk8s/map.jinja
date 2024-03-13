@@ -48,6 +48,7 @@
         'python36-psutil': 'python3-psutil',
         'python36-pyOpenSSL': 'python3-pyOpenSSL',
         'python36-rpm': 'python3-rpm',
+        'm2crypto': 'python3-m2crypto',
         'ebtables': 'iptables-ebtables',
         'yum-plugin-versionlock': 'python3-dnf-plugin-versionlock',
       }
@@ -89,6 +90,15 @@
     'RedHat': {
       7: {
         'repositories': {
+          'metalk8s-epel': {
+            'humanname': 'EPEL',
+            'gpgcheck': 1,
+            'gpgkeys': [
+                'RPM-GPG-KEY-metalk8s-epel-7_1',
+            ],
+            'repo_gpg_check': 0,
+            'enabled': 1,
+          },
           'metalk8s-kubernetes': {
             'humanname': 'Kubernetes',
             'gpgcheck': 1,
@@ -118,6 +128,15 @@
       },
       8: {
         'repositories': {
+          'metalk8s-epel': {
+            'humanname': 'EPEL',
+            'gpgcheck': 1,
+            'gpgkeys': [
+                'RPM-GPG-KEY-metalk8s-epel-8_1',
+            ],
+            'repo_gpg_check': 0,
+            'enabled': 1,
+          },
           'metalk8s-kubernetes': {
             'humanname': 'Kubernetes',
             'gpgcheck': 1,

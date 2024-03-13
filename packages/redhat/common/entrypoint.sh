@@ -5,6 +5,7 @@ set -u
 set -o pipefail
 
 declare -r ENABLED_REPOS=(
+    epel
     kubernetes
     saltstack
 )
@@ -124,6 +125,11 @@ download_repository_gpg_keys() {
 add_dependencies(){
     while read -r name dependency repo relpath; do
         case $repo in
+            epel)
+                if [ ${#EPEL_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${EPEL_DEPS[@]}"; then
+                    EPEL_DEPS+=("$dependency")
+                fi
+                ;;
             kubernetes)
                 if [ ${#KUBERNETES_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${KUBERNETES_DEPS[@]}"; then
                     KUBERNETES_DEPS+=("$dependency")
@@ -146,7 +152,7 @@ add_dependencies(){
 
 download_packages() {
     set -x
-    declare -ga KUBERNETES_DEPS=() SALT_DEPS=()
+    declare -ga EPEL_DEPS=() KUBERNETES_DEPS=() SALT_DEPS=()
     local -r releasever=${RELEASEVER:-7}
     local -a packages=("$@")
     local query_format query_opts repo_dir
@@ -184,6 +190,9 @@ download_packages() {
         download_repository_gpg_keys "$repo"
 
         case $repo in
+            epel)
+                dependencies=("${EPEL_DEPS[@]}")
+                ;;
             kubernetes)
                 dependencies=("${KUBERNETES_DEPS[@]}")
                 ;;

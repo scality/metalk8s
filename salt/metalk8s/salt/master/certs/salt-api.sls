@@ -4,16 +4,21 @@
 
 {%- set private_key_path = "/etc/salt/pki/api/salt-api.key" %}
 
+include:
+  - metalk8s.internal.m2crypto
 
 Create Salt API private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-    - keysize: 2048
+    - bits: 2048
+    - verbose: False
     - user: root
     - group: root
     - mode: '0600'
     - makedirs: True
     - dir_mode: '0755'
+    - require:
+      - metalk8s_package_manager: Install m2crypto
     - unless:
       - test -f "{{ private_key_path }}"
 
@@ -30,7 +35,7 @@ Create Salt API private key:
 Generate Salt API certificate:
   x509.certificate_managed:
     - name: {{ certificates.server.files['salt-api'].path }}
-    - private_key: {{ private_key_path }}
+    - public_key: {{ private_key_path }}
 {%- if salt.config.get('file_client') != 'local' %}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
 {%- endif %}

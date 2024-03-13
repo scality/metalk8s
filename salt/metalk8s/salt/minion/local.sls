@@ -26,5 +26,3 @@ Configure salt minion for local mode:
         ext_pillar:
           - metalk8s: /etc/metalk8s/bootstrap.yaml
         retry_dns_count: 3
-        features:
-          x509_v2: true
