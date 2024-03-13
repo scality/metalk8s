@@ -199,23 +199,25 @@ export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
     .map((streamValue) => streamValue.values)
     .reduce((agg, value) => [...agg, ...value], [])
     .reduce((agg, value) => {
-      const alert = JSON.parse(value[1]);
+      const parsedLogLine = JSON.parse(value[1]);
+      const alert = JSON.parse(parsedLogLine.message);
       return {
         ...agg,
         [`${alert.fingerprint}-${alert.startsAt}`]: {
           id: alert.fingerprint,
           summary: (alert.annotations && alert.annotations.summary) || '',
           description:
-            alert.annotations.description || alert.annotations.message,
+            alert.annotations?.description || alert.annotations?.message || '',
           startsAt: alert.startsAt,
           endsAt: alert.status === 'firing' ? null : alert.endsAt,
-          severity: alert.labels.severity,
+          severity: alert.labels?.severity || 'unknown',
           documentationUrl:
             (alert.annotations && alert.annotations.runbook_url) || '',
           labels: {
-            ...alert.labels,
+            ...(alert.labels || {}),
             selectors:
-              (alert.annotations.selectors &&
+              (alert.annotations &&
+                alert.annotations.selectors &&
                 alert.annotations.selectors.split(',')) ||
               [],
           },
