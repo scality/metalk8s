@@ -110,7 +110,50 @@ describe('NodePageOverviewTab', () => {
     await userEvent.keyboard('{enter}');
 
     expect(SUT).toHaveBeenCalledWith({
-      metadata: { labels: { 'metalk8s.scality.com/name': NEW_DISPLAY_NAME } },
+      metadata: {
+        labels: {
+          'metalk8s.scality.com/name': `${props.nodeName}${NEW_DISPLAY_NAME}`,
+        },
+      },
     });
+  });
+
+  it('should display name even if displayName is not empty', async () => {
+    const testProps = {
+      nodeName: 'mock-node',
+      nodeTableData: [
+        {
+          id: 'mock-id',
+          name: {
+            name: 'mock-node',
+            displayName: '',
+            controlPlaneIP: '',
+            workloadPlaneIP: '',
+          },
+          status: {
+            status: 'ready',
+            conditions: [],
+            statusTextColor: '#0AADA6',
+            computedStatus: ['ready'],
+          },
+          roles: 'bootstrap',
+          health: {
+            health: 'healthy',
+            totalAlertsCounter: 0,
+            criticalAlertsCounter: 0,
+            warningAlertsCounter: 0,
+          },
+        },
+      ],
+      nodes: [],
+      pods: [],
+      volumes: [],
+    };
+
+    render(<NodePageOverviewTab {...testProps} />);
+
+    const inputs = await screen.findAllByText(testProps.nodeName);
+
+    expect(inputs.length).toBe(2);
   });
 });

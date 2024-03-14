@@ -226,7 +226,9 @@ const NodePageOverviewTab = (props) => {
                 id="node-name-input"
                 autoFocus
                 changeMutation={mutation}
-                defaultValue={currentNode?.name?.displayName}
+                defaultValue={
+                  currentNode?.name?.displayName || currentNode?.name?.name
+                }
               />
             </Stack>
             <OverviewInformationSpan>
