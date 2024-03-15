@@ -88,7 +88,7 @@ def add_silence(
     }
 
     response = _requests_alertmanager_api(
-        "api/v1/silences", "POST", json=body, **kwargs
+        "api/v2/silences", "POST", json=body, **kwargs
     )
 
     return response["silenceId"]
@@ -109,7 +109,7 @@ def delete_silence(silence_id, **kwargs):
             64d84a9e-cc6e-41ce-83ff-e84771ff6872
     """
     return _requests_alertmanager_api(
-        f"api/v1/silence/{silence_id}", "DELETE", **kwargs
+        f"api/v2/silence/{silence_id}", "DELETE", **kwargs
     )
 
 
@@ -128,8 +128,9 @@ def get_silences(state=None, **kwargs):
         salt-call metalk8s_monitoring.get_silences
         salt-call metalk8s_monitoring.get_silences state=active
     """
-    response = _requests_alertmanager_api("api/v1/silences", "GET", **kwargs)
-
+    response = _requests_alertmanager_api("api/v2/silences", "GET", **kwargs)
+    if response is None or response == []:
+        return []
     if state is not None:
         silences = [
             silence for silence in response if silence["status"]["state"] == state
@@ -155,8 +156,9 @@ def get_alerts(state=None, **kwargs):
         salt-call metalk8s_monitoring.get_alerts
         salt-call metalk8s_monitoring.get_alerts state=suppressed
     """
-    response = _requests_alertmanager_api("api/v1/alerts", "GET", **kwargs)
-
+    response = _requests_alertmanager_api("api/v2/alerts", "GET", **kwargs)
+    if response is None or response == []:
+        return []
     if state is not None:
         alerts = [alert for alert in response if alert["status"]["state"] == state]
     else:

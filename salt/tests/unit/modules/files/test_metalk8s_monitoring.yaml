@@ -182,6 +182,14 @@ get_silences:
     result:
       - *active_silence
 
+  - _id: get_empty
+    response: []
+    result: []
+
+  - _id: get_none
+    response: null
+    result: []
+
 get_alerts:
   - _id: without-state
     response: &alerts_list
@@ -203,3 +211,11 @@ get_alerts:
     response: *alerts_list
     result:
       - *active_alert
+
+  - _id: get_empty
+    response: []
+    result: []
+
+  - _id: get_none
+    response: null
+    result: []
