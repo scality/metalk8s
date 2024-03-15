@@ -161,7 +161,7 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
         request_mock.assert_called_once()
         self.assertEqual(
             request_mock.call_args[0],
-            ("api/v1/silence/d287796c-cf59-4d10-8e5b-d5cc3ff51b9c", "DELETE"),
+            ("api/v2/silence/d287796c-cf59-4d10-8e5b-d5cc3ff51b9c", "DELETE"),
         )
 
     @parameterized.expand(
