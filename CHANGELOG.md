@@ -4,6 +4,9 @@
 
 ### Enhancements
 
+- Update "Node Exporter Full" Dashboard
+  (PR[#4268](https://github.com/scality/metalk8s/pull/4268))
+
 - Add a Check to ensure pods/services CIDRs don't overlap
   Workload Plane/Control Plane CIDRs.
   (PR[#4217](https://github.com/scality/metalk8s/pull/4217))
