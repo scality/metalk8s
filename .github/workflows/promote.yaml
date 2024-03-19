@@ -10,9 +10,16 @@ jobs:
     uses: ./.github/workflows/build.yaml
     secrets: inherit
 
+  generate-sbom:
+    needs:
+      - build
+    uses: ./.github/workflows/generate-sbom.yaml
+    secrets: inherit
+
   promote-artifacts:
     needs:
       - build
+      - generate-sbom
     runs-on: ubuntu-20.04
     outputs:
       artifact-link: ${{ steps.promote.outputs.link }}
