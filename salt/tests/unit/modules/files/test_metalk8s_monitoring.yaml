@@ -7,13 +7,13 @@ alertmanager_api_helper:
       ports:
         http-web: 1234
         reloader-web: 1235
-    route: api/v1/alerts
-    resp_body:
-      status: success
+    route: api/v2/alerts
+    resp_content:
       data: some result
-    result: some result
+    result:
+      data: some result
     called_with:
-      args: [GET, 'http://10.0.0.1:1234/api/v1/alerts']
+      args: [GET, 'http://10.0.0.1:1234/api/v2/alerts']
 
   - _id: bad-endpoint
     ips_and_ports:
@@ -23,7 +23,7 @@ alertmanager_api_helper:
       ports:
         web: 1234
         reloader-web: 1235
-    route: api/v1/alerts
+    route: api/v2/alerts
     raises: True
     request_called_once: False
     result: >-
@@ -31,7 +31,7 @@ alertmanager_api_helper:
 
   - _id: empty-endpoint
     ips_and_ports: {}
-    route: api/v1/alerts
+    route: api/v2/alerts
     raises: True
     request_called_once: False
     result: >-
@@ -43,10 +43,10 @@ alertmanager_api_helper:
     method: POST
     json:
       my-data: my-value
-    resp_body:
-      status: success
+    resp_content:
       data: some result
-    result: some result
+    result:
+      data: some result
     called_with:
       args: [POST, 'http://10.0.0.1:1234/my-route']
       kwargs:
@@ -54,49 +54,51 @@ alertmanager_api_helper:
 
   - _id: request-error
     ips_and_ports: *alertmanager_ips_and_ports
-    route: api/v1/alerts
+    route: api/v2/alerts
     request_raises: 'some request error'
     raises: True
     result: >-
-      Unable to query Alertmanager API on http://10.0.0.1:1234/api/v1/alerts
+      Unable to query Alertmanager API on http://10.0.0.1:1234/api/v2/alerts
 
   - _id: response-error
     ips_and_ports: *alertmanager_ips_and_ports
-    route: api/v1/alerts
-    resp_body:
-      status: error
-      error: 'some error happened'
-      errorType: 'IMPOSSIBRU'
+    route: api/v2/alerts
+    resp_status: 404
+    resp_content:
+      code: 601
+      message: 'alert not found'
     raises: True
-    result: 'IMPOSSIBRU: some error happened'
+    result: >-
+      Received HTTP code 404 when querying Alertmanager API on
+      http://10.0.0.1:1234/api/v2/alerts
+      Error message: '{"code": 601, "message": "alert not found"}'
 
   - _id: response-bad-format
     ips_and_ports: *alertmanager_ips_and_ports
-    route: api/v1/alerts
-    resp_body: 'wrong format'
-    resp_status: 200
+    route: api/v2/alerts
+    resp_content: 'wrong format'
     raises: True
     result: >-
-      Malformed response returned from Alertmanager API: .*: wrong format
+      Unable to decode JSON response from Alertmanager API
+      Content: 'wrong format'
 
   - _id: response-bad-status
     ips_and_ports: *alertmanager_ips_and_ports
-    route: api/v1/alerts
-    resp_body: null
+    route: api/v2/alerts
     resp_status: 401
+    resp_content: Unauthorized
     raises: True
     result: >-
       Received HTTP code 401 when querying Alertmanager API on
-      http://10.0.0.1:1234/api/v1/alerts
+      http://10.0.0.1:1234/api/v2/alerts
+      Error message: 'Unauthorized'
 
   - _id: nominal-delete
     ips_and_ports: *alertmanager_ips_and_ports
-    route: api/v1/alerts
-    resp_body:
-      status: success
+    route: api/v2/alerts
     result: True
     called_with:
-      args: [GET, 'http://10.0.0.1:1234/api/v1/alerts']
+      args: [GET, 'http://10.0.0.1:1234/api/v2/alerts']
 
 add_silence:
   - _id: nominal
