@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: CronJob
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: test-container
+              image: ""
+              command:
+                - /bin/sh
+                - -c
+                - echo "Hello, World!" && sleep 300 && echo "Goodbye, World!"
+          restartPolicy: OnFailure

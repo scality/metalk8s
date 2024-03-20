@@ -42,8 +42,8 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
             metalk8s_kubernetes_cronjob.__virtual__(), "metalk8s_kubernetes_cronjob"
         )
 
-    @utils.parameterized_from_cases(YAML_TESTS_CASES["list_cronjobs"])
-    def test_list_cronjobs(
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["get_cronjobs"])
+    def test_get_cronjobs(
         self,
         result,
         list_objects=None,
@@ -63,7 +63,7 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
-                    metalk8s_kubernetes_cronjob.list_cronjobs,
+                    metalk8s_kubernetes_cronjob.get_cronjobs,
                     suspended=suspended,
                     mark=mark,
                     all_namespaces=all_namespaces,
@@ -72,7 +72,7 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
             else:
                 self.assertEqual(
-                    metalk8s_kubernetes_cronjob.list_cronjobs(
+                    metalk8s_kubernetes_cronjob.get_cronjobs(
                         suspended=suspended,
                         mark=mark,
                         all_namespaces=all_namespaces,
@@ -191,7 +191,7 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
     def test_get_jobs(
         self,
         result,
-        cronjob_name,
+        name,
         namespace,
         list_objects=None,
         get_cronjob=None,
@@ -210,15 +210,15 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
             mock_get_cronjob,
         ):
             self.assertEqual(
-                metalk8s_kubernetes_cronjob.get_jobs(cronjob_name, namespace),
+                metalk8s_kubernetes_cronjob.get_jobs(name, namespace),
                 result,
             )
 
-    @utils.parameterized_from_cases(YAML_TESTS_CASES["stop_jobs"])
-    def test_stop_jobs(
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["suspend_cronjob_and_delete_jobs"])
+    def test_suspend_cronjob_and_delete_jobs(
         self,
         result,
-        cronjob_name,
+        name,
         namespace,
         mark=None,
         wait=False,
@@ -230,7 +230,7 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         launch_ts = time.time()
 
-        def get_jobs_call(cronjob_name, namespace, **kwargs):
+        def get_jobs_call(name, namespace, **kwargs):
             if wait and time.time() - launch_ts >= delete_jobs_delay:
                 return []
             return get_jobs
@@ -254,8 +254,8 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertRaisesRegex(
                     CommandExecutionError,
                     re.escape(result),
-                    metalk8s_kubernetes_cronjob.stop_jobs,
-                    cronjob_name,
+                    metalk8s_kubernetes_cronjob.suspend_cronjob_and_delete_jobs,
+                    name,
                     namespace,
                     mark,
                     wait,
@@ -263,8 +263,8 @@ class Metalk8sKubernetesCronjobTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 )
             else:
                 self.assertEqual(
-                    metalk8s_kubernetes_cronjob.stop_jobs(
-                        cronjob_name,
+                    metalk8s_kubernetes_cronjob.suspend_cronjob_and_delete_jobs(
+                        name,
                         namespace,
                         mark,
                         wait,

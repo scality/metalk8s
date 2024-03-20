@@ -122,14 +122,6 @@ def teardown(context, k8s_client):
 # Given {{{
 
 
-@given("the Prometheus API is available")
-def check_prometheus_api(prometheus_api):
-    try:
-        prometheus_api.get_targets()
-    except utils.PrometheusApiError as exc:
-        pytest.fail(str(exc))
-
-
 @given("the Grafana API is available")
 def check_grafana_api(grafana_api):
     try:

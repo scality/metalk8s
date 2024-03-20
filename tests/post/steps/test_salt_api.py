@@ -1,5 +1,4 @@
 import ast
-import base64
 
 import kubernetes.client
 import requests
@@ -7,15 +6,7 @@ import requests
 import pytest
 from pytest_bdd import parsers, scenario, then, when
 
-
-def _negation(value):
-    """Parse an optional negation after a verb (in a Gherkin feature spec)."""
-    if value == "":
-        return False
-    elif value in [" not", "not"]:
-        return True
-    else:
-        raise ValueError("Cannot parse '{}' as an optional negation".format(value))
+from tests.utils import negation
 
 
 # Scenario {{{
@@ -124,7 +115,7 @@ def login_salt_api_token_override_username(
 @then(
     parsers.cfparse(
         "we can{negated:Negation?} ping all minions",
-        extra_types={"Negation": _negation},
+        extra_types={"Negation": negation},
     )
 )
 def ping_all_minions(host, context, negated):
@@ -141,7 +132,7 @@ def ping_all_minions(host, context, negated):
 @then(
     parsers.cfparse(
         "we can{negated:Negation?} run state '{module}' on '{targets}'",
-        extra_types={"Negation": _negation},
+        extra_types={"Negation": negation},
     )
 )
 def run_state_on_targets(host, context, negated, module, targets):

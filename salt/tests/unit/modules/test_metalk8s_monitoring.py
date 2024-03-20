@@ -3,6 +3,8 @@ from importlib import reload
 import os.path
 from unittest.mock import MagicMock, patch
 from unittest import TestCase
+from json import dumps
+from json.decoder import JSONDecodeError
 
 
 from parameterized import param, parameterized
@@ -36,15 +38,6 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
         reload(metalk8s_monitoring)
         self.assertEqual(metalk8s_monitoring.__virtual__(), "metalk8s_monitoring")
 
-    def test_virtual_missing_deps(self):
-        """Test the behaviour of `__virtual__` when missing dependencies."""
-        with utils.ForceImportErrorOn("requests"):
-            reload(metalk8s_monitoring)
-            self.assertTupleEqual(
-                metalk8s_monitoring.__virtual__(),
-                (False, "Missing dependencies: requests"),
-            )
-
     @parameterized.expand(
         [
             param.explicit(kwargs=test_case)
@@ -62,7 +55,7 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
         called_with=None,
         request_called_once=True,
         request_raises=False,
-        resp_body=None,
+        resp_content=None,
         resp_status=200,
         **kwargs
     ):
@@ -76,13 +69,31 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
             session_mock.request.side_effect = Exception(request_raises)
         else:
             response_mock = session_mock.request.return_value
+            response_mock.status_code = resp_status
+            response_mock.ok = resp_status == 200
 
-            if isinstance(resp_body, dict):
-                response_mock.json.return_value = resp_body
+            if isinstance(resp_content, dict):
+                response_mock.json.return_value = resp_content
+                response_mock.text = dumps(resp_content)
+                response_mock.content = bytes(dumps(resp_content), "UTF-8")
+            elif isinstance(resp_content, str):
+                response_mock.json.side_effect = JSONDecodeError(
+                    "Invalid JSON response",
+                    dumps(resp_content),
+                    1,
+                )
+                response_mock.text = resp_content
+                response_mock.content = bytes(resp_content, "UTF-8")
+            elif resp_content is None:
+                response_mock.json.return_value = JSONDecodeError(
+                    "Content is None",
+                    "",
+                    0,
+                )
+                response_mock.text = ""
+                response_mock.content = None
             else:
-                response_mock.json.side_effect = ValueError("Invalid JSON response")
-                response_mock.status_code = resp_status
-                response_mock.text = resp_body
+                raise ValueError("Invalid resp_content type")
 
         utils_mocks = {
             "metalk8s.requests_retry_session": get_session_mock,
@@ -125,7 +136,7 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
     def test_add_silence(self, _id, value, call_body, now_mock=None, **kwargs):
         request_mock = MagicMock()
         silence_id = "d287796c-cf59-4d10-8e5b-d5cc3ff51b9c"
-        request_mock.return_value = {"silenceId": silence_id}
+        request_mock.return_value = {"silenceID": silence_id}
 
         with patch.object(
             metalk8s_monitoring, "_requests_alertmanager_api", request_mock
