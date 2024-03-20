@@ -1,4 +1,4 @@
-list_cronjobs:
+get_cronjobs:
   # Single namespace : default
   - list_objects: &_list_objects_default
       - name: my_cronjob
@@ -201,7 +201,7 @@ get_jobs:
           ownerReferences:
             - uid: 5678
     get_cronjob: *get_cronjob_default
-    cronjob_name: my_cronjob
+    name: my_cronjob
     namespace: default
     result:
       - name: my_job
@@ -264,7 +264,7 @@ get_jobs:
           ownerReferences:
             - uid: 1234
     get_cronjob: *get_cronjob_default
-    cronjob_name: my_cronjob
+    name: my_cronjob
     namespace: default
     result:
       - name: my_job
@@ -294,11 +294,11 @@ get_jobs:
 
   # No jobs
   - get_cronjob: *get_cronjob_default
-    cronjob_name: my_cronjob
+    name: my_cronjob
     namespace: default
     result: []
 
-stop_jobs:
+suspend_cronjob_and_delete_jobs:
   # Nominal case
   - get_jobs: &_get_jobs_my_cronjob
       - name: my_job
@@ -309,19 +309,19 @@ stop_jobs:
           name: my_cronjob
           ownerReferences:
             - uid: 1234
-    cronjob_name: my_cronjob
+    name: my_cronjob
     namespace: default
     result: *_get_jobs_my_cronjob
 
   # No jobs
   - get_jobs: []
-    cronjob_name: my_cronjob
+    name: my_cronjob
     namespace: default
     result: []
 
   # Wait for jobs to be deleted
   - get_jobs: *_get_jobs_my_cronjob
-    cronjob_name: my_cronjob
+    name: my_cronjob
     namespace: default
     wait: true
     delete_jobs_delay: 1
@@ -329,7 +329,7 @@ stop_jobs:
 
   # Timeout exceeded
   - get_jobs: *_get_jobs
-    cronjob_name: my_cronjob
+    name: my_cronjob
     namespace: default
     wait: true
     timeout_seconds: 1

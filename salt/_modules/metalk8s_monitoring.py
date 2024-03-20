@@ -4,22 +4,12 @@
 from salt.exceptions import CommandExecutionError
 
 from datetime import datetime, timedelta
-
-MISSING_DEPS = []
-
-try:
-    import requests
-except ImportError:
-    MISSING_DEPS.append("requests")
+from json.decoder import JSONDecodeError
 
 __virtualname__ = "metalk8s_monitoring"
 
 
 def __virtual__():
-    if MISSING_DEPS:
-        error_msg = f"Missing dependencies: {', '.join(MISSING_DEPS)}"
-        return False, error_msg
-
     return __virtualname__
 
 
@@ -91,7 +81,7 @@ def add_silence(
         "api/v2/silences", "POST", json=body, **kwargs
     )
 
-    return response["silenceId"]
+    return response["silenceID"]
 
 
 def delete_silence(silence_id, **kwargs):
@@ -191,28 +181,18 @@ def _requests_alertmanager_api(route, method="GET", **kwargs):
         raise CommandExecutionError(
             f"Unable to query Alertmanager API on {url}"
         ) from exc
-
-    try:
-        json = response.json()
-    except ValueError as exc:
-        if response.status_code != requests.codes.ok:
-            error = (
-                f"Received HTTP code {response.status_code} when "
-                f"querying Alertmanager API on {url}"
-            )
-        else:
-            error = (
-                "Malformed response returned from Alertmanager API: "
-                f"{exc}: {response.text}"
-            )
-        raise CommandExecutionError(error) from exc
-
-    if json["status"] == "error":
-        raise CommandExecutionError(f"{json['errorType']}: {json['error']}")
-
-    # When we successfully delete a silence, the API returns a 200 with a
-    # `status` key set to `success` and no `data` key.
-    if json["status"] == "success" and json.get("data") is None:
+    if not response.ok:
+        raise CommandExecutionError(
+            f"Received HTTP code {response.status_code} when "
+            f"querying Alertmanager API on {url} "
+            f"Error message: '{response.text}'"
+        )
+    if not response.content:
         return True
-
-    return json.get("data")
+    try:
+        return response.json()
+    except JSONDecodeError as exc:
+        raise CommandExecutionError(
+            "Unable to decode JSON response from Alertmanager API "
+            f"Content: '{response.text}'"
+        ) from exc

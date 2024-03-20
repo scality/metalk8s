@@ -11,7 +11,7 @@ def __virtual__():
     return __virtualname__
 
 
-def list_cronjobs(
+def get_cronjobs(
     suspended=None,
     mark=None,
     all_namespaces=False,
@@ -166,17 +166,17 @@ def activate_cronjob(name, namespace, mark=None, **kwargs):
     return _set_cronjob_suspend(name, namespace, suspend=False, mark=mark, **kwargs)
 
 
-def get_jobs(cronjob_name, namespace, **kwargs):
+def get_jobs(name, namespace, **kwargs):
     """Get the Jobs created by a CronJob.
 
     Args:
-        cronjob_name (str): name of the CronJob.
+        name (str): name of the CronJob.
         namespace (str): namespace of the CronJob.
 
     Returns:
         list: list of Jobs created by the CronJob.
     """
-    cronjob_uid = get_cronjob(cronjob_name, namespace, **kwargs)["metadata"]["uid"]
+    cronjob_uid = get_cronjob(name, namespace, **kwargs)["metadata"]["uid"]
 
     # Get all Jobs in the namespace
     jobs = __salt__["metalk8s_kubernetes.list_objects"](
@@ -198,8 +198,8 @@ def get_jobs(cronjob_name, namespace, **kwargs):
     return filtered_jobs
 
 
-def stop_jobs(
-    cronjob_name,
+def suspend_cronjob_and_delete_jobs(
+    name,
     namespace,
     mark=None,
     wait=False,
@@ -209,7 +209,7 @@ def stop_jobs(
     """Suspend the CronJob and delete all its Jobs.
 
     Args:
-        cronjob_name (str): name of the CronJob.
+        name (str): name of the CronJob.
         namespace (str): namespace of the CronJob.
         wait (bool, optional): wait for the Jobs to be deleted. Defaults to False.
         timeout_seconds (int, optional): timeout in seconds to wait for the Jobs to be deleted. Defaults to 60.
@@ -220,9 +220,9 @@ def stop_jobs(
     Returns:
         list: list of Jobs that have been deleted.
     """
-    suspend_cronjob(cronjob_name, namespace, mark, **kwargs)
+    suspend_cronjob(name, namespace, mark, **kwargs)
 
-    jobs = get_jobs(cronjob_name, namespace, **kwargs)
+    jobs = get_jobs(name, namespace, **kwargs)
 
     for job in jobs:
         __salt__["metalk8s_kubernetes.delete_object"](
@@ -238,7 +238,7 @@ def stop_jobs(
     if wait:
         start_ts = time.time()
         while time.time() - start_ts < timeout_seconds:
-            waiting_jobs = get_jobs(cronjob_name, namespace, **kwargs)
+            waiting_jobs = get_jobs(name, namespace, **kwargs)
             if not waiting_jobs:
                 break
 
@@ -248,7 +248,7 @@ def stop_jobs(
 
             raise CommandExecutionError(
                 f"Wait timeout exceeded while deleting the following Jobs {waiting_jobs_names} "
-                f"for CronJob {cronjob_name} in namespace {namespace}"
+                f"for CronJob {name} in namespace {namespace}"
             )
 
     # Return the list of deleted jobs
