@@ -312,16 +312,23 @@ def check_pillar_keys(keys, refresh=True, pillar=None, raise_error=True):
         refresh (bool): refresh pillar or not
         pillar (dict): pillar dict to check
     """
+    # grains object we pass to get_pillar
+    # since 3007 we pass __grains__.value()
+    # as its scope outlives execution modules
+    # cf. https://github.com/saltstack/salt/issues/62477
+    try:
+        passed_grains = __grains__.value()
+    except AttributeError:
+        passed_grains = __grains__
+
     # Ignore `refresh` if pillar is provided
     if not pillar and refresh:
         # Do not use `saltutil.refresh_pillar` as in salt 2018.3 we can not do
         # synchronous pillar refresh
         # See https://github.com/saltstack/salt/issues/20590
-        # we use __grains__.value() as it goes beyond the execution modules
-        # cf. https://github.com/saltstack/salt/issues/62477
         pillar = get_pillar(
             __opts__,
-            __grains__.value(),
+            passed_grains,
             __grains__["id"],
             saltenv=__opts__.get("saltenv"),
             pillarenv=__opts__.get("pillarenv"),
