@@ -75,6 +75,13 @@ def render(
     context = args.get("context", [None])[0]
     absent = args.get("absent", [False])[0]
 
+    # Allow to force absent arg from pillar
+    if (
+        __pillar__.get("_metalk8s_kubernetes_renderer", {}).get("force_absent")
+        is not None
+    ):
+        absent = __pillar__["_metalk8s_kubernetes_renderer"]["force_absent"]
+
     if not isinstance(source, six.string_types):
         # Assume it is a file handle
         source = source.read()
