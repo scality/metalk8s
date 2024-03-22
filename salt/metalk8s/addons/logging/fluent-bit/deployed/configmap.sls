@@ -1,6 +1,15 @@
 include:
   - ...deployed.namespace
 
+{%- set fluent_bit_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml', saltenv=saltenv
+    )
+%}
+{%- set fluent_bit = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-logging', 'metalk8s-fluent-bit-config', fluent_bit_defaults
+    )
+%}
+
 Create fluent-bit ConfigMap:
   metalk8s_kubernetes.object_present:
     - manifest:
@@ -108,29 +117,12 @@ Create fluent-bit ConfigMap:
                 Add            namespace unknown
                 Add            pod unknown
                 Add            stream unknown
+            {%- for output in fluent_bit.spec.config.output %}
             [Output]
-                Name           loki
-                Match          kube.*
-                Host           loki
-                Port           3100
-                Tenant_ID      ""
-                Labels         job=fluent-bit
-                Label_Keys     $container, $node, $namespace, $pod, $app, $release, $stream
-                Auto_Kubernetes_Labels false
-                Line_Format    json
-                Log_Level      warn
-                Workers        4
-            [Output]
-                Name           loki
-                Match          host.*
-                Host           loki
-                Port           3100
-                Tenant_ID      ""
-                Labels         job=fluent-bit
-                Label_Keys     $hostname, $unit
-                Line_Format    json
-                Log_Level      warn
-                Workers        4
+                {%- for key, value in output.items() %}
+                {{ "{:<14} {}".format(key, value) }}
+                {%- endfor %}
+            {%- endfor %}
           custom_parsers.conf: |-
             [PARSER]
                 Name        container

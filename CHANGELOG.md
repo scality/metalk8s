@@ -2,6 +2,11 @@
 
 ## Release 127.0.0 (in development)
 
+### Additions
+
+- Add ability to configure fluent-bit output
+  (PR[#4276](https://github.com/scality/metalk8s/pull/4276))
+
 ### Enhancements
 
 - Bump Kubernetes version to
