@@ -145,7 +145,7 @@ delete_object:
         name: my_pod
     called_with:
       name: my_pod
-      namespace: null
+      namespace: default
     result: "<my_pod deleted object dict>"
 
   # Simple Pod deletion (using manifest)
@@ -423,7 +423,7 @@ get_object:
         name: my_node
     called_with:
       name: my_node
-      namespace: null
+      namespace: default
     result: "<my_node object dict>"
 
   # Simple Get Pod (using manifest)

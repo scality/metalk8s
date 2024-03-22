@@ -130,6 +130,20 @@ def _object_manipulation_function(action):
                 f"Must provide one of {' or '.join(needed_params)} to {action} object."
             )
 
+        if action in ["delete", "get"]:
+            # Only keep needed information and remove anything else
+            # to avoid invalid error on slots formatting
+            manifest = {
+                "apiVersion": manifest["apiVersion"],
+                "kind": manifest["kind"],
+                "metadata": {
+                    "name": manifest.get("metadata", {}).get("name"),
+                    "namespace": manifest.get("metadata", {}).get(
+                        "namespace", namespace
+                    ),
+                },
+            }
+
         # Format slots on the manifest
         manifest = __salt__.metalk8s.format_slots(manifest)
 
