@@ -107,7 +107,7 @@ def codegen_chart_fluent_bit() -> types.TaskDict:
         f"{constants.CHART_RENDER_CMD} fluent-bit {value_file} {chart_dir} "
         "--namespace metalk8s-logging "
         "--service-config fluent_bit metalk8s-fluent-bit-config "
-        "metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml metalk8s-logging "
+        "metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml.j2 metalk8s-logging "
         f"--output {target_sls}"
     )
 

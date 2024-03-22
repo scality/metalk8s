@@ -39,6 +39,7 @@ check_pod_is_in_phase() {
 
 NODE_NAME=${NODE_NAME:-$(salt-call --local --out txt grains.get id | cut -c 8-)}
 PRODUCT_TXT=${PRODUCT_TXT:-/vagrant/_build/root/product.txt}
+LOKI_ENABLED=${LOKI_ENABLED:-true}
 MAX_TRIES=300
 
 # shellcheck disable=SC1090
@@ -93,5 +94,7 @@ wait_for_pod "AlertManager" \
     metalk8s-monitoring alertmanager-prometheus-operator-alertmanager-0
 wait_for_pod "Prometheus" \
     metalk8s-monitoring prometheus-prometheus-operator-prometheus-0
-wait_for_pod "Loki" \
-    metalk8s-logging loki-0
+if [ "$LOKI_ENABLED" = "true" ]; then
+    wait_for_pod "Loki" \
+        metalk8s-logging loki-0
+fi

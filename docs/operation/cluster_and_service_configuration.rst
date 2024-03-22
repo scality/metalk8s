@@ -95,9 +95,9 @@ forward them to a log aggregation system (loki).
 
 The default configuration values for Fluent-bit are specified below:
 
-.. literalinclude:: ../../salt/metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml
+.. literalinclude:: ../../salt/metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml.j2
    :language: yaml
-   :lines: 3-
+   :lines: 3-14,16-37
 
 
 UI Default Configuration

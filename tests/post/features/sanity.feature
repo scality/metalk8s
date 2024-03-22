@@ -53,12 +53,6 @@ Feature: Cluster Sanity Checks
         | metalk8s-ingress    | ingress-nginx-controller                     |
         | metalk8s-ingress    | ingress-nginx-control-plane-controller       |
         | metalk8s-monitoring | prometheus-operator-prometheus-node-exporter |
-        | metalk8s-logging    | fluent-bit                                   |
-
-    # We do a special case for Dex since Dex may not be deployed in every environment
-    @authentication
-    Scenario: Dex has available replicas
-        Then the Deployment 'dex' in the 'metalk8s-auth' namespace has all desired replicas available
 
     @volumes_provisioned
     Scenario Outline: StatefulSet has available replicas
@@ -68,4 +62,17 @@ Feature: Cluster Sanity Checks
         | namespace           | name                                          |
         | metalk8s-monitoring | alertmanager-prometheus-operator-alertmanager |
         | metalk8s-monitoring | prometheus-prometheus-operator-prometheus     |
-        | metalk8s-logging    | loki                                          |
+
+    # We do a special case for Dex since Dex may not be deployed in every environment
+    @authentication
+    Scenario: Dex has available replicas
+        Then the Deployment 'dex' in the 'metalk8s-auth' namespace has all desired replicas available
+
+    # We do special case for logging components since they may not be deployed in every environment
+    @logging
+    Scenario: Fluent-bit has available replicas
+        Then the DaemonSet 'fluent-bit' in the 'metalk8s-logging' namespace has all desired Pods ready
+
+    @logging @volumes_provisioned
+    Scenario: Loki has available replicas
+        Then the StatefulSet 'loki' in the 'metalk8s-logging' namespace has all desired replicas available

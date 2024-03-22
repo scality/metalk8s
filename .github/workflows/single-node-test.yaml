@@ -43,6 +43,11 @@ on:
         required: false
         type: boolean
         default: true
+      setup-logging:
+        description: "Whether or not the logging should be configured and tested"
+        required: false
+        type: boolean
+        default: true
 
       # Solution information
       solution-name:
@@ -72,7 +77,7 @@ on:
         default: "1.0.3"
 
 env:
-  NAME: single-node-${{ inputs.os }}-${{ inputs.setup-idp && 'idp' || 'no-idp' }}
+  NAME: single-node-${{ inputs.os }}-${{ inputs.setup-idp && 'idp' || 'no-idp' }}-${{ inputs.setup-logging && 'logging' || 'no-logging' }}
 
 jobs:
   single-node:
@@ -144,6 +149,7 @@ jobs:
         uses: ./.github/actions/generate-bootstrap
         with:
           DEX_ENABLED: ${{ inputs.setup-idp }}
+          LOGGING_ENABLED: ${{ inputs.setup-logging }}
       - name: Mount MetalK8s ISO
         uses: ./.github/actions/mount-iso
       - name: Run Bootstrap
@@ -154,6 +160,8 @@ jobs:
           metalk8s-version: ${{ env.METALK8S_VERSION }}
       - name: Provision volumes
         uses: ./.github/actions/provision-volumes
+        with:
+          LOGGING_ENABLED: ${{ inputs.setup-logging }}
       - name: Untaint bootstrap node
         uses: ./.github/actions/untaint
       # }}}
@@ -224,7 +232,9 @@ jobs:
       - name: Run tests from Bastion
         uses: ./.github/actions/bastion-tests
         with:
-          EXTRA_FILTER: ${{ inputs.setup-idp && ' ' || 'and not authentication' }}
+          EXTRA_FILTER: >-
+            ${{ inputs.setup-idp && ' ' || 'and not authentication' }}
+            ${{ inputs.setup-logging && ' ' || 'and not logging' }}
       - name: Run UI tests from Bastion
         if: inputs.setup-idp
         uses: ./.github/actions/bastion-ui-tests

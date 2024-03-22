@@ -2,7 +2,7 @@ include:
   - ...deployed.namespace
 
 {%- set fluent_bit_defaults = salt.slsutil.renderer(
-        'salt://metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml', saltenv=saltenv
+        'salt://metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml.j2', saltenv=saltenv
     )
 %}
 {%- set fluent_bit = salt.metalk8s_service_configuration.get_service_conf(

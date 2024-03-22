@@ -13,6 +13,10 @@ inputs:
     description: "Whether or not Dex should be enabled"
     required: false
     default: "true"
+  LOGGING_ENABLED:
+    description: "Wether or not logging should be enabled"
+    required: false
+    default: "true"
   DEBUG:
     description: "Whether or not debug mode should be enabled"
     required: false
@@ -60,6 +64,10 @@ runs:
           addons:
             dex:
               enabled: ${{ inputs.DEX_ENABLED }}
+            loki:
+              enabled: ${{ inputs.LOGGING_ENABLED }}
+            fluent-bit:
+              enabled: ${{ inputs.LOGGING_ENABLED }}
           kubernetes:
             coreDNS:
               affinity: ${{ env.AFFINITY }}

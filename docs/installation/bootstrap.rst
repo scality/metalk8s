@@ -71,6 +71,10 @@ Configuration
       addons:
         dex:
           enabled: True
+        fluent-bit:
+          enabled: True
+        loki:
+          enabled: True
       kubernetes:
         apiServer:
           oidc: {}
@@ -188,6 +192,10 @@ to configure.
   MetalK8s you can disable it by setting ``addons.dex.enabled`` to ``false``.
   If ``dex`` is disabled you will not be able to use the MetalK8s UI and
   Grafana.
+
+  Deployment of logging stack relying on fluent-bit and loki can be disabled
+  respectively by setting ``addons.fluent-bit.enabled`` and
+  ``addons.loki.enabled`` to ``false``.
 
 The ``kubernetes`` field can be omitted if you do not have any specific
 Kubernetes `Feature Gates`_ to enable or disable and if you are ok with

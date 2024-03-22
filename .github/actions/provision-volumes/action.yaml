@@ -10,6 +10,10 @@ inputs:
     description: "Path to the MetalK8s ISO mountpoint on bootstrap node"
     required: false
     default: "/var/tmp/metalk8s"
+  LOGGING_ENABLED:
+    description: "Wether or not logging should be enabled"
+    required: false
+    default: "true"
 
 runs:
   using: "composite"
@@ -27,4 +31,5 @@ runs:
           PRODUCT_MOUNT=\"${{ inputs.MOUNTPOINT }}\"
           PRODUCT_TXT=\"${{ inputs.MOUNTPOINT }}/product.txt\"
           NODE_NAME=\"${{ inputs.NODE }}\"
+          LOKI_ENABLED=\"${{ inputs.LOGGING_ENABLED }}\"
           /tmp/create-volumes.sh

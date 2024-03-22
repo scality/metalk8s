@@ -1,4 +1,4 @@
-#!yaml
+#!jinja|yaml
 
 # Configuration of the fluent-bit service
 apiVersion: addons.metalk8s.scality.com
@@ -12,12 +12,13 @@ spec:
       limits:
         memory: 1Gi
   config:
+    {%- if pillar.addons.loki.enabled %}
     output:
       - Name: loki
         Match: kube.*
         Host: loki
         Port: 3100
-        Tenant_ID: ""
+        Tenant_ID: '""'
         Labels: job=fluent-bit
         Label_Keys: "$container, $node, $namespace, $pod, $app, $release, $stream"
         Auto_Kubernetes_Labels: false
@@ -28,9 +29,12 @@ spec:
         Match: host.*
         Host: loki
         Port: 3100
-        Tenant_ID: ""
+        Tenant_ID: '""'
         Labels: "job=fluent-bit"
         Label_Keys: "$hostname, $unit"
         Line_Format: json
         Log_Level: warn
         Workers: 4
+    {%- else %}
+    output: []
+    {%- endif %}

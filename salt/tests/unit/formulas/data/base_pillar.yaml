@@ -184,3 +184,7 @@ kubernetes:
 addons:
   dex:
     enabled: True
+  fluent-bit:
+    enabled: True
+  loki:
+    enabled: True

@@ -171,14 +171,17 @@ jobs:
           # we also test solution install + upgrade there
           - rocky-8
         setup-idp: [true]
+        setup-logging: [true]
         include:
           - os: rocky-8
             setup-idp: false
+            setup-logging: false
     with:
       artifacts-url: ${{ needs.retrieve-info.outputs.artifacts-link }}
       os: ${{ matrix.os }}
       test-solution: true
       setup-idp: ${{ matrix.setup-idp }}
+      setup-logging: ${{ matrix.setup-logging }}
 
   bootstrap-restore:
     uses: ./.github/workflows/multi-node-test.yaml

@@ -69,6 +69,22 @@ def test_dex_deploy(host):
     pass
 
 
+@scenario(
+    "../features/sanity.feature",
+    "Fluent-bit has available replicas",
+)
+def test_fluent_bit_ds(host):
+    pass
+
+
+@scenario(
+    "../features/sanity.feature",
+    "Loki has available replicas",
+)
+def test_loki_sts(host):
+    pass
+
+
 # }}}
 # Then {{{
 
@@ -188,7 +204,7 @@ def check_deployment(k8s_client, name, namespace):
     )
 
 
-@then("the DaemonSet <name> in the <namespace> namespace has all desired " "Pods ready")
+@then("the DaemonSet <name> in the <namespace> namespace has all desired Pods ready")
 @then(
     parsers.parse(
         "the DaemonSet '{name}' in the '{namespace}' namespace has all desired "
@@ -227,6 +243,12 @@ def check_daemonset(k8s_client, name, namespace):
 @then(
     "the StatefulSet <name> in the <namespace> namespace has all desired "
     "replicas available"
+)
+@then(
+    parsers.parse(
+        "the StatefulSet '{name}' in the '{namespace}' namespace has all desired "
+        "replicas available"
+    )
 )
 def check_statefulset(k8s_client, name, namespace):
     def _wait_for_stateful_set():
