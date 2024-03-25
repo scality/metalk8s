@@ -39,7 +39,7 @@ const NodePageContent = (props) => {
   if (!nodeTableData.length && isFirstLoadingDone) {
     return (
       <EmptyState
-        label={'Node'}
+        listedResource="Node"
         link="/nodes/create"
         icon="Node-backend"
         history={history}

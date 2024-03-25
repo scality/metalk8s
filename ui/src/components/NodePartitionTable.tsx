@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import { useTheme } from 'styled-components';
 import { useQuery } from 'react-query';
-import { useIntl } from 'react-intl';
-import { Loader, ProgressBar } from '@scality/core-ui';
-import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
-import { Box, Table } from '@scality/core-ui/dist/next';
+
+import { ProgressBar, spacing } from '@scality/core-ui';
+
+import { Table } from '@scality/core-ui/dist/next';
 import {
   queryNodeFSUsage,
   queryNodeFSSize,
@@ -22,7 +22,6 @@ import {
 
 const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
   const theme = useTheme();
-  const intl = useIntl();
   const columns = [
     {
       Header: 'Health',
@@ -54,11 +53,9 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
         return (
           <ProgressBar
             size="large"
-            // @ts-expect-error - FIXME when you are working on it
             color={theme.infoSecondary}
             percentage={value}
             buildinLabel={`${value}%`}
-            // @ts-expect-error - FIXME when you are working on it
             backgroundColor={theme.buttonSecondary}
             aria-label={`${value}%`}
           />
@@ -71,6 +68,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       cellStyle: {
         textAlign: 'right',
         width: '6.25rem',
+        marginRight: spacing.r16,
       },
     },
   ];
@@ -115,43 +113,23 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       alertNF,
     );
   return (
-    <Box flex={1} pr="1rem">
-      <Table columns={columns} data={partitions} defaultSortingKey={'health'}>
-        <Table.SingleSelectableContent
-          rowHeight="h40"
-          separationLineVariant="backgroundLevel2"
-          backgroundVariant="backgroundLevel4"
-          children={(Rows) => {
-            if (status === 'loading') {
-              return (
-                <Box display="flex" justifyContent="center">
-                  <Loader size="large" aria-label="loading" />
-                </Box>
-              );
-            } else if (status === 'error') {
-              return (
-                <>
-                  {' '}
-                  {intl.formatMessage({
-                    id: 'error_system_partitions',
-                  })}
-                </>
-              );
-            } else if (status === 'success' && partitions.length === 0) {
-              return (
-                <NoResult>
-                  {intl.formatMessage({
-                    id: 'no_system_partition',
-                  })}
-                </NoResult>
-              );
-            }
-
-            return <>{Rows}</>;
-          }}
-        />
-      </Table>
-    </Box>
+    <Table
+      status={status}
+      columns={columns}
+      data={partitions}
+      defaultSortingKey={'health'}
+      entityName={{
+        en: {
+          singular: 'system partition',
+          plural: 'system partitions',
+        },
+      }}
+    >
+      <Table.SingleSelectableContent
+        rowHeight="h40"
+        separationLineVariant="backgroundLevel2"
+      />
+    </Table>
   );
 };
 

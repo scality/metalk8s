@@ -376,9 +376,7 @@ const VolumeDetailCard = (props) => {
                     bottomRightLabel={`${formatSizeForDisplay(
                       storageCapacity,
                     )} TOTAL`}
-                    // @ts-expect-error - FIXME when you are working on it
                     color={theme.infoSecondary}
-                    // @ts-expect-error - FIXME when you are working on it
                     backgroundColor={theme.buttonSecondary}
                   />
                 </ProgressBarContainer>

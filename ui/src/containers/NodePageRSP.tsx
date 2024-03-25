@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useRouteMatch } from 'react-router';
 import { Tabs } from '@scality/core-ui/dist/next';
-import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
+
 import {
   AppContainer,
   Icon,
@@ -191,29 +191,13 @@ const NodePageRSP = (props) => {
                 variant={
                   criticalAlerts.length > 0 ? 'statusCritical' : 'statusWarning'
                 }
-                // @ts-expect-error - FIXME when you are working on it
-                text={alertsNode.length}
+                text={`${alertsNode.length}`}
               />
             ) : null
           }
           data-cy="alerts_tab_node_page"
         >
-          <AlertsTab
-            alerts={alertsNode}
-            children={(Rows) => {
-              if (alertsNode?.length === 0) {
-                return (
-                  <NoResult>
-                    {intl.formatMessage({
-                      id: 'no_active_alerts',
-                    })}
-                  </NoResult>
-                );
-              }
-
-              return <>{Rows}</>;
-            }}
-          />
+          <AlertsTab alerts={alertsNode} />
         </Tabs.Tab>
         <Tabs.Tab
           path={`${url}/metrics`}

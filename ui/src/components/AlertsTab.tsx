@@ -1,15 +1,13 @@
-import React from 'react';
-import { ConstrainedText, FormattedDateTime } from '@scality/core-ui';
+import { ConstrainedText, spacing, FormattedDateTime } from '@scality/core-ui';
 import { Box, Table } from '@scality/core-ui/dist/next';
-import ActiveAlertsFilter from './ActiveAlertsFilters';
-import { useURLQuery } from '../services/utils';
-import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
+import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
 import { Alert } from '../services/alertUtils';
+import { useURLQuery } from '../services/utils';
+import ActiveAlertsFilter from './ActiveAlertsFilters';
 import CircleStatus from './CircleStatus';
 
 const AlertsTab = ({
   alerts,
-  children,
 }: {
   alerts: Alert[];
   children?: (rows: JSX.Element) => JSX.Element;
@@ -19,9 +17,8 @@ const AlertsTab = ({
   // Filter more than one severity, the URL should be:
   // `/nodes/<node-name>/alerts?severity=warning&severity=critical`
   let alertSeverity = query.getAll('severity');
-
-  // Display all the alerts when there is no severity filter
-  if (alertSeverity?.length === 0) {
+  // Display all the alerts when there is no severity filter or when severity filter is 'all'.
+  if (alertSeverity?.length === 0 || alertSeverity?.includes('all')) {
     alertSeverity.push(STATUS_WARNING, STATUS_CRITICAL);
   }
 
@@ -41,14 +38,15 @@ const AlertsTab = ({
       Header: 'Name',
       accessor: 'name',
       cellStyle: {
-        width: '13rem',
+        flex: 1,
       },
     },
     {
       Header: 'Severity',
       accessor: 'severity',
       cellStyle: {
-        width: '4.5rem',
+        flex: 0.5,
+        textAlign: 'center',
       },
       Cell: ({ value }) => {
         return <CircleStatus name="Circle-health" status={value} />;
@@ -58,7 +56,7 @@ const AlertsTab = ({
       Header: 'Description',
       accessor: 'alertDescription',
       cellStyle: {
-        flex: 1,
+        flex: 3,
         paddingLeft: '1rem',
       },
       Cell: ({ value }) => {
@@ -70,7 +68,8 @@ const AlertsTab = ({
       accessor: 'activeSince',
       cellStyle: {
         textAlign: 'right',
-        width: '7rem',
+        flex: 1,
+        marginRight: spacing.r16,
       },
       Cell: ({ value }) => {
         return (
@@ -83,19 +82,24 @@ const AlertsTab = ({
     },
   ];
   return (
-    <Box display="flex" flexDirection="column" height="100%" margin="1rem">
-      <Box display="flex" justifyContent="flex-end">
-        <Box display="flex" width="150px">
-          <ActiveAlertsFilter />
-        </Box>
+    <Box display="flex" flexDirection="column" height="100%" width="100%">
+      <Box display="flex" justifyContent="flex-end" padding={spacing.r16}>
+        <ActiveAlertsFilter />
       </Box>
       <Box pt="1rem" flex={1}>
-        <Table columns={columns} data={activeAlertListData}>
+        <Table
+          columns={columns}
+          data={activeAlertListData}
+          entityName={{
+            en: {
+              singular: 'acitve alert',
+              plural: 'active alerts',
+            },
+          }}
+        >
           <Table.SingleSelectableContent
             rowHeight="h48"
             separationLineVariant="backgroundLevel2"
-            backgroundVariant="backgroundLevel4"
-            children={children}
           />
         </Table>
       </Box>
