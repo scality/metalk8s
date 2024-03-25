@@ -48,9 +48,9 @@ const NotificationMenu = styled.ul<{
   margin: 0;
   z-index: 9000;
   background-color: ${(props) => props.theme.backgroundLevel1};
-  border-radius 0.1875rem;
+  border-radius: 0.1875rem;
   border: 1px solid ${(props) => props.theme.border};
-  box-shadow: 0px 4px 10px 4px #000};
+  box-shadow: 0px 4px 10px 4px #000;
 `;
 const NotificationItem = styled.li<{
   isHighlighted: boolean;
