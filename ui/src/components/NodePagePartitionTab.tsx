@@ -6,14 +6,14 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import NodePartitionTable from './NodePartitionTable';
 import { GRAFANA_DASHBOARDS, PORT_NODE_EXPORTER } from '../constants';
 import { useTypedSelector } from '../hooks';
-import { Icon } from '@scality/core-ui';
+import { Icon, spacing } from '@scality/core-ui';
 const TitleContainer = styled.div`
   display: flex;
   position: sticky;
   z-index: 100;
   top: 0;
   justify-content: flex-end;
-  padding: ${padding.large} ${padding.base} 0 ${padding.larger};
+  padding: ${spacing.r16};
 `;
 
 const NodePagePartitionTab = (props: Record<string, any>) => {

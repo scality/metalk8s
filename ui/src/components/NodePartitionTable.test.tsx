@@ -1,13 +1,8 @@
-import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitForElementToBeRemoved } from '@testing-library/react';
 import { setupServer } from 'msw/node';
 import { rest } from 'msw';
 import NodePartitionTable from './NodePartitionTable';
-import {
-  waitForLoadingToFinish,
-  render,
-  FAKE_CONTROL_PLANE_IP,
-} from './__TEST__/util';
+import { render, FAKE_CONTROL_PLANE_IP } from './__TEST__/util';
 import { initialize as initializeProm } from '../services/prometheus/api';
 import { initialize as initializeAM } from '../services/alertmanager/api';
 import { initialize as initializeLoki } from '../services/loki/api';
@@ -345,12 +340,14 @@ describe('the system partition table', () => {
     initializeProm(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus`);
     initializeAM(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager`);
     initializeLoki(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/loki`);
-    const { getByLabelText } = render(
-      <NodePartitionTable instanceIP={'192.168.1.29'} />,
+    render(<NodePartitionTable instanceIP={'192.168.1.29'} />);
+    expect(
+      screen.getByText(/Loading system partitions.../i),
+    ).toBeInTheDocument();
+    // E
+    await waitForElementToBeRemoved(() =>
+      screen.getByText(/Loading system partitions.../i),
     );
-    expect(getByLabelText('loading')).toBeInTheDocument();
-    // Exercise
-    await waitForLoadingToFinish();
     // Verify
     expect(
       screen.getByLabelText('Exclamation-circle status warning'),
@@ -375,15 +372,19 @@ describe('the system partition table', () => {
         },
       ),
     );
-    const { getByLabelText } = render(
-      <NodePartitionTable instanceIP={'192.168.1.29'} />,
-    );
-    expect(getByLabelText('loading')).toBeInTheDocument();
+    render(<NodePartitionTable instanceIP={'192.168.1.29'} />);
+    expect(
+      screen.getByText(/Loading system partitions.../i),
+    ).toBeInTheDocument();
     // E
-    await waitForLoadingToFinish();
+    await waitForElementToBeRemoved(() =>
+      screen.getByText(/Loading system partitions.../i),
+    );
     // V
     expect(
-      screen.getByText('System partitions request has failed.'),
+      screen.getByText(
+        'An error occurred while loading the system partitions, please refresh the page.',
+      ),
     ).toBeInTheDocument();
   });
   afterAll(() => {

@@ -6,9 +6,11 @@ import {
   TextBadge,
   AppContainer,
   Stack,
+  Wrap,
+  spacing,
 } from '@scality/core-ui';
 import { Button, Table } from '@scality/core-ui/dist/next';
-import { fontSize, spacing } from '@scality/core-ui/dist/style/theme';
+import { fontSize } from '@scality/core-ui/dist/style/theme';
 import { useAlerts } from './AlertProvider';
 import StatusIcon from '../components/StatusIcon';
 import { STATUS_WARNING, STATUS_CRITICAL, STATUS_HEALTH } from '../constants';
@@ -39,10 +41,7 @@ const SecondaryTitle = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${
-    // @ts-expect-error - FIXME when you are working on it
-    fontSize.bases
-  };
+  font-size: ${fontSize.base};
   width: 250px;
   color: ${(props) => props.theme.textSecondary};
 `;
@@ -134,21 +133,18 @@ function AlertPageHeader({
               id: 'active_alerts',
             })}
           </>
-          {/* @ts-expect-error - FIXME when you are working on it */}
-          <TextBadge variant="infoPrimary" text={activeAlerts} />
+          <TextBadge variant="infoPrimary" text={activeAlerts + ''} />
           <SeperationLine />
         </SecondaryTitle>
 
         <TertiaryTitle>
           <div>
             Critical
-            {/* @ts-expect-error - FIXME when you are working on it */}
-            <TextBadge variant="statusCritical" text={critical} />
+            <TextBadge variant="statusCritical" text={`${critical}`} />
           </div>
           <div>
             Warning
-            {/* @ts-expect-error - FIXME when you are working on it */}
-            <TextBadge variant="statusWarning" text={warning} />
+            <TextBadge variant="statusWarning" text={`${warning}`} />
           </div>
         </TertiaryTitle>
       </Stack>
@@ -193,40 +189,31 @@ const ActiveAlertTab = React.memo(
     }, []);
     const DEFAULT_SORTING_KEY = 'severity';
     return (
-      <div
-        style={{
-          width: '100%',
+      <Table
+        columns={columns}
+        data={data}
+        defaultSortingKey={DEFAULT_SORTING_KEY}
+        sortTypes={sortTypes}
+        entityName={{
+          en: {
+            singular: 'active alert',
+            plural: 'active alerts',
+          },
         }}
       >
-        <Table
-          columns={columns}
-          data={data}
-          defaultSortingKey={DEFAULT_SORTING_KEY}
-          sortTypes={sortTypes}
-        >
-          <div
-            style={{
-              margin: `${spacing.sp16} 0`,
-            }}
-          >
-            <Table.SearchWithQueryParams
-              displayedName={{
-                singular: 'alert',
-                plural: 'alerts',
-              }}
-            />
-          </div>
-          <Table.SingleSelectableContent
-            rowHeight="h48"
-            separationLineVariant="backgroundLevel1"
-            backgroundVariant="backgroundLevel3"
-            customItemKey={(index, data) => {
-              // @ts-expect-error - FIXME when you are working on it
-              return data[index].id;
-            }}
-          />
-        </Table>
-      </div>
+        <Wrap padding={spacing.r16}>
+          <Table.SearchWithQueryParams />
+          <p></p>
+        </Wrap>
+        <Table.SingleSelectableContent
+          rowHeight="h48"
+          separationLineVariant="backgroundLevel1"
+          customItemKey={(index, data) => {
+            // @ts-expect-error - FIXME when you are working on it
+            return data[index].id;
+          }}
+        />
+      </Table>
     );
   },
   (a, b) => {
@@ -238,7 +225,7 @@ const ActiveAlertTab = React.memo(
 export default function AlertPage() {
   const alerts = useAlerts({});
   const leafAlerts = useMemo(
-    () => alerts?.alerts.filter((alert) => !alert.labels.children) || [],
+    () => alerts?.alerts?.filter((alert) => !alert.labels.children) || [],
     [JSON.stringify(alerts?.alerts)],
   );
   const criticalAlerts = leafAlerts.filter(
@@ -254,7 +241,8 @@ export default function AlertPage() {
         accessor: 'severity',
         cellStyle: {
           textAlign: 'center',
-          width: '100px',
+          flex: 1,
+          minWidth: '3rem',
         },
         sortType: 'severity',
         Cell: (cell) => <CircleStatus status={cell.value} />,
@@ -263,15 +251,15 @@ export default function AlertPage() {
         Header: 'Name',
         accessor: 'labels.alertname',
         cellStyle: {
-          flexGrow: '2',
+          flex: 2,
+          minWidth: '10rem',
         },
         sortType: 'name',
       },
       {
         Header: 'Description',
         cellStyle: {
-          flexGrow: '12',
-          margin: `0 ${spacing.sp8}`,
+          flex: 12,
         },
         accessor: (row) => row.description || row.summary,
         Cell: (cell) => <ConstrainedText lineClamp={2} text={cell.value} />,
@@ -280,9 +268,9 @@ export default function AlertPage() {
         Header: 'Active since',
         accessor: 'startsAt',
         cellStyle: {
-          flexGrow: '1',
+          flex: 2,
           textAlign: 'right',
-          marginRight: spacing.sp12,
+          marginRight: spacing.r12,
         },
         Cell: (cell) => <span>{formatDateToMid1(cell.value)}</span>,
       },
@@ -298,7 +286,7 @@ export default function AlertPage() {
           warning={wariningAlerts.length}
         />
       </AppContainer.OverallSummary>
-      <AppContainer.MainContent hasPadding>
+      <AppContainer.MainContent>
         {/* @ts-expect-error - FIXME when you are working on it */}
         <ActiveAlertTab data={leafAlerts} columns={columns} />
       </AppContainer.MainContent>

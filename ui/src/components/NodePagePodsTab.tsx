@@ -2,9 +2,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import isEqual from 'lodash.isequal';
-import { Tooltip, Icon } from '@scality/core-ui';
+import { Tooltip, Icon, spacing } from '@scality/core-ui';
 import { Table } from '@scality/core-ui/dist/next';
-import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './style/CommonLayoutStyle';
 import { TooltipContent } from './TableRow';
 import {
@@ -17,9 +16,9 @@ import {
 import { useIntl } from 'react-intl';
 const PodTableContainer = styled.div`
   color: ${(props) => props.theme.textPrimary};
-  padding: ${padding.large};
-  height: calc(100% - ${padding.large} - ${padding.large});
-  width: calc(100% - ${padding.large} - ${padding.large});
+  padding-top: ${spacing.r20};
+  height: calc(100% - ${spacing.r16});
+  width: 100%;
 `;
 // Color specification:
 // Pod Running + All Containers are ready => Green
@@ -28,9 +27,8 @@ const PodTableContainer = styled.div`
 //  Pod Succeeded => Green
 //  Pod Failed => Red
 //  Pod Unknown => Red
-const StatusText = styled.div`
+const StatusText = styled.div<{ status; numContainer?; numContainerRunning? }>`
   color: ${(props) => {
-    // @ts-expect-error - FIXME when you are working on it
     const { status, numContainer, numContainerRunning } = props;
 
     if (status === STATUS_RUNNING && numContainer === numContainerRunning) {
@@ -45,7 +43,7 @@ const StatusText = styled.div`
     } else if (status === STATUS_FAILED || status === STATUS_UNKNOWN) {
       return props.theme.statusCritical;
     }
-  }}};
+  }};
 `;
 const ExternalLink = styled.a`
   color: ${(props) => props.theme.textSecondary};
@@ -65,7 +63,7 @@ const NodePagePodsTab = React.memo((props) => {
           width: '100%',
           maxWidth: '20rem',
           minWidth: '5rem',
-          marginRight: spacing.sp8,
+          marginRight: spacing.r8,
         },
       },
       {
@@ -73,7 +71,7 @@ const NodePagePodsTab = React.memo((props) => {
         accessor: 'status',
         cellStyle: {
           maxWidth: '7rem',
-          marginRight: spacing.sp8,
+          marginRight: spacing.r8,
         },
         sortType: (rowa, rowb) => {
           const {
@@ -92,7 +90,6 @@ const NodePagePodsTab = React.memo((props) => {
           const { status, numContainer, numContainerRunning } = cellProps.value;
           return status === STATUS_RUNNING ? (
             <StatusText
-              // @ts-expect-error - FIXME when you are working on it
               status={status}
               numContainer={numContainer}
               numContainerRunning={numContainerRunning}
@@ -100,7 +97,6 @@ const NodePagePodsTab = React.memo((props) => {
               {`${status} (${numContainerRunning}/${numContainer})`}
             </StatusText>
           ) : (
-            // @ts-expect-error - FIXME when you are working on it
             <StatusText status={status}>{status}</StatusText>
           );
         },
@@ -110,7 +106,7 @@ const NodePagePodsTab = React.memo((props) => {
         accessor: 'age',
         cellStyle: {
           maxWidth: '5rem',
-          marginRight: spacing.sp8,
+          marginRight: spacing.r8,
         },
       },
       {
@@ -119,7 +115,7 @@ const NodePagePodsTab = React.memo((props) => {
         cellStyle: {
           maxWidth: '7rem',
           minWidth: '5rem',
-          marginRight: spacing.sp8,
+          marginRight: spacing.r8,
         },
       },
       {
@@ -128,7 +124,8 @@ const NodePagePodsTab = React.memo((props) => {
         cellStyle: {
           minWidth: '3rem',
           textAlign: 'center',
-          width: spacing.sp40,
+          width: spacing.r40,
+          marginRight: spacing.r16,
         },
         Cell: ({ value }) => {
           return (
@@ -158,11 +155,20 @@ const NodePagePodsTab = React.memo((props) => {
   return (
     <NodeTab>
       <PodTableContainer>
-        <Table columns={columns} data={pods} defaultSortingKey={'status'}>
+        <Table
+          columns={columns}
+          data={pods}
+          defaultSortingKey={'status'}
+          entityName={{
+            en: {
+              singular: 'pod',
+              plural: 'pods',
+            },
+          }}
+        >
           <Table.SingleSelectableContent
             rowHeight="h48"
             separationLineVariant="backgroundLevel3"
-            backgroundVariant="backgroundLevel1"
           />
         </Table>
       </PodTableContainer>

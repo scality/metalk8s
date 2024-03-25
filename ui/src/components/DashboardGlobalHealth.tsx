@@ -1,6 +1,4 @@
-import React from 'react';
 import styled from 'styled-components';
-import { spacing } from '@scality/core-ui/dist/style/theme';
 import DashboardAlerts from './DashboardAlerts';
 import { Box, useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import {
@@ -10,10 +8,13 @@ import {
   Tooltip,
   StatusWrapper,
   Loader,
-  SpacedBox,
   AppContainer,
+  spacing,
   Stack,
+  Icon,
+  GlobalHealthBar,
 } from '@scality/core-ui';
+
 import {
   highestAlertToStatus,
   useAlertLibrary,
@@ -24,9 +25,9 @@ import { useStartingTimeStamp } from '../containers/StartTimeProvider';
 import CircleStatus from './CircleStatus';
 import StatusIcon from './StatusIcon';
 import { getClusterAlertSegmentQuery } from '../services/platformlibrary/metrics';
-import { GlobalHealthBar } from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
-import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
+
 import { useQuery } from 'react-query';
+
 const HealthBarContainer = styled.div`
   flex-direction: column;
   width: 90%;
@@ -51,8 +52,7 @@ const DashboardGlobalHealth = () => {
   const platformStatus = highestAlertToStatus(platformHighestSeverityAlert);
   return (
     <AppContainer.OverallSummary>
-      {/* @ts-expect-error - FIXME when you are working on it  */}
-      <Stack alignItems="center">
+      <Stack style={{ alignItems: 'center' }}>
         <Box flex="1" display="flex">
           <PlatformStatusIcon>
             <StatusWrapper status={platformStatus}>
@@ -74,63 +74,56 @@ const DashboardGlobalHealth = () => {
                 alignItems: 'center',
               }}
             >
-              <SpacedBox
+              <Box
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                 }}
                 mr={20}
               >
-                <SpacedBox mr={8}>
-                  <EmphaseText
-                    // @ts-expect-error - FIXME when you are working on it
-                    style={{
-                      letterSpacing: spacing.sp2,
-                    }}
-                  >
-                    Global Health
-                  </EmphaseText>
-                </SpacedBox>
+                <Box
+                  mr={8}
+                  style={{
+                    letterSpacing: spacing.r2,
+                  }}
+                >
+                  <EmphaseText>Global Health</EmphaseText>
+                </Box>
 
                 <Tooltip
                   placement="bottom"
                   overlay={
-                    <SmallerText
-                      // @ts-expect-error - FIXME when you are working on it
-                      style={{
-                        minWidth: '30rem',
-                        display: 'block',
-                      }}
-                    >
+                    <SmallerText>
                       {intl
                         .formatMessage({
                           id: 'global_health_explanation',
                         })
                         .split('\n')
                         .map((line, key) => (
-                          <SpacedBox
-                            key={`globalheathexplanation-${key}`}
-                            mb={8}
-                          >
+                          <Box key={`globalheathexplanation-${key}`} mb={8}>
                             {line}
-                          </SpacedBox>
+                          </Box>
                         ))}
                     </SmallerText>
                   }
+                  overlayStyle={{
+                    minWidth: '30rem',
+                    display: 'block',
+                  }}
                 >
                   <Icon name="Info" color="buttonSecondary" />
                 </Tooltip>
-              </SpacedBox>
+              </Box>
               <EmphaseText>
                 <CircleStatus status={platformStatus} />
               </EmphaseText>
               {historyAlertStatus === 'loading' && (
-                <SpacedBox ml={8}>
+                <Box ml={8}>
                   <Loader size={'larger'} />
-                </SpacedBox>
+                </Box>
               )}
             </div>
-            <SpacedBox mr={20}>
+            <Box mr={20}>
               <GlobalHealthBar
                 id={'platform_globalhealth'}
                 alerts={
@@ -149,13 +142,13 @@ const DashboardGlobalHealth = () => {
                 start={startingTimeISO}
                 end={currentTimeISO}
               />
-            </SpacedBox>
+            </Box>
           </HealthBarContainer>
         </Box>
         <Box flex="2">
-          <SpacedBox ml={24}>
+          <Box ml={24}>
             <DashboardAlerts />
-          </SpacedBox>
+          </Box>
         </Box>
       </Stack>
     </AppContainer.OverallSummary>
