@@ -6,8 +6,8 @@ import styled, { createGlobalStyle } from 'styled-components';
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { Layout } from '@scality/core-ui/dist/components/layout/v2/index';
 import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
-
 import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
+
 import { useIntl } from 'react-intl';
 import { useTheme } from 'styled-components';
 import { UserData, useAuth, useLogOut } from '../auth/AuthProvider';
@@ -34,8 +34,7 @@ const Logo = styled.img`
 export const LoadingNavbar = ({ logo }: { logo: string }) => (
   <CoreUINavbar
     logo={<Logo src={logo} alt="logo" />}
-    // @ts-expect-error - FIXME when you are working on it
-    role="navigation"
+    rightActions={[]}
     tabs={[
       {
         title: 'loading',
@@ -463,12 +462,22 @@ export const Navbar = ({
 
   if (canChangeTheme) {
     rightTabs.unshift({
-      icon: <i className={`fas fa-${themeMode === 'dark' ? 'sun' : 'moon'}`} />,
-      onClick: () => {
-        setThemeMode(themeMode === 'dark' ? 'light' : 'dark');
-      },
-      // @ts-expect-error - FIXME when you are working on it
-      type: 'button',
+      render: () => (
+        <Button
+          onClick={() => {
+            setThemeMode(themeMode === 'dark' ? 'light' : 'dark');
+          }}
+          icon={
+            <i className={`fas fa-${themeMode === 'dark' ? 'sun' : 'moon'}`} />
+          }
+          tooltip={{
+            overlay: `Switch to ${
+              themeMode === 'dark' ? 'light' : 'dark'
+            } theme`,
+          }}
+        ></Button>
+      ),
+      type: 'custom',
     });
   }
 
