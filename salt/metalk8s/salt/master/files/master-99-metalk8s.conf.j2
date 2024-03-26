@@ -74,3 +74,8 @@ reactor:
     - salt://metalk8s/reactor/certs/renew.sls?saltenv={{ saltenv }}
   - 'salt/beacon/*/metalk8s_watch_kubeconfig_expiry/':
     - salt://metalk8s/reactor/certs/renew.sls?saltenv={{ saltenv }}
+
+netapi_enable_clients:
+  - local
+  - local_async
+  - runner
