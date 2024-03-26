@@ -58,7 +58,7 @@ const simplifiedStylesPlugin: StylisPlugin = (context, content) => {
   return undefined;
 };
 
-const metalK8sConfig = {
+export const metalK8sConfig = {
   url: '/api/kubernetes',
   url_salt: '/api/salt',
   url_prometheus: '/api/prometheus',
@@ -66,7 +66,7 @@ const metalK8sConfig = {
   url_doc: '/docs',
   url_alertmanager: '/api/alertmanager',
   url_loki: '/api/loki',
-  flags: ['dashboard'],
+  flags: ['dashboard', 'show_node_display_name'],
   ui_base_path: '/platform',
   url_support: 'https://github.com/scality/metalk8s/discussions/new',
 };
@@ -145,10 +145,14 @@ export const AllTheProviders = (
   };
 };
 
-const customRender = (ui: React.ReactNode, options = {}) =>
+const customRender = (
+  ui: React.ReactNode,
+  options = {},
+  providersArgs = ['/', metalK8sConfig],
+) =>
   // @ts-expect-error - FIXME when you are working on it
   render(ui, {
-    wrapper: AllTheProviders(),
+    wrapper: AllTheProviders(...providersArgs),
     ...options,
   });
 

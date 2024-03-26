@@ -15,7 +15,10 @@ import {
   deployNodeAction,
   fetchClusterVersionAction,
 } from '../ducks/app/nodes';
-import { useUpdateNodeDisplayName } from '../hooks/nodes';
+import {
+  useUpdateNodeDisplayName,
+  useShowNodeDisplayName,
+} from '../hooks/nodes';
 import ActiveAlertsCounter from './ActiveAlertsCounter';
 import {
   ActiveAlertTitle,
@@ -172,6 +175,8 @@ const NodePageOverviewTab = (props) => {
 
   const mutation = useUpdateNodeDisplayName(nodeName);
 
+  const { isDisplayNodeNameShown } = useShowNodeDisplayName();
+
   return (
     <NodeTab>
       <TabContentContainer>
@@ -216,21 +221,25 @@ const NodePageOverviewTab = (props) => {
                 </OverviewInformationValue>
               </OverviewInformationWrapper>
             </OverviewInformationSpan>
-            <Stack
-              direction="horizontal"
-              style={{ paddingLeft: 20, paddingBottom: 20 }}
-            >
-              <OverviewInformationLabel>Display Name</OverviewInformationLabel>
-              <InlineInput
-                key={currentNode?.name?.displayName}
-                id="node-name-input"
-                autoFocus
-                changeMutation={mutation}
-                defaultValue={
-                  currentNode?.name?.displayName || currentNode?.name?.name
-                }
-              />
-            </Stack>
+            {isDisplayNodeNameShown && (
+              <Stack
+                direction="horizontal"
+                style={{ paddingLeft: 20, paddingBottom: 20 }}
+              >
+                <OverviewInformationLabel>
+                  Display Name
+                </OverviewInformationLabel>
+                <InlineInput
+                  key={currentNode?.name?.displayName}
+                  id="node-name-input"
+                  autoFocus
+                  changeMutation={mutation}
+                  defaultValue={
+                    currentNode?.name?.displayName || currentNode?.name?.name
+                  }
+                />
+              </Stack>
+            )}
             <OverviewInformationSpan>
               <OverviewInformationLabel>Name</OverviewInformationLabel>
               <OverviewInformationWrapper>

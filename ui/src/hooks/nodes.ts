@@ -144,3 +144,10 @@ export const useUpdateNodeDisplayName = (name: string) => {
     },
   });
 };
+
+export const useShowNodeDisplayName = (): {
+  isDisplayNodeNameShown: boolean;
+} => {
+  const { flags } = useConfig();
+  return { isDisplayNodeNameShown: flags?.includes('show_node_display_name') };
+};
