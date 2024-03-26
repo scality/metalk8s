@@ -148,7 +148,7 @@ export const AllTheProviders = (
 const customRender = (
   ui: React.ReactNode,
   options = {},
-  providersArgs = ['/', metalK8sConfig],
+  providersArgs: [string, typeof metalK8sConfig] = ['/', metalK8sConfig],
 ) =>
   // @ts-expect-error - FIXME when you are working on it
   render(ui, {
