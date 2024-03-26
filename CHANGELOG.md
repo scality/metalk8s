@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 127.0.0 (in development)
+## Release 127.0.0
 
 ### Additions
 
