@@ -84,6 +84,12 @@ Deploy kube-proxy (ConfigMap):
               tcpTimeout: 0s
               udpTimeout: 0s
             kind: KubeProxyConfiguration
+            logging:
+              flushFrequency: 0
+              options:
+                json:
+                  infoBufferSize: "0"
+              verbosity: 0
             metricsBindAddress: @HOST_IP@:10249
             mode: ""
             nodePortAddresses: {{ salt.metalk8s_network.get_nodeport_cidrs() | tojson }}

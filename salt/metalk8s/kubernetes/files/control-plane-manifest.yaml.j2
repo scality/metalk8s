@@ -67,6 +67,7 @@ spec:
 {%- if sidecars is defined and sidecars %}
     {{ sidecars | yaml(False) | indent(4, False) }}
 {%- endif %}
+  priority: 2000001000
   priorityClassName: "system-node-critical"
   securityContext:
     seccompProfile:

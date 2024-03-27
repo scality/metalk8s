@@ -53,6 +53,7 @@ spec:
           readOnly: {{ volume.get("readOnly", false) }}
         {%- endfor %}
   hostNetwork: true
+  priority: 2000001000
   priorityClassName: "system-node-critical"
   securityContext:
     seccompProfile:
