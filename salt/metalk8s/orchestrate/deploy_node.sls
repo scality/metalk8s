@@ -16,7 +16,7 @@
 # manually using raw ssh
 Install python36:
   metalk8s.saltutil_cmd:
-    - name: '[ "$EUID" -eq 0 ] && yum install -y python3 || sudo yum install -y python3'
+    - name: '[ "$EUID" -eq 0 ] && yum install -y python3 python3-psutil || sudo yum install -y python3 python3-psutil'
     - tgt: {{ node_name }}
     - ssh: true
     - raw_shell: true
@@ -98,7 +98,7 @@ Wait minion available ssh:
     - require_in:
       - salt: Set grains
       - salt: Refresh the mine
-      - salt: Cordon the node
+      - metalk8s_cordon: Cordon the node
 {%- endif %}
 
 Sync module on the node:

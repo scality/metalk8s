@@ -6,6 +6,7 @@ __pycache__/
 .tox/
 .coverage
 
+.venv/
 buildchain/.venv/
 
 .doit.db

@@ -19,7 +19,7 @@ try:
     import kubernetes
     from kubernetes.client.rest import ApiException
     from kubernetes.client.models.v1_object_meta import V1ObjectMeta
-    from kubernetes.client.models.v1beta1_eviction import V1beta1Eviction
+    from kubernetes.client.models.v1_eviction import V1Eviction
     from urllib3.exceptions import HTTPError
 
     HAS_LIBS = True
@@ -531,7 +531,7 @@ def evict_pod(name, namespace="default", grace_period=1, **kwargs):
         client.request(
             "post",
             path,
-            body=V1beta1Eviction(delete_options=delete_options, metadata=object_meta),
+            body=V1Eviction(delete_options=delete_options, metadata=object_meta),
         )
     except (ApiException, HTTPError) as exc:
         if isinstance(exc, ApiException):
@@ -546,7 +546,7 @@ def evict_pod(name, namespace="default", grace_period=1, **kwargs):
             if exc.status == 429:
                 # Too Many Requests: the eviction is rejected, but indicates
                 # we should retry later (probably due to a disruption budget)
-                status = json.loads(exc.body, encoding="utf-8")
+                status = json.loads(exc.body)
                 log.info(
                     "Cannot evict %s at the moment: %s",
                     name,
