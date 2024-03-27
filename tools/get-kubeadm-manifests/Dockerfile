@@ -1,4 +1,4 @@
-FROM centos:7
+FROM rockylinux:8
 
 ARG K8S_SHORT_VERSION
 
