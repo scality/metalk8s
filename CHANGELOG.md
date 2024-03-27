@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## Release 128.0.0 (in development)
+
 ## Release 127.0.1 (in development)
 
 ## Release 127.0.0
