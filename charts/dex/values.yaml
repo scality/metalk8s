@@ -238,6 +238,9 @@ serviceMonitor:
   # Can be used with `tlsConfig` for example if using istio mTLS.
   scheme: ""
 
+  # -- HTTP path to scrape for metrics.
+  path: /metrics
+
   # -- TLS configuration to use when scraping the endpoint.
   # For example if using istio mTLS.
   ## Of type: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#tlsconfig
@@ -245,6 +248,9 @@ serviceMonitor:
 
   # -- Prometheus scrape bearerTokenFile
   bearerTokenFile:
+
+  # -- HonorLabels chooses the metric's labels on collisions with target labels.
+  honorLabels: false
 
   # -- Prometheus scrape metric relabel configs
   # to apply to samples before ingestion.

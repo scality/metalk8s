@@ -1,6 +1,6 @@
 # dex
 
-![version: 0.15.2](https://img.shields.io/badge/version-0.15.2-informational?style=flat-square) ![type: application](https://img.shields.io/badge/type-application-informational?style=flat-square) ![app version: 2.37.0](https://img.shields.io/badge/app%20version-2.37.0-informational?style=flat-square) ![kube version: >=1.14.0-0](https://img.shields.io/badge/kube%20version->=1.14.0--0-informational?style=flat-square) [![artifact hub](https://img.shields.io/badge/artifact%20hub-dex-informational?style=flat-square)](https://artifacthub.io/packages/helm/dex/dex)
+![version: 0.17.0](https://img.shields.io/badge/version-0.17.0-informational?style=flat-square) ![type: application](https://img.shields.io/badge/type-application-informational?style=flat-square) ![app version: 2.39.0](https://img.shields.io/badge/app%20version-2.39.0-informational?style=flat-square) ![kube version: >=1.14.0-0](https://img.shields.io/badge/kube%20version->=1.14.0--0-informational?style=flat-square) [![artifact hub](https://img.shields.io/badge/artifact%20hub-dex-informational?style=flat-square)](https://artifacthub.io/packages/helm/dex/dex)
 
 OpenID Connect (OIDC) identity and OAuth 2.0 provider with pluggable connectors.
 
@@ -166,8 +166,10 @@ ingress:
 | serviceMonitor.labels | object | `{}` | Labels to be added to the ServiceMonitor. |
 | serviceMonitor.annotations | object | `{}` | Annotations to be added to the ServiceMonitor. |
 | serviceMonitor.scheme | string | `""` | HTTP scheme to use for scraping. Can be used with `tlsConfig` for example if using istio mTLS. |
+| serviceMonitor.path | string | `"/metrics"` | HTTP path to scrape for metrics. |
 | serviceMonitor.tlsConfig | object | `{}` | TLS configuration to use when scraping the endpoint. For example if using istio mTLS. |
 | serviceMonitor.bearerTokenFile | string | `nil` | Prometheus scrape bearerTokenFile |
+| serviceMonitor.honorLabels | bool | `false` | HonorLabels chooses the metric's labels on collisions with target labels. |
 | serviceMonitor.metricRelabelings | list | `[]` | Prometheus scrape metric relabel configs to apply to samples before ingestion. |
 | serviceMonitor.relabelings | list | `[]` | Relabel configs to apply to samples before ingestion. |
 | resources | object | No requests or limits. | Container resource [requests and limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/). See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#resources) for details. |
