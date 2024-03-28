@@ -23,6 +23,12 @@
   [2.9.6](https://github.com/grafana/loki/releases/tag/v2.9.6)
   (PR[#4285](https://github.com/scality/metalk8s/pull/4285))
 
+- Bump fluent-bit chart version to
+  [0.44.0](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.44.0)
+  The fluent-bit image has been bumped accordingly to
+  [2.2.2](https://github.com/fluent/fluent-bit/releases/tag/v2.2.2)
+  (PR[#4286](https://github.com/scality/metalk8s/pull/4286))
+
 ## Release 127.0.1 (in development)
 
 ## Release 127.0.0

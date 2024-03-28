@@ -53,3 +53,6 @@ serviceMonitor:
   enabled: true
   selector:
     metalk8s.scality.com/monitor: ''
+
+dashboards:
+  enabled: true
