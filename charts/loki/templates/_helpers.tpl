@@ -245,7 +245,20 @@ s3:
     ca_file: {{ . }}
     {{- end}}
   {{- end }}
+  {{- with .backoff_config}}
+  backoff_config:
+    {{- with .min_period }}
+    min_period: {{ . }}
+    {{- end}}
+    {{- with .max_period }}
+    max_period: {{ . }}
+    {{- end}}
+    {{- with .max_retries }}
+    max_retries: {{ . }}
+    {{- end}}
+  {{- end }}
 {{- end -}}
+
 {{- else if eq .Values.loki.storage.type "gcs" -}}
 {{- with .Values.loki.storage.gcs }}
 gcs:
@@ -276,6 +289,39 @@ azure:
   {{- with .endpointSuffix }}
   endpoint_suffix: {{ . }}
   {{- end }}
+{{- end -}}
+{{- else if eq .Values.loki.storage.type "swift" -}}
+{{- with .Values.loki.storage.swift }}
+swift:
+  {{- with .auth_version }}
+  auth_version: {{ . }}
+  {{- end }}
+  auth_url: {{ .auth_url }}
+  {{- with .internal }}
+  internal: {{ . }}
+  {{- end }}
+  username: {{ .username }}
+  user_domain_name: {{ .user_domain_name }}
+  {{- with .user_domain_id }}
+  user_domain_id: {{ . }}
+  {{- end }}
+  {{- with .user_id }}
+  user_id: {{ . }}
+  {{- end }}
+  password: {{ .password }}
+  {{- with .domain_id }}
+  domain_id: {{ . }}
+  {{- end }}
+  domain_name: {{ .domain_name }}
+  project_id: {{ .project_id }}
+  project_name: {{ .project_name }}
+  project_domain_id: {{ .project_domain_id }}
+  project_domain_name: {{ .project_domain_name }}
+  region_name: {{ .region_name }}
+  container_name: {{ .container_name }}
+  max_retries: {{ .max_retries | default 3 }}
+  connect_timeout: {{ .connect_timeout | default "10s" }}
+  request_timeout: {{ .request_timeout | default "5s" }}
 {{- end -}}
 {{- else -}}
 {{- with .Values.loki.storage.filesystem }}
@@ -316,6 +362,9 @@ s3:
   {{- end }}
   s3forcepathstyle: {{ .s3ForcePathStyle }}
   insecure: {{ .insecure }}
+  {{- with .http_config }}
+  http_config: {{ toYaml . | nindent 6 }}
+  {{- end }}
 {{- end -}}
 {{- else if eq .Values.loki.storage.type "gcs" -}}
 {{- with .Values.loki.storage.gcs }}
@@ -349,6 +398,39 @@ azure:
   {{- with .endpointSuffix }}
   endpoint_suffix: {{ . }}
   {{- end }}
+{{- end -}}
+{{- else if eq .Values.loki.storage.type "swift" -}}
+{{- with .Values.loki.storage.swift }}
+swift:
+  {{- with .auth_version }}
+  auth_version: {{ . }}
+  {{- end }}
+  auth_url: {{ .auth_url }}
+  {{- with .internal }}
+  internal: {{ . }}
+  {{- end }}
+  username: {{ .username }}
+  user_domain_name: {{ .user_domain_name }}
+  {{- with .user_domain_id }}
+  user_domain_id: {{ . }}
+  {{- end }}
+  {{- with .user_id }}
+  user_id: {{ . }}
+  {{- end }}
+  password: {{ .password }}
+  {{- with .domain_id }}
+  domain_id: {{ . }}
+  {{- end }}
+  domain_name: {{ .domain_name }}
+  project_id: {{ .project_id }}
+  project_name: {{ .project_name }}
+  project_domain_id: {{ .project_domain_id }}
+  project_domain_name: {{ .project_domain_name }}
+  region_name: {{ .region_name }}
+  container_name: {{ .container_name }}
+  max_retries: {{ .max_retries | default 3 }}
+  connect_timeout: {{ .connect_timeout | default "10s" }}
+  request_timeout: {{ .request_timeout | default "5s" }}
 {{- end -}}
 {{- else }}
 type: "local"
@@ -480,16 +562,16 @@ Params:
   pathType: Prefix
   {{- end }}
   backend:
-    {{- if $ingressApiIsStable }}
     {{- $serviceName := include "loki.ingress.serviceName" (dict "ctx" $.ctx "svcName" $.svcName) }}
+    {{- if $ingressApiIsStable }}
     service:
       name: {{ $serviceName }}
       port:
-        number: 3100
+        number: {{ $.ctx.Values.loki.server.http_listen_port }}
     {{- else }}
     serviceName: {{ $serviceName }}
-    servicePort: 3100
-{{- end -}}
+    servicePort: {{ $.ctx.Values.loki.server.http_listen_port }}
+    {{- end -}}
 {{- end -}}
 {{- end -}}
 
@@ -518,7 +600,7 @@ Create the service endpoint including port for MinIO.
 
 {{/* Determine if deployment is using object storage */}}
 {{- define "loki.isUsingObjectStorage" -}}
-{{- or (eq .Values.loki.storage.type "gcs") (eq .Values.loki.storage.type "s3") (eq .Values.loki.storage.type "azure") -}}
+{{- or (eq .Values.loki.storage.type "gcs") (eq .Values.loki.storage.type "s3") (eq .Values.loki.storage.type "azure") (eq .Values.loki.storage.type "swift") (eq .Values.loki.storage.type "alibabacloud") -}}
 {{- end -}}
 
 {{/* Configure the correct name for the memberlist service */}}
@@ -531,7 +613,7 @@ Create the service endpoint including port for MinIO.
 {{- $isSingleBinary := eq (include "loki.deployment.isSingleBinary" .) "true" -}}
 {{- $url := printf "%s.%s.svc.%s.:%s" (include "loki.gatewayFullname" .) .Release.Namespace .Values.global.clusterDomain (.Values.gateway.service.port | toString)  }}
 {{- if and $isSingleBinary (not .Values.gateway.enabled)  }}
-  {{- $url = printf "%s.%s.svc.%s.:3100" (include "loki.singleBinaryFullname" .) .Release.Namespace .Values.global.clusterDomain }}
+  {{- $url = printf "%s.%s.svc.%s.:%s" (include "loki.singleBinaryFullname" .) .Release.Namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
 {{- end }}
 {{- printf "%s" $url -}}
 {{- end -}}
@@ -604,7 +686,11 @@ http {
 
   sendfile     on;
   tcp_nopush   on;
+  {{- if .Values.gateway.nginxConfig.resolver }}
+  resolver {{ .Values.gateway.nginxConfig.resolver }};
+  {{- else }}
   resolver {{ .Values.global.dnsService }}.{{ .Values.global.dnsNamespace }}.svc.{{ .Values.global.clusterDomain }}.;
+  {{- end }}
 
   {{- with .Values.gateway.nginxConfig.httpSnippet }}
   {{- tpl . $ | nindent 2 }}
@@ -612,7 +698,9 @@ http {
 
   server {
     listen             8080;
+    {{- if .Values.gateway.nginxConfig.enableIPv6 }}
     listen             [::]:8080;
+    {{- end }}
 
     {{- if .Values.gateway.basicAuth.enabled }}
     auth_basic           "Loki";
@@ -638,9 +726,9 @@ http {
     {{- $writeHost = include "loki.singleBinaryFullname" .}}
     {{- end }}
 
-    {{- $writeUrl    := printf "http://%s.%s.svc.%s:3100" $writeHost   .Release.Namespace .Values.global.clusterDomain }}
-    {{- $readUrl     := printf "http://%s.%s.svc.%s:3100" $readHost    .Release.Namespace .Values.global.clusterDomain }}
-    {{- $backendUrl  := printf "http://%s.%s.svc.%s:3100" $backendHost .Release.Namespace .Values.global.clusterDomain }}
+    {{- $writeUrl    := printf "http://%s.%s.svc.%s:%s" $writeHost   .Release.Namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
+    {{- $readUrl     := printf "http://%s.%s.svc.%s:%s" $readHost    .Release.Namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
+    {{- $backendUrl  := printf "http://%s.%s.svc.%s:%s" $backendHost .Release.Namespace .Values.global.clusterDomain (.Values.loki.server.http_listen_port | toString) }}
 
     {{- if .Values.gateway.nginxConfig.customWriteUrl }}
     {{- $writeUrl  = .Values.gateway.nginxConfig.customWriteUrl }}
@@ -800,7 +888,7 @@ enableServiceLinks: false
 {{/* single binary */}}
 {{- $compactorAddress = include "loki.singleBinaryFullname" . -}}
 {{- end -}}
-{{- printf "%s" $compactorAddress }}
+{{- printf "http://%s:%s" $compactorAddress (.Values.loki.server.http_listen_port | toString) }}
 {{- end }}
 
 {{/* Determine query-scheduler address */}}
@@ -808,7 +896,7 @@ enableServiceLinks: false
 {{- $isSimpleScalable := eq (include "loki.deployment.isScalable" .) "true" -}}
 {{- $schedulerAddress := ""}}
 {{- if and $isSimpleScalable (not .Values.read.legacyReadTarget ) -}}
-{{- $schedulerAddress = printf "query-scheduler-discovery.%s.svc.%s.:9095" .Release.Namespace .Values.global.clusterDomain -}}
+{{- $schedulerAddress = printf "query-scheduler-discovery.%s.svc.%s.:%s" .Release.Namespace .Values.global.clusterDomain (.Values.loki.server.grpc_listen_port | toString) -}}
 {{- end -}}
 {{- printf "%s" $schedulerAddress }}
 {{- end }}

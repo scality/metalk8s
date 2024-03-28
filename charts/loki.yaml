@@ -63,6 +63,9 @@ monitoring:
   lokiCanary:
     enabled: false
 
+  dashboards:
+    enabled: false
+
 gateway:
   enabled: false
 
