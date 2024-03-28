@@ -2,6 +2,12 @@
 
 ## Release 127.0.1 (in development)
 
+### Bug fixes
+
+- In order to reduce slow DNS impact, let's disable
+  salt FQDNs grains that are not used today
+  (PR[#4287](https://github.com/scality/metalk8s/pull/4287))
+
 ## Release 127.0.0
 
 ### Additions
