@@ -29,6 +29,12 @@
   [2.2.2](https://github.com/fluent/fluent-bit/releases/tag/v2.2.2)
   (PR[#4286](https://github.com/scality/metalk8s/pull/4286))
 
+- Bump ingress-nginx chart version to
+  [4.10.0](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.10.0)
+  The controller image has been bumped accordingly to
+  [v1.10.0](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.10.0)
+  (PR[#4289](https://github.com/scality/metalk8s/pull/4289))
+
 ## Release 127.0.1 (in development)
 
 ### Bug fixes

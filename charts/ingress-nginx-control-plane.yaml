@@ -3,7 +3,7 @@ controller:
 
   image:
     digest: null
-    repository: '{%- endraw -%}{{ build_image_name(\"nginx-ingress-controller\", False) }}{%- raw -%}'
+    repository: __image__(nginx-ingress-controller)
 
   electionID: ingress-control-plane-controller-leader
 
