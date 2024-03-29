@@ -1,0 +1,71 @@
+name: "Generate sbom"
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "the git revision to checkout"
+        default: ${{ github.ref }}
+        required: false
+        type: string
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Cleanup some unused ressources
+        run: |-
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+
+      - name: Create directories
+        shell: bash
+        run: |
+          mkdir -p metalk8s_sbom/repo
+          mkdir -p metalk8s_sbom/sbom
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          path: metalk8s_sbom/repo/metalk8s
+
+      - name: Scan metalk8s repository
+        uses: scality/sbom@v1
+        with:
+          repo: metalk8s
+          input_path: metalk8s_sbom/repo/metalk8s
+          output_path: metalk8s_sbom/sbom
+
+      - name: Generate archive
+        shell: bash
+        run: |
+          cd metalk8s_sbom/sbom
+          tar -czf sbom_metalk8s.tar.gz *.json
+
+      - name: Clean up
+        shell: bash
+        run: |
+          rm -rf metalk8s_sbom/repo
+          rm -f metalk8s_sbom/sbom/*.json
+
+      - name: Upload SBOM to artifacts
+        uses: scality/action-artifacts@v4
+        with:
+          method: upload
+          url: https://artifacts.scality.net
+          user: ${{ secrets.artifacts_user }}
+          password: ${{ secrets.artifacts_password }}
+          source: metalk8s_sbom/
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+            
+      - name: Generate Job result
+        if: always()
+        uses: ./.github/actions/generate-job-result
+        with:
+          name: generate-sbom
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          GIT_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}

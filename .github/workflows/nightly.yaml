@@ -205,6 +205,10 @@ jobs:
       nodes-count: 2
       k8s-conformance: true
 
+  generate-sbom:
+    uses: ./.github/workflows/generate-sbom.yaml
+    secrets: inherit
+
   write-final-failed-status:
     runs-on: ubuntu-22.04
     needs:
@@ -213,6 +217,7 @@ jobs:
       - install
       - bootstrap-restore
       - k8s-conformance
+      - generate-sbom
     if: failure()
     steps:
       - name: Checkout
@@ -240,6 +245,7 @@ jobs:
       - install
       - bootstrap-restore
       - k8s-conformance
+      - generate-sbom
     if: success()
     steps:
       - name: Checkout
