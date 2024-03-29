@@ -542,9 +542,13 @@ def check_grafana_dashboards(host, grafana_api):
         pytest.fail(f"Failed to read file {DASHBOARD_UIDS_FILE}: {exc!s}")
 
     try:
-        expected_dashboards = json.loads(expected_dashboards_str)
+        expected_dashboards_json = json.loads(expected_dashboards_str)
     except json.JSONDecodeError as exc:
         pytest.fail(f"Failed to decode JSON from {DASHBOARD_UIDS_FILE}: {exc!s}")
+
+    expected_dashboards = expected_dashboards_json["all"]
+    if utils.get_pillar(host, "addons:fluent-bit:enabled"):
+        expected_dashboards.update(expected_dashboards_json["fluent-bit"])
 
     uid_mismatches = []
     extra_dashboards = []
