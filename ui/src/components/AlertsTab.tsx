@@ -1,8 +1,8 @@
 import React from 'react';
-import { Chips, ConstrainedText } from '@scality/core-ui';
+import { ConstrainedText, FormattedDateTime } from '@scality/core-ui';
 import { Box, Table } from '@scality/core-ui/dist/next';
 import ActiveAlertsFilter from './ActiveAlertsFilters';
-import { useURLQuery, formatDateToMid1 } from '../services/utils';
+import { useURLQuery } from '../services/utils';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
 import { Alert } from '../services/alertUtils';
 import CircleStatus from './CircleStatus';
@@ -73,7 +73,7 @@ const AlertsTab = ({
         width: '7rem',
       },
       Cell: ({ value }) => {
-        return <span>{formatDateToMid1(value)}</span>;
+        return <FormattedDateTime value={new Date(value)} format="date-time" />;
       },
     },
   ];
