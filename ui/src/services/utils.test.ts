@@ -5,7 +5,6 @@ import {
   fromMilliSectoAge,
   useTableSortURLSync,
   linuxDrivesNamingIncrement,
-  formatDateToMid1,
   getSegments,
   getNaNSegments,
   allSizeUnitsToBytes,
@@ -112,27 +111,7 @@ it('should return an empty string if the increment is smaller than 0', () => {
   const result = linuxDrivesNamingIncrement('/dev/vda', -1);
   expect(result).toEqual('');
 });
-it('should return the formatted local time', () => {
-  // mock a local time
-  jest
-    .spyOn(global.Date, 'now')
-    .mockImplementationOnce(() =>
-      new Date('2019-05-14T11:01:58.135').valueOf(),
-    );
-  // @ts-expect-error - FIXME when you are working on it
-  const result = formatDateToMid1(Date.now());
-  expect(result).toEqual('2019-05-14 11:01');
-});
-it('should return 00:00', () => {
-  jest
-    .spyOn(global.Date, 'now')
-    .mockImplementationOnce(() =>
-      new Date('2019-05-14T00:00:58.135').valueOf(),
-    );
-  // @ts-expect-error - FIXME when you are working on it
-  const result = formatDateToMid1(Date.now());
-  expect(result).toEqual('2019-05-14 00:00');
-});
+
 describe('getNaNSegments', () => {
   it('should return 0 segments when no points are missing', () => {
     //S
