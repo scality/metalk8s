@@ -11,6 +11,9 @@
 - Bump etcd version to [3.5.12](https://github.com/etcd-io/etcd/releases/tag/v3.5.12)
   (PR[#4283](https://github.com/scality/metalk8s/pull/4283))
 
+- Bump containerd to [1.6.31](https://github.com/containerd/containerd/releases/tag/v1.6.31)
+  (PR[#4292](https://github.com/scality/metalk8s/pull/4292))
+
 - Bump Calico version to [3.27.3](https://github.com/projectcalico/calico/releases/tag/v3.27.3)
   (PR[#4291](https://github.com/scality/metalk8s/pull/4291))
 
