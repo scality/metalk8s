@@ -11,6 +11,9 @@
 - Bump etcd version to [3.5.12](https://github.com/etcd-io/etcd/releases/tag/v3.5.12)
   (PR[#4283](https://github.com/scality/metalk8s/pull/4283))
 
+- Bump Calico version to [3.27.3](https://github.com/projectcalico/calico/releases/tag/v3.27.3)
+  (PR[#4291](https://github.com/scality/metalk8s/pull/4291))
+
 - Bump dex chart version to
   [0.17.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.17.0)
   Dex itself has been bumped accordingly to
