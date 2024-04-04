@@ -42,6 +42,10 @@
   and `metalk8s-keepalived` image to `alpine:3.19.1`
   (PR[#4293](https://github.com/scality/metalk8s/pull/4293))
 
+- Bump keepalived version to [2.2.8](https://www.keepalived.org/release-notes/Release-2.2.8.html)
+  in `metalk8s-keepalived` image
+  (PR[#4296](https://github.com/scality/metalk8s/pull/4296))
+
 - Bump the rocky base image used by `salt-master` and `metalk8s-utils`
   images to `rockylinux:8.9.20231119`
   (PR[#4294](https://github.com/scality/metalk8s/pull/4294))
