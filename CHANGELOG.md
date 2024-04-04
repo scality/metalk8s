@@ -38,6 +38,10 @@
   [v1.10.0](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.10.0)
   (PR[#4289](https://github.com/scality/metalk8s/pull/4289))
 
+- Bump the alpine base image used by `metalk8s-alert-logger`
+  and `metalk8s-keepalived` image to `alpine:3.19.1`
+  (PR[#4293](https://github.com/scality/metalk8s/pull/4293))
+
 ## Release 127.0.1 (in development)
 
 ### Bug fixes
