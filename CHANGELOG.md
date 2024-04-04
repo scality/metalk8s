@@ -46,6 +46,9 @@
   images to `rockylinux:8.9.20231119`
   (PR[#4294](https://github.com/scality/metalk8s/pull/4294))
 
+- Bump nginx image to [1.25.4-alpine](https://github.com/nginx/nginx/releases/tag/release-1.25.4)
+  (PR[#4295](https://github.com/scality/metalk8s/pull/4295))
+
 ## Release 127.0.1 (in development)
 
 ### Bug fixes
