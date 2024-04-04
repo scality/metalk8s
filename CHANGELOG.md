@@ -42,6 +42,10 @@
   and `metalk8s-keepalived` image to `alpine:3.19.1`
   (PR[#4293](https://github.com/scality/metalk8s/pull/4293))
 
+- Bump the rocky base image used by `salt-master` and `metalk8s-utils`
+  images to `rockylinux:8.9.20231119`
+  (PR[#4294](https://github.com/scality/metalk8s/pull/4294))
+
 ## Release 127.0.1 (in development)
 
 ### Bug fixes
