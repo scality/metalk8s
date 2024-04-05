@@ -6,13 +6,14 @@ import {
   TextBadge,
   AppContainer,
   Stack,
+  FormattedDateTime,
 } from '@scality/core-ui';
 import { Button, Table } from '@scality/core-ui/dist/next';
 import { fontSize, spacing } from '@scality/core-ui/dist/style/theme';
 import { useAlerts } from './AlertProvider';
 import StatusIcon from '../components/StatusIcon';
 import { STATUS_WARNING, STATUS_CRITICAL, STATUS_HEALTH } from '../constants';
-import { compareHealth, formatDateToMid1 } from '../services/utils';
+import { compareHealth } from '../services/utils';
 import CircleStatus from '../components/CircleStatus';
 import { useIntl } from 'react-intl';
 import isEqual from 'lodash.isequal';
@@ -284,7 +285,9 @@ export default function AlertPage() {
           textAlign: 'right',
           marginRight: spacing.sp12,
         },
-        Cell: (cell) => <span>{formatDateToMid1(cell.value)}</span>,
+        Cell: (cell) => (
+          <FormattedDateTime value={new Date(cell.value)} format="date-time" />
+        ),
       },
     ],
     [],

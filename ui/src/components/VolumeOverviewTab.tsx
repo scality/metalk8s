@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { useHistory } from 'react-router';
-import { FormattedDate, FormattedTime } from 'react-intl';
 import styled, { useTheme } from 'styled-components';
 import {
   fontSize,
-  padding,
   fontWeight,
+  padding,
 } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import ActiveAlertsCounter from './ActiveAlertsCounter';
@@ -19,7 +18,15 @@ import {
   STATUS_WARNING,
   LVM_LOGICAL_VOLUME,
 } from '../constants';
-import { Banner, Link, Modal, ProgressBar } from '@scality/core-ui';
+import {
+  Banner,
+  FormattedDateTime,
+  Link,
+  Modal,
+  ProgressBar,
+  spacing,
+  Icon,
+} from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import {
@@ -34,7 +41,6 @@ import {
 } from './style/CommonLayoutStyle';
 import { formatSizeForDisplay } from '../services/utils';
 import { RenderNoDataAvailable } from '../containers/NodePageMetricsTab';
-import { Icon } from '@scality/core-ui';
 const VolumeDetailCardContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -42,7 +48,7 @@ const VolumeDetailCardContainer = styled.div`
 `;
 const VolumeTitleSection = styled.div`
   color: ${(props) => props.theme.textPrimary};
-  padding: ${padding.large} ${padding.base} ${padding.larger} ${padding.large};
+  padding: ${spacing.r20} ${spacing.r16} ${spacing.r24} ${spacing.r20};
   display: flex;
   justify-content: space-between;
 `;
@@ -50,36 +56,36 @@ const VolumeGraph = styled.div`
   display: flex;
   flex-direction: column;
   margin-left: 2%;
-  padding-right: ${padding.larger};
+  padding-right: ${spacing.r24};
 `;
 const VolumeUsage = styled.div`
   min-height: 94px;
-  margin: ${padding.large} ${padding.small} ${padding.large} 0;
-  padding: 0 ${padding.base} 0 0;
+  margin: ${spacing.r20} ${spacing.r8} ${spacing.r20} 0;
+  padding: 0 ${spacing.r16} 0 0;
 `;
 const VolumeSectionTitle = styled.div`
   color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
-  padding: 0 0 ${padding.base} 0;
+  padding: 0 0 ${spacing.r16} 0;
 `;
 const ProgressBarContainer = styled.div`
-  margin: ${padding.small};
+  margin: ${spacing.r8};
 `;
 const NotificationButtonGroup = styled.div`
   display: flex;
   justify-content: flex-end;
 `;
 const ModalBody = styled.div`
-  padding-bottom: ${padding.base};
+  padding-bottom: ${spacing.r16};
 `;
 const CancelButton = styled(Button)`
-  margin-right: ${padding.small};
+  margin-right: ${spacing.r8};
 `;
 const LabelName = styled.span`
   font-size: ${fontSize.small};
   color: ${(props) => props.theme.textPrimary};
-  padding-right: ${padding.base};
+  padding-right: ${spacing.r16};
 `;
 const LabelValue = styled.span`
   font-size: ${fontSize.small};
@@ -259,17 +265,9 @@ const VolumeDetailCard = (props) => {
             </OverviewInformationLabel>
             {creationTimestamp ? (
               <OverviewInformationValue>
-                <FormattedDate
-                  value={creationTimestamp}
-                  year="numeric"
-                  month="short"
-                  day="2-digit"
-                />{' '}
-                <FormattedTime
-                  hour="2-digit"
-                  minute="2-digit"
-                  second="2-digit"
-                  value={creationTimestamp}
+                <FormattedDateTime
+                  format="date-time-second"
+                  value={new Date(creationTimestamp)}
                 />
               </OverviewInformationValue>
             ) : (

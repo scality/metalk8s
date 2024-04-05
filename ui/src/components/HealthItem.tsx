@@ -1,18 +1,18 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useIntl } from 'react-intl';
-import { Tooltip } from '@scality/core-ui';
-import { StatusText, Icon } from '@scality/core-ui';
 import {
+  FormattedDateTime,
+  Tooltip,
+  StatusText,
+  Icon,
   spacing,
-  fontSize,
-  fontWeight,
-} from '@scality/core-ui/dist/style/theme';
+} from '@scality/core-ui';
+import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
 import type { Alert } from '../services/alertUtils';
 import type { Status } from '../containers/AlertProvider';
 import CircleStatus from './CircleStatus';
 import { STATUS_HEALTH } from '../constants';
-import { formatDateToMid1 } from '../services/utils';
 import {
   useDiscoveredViews,
   useLinkOpener,
@@ -23,10 +23,10 @@ const ServiceItemLabelWrapper = styled.div`
   align-items: baseline;
 `;
 const ServiceItemLabel = styled.div`
-  margin-left: ${spacing.sp8};
+  margin-left: ${spacing.r8};
 `;
 const ServiceItemElement = styled.div`
-  padding: ${spacing.sp4};
+  padding: ${spacing.r4};
 `;
 const ClickableServiceItemElement = styled(ServiceItemElement)`
   width: 100%;
@@ -59,7 +59,7 @@ const NonHealthyPopUp = styled.div`
 
   label {
     width: 25%;
-    margin-right: ${spacing.sp8};
+    margin-right: ${spacing.r8};
     color: ${(props) => props.theme.textSecondary};
     text-align: right;
   }
@@ -71,7 +71,7 @@ const NonHealthyPopUpTitle = styled.div`
 const NonHealthyPopUpItem = styled.div`
   width: 100%;
   display: flex;
-  margin: ${spacing.sp4} ${spacing.sp14};
+  margin: ${spacing.r4} ${spacing.r14};
   align-items: center;
 `;
 
@@ -133,7 +133,10 @@ const HealthItem = ({
                       id: 'start',
                     })}
                   </label>
-                  <div>{formatDateToMid1(alerts[0].startsAt)}</div>
+                  <FormattedDateTime
+                    value={new Date(alerts[0].startsAt)}
+                    format="date-time"
+                  />
                 </NonHealthyPopUpItem>
               )}
             </NonHealthyPopUp>

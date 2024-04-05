@@ -1,13 +1,17 @@
-import { InlineInput, Loader, Stack, Steppers } from '@scality/core-ui';
-import { Button } from '@scality/core-ui/dist/next';
 import {
-  fontSize,
-  fontWeight,
-  padding,
-} from '@scality/core-ui/dist/style/theme';
+  InlineInput,
+  Loader,
+  Stack,
+  Steppers,
+  spacing,
+  FormattedDateTime,
+} from '@scality/core-ui';
+import React from 'react';
+import { Button } from '@scality/core-ui/dist/next';
+import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
 import isEmpty from 'lodash.isempty';
 import { useEffect } from 'react';
-import { FormattedDate, FormattedTime, useIntl } from 'react-intl';
+import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { API_STATUS_UNKNOWN } from '../constants';
@@ -38,7 +42,7 @@ const NodeNameContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: ${padding.large} 0 ${padding.larger} ${padding.large};
+  padding: ${spacing.r20} 0 ${spacing.r24} ${spacing.r20};
 `;
 const StatusText = styled.span`
   color: ${(props) => {
@@ -52,11 +56,11 @@ const Detail = styled.div`
   justify-content: space-between;
 `;
 const DeployButton = styled(Button)`
-  margin-right: ${padding.base};
+  margin-right: ${spacing.r16};
 `;
 const NodeDeploymentWrapper = styled.div`
-  padding: ${padding.smaller} 0 0 ${padding.small};
-  margin: ${padding.base} ${padding.base} 0 ${padding.base};
+  padding: ${spacing.r4} 0 0 ${spacing.r8};
+  margin: ${spacing.r16} ${spacing.r16} 0 ${spacing.r16};
   background-color: ${(props) => props.theme.backgroundLevel3};
 `;
 const NodeDeploymentTitle = styled.div`
@@ -65,13 +69,13 @@ const NodeDeploymentTitle = styled.div`
   font-size: ${fontSize.base};
 `;
 const NodeDeploymentStatus = styled.div`
-  padding: ${padding.base};
+  padding: ${spacing.r16};
   font-size: ${fontSize.base};
 `;
 const InfoMessage = styled.div`
   color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
-  padding: ${padding.base};
+  padding: ${spacing.r16};
 `;
 const NodeDeploymentContent = styled.div`
   display: flex;
@@ -305,16 +309,8 @@ const NodePageOverviewTab = (props) => {
               {creationTimestamp ? (
                 <OverviewInformationWrapper>
                   <OverviewInformationValue>
-                    <FormattedDate
-                      value={creationTimestamp}
-                      year="numeric"
-                      month="short"
-                      day="2-digit"
-                    />{' '}
-                    <FormattedTime
-                      hour="2-digit"
-                      minute="2-digit"
-                      second="2-digit"
+                    <FormattedDateTime
+                      format="date-time-second"
                       value={creationTimestamp}
                     />
                   </OverviewInformationValue>
