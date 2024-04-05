@@ -31,7 +31,7 @@ jobs:
           path: metalk8s_sbom/repo/metalk8s
 
       - name: Scan metalk8s repository
-        uses: scality/sbom@v1
+        uses: scality/sbom@v1.1.0
         with:
           repo: metalk8s
           input_path: metalk8s_sbom/repo/metalk8s
