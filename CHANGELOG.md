@@ -37,6 +37,12 @@
   - Bump prometheus-operator and prometheus-config-reloader containers version to
     [0.72.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.72.0)
 
+- Bump Prometheus Adapter chart version to
+  [4.10.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-4.10.0)
+  The prometheus-adapter image has been bumped accordingly to
+  [v0.11.2](https://github.com/kubernetes-sigs/prometheus-adapter/releases/tag/v0.11.2)
+  (PR[#4301](https://github.com/scality/metalk8s/pull/4301))
+
 - Bump dex chart version to
   [0.17.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.17.0)
   Dex itself has been bumped accordingly to
