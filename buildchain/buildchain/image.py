@@ -315,7 +315,7 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
             .isoformat(),
             "VCS_REF": constants.GIT_REF or "<unknown>",
             "METALK8S_VERSION": versions.VERSION,
-            "VERSION": "latest",
+            "VERSION": versions.VERSION,
         },
     ),
 )

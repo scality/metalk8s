@@ -258,7 +258,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="storage-operator",
-        version="latest",
+        version=VERSION,
         digest=None,
     ),
     Image(
