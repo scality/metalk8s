@@ -198,7 +198,6 @@ def codegen_chart_kube_prometheus_stack() -> types.TaskDict:
         "prometheus-operator-kubernetes-system-kubelet,"
         'spec:groups:0:rules:1:for,"5m"\' '
         f"--drop-prometheus-rules {drop_rule_file} "
-        f"--remove-manifest ConfigMap prometheus-operator-nodes-darwin "
         f"--output {target_sls}"
     )
 

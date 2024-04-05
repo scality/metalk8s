@@ -14,6 +14,29 @@
 - Bump Calico version to [3.27.3](https://github.com/projectcalico/calico/releases/tag/v3.27.3)
   (PR[#4291](https://github.com/scality/metalk8s/pull/4291))
 
+- Bump kube-prometheus-stack chart version to
+  [57.2.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-57.2.0)
+  (PR[#4300](https://github.com/scality/metalk8s/pull/4300))
+
+  This change includes:
+
+  - Bump Prometheus container version to
+    [2.51.0](https://github.com/prometheus/prometheus/releases/tag/v2.51.0)
+  - Bump grafana chart version to
+    [7.3.7](https://github.com/grafana/helm-charts/releases/tag/grafana-7.3.7),
+    Grafana container version to
+    [10.4.0](https://github.com/grafana/grafana/releases/tag/v10.4.0),
+    and kiwigrid/k8s-sidecar container version to
+    [1.26.1](https://github.com/kiwigrid/k8s-sidecar/releases/tag/1.26.1)
+  - Bump kube-state-metrics chart version to
+    [5.18.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-state-metrics-5.18.0)
+    and kube-state-metrics container version to
+    [2.11.0](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.11.0)
+  - Bump prometheus-node-exporter chart version to
+    [4.32.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-node-exporter-4.32.0)
+  - Bump prometheus-operator and prometheus-config-reloader containers version to
+    [0.72.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.72.0)
+
 - Bump dex chart version to
   [0.17.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.17.0)
   Dex itself has been bumped accordingly to

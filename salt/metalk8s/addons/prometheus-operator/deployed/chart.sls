@@ -16,7 +16,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-    operator.prometheus.io/version: 0.71.2
+    operator.prometheus.io/version: 0.72.0
   name: alertmanagerconfigs.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -5738,7 +5738,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-    operator.prometheus.io/version: 0.71.2
+    operator.prometheus.io/version: 0.72.0
   name: alertmanagers.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -6044,7 +6044,8 @@ spec:
                               properties:
                                 labelSelector:
                                   description: A label query over a set of resources,
-                                    in this case pods.
+                                    in this case pods. If it's null, this PodAffinityTerm
+                                    matches with no Pods.
                                   properties:
                                     matchExpressions:
                                       description: matchExpressions is a list of label
@@ -6094,6 +6095,44 @@ spec:
                                       type: object
                                   type: object
                                   x-kubernetes-map-type: atomic
+                                matchLabelKeys:
+                                  description: MatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key in (value)` to select
+                                    the group of existing pods which pods will be
+                                    taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MatchLabelKeys and LabelSelector. Also,
+                                    MatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                                mismatchLabelKeys:
+                                  description: MismatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key notin (value)` to
+                                    select the group of existing pods which pods will
+                                    be taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MismatchLabelKeys and LabelSelector. Also,
+                                    MismatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -6204,7 +6243,8 @@ spec:
                           properties:
                             labelSelector:
                               description: A label query over a set of resources,
-                                in this case pods.
+                                in this case pods. If it's null, this PodAffinityTerm
+                                matches with no Pods.
                               properties:
                                 matchExpressions:
                                   description: matchExpressions is a list of label
@@ -6250,6 +6290,43 @@ spec:
                                   type: object
                               type: object
                               x-kubernetes-map-type: atomic
+                            matchLabelKeys:
+                              description: MatchLabelKeys is a set of pod label keys
+                                to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key in (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MatchLabelKeys and LabelSelector.
+                                Also, MatchLabelKeys cannot be set when LabelSelector
+                                isn't set. This is an alpha field and requires enabling
+                                MatchLabelKeysInPodAffinity feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                            mismatchLabelKeys:
+                              description: MismatchLabelKeys is a set of pod label
+                                keys to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key notin (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MismatchLabelKeys and
+                                LabelSelector. Also, MismatchLabelKeys cannot be set
+                                when LabelSelector isn't set. This is an alpha field
+                                and requires enabling MatchLabelKeysInPodAffinity
+                                feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
                             namespaceSelector:
                               description: A label query over the set of namespaces
                                 that the term applies to. The term is applied to the
@@ -6353,7 +6430,8 @@ spec:
                               properties:
                                 labelSelector:
                                   description: A label query over a set of resources,
-                                    in this case pods.
+                                    in this case pods. If it's null, this PodAffinityTerm
+                                    matches with no Pods.
                                   properties:
                                     matchExpressions:
                                       description: matchExpressions is a list of label
@@ -6403,6 +6481,44 @@ spec:
                                       type: object
                                   type: object
                                   x-kubernetes-map-type: atomic
+                                matchLabelKeys:
+                                  description: MatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key in (value)` to select
+                                    the group of existing pods which pods will be
+                                    taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MatchLabelKeys and LabelSelector. Also,
+                                    MatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                                mismatchLabelKeys:
+                                  description: MismatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key notin (value)` to
+                                    select the group of existing pods which pods will
+                                    be taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MismatchLabelKeys and LabelSelector. Also,
+                                    MismatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -6513,7 +6629,8 @@ spec:
                           properties:
                             labelSelector:
                               description: A label query over a set of resources,
-                                in this case pods.
+                                in this case pods. If it's null, this PodAffinityTerm
+                                matches with no Pods.
                               properties:
                                 matchExpressions:
                                   description: matchExpressions is a list of label
@@ -6559,6 +6676,43 @@ spec:
                                   type: object
                               type: object
                               x-kubernetes-map-type: atomic
+                            matchLabelKeys:
+                              description: MatchLabelKeys is a set of pod label keys
+                                to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key in (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MatchLabelKeys and LabelSelector.
+                                Also, MatchLabelKeys cannot be set when LabelSelector
+                                isn't set. This is an alpha field and requires enabling
+                                MatchLabelKeysInPodAffinity feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                            mismatchLabelKeys:
+                              description: MismatchLabelKeys is a set of pod label
+                                keys to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key notin (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MismatchLabelKeys and
+                                LabelSelector. Also, MismatchLabelKeys cannot be set
+                                when LabelSelector isn't set. This is an alpha field
+                                and requires enabling MatchLabelKeysInPodAffinity
+                                feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
                             namespaceSelector:
                               description: A label query over the set of namespaces
                                 that the term applies to. The term is applied to the
@@ -7645,6 +7799,18 @@ spec:
                               required:
                               - port
                               type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
+                              type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
                                 as a LifecycleHandler and kept for the backward compatibility.
@@ -7742,6 +7908,18 @@ spec:
                                   type: string
                               required:
                               - port
+                              type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
                               type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
@@ -9003,6 +9181,18 @@ spec:
                               required:
                               - port
                               type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
+                              type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
                                 as a LifecycleHandler and kept for the backward compatibility.
@@ -9100,6 +9290,18 @@ spec:
                                   type: string
                               required:
                               - port
+                              type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
                               type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
@@ -10522,30 +10724,6 @@ spec:
                                   value but must still be higher than capacity recorded
                                   in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                 properties:
-                                  claims:
-                                    description: "Claims lists the names of resources,\
-                                      \ defined in spec.resourceClaims, that are used\
-                                      \ by this container. \n This is an alpha field\
-                                      \ and requires enabling the DynamicResourceAllocation\
-                                      \ feature gate. \n This field is immutable.\
-                                      \ It can only be set for containers."
-                                    items:
-                                      description: ResourceClaim references one entry
-                                        in PodSpec.ResourceClaims.
-                                      properties:
-                                        name:
-                                          description: Name must match the name of
-                                            one entry in pod.spec.resourceClaims of
-                                            the Pod where this field is used. It makes
-                                            that resource available inside a container.
-                                          type: string
-                                      required:
-                                      - name
-                                      type: object
-                                    type: array
-                                    x-kubernetes-list-map-keys:
-                                    - name
-                                    x-kubernetes-list-type: map
                                   limits:
                                     additionalProperties:
                                       anyOf:
@@ -10623,6 +10801,27 @@ spec:
                               storageClassName:
                                 description: 'storageClassName is the name of the
                                   StorageClass required by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                type: string
+                              volumeAttributesClassName:
+                                description: 'volumeAttributesClassName may be used
+                                  to set the VolumeAttributesClass used by this claim.
+                                  If specified, the CSI driver will create or update
+                                  the volume with the attributes defined in the corresponding
+                                  VolumeAttributesClass. This has a different purpose
+                                  than storageClassName, it can be changed after the
+                                  claim is created. An empty string value means that
+                                  no VolumeAttributesClass will be applied to the
+                                  claim but it''s not allowed to reset this field
+                                  to empty string once it is set. If unspecified and
+                                  the PersistentVolumeClaim is unbound, the default
+                                  VolumeAttributesClass will be set by the persistentvolume
+                                  controller if it exists. If the resource referred
+                                  to by volumeAttributesClass does not exist, this
+                                  PersistentVolumeClaim will be set to a Pending state,
+                                  as reflected by the modifyVolumeStatus field, until
+                                  such as a resource exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                                  (Alpha) Using this field requires the VolumeAttributesClass
+                                  feature gate to be enabled.'
                                 type: string
                               volumeMode:
                                 description: volumeMode defines what type of volume
@@ -10790,30 +10989,6 @@ spec:
                               must still be higher than capacity recorded in the status
                               field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                             properties:
-                              claims:
-                                description: "Claims lists the names of resources,\
-                                  \ defined in spec.resourceClaims, that are used\
-                                  \ by this container. \n This is an alpha field and\
-                                  \ requires enabling the DynamicResourceAllocation\
-                                  \ feature gate. \n This field is immutable. It can\
-                                  \ only be set for containers."
-                                items:
-                                  description: ResourceClaim references one entry
-                                    in PodSpec.ResourceClaims.
-                                  properties:
-                                    name:
-                                      description: Name must match the name of one
-                                        entry in pod.spec.resourceClaims of the Pod
-                                        where this field is used. It makes that resource
-                                        available inside a container.
-                                      type: string
-                                  required:
-                                  - name
-                                  type: object
-                                type: array
-                                x-kubernetes-list-map-keys:
-                                - name
-                                x-kubernetes-list-type: map
                               limits:
                                 additionalProperties:
                                   anyOf:
@@ -10889,6 +11064,26 @@ spec:
                           storageClassName:
                             description: 'storageClassName is the name of the StorageClass
                               required by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                            type: string
+                          volumeAttributesClassName:
+                            description: 'volumeAttributesClassName may be used to
+                              set the VolumeAttributesClass used by this claim. If
+                              specified, the CSI driver will create or update the
+                              volume with the attributes defined in the corresponding
+                              VolumeAttributesClass. This has a different purpose
+                              than storageClassName, it can be changed after the claim
+                              is created. An empty string value means that no VolumeAttributesClass
+                              will be applied to the claim but it''s not allowed to
+                              reset this field to empty string once it is set. If
+                              unspecified and the PersistentVolumeClaim is unbound,
+                              the default VolumeAttributesClass will be set by the
+                              persistentvolume controller if it exists. If the resource
+                              referred to by volumeAttributesClass does not exist,
+                              this PersistentVolumeClaim will be set to a Pending
+                              state, as reflected by the modifyVolumeStatus field,
+                              until such as a resource exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                              (Alpha) Using this field requires the VolumeAttributesClass
+                              feature gate to be enabled.'
                             type: string
                           volumeMode:
                             description: volumeMode defines what type of volume is
@@ -11038,6 +11233,42 @@ spec:
                               - type
                               type: object
                             type: array
+                          currentVolumeAttributesClassName:
+                            description: currentVolumeAttributesClassName is the current
+                              name of the VolumeAttributesClass the PVC is using.
+                              When unset, there is no VolumeAttributeClass applied
+                              to this PersistentVolumeClaim This is an alpha field
+                              and requires enabling VolumeAttributesClass feature.
+                            type: string
+                          modifyVolumeStatus:
+                            description: ModifyVolumeStatus represents the status
+                              object of ControllerModifyVolume operation. When this
+                              is unset, there is no ModifyVolume operation being attempted.
+                              This is an alpha field and requires enabling VolumeAttributesClass
+                              feature.
+                            properties:
+                              status:
+                                description: 'status is the status of the ControllerModifyVolume
+                                  operation. It can be in any of following states:
+                                  - Pending Pending indicates that the PersistentVolumeClaim
+                                  cannot be modified due to unmet requirements, such
+                                  as the specified VolumeAttributesClass not existing.
+                                  - InProgress InProgress indicates that the volume
+                                  is being modified. - Infeasible Infeasible indicates
+                                  that the request has been rejected as invalid by
+                                  the CSI driver. To resolve the error, a valid VolumeAttributesClass
+                                  needs to be specified. Note: New statuses can be
+                                  added in the future. Consumers should check for
+                                  unknown statuses and fail appropriately.'
+                                type: string
+                              targetVolumeAttributesClassName:
+                                description: targetVolumeAttributesClassName is the
+                                  name of the VolumeAttributesClass the PVC currently
+                                  being reconciled
+                                type: string
+                            required:
+                            - status
+                            type: object
                           phase:
                             description: phase represents the current phase of PersistentVolumeClaim.
                             type: string
@@ -11864,31 +12095,6 @@ spec:
                                     value but must still be higher than capacity recorded
                                     in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                   properties:
-                                    claims:
-                                      description: "Claims lists the names of resources,\
-                                        \ defined in spec.resourceClaims, that are\
-                                        \ used by this container. \n This is an alpha\
-                                        \ field and requires enabling the DynamicResourceAllocation\
-                                        \ feature gate. \n This field is immutable.\
-                                        \ It can only be set for containers."
-                                      items:
-                                        description: ResourceClaim references one
-                                          entry in PodSpec.ResourceClaims.
-                                        properties:
-                                          name:
-                                            description: Name must match the name
-                                              of one entry in pod.spec.resourceClaims
-                                              of the Pod where this field is used.
-                                              It makes that resource available inside
-                                              a container.
-                                            type: string
-                                        required:
-                                        - name
-                                        type: object
-                                      type: array
-                                      x-kubernetes-list-map-keys:
-                                      - name
-                                      x-kubernetes-list-type: map
                                     limits:
                                       additionalProperties:
                                         anyOf:
@@ -11970,6 +12176,28 @@ spec:
                                   description: 'storageClassName is the name of the
                                     StorageClass required by the claim. More info:
                                     https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                  type: string
+                                volumeAttributesClassName:
+                                  description: 'volumeAttributesClassName may be used
+                                    to set the VolumeAttributesClass used by this
+                                    claim. If specified, the CSI driver will create
+                                    or update the volume with the attributes defined
+                                    in the corresponding VolumeAttributesClass. This
+                                    has a different purpose than storageClassName,
+                                    it can be changed after the claim is created.
+                                    An empty string value means that no VolumeAttributesClass
+                                    will be applied to the claim but it''s not allowed
+                                    to reset this field to empty string once it is
+                                    set. If unspecified and the PersistentVolumeClaim
+                                    is unbound, the default VolumeAttributesClass
+                                    will be set by the persistentvolume controller
+                                    if it exists. If the resource referred to by volumeAttributesClass
+                                    does not exist, this PersistentVolumeClaim will
+                                    be set to a Pending state, as reflected by the
+                                    modifyVolumeStatus field, until such as a resource
+                                    exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                                    (Alpha) Using this field requires the VolumeAttributesClass
+                                    feature gate to be enabled.'
                                   type: string
                                 volumeMode:
                                   description: volumeMode defines what type of volume
@@ -12345,6 +12573,102 @@ spec:
                             description: Projection that may be projected along with
                               other supported volume types
                             properties:
+                              clusterTrustBundle:
+                                description: "ClusterTrustBundle allows a pod to access\
+                                  \ the `.spec.trustBundle` field of ClusterTrustBundle\
+                                  \ objects in an auto-updating file. \n Alpha, gated\
+                                  \ by the ClusterTrustBundleProjection feature gate.\
+                                  \ \n ClusterTrustBundle objects can either be selected\
+                                  \ by name, or by the combination of signer name\
+                                  \ and a label selector. \n Kubelet performs aggressive\
+                                  \ normalization of the PEM contents written into\
+                                  \ the pod filesystem.  Esoteric PEM features such\
+                                  \ as inter-block comments and block headers are\
+                                  \ stripped.  Certificates are deduplicated. The\
+                                  \ ordering of certificates within the file is arbitrary,\
+                                  \ and Kubelet may change the order over time."
+                                properties:
+                                  labelSelector:
+                                    description: Select all ClusterTrustBundles that
+                                      match this label selector.  Only has effect
+                                      if signerName is set.  Mutually-exclusive with
+                                      name.  If unset, interpreted as "match nothing".  If
+                                      set but empty, interpreted as "match everything".
+                                    properties:
+                                      matchExpressions:
+                                        description: matchExpressions is a list of
+                                          label selector requirements. The requirements
+                                          are ANDed.
+                                        items:
+                                          description: A label selector requirement
+                                            is a selector that contains values, a
+                                            key, and an operator that relates the
+                                            key and values.
+                                          properties:
+                                            key:
+                                              description: key is the label key that
+                                                the selector applies to.
+                                              type: string
+                                            operator:
+                                              description: operator represents a key's
+                                                relationship to a set of values. Valid
+                                                operators are In, NotIn, Exists and
+                                                DoesNotExist.
+                                              type: string
+                                            values:
+                                              description: values is an array of string
+                                                values. If the operator is In or NotIn,
+                                                the values array must be non-empty.
+                                                If the operator is Exists or DoesNotExist,
+                                                the values array must be empty. This
+                                                array is replaced during a strategic
+                                                merge patch.
+                                              items:
+                                                type: string
+                                              type: array
+                                          required:
+                                          - key
+                                          - operator
+                                          type: object
+                                        type: array
+                                      matchLabels:
+                                        additionalProperties:
+                                          type: string
+                                        description: matchLabels is a map of {key,value}
+                                          pairs. A single {key,value} in the matchLabels
+                                          map is equivalent to an element of matchExpressions,
+                                          whose key field is "key", the operator is
+                                          "In", and the values array contains only
+                                          "value". The requirements are ANDed.
+                                        type: object
+                                    type: object
+                                    x-kubernetes-map-type: atomic
+                                  name:
+                                    description: Select a single ClusterTrustBundle
+                                      by object name.  Mutually-exclusive with signerName
+                                      and labelSelector.
+                                    type: string
+                                  optional:
+                                    description: If true, don't block pod startup
+                                      if the referenced ClusterTrustBundle(s) aren't
+                                      available.  If using name, then the named ClusterTrustBundle
+                                      is allowed not to exist.  If using signerName,
+                                      then the combination of signerName and labelSelector
+                                      is allowed to match zero ClusterTrustBundles.
+                                    type: boolean
+                                  path:
+                                    description: Relative path from the volume root
+                                      to write the bundle.
+                                    type: string
+                                  signerName:
+                                    description: Select all ClusterTrustBundles that
+                                      match this signer name. Mutually-exclusive with
+                                      name.  The contents of all selected ClusterTrustBundles
+                                      will be unified and deduplicated.
+                                    type: string
+                                required:
+                                - path
+                                type: object
                               configMap:
                                 description: configMap information about the configMap
                                   data to project
@@ -13170,7 +13494,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-    operator.prometheus.io/version: 0.71.2
+    operator.prometheus.io/version: 0.72.0
   name: podmonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -13828,6 +14152,28 @@ spec:
                   of scraped samples that will be accepted.'
                 format: int64
                 type: integer
+              scrapeClass:
+                description: The scrape class to apply.
+                minLength: 1
+                type: string
+              scrapeProtocols:
+                description: "`scrapeProtocols` defines the protocols to negotiate\
+                  \ during a scrape. It tells clients the protocols supported by Prometheus\
+                  \ in order of preference (from most to least preferred). \n If unset,\
+                  \ Prometheus uses its default value. \n It requires Prometheus >=\
+                  \ v2.49.0."
+                items:
+                  description: 'ScrapeProtocol represents a protocol used by Prometheus
+                    for scraping metrics. Supported values are: * `OpenMetricsText0.0.1`
+                    * `OpenMetricsText1.0.0` * `PrometheusProto` * `PrometheusText0.0.4`'
+                  enum:
+                  - PrometheusProto
+                  - OpenMetricsText0.0.1
+                  - OpenMetricsText1.0.0
+                  - PrometheusText0.0.4
+                  type: string
+                type: array
+                x-kubernetes-list-type: set
               selector:
                 description: Label selector to select the Kubernetes `Pod` objects.
                 properties:
@@ -13892,7 +14238,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-    operator.prometheus.io/version: 0.71.2
+    operator.prometheus.io/version: 0.72.0
   name: probes.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -14250,6 +14596,28 @@ spec:
                   samples that will be accepted.
                 format: int64
                 type: integer
+              scrapeClass:
+                description: The scrape class to apply.
+                minLength: 1
+                type: string
+              scrapeProtocols:
+                description: "`scrapeProtocols` defines the protocols to negotiate\
+                  \ during a scrape. It tells clients the protocols supported by Prometheus\
+                  \ in order of preference (from most to least preferred). \n If unset,\
+                  \ Prometheus uses its default value. \n It requires Prometheus >=\
+                  \ v2.49.0."
+                items:
+                  description: 'ScrapeProtocol represents a protocol used by Prometheus
+                    for scraping metrics. Supported values are: * `OpenMetricsText0.0.1`
+                    * `OpenMetricsText1.0.0` * `PrometheusProto` * `PrometheusText0.0.4`'
+                  enum:
+                  - PrometheusProto
+                  - OpenMetricsText0.0.1
+                  - OpenMetricsText1.0.0
+                  - PrometheusText0.0.4
+                  type: string
+                type: array
+                x-kubernetes-list-type: set
               scrapeTimeout:
                 description: Timeout for scraping metrics from the Prometheus exporter.
                   If not specified, the Prometheus global scrape timeout is used.
@@ -14631,7 +14999,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-    operator.prometheus.io/version: 0.71.2
+    operator.prometheus.io/version: 0.72.0
   name: prometheusagents.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -14984,7 +15352,8 @@ spec:
                               properties:
                                 labelSelector:
                                   description: A label query over a set of resources,
-                                    in this case pods.
+                                    in this case pods. If it's null, this PodAffinityTerm
+                                    matches with no Pods.
                                   properties:
                                     matchExpressions:
                                       description: matchExpressions is a list of label
@@ -15034,6 +15403,44 @@ spec:
                                       type: object
                                   type: object
                                   x-kubernetes-map-type: atomic
+                                matchLabelKeys:
+                                  description: MatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key in (value)` to select
+                                    the group of existing pods which pods will be
+                                    taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MatchLabelKeys and LabelSelector. Also,
+                                    MatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                                mismatchLabelKeys:
+                                  description: MismatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key notin (value)` to
+                                    select the group of existing pods which pods will
+                                    be taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MismatchLabelKeys and LabelSelector. Also,
+                                    MismatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -15144,7 +15551,8 @@ spec:
                           properties:
                             labelSelector:
                               description: A label query over a set of resources,
-                                in this case pods.
+                                in this case pods. If it's null, this PodAffinityTerm
+                                matches with no Pods.
                               properties:
                                 matchExpressions:
                                   description: matchExpressions is a list of label
@@ -15190,6 +15598,43 @@ spec:
                                   type: object
                               type: object
                               x-kubernetes-map-type: atomic
+                            matchLabelKeys:
+                              description: MatchLabelKeys is a set of pod label keys
+                                to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key in (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MatchLabelKeys and LabelSelector.
+                                Also, MatchLabelKeys cannot be set when LabelSelector
+                                isn't set. This is an alpha field and requires enabling
+                                MatchLabelKeysInPodAffinity feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                            mismatchLabelKeys:
+                              description: MismatchLabelKeys is a set of pod label
+                                keys to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key notin (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MismatchLabelKeys and
+                                LabelSelector. Also, MismatchLabelKeys cannot be set
+                                when LabelSelector isn't set. This is an alpha field
+                                and requires enabling MatchLabelKeysInPodAffinity
+                                feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
                             namespaceSelector:
                               description: A label query over the set of namespaces
                                 that the term applies to. The term is applied to the
@@ -15293,7 +15738,8 @@ spec:
                               properties:
                                 labelSelector:
                                   description: A label query over a set of resources,
-                                    in this case pods.
+                                    in this case pods. If it's null, this PodAffinityTerm
+                                    matches with no Pods.
                                   properties:
                                     matchExpressions:
                                       description: matchExpressions is a list of label
@@ -15343,6 +15789,44 @@ spec:
                                       type: object
                                   type: object
                                   x-kubernetes-map-type: atomic
+                                matchLabelKeys:
+                                  description: MatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key in (value)` to select
+                                    the group of existing pods which pods will be
+                                    taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MatchLabelKeys and LabelSelector. Also,
+                                    MatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                                mismatchLabelKeys:
+                                  description: MismatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key notin (value)` to
+                                    select the group of existing pods which pods will
+                                    be taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MismatchLabelKeys and LabelSelector. Also,
+                                    MismatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -15453,7 +15937,8 @@ spec:
                           properties:
                             labelSelector:
                               description: A label query over a set of resources,
-                                in this case pods.
+                                in this case pods. If it's null, this PodAffinityTerm
+                                matches with no Pods.
                               properties:
                                 matchExpressions:
                                   description: matchExpressions is a list of label
@@ -15499,6 +15984,43 @@ spec:
                                   type: object
                               type: object
                               x-kubernetes-map-type: atomic
+                            matchLabelKeys:
+                              description: MatchLabelKeys is a set of pod label keys
+                                to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key in (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MatchLabelKeys and LabelSelector.
+                                Also, MatchLabelKeys cannot be set when LabelSelector
+                                isn't set. This is an alpha field and requires enabling
+                                MatchLabelKeysInPodAffinity feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                            mismatchLabelKeys:
+                              description: MismatchLabelKeys is a set of pod label
+                                keys to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key notin (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MismatchLabelKeys and
+                                LabelSelector. Also, MismatchLabelKeys cannot be set
+                                when LabelSelector isn't set. This is an alpha field
+                                and requires enabling MatchLabelKeysInPodAffinity
+                                feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
                             namespaceSelector:
                               description: A label query over the set of namespaces
                                 that the term applies to. The term is applied to the
@@ -16132,6 +16654,18 @@ spec:
                               required:
                               - port
                               type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
+                              type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
                                 as a LifecycleHandler and kept for the backward compatibility.
@@ -16229,6 +16763,18 @@ spec:
                                   type: string
                               required:
                               - port
+                              type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
                               type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
@@ -17640,6 +18186,18 @@ spec:
                               required:
                               - port
                               type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
+                              type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
                                 as a LifecycleHandler and kept for the backward compatibility.
@@ -17737,6 +18295,18 @@ spec:
                                   type: string
                               required:
                               - port
+                              type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
                               type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
@@ -19708,6 +20278,159 @@ spec:
                   2.45.0 and newer.
                 format: int64
                 type: integer
+              scrapeClasses:
+                description: EXPERIMENTAL List of scrape classes to expose to monitors
+                  and other scrape configs. This is experimental feature and might
+                  change in the future.
+                items:
+                  properties:
+                    default:
+                      description: "Default indicates that the scrape applies to all\
+                        \ scrape objects that don't configure an explicit scrape class\
+                        \ name. \n Only one scrape class can be set as default."
+                      type: boolean
+                    name:
+                      description: Name of the scrape class.
+                      minLength: 1
+                      type: string
+                    tlsConfig:
+                      description: TLSConfig section for scrapes.
+                      properties:
+                        ca:
+                          description: Certificate authority used when verifying server
+                            certificates.
+                          properties:
+                            configMap:
+                              description: ConfigMap containing data to use for the
+                                targets.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                            secret:
+                              description: Secret containing data to use for the targets.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                          type: object
+                        caFile:
+                          description: Path to the CA cert in the Prometheus container
+                            to use for the targets.
+                          type: string
+                        cert:
+                          description: Client certificate to present when doing client-authentication.
+                          properties:
+                            configMap:
+                              description: ConfigMap containing data to use for the
+                                targets.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                            secret:
+                              description: Secret containing data to use for the targets.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                          type: object
+                        certFile:
+                          description: Path to the client cert file in the Prometheus
+                            container for the targets.
+                          type: string
+                        insecureSkipVerify:
+                          description: Disable target certificate validation.
+                          type: boolean
+                        keyFile:
+                          description: Path to the client key file in the Prometheus
+                            container for the targets.
+                          type: string
+                        keySecret:
+                          description: Secret containing the client key file for the
+                            targets.
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                          x-kubernetes-map-type: atomic
+                        serverName:
+                          description: Used to verify the hostname for the targets.
+                          type: string
+                      type: object
+                  required:
+                  - name
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - name
+                x-kubernetes-list-type: map
               scrapeConfigNamespaceSelector:
                 description: Namespaces to match for ScrapeConfig discovery. An empty
                   label selector matches all namespaces. A null label selector matches
@@ -19816,6 +20539,23 @@ spec:
                   30s\""
                 pattern: ^(0|(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
                 type: string
+              scrapeProtocols:
+                description: "The protocols to negotiate during a scrape. It tells\
+                  \ clients the protocols supported by Prometheus in order of preference\
+                  \ (from most to least preferred). \n If unset, Prometheus uses its\
+                  \ default value. \n It requires Prometheus >= v2.49.0."
+                items:
+                  description: 'ScrapeProtocol represents a protocol used by Prometheus
+                    for scraping metrics. Supported values are: * `OpenMetricsText0.0.1`
+                    * `OpenMetricsText1.0.0` * `PrometheusProto` * `PrometheusText0.0.4`'
+                  enum:
+                  - PrometheusProto
+                  - OpenMetricsText0.0.1
+                  - OpenMetricsText1.0.0
+                  - PrometheusText0.0.4
+                  type: string
+                type: array
+                x-kubernetes-list-type: set
               scrapeTimeout:
                 description: Number of seconds to wait until a scrape request times
                   out.
@@ -20295,30 +21035,6 @@ spec:
                                   value but must still be higher than capacity recorded
                                   in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                 properties:
-                                  claims:
-                                    description: "Claims lists the names of resources,\
-                                      \ defined in spec.resourceClaims, that are used\
-                                      \ by this container. \n This is an alpha field\
-                                      \ and requires enabling the DynamicResourceAllocation\
-                                      \ feature gate. \n This field is immutable.\
-                                      \ It can only be set for containers."
-                                    items:
-                                      description: ResourceClaim references one entry
-                                        in PodSpec.ResourceClaims.
-                                      properties:
-                                        name:
-                                          description: Name must match the name of
-                                            one entry in pod.spec.resourceClaims of
-                                            the Pod where this field is used. It makes
-                                            that resource available inside a container.
-                                          type: string
-                                      required:
-                                      - name
-                                      type: object
-                                    type: array
-                                    x-kubernetes-list-map-keys:
-                                    - name
-                                    x-kubernetes-list-type: map
                                   limits:
                                     additionalProperties:
                                       anyOf:
@@ -20396,6 +21112,27 @@ spec:
                               storageClassName:
                                 description: 'storageClassName is the name of the
                                   StorageClass required by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                type: string
+                              volumeAttributesClassName:
+                                description: 'volumeAttributesClassName may be used
+                                  to set the VolumeAttributesClass used by this claim.
+                                  If specified, the CSI driver will create or update
+                                  the volume with the attributes defined in the corresponding
+                                  VolumeAttributesClass. This has a different purpose
+                                  than storageClassName, it can be changed after the
+                                  claim is created. An empty string value means that
+                                  no VolumeAttributesClass will be applied to the
+                                  claim but it''s not allowed to reset this field
+                                  to empty string once it is set. If unspecified and
+                                  the PersistentVolumeClaim is unbound, the default
+                                  VolumeAttributesClass will be set by the persistentvolume
+                                  controller if it exists. If the resource referred
+                                  to by volumeAttributesClass does not exist, this
+                                  PersistentVolumeClaim will be set to a Pending state,
+                                  as reflected by the modifyVolumeStatus field, until
+                                  such as a resource exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                                  (Alpha) Using this field requires the VolumeAttributesClass
+                                  feature gate to be enabled.'
                                 type: string
                               volumeMode:
                                 description: volumeMode defines what type of volume
@@ -20563,30 +21300,6 @@ spec:
                               must still be higher than capacity recorded in the status
                               field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                             properties:
-                              claims:
-                                description: "Claims lists the names of resources,\
-                                  \ defined in spec.resourceClaims, that are used\
-                                  \ by this container. \n This is an alpha field and\
-                                  \ requires enabling the DynamicResourceAllocation\
-                                  \ feature gate. \n This field is immutable. It can\
-                                  \ only be set for containers."
-                                items:
-                                  description: ResourceClaim references one entry
-                                    in PodSpec.ResourceClaims.
-                                  properties:
-                                    name:
-                                      description: Name must match the name of one
-                                        entry in pod.spec.resourceClaims of the Pod
-                                        where this field is used. It makes that resource
-                                        available inside a container.
-                                      type: string
-                                  required:
-                                  - name
-                                  type: object
-                                type: array
-                                x-kubernetes-list-map-keys:
-                                - name
-                                x-kubernetes-list-type: map
                               limits:
                                 additionalProperties:
                                   anyOf:
@@ -20662,6 +21375,26 @@ spec:
                           storageClassName:
                             description: 'storageClassName is the name of the StorageClass
                               required by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                            type: string
+                          volumeAttributesClassName:
+                            description: 'volumeAttributesClassName may be used to
+                              set the VolumeAttributesClass used by this claim. If
+                              specified, the CSI driver will create or update the
+                              volume with the attributes defined in the corresponding
+                              VolumeAttributesClass. This has a different purpose
+                              than storageClassName, it can be changed after the claim
+                              is created. An empty string value means that no VolumeAttributesClass
+                              will be applied to the claim but it''s not allowed to
+                              reset this field to empty string once it is set. If
+                              unspecified and the PersistentVolumeClaim is unbound,
+                              the default VolumeAttributesClass will be set by the
+                              persistentvolume controller if it exists. If the resource
+                              referred to by volumeAttributesClass does not exist,
+                              this PersistentVolumeClaim will be set to a Pending
+                              state, as reflected by the modifyVolumeStatus field,
+                              until such as a resource exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                              (Alpha) Using this field requires the VolumeAttributesClass
+                              feature gate to be enabled.'
                             type: string
                           volumeMode:
                             description: volumeMode defines what type of volume is
@@ -20811,6 +21544,42 @@ spec:
                               - type
                               type: object
                             type: array
+                          currentVolumeAttributesClassName:
+                            description: currentVolumeAttributesClassName is the current
+                              name of the VolumeAttributesClass the PVC is using.
+                              When unset, there is no VolumeAttributeClass applied
+                              to this PersistentVolumeClaim This is an alpha field
+                              and requires enabling VolumeAttributesClass feature.
+                            type: string
+                          modifyVolumeStatus:
+                            description: ModifyVolumeStatus represents the status
+                              object of ControllerModifyVolume operation. When this
+                              is unset, there is no ModifyVolume operation being attempted.
+                              This is an alpha field and requires enabling VolumeAttributesClass
+                              feature.
+                            properties:
+                              status:
+                                description: 'status is the status of the ControllerModifyVolume
+                                  operation. It can be in any of following states:
+                                  - Pending Pending indicates that the PersistentVolumeClaim
+                                  cannot be modified due to unmet requirements, such
+                                  as the specified VolumeAttributesClass not existing.
+                                  - InProgress InProgress indicates that the volume
+                                  is being modified. - Infeasible Infeasible indicates
+                                  that the request has been rejected as invalid by
+                                  the CSI driver. To resolve the error, a valid VolumeAttributesClass
+                                  needs to be specified. Note: New statuses can be
+                                  added in the future. Consumers should check for
+                                  unknown statuses and fail appropriately.'
+                                type: string
+                              targetVolumeAttributesClassName:
+                                description: targetVolumeAttributesClassName is the
+                                  name of the VolumeAttributesClass the PVC currently
+                                  being reconciled
+                                type: string
+                            required:
+                            - status
+                            type: object
                           phase:
                             description: phase represents the current phase of PersistentVolumeClaim.
                             type: string
@@ -21826,31 +22595,6 @@ spec:
                                     value but must still be higher than capacity recorded
                                     in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                   properties:
-                                    claims:
-                                      description: "Claims lists the names of resources,\
-                                        \ defined in spec.resourceClaims, that are\
-                                        \ used by this container. \n This is an alpha\
-                                        \ field and requires enabling the DynamicResourceAllocation\
-                                        \ feature gate. \n This field is immutable.\
-                                        \ It can only be set for containers."
-                                      items:
-                                        description: ResourceClaim references one
-                                          entry in PodSpec.ResourceClaims.
-                                        properties:
-                                          name:
-                                            description: Name must match the name
-                                              of one entry in pod.spec.resourceClaims
-                                              of the Pod where this field is used.
-                                              It makes that resource available inside
-                                              a container.
-                                            type: string
-                                        required:
-                                        - name
-                                        type: object
-                                      type: array
-                                      x-kubernetes-list-map-keys:
-                                      - name
-                                      x-kubernetes-list-type: map
                                     limits:
                                       additionalProperties:
                                         anyOf:
@@ -21932,6 +22676,28 @@ spec:
                                   description: 'storageClassName is the name of the
                                     StorageClass required by the claim. More info:
                                     https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                  type: string
+                                volumeAttributesClassName:
+                                  description: 'volumeAttributesClassName may be used
+                                    to set the VolumeAttributesClass used by this
+                                    claim. If specified, the CSI driver will create
+                                    or update the volume with the attributes defined
+                                    in the corresponding VolumeAttributesClass. This
+                                    has a different purpose than storageClassName,
+                                    it can be changed after the claim is created.
+                                    An empty string value means that no VolumeAttributesClass
+                                    will be applied to the claim but it''s not allowed
+                                    to reset this field to empty string once it is
+                                    set. If unspecified and the PersistentVolumeClaim
+                                    is unbound, the default VolumeAttributesClass
+                                    will be set by the persistentvolume controller
+                                    if it exists. If the resource referred to by volumeAttributesClass
+                                    does not exist, this PersistentVolumeClaim will
+                                    be set to a Pending state, as reflected by the
+                                    modifyVolumeStatus field, until such as a resource
+                                    exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                                    (Alpha) Using this field requires the VolumeAttributesClass
+                                    feature gate to be enabled.'
                                   type: string
                                 volumeMode:
                                   description: volumeMode defines what type of volume
@@ -22307,6 +23073,102 @@ spec:
                             description: Projection that may be projected along with
                               other supported volume types
                             properties:
+                              clusterTrustBundle:
+                                description: "ClusterTrustBundle allows a pod to access\
+                                  \ the `.spec.trustBundle` field of ClusterTrustBundle\
+                                  \ objects in an auto-updating file. \n Alpha, gated\
+                                  \ by the ClusterTrustBundleProjection feature gate.\
+                                  \ \n ClusterTrustBundle objects can either be selected\
+                                  \ by name, or by the combination of signer name\
+                                  \ and a label selector. \n Kubelet performs aggressive\
+                                  \ normalization of the PEM contents written into\
+                                  \ the pod filesystem.  Esoteric PEM features such\
+                                  \ as inter-block comments and block headers are\
+                                  \ stripped.  Certificates are deduplicated. The\
+                                  \ ordering of certificates within the file is arbitrary,\
+                                  \ and Kubelet may change the order over time."
+                                properties:
+                                  labelSelector:
+                                    description: Select all ClusterTrustBundles that
+                                      match this label selector.  Only has effect
+                                      if signerName is set.  Mutually-exclusive with
+                                      name.  If unset, interpreted as "match nothing".  If
+                                      set but empty, interpreted as "match everything".
+                                    properties:
+                                      matchExpressions:
+                                        description: matchExpressions is a list of
+                                          label selector requirements. The requirements
+                                          are ANDed.
+                                        items:
+                                          description: A label selector requirement
+                                            is a selector that contains values, a
+                                            key, and an operator that relates the
+                                            key and values.
+                                          properties:
+                                            key:
+                                              description: key is the label key that
+                                                the selector applies to.
+                                              type: string
+                                            operator:
+                                              description: operator represents a key's
+                                                relationship to a set of values. Valid
+                                                operators are In, NotIn, Exists and
+                                                DoesNotExist.
+                                              type: string
+                                            values:
+                                              description: values is an array of string
+                                                values. If the operator is In or NotIn,
+                                                the values array must be non-empty.
+                                                If the operator is Exists or DoesNotExist,
+                                                the values array must be empty. This
+                                                array is replaced during a strategic
+                                                merge patch.
+                                              items:
+                                                type: string
+                                              type: array
+                                          required:
+                                          - key
+                                          - operator
+                                          type: object
+                                        type: array
+                                      matchLabels:
+                                        additionalProperties:
+                                          type: string
+                                        description: matchLabels is a map of {key,value}
+                                          pairs. A single {key,value} in the matchLabels
+                                          map is equivalent to an element of matchExpressions,
+                                          whose key field is "key", the operator is
+                                          "In", and the values array contains only
+                                          "value". The requirements are ANDed.
+                                        type: object
+                                    type: object
+                                    x-kubernetes-map-type: atomic
+                                  name:
+                                    description: Select a single ClusterTrustBundle
+                                      by object name.  Mutually-exclusive with signerName
+                                      and labelSelector.
+                                    type: string
+                                  optional:
+                                    description: If true, don't block pod startup
+                                      if the referenced ClusterTrustBundle(s) aren't
+                                      available.  If using name, then the named ClusterTrustBundle
+                                      is allowed not to exist.  If using signerName,
+                                      then the combination of signerName and labelSelector
+                                      is allowed to match zero ClusterTrustBundles.
+                                    type: boolean
+                                  path:
+                                    description: Relative path from the volume root
+                                      to write the bundle.
+                                    type: string
+                                  signerName:
+                                    description: Select all ClusterTrustBundles that
+                                      match this signer name. Mutually-exclusive with
+                                      name.  The contents of all selected ClusterTrustBundles
+                                      will be unified and deduplicated.
+                                    type: string
+                                required:
+                                - path
+                                type: object
                               configMap:
                                 description: configMap information about the configMap
                                   data to project
@@ -23186,7 +24048,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-    operator.prometheus.io/version: 0.71.2
+    operator.prometheus.io/version: 0.72.0
   name: prometheuses.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -23593,7 +24455,8 @@ spec:
                               properties:
                                 labelSelector:
                                   description: A label query over a set of resources,
-                                    in this case pods.
+                                    in this case pods. If it's null, this PodAffinityTerm
+                                    matches with no Pods.
                                   properties:
                                     matchExpressions:
                                       description: matchExpressions is a list of label
@@ -23643,6 +24506,44 @@ spec:
                                       type: object
                                   type: object
                                   x-kubernetes-map-type: atomic
+                                matchLabelKeys:
+                                  description: MatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key in (value)` to select
+                                    the group of existing pods which pods will be
+                                    taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MatchLabelKeys and LabelSelector. Also,
+                                    MatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                                mismatchLabelKeys:
+                                  description: MismatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key notin (value)` to
+                                    select the group of existing pods which pods will
+                                    be taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MismatchLabelKeys and LabelSelector. Also,
+                                    MismatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -23753,7 +24654,8 @@ spec:
                           properties:
                             labelSelector:
                               description: A label query over a set of resources,
-                                in this case pods.
+                                in this case pods. If it's null, this PodAffinityTerm
+                                matches with no Pods.
                               properties:
                                 matchExpressions:
                                   description: matchExpressions is a list of label
@@ -23799,6 +24701,43 @@ spec:
                                   type: object
                               type: object
                               x-kubernetes-map-type: atomic
+                            matchLabelKeys:
+                              description: MatchLabelKeys is a set of pod label keys
+                                to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key in (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MatchLabelKeys and LabelSelector.
+                                Also, MatchLabelKeys cannot be set when LabelSelector
+                                isn't set. This is an alpha field and requires enabling
+                                MatchLabelKeysInPodAffinity feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                            mismatchLabelKeys:
+                              description: MismatchLabelKeys is a set of pod label
+                                keys to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key notin (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MismatchLabelKeys and
+                                LabelSelector. Also, MismatchLabelKeys cannot be set
+                                when LabelSelector isn't set. This is an alpha field
+                                and requires enabling MatchLabelKeysInPodAffinity
+                                feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
                             namespaceSelector:
                               description: A label query over the set of namespaces
                                 that the term applies to. The term is applied to the
@@ -23902,7 +24841,8 @@ spec:
                               properties:
                                 labelSelector:
                                   description: A label query over a set of resources,
-                                    in this case pods.
+                                    in this case pods. If it's null, this PodAffinityTerm
+                                    matches with no Pods.
                                   properties:
                                     matchExpressions:
                                       description: matchExpressions is a list of label
@@ -23952,6 +24892,44 @@ spec:
                                       type: object
                                   type: object
                                   x-kubernetes-map-type: atomic
+                                matchLabelKeys:
+                                  description: MatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key in (value)` to select
+                                    the group of existing pods which pods will be
+                                    taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MatchLabelKeys and LabelSelector. Also,
+                                    MatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                                mismatchLabelKeys:
+                                  description: MismatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key notin (value)` to
+                                    select the group of existing pods which pods will
+                                    be taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MismatchLabelKeys and LabelSelector. Also,
+                                    MismatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -24062,7 +25040,8 @@ spec:
                           properties:
                             labelSelector:
                               description: A label query over a set of resources,
-                                in this case pods.
+                                in this case pods. If it's null, this PodAffinityTerm
+                                matches with no Pods.
                               properties:
                                 matchExpressions:
                                   description: matchExpressions is a list of label
@@ -24108,6 +25087,43 @@ spec:
                                   type: object
                               type: object
                               x-kubernetes-map-type: atomic
+                            matchLabelKeys:
+                              description: MatchLabelKeys is a set of pod label keys
+                                to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key in (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MatchLabelKeys and LabelSelector.
+                                Also, MatchLabelKeys cannot be set when LabelSelector
+                                isn't set. This is an alpha field and requires enabling
+                                MatchLabelKeysInPodAffinity feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                            mismatchLabelKeys:
+                              description: MismatchLabelKeys is a set of pod label
+                                keys to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key notin (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MismatchLabelKeys and
+                                LabelSelector. Also, MismatchLabelKeys cannot be set
+                                when LabelSelector isn't set. This is an alpha field
+                                and requires enabling MatchLabelKeysInPodAffinity
+                                feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
                             namespaceSelector:
                               description: A label query over the set of namespaces
                                 that the term applies to. The term is applied to the
@@ -25088,6 +26104,18 @@ spec:
                               required:
                               - port
                               type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
+                              type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
                                 as a LifecycleHandler and kept for the backward compatibility.
@@ -25185,6 +26213,18 @@ spec:
                                   type: string
                               required:
                               - port
+                              type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
                               type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
@@ -26626,6 +27666,18 @@ spec:
                               required:
                               - port
                               type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
+                              type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
                                 as a LifecycleHandler and kept for the backward compatibility.
@@ -26723,6 +27775,18 @@ spec:
                                   type: string
                               required:
                               - port
+                              type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
                               type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
@@ -29244,6 +30308,159 @@ spec:
                   2.45.0 and newer.
                 format: int64
                 type: integer
+              scrapeClasses:
+                description: EXPERIMENTAL List of scrape classes to expose to monitors
+                  and other scrape configs. This is experimental feature and might
+                  change in the future.
+                items:
+                  properties:
+                    default:
+                      description: "Default indicates that the scrape applies to all\
+                        \ scrape objects that don't configure an explicit scrape class\
+                        \ name. \n Only one scrape class can be set as default."
+                      type: boolean
+                    name:
+                      description: Name of the scrape class.
+                      minLength: 1
+                      type: string
+                    tlsConfig:
+                      description: TLSConfig section for scrapes.
+                      properties:
+                        ca:
+                          description: Certificate authority used when verifying server
+                            certificates.
+                          properties:
+                            configMap:
+                              description: ConfigMap containing data to use for the
+                                targets.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                            secret:
+                              description: Secret containing data to use for the targets.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                          type: object
+                        caFile:
+                          description: Path to the CA cert in the Prometheus container
+                            to use for the targets.
+                          type: string
+                        cert:
+                          description: Client certificate to present when doing client-authentication.
+                          properties:
+                            configMap:
+                              description: ConfigMap containing data to use for the
+                                targets.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                            secret:
+                              description: Secret containing data to use for the targets.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                          type: object
+                        certFile:
+                          description: Path to the client cert file in the Prometheus
+                            container for the targets.
+                          type: string
+                        insecureSkipVerify:
+                          description: Disable target certificate validation.
+                          type: boolean
+                        keyFile:
+                          description: Path to the client key file in the Prometheus
+                            container for the targets.
+                          type: string
+                        keySecret:
+                          description: Secret containing the client key file for the
+                            targets.
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                          x-kubernetes-map-type: atomic
+                        serverName:
+                          description: Used to verify the hostname for the targets.
+                          type: string
+                      type: object
+                  required:
+                  - name
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - name
+                x-kubernetes-list-type: map
               scrapeConfigNamespaceSelector:
                 description: Namespaces to match for ScrapeConfig discovery. An empty
                   label selector matches all namespaces. A null label selector matches
@@ -29352,6 +30569,23 @@ spec:
                   30s\""
                 pattern: ^(0|(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
                 type: string
+              scrapeProtocols:
+                description: "The protocols to negotiate during a scrape. It tells\
+                  \ clients the protocols supported by Prometheus in order of preference\
+                  \ (from most to least preferred). \n If unset, Prometheus uses its\
+                  \ default value. \n It requires Prometheus >= v2.49.0."
+                items:
+                  description: 'ScrapeProtocol represents a protocol used by Prometheus
+                    for scraping metrics. Supported values are: * `OpenMetricsText0.0.1`
+                    * `OpenMetricsText1.0.0` * `PrometheusProto` * `PrometheusText0.0.4`'
+                  enum:
+                  - PrometheusProto
+                  - OpenMetricsText0.0.1
+                  - OpenMetricsText1.0.0
+                  - PrometheusText0.0.4
+                  type: string
+                type: array
+                x-kubernetes-list-type: set
               scrapeTimeout:
                 description: Number of seconds to wait until a scrape request times
                   out.
@@ -29835,30 +31069,6 @@ spec:
                                   value but must still be higher than capacity recorded
                                   in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                 properties:
-                                  claims:
-                                    description: "Claims lists the names of resources,\
-                                      \ defined in spec.resourceClaims, that are used\
-                                      \ by this container. \n This is an alpha field\
-                                      \ and requires enabling the DynamicResourceAllocation\
-                                      \ feature gate. \n This field is immutable.\
-                                      \ It can only be set for containers."
-                                    items:
-                                      description: ResourceClaim references one entry
-                                        in PodSpec.ResourceClaims.
-                                      properties:
-                                        name:
-                                          description: Name must match the name of
-                                            one entry in pod.spec.resourceClaims of
-                                            the Pod where this field is used. It makes
-                                            that resource available inside a container.
-                                          type: string
-                                      required:
-                                      - name
-                                      type: object
-                                    type: array
-                                    x-kubernetes-list-map-keys:
-                                    - name
-                                    x-kubernetes-list-type: map
                                   limits:
                                     additionalProperties:
                                       anyOf:
@@ -29936,6 +31146,27 @@ spec:
                               storageClassName:
                                 description: 'storageClassName is the name of the
                                   StorageClass required by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                type: string
+                              volumeAttributesClassName:
+                                description: 'volumeAttributesClassName may be used
+                                  to set the VolumeAttributesClass used by this claim.
+                                  If specified, the CSI driver will create or update
+                                  the volume with the attributes defined in the corresponding
+                                  VolumeAttributesClass. This has a different purpose
+                                  than storageClassName, it can be changed after the
+                                  claim is created. An empty string value means that
+                                  no VolumeAttributesClass will be applied to the
+                                  claim but it''s not allowed to reset this field
+                                  to empty string once it is set. If unspecified and
+                                  the PersistentVolumeClaim is unbound, the default
+                                  VolumeAttributesClass will be set by the persistentvolume
+                                  controller if it exists. If the resource referred
+                                  to by volumeAttributesClass does not exist, this
+                                  PersistentVolumeClaim will be set to a Pending state,
+                                  as reflected by the modifyVolumeStatus field, until
+                                  such as a resource exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                                  (Alpha) Using this field requires the VolumeAttributesClass
+                                  feature gate to be enabled.'
                                 type: string
                               volumeMode:
                                 description: volumeMode defines what type of volume
@@ -30103,30 +31334,6 @@ spec:
                               must still be higher than capacity recorded in the status
                               field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                             properties:
-                              claims:
-                                description: "Claims lists the names of resources,\
-                                  \ defined in spec.resourceClaims, that are used\
-                                  \ by this container. \n This is an alpha field and\
-                                  \ requires enabling the DynamicResourceAllocation\
-                                  \ feature gate. \n This field is immutable. It can\
-                                  \ only be set for containers."
-                                items:
-                                  description: ResourceClaim references one entry
-                                    in PodSpec.ResourceClaims.
-                                  properties:
-                                    name:
-                                      description: Name must match the name of one
-                                        entry in pod.spec.resourceClaims of the Pod
-                                        where this field is used. It makes that resource
-                                        available inside a container.
-                                      type: string
-                                  required:
-                                  - name
-                                  type: object
-                                type: array
-                                x-kubernetes-list-map-keys:
-                                - name
-                                x-kubernetes-list-type: map
                               limits:
                                 additionalProperties:
                                   anyOf:
@@ -30202,6 +31409,26 @@ spec:
                           storageClassName:
                             description: 'storageClassName is the name of the StorageClass
                               required by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                            type: string
+                          volumeAttributesClassName:
+                            description: 'volumeAttributesClassName may be used to
+                              set the VolumeAttributesClass used by this claim. If
+                              specified, the CSI driver will create or update the
+                              volume with the attributes defined in the corresponding
+                              VolumeAttributesClass. This has a different purpose
+                              than storageClassName, it can be changed after the claim
+                              is created. An empty string value means that no VolumeAttributesClass
+                              will be applied to the claim but it''s not allowed to
+                              reset this field to empty string once it is set. If
+                              unspecified and the PersistentVolumeClaim is unbound,
+                              the default VolumeAttributesClass will be set by the
+                              persistentvolume controller if it exists. If the resource
+                              referred to by volumeAttributesClass does not exist,
+                              this PersistentVolumeClaim will be set to a Pending
+                              state, as reflected by the modifyVolumeStatus field,
+                              until such as a resource exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                              (Alpha) Using this field requires the VolumeAttributesClass
+                              feature gate to be enabled.'
                             type: string
                           volumeMode:
                             description: volumeMode defines what type of volume is
@@ -30351,6 +31578,42 @@ spec:
                               - type
                               type: object
                             type: array
+                          currentVolumeAttributesClassName:
+                            description: currentVolumeAttributesClassName is the current
+                              name of the VolumeAttributesClass the PVC is using.
+                              When unset, there is no VolumeAttributeClass applied
+                              to this PersistentVolumeClaim This is an alpha field
+                              and requires enabling VolumeAttributesClass feature.
+                            type: string
+                          modifyVolumeStatus:
+                            description: ModifyVolumeStatus represents the status
+                              object of ControllerModifyVolume operation. When this
+                              is unset, there is no ModifyVolume operation being attempted.
+                              This is an alpha field and requires enabling VolumeAttributesClass
+                              feature.
+                            properties:
+                              status:
+                                description: 'status is the status of the ControllerModifyVolume
+                                  operation. It can be in any of following states:
+                                  - Pending Pending indicates that the PersistentVolumeClaim
+                                  cannot be modified due to unmet requirements, such
+                                  as the specified VolumeAttributesClass not existing.
+                                  - InProgress InProgress indicates that the volume
+                                  is being modified. - Infeasible Infeasible indicates
+                                  that the request has been rejected as invalid by
+                                  the CSI driver. To resolve the error, a valid VolumeAttributesClass
+                                  needs to be specified. Note: New statuses can be
+                                  added in the future. Consumers should check for
+                                  unknown statuses and fail appropriately.'
+                                type: string
+                              targetVolumeAttributesClassName:
+                                description: targetVolumeAttributesClassName is the
+                                  name of the VolumeAttributesClass the PVC currently
+                                  being reconciled
+                                type: string
+                            required:
+                            - status
+                            type: object
                           phase:
                             description: phase represents the current phase of PersistentVolumeClaim.
                             type: string
@@ -31785,31 +33048,6 @@ spec:
                                     value but must still be higher than capacity recorded
                                     in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                   properties:
-                                    claims:
-                                      description: "Claims lists the names of resources,\
-                                        \ defined in spec.resourceClaims, that are\
-                                        \ used by this container. \n This is an alpha\
-                                        \ field and requires enabling the DynamicResourceAllocation\
-                                        \ feature gate. \n This field is immutable.\
-                                        \ It can only be set for containers."
-                                      items:
-                                        description: ResourceClaim references one
-                                          entry in PodSpec.ResourceClaims.
-                                        properties:
-                                          name:
-                                            description: Name must match the name
-                                              of one entry in pod.spec.resourceClaims
-                                              of the Pod where this field is used.
-                                              It makes that resource available inside
-                                              a container.
-                                            type: string
-                                        required:
-                                        - name
-                                        type: object
-                                      type: array
-                                      x-kubernetes-list-map-keys:
-                                      - name
-                                      x-kubernetes-list-type: map
                                     limits:
                                       additionalProperties:
                                         anyOf:
@@ -31891,6 +33129,28 @@ spec:
                                   description: 'storageClassName is the name of the
                                     StorageClass required by the claim. More info:
                                     https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                  type: string
+                                volumeAttributesClassName:
+                                  description: 'volumeAttributesClassName may be used
+                                    to set the VolumeAttributesClass used by this
+                                    claim. If specified, the CSI driver will create
+                                    or update the volume with the attributes defined
+                                    in the corresponding VolumeAttributesClass. This
+                                    has a different purpose than storageClassName,
+                                    it can be changed after the claim is created.
+                                    An empty string value means that no VolumeAttributesClass
+                                    will be applied to the claim but it''s not allowed
+                                    to reset this field to empty string once it is
+                                    set. If unspecified and the PersistentVolumeClaim
+                                    is unbound, the default VolumeAttributesClass
+                                    will be set by the persistentvolume controller
+                                    if it exists. If the resource referred to by volumeAttributesClass
+                                    does not exist, this PersistentVolumeClaim will
+                                    be set to a Pending state, as reflected by the
+                                    modifyVolumeStatus field, until such as a resource
+                                    exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                                    (Alpha) Using this field requires the VolumeAttributesClass
+                                    feature gate to be enabled.'
                                   type: string
                                 volumeMode:
                                   description: volumeMode defines what type of volume
@@ -32266,6 +33526,102 @@ spec:
                             description: Projection that may be projected along with
                               other supported volume types
                             properties:
+                              clusterTrustBundle:
+                                description: "ClusterTrustBundle allows a pod to access\
+                                  \ the `.spec.trustBundle` field of ClusterTrustBundle\
+                                  \ objects in an auto-updating file. \n Alpha, gated\
+                                  \ by the ClusterTrustBundleProjection feature gate.\
+                                  \ \n ClusterTrustBundle objects can either be selected\
+                                  \ by name, or by the combination of signer name\
+                                  \ and a label selector. \n Kubelet performs aggressive\
+                                  \ normalization of the PEM contents written into\
+                                  \ the pod filesystem.  Esoteric PEM features such\
+                                  \ as inter-block comments and block headers are\
+                                  \ stripped.  Certificates are deduplicated. The\
+                                  \ ordering of certificates within the file is arbitrary,\
+                                  \ and Kubelet may change the order over time."
+                                properties:
+                                  labelSelector:
+                                    description: Select all ClusterTrustBundles that
+                                      match this label selector.  Only has effect
+                                      if signerName is set.  Mutually-exclusive with
+                                      name.  If unset, interpreted as "match nothing".  If
+                                      set but empty, interpreted as "match everything".
+                                    properties:
+                                      matchExpressions:
+                                        description: matchExpressions is a list of
+                                          label selector requirements. The requirements
+                                          are ANDed.
+                                        items:
+                                          description: A label selector requirement
+                                            is a selector that contains values, a
+                                            key, and an operator that relates the
+                                            key and values.
+                                          properties:
+                                            key:
+                                              description: key is the label key that
+                                                the selector applies to.
+                                              type: string
+                                            operator:
+                                              description: operator represents a key's
+                                                relationship to a set of values. Valid
+                                                operators are In, NotIn, Exists and
+                                                DoesNotExist.
+                                              type: string
+                                            values:
+                                              description: values is an array of string
+                                                values. If the operator is In or NotIn,
+                                                the values array must be non-empty.
+                                                If the operator is Exists or DoesNotExist,
+                                                the values array must be empty. This
+                                                array is replaced during a strategic
+                                                merge patch.
+                                              items:
+                                                type: string
+                                              type: array
+                                          required:
+                                          - key
+                                          - operator
+                                          type: object
+                                        type: array
+                                      matchLabels:
+                                        additionalProperties:
+                                          type: string
+                                        description: matchLabels is a map of {key,value}
+                                          pairs. A single {key,value} in the matchLabels
+                                          map is equivalent to an element of matchExpressions,
+                                          whose key field is "key", the operator is
+                                          "In", and the values array contains only
+                                          "value". The requirements are ANDed.
+                                        type: object
+                                    type: object
+                                    x-kubernetes-map-type: atomic
+                                  name:
+                                    description: Select a single ClusterTrustBundle
+                                      by object name.  Mutually-exclusive with signerName
+                                      and labelSelector.
+                                    type: string
+                                  optional:
+                                    description: If true, don't block pod startup
+                                      if the referenced ClusterTrustBundle(s) aren't
+                                      available.  If using name, then the named ClusterTrustBundle
+                                      is allowed not to exist.  If using signerName,
+                                      then the combination of signerName and labelSelector
+                                      is allowed to match zero ClusterTrustBundles.
+                                    type: boolean
+                                  path:
+                                    description: Relative path from the volume root
+                                      to write the bundle.
+                                    type: string
+                                  signerName:
+                                    description: Select all ClusterTrustBundles that
+                                      match this signer name. Mutually-exclusive with
+                                      name.  The contents of all selected ClusterTrustBundles
+                                      will be unified and deduplicated.
+                                    type: string
+                                required:
+                                - path
+                                type: object
                               configMap:
                                 description: configMap information about the configMap
                                   data to project
@@ -33145,7 +34501,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-    operator.prometheus.io/version: 0.71.2
+    operator.prometheus.io/version: 0.72.0
   name: prometheusrules.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -33276,7 +34632,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-    operator.prometheus.io/version: 0.71.2
+    operator.prometheus.io/version: 0.72.0
   name: scrapeconfigs.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -33876,6 +35232,314 @@ spec:
                   - server
                   type: object
                 type: array
+              digitalOceanSDConfigs:
+                description: DigitalOceanSDConfigs defines a list of DigitalOcean
+                  service discovery configurations.
+                items:
+                  description: DigitalOceanSDConfig allow retrieving scrape targets
+                    from DigitalOcean's Droplets API. This service discovery uses
+                    the public IPv4 address by default, by that can be changed with
+                    relabeling See https://prometheus.io/docs/prometheus/latest/configuration/configuration/#digitalocean_sd_config
+                  properties:
+                    authorization:
+                      description: Authorization header configuration to authenticate
+                        against the DigitalOcean API. Cannot be set at the same time
+                        as `oauth2`.
+                      properties:
+                        credentials:
+                          description: Selects a key of a Secret in the namespace
+                            that contains the credentials for authentication.
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                          x-kubernetes-map-type: atomic
+                        type:
+                          description: "Defines the authentication type. The value\
+                            \ is case-insensitive. \n \"Basic\" is not a supported\
+                            \ value. \n Default: \"Bearer\""
+                          type: string
+                      type: object
+                    enableHTTP2:
+                      description: Whether to enable HTTP2.
+                      type: boolean
+                    followRedirects:
+                      description: Configure whether HTTP requests follow HTTP 3xx
+                        redirects.
+                      type: boolean
+                    noProxy:
+                      description: "`noProxy` is a comma-separated string that can\
+                        \ contain IPs, CIDR notation, domain names that should be\
+                        \ excluded from proxying. IP and domain names can contain\
+                        \ port numbers. \n It requires Prometheus >= v2.43.0."
+                      type: string
+                    oauth2:
+                      description: Optional OAuth 2.0 configuration. Cannot be set
+                        at the same time as `authorization`.
+                      properties:
+                        clientId:
+                          description: '`clientId` specifies a key of a Secret or
+                            ConfigMap containing the OAuth2 client''s ID.'
+                          properties:
+                            configMap:
+                              description: ConfigMap containing data to use for the
+                                targets.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                            secret:
+                              description: Secret containing data to use for the targets.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                          type: object
+                        clientSecret:
+                          description: '`clientSecret` specifies a key of a Secret
+                            containing the OAuth2 client''s secret.'
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                          x-kubernetes-map-type: atomic
+                        endpointParams:
+                          additionalProperties:
+                            type: string
+                          description: '`endpointParams` configures the HTTP parameters
+                            to append to the token URL.'
+                          type: object
+                        scopes:
+                          description: '`scopes` defines the OAuth2 scopes used for
+                            the token request.'
+                          items:
+                            type: string
+                          type: array
+                        tokenUrl:
+                          description: '`tokenURL` configures the URL to fetch the
+                            token from.'
+                          minLength: 1
+                          type: string
+                      required:
+                      - clientId
+                      - clientSecret
+                      - tokenUrl
+                      type: object
+                    port:
+                      description: The port to scrape metrics from.
+                      type: integer
+                    proxyConnectHeader:
+                      additionalProperties:
+                        description: SecretKeySelector selects a key of a Secret.
+                        properties:
+                          key:
+                            description: The key of the secret to select from.  Must
+                              be a valid secret key.
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                          optional:
+                            description: Specify whether the Secret or its key must
+                              be defined
+                            type: boolean
+                        required:
+                        - key
+                        type: object
+                        x-kubernetes-map-type: atomic
+                      description: "ProxyConnectHeader optionally specifies headers\
+                        \ to send to proxies during CONNECT requests. \n It requires\
+                        \ Prometheus >= v2.43.0."
+                      type: object
+                      x-kubernetes-map-type: atomic
+                    proxyFromEnvironment:
+                      description: "Whether to use the proxy configuration defined\
+                        \ by environment variables (HTTP_PROXY, HTTPS_PROXY, and NO_PROXY).\
+                        \ If unset, Prometheus uses its default value. \n It requires\
+                        \ Prometheus >= v2.43.0."
+                      type: boolean
+                    proxyUrl:
+                      description: "`proxyURL` defines the HTTP proxy server to use.\
+                        \ \n It requires Prometheus >= v2.43.0."
+                      pattern: ^http(s)?://.+$
+                      type: string
+                    refreshInterval:
+                      description: Refresh interval to re-read the instance list.
+                      pattern: ^(0|(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
+                      type: string
+                    tlsConfig:
+                      description: TLS configuration applying to the target HTTP endpoint.
+                      properties:
+                        ca:
+                          description: Certificate authority used when verifying server
+                            certificates.
+                          properties:
+                            configMap:
+                              description: ConfigMap containing data to use for the
+                                targets.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                            secret:
+                              description: Secret containing data to use for the targets.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                          type: object
+                        cert:
+                          description: Client certificate to present when doing client-authentication.
+                          properties:
+                            configMap:
+                              description: ConfigMap containing data to use for the
+                                targets.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                            secret:
+                              description: Secret containing data to use for the targets.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                          type: object
+                        insecureSkipVerify:
+                          description: Disable target certificate validation.
+                          type: boolean
+                        keySecret:
+                          description: Secret containing the client key file for the
+                            targets.
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                          x-kubernetes-map-type: atomic
+                        serverName:
+                          description: Used to verify the hostname for the targets.
+                          type: string
+                      type: object
+                  type: object
+                type: array
               dnsSDConfigs:
                 description: DNSSDConfigs defines a list of DNS service discovery
                   configurations.
@@ -33902,13 +35566,15 @@ spec:
                       pattern: ^(0|(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
                       type: string
                     type:
-                      description: The type of DNS query to perform. One of SRV, A,
-                        AAAA or MX. If not set, Prometheus uses its default value.
+                      description: "The type of DNS query to perform. One of SRV,\
+                        \ A, AAAA, MX or NS. If not set, Prometheus uses its default\
+                        \ value. \n When set to NS, It requires Prometheus >= 2.49.0."
                       enum:
                       - SRV
                       - A
                       - AAAA
                       - MX
+                      - NS
                       type: string
                   required:
                   - names
@@ -34000,6 +35666,11 @@ spec:
                       x-kubernetes-map-type: atomic
                   type: object
                 type: array
+              enableCompression:
+                description: "When false, Prometheus will request uncompressed response\
+                  \ from the scraped target. \n It requires Prometheus >= v2.49.0.\
+                  \ \n If unset, Prometheus uses true by default."
+                type: boolean
               fileSDConfigs:
                 description: FileSDConfigs defines a list of file service discovery
                   configurations.
@@ -35256,10 +36927,31 @@ spec:
                 - HTTP
                 - HTTPS
                 type: string
+              scrapeClass:
+                description: The scrape class to apply.
+                minLength: 1
+                type: string
               scrapeInterval:
                 description: ScrapeInterval is the interval between consecutive scrapes.
                 pattern: ^(0|(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
                 type: string
+              scrapeProtocols:
+                description: "The protocols to negotiate during a scrape. It tells\
+                  \ clients the protocols supported by Prometheus in order of preference\
+                  \ (from most to least preferred). \n If unset, Prometheus uses its\
+                  \ default value. \n It requires Prometheus >= v2.49.0."
+                items:
+                  description: 'ScrapeProtocol represents a protocol used by Prometheus
+                    for scraping metrics. Supported values are: * `OpenMetricsText0.0.1`
+                    * `OpenMetricsText1.0.0` * `PrometheusProto` * `PrometheusText0.0.4`'
+                  enum:
+                  - PrometheusProto
+                  - OpenMetricsText0.0.1
+                  - OpenMetricsText1.0.0
+                  - PrometheusText0.0.4
+                  type: string
+                type: array
+                x-kubernetes-list-type: set
               scrapeTimeout:
                 description: ScrapeTimeout is the number of seconds to wait until
                   a scrape request times out.
@@ -35423,7 +37115,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-    operator.prometheus.io/version: 0.71.2
+    operator.prometheus.io/version: 0.72.0
   name: servicemonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -35898,9 +37590,9 @@ spec:
                       anyOf:
                       - type: integer
                       - type: string
-                      description: "Name or number of the target port of the `Pod`\
-                        \ object behind the Service, the port must be specified with\
-                        \ container port property. \n Deprecated: use `port` instead."
+                      description: Name or number of the target port of the `Pod`
+                        object behind the Service. The port must be specified with
+                        the container's port property.
                       x-kubernetes-int-or-string: true
                     tlsConfig:
                       description: TLS configuration to use when scraping the target.
@@ -36097,6 +37789,28 @@ spec:
                   of scraped samples that will be accepted.'
                 format: int64
                 type: integer
+              scrapeClass:
+                description: The scrape class to apply.
+                minLength: 1
+                type: string
+              scrapeProtocols:
+                description: "`scrapeProtocols` defines the protocols to negotiate\
+                  \ during a scrape. It tells clients the protocols supported by Prometheus\
+                  \ in order of preference (from most to least preferred). \n If unset,\
+                  \ Prometheus uses its default value. \n It requires Prometheus >=\
+                  \ v2.49.0."
+                items:
+                  description: 'ScrapeProtocol represents a protocol used by Prometheus
+                    for scraping metrics. Supported values are: * `OpenMetricsText0.0.1`
+                    * `OpenMetricsText1.0.0` * `PrometheusProto` * `PrometheusText0.0.4`'
+                  enum:
+                  - PrometheusProto
+                  - OpenMetricsText0.0.1
+                  - OpenMetricsText1.0.0
+                  - PrometheusText0.0.4
+                  type: string
+                type: array
+                x-kubernetes-list-type: set
               selector:
                 description: Label selector to select the Kubernetes `Endpoints` objects.
                 properties:
@@ -36168,7 +37882,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-    operator.prometheus.io/version: 0.71.2
+    operator.prometheus.io/version: 0.72.0
   name: thanosrulers.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -36493,7 +38207,8 @@ spec:
                               properties:
                                 labelSelector:
                                   description: A label query over a set of resources,
-                                    in this case pods.
+                                    in this case pods. If it's null, this PodAffinityTerm
+                                    matches with no Pods.
                                   properties:
                                     matchExpressions:
                                       description: matchExpressions is a list of label
@@ -36543,6 +38258,44 @@ spec:
                                       type: object
                                   type: object
                                   x-kubernetes-map-type: atomic
+                                matchLabelKeys:
+                                  description: MatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key in (value)` to select
+                                    the group of existing pods which pods will be
+                                    taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MatchLabelKeys and LabelSelector. Also,
+                                    MatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                                mismatchLabelKeys:
+                                  description: MismatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key notin (value)` to
+                                    select the group of existing pods which pods will
+                                    be taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MismatchLabelKeys and LabelSelector. Also,
+                                    MismatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -36653,7 +38406,8 @@ spec:
                           properties:
                             labelSelector:
                               description: A label query over a set of resources,
-                                in this case pods.
+                                in this case pods. If it's null, this PodAffinityTerm
+                                matches with no Pods.
                               properties:
                                 matchExpressions:
                                   description: matchExpressions is a list of label
@@ -36699,6 +38453,43 @@ spec:
                                   type: object
                               type: object
                               x-kubernetes-map-type: atomic
+                            matchLabelKeys:
+                              description: MatchLabelKeys is a set of pod label keys
+                                to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key in (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MatchLabelKeys and LabelSelector.
+                                Also, MatchLabelKeys cannot be set when LabelSelector
+                                isn't set. This is an alpha field and requires enabling
+                                MatchLabelKeysInPodAffinity feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                            mismatchLabelKeys:
+                              description: MismatchLabelKeys is a set of pod label
+                                keys to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key notin (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MismatchLabelKeys and
+                                LabelSelector. Also, MismatchLabelKeys cannot be set
+                                when LabelSelector isn't set. This is an alpha field
+                                and requires enabling MatchLabelKeysInPodAffinity
+                                feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
                             namespaceSelector:
                               description: A label query over the set of namespaces
                                 that the term applies to. The term is applied to the
@@ -36802,7 +38593,8 @@ spec:
                               properties:
                                 labelSelector:
                                   description: A label query over a set of resources,
-                                    in this case pods.
+                                    in this case pods. If it's null, this PodAffinityTerm
+                                    matches with no Pods.
                                   properties:
                                     matchExpressions:
                                       description: matchExpressions is a list of label
@@ -36852,6 +38644,44 @@ spec:
                                       type: object
                                   type: object
                                   x-kubernetes-map-type: atomic
+                                matchLabelKeys:
+                                  description: MatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key in (value)` to select
+                                    the group of existing pods which pods will be
+                                    taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MatchLabelKeys and LabelSelector. Also,
+                                    MatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
+                                mismatchLabelKeys:
+                                  description: MismatchLabelKeys is a set of pod label
+                                    keys to select which pods will be taken into consideration.
+                                    The keys are used to lookup values from the incoming
+                                    pod labels, those key-value labels are merged
+                                    with `LabelSelector` as `key notin (value)` to
+                                    select the group of existing pods which pods will
+                                    be taken into consideration for the incoming pod's
+                                    pod (anti) affinity. Keys that don't exist in
+                                    the incoming pod labels will be ignored. The default
+                                    value is empty. The same key is forbidden to exist
+                                    in both MismatchLabelKeys and LabelSelector. Also,
+                                    MismatchLabelKeys cannot be set when LabelSelector
+                                    isn't set. This is an alpha field and requires
+                                    enabling MatchLabelKeysInPodAffinity feature gate.
+                                  items:
+                                    type: string
+                                  type: array
+                                  x-kubernetes-list-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -36962,7 +38792,8 @@ spec:
                           properties:
                             labelSelector:
                               description: A label query over a set of resources,
-                                in this case pods.
+                                in this case pods. If it's null, this PodAffinityTerm
+                                matches with no Pods.
                               properties:
                                 matchExpressions:
                                   description: matchExpressions is a list of label
@@ -37008,6 +38839,43 @@ spec:
                                   type: object
                               type: object
                               x-kubernetes-map-type: atomic
+                            matchLabelKeys:
+                              description: MatchLabelKeys is a set of pod label keys
+                                to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key in (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MatchLabelKeys and LabelSelector.
+                                Also, MatchLabelKeys cannot be set when LabelSelector
+                                isn't set. This is an alpha field and requires enabling
+                                MatchLabelKeysInPodAffinity feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                            mismatchLabelKeys:
+                              description: MismatchLabelKeys is a set of pod label
+                                keys to select which pods will be taken into consideration.
+                                The keys are used to lookup values from the incoming
+                                pod labels, those key-value labels are merged with
+                                `LabelSelector` as `key notin (value)` to select the
+                                group of existing pods which pods will be taken into
+                                consideration for the incoming pod's pod (anti) affinity.
+                                Keys that don't exist in the incoming pod labels will
+                                be ignored. The default value is empty. The same key
+                                is forbidden to exist in both MismatchLabelKeys and
+                                LabelSelector. Also, MismatchLabelKeys cannot be set
+                                when LabelSelector isn't set. This is an alpha field
+                                and requires enabling MatchLabelKeysInPodAffinity
+                                feature gate.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
                             namespaceSelector:
                               description: A label query over the set of namespaces
                                 that the term applies to. The term is applied to the
@@ -37442,6 +39310,18 @@ spec:
                               required:
                               - port
                               type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
+                              type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
                                 as a LifecycleHandler and kept for the backward compatibility.
@@ -37539,6 +39419,18 @@ spec:
                                   type: string
                               required:
                               - port
+                              type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
                               type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
@@ -38962,6 +40854,18 @@ spec:
                               required:
                               - port
                               type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
+                              type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
                                 as a LifecycleHandler and kept for the backward compatibility.
@@ -39059,6 +40963,18 @@ spec:
                                   type: string
                               required:
                               - port
+                              type: object
+                            sleep:
+                              description: Sleep represents the duration that the
+                                container should sleep before being terminated.
+                              properties:
+                                seconds:
+                                  description: Seconds is the number of seconds to
+                                    sleep.
+                                  format: int64
+                                  type: integer
+                              required:
+                              - seconds
                               type: object
                             tcpSocket:
                               description: Deprecated. TCPSocket is NOT supported
@@ -40631,30 +42547,6 @@ spec:
                                   value but must still be higher than capacity recorded
                                   in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                 properties:
-                                  claims:
-                                    description: "Claims lists the names of resources,\
-                                      \ defined in spec.resourceClaims, that are used\
-                                      \ by this container. \n This is an alpha field\
-                                      \ and requires enabling the DynamicResourceAllocation\
-                                      \ feature gate. \n This field is immutable.\
-                                      \ It can only be set for containers."
-                                    items:
-                                      description: ResourceClaim references one entry
-                                        in PodSpec.ResourceClaims.
-                                      properties:
-                                        name:
-                                          description: Name must match the name of
-                                            one entry in pod.spec.resourceClaims of
-                                            the Pod where this field is used. It makes
-                                            that resource available inside a container.
-                                          type: string
-                                      required:
-                                      - name
-                                      type: object
-                                    type: array
-                                    x-kubernetes-list-map-keys:
-                                    - name
-                                    x-kubernetes-list-type: map
                                   limits:
                                     additionalProperties:
                                       anyOf:
@@ -40732,6 +42624,27 @@ spec:
                               storageClassName:
                                 description: 'storageClassName is the name of the
                                   StorageClass required by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                type: string
+                              volumeAttributesClassName:
+                                description: 'volumeAttributesClassName may be used
+                                  to set the VolumeAttributesClass used by this claim.
+                                  If specified, the CSI driver will create or update
+                                  the volume with the attributes defined in the corresponding
+                                  VolumeAttributesClass. This has a different purpose
+                                  than storageClassName, it can be changed after the
+                                  claim is created. An empty string value means that
+                                  no VolumeAttributesClass will be applied to the
+                                  claim but it''s not allowed to reset this field
+                                  to empty string once it is set. If unspecified and
+                                  the PersistentVolumeClaim is unbound, the default
+                                  VolumeAttributesClass will be set by the persistentvolume
+                                  controller if it exists. If the resource referred
+                                  to by volumeAttributesClass does not exist, this
+                                  PersistentVolumeClaim will be set to a Pending state,
+                                  as reflected by the modifyVolumeStatus field, until
+                                  such as a resource exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                                  (Alpha) Using this field requires the VolumeAttributesClass
+                                  feature gate to be enabled.'
                                 type: string
                               volumeMode:
                                 description: volumeMode defines what type of volume
@@ -40899,30 +42812,6 @@ spec:
                               must still be higher than capacity recorded in the status
                               field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                             properties:
-                              claims:
-                                description: "Claims lists the names of resources,\
-                                  \ defined in spec.resourceClaims, that are used\
-                                  \ by this container. \n This is an alpha field and\
-                                  \ requires enabling the DynamicResourceAllocation\
-                                  \ feature gate. \n This field is immutable. It can\
-                                  \ only be set for containers."
-                                items:
-                                  description: ResourceClaim references one entry
-                                    in PodSpec.ResourceClaims.
-                                  properties:
-                                    name:
-                                      description: Name must match the name of one
-                                        entry in pod.spec.resourceClaims of the Pod
-                                        where this field is used. It makes that resource
-                                        available inside a container.
-                                      type: string
-                                  required:
-                                  - name
-                                  type: object
-                                type: array
-                                x-kubernetes-list-map-keys:
-                                - name
-                                x-kubernetes-list-type: map
                               limits:
                                 additionalProperties:
                                   anyOf:
@@ -40998,6 +42887,26 @@ spec:
                           storageClassName:
                             description: 'storageClassName is the name of the StorageClass
                               required by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                            type: string
+                          volumeAttributesClassName:
+                            description: 'volumeAttributesClassName may be used to
+                              set the VolumeAttributesClass used by this claim. If
+                              specified, the CSI driver will create or update the
+                              volume with the attributes defined in the corresponding
+                              VolumeAttributesClass. This has a different purpose
+                              than storageClassName, it can be changed after the claim
+                              is created. An empty string value means that no VolumeAttributesClass
+                              will be applied to the claim but it''s not allowed to
+                              reset this field to empty string once it is set. If
+                              unspecified and the PersistentVolumeClaim is unbound,
+                              the default VolumeAttributesClass will be set by the
+                              persistentvolume controller if it exists. If the resource
+                              referred to by volumeAttributesClass does not exist,
+                              this PersistentVolumeClaim will be set to a Pending
+                              state, as reflected by the modifyVolumeStatus field,
+                              until such as a resource exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                              (Alpha) Using this field requires the VolumeAttributesClass
+                              feature gate to be enabled.'
                             type: string
                           volumeMode:
                             description: volumeMode defines what type of volume is
@@ -41147,6 +43056,42 @@ spec:
                               - type
                               type: object
                             type: array
+                          currentVolumeAttributesClassName:
+                            description: currentVolumeAttributesClassName is the current
+                              name of the VolumeAttributesClass the PVC is using.
+                              When unset, there is no VolumeAttributeClass applied
+                              to this PersistentVolumeClaim This is an alpha field
+                              and requires enabling VolumeAttributesClass feature.
+                            type: string
+                          modifyVolumeStatus:
+                            description: ModifyVolumeStatus represents the status
+                              object of ControllerModifyVolume operation. When this
+                              is unset, there is no ModifyVolume operation being attempted.
+                              This is an alpha field and requires enabling VolumeAttributesClass
+                              feature.
+                            properties:
+                              status:
+                                description: 'status is the status of the ControllerModifyVolume
+                                  operation. It can be in any of following states:
+                                  - Pending Pending indicates that the PersistentVolumeClaim
+                                  cannot be modified due to unmet requirements, such
+                                  as the specified VolumeAttributesClass not existing.
+                                  - InProgress InProgress indicates that the volume
+                                  is being modified. - Infeasible Infeasible indicates
+                                  that the request has been rejected as invalid by
+                                  the CSI driver. To resolve the error, a valid VolumeAttributesClass
+                                  needs to be specified. Note: New statuses can be
+                                  added in the future. Consumers should check for
+                                  unknown statuses and fail appropriately.'
+                                type: string
+                              targetVolumeAttributesClassName:
+                                description: targetVolumeAttributesClassName is the
+                                  name of the VolumeAttributesClass the PVC currently
+                                  being reconciled
+                                type: string
+                            required:
+                            - status
+                            type: object
                           phase:
                             description: phase represents the current phase of PersistentVolumeClaim.
                             type: string
@@ -41992,31 +43937,6 @@ spec:
                                     value but must still be higher than capacity recorded
                                     in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                   properties:
-                                    claims:
-                                      description: "Claims lists the names of resources,\
-                                        \ defined in spec.resourceClaims, that are\
-                                        \ used by this container. \n This is an alpha\
-                                        \ field and requires enabling the DynamicResourceAllocation\
-                                        \ feature gate. \n This field is immutable.\
-                                        \ It can only be set for containers."
-                                      items:
-                                        description: ResourceClaim references one
-                                          entry in PodSpec.ResourceClaims.
-                                        properties:
-                                          name:
-                                            description: Name must match the name
-                                              of one entry in pod.spec.resourceClaims
-                                              of the Pod where this field is used.
-                                              It makes that resource available inside
-                                              a container.
-                                            type: string
-                                        required:
-                                        - name
-                                        type: object
-                                      type: array
-                                      x-kubernetes-list-map-keys:
-                                      - name
-                                      x-kubernetes-list-type: map
                                     limits:
                                       additionalProperties:
                                         anyOf:
@@ -42098,6 +44018,28 @@ spec:
                                   description: 'storageClassName is the name of the
                                     StorageClass required by the claim. More info:
                                     https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                  type: string
+                                volumeAttributesClassName:
+                                  description: 'volumeAttributesClassName may be used
+                                    to set the VolumeAttributesClass used by this
+                                    claim. If specified, the CSI driver will create
+                                    or update the volume with the attributes defined
+                                    in the corresponding VolumeAttributesClass. This
+                                    has a different purpose than storageClassName,
+                                    it can be changed after the claim is created.
+                                    An empty string value means that no VolumeAttributesClass
+                                    will be applied to the claim but it''s not allowed
+                                    to reset this field to empty string once it is
+                                    set. If unspecified and the PersistentVolumeClaim
+                                    is unbound, the default VolumeAttributesClass
+                                    will be set by the persistentvolume controller
+                                    if it exists. If the resource referred to by volumeAttributesClass
+                                    does not exist, this PersistentVolumeClaim will
+                                    be set to a Pending state, as reflected by the
+                                    modifyVolumeStatus field, until such as a resource
+                                    exists. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#volumeattributesclass
+                                    (Alpha) Using this field requires the VolumeAttributesClass
+                                    feature gate to be enabled.'
                                   type: string
                                 volumeMode:
                                   description: volumeMode defines what type of volume
@@ -42473,6 +44415,102 @@ spec:
                             description: Projection that may be projected along with
                               other supported volume types
                             properties:
+                              clusterTrustBundle:
+                                description: "ClusterTrustBundle allows a pod to access\
+                                  \ the `.spec.trustBundle` field of ClusterTrustBundle\
+                                  \ objects in an auto-updating file. \n Alpha, gated\
+                                  \ by the ClusterTrustBundleProjection feature gate.\
+                                  \ \n ClusterTrustBundle objects can either be selected\
+                                  \ by name, or by the combination of signer name\
+                                  \ and a label selector. \n Kubelet performs aggressive\
+                                  \ normalization of the PEM contents written into\
+                                  \ the pod filesystem.  Esoteric PEM features such\
+                                  \ as inter-block comments and block headers are\
+                                  \ stripped.  Certificates are deduplicated. The\
+                                  \ ordering of certificates within the file is arbitrary,\
+                                  \ and Kubelet may change the order over time."
+                                properties:
+                                  labelSelector:
+                                    description: Select all ClusterTrustBundles that
+                                      match this label selector.  Only has effect
+                                      if signerName is set.  Mutually-exclusive with
+                                      name.  If unset, interpreted as "match nothing".  If
+                                      set but empty, interpreted as "match everything".
+                                    properties:
+                                      matchExpressions:
+                                        description: matchExpressions is a list of
+                                          label selector requirements. The requirements
+                                          are ANDed.
+                                        items:
+                                          description: A label selector requirement
+                                            is a selector that contains values, a
+                                            key, and an operator that relates the
+                                            key and values.
+                                          properties:
+                                            key:
+                                              description: key is the label key that
+                                                the selector applies to.
+                                              type: string
+                                            operator:
+                                              description: operator represents a key's
+                                                relationship to a set of values. Valid
+                                                operators are In, NotIn, Exists and
+                                                DoesNotExist.
+                                              type: string
+                                            values:
+                                              description: values is an array of string
+                                                values. If the operator is In or NotIn,
+                                                the values array must be non-empty.
+                                                If the operator is Exists or DoesNotExist,
+                                                the values array must be empty. This
+                                                array is replaced during a strategic
+                                                merge patch.
+                                              items:
+                                                type: string
+                                              type: array
+                                          required:
+                                          - key
+                                          - operator
+                                          type: object
+                                        type: array
+                                      matchLabels:
+                                        additionalProperties:
+                                          type: string
+                                        description: matchLabels is a map of {key,value}
+                                          pairs. A single {key,value} in the matchLabels
+                                          map is equivalent to an element of matchExpressions,
+                                          whose key field is "key", the operator is
+                                          "In", and the values array contains only
+                                          "value". The requirements are ANDed.
+                                        type: object
+                                    type: object
+                                    x-kubernetes-map-type: atomic
+                                  name:
+                                    description: Select a single ClusterTrustBundle
+                                      by object name.  Mutually-exclusive with signerName
+                                      and labelSelector.
+                                    type: string
+                                  optional:
+                                    description: If true, don't block pod startup
+                                      if the referenced ClusterTrustBundle(s) aren't
+                                      available.  If using name, then the named ClusterTrustBundle
+                                      is allowed not to exist.  If using signerName,
+                                      then the combination of signerName and labelSelector
+                                      is allowed to match zero ClusterTrustBundles.
+                                    type: boolean
+                                  path:
+                                    description: Relative path from the volume root
+                                      to write the bundle.
+                                    type: string
+                                  signerName:
+                                    description: Select all ClusterTrustBundles that
+                                      match this signer name. Mutually-exclusive with
+                                      name.  The contents of all selected ClusterTrustBundles
+                                      will be unified and deduplicated.
+                                    type: string
+                                required:
+                                - path
+                                type: object
                               configMap:
                                 description: configMap information about the configMap
                                   data to project
@@ -43083,6 +45121,7 @@ spec:
       status: {}
 ---
 apiVersion: v1
+automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
   labels:
@@ -43090,8 +45129,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.3
-    helm.sh/chart: grafana-7.3.3
+    app.kubernetes.io/version: 10.4.0
+    helm.sh/chart: grafana-7.3.7
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -43105,8 +45144,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.4
+    app.kubernetes.io/version: 2.11.0
+    helm.sh/chart: kube-state-metrics-5.18.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -43122,7 +45161,7 @@ metadata:
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 1.7.0
-    helm.sh/chart: prometheus-node-exporter-4.30.3
+    helm.sh/chart: prometheus-node-exporter-4.32.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -43140,8 +45179,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -43159,8 +45198,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -43178,8 +45217,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -43198,31 +45237,12 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.3
-    helm.sh/chart: grafana-7.3.3
+    app.kubernetes.io/version: 10.4.0
+    helm.sh/chart: grafana-7.3.7
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 type: Opaque
----
-apiVersion: v1
-data: null
-kind: Secret
-metadata:
-  labels:
-    app: prometheus-operator-prometheus
-    app.kubernetes.io/component: prometheus
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-prometheus
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-prometheus
-  namespace: metalk8s-monitoring
 ---
 apiVersion: v1
 data:
@@ -43245,8 +45265,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.3
-    helm.sh/chart: grafana-7.3.3
+    app.kubernetes.io/version: 10.4.0
+    helm.sh/chart: grafana-7.3.7
     heritage: metalk8s
   name: prometheus-operator-grafana-config-dashboards
   namespace: metalk8s-monitoring
@@ -43272,8 +45292,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_datasource: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43322,8 +45342,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43427,8 +45447,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43518,8 +45538,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43582,8 +45602,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44144,8 +46164,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44187,8 +46207,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44264,11 +46284,11 @@ data:
     (size)","type":"timeseries"},{"datasource":{"uid":"$datasource"},"fieldConfig":{"defaults":{"color":{"mode":"palette-classic"},"custom":{"axisBorderShow":false,"axisCenteredZero":false,"axisColorMode":"text","axisLabel":"","axisPlacement":"auto","barAlignment":0,"drawStyle":"line","fillOpacity":10,"gradientMode":"none","hideFrom":{"legend":false,"tooltip":false,"viz":false},"insertNulls":false,"lineInterpolation":"linear","lineWidth":2,"pointSize":5,"scaleDistribution":{"type":"linear"},"showPoints":"never","spanNulls":true,"stacking":{"group":"A","mode":"normal"},"thresholdsStyle":{"mode":"off"}},"links":[],"mappings":[],"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"pps","unitScale":true},"overrides":[]},"gridPos":{"h":7,"w":12,"x":12,"y":28},"id":24,"links":[],"options":{"legend":{"calcs":[],"displayMode":"list","placement":"bottom","showLegend":true},"tooltip":{"mode":"multi","sort":"desc"}},"pluginVersion":"10.3.3","targets":[{"datasource":{"uid":"$datasource"},"expr":"sum(rate(coredns_cache_hits_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
     by (type)","hide":false,"intervalFactor":2,"legendFormat":"hits:{{ type }}","refId":"A","step":40},{"datasource":{"uid":"$datasource"},"expr":"sum(rate(coredns_cache_misses_total{job=~\"$job\",cluster=~\"$cluster\",instance=~\"$instance\"}[5m]))
     by (type)","hide":false,"intervalFactor":2,"legendFormat":"misses","refId":"B","step":40}],"title":"Cache
-    (hitrate)","type":"timeseries"}],"refresh":"10s","schemaVersion":39,"tags":["dns","coredns"],"templating":{"list":[{"current":{},"hide":0,"includeAll":false,"multi":false,"name":"datasource","options":[],"query":"prometheus","queryValue":"","refresh":1,"regex":"","skipUrlSync":false,"type":"datasource"},{"allValue":".*","current":{"selected":false,"text":"All","value":"$__all"},"datasource":{"type":"prometheus","uid":"$datasource"},"definition":"label_values(up{job=~\"$job\"},
-    cluster)","hide":2,"includeAll":true,"label":"Cluster","multi":false,"name":"cluster","options":[],"query":"label_values(up{job=~\"$job\"},
-    cluster)","refresh":1,"regex":"","skipUrlSync":false,"sort":1,"tagValuesQuery":"","tagsQuery":"","type":"query","useTags":false},{"allValue":".*","current":{"selected":false,"text":"All","value":"$__all"},"datasource":{"type":"prometheus","uid":"${datasource}"},"definition":"label_values(coredns_dns_requests_total{cluster=~\"$cluster\"},job)","hide":0,"includeAll":true,"label":"Job","multi":false,"name":"job","options":[],"query":{"qryType":1,"query":"label_values(coredns_dns_requests_total{cluster=~\"$cluster\"},job)","refId":"PrometheusVariableQueryEditor-VariableQuery"},"refresh":1,"regex":"","skipUrlSync":false,"sort":1,"type":"query"},{"allValue":".*","current":{"selected":false,"text":"All","value":"$__all"},"datasource":{"type":"prometheus","uid":"$datasource"},"definition":"label_values(coredns_dns_requests_total{job=~\"$job\",cluster=~\"$cluster\"},
+    (hitrate)","type":"timeseries"}],"refresh":"10s","schemaVersion":39,"tags":["dns","coredns"],"templating":{"list":[{"current":{},"hide":0,"includeAll":false,"multi":false,"name":"datasource","options":[],"query":"prometheus","queryValue":"","refresh":1,"regex":"","skipUrlSync":false,"type":"datasource"},{"allValue":".*","current":{"selected":false,"text":"All","value":"$__all"},"datasource":{"type":"prometheus","uid":"$datasource"},"definition":"label_values(coredns_dns_requests_total,
+    cluster)","hide":2,"includeAll":true,"label":"Cluster","multi":false,"name":"cluster","options":[],"query":"label_values(coredns_dns_requests_total,
+    cluster)","refresh":2,"regex":"","skipUrlSync":false,"sort":1,"tagValuesQuery":"","tagsQuery":"","type":"query","useTags":false},{"allValue":".*","current":{"selected":false,"text":"All","value":"$__all"},"datasource":{"type":"prometheus","uid":"${datasource}"},"definition":"label_values(coredns_dns_requests_total{cluster=~\"$cluster\"},job)","hide":0,"includeAll":true,"label":"Job","multi":false,"name":"job","options":[],"query":{"qryType":1,"query":"label_values(coredns_dns_requests_total{cluster=~\"$cluster\"},job)","refId":"PrometheusVariableQueryEditor-VariableQuery"},"refresh":2,"regex":"","skipUrlSync":false,"sort":1,"type":"query"},{"allValue":".*","current":{"selected":false,"text":"All","value":"$__all"},"datasource":{"type":"prometheus","uid":"$datasource"},"definition":"label_values(coredns_dns_requests_total{job=~\"$job\",cluster=~\"$cluster\"},
     instance)","hide":0,"includeAll":true,"label":"Instance","multi":false,"name":"instance","options":[],"query":"label_values(coredns_dns_requests_total{job=~\"$job\",cluster=~\"$cluster\"},
-    instance)","refresh":1,"regex":"","skipUrlSync":false,"sort":3,"tagValuesQuery":"","tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-3h","to":"now"},"timepicker":{"refresh_intervals":["10s","30s","1m","5m","15m","30m","1h","2h","1d"]},"timezone":
+    instance)","refresh":2,"regex":"","skipUrlSync":false,"sort":3,"tagValuesQuery":"","tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-3h","to":"now"},"timepicker":{"refresh_intervals":["10s","30s","1m","5m","15m","30m","1h","2h","1d"]},"timezone":
     "utc","title":"CoreDNS","uid":"vkQ0UHxik","version":3,"weekStart":""}'
 kind: ConfigMap
 metadata:
@@ -44279,8 +46299,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44515,8 +46535,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44613,8 +46633,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44848,8 +46868,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44944,8 +46964,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45147,8 +47167,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45371,8 +47391,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45599,8 +47619,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45710,8 +47730,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45786,8 +47806,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45895,8 +47915,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -46839,8 +48859,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -47803,8 +49823,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48766,8 +50786,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48828,8 +50848,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48883,8 +50903,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -49884,7 +51904,7 @@ data:
                     "multi": true,
                     "name": "cluster",
                     "options": [],
-                    "query": "label_values(prometheus_build_info{job=\"prometheus-k8s\",namespace=\"monitoring\"}, cluster)",
+                    "query": "label_values(prometheus_build_info{}, cluster)",
                     "refresh": 1,
                     "regex": "",
                     "sort": 2,
@@ -49987,8 +52007,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -50048,8 +52068,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -50126,8 +52146,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -50205,8 +52225,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -50222,8 +52242,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.3
-    helm.sh/chart: grafana-7.3.3
+    app.kubernetes.io/version: 10.4.0
+    helm.sh/chart: grafana-7.3.7
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrole
   namespace: metalk8s-monitoring
@@ -50247,8 +52267,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.4
+    app.kubernetes.io/version: 2.11.0
+    helm.sh/chart: kube-state-metrics-5.18.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -50465,8 +52485,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50573,8 +52593,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50615,8 +52635,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.3
-    helm.sh/chart: grafana-7.3.3
+    app.kubernetes.io/version: 10.4.0
+    helm.sh/chart: grafana-7.3.7
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrolebinding
   namespace: metalk8s-monitoring
@@ -50638,8 +52658,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.4
+    app.kubernetes.io/version: 2.11.0
+    helm.sh/chart: kube-state-metrics-5.18.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -50663,8 +52683,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50688,8 +52708,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50712,8 +52732,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.3
-    helm.sh/chart: grafana-7.3.3
+    app.kubernetes.io/version: 10.4.0
+    helm.sh/chart: grafana-7.3.7
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -50727,8 +52747,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.3
-    helm.sh/chart: grafana-7.3.3
+    app.kubernetes.io/version: 10.4.0
+    helm.sh/chart: grafana-7.3.7
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -50749,8 +52769,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.3
-    helm.sh/chart: grafana-7.3.3
+    app.kubernetes.io/version: 10.4.0
+    helm.sh/chart: grafana-7.3.7
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -50776,8 +52796,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.4
+    app.kubernetes.io/version: 2.11.0
+    helm.sh/chart: kube-state-metrics-5.18.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -50805,7 +52825,7 @@ metadata:
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 1.7.0
-    helm.sh/chart: prometheus-node-exporter-4.30.3
+    helm.sh/chart: prometheus-node-exporter-4.32.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -50831,8 +52851,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50864,8 +52884,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     jobLabel: coredns
     metalk8s.scality.com/monitor: ''
@@ -50891,8 +52911,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     jobLabel: kube-controller-manager
     metalk8s.scality.com/monitor: ''
@@ -50919,8 +52939,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     jobLabel: kube-etcd
     metalk8s.scality.com/monitor: ''
@@ -50947,8 +52967,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     jobLabel: kube-proxy
     metalk8s.scality.com/monitor: ''
@@ -50975,8 +52995,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     jobLabel: kube-scheduler
     metalk8s.scality.com/monitor: ''
@@ -51004,8 +53024,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51030,8 +53050,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51063,8 +53083,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-thanos-discovery
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51094,7 +53114,7 @@ metadata:
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 1.7.0
-    helm.sh/chart: prometheus-node-exporter-4.30.3
+    helm.sh/chart: prometheus-node-exporter-4.32.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -51117,7 +53137,7 @@ spec:
         app.kubernetes.io/name: prometheus-node-exporter
         app.kubernetes.io/part-of: metalk8s
         app.kubernetes.io/version: 1.7.0
-        helm.sh/chart: prometheus-node-exporter-4.30.3
+        helm.sh/chart: prometheus-node-exporter-4.32.0
         heritage: metalk8s
         jobLabel: node-exporter
         release: prometheus-operator
@@ -51217,8 +53237,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.3
-    helm.sh/chart: grafana-7.3.3
+    app.kubernetes.io/version: 10.4.0
+    helm.sh/chart: grafana-7.3.7
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -51275,7 +53295,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/dashboards/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:1.25.2
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:1.26.1
         imagePullPolicy: IfNotPresent
         name: grafana-sc-dashboard
         securityContext:
@@ -51313,7 +53333,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/datasources/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:1.25.2
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:1.26.1
         imagePullPolicy: IfNotPresent
         name: grafana-sc-datasources
         securityContext:
@@ -51349,7 +53369,7 @@ spec:
           value: /var/lib/grafana/plugins
         - name: GF_PATHS_PROVISIONING
           value: /etc/grafana/provisioning
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:10.3.3
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:10.4.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -51432,8 +53452,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.4
+    app.kubernetes.io/version: 2.11.0
+    helm.sh/chart: kube-state-metrics-5.18.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -51455,8 +53475,8 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: kube-state-metrics
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 2.10.1
-        helm.sh/chart: kube-state-metrics-5.16.4
+        app.kubernetes.io/version: 2.11.0
+        helm.sh/chart: kube-state-metrics-5.18.0
         heritage: metalk8s
         release: prometheus-operator
     spec:
@@ -51464,7 +53484,7 @@ spec:
       - args:
         - --port=8080
         - --resources=certificatesigningrequests,configmaps,cronjobs,daemonsets,deployments,endpoints,horizontalpodautoscalers,ingresses,jobs,leases,limitranges,mutatingwebhookconfigurations,namespaces,networkpolicies,nodes,persistentvolumeclaims,persistentvolumes,poddisruptionbudgets,pods,replicasets,replicationcontrollers,resourcequotas,secrets,services,statefulsets,storageclasses,validatingwebhookconfigurations,volumeattachments
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("kube-state-metrics", False, False) }}{%- raw %}:v2.10.1
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("kube-state-metrics", False, False) }}{%- raw %}:v2.11.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -51527,8 +53547,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51550,8 +53570,8 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-operator-operator
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 56.21.2
-        chart: kube-prometheus-stack-56.21.2
+        app.kubernetes.io/version: 57.2.0
+        chart: kube-prometheus-stack-57.2.0
         heritage: metalk8s
         metalk8s.scality.com/monitor: ''
         release: prometheus-operator
@@ -51561,7 +53581,7 @@ spec:
       - args:
         - --kubelet-service=kube-system/prometheus-operator-kubelet
         - --localhost=127.0.0.1
-        - --prometheus-config-reloader={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-config-reloader", False, False) }}{%- raw %}:v0.71.2
+        - --prometheus-config-reloader={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-config-reloader", False, False) }}{%- raw %}:v0.72.0
         - --config-reloader-cpu-request=0
         - --config-reloader-cpu-limit=0
         - --config-reloader-memory-request=0
@@ -51571,7 +53591,7 @@ spec:
         env:
         - name: GOGC
           value: '30'
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-operator", False, False) }}{%- raw %}:v0.71.2
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-operator", False, False) }}{%- raw %}:v0.72.0
         imagePullPolicy: IfNotPresent
         name: prometheus-operator
         ports:
@@ -51614,8 +53634,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.3
-    helm.sh/chart: grafana-7.3.3
+    app.kubernetes.io/version: 10.4.0
+    helm.sh/chart: grafana-7.3.7
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -51642,8 +53662,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51726,8 +53746,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51760,7 +53780,7 @@ spec:
   enableAdminAPI: {% endraw -%}{{ prometheus.spec.config.enable_admin_api }}{%- raw %}
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
   hostNetwork: false
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v2.50.1
+  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v2.51.0
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -51824,7 +53844,7 @@ spec:
     operator: Exists
   tsdb:
     outOfOrderTimeWindow: 0s
-  version: v2.50.1
+  version: v2.51.0
   walCompression: true
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -51836,8 +53856,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51997,8 +54017,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52030,8 +54050,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52218,8 +54238,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52280,8 +54300,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52308,8 +54328,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52335,8 +54355,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52362,8 +54382,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52389,8 +54409,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52416,8 +54436,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52505,8 +54525,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52573,8 +54593,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52706,8 +54726,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53028,8 +55048,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53061,8 +55081,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53138,8 +55158,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53163,8 +55183,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53200,8 +55220,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53266,8 +55286,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53343,8 +55363,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53382,8 +55402,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53651,8 +55671,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53784,8 +55804,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53912,8 +55932,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54001,8 +56021,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54032,8 +56052,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54062,8 +56082,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54223,8 +56243,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54253,8 +56273,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54299,8 +56319,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54382,8 +56402,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54481,8 +56501,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54512,8 +56532,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54569,8 +56589,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54685,8 +56705,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55017,8 +57037,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.3.3
-    helm.sh/chart: grafana-7.3.3
+    app.kubernetes.io/version: 10.4.0
+    helm.sh/chart: grafana-7.3.7
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
   name: prometheus-operator-grafana
@@ -55048,8 +57068,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.1
-    helm.sh/chart: kube-state-metrics-5.16.4
+    app.kubernetes.io/version: 2.11.0
+    helm.sh/chart: kube-state-metrics-5.18.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55075,7 +57095,7 @@ metadata:
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 1.7.0
-    helm.sh/chart: prometheus-node-exporter-4.30.3
+    helm.sh/chart: prometheus-node-exporter-4.32.0
     heritage: metalk8s
     jobLabel: node-exporter
     metalk8s.scality.com/monitor: ''
@@ -55103,8 +57123,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55135,8 +57155,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55164,8 +57184,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-apiserver
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55204,8 +57224,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55237,8 +57257,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55266,8 +57286,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55295,8 +57315,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55328,8 +57348,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kubelet
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55423,8 +57443,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55451,8 +57471,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 56.21.2
-    chart: kube-prometheus-stack-56.21.2
+    app.kubernetes.io/version: 57.2.0
+    chart: kube-prometheus-stack-57.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator

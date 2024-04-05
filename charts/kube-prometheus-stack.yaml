@@ -1,6 +1,6 @@
 nameOverride: prometheus-operator
 
-kubeTargetVersionOverride: 1.27.0
+kubeTargetVersionOverride: 1.28.0
 
 commonLabels:
   # This needs to remain 'Tiller' for the render script to work properly
@@ -326,3 +326,8 @@ kubelet:
       #   action: drop
       #   regex: '.+;'
       # END WORKAROUND
+
+nodeExporter:
+  operatingSystems:
+    darwin:
+      enabled: false
