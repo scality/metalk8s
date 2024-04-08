@@ -2,20 +2,23 @@ namespace: kube-system
 
 namePrefix: storage-operator-
 
+labels:
+  - pairs:
+      app.kubernetes.io/created-by: metalk8s
+      app.kubernetes.io/part-of: metalk8s
+
 images:
   - name: controller
     newName: 'BUILD_IMAGE_CLUSTER_OPERATOR'
     newTag: 'latest'
 
-bases:
+resources:
 - ../crd
 - ../rbac
 - ../manager
 
 patches:
-- path: deploy_patch.yaml
-  target:
-    kind: Deployment
-
-patchesStrategicMerge:
-  - delete_ns.yaml
+  - path: deploy_patch.yaml
+    target:
+      kind: Deployment
+  - path: delete_ns.yaml

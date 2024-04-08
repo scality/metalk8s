@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 // Some basic slice helpers that are lacking from Go stdlib…
 //
