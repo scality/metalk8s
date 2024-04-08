@@ -6,7 +6,7 @@ resources:
 - bases/metalk8s.scality.com_virtualippools.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
-patchesStrategicMerge:
+patches:
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
 # patches here are for enabling the conversion webhook for each CRD
 #- patches/webhook_in_clusterconfigs.yaml

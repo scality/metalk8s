@@ -1,6 +1,17 @@
 include:
   - .manifests
 
+{#- In MetalK8s 128.0 this config has been removed
+    This can be removed in `development/129.0` #}
+Ensure old MetalK8s operator config does no longer exists:
+  metalk8s_kubernetes.object_absent:
+    - name: metalk8s-operator-manager-config
+    - namespace: kube-system
+    - apiVersion: v1
+    - kind: ConfigMap
+    - require:
+      - sls: metalk8s.addons.metalk8s-operator.deployed.manifests
+
 Wait for the MetalK8s Operator to be Ready:
   test.configurable_test_state:
     - changes: False

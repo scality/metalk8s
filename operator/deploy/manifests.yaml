@@ -2,8 +2,10 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.11.1
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.13.0
+  labels:
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/part-of: metalk8s
   name: clusterconfigs.metalk8s.scality.com
 spec:
   group: metalk8s.scality.com
@@ -27,10 +29,14 @@ spec:
         description: ClusterConfig is the Schema for the clusterconfigs API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -55,7 +61,8 @@ spec:
                       managedVirtualIP:
                         properties:
                           address:
-                            description: and will be used to reach the Ingress A Virtual IP address that will be managed by the Operator
+                            description: and will be used to reach the Ingress A Virtual
+                              IP address that will be managed by the Operator
                             format: ipv4
                             type: string
                         required:
@@ -68,7 +75,8 @@ spec:
                 properties:
                   virtualIPPools:
                     additionalProperties:
-                      description: VirtualIPPoolSpec defines the desired state of VirtualIPPool
+                      description: VirtualIPPoolSpec defines the desired state of
+                        VirtualIPPool
                       properties:
                         addresses:
                           description: Virtual IP addresses to use
@@ -78,13 +86,15 @@ spec:
                           minItems: 1
                           type: array
                         healthcheck:
-                          description: The local health check to run to ensure the Virtual IP can sit on this specific node
+                          description: The local health check to run to ensure the
+                            Virtual IP can sit on this specific node
                           properties:
                             httpGet:
                               description: Simple HTTP Get check
                               properties:
                                 host:
-                                  description: The IP to do the HTTP request (default to keepalived Pod IP)
+                                  description: The IP to do the HTTP request (default
+                                    to keepalived Pod IP)
                                   format: ipv4
                                   type: string
                                 path:
@@ -96,7 +106,8 @@ spec:
                                   type: integer
                                 scheme:
                                   default: HTTPS
-                                  description: The scheme to use for the HTTP request (default to HTTPS)
+                                  description: The scheme to use for the HTTP request
+                                    (default to HTTPS)
                                   enum:
                                   - HTTP
                                   - HTTPS
@@ -111,23 +122,43 @@ spec:
                         tolerations:
                           description: Tolerations to deploy the Virtual IPs manager
                           items:
-                            description: The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.
+                            description: The pod this Toleration is attached to tolerates
+                              any taint that matches the triple <key,value,effect>
+                              using the matching operator <operator>.
                             properties:
                               effect:
-                                description: Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+                                description: Effect indicates the taint effect to
+                                  match. Empty means match all taint effects. When
+                                  specified, allowed values are NoSchedule, PreferNoSchedule
+                                  and NoExecute.
                                 type: string
                               key:
-                                description: Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+                                description: Key is the taint key that the toleration
+                                  applies to. Empty means match all taint keys. If
+                                  the key is empty, operator must be Exists; this
+                                  combination means to match all values and all keys.
                                 type: string
                               operator:
-                                description: Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
+                                description: Operator represents a key's relationship
+                                  to the value. Valid operators are Exists and Equal.
+                                  Defaults to Equal. Exists is equivalent to wildcard
+                                  for value, so that a pod can tolerate all taints
+                                  of a particular category.
                                 type: string
                               tolerationSeconds:
-                                description: TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
+                                description: TolerationSeconds represents the period
+                                  of time the toleration (which must be of effect
+                                  NoExecute, otherwise this field is ignored) tolerates
+                                  the taint. By default, it is not set, which means
+                                  tolerate the taint forever (do not evict). Zero
+                                  and negative values will be treated as 0 (evict
+                                  immediately) by the system.
                                 format: int64
                                 type: integer
                               value:
-                                description: Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+                                description: Value is the taint value the toleration
+                                  matches to. If the operator is Exists, the value
+                                  should be empty, otherwise just a regular string.
                                 type: string
                             type: object
                           type: array
@@ -144,23 +175,37 @@ spec:
               conditions:
                 description: List of conditions for the ClusterConfig
                 items:
-                  description: Condition contains details for one aspect of the current state of this object
+                  description: Condition contains details for one aspect of the current
+                    state of this object
                   properties:
                     lastTransitionTime:
-                      description: lastTransitionTime is the last time the condition transitioned from one status to another. This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      description: lastTransitionTime is the last time the condition
+                        transitioned from one status to another. This should be when
+                        the underlying condition changed.  If that is not known, then
+                        using the time when the API field changed is acceptable.
                       format: date-time
                       type: string
                     message:
-                      description: message is a human readable message indicating details about the transition. This may be an empty string.
+                      description: message is a human readable message indicating
+                        details about the transition. This may be an empty string.
                       maxLength: 32768
                       type: string
                     observedGeneration:
-                      description: observedGeneration represents the .metadata.generation that the condition was set based upon. For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date with respect to the current state of the instance.
+                      description: observedGeneration represents the .metadata.generation
+                        that the condition was set based upon. For instance, if .metadata.generation
+                        is currently 12, but the .status.conditions[x].observedGeneration
+                        is 9, the condition is out of date with respect to the current
+                        state of the instance.
                       format: int64
                       minimum: 0
                       type: integer
                     reason:
-                      description: reason contains a programmatic identifier indicating the reason for the condition's last transition. Producers of specific condition types may define expected values and meanings for this field, and whether the values are considered a guaranteed API. The value should be a CamelCase string. This field may not be empty.
+                      description: reason contains a programmatic identifier indicating
+                        the reason for the condition's last transition. Producers
+                        of specific condition types may define expected values and
+                        meanings for this field, and whether the values are considered
+                        a guaranteed API. The value should be a CamelCase string.
+                        This field may not be empty.
                       maxLength: 1024
                       minLength: 1
                       pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
@@ -173,7 +218,11 @@ spec:
                       - Unknown
                       type: string
                     type:
-                      description: type of condition in CamelCase or in foo.example.com/CamelCase. --- Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be useful (see .node.status.conditions), the ability to deconflict is important. The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        --- Many .condition.type values are consistent across resources
+                        like Available, but because arbitrary conditions can be useful
+                        (see .node.status.conditions), the ability to deconflict is
+                        important. The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
                       maxLength: 316
                       pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
                       type: string
@@ -214,8 +263,10 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.11.1
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.13.0
+  labels:
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/part-of: metalk8s
   name: virtualippools.metalk8s.scality.com
 spec:
   group: metalk8s.scality.com
@@ -234,10 +285,14 @@ spec:
         description: VirtualIPPool is the Schema for the virtualippools API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -252,13 +307,15 @@ spec:
                 minItems: 1
                 type: array
               healthcheck:
-                description: The local health check to run to ensure the Virtual IP can sit on this specific node
+                description: The local health check to run to ensure the Virtual IP
+                  can sit on this specific node
                 properties:
                   httpGet:
                     description: Simple HTTP Get check
                     properties:
                       host:
-                        description: The IP to do the HTTP request (default to keepalived Pod IP)
+                        description: The IP to do the HTTP request (default to keepalived
+                          Pod IP)
                         format: ipv4
                         type: string
                       path:
@@ -270,7 +327,8 @@ spec:
                         type: integer
                       scheme:
                         default: HTTPS
-                        description: The scheme to use for the HTTP request (default to HTTPS)
+                        description: The scheme to use for the HTTP request (default
+                          to HTTPS)
                         enum:
                         - HTTP
                         - HTTPS
@@ -285,23 +343,40 @@ spec:
               tolerations:
                 description: Tolerations to deploy the Virtual IPs manager
                 items:
-                  description: The pod this Toleration is attached to tolerates any taint that matches the triple <key,value,effect> using the matching operator <operator>.
+                  description: The pod this Toleration is attached to tolerates any
+                    taint that matches the triple <key,value,effect> using the matching
+                    operator <operator>.
                   properties:
                     effect:
-                      description: Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+                      description: Effect indicates the taint effect to match. Empty
+                        means match all taint effects. When specified, allowed values
+                        are NoSchedule, PreferNoSchedule and NoExecute.
                       type: string
                     key:
-                      description: Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+                      description: Key is the taint key that the toleration applies
+                        to. Empty means match all taint keys. If the key is empty,
+                        operator must be Exists; this combination means to match all
+                        values and all keys.
                       type: string
                     operator:
-                      description: Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category.
+                      description: Operator represents a key's relationship to the
+                        value. Valid operators are Exists and Equal. Defaults to Equal.
+                        Exists is equivalent to wildcard for value, so that a pod
+                        can tolerate all taints of a particular category.
                       type: string
                     tolerationSeconds:
-                      description: TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system.
+                      description: TolerationSeconds represents the period of time
+                        the toleration (which must be of effect NoExecute, otherwise
+                        this field is ignored) tolerates the taint. By default, it
+                        is not set, which means tolerate the taint forever (do not
+                        evict). Zero and negative values will be treated as 0 (evict
+                        immediately) by the system.
                       format: int64
                       type: integer
                     value:
-                      description: Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string.
+                      description: Value is the taint value the toleration matches
+                        to. If the operator is Exists, the value should be empty,
+                        otherwise just a regular string.
                       type: string
                   type: object
                 type: array
@@ -314,23 +389,37 @@ spec:
               conditions:
                 description: List of conditions for the VirtualIPPool
                 items:
-                  description: Condition contains details for one aspect of the current state of this object
+                  description: Condition contains details for one aspect of the current
+                    state of this object
                   properties:
                     lastTransitionTime:
-                      description: lastTransitionTime is the last time the condition transitioned from one status to another. This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      description: lastTransitionTime is the last time the condition
+                        transitioned from one status to another. This should be when
+                        the underlying condition changed.  If that is not known, then
+                        using the time when the API field changed is acceptable.
                       format: date-time
                       type: string
                     message:
-                      description: message is a human readable message indicating details about the transition. This may be an empty string.
+                      description: message is a human readable message indicating
+                        details about the transition. This may be an empty string.
                       maxLength: 32768
                       type: string
                     observedGeneration:
-                      description: observedGeneration represents the .metadata.generation that the condition was set based upon. For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date with respect to the current state of the instance.
+                      description: observedGeneration represents the .metadata.generation
+                        that the condition was set based upon. For instance, if .metadata.generation
+                        is currently 12, but the .status.conditions[x].observedGeneration
+                        is 9, the condition is out of date with respect to the current
+                        state of the instance.
                       format: int64
                       minimum: 0
                       type: integer
                     reason:
-                      description: reason contains a programmatic identifier indicating the reason for the condition's last transition. Producers of specific condition types may define expected values and meanings for this field, and whether the values are considered a guaranteed API. The value should be a CamelCase string. This field may not be empty.
+                      description: reason contains a programmatic identifier indicating
+                        the reason for the condition's last transition. Producers
+                        of specific condition types may define expected values and
+                        meanings for this field, and whether the values are considered
+                        a guaranteed API. The value should be a CamelCase string.
+                        This field may not be empty.
                       maxLength: 1024
                       minLength: 1
                       pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
@@ -343,7 +432,11 @@ spec:
                       - Unknown
                       type: string
                     type:
-                      description: type of condition in CamelCase or in foo.example.com/CamelCase. --- Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be useful (see .node.status.conditions), the ability to deconflict is important. The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                        --- Many .condition.type values are consistent across resources
+                        like Available, but because arbitrary conditions can be useful
+                        (see .node.status.conditions), the ability to deconflict is
+                        important. The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
                       maxLength: 316
                       pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
                       type: string
@@ -368,12 +461,26 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/instance: controller-manager-sa
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: serviceaccount
+    app.kubernetes.io/part-of: metalk8s
   name: metalk8s-operator-controller-manager
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/instance: leader-election-role
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: role
+    app.kubernetes.io/part-of: metalk8s
   name: metalk8s-operator-leader-election-role
   namespace: kube-system
 rules:
@@ -412,7 +519,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
+  labels:
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/part-of: metalk8s
   name: metalk8s-operator-manager-role
 rules:
 - apiGroups:
@@ -522,6 +631,13 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/instance: leader-election-rolebinding
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: rolebinding
+    app.kubernetes.io/part-of: metalk8s
   name: metalk8s-operator-leader-election-rolebinding
   namespace: kube-system
 roleRef:
@@ -536,6 +652,13 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/instance: manager-rolebinding
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: clusterrolebinding
+    app.kubernetes.io/part-of: metalk8s
   name: metalk8s-operator-manager-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -546,18 +669,16 @@ subjects:
   name: metalk8s-operator-controller-manager
   namespace: kube-system
 ---
-apiVersion: v1
-data:
-  controller_manager_config.yaml: "apiVersion: controller-runtime.sigs.k8s.io/v1alpha1\nkind: ControllerManagerConfig\nhealth:\n  healthProbeBindAddress: :8081\nmetrics:\n  bindAddress: 127.0.0.1:8080\nwebhook:\n  port: 9443\nleaderElection:\n  leaderElect: true\n  resourceName: 02367e3e.metalk8s.scality.com\n#   leaderElectionReleaseOnCancel defines if the leader should step down volume \n#   when the Manager ends. This requires the binary to immediately end when the\n#   Manager is stopped, otherwise, this setting is unsafe. Setting this significantly\n#   speeds up voluntary leader transitions as the new leader don't have to wait\n#   LeaseDuration time first.\n#   In the default scaffold provided, the program ends immediately after \n#   the manager stops, so would be fine to enable this option. However, \n#   if you are doing or is intended to do any operation such as perform cleanups \n#   after the manager stops then its usage might be unsafe.\n#   leaderElectionReleaseOnCancel: true\n"
-kind: ConfigMap
-metadata:
-  name: metalk8s-operator-manager-config
-  namespace: kube-system
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    app.kubernetes.io/component: manager
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/instance: controller-manager
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: deployment
+    app.kubernetes.io/part-of: metalk8s
     control-plane: controller-manager
   name: metalk8s-operator-controller-manager
   namespace: kube-system
@@ -603,8 +724,13 @@ spec:
             memory: 64Mi
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
       securityContext:
         runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: metalk8s-operator-controller-manager
       terminationGracePeriodSeconds: 10
       tolerations:
