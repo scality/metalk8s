@@ -85,6 +85,12 @@
 - Bump nginx image to [1.25.4-alpine](https://github.com/nginx/nginx/releases/tag/release-1.25.4)
   (PR[#4295](https://github.com/scality/metalk8s/pull/4295))
 
+- Bump Operator-SDK used by `metalk8s-operator` and `storage-operator` to
+  [1.34.1](https://github.com/operator-framework/operator-sdk/releases/tag/v1.34.1)
+  The Go version has been bumped accordingly to
+  [1.20](https://golang.org/doc/devel/release.html#go1.20.minor)
+  (PR[#4302](https://github.com/scality/metalk8s/pull/4302))
+
 ### Bug fixes
 
 - Do no longer use `latest` for `storage-operator` image
