@@ -111,28 +111,11 @@ jobs:
       ## }}}
 
       # Wait for everything to be Ready {{{
-      - name: Ensure all Salt minion are running
-        uses: ./.github/actions/run-command-ssh
+      - name: Wait for a stable cluster
+        uses: ./.github/actions/run-script-ssh
         with:
-          COMMAND: |
-            for _ in \$(seq 10); do
-                sudo crictl exec \$(sudo crictl ps --label='io.kubernetes.container.name=salt-master' -q) salt '*' test.ping && exit 0
-                sleep 5
-            done
-      - name: Wait for pods to stabilize after restoration
-        uses: ./.github/actions/wait-pod-stable
-        with:
-          # NOTE: We increase stabilization time after restoration it may take some
-          # time to stabilize
-          STABILIZATION_TIME: "240"
-      - name: Ensure all pods are running
-        uses: ./.github/actions/run-command-ssh
-        with:
-          # NOTE: we ignore Jobs as they can't be Ready (either Succeeded or Failed)
-          COMMAND: >
-            sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf
-            wait pods --for=condition=Ready --all --all-namespaces
-            --selector='!job-name' --timeout=5s
+          SCRIPT: .github/scripts/stabilize_snapshot.py
+          RUN_WITH: sudo python3 -u
       ## }}}
 
       ## Run upgrade {{{

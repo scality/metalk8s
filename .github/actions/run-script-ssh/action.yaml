@@ -1,0 +1,34 @@
+name: "run script over ssh"
+description: "run a script on the remove node over ssh"
+
+inputs:
+  SCRIPT:
+    description: "the script to run"
+    required: true
+  RUN_WITH:
+    description: "the interpreter to run the script"
+    required: false
+    default: "bash"
+  ENV:
+    description: "the envirnoment variables for that run"
+    required: false
+    default: ""
+  NODE:
+    description: "the remote node name"
+    required: false
+    default: "bootstrap"
+
+runs:
+  using: composite
+  steps:
+    - name: check ssh_config file
+      shell: bash
+      run: test -f ssh_config
+    - name: check script to run
+      shell: bash
+      run: test -f ${{ inputs.SCRIPT }}
+    - name: run the script on the remote node
+      shell: bash
+      run: >
+        ssh -F ssh_config "${{ inputs.NODE }}"
+        "${{ inputs.ENV }} ${{ inputs.RUN_WITH }}" < ${{ inputs.SCRIPT }}
