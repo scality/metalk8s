@@ -13,3 +13,4 @@ runs:
       uses: ./.github/actions/run-command-ssh
       with:
         COMMAND: sudo /srv/scality/metalk8s-${{ inputs.version }}/upgrade.sh --verbose
+        SSH_OPTIONS: "-o ServerAliveInterval=15"

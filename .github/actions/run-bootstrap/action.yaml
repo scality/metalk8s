@@ -14,3 +14,4 @@ runs:
       uses: ./.github/actions/run-command-ssh
       with:
         COMMAND: sudo ${{ inputs.MOUNTPOINT }}/bootstrap.sh --verbose
+        SSH_OPTIONS: "-o ServerAliveInterval=15"
