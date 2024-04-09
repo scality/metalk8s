@@ -461,19 +461,18 @@ export const Navbar = ({
   }
 
   if (canChangeTheme) {
+    const switchThemeTo = themeMode === 'dark' ? 'light' : 'dark';
     rightTabs.unshift({
       render: () => (
         <Button
           onClick={() => {
-            setThemeMode(themeMode === 'dark' ? 'light' : 'dark');
+            setThemeMode(switchThemeTo);
           }}
           icon={
             <i className={`fas fa-${themeMode === 'dark' ? 'sun' : 'moon'}`} />
           }
           tooltip={{
-            overlay: `Switch to ${
-              themeMode === 'dark' ? 'light' : 'dark'
-            } theme`,
+            overlay: `Switch to ${switchThemeTo} theme`,
           }}
         ></Button>
       ),
