@@ -17,6 +17,12 @@ on:
         type: string
         default: "unknown"
 
+      enable-debug-when-failure:
+        description: "Whether or not debug when failure should be enabled or not"
+        required: false
+        type: boolean
+        default: false
+
 jobs:
   get-dev-artifacts-url:
     runs-on: ubuntu-22.04
@@ -46,6 +52,7 @@ jobs:
       from-artifacts-url: ${{ needs.get-dev-artifacts-url.outputs.artifacts-url }}
       to-artifacts-url: ${{ inputs.artifacts-url }}
       type: ${{ inputs.type }}-dev
+      enable-debug-when-failure: ${{ inputs.enable-debug-when-failure }}
 
   dev-downgrade:
     needs:
@@ -56,3 +63,4 @@ jobs:
       from-artifacts-url: ${{ inputs.artifacts-url }}
       to-artifacts-url: ${{ needs.get-dev-artifacts-url.outputs.artifacts-url }}
       type: ${{ inputs.type }}-dev
+      enable-debug-when-failure: ${{ inputs.enable-debug-when-failure }}
