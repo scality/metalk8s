@@ -3,12 +3,17 @@ run-name: "Nightly tests for ${{ github.ref_name }}"
 
 on:
   workflow_dispatch:
+    inputs:
+      artifacts-url:
+        description: Artifacts URL to use (fallback to the latest pre-merge build on this branch)
+        type: string
+        required: false
 
 jobs:
   retrieve-info:
     runs-on: ubuntu-22.04
     outputs:
-      artifacts-link: ${{ steps.artifacts.outputs.link }}
+      artifacts-link: ${{ inputs.artifacts-url || steps.artifacts.outputs.link }}
       version_major: ${{ steps.get-version.outputs.version_major }}
       version_minor: ${{ steps.get-version.outputs.version_minor }}
       version_patch: ${{ steps.get-version.outputs.version_patch }}
@@ -20,6 +25,7 @@ jobs:
       - name: Retrieve artifacts url
         uses: scality/action-artifacts@v4
         id: artifacts
+        if: inputs.artifacts-url == ''
         with:
           method: get
           workflow-name: Pre-merge
