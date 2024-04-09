@@ -80,6 +80,14 @@ jobs:
         run: cp terraform-snapshot/terraform/ssh_config ./
       ## }}}
 
+      ## Restart kubelet on every nodes {{{
+      - name: Restart kubelet on every nodes
+        uses: ./.github/actions/run-command-ssh-all-nodes
+        with:
+          NODES_COUNT: "${{ matrix.nodes-count }}"
+          COMMAND: "sudo systemctl enable --now kubelet"
+      ## }}}
+
       ## Retrieve new version ISO {{{
       - name: Get MetalK8s ISO
         uses: ./.github/actions/retrieve-iso

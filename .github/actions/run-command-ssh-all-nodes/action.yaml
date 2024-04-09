@@ -1,0 +1,34 @@
+name: "run command ssh on all nodes"
+description: "Run a command over ssh on all nodes"
+
+inputs:
+  COMMAND:
+    description: "the command to run"
+    required: true
+  NODES_COUNT:
+    description: number of nodes
+    required: false
+    default: "0"
+  SSH_OPTIONS:
+    description: "Additional args passed to ssh"
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    ## Here we cannot use the ssh-command action as we need to run this in a loop
+    ## that is generated at the runtime.
+    - shell: bash
+      run: test -f ssh_config
+    - name: build hosts list
+      shell: bash
+      run: |
+        export HOSTS_LIST=""
+        echo "HOSTS_LIST=bootstrap$(seq -s '' --format ' node-%g' 1 ${{ inputs.NODES_COUNT }})" >> $GITHUB_ENV
+    - name: run the command on all nodes
+      shell: bash
+      run: |
+        for host in ${HOSTS_LIST}; do
+          ssh -F ssh_config ${{ inputs.SSH_OPTIONS }} ${host} "${{ inputs.COMMAND }}"
+        done
