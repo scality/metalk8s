@@ -18,3 +18,4 @@ runs:
         COMMAND: >
           sudo ${{ steps.metalk8s_mountpoint.outputs.mountpoint }}/downgrade.sh
           --destination-version ${{ inputs.version }} --verbose
+        SSH_OPTIONS: "-o ServerAliveInterval=15"

@@ -45,8 +45,8 @@ on:
       nodes-count:
         description: "Number of extra node to spawn for multi-node"
         required: false
-        type: string
-        default: "1"
+        type: number
+        default: 1
       install-solution:
         description: "Whether or not the tests solution should be installed"
         required: false
@@ -73,7 +73,7 @@ jobs:
     secrets: inherit
     with:
       artifacts-url: ${{ inputs.artifacts-url }}
-      nodes-count: ${{ inputs.nodes-count }}
+      nodes-count: ${{ fromJson(inputs.nodes-count) }}
       install-solution: ${{ inputs.install-solution }}
       generate-snapshots: ${{ inputs.generate-snapshots }}
       enable-debug-when-failure: true

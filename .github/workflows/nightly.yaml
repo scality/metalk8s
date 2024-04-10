@@ -3,12 +3,23 @@ run-name: "Nightly tests for ${{ github.ref_name }}"
 
 on:
   workflow_dispatch:
+    inputs:
+      artifacts-url:
+        description: Artifacts URL to use (fallback to the latest pre-merge build on this branch)
+        type: string
+        required: false
+
+      enable-debug-when-failure:
+        description: "Whether or not debug when failure should be enabled or not"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   retrieve-info:
     runs-on: ubuntu-22.04
     outputs:
-      artifacts-link: ${{ steps.artifacts.outputs.link }}
+      artifacts-link: ${{ inputs.artifacts-url || steps.artifacts.outputs.link }}
       version_major: ${{ steps.get-version.outputs.version_major }}
       version_minor: ${{ steps.get-version.outputs.version_minor }}
       version_patch: ${{ steps.get-version.outputs.version_patch }}
@@ -20,6 +31,7 @@ jobs:
       - name: Retrieve artifacts url
         uses: scality/action-artifacts@v4
         id: artifacts
+        if: inputs.artifacts-url == ''
         with:
           method: get
           workflow-name: Pre-merge
@@ -141,6 +153,7 @@ jobs:
       artifacts-url: ${{ needs.compute-lifecycle-promoted-matrix.outputs.artifacts-link }}
       type: ${{ matrix.type }}
       promoted-version: ${{ matrix.version }}
+      enable-debug-when-failure: ${{ inputs.enable-debug-when-failure }}
 
   lifecycle-dev:
     uses: ./.github/workflows/lifecycle-dev.yaml
@@ -155,6 +168,7 @@ jobs:
       artifacts-url: ${{ needs.compute-lifecycle-dev-matrix.outputs.artifacts-link }}
       type: ${{ matrix.type }}
       dev-branch: ${{ matrix.branch }}
+      enable-debug-when-failure: ${{ inputs.enable-debug-when-failure }}
 
   install:
     uses: ./.github/workflows/single-node-test.yaml
@@ -182,6 +196,7 @@ jobs:
       test-solution: true
       setup-idp: ${{ matrix.setup-idp }}
       setup-logging: ${{ matrix.setup-logging }}
+      enable-debug-when-failure: ${{ inputs.enable-debug-when-failure }}
 
   bootstrap-restore:
     uses: ./.github/workflows/multi-node-test.yaml
@@ -193,6 +208,7 @@ jobs:
       artifacts-url: ${{ needs.retrieve-info.outputs.artifacts-link }}
       nodes-count: 2
       bootstrap-restore: true
+      enable-debug-when-failure: ${{ inputs.enable-debug-when-failure }}
 
   k8s-conformance:
     uses: ./.github/workflows/multi-node-test.yaml
@@ -204,6 +220,7 @@ jobs:
       artifacts-url: ${{ needs.retrieve-info.outputs.artifacts-link }}
       nodes-count: 2
       k8s-conformance: true
+      enable-debug-when-failure: ${{ inputs.enable-debug-when-failure }}
 
   generate-sbom:
     uses: ./.github/workflows/generate-sbom.yaml

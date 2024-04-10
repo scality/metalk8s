@@ -17,6 +17,12 @@ on:
         type: string
         default: "unknown"
 
+      enable-debug-when-failure:
+        description: "Whether or not debug when failure should be enabled or not"
+        required: false
+        type: boolean
+        default: false
+
 env:
   OS: "rocky-8"
   NODES_COUNT: "0"
@@ -170,6 +176,9 @@ jobs:
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
           source: artifacts
       ## }}
+      - name: debug
+        if: inputs.enable-debug-when-failure && failure()
+        run: sleep 3600
 
       ## Destroy {{{
       - name: Destroy cluster with Terraform
