@@ -13,7 +13,7 @@ const mockUseSelector = useSelector as jest.Mock;
 
 const mockResult = (numContainerRunning: number, status = 'Running') => ({
   name: 'test-pod',
-  age: '4d2h',
+  age: Date.now() - 4 * 60 * 60 * 1000,
   namespace: 'xcore',
   status: {
     status,
@@ -29,7 +29,7 @@ const statusCriticalRGB = 'rgb(232, 72, 85)';
 
 const selectors = {
   podName: () => screen.getByText('test-pod'),
-  podAge: () => screen.getByText('4d2h'),
+  podAge: () => screen.getByText('4h'),
   podNamespace: () => screen.getByText('xcore'),
   podStatus: (status: string) => screen.getByText(status),
 };
