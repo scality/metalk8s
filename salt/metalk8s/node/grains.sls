@@ -16,6 +16,8 @@ Set control_plane_ip grain:
   grains.present:
     - name: metalk8s:control_plane_ip
     - value: {{ control_plane_ip }}
+    - onchanges_in:
+      - module: Force sync of grains
 
 {%- else %}
 
@@ -35,10 +37,21 @@ Set workload_plane_ip grain:
   grains.present:
     - name: metalk8s:workload_plane_ip
     - value: {{ workload_plane_ip }}
+    - onchanges_in:
+      - module: Force sync of grains
 
 {%- else %}
 
 No workload-plane network interface present on the host:
   test.fail_without_changes
+
+{%- endif %}
+
+{%- if control_plane_ip or workload_plane_ip %}
+
+{#- Since we enable grains cache, the cache is not refreshed automatically #}
+Force sync of grains:
+  module.run:
+    - saltutil.sync_grains: []
 
 {%- endif %}
