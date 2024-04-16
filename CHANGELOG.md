@@ -91,6 +91,9 @@
   [1.20](https://golang.org/doc/devel/release.html#go1.20.minor)
   (PR[#4302](https://github.com/scality/metalk8s/pull/4302))
 
+- Anonymize diff when updating a Kubernetes Secret object from salt state
+  (PR[#4313](https://github.com/scality/metalk8s/pull/4313))
+
 ### Bug fixes
 
 - Do no longer use `latest` for `storage-operator` image
