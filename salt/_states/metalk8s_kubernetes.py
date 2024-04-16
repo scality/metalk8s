@@ -159,7 +159,11 @@ def object_present(name, manifest=None, **kwargs):
         name=name_arg, manifest=manifest, old_object=obj, saltenv=__env__, **kwargs
     )
     diff = __utils__["dictdiffer.recursive_diff"](obj, new)
-    ret["changes"] = diff.diffs
+    # Anonymize diff when object has `kind: Secret`
+    if new.get("kind") == "Secret":
+        ret["changes"] = {"old": "REDACTED", "new": "REDACTED"}
+    else:
+        ret["changes"] = diff.diffs
     ret["comment"] = "The object was replaced"
 
     return ret
