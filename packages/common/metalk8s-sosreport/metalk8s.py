@@ -189,7 +189,7 @@ class MetalK8s(Plugin, RedHatPlugin):
                 relative_dest = os.path.join(relative_dest, namespace)
             _add_symlink(relative_dest, src_path, dest_name)
 
-        def _handle_list():
+        def _handle_global():
             for kind, namespaces in ns_kind.items():
                 for namespace in namespaces:
                     filename = "{}_ns_{}_list.txt".format(kind, namespace)
@@ -208,6 +208,23 @@ class MetalK8s(Plugin, RedHatPlugin):
                         namespace=namespace,
                     )
 
+                    if kind == "pod":
+                        filename = "{}_ns_{}_top.txt".format(kind, namespace)
+                        self.add_cmd_output(
+                            "{} top --namespace={} {}".format(
+                                self.kube_cmd, namespace, kind
+                            ),
+                            subdir=flat_dir,
+                            suggest_filename=filename,
+                        )
+
+                        _handle_symlinks(
+                            src_name=filename,
+                            dest_name="top.txt",
+                            kind=kind,
+                            namespace=namespace,
+                        )
+
             for kind in no_ns_kind:
                 filename = "{}_list.txt".format(kind)
                 self.add_cmd_output(
@@ -217,6 +234,16 @@ class MetalK8s(Plugin, RedHatPlugin):
                 )
 
                 _handle_symlinks(src_name=filename, dest_name="list.txt", kind=kind)
+
+                if kind == "node":
+                    filename = "{}_top.txt".format(kind)
+                    self.add_cmd_output(
+                        "{} top {}".format(self.kube_cmd, kind),
+                        subdir=flat_dir,
+                        suggest_filename=filename,
+                    )
+
+                    _handle_symlinks(src_name=filename, dest_name="top.txt", kind=kind)
 
         def _handle_describe(prefix, obj):
             cmd = "{} describe {} {}".format(
@@ -368,7 +395,7 @@ class MetalK8s(Plugin, RedHatPlugin):
         for obj in all_no_ns_obj:
             _handle_obj(obj)
 
-        _handle_list()
+        _handle_global()
 
     def _setup_metrics(self):
         prom_svc = json.loads(

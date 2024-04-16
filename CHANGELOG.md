@@ -98,6 +98,12 @@
 
 ## Release 127.0.1 (in development)
 
+### Enhancements
+
+- Add `kubectl top` output as part of `metalk8s`
+  sosreport plugin
+  (PR[#4312](https://github.com/scality/metalk8s/pull/4312))
+
 ### Bug fixes
 
 - In order to reduce slow DNS impact, let's disable
