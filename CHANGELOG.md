@@ -104,6 +104,10 @@
   salt FQDNs grains that are not used today
   (PR[#4287](https://github.com/scality/metalk8s/pull/4287))
 
+- Add an option on the Salt minion `grains_cache: true`. It allows
+  MetalK8s to be deployed and upgraded with a non responding DNS. 
+  (PR[#4311](https://github.com/scality/metalk8s/pull/4311))
+
 ## Release 127.0.0
 
 ### Additions
