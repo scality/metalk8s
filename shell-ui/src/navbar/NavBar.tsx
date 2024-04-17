@@ -159,22 +159,18 @@ export const useNavbarLinksToActions = (
     .sort((a, b) => {
       if (!a.view.isFederated || !b.view.isFederated) {
         return 0;
-      }
-      if (a.view.view.path === '/') {
+      } else if (
+        (a.view.view.exact && !b.view.view.exact) ||
+        (a.view.view.strict && !b.view.view.strict)
+      ) {
         return -1;
-      }
-      if (a.view.view.exact && !b.view.view.exact) {
-        return -1;
-      }
-      if (!a.view.view.exact && b.view.view.exact) {
+      } else if (
+        (!a.view.view.exact && b.view.view.exact) ||
+        (!a.view.view.strict && b.view.view.strict)
+      ) {
         return 1;
       }
-      if (a.view.view.strict && !b.view.view.strict) {
-        return -1;
-      }
-      if (!a.view.view.strict && b.view.view.strict) {
-        return 1;
-      }
+
       return 0;
     })
     .find((link) =>
