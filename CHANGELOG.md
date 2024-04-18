@@ -2,6 +2,13 @@
 
 ## Release 127.0.2 (in development)
 
+### Enhancements
+
+- Handle a 409 conflict error when using
+  `metalk8s_kubernetes.object_present` Salt state
+  due to another component modifying the wanted object
+  (PR[#4317](https://github.com/scality/metalk8s/pull/4317))
+
 ## Release 127.0.1
 
 ### Enhancements

@@ -414,6 +414,17 @@ replace_object:
     raises: True
     result: Failed to replace object
 
+  # Conflict error - expected - sent back to the state
+  # to handle the error
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    api_status_code: 409
+    raises: True
+    result: 409 Conflict
+
 get_object:
   # Simple Get Pod (using manifest) - No namespace
   - manifest:
