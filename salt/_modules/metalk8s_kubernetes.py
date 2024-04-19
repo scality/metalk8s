@@ -59,6 +59,12 @@ def _handle_error(exception, action):
         and exception.status == 404
     ):
         return None
+    elif (
+        action == "replace"
+        and isinstance(exception, ApiException)
+        and exception.status == 409
+    ):
+        raise CommandExecutionError("409 Conflict") from exception
     else:
         raise CommandExecutionError(base_msg) from exception
 

@@ -5,7 +5,9 @@ and `object_updated`.
 Those will then simply delegate all the logic to the `metalk8s_kubernetes`
 execution module, only managing simple dicts in this state module.
 """
+
 import time
+from salt.exceptions import CommandExecutionError
 
 __virtualname__ = "metalk8s_kubernetes"
 
@@ -104,69 +106,88 @@ def object_present(name, manifest=None, **kwargs):
     """
     ret = {"name": name, "changes": {}, "result": True, "comment": ""}
 
-    manifest_content = manifest
-    if not manifest_content:
-        try:
-            manifest_content = __salt__[
-                "metalk8s_kubernetes.read_and_render_yaml_file"
-            ](
-                source=name,
-                template=kwargs.get("template", "jinja"),
-                context=kwargs.get("defaults"),
-                saltenv=__env__,
+    # To handle retries if there is a 409 conflict
+    retries = 5
+    for _ in range(retries):
+        manifest_content = manifest
+        if not manifest_content:
+            try:
+                manifest_content = __salt__[
+                    "metalk8s_kubernetes.read_and_render_yaml_file"
+                ](
+                    source=name,
+                    template=kwargs.get("template", "jinja"),
+                    context=kwargs.get("defaults"),
+                    saltenv=__env__,
+                )
+            except Exception:  # pylint: disable=broad-except
+                # Do not fail if we are not able to load the YAML,
+                # let the module raise if needed
+                manifest_content = None
+
+        # Only pass `name` if we have no manifest
+        name_arg = None if manifest else name
+
+        manifest_metadata = (manifest_content or {}).get("metadata", {})
+
+        # We skip retrieving if this manifest has a "generateName"
+        # in this case it's a unique object so we just want to create a new one
+        if manifest_metadata.get("generateName"):
+            obj = None
+        else:
+            obj = __salt__["metalk8s_kubernetes.get_object"](
+                name=name_arg, manifest=manifest, saltenv=__env__, **kwargs
             )
-        except Exception:  # pylint: disable=broad-except
-            # Do not fail if we are not able to load the YAML,
-            # let the module raise if needed
-            manifest_content = None
 
-    # Only pass `name` if we have no manifest
-    name_arg = None if manifest else name
+        if __opts__["test"]:
+            ret["result"] = None
+            ret[
+                "comment"
+            ] = f"The object is going to be {'created' if obj is None else 'replaced'}"
+            return ret
 
-    manifest_metadata = (manifest_content or {}).get("metadata", {})
+        if obj is None:
+            __salt__["metalk8s_kubernetes.create_object"](
+                name=name_arg, manifest=manifest, saltenv=__env__, **kwargs
+            )
+            ret["changes"] = {"old": "absent", "new": "present"}
+            ret["comment"] = "The object was created"
 
-    # We skip retrieving if this manifest has a "generateName"
-    # in this case it's a unique object so we just want to create a new one
-    if manifest_metadata.get("generateName"):
-        obj = None
-    else:
-        obj = __salt__["metalk8s_kubernetes.get_object"](
-            name=name_arg, manifest=manifest, saltenv=__env__, **kwargs
-        )
+            return ret
 
-    if __opts__["test"]:
-        ret["result"] = None
-        ret[
-            "comment"
-        ] = f"The object is going to be {'created' if obj is None else 'replaced'}"
+        # TODO: Attempt to handle idempotency as much as possible here, we don't
+        #       want to always replace if nothing changed. Currently though, we
+        #       don't know how to achieve this, since some fields may be set by
+        #       api-server or by the user without us being able to distinguish
+        #       them.
+        try:
+            new = __salt__["metalk8s_kubernetes.replace_object"](
+                name=name_arg,
+                manifest=manifest,
+                old_object=obj,
+                saltenv=__env__,
+                **kwargs,
+            )
+        # Handle the conflict error by getting the most up to date object
+        # and retrying
+        except CommandExecutionError as exc:
+            if exc.message == "409 Conflict":
+                # Retry the state
+                continue
+            raise
+
+        diff = __utils__["dictdiffer.recursive_diff"](obj, new)
+        if new.get("kind") == "Secret":
+            ret["changes"] = {"old": "REDACTED", "new": "REDACTED"}
+        else:
+            ret["changes"] = diff.diffs
+        ret["comment"] = "The object was replaced"
+
         return ret
 
-    if obj is None:
-        __salt__["metalk8s_kubernetes.create_object"](
-            name=name_arg, manifest=manifest, saltenv=__env__, **kwargs
-        )
-        ret["changes"] = {"old": "absent", "new": "present"}
-        ret["comment"] = "The object was created"
-
-        return ret
-
-    # TODO: Attempt to handle idempotency as much as possible here, we don't
-    #       want to always replace if nothing changed. Currently though, we
-    #       don't know how to achieve this, since some fields may be set by
-    #       api-server or by the user without us being able to distinguish
-    #       them.
-    new = __salt__["metalk8s_kubernetes.replace_object"](
-        name=name_arg, manifest=manifest, old_object=obj, saltenv=__env__, **kwargs
+    raise CommandExecutionError(
+        f"After {retries} retries, still getting" " 409 Conflict error, aborting."
     )
-    diff = __utils__["dictdiffer.recursive_diff"](obj, new)
-    # Anonymize diff when object has `kind: Secret`
-    if new.get("kind") == "Secret":
-        ret["changes"] = {"old": "REDACTED", "new": "REDACTED"}
-    else:
-        ret["changes"] = diff.diffs
-    ret["comment"] = "The object was replaced"
-
-    return ret
 
 
 def object_updated(name, manifest=None, **kwargs):
