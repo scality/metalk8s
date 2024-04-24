@@ -32,6 +32,7 @@ def _load_solutions(bootstrap_id):
         available_ret = __salt__["saltutil.cmd"](
             tgt=bootstrap_id,
             fun="metalk8s_solutions.list_available",
+            timeout=20,
         )[bootstrap_id]
         if available_ret["retcode"] != 0:
             raise Exception(f"[{available_ret['retcode']}] {available_ret['ret']}")
