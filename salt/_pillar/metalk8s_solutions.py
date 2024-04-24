@@ -38,7 +38,7 @@ def _load_solutions(bootstrap_id):
             raise Exception(f"[{available_ret['retcode']}] {available_ret['ret']}")
 
         result["available"] = available_ret["ret"]
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception as exc:  # pylint: disable=broad-except ops
         errors.append(f"Error when listing available Solutions: {exc}")
 
     try:

@@ -544,7 +544,7 @@ def pkg_version_cmp(left: str, right: str) -> int:
 
 
 @register_basic("random.get_str")
-def random_get_str(length: int = 20) -> str:
+def random_get_str(length: int = 20, punctuation: bool = True) -> str:
     """Generate a random string of specific length."""
     allowed_chars = string.ascii_letters + string.digits + string.punctuation
     return "".join(random.choices(allowed_chars, k=length))
