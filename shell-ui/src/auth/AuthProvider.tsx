@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { PropsWithChildren, useMemo } from 'react';
 import { useCallback, useEffect } from 'react';
 import { useAuthConfig } from './AuthConfigProvider';
 import {
@@ -153,7 +153,21 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
     },
     userManager,
   };
-  return <OIDCAuthProvider {...oidcConfig}>{children}</OIDCAuthProvider>;
+  return (
+    <OIDCAuthProvider {...oidcConfig}>
+      <SyncTokenWithGlobalWindow>{children}</SyncTokenWithGlobalWindow>
+    </OIDCAuthProvider>
+  );
+}
+
+function SyncTokenWithGlobalWindow({ children }: PropsWithChildren<{}>) {
+  const auth = useOauth2Auth();
+  useMemo(() => {
+    if (auth && auth.userData) {
+      window.TOKEN = auth.userData.access_token;
+    }
+  }, [auth]);
+  return <>{children}</>;
 }
 
 export type UserData = {

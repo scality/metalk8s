@@ -17,6 +17,7 @@ declare global {
         null | (BuildtimeWebFinger | RuntimeWebFinger)[]
       >;
     };
+    TOKEN: string;
   }
 }
 
