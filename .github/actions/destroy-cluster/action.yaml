@@ -17,11 +17,11 @@ inputs:
   TERRAFORM_VERSION:
     description: "Terraform version to use"
     required: false
-    default: "1.5.2"
+    default: "1.8.2"
   TERRAFORM_SNAPSHOT_TAG:
     description: "Tag to checkout for the scality/terraform-snapshot repository"
     required: false
-    default: "0.13.0"
+    default: "0.15.0"
 
   # Cloud configuration
   CLOUD:
