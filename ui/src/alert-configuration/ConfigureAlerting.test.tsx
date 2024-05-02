@@ -121,7 +121,7 @@ const server = setupServer(
   ),
 
   rest.post(
-    'http://localhost/api/alertmanager/api/v1/alerts',
+    'http://localhost/api/alertmanager/api/v2/alerts',
     (req, res, ctx) => {
       const result = {
         status: 'success',
