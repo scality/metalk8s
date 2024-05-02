@@ -26,6 +26,10 @@ gpgkey=https://repo.saltproject.io/salt/py3/redhat/\$releasever/\$basearch/minor
  && dnf install -y glibc-all-langpacks langpacks-en \
  && dnf clean all
 
+# patch salt 
+COPY patch.sh /
+RUN /patch.sh
+
 # Set up locale
 ENV LC_ALL=en_US.UTF-8
 
