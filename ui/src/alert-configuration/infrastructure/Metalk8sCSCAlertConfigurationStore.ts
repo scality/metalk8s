@@ -550,7 +550,7 @@ export class Metalk8sCSCAlertConfigurationStore
     ${credsTemplate}.`;
 
     const alertFetchResponse = await fetch(
-      `${this.alertManagerApiBaseUrl}/api/v1/alerts`,
+      `${this.alertManagerApiBaseUrl}/api/v2/alerts`,
       {
         method: 'POST',
         headers: {

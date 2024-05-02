@@ -339,10 +339,7 @@
                                     "
                                   >
                                     <span style="font-weight: normal">
-                                      {{ .Alerts | len }} alert{{ if gt (len
-                                      .Alerts) 1 }}s{{ end }} for {{ range
-                                      .GroupLabels.SortedPairs }} {{ .Name }}={{
-                                      .Value }} {{ end }}</span
+                                      {{ .Alerts | len }} alert{{ if gt (len .Alerts) 1 }}s{{ end }} for {{ range .GroupLabels.SortedPairs }} {{ .Name }}={{ .Value }} {{ end }}</span
                                     >
                                   </td>
                                 </tr>
@@ -527,8 +524,7 @@
                                   "
                                 >
                                   <span style="font-weight: normal"
-                                    >{{ .Alerts.Firing | len }} Alert{{ if gt
-                                    (len .Alerts.Firing) 1 }}s{{ end }}
+                                    >{{ .Alerts.Firing | len }} Alert{{ if gt (len .Alerts.Firing) 1 }}s{{ end }}
                                     currently firing</span
                                   >
                                 </td>
@@ -623,16 +619,11 @@
                               </td>
                               <td>{{ .Labels.alertname }}</td>
                               <td>
-                                {{if .Annotations.description }} {{
-                                .Annotations.description }} {{ else if
-                                .Annotations.message }} {{ .Annotations.message
-                                }} {{ else if .Annotations.summary }} {{
-                                .Annotations.summary }} {{ else }} No
+                                {{if .Annotations.description }} {{ .Annotations.description }} {{ else if .Annotations.message }} {{ .Annotations.message }} {{ else if .Annotations.summary }} {{ .Annotations.summary }} {{ else }} No
                                 description {{ end }}
                               </td>
                               <td>
-                                {{ .StartsAt.Format "2006-01-02 15:04:05
-                                (Z07:00)" }}
+                                {{ .StartsAt.Format "2006-01-02 15:04:05 (Z07:00)" }}
                               </td>
                             </tr>
                             {{ end }}
@@ -857,8 +848,7 @@
                                   "
                                 >
                                   <span style="font-weight: normal"
-                                    >{{ .Alerts.Resolved | len }} Alert{{ if gt
-                                    (len .Alerts.Resolved) 1 }}s{{ end }}
+                                    >{{ .Alerts.Resolved | len }} Alert{{ if gt (len .Alerts.Resolved) 1 }}s{{ end }}
                                     resolved</span
                                   >
                                 </td>
@@ -955,17 +945,11 @@
                               </td>
                               <td>{{ .Labels.alertname }}</td>
                               <td>
-                                {{if .Annotations.description }} {{
-                                .Annotations.description }} {{ else if
-                                .Annotations.message }} {{ .Annotations.message
-                                }} {{ else if .Annotations.summary }} {{
-                                .Annotations.summary }} {{ else }} No
+                                {{if .Annotations.description }} {{ .Annotations.description }} {{ else if .Annotations.message }} {{ .Annotations.message }} {{ else if .Annotations.summary }} {{ .Annotations.summary }} {{ else }} No
                                 description {{ end }}
                               </td>
                               <td>
-                                {{ .StartsAt.Format "2006-01-02 15:04:05
-                                (Z07:00)" }} - {{ .EndsAt.Format "2006-01-02
-                                15:04:05 (Z07:00)" }}
+                                {{ .StartsAt.Format "2006-01-02 15:04:05 (Z07:00)" }} - {{ .EndsAt.Format "2006-01-02 15:04:05 (Z07:00)" }}
                               </td>
                             </tr>
                             {{ end }}
