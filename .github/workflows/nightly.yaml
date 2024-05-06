@@ -224,7 +224,12 @@ jobs:
 
   generate-sbom:
     uses: ./.github/workflows/generate-sbom.yaml
+    needs:
+      - retrieve-info
     secrets: inherit
+    with:
+      ref: ${{ github.ref }}
+      artifacts-url: ${{ needs.retrieve-info.outputs.artifacts-link }}
 
   write-final-failed-status:
     runs-on: ubuntu-22.04
