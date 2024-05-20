@@ -11,18 +11,18 @@ charset-normalizer==2.0.10
 cloudpickle==2.0.0
     # via doit
 docker==4.1.0
-    # via -r requirements.in
+    # via -r buildchain/requirements.in
 doit==0.34.0
-    # via -r requirements.in
+    # via -r buildchain/requirements.in
 idna==3.7
     # via requests
 pyinotify==0.9.6 ; sys_platform == "linux"
     # via
-    #   -c platform-requirements.txt
+    #   -c buildchain/platform-requirements.txt
     #   doit
 pyyaml==5.3.1
-    # via -r requirements.in
-requests==2.27.1
+    # via -r buildchain/requirements.in
+requests==2.32.0
     # via docker
 six==1.16.0
     # via docker
