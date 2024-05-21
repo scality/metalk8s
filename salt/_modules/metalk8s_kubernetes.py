@@ -465,6 +465,7 @@ def check_object_ready(*args, **kwargs):
     # NOTE: Only have a specific case for Deployment for the moment
     # but may evolve in the future if we need to check other specific objects
     if obj["kind"] == "Deployment":
+        log.debug("checking Deployment : %s", obj)
         if (
             obj["status"]["updatedReplicas"] != obj["spec"]["replicas"]
             or obj["status"]["replicas"] != obj["spec"]["replicas"]
