@@ -206,10 +206,10 @@ run "Performing Pre-Upgrade checks" precheck_upgrade
 # This flag can safely be removed in MetalK8s 2.12.
 "$BASE_DIR"/backup.sh --no-replication
 
-
+run "Determine the OS" determine_os
 run "DEV: Installing extra packages" install_packages lvm2 tmux vim make automake gcc gcc-c++ kernel-devel swig openssl-devel
-run "Install extra salt packes" salt_install_extra
-run "Patch salt files" patch_salt
+#run "Install extra salt packes" salt_install_extra
+#run "Patch salt files" patch_salt
 run "Upgrading bootstrap" upgrade_bootstrap
 run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the pre-upgrade" launch_pre_upgrade
