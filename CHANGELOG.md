@@ -108,6 +108,10 @@
   due to another component modifying the wanted object
   (PR[#4317](https://github.com/scality/metalk8s/pull/4317))
 
+- `sosreport` now can be used with the option `--upload-protocol s3`
+  to save reports directly in S3 buckets
+  (PR[#4328](https://github.com/scality/metalk8s/pull/4328))
+
 ### Bug fixes
 
 - Following to Alert Manager Bump the test email feature from the
