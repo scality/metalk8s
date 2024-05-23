@@ -85,7 +85,7 @@ def validate(
     # Verify client cn
     if expected_cn is not None:
         try:
-            current_cn = client_cert_detail["Subject"]["CN"]
+            current_cn = client_cert_detail["subject"]["CN"]
         except KeyError:
             return False
         else:
@@ -94,7 +94,7 @@ def validate(
 
     # Verify client client cert expiration date is > 30days
     try:
-        expiration_date = client_cert_detail["Not After"]
+        expiration_date = client_cert_detail["not_after"]
     except KeyError:
         return False
     else:
