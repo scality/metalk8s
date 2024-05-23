@@ -181,7 +181,6 @@ main() {
         run "Installing Python3 package" install_packages python3
         PYTHON=${PYTHON:-$(command -v python3)}
     fi
-    run "DEV: Installing extra packages" install_packages lvm2 tmux vim make automake gcc gcc-c++ kernel-devel swig openssl-devel
     run "Checking that BootstrapConfiguration is present" bootstrap_file_is_present
     run "Pre-minion system tests" pre_minion_checks
     run "Configure internal repositories" configure_repositories
@@ -189,7 +188,6 @@ main() {
     run "Disabling Salt minion service" disable_salt_minion_service
     run "Stopping Salt minion service" stop_salt_minion_service
     run "Installing mandatory packages" install_packages "${PACKAGES[@]}"
-    run "Install extra salt packes" salt_install_extra
     run "Patch salt files" patch_salt
     run "Checking Salt minion ID" check_minion_id
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
