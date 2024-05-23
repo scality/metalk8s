@@ -407,6 +407,7 @@ PACKAGES: Dict[str, Any] = {
                 version=NONSUFFIXED_VERSION,
                 release=f"{SOSREPORT_RELEASE}.el8",
             ),
+            PackageVersion(name="python3-boto3"),
             PackageVersion(name="python3-m2crypto", override="m2crypto"),
             PackageVersion(name="python3-dnf-plugin-versionlock"),
             PackageVersion(name="python3-psutil", override="python36-psutil"),

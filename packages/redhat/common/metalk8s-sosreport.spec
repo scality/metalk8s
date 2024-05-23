@@ -11,6 +11,7 @@ BuildRequires: /usr/bin/pathfix.py
 Requires: sos >= 4.0
 Requires: python3 >= 3.6
 Requires: python3-requests
+Requires: python3-boto3 >= 1.6
 %else
 Requires: sos >= 3.1, sos < 4.0
 Requires: python >= 2.6, python < 2.8
