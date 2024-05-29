@@ -46,6 +46,25 @@ IMAGES_LIST = [
     },
 ]
 
+CONTAINERS_LIST = [
+    {
+        "id": "f7a1c96e4a915af220361b33f03b53e5a161bb0d4632928e7482a59b6d75cd96",
+        "metadata": {
+            "name": "my-container-pause",
+        },
+        "imageRef": "sha256:da86e6ba6ca197bf6bc5e9d900febd906b133eaa4750e6bed647b0fbe50ed43e",
+        "state": "CONTAINER_RUNNING",
+    },
+    {
+        "id": "16da0bd9ce5c8a4a8b69d6114aa45041691d67b2b597579a45cf27e90d77e729",
+        "metadata": {
+            "name": "my-container-reg",
+        },
+        "imageRef": "sha256:2c4adeb21b4ff8ed3309d0e42b6b4ae39872399f7b37e0856e673b13c4aba13d",
+        "state": "CONTAINER_RUNNING",
+    },
+]
+
 COMPONENT_LIST = [
     {
         "id": "225a77f7ef0df4347ac7ac81a351f3b122b592cbbee62e157061cf28a811ac45",
@@ -105,6 +124,38 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
         with patch.dict(cri.__salt__, {"cmd.run_all": mock_cmd}):
             self.assertEqual(cri.list_images(), result)
             mock_cmd.assert_called_once_with("crictl images -o json")
+
+    @parameterized.expand(
+        [
+            (IMAGES_LIST, json.dumps({"containers": CONTAINERS_LIST}), IMAGES_LIST),
+        ]
+    )
+    def test_list_used_images(self, images, containers, result):
+        """
+        Tests the return of `list_used_images` function
+        """
+        mock_cmd = MagicMock(return_value=containers)
+        with patch.object(
+            cri, "list_images", MagicMock(return_value=images)
+        ), patch.dict(cri.__salt__, {"cmd.run_all": mock_cmd}):
+            self.assertEqual(cri.list_used_images(), result)
+            mock_cmd.assert_called_once_with("crictl ps -o json")
+
+    @parameterized.expand(
+        [
+            (IMAGES_LIST, json.dumps({"containers": CONTAINERS_LIST}), []),
+        ]
+    )
+    def test_list_unused_images(self, images, containers, result):
+        """
+        Tests the return of `list_unused_images` function
+        """
+        mock_cmd = MagicMock(return_value=containers)
+        with patch.object(
+            cri, "list_images", MagicMock(return_value=images)
+        ), patch.dict(cri.__salt__, {"cmd.run_all": mock_cmd}):
+            self.assertEqual(cri.list_unused_images(), result)
+            mock_cmd.assert_called_once_with("crictl ps -o json")
 
     @parameterized.expand(
         [

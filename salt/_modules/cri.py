@@ -38,6 +38,80 @@ def list_images():
     return salt.utils.json.loads(out["stdout"])["images"]
 
 
+def _get_used_image_ids():
+    """
+    List image ids for used containers
+    """
+    containers = __salt__["cmd.run_all"]("crictl ps -o json")
+    if containers["retcode"] != 0:
+        log.error("Failed to list containers")
+        return None
+    containers = salt.utils.json.loads(containers["stdout"])["containers"]
+    return [container["imageRef"] for container in containers]
+
+
+def list_used_images():
+    """
+    List the used images stored in the CRI image cache.
+
+    .. note::
+
+       This uses the :command:`crictl` command, which should be configured
+       correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
+    """
+    log.info("Listing used CRI images")
+
+    images = list_images()
+    if images is None:
+        return None
+
+    used_images_ids = _get_used_image_ids()
+    if used_images_ids is None:
+        return None
+
+    return [image for image in images if image["id"] in used_images_ids]
+
+
+def list_unused_images():
+    """
+    List the unused images stored in the CRI image cache.
+
+    .. note::
+
+       This uses the :command:`crictl` command, which should be configured
+       correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
+    """
+    log.info("Listing unused CRI images")
+
+    images = list_images()
+    if images is None:
+        return None
+
+    used_images_ids = _get_used_image_ids()
+    if used_images_ids is None:
+        return None
+
+    return [image for image in images if image["id"] not in used_images_ids]
+
+
+def prune_images():
+    """
+    Prune unused images in the CRI image cache.
+
+    .. note::
+
+       This uses the :command:`crictl` command, which should be configured
+       correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
+    """
+    log.info("Pruning CRI images")
+    out = __salt__["cmd.run_all"]("crictl rmi --prune")
+    if out["retcode"] != 0:
+        log.error("Failed to prune images")
+        msg = out["stderr"] or out["stdout"]
+        raise CommandExecutionError(f"failed to prune CRI images: {msg}")
+    return True
+
+
 def available(name):
     """
     Check if given image exists in the containerd namespace image list

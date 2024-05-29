@@ -20,6 +20,34 @@ def __virtual__():
     return __virtualname__
 
 
+def images_pruned(name):
+    """
+    Prune unused images in the CRI imahe cache
+    """
+
+    ret = {
+        "name": name,
+        "result": False,
+        "changes": {},
+        "comment": "",
+    }
+
+    unused = __salt__["cri.list_unused_images"]()
+    if unused is None:
+        ret["comment"] = "Unable to list unused images"
+        return ret
+
+    if not unused:
+        ret["comment"] = "No images to remove"
+        ret["result"] = True
+        return ret
+
+    if __salt__["cri.prune_images"]():
+        ret["comment"] = "Images cleaned"
+        ret["result"] = True
+        ret["changes"] = {image["repoTags"][0]: "removed" for image in unused}
+
+
 def image_managed(name, archive_path=None):
     """
     Pull or load an image in the CRI image cache.
