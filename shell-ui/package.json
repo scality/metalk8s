@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@scality/core-ui": "0.121.0",
-    "@scality/module-federation": "github:scality/module-federation.git#1.2.2",
+    "@scality/module-federation": "^1.2.3",
     "canvas": "^2.9.3",
     "downshift": "^8.0.0",
     "oidc-client": "^1.11.3",
