@@ -108,6 +108,7 @@ Create kubelet config file:
           cpu: 200m
           memory: 200Mi
         kubeReserved: {{ salt.metalk8s_os.get_kubereserved() | tojson }}
+        containerLogMaxSize: 50Mi # default is 10Mi
 {%- for key, value in kubelet.config.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}

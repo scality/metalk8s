@@ -17,6 +17,10 @@
   with other systems
   (PR[#4330](https://github.com/scality/metalk8s/pull/4330))
 
+- The max log file size per container is raised to 50Mi. 
+  The default was 10 Mi.
+  (PR[#4336](https://github.com/scality/metalk8s/pull/4336))
+
 ### Bug fixes
 
 - Following to Alert Manager Bump the test email feature from the
