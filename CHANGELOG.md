@@ -13,6 +13,10 @@
   to save reports directly in S3 buckets
   (PR[#4328](https://github.com/scality/metalk8s/pull/4328))
 
+- The `VRID` attribution is now randomized to minimize conflicts
+  with other systems
+  (PR[#4330](https://github.com/scality/metalk8s/pull/4330))
+
 ### Bug fixes
 
 - Following to Alert Manager Bump the test email feature from the
