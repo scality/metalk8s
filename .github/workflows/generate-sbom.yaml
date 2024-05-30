@@ -38,6 +38,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Cleanup some unused ressources
         run: |-
@@ -88,7 +90,7 @@ jobs:
       - name: Retrieve product.txt from artifacts
         run: >
           curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
-          ${{ inputs.artifacts-url }}/product.txt
+          ${{ inputs.artifacts-url || steps.artifacts.outputs.link }}/product.txt
 
       - name: Get full MetalK8s version
         run: |
