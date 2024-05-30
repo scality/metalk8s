@@ -73,7 +73,12 @@ const AlertsTab = ({
         width: '7rem',
       },
       Cell: ({ value }) => {
-        return <FormattedDateTime value={new Date(value)} format="date-time" />;
+        return (
+          <FormattedDateTime
+            value={new Date(value)}
+            format="date-time-second"
+          />
+        );
       },
     },
   ];

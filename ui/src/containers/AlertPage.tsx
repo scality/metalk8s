@@ -286,7 +286,10 @@ export default function AlertPage() {
           marginRight: spacing.sp12,
         },
         Cell: (cell) => (
-          <FormattedDateTime value={new Date(cell.value)} format="date-time" />
+          <FormattedDateTime
+            value={new Date(cell.value)}
+            format="date-time-second"
+          />
         ),
       },
     ],

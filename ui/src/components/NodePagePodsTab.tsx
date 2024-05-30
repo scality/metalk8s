@@ -7,6 +7,7 @@ import { Table } from '@scality/core-ui/dist/next';
 import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './style/CommonLayoutStyle';
 import { TooltipContent } from './TableRow';
+import { fromMilliSectoAge } from '../services/utils';
 import {
   STATUS_RUNNING,
   STATUS_PENDING,
@@ -45,7 +46,7 @@ const StatusText = styled.div`
     } else if (status === STATUS_FAILED || status === STATUS_UNKNOWN) {
       return props.theme.statusCritical;
     }
-  }}};
+  }};
 `;
 const ExternalLink = styled.a`
   color: ${(props) => props.theme.textSecondary};
@@ -111,6 +112,9 @@ const NodePagePodsTab = React.memo((props) => {
         cellStyle: {
           maxWidth: '5rem',
           marginRight: spacing.sp8,
+        },
+        Cell: ({ value }) => {
+          return fromMilliSectoAge(Date.now() - value);
         },
       },
       {

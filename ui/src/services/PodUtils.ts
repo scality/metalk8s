@@ -4,8 +4,7 @@ export const getPodsListData = (nodeName, pods) => {
   const podsList = pods?.filter((pod) => pod.nodeName === nodeName);
   return (
     podsList?.map((pod) => {
-      // @ts-expect-error - FIXME when you are working on it
-      const age = fromMilliSectoAge(new Date() - pod.startTime);
+      const age = new Date(pod.startTime).getTime();
       const numContainer = pod?.containerStatuses?.length ?? 0;
       const numContainerRunning =
         pod?.containerStatuses?.filter((container) => container.ready === true)
