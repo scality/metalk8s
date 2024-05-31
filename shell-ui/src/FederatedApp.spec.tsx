@@ -1,11 +1,11 @@
 import { setupServer } from 'msw/node';
 import { rest } from 'msw';
-import { screen, render, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen, render, within, waitFor } from '@testing-library/react';
 import './navbar/index';
 import { waitForLoadingToFinish } from './navbar/__TESTS__/utils';
 import { jest } from '@jest/globals';
 import App, { queryClient } from './FederatedApp';
+import { debug } from 'jest-preview';
 export const configurationHandlers = [
   rest.get(
     'http://localhost:3000/.well-known/micro-app-configuration',
@@ -240,10 +240,15 @@ describe('FederatedApp', () => {
     //S
     render(<App />);
     //E
-    await waitForLoadingToFinish();
+    await waitFor(() =>
+      expect(screen.getByRole('navigation')).toBeInTheDocument(),
+    );
     //V
     const navbar = screen.getByRole('navigation');
     expect(navbar).toBeInTheDocument();
+    await waitFor(() =>
+      expect(within(navbar).getByText(/Platform/i)).toBeInTheDocument(),
+    );
     expect(within(navbar).getByText(/Platform/i)).toBeInTheDocument();
     expect(within(navbar).getByText(/Alerts/i)).toBeInTheDocument();
   });

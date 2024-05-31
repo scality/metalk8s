@@ -134,7 +134,10 @@ function prefetch(url: string) {
     const script = document.createElement('script');
     script.src = url;
     script.async = true;
-    script.onload = resolve;
+    script.onload = (evt) => {
+      script.setAttribute('data-loaded', 'true');
+      resolve(evt);
+    };
     script.onerror = reject;
     document.head?.appendChild(script);
   });
