@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"math/rand"
 	"net/url"
 	"strings"
 
@@ -233,14 +234,23 @@ func (r *VirtualIPPoolReconciler) cacheUsedVRIDs(ctx context.Context, pool metal
 
 // Return a not used Virtual Router ID and mark it as used
 func (r *VirtualIPPoolReconciler) getFreeVRID() int {
+	notUsed := make([]int, 0, 255)
+
 	for i := 1; i <= 255; i++ {
 		if !r.usedVRID[i] {
-			r.usedVRID[i] = true
-			return i
+			notUsed = append(notUsed, i)
 		}
 	}
-	// There is no more Virtual Router ID free
-	return -1
+
+	if len(notUsed) == 0 {
+		// There is no more Virtual Router ID free
+		return -1
+	}
+
+	new_vrid := notUsed[rand.Intn(len(notUsed))]
+	r.usedVRID[new_vrid] = true
+
+	return new_vrid
 }
 
 // Return the list of Nodes where a pool should be deployed and
