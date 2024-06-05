@@ -109,6 +109,16 @@ Bring bootstrap minion to highstate:
     - salt: Sync bootstrap minion
     - salt: Deploy CA role on bootstrap minion
 
+Deploy kubeconfig to master:
+  salt.state:
+  - tgt: {{ pillar.bootstrap_id }}
+  - sls :
+    - metalk8s.salt.master.kubeconfig
+  - saltenv: metalk8s-{{ version }}
+  - pillar: {{ pillar_data | tojson }}
+  - require:
+    - salt: Bring bootstrap minion to highstate
+
 Wait for API server to be available:
   http.wait_for_successful_query:
   - name: https://127.0.0.1:7443/healthz

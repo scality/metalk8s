@@ -35,12 +35,9 @@ def _get_endpoint_up(ca_cert, cert_key, cert_cert, nodes=None):
     """Pick an answering etcd endpoint among all etcd servers."""
     etcd_hosts = __salt__["metalk8s.minions_by_role"]("etcd", nodes=nodes)
 
-    log.debug(f"ARTDBG: got etcd hosts: {etcd_hosts}")
     # Get host ip from etcd_hosts
 
-    log.debug("ARTDBG: fetching getting cp_ips from mine")
     cp_ips = __salt__["saltutil.runner"]("mine.get", tgt="*", fun="control_plane_ip")
-    log.debug(f"ARTDBG: got cp_ips from mine: {cp_ips}")
     endpoints = [cp_ips[host] for host in etcd_hosts if host in cp_ips]
 
     for endpoint in endpoints:
@@ -109,7 +106,6 @@ def urls_exist_in_cluster(
             ca_cert=ca_cert, cert_key=cert_key, cert_cert=cert_cert
         )
 
-    log.debug("ARTDBG: starting etcd client")
     with etcd3.client(
         host=endpoint,
         ca_cert=ca_cert,
@@ -118,7 +114,6 @@ def urls_exist_in_cluster(
         timeout=TIMEOUT,
     ) as etcd:
 
-        log.debug("ARTDBG: started etcd3 client")
         all_urls = []
         for member in etcd.members:
             all_urls.extend(member.peer_urls)
@@ -192,20 +187,15 @@ def get_etcd_member_list(
     cert_cert="/etc/kubernetes/pki/etcd/salt-master-etcd-client.crt",
 ):
     """Get the list of etcd members using the python etcd3 client."""
-    log.debug("ARTDBG: fetching etcd member list")
-    log.debug("ARTDBG: getting etcd endpoint")
     if not endpoint:
         # If we have no endpoint get it from mine
         try:
-            log.debug(f"ARTDBG: nodes = {nodes}")
             endpoint = _get_endpoint_up(
                 nodes=nodes, ca_cert=ca_cert, cert_key=cert_key, cert_cert=cert_cert
             )
         except Exception:  # pylint: disable=broad-except
             return []
-    log.debug(f"ARTDBG: found etcd endpoint {endpoint}")
 
-    log.debug("ARTDBG: starting etcd client")
     with etcd3.client(
         host=endpoint,
         ca_cert=ca_cert,
@@ -213,7 +203,6 @@ def get_etcd_member_list(
         cert_cert=cert_cert,
         timeout=TIMEOUT,
     ) as etcd:
-        log.debug("ARTDBG: started etcd3 client")
         return [
             {
                 "id": member.id,

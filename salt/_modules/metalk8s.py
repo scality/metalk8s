@@ -97,20 +97,15 @@ def minions_by_role(role, nodes=None):
         nodes (dict(str, dict)): Nodes to inspect
             Defaults to `pillar.metalk8s.nodes`.
     """
-    if role == "etcd":
-        log.debug(f"ARTDBG: fetching minions with etcd role from {nodes}")
     if nodes is None:
-        log.debug("ARTDBG: nodes is empty, fetching from pillar")
         try:
             nodes = __pillar__["metalk8s"]["nodes"]
         except Exception as exc:
             raise CommandExecutionError(
                 "Can't retrieve 'metalk8s:nodes' pillar"
             ) from exc
-    log.debug("ARTDBG: checking nodes pillar for errors")
     pillar_errors = nodes.pop("_errors", None)
     if pillar_errors:
-        log.debug(f"ARTDBG: found errors in nodes pillar: {pillar_errors}")
         raise CommandExecutionError(
             "Can't retrieve minions by role because of errors in pillar "
             f"'metalk8s:nodes': {', '.join(pillar_errors)}"
