@@ -222,7 +222,6 @@ const SymmetricalQuantileChart = ({
               quantile5Data,
               'below',
               false,
-              // @ts-expect-error - FIXME when you are working on it
             )}${renderTooltipSeperationLine(theme.border)}
             `;
           }
