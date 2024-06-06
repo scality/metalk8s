@@ -112,7 +112,10 @@ const VolumePageContent = (props) => {
   if (!volumeListData.length && isFirstLoadingDone) {
     return (
       <EmptyState
-        listedResource={'Volume'}
+        listedResource={{
+          singular: 'Volume',
+          plural: 'Volumes',
+        }}
         link="/volumes/createVolume"
         icon="Node-pdf"
         history={history}
