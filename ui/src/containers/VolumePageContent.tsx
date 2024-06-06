@@ -118,7 +118,6 @@ const VolumePageContent = (props) => {
         }}
         link="/volumes/createVolume"
         icon="Node-pdf"
-        history={history}
       />
     );
   }

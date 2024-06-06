@@ -45,7 +45,6 @@ const NodePageContent = (props) => {
         }}
         link="/nodes/create"
         icon="Node-backend"
-        history={history}
       />
     );
   }
