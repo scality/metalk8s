@@ -50,24 +50,20 @@ It should be called at saga level before storing the alerts to `redux-store`
 or where we resolve the promise with `react-query` 
 */
 export const removeWarningAlerts = (alerts: Alert[]): Alert[] => {
-  const len = alerts.length;
-  const removeIndex = [];
-
-  for (let i = 0; i < len - 1; i++) {
-    for (let j = i + 1; j < len; j++) {
-      if (isSameAlertWithDiffSeverity(alerts[i].labels, alerts[j].labels)) {
-        if (alerts[i].labels.severity === STATUS_WARNING) {
-          removeIndex.push(i);
-        } else if (alerts[j].labels.severity === STATUS_WARNING) {
-          removeIndex.push(j);
-        }
-      }
+  const criticalAlerts = alerts.filter((alert) => {
+    if (alert.severity === STATUS_CRITICAL) {
+      return true;
     }
-  }
-
-  let removedWarningAlerts = [...alerts];
-  removeIndex.forEach((index) => removedWarningAlerts.splice(index, 1));
-  return removedWarningAlerts;
+    // check if there is a critical alert with the same labels
+    const isSameAlert = alerts.find((a) => {
+      return (
+        a.severity === STATUS_CRITICAL &&
+        isSameAlertWithDiffSeverity(a.labels, alert.labels)
+      );
+    });
+    return !isSameAlert;
+  });
+  return criticalAlerts;
 };
 // Sort the alerts base on the `severity`
 export const sortAlerts = (alerts: Alert[]): Alert[] => {
