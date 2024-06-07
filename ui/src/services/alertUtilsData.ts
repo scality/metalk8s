@@ -23,6 +23,7 @@ export const alerts = [
       service: 'prometheus-operator-prometheus-node-exporter',
       severity: 'critical',
     },
+    severity: 'critical',
     originalAlert: {},
   },
   {
@@ -48,6 +49,7 @@ export const alerts = [
       service: 'prometheus-operator-prometheus-node-exporter',
       severity: 'warning',
     },
+    severity: 'warning',
     originalAlert: {},
   },
   {
@@ -73,6 +75,7 @@ export const alerts = [
       service: 'prometheus-operator-prometheus-node-exporter',
       severity: 'warning',
     },
+    severity: 'warning',
     originalAlert: {},
   },
 ];

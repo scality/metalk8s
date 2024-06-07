@@ -26,6 +26,9 @@
 - Following to Alert Manager Bump the test email feature from the
   UI wasn't working correctly.
   (PR[#4322](https://github.com/scality/metalk8s/pull/4322))
+- Alert filtering in the UI when both a critical and warning alert
+  wasn't working properly.
+  (PR[#4334](https://github.com/scality/metalk8s/pull/4334)) 
 
 ## Release 127.0.1
 
