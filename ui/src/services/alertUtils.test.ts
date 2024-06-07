@@ -14,6 +14,429 @@ it('should return the alert list fitered the warning alert', () => {
   expect(result.some(({ id }) => id === '3')).toBe(true);
   expect(result.some(({ id }) => id === '2')).toBe(false);
 });
+it('should filter out the expected alerts', () => {
+  const alerts = [
+    {
+      id: '24fa98722d9d63df',
+      summary: 'Utilization metrics service not available',
+      description:
+        'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+      startsAt: '2024-06-04T13:29:51.402Z',
+      endsAt: '2024-06-04T15:11:21.402Z',
+      severity: 'warning',
+      documentationUrl: '',
+      labels: {
+        alertname:
+          'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+        prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+        severity: 'warning',
+        description:
+          'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+        namespace: 'zenko',
+        summary: 'Utilization metrics service not available',
+        zenko_component: 'internal-cloudserver',
+        zenko_instance: 'data',
+        selectors: [],
+      },
+      originalAlert: {
+        annotations: {
+          description:
+            'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+          namespace: 'zenko',
+          summary: 'Utilization metrics service not available',
+          zenko_component: 'internal-cloudserver',
+          zenko_instance: 'data',
+        },
+        endsAt: '2024-06-04T15:11:21.402Z',
+        fingerprint: '24fa98722d9d63df',
+        receivers: [
+          {
+            name: 'metalk8s-alert-logger',
+          },
+        ],
+        startsAt: '2024-06-04T13:29:51.402Z',
+        status: {
+          inhibitedBy: ['308933b2082d0054'],
+          silencedBy: [],
+          state: 'suppressed',
+        },
+        updatedAt: '2024-06-04T15:07:21.409Z',
+        generatorURL:
+          'http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=avg%28avg_over_time%28s3_cloudserver_quota_utilization_service_available%7Bnamespace%3D%22zenko%22%2Cservice%3D%22data-internal-s3api-metrics%22%7D%5B1m%5D%29%29+%3C+0.5&g0.tab=1',
+        labels: {
+          alertname:
+            'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+          prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+          severity: 'warning',
+        },
+      },
+      status: 'suppressed',
+    },
+    {
+      id: '308933b2082d0054',
+      summary: 'Utilization metrics service not available',
+      description:
+        'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+      startsAt: '2024-06-04T13:38:51.402Z',
+      endsAt: '2024-06-04T15:11:21.402Z',
+      severity: 'critical',
+      documentationUrl: '',
+      labels: {
+        alertname:
+          'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+        prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+        severity: 'critical',
+        description:
+          'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+        namespace: 'zenko',
+        summary: 'Utilization metrics service not available',
+        zenko_component: 'internal-cloudserver',
+        zenko_instance: 'data',
+        selectors: [],
+      },
+      originalAlert: {
+        annotations: {
+          description:
+            'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+          namespace: 'zenko',
+          summary: 'Utilization metrics service not available',
+          zenko_component: 'internal-cloudserver',
+          zenko_instance: 'data',
+        },
+        endsAt: '2024-06-04T15:11:21.402Z',
+        fingerprint: '308933b2082d0054',
+        receivers: [
+          {
+            name: 'metalk8s-alert-logger',
+          },
+        ],
+        startsAt: '2024-06-04T13:38:51.402Z',
+        status: {
+          inhibitedBy: [],
+          silencedBy: [],
+          state: 'active',
+        },
+        updatedAt: '2024-06-04T15:07:21.410Z',
+        generatorURL:
+          'http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=avg%28avg_over_time%28s3_cloudserver_quota_utilization_service_available%7Bnamespace%3D%22zenko%22%2Cservice%3D%22data-internal-s3api-metrics%22%7D%5B1m%5D%29%29+%3C+0.5&g0.tab=1',
+        labels: {
+          alertname:
+            'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+          prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+          severity: 'critical',
+        },
+      },
+      status: 'active',
+    },
+    {
+      id: '33ea695920909903',
+      summary: 'This version support will end on 2024-06-07',
+      description: 'This version support will end on 2024-06-07',
+      startsAt: '2024-06-04T13:13:25.673Z',
+      endsAt: '2024-06-04T15:11:25.673Z',
+      severity: 'warning',
+      documentationUrl: '',
+      labels: {
+        alertname: 'VersionSoonOutdated',
+        prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+        severity: 'warning',
+        description: 'This version support will end on 2024-06-07',
+        summary: 'This version support will end on 2024-06-07',
+        selectors: [],
+      },
+      originalAlert: {
+        annotations: {
+          description: 'This version support will end on 2024-06-07',
+          summary: 'This version support will end on 2024-06-07',
+        },
+        endsAt: '2024-06-04T15:11:25.673Z',
+        fingerprint: '33ea695920909903',
+        receivers: [
+          {
+            name: 'metalk8s-alert-logger',
+          },
+        ],
+        startsAt: '2024-06-04T13:13:25.673Z',
+        status: {
+          inhibitedBy: [],
+          silencedBy: [],
+          state: 'active',
+        },
+        updatedAt: '2024-06-04T15:07:25.676Z',
+        generatorURL:
+          'http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%28time%28%29%29+%3E+1.7099424e%2B09+and+vector%28time%28%29%29+%3C%3D+1.7177184e%2B09&g0.tab=1',
+        labels: {
+          alertname: 'VersionSoonOutdated',
+          prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+          severity: 'warning',
+        },
+      },
+      status: 'active',
+    },
+    {
+      id: '4c436f49b2d65b4e',
+      summary: 'Utilization metrics service not available',
+      description:
+        'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+      startsAt: '2024-06-04T13:38:28.719Z',
+      endsAt: '2024-06-04T15:12:28.719Z',
+      severity: 'critical',
+      documentationUrl: '',
+      labels: {
+        alertname:
+          'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+        prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+        severity: 'critical',
+        description:
+          'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+        namespace: 'zenko',
+        summary: 'Utilization metrics service not available',
+        zenko_component: 'connector-cloudserver',
+        zenko_instance: 'data',
+        selectors: [],
+      },
+      originalAlert: {
+        annotations: {
+          description:
+            'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+          namespace: 'zenko',
+          summary: 'Utilization metrics service not available',
+          zenko_component: 'connector-cloudserver',
+          zenko_instance: 'data',
+        },
+        endsAt: '2024-06-04T15:12:28.719Z',
+        fingerprint: '4c436f49b2d65b4e',
+        receivers: [
+          {
+            name: 'metalk8s-alert-logger',
+          },
+        ],
+        startsAt: '2024-06-04T13:38:28.719Z',
+        status: {
+          inhibitedBy: [],
+          silencedBy: [],
+          state: 'active',
+        },
+        updatedAt: '2024-06-04T15:08:28.734Z',
+        generatorURL:
+          'http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=avg%28avg_over_time%28s3_cloudserver_quota_utilization_service_available%7Bnamespace%3D%22zenko%22%2Cservice%3D%22data-connector-s3api-metrics%22%7D%5B1m%5D%29%29+%3C+0.5&g0.tab=1',
+        labels: {
+          alertname:
+            'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+          prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+          severity: 'critical',
+        },
+      },
+      status: 'active',
+    },
+    {
+      id: '7b62ddc7ed797e35',
+      summary: 'Utilization metrics service not available',
+      description:
+        'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+      startsAt: '2024-06-04T13:29:28.719Z',
+      endsAt: '2024-06-04T15:12:28.719Z',
+      severity: 'warning',
+      documentationUrl: '',
+      labels: {
+        alertname:
+          'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+        prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+        severity: 'warning',
+        description:
+          'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+        namespace: 'zenko',
+        summary: 'Utilization metrics service not available',
+        zenko_component: 'connector-cloudserver',
+        zenko_instance: 'data',
+        selectors: [],
+      },
+      originalAlert: {
+        annotations: {
+          description:
+            'The storage metrics required for Account or S3 Bucket Quota checks are not available, the quotas are disabled.',
+          namespace: 'zenko',
+          summary: 'Utilization metrics service not available',
+          zenko_component: 'connector-cloudserver',
+          zenko_instance: 'data',
+        },
+        endsAt: '2024-06-04T15:12:28.719Z',
+        fingerprint: '7b62ddc7ed797e35',
+        receivers: [
+          {
+            name: 'metalk8s-alert-logger',
+          },
+        ],
+        startsAt: '2024-06-04T13:29:28.719Z',
+        status: {
+          inhibitedBy: ['4c436f49b2d65b4e'],
+          silencedBy: [],
+          state: 'suppressed',
+        },
+        updatedAt: '2024-06-04T15:08:28.732Z',
+        generatorURL:
+          'http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=avg%28avg_over_time%28s3_cloudserver_quota_utilization_service_available%7Bnamespace%3D%22zenko%22%2Cservice%3D%22data-connector-s3api-metrics%22%7D%5B1m%5D%29%29+%3C+0.5&g0.tab=1',
+        labels: {
+          alertname:
+            'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+          prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+          severity: 'warning',
+        },
+      },
+      status: 'suppressed',
+    },
+    {
+      id: 'f1eccc5cefca8be9',
+      summary: '',
+      description:
+        'Your product instance is missing a valid license key.\nYou can request one from Scality by sending an email to\nsales_operations@scality.com providing your company name\nand instance ID.\n',
+      startsAt: '2024-06-04T13:12:15.081Z',
+      endsAt: '2024-06-04T15:12:09.081Z',
+      severity: 'warning',
+      documentationUrl: '',
+      labels: {
+        alertname: 'MissingLicense',
+        container: 'license-metrics-exporter',
+        endpoint: 'http',
+        instance: '10.233.33.34:8080',
+        job: 'license-metrics-exporter',
+        namespace: 'license',
+        pod: 'license-metrics-exporter-ff6598b5-5zzrz',
+        prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+        service: 'license-metrics-exporter',
+        severity: 'warning',
+        description:
+          'Your product instance is missing a valid license key.\nYou can request one from Scality by sending an email to\nsales_operations@scality.com providing your company name\nand instance ID.\n',
+        selectors: [],
+      },
+      originalAlert: {
+        annotations: {
+          description:
+            'Your product instance is missing a valid license key.\nYou can request one from Scality by sending an email to\nsales_operations@scality.com providing your company name\nand instance ID.\n',
+        },
+        endsAt: '2024-06-04T15:12:09.081Z',
+        fingerprint: 'f1eccc5cefca8be9',
+        receivers: [
+          {
+            name: 'metalk8s-alert-logger',
+          },
+        ],
+        startsAt: '2024-06-04T13:12:15.081Z',
+        status: {
+          inhibitedBy: [],
+          silencedBy: [],
+          state: 'active',
+        },
+        updatedAt: '2024-06-04T15:08:09.084Z',
+        generatorURL:
+          'http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=license_type+%3D%3D+1&g0.tab=1',
+        labels: {
+          alertname: 'MissingLicense',
+          container: 'license-metrics-exporter',
+          endpoint: 'http',
+          instance: '10.233.33.34:8080',
+          job: 'license-metrics-exporter',
+          namespace: 'license',
+          pod: 'license-metrics-exporter-ff6598b5-5zzrz',
+          prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+          service: 'license-metrics-exporter',
+          severity: 'warning',
+        },
+      },
+      status: 'active',
+    },
+    {
+      id: 'fc30b79dbdb0a043',
+      summary:
+        'An alert that should always be firing to certify that Alertmanager is working properly.',
+      description:
+        'This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n"DeadMansSnitch" integration in PagerDuty.',
+      startsAt: '2024-06-04T12:55:51.687Z',
+      endsAt: '2024-06-04T15:11:51.687Z',
+      severity: 'none',
+      documentationUrl:
+        'https://runbooks.prometheus-operator.dev/runbooks/general/watchdog',
+      labels: {
+        alertname: 'Watchdog',
+        prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+        severity: 'none',
+        description:
+          'This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n"DeadMansSnitch" integration in PagerDuty.',
+        runbook_url:
+          'https://runbooks.prometheus-operator.dev/runbooks/general/watchdog',
+        summary:
+          'An alert that should always be firing to certify that Alertmanager is working properly.',
+        selectors: [],
+      },
+      originalAlert: {
+        annotations: {
+          description:
+            'This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n"DeadMansSnitch" integration in PagerDuty.',
+          runbook_url:
+            'https://runbooks.prometheus-operator.dev/runbooks/general/watchdog',
+          summary:
+            'An alert that should always be firing to certify that Alertmanager is working properly.',
+        },
+        endsAt: '2024-06-04T15:11:51.687Z',
+        fingerprint: 'fc30b79dbdb0a043',
+        receivers: [
+          {
+            name: 'metalk8s-alert-logger',
+          },
+          {
+            name: 'null',
+          },
+        ],
+        startsAt: '2024-06-04T12:55:51.687Z',
+        status: {
+          inhibitedBy: [],
+          silencedBy: [],
+          state: 'active',
+        },
+        updatedAt: '2024-06-04T15:07:51.693Z',
+        generatorURL:
+          'http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29&g0.tab=1',
+        labels: {
+          alertname: 'Watchdog',
+          prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
+          severity: 'none',
+        },
+      },
+      status: 'active',
+    },
+  ];
+  //@ts-expect-error
+  const result = removeWarningAlerts(alerts);
+  expect(
+    result.filter(
+      (alert) =>
+        alert.labels.alertname ===
+        'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+    ),
+  ).toHaveLength(1);
+  expect(
+    result.filter(
+      (alert) =>
+        alert.labels.alertname ===
+        'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+    )[0].severity,
+  ).toBe('critical');
+
+  expect(
+    result.filter(
+      (alert) =>
+        alert.labels.alertname ===
+        'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+    ),
+  ).toHaveLength(1);
+  expect(
+    result.filter(
+      (alert) =>
+        alert.labels.alertname ===
+        'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+    )[0].severity,
+  ).toBe('critical');
+});
 it('should return false when the labels has different value', () => {
   const labels = {
     node: 'node1',
