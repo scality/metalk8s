@@ -206,7 +206,6 @@ export default function ConfigureAlerting() {
   return (
     <AppContainer hasPadding>
       <AppContainer.MainContent background="backgroundLevel1">
-        {/* @ts-expect-error - FIXME when you are working on it */}
         <Box margin="0 auto" background={theme.backgroundLevel4} flex="1">
           <Form
             onSubmit={handleSubmit((data) => {

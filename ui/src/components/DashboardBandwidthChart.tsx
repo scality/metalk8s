@@ -94,7 +94,6 @@ const DashboardBandwidthChartWithoutQuantile = ({
           if (serie.key === `${lastNodeName}-in`) {
             return `${defaultRenderTooltipSerie(
               serie,
-              // @ts-expect-error - FIXME when you are working on it
             )}${renderTooltipSeperationLine(theme.border)}`;
           } else {
             return defaultRenderTooltipSerie(serie);

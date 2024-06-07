@@ -1,34 +1,34 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { Fragment, useState, useEffect } from 'react';
-import { useHistory, useLocation, useRouteMatch } from 'react-router';
-import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
 import {
   AppContainer,
   EmptyState,
   TextBadge,
   TwoPanelLayout,
 } from '@scality/core-ui';
-import VolumeListTable from '../components/VolumeListTable';
-import VolumeOverviewTab from '../components/VolumeOverviewTab';
+import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
+import { Tabs } from '@scality/core-ui/dist/next';
+import { useEffect, useState } from 'react';
+import { useIntl } from 'react-intl';
+import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import AlertsTab from '../components/AlertsTab';
-import VolumeMetricsTab from '../components/VolumeMetricsTab';
 import VolumeDetailsTab from '../components/VolumeDetailsTab';
-import {
-  SPARSE_LOOP_DEVICE,
-  RAW_BLOCK_DEVICE,
-  LVM_LOGICAL_VOLUME,
-} from '../constants';
-import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
-import { useAlerts } from './AlertProvider';
+import VolumeListTable from '../components/VolumeListTable';
+import VolumeMetricsTab from '../components/VolumeMetricsTab';
+import VolumeOverviewTab from '../components/VolumeOverviewTab';
 import {
   LeftSideInstanceList,
-  NoInstanceSelectedContainer,
   NoInstanceSelected,
+  NoInstanceSelectedContainer,
   RightSidePanel,
 } from '../components/style/CommonLayoutStyle';
-import { useIntl } from 'react-intl';
+import {
+  LVM_LOGICAL_VOLUME,
+  RAW_BLOCK_DEVICE,
+  SPARSE_LOOP_DEVICE,
+} from '../constants';
+import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
 import { usePrevious } from '../services/utils';
-import { Tabs } from '@scality/core-ui/dist/next';
+import { useAlerts } from './AlertProvider';
 
 // <VolumePageContent> component extracts volume name from URL and holds the volume-specific data.
 // The three components in RightSidePanel (<VolumeOverviewTab> / <AlertsTab> / <MetricGraphCard>) are dumb components,
@@ -100,7 +100,6 @@ const VolumePageContent = (props) => {
   const instanceIp = nodes.find(
     (node) => node.name === volume?.spec?.nodeName,
   )?.internalIP;
-
   /*
    ** Used to determine if a first loading has happened
    ** This allow us to check if we need to display EmptyState or not
@@ -113,10 +112,12 @@ const VolumePageContent = (props) => {
   if (!volumeListData.length && isFirstLoadingDone) {
     return (
       <EmptyState
-        label={'Volume'}
+        listedResource={{
+          singular: 'Volume',
+          plural: 'Volumes',
+        }}
         link="/volumes/createVolume"
         icon="Node-pdf"
-        history={history}
       />
     );
   }
@@ -206,8 +207,7 @@ const VolumePageContent = (props) => {
                       ? 'statusCritical'
                       : 'statusWarning'
                   }
-                  // @ts-expect-error - FIXME when you are working on it
-                  text={alertlist.length}
+                  text={`${alertlist.length}`}
                 />
               ) : null
             }

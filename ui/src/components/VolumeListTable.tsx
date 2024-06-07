@@ -1,14 +1,13 @@
+import { Icon, ProgressBar, Tooltip, Wrap, spacing } from '@scality/core-ui';
+import { Box, Button, Table } from '@scality/core-ui/dist/next';
 import React from 'react';
+import { useIntl } from 'react-intl';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from 'styled-components';
-import { Icon, ProgressBar, Tooltip } from '@scality/core-ui';
-import { Box, Button, Table } from '@scality/core-ui/dist/next';
-import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
-import { useIntl } from 'react-intl';
 import CircleStatus from './CircleStatus';
-import { UnknownIcon, TooltipContent } from './TableRow';
 import { Latency } from './Latency';
+import { TooltipContent, UnknownIcon } from './TableRow';
 
 const VolumeListTable = (props) => {
   const { volumeListData, volumeName } = props;
@@ -23,7 +22,7 @@ const VolumeListTable = (props) => {
         accessor: 'health',
         cellStyle: {
           textAlign: 'center',
-          width: '5rem',
+          width: '3rem',
         },
         Cell: (cellProps) => {
           return <CircleStatus name="Circle-health" status={cellProps.value} />;
@@ -34,8 +33,9 @@ const VolumeListTable = (props) => {
         accessor: 'name',
         cellStyle: {
           textAlign: 'left',
-          flex: 1,
-          minWidth: '4rem',
+          minWidth: '5rem',
+          width: 'unset',
+          flex: '1 2',
         },
       },
       {
@@ -43,9 +43,9 @@ const VolumeListTable = (props) => {
         accessor: 'node',
         cellStyle: {
           textAlign: 'left',
-          flex: 1,
-          paddingLeft: '0.857rem',
-          minWidth: '3.214rem',
+          minWidth: '4rem',
+          flex: '0.8 2 3rem',
+          width: 'unset',
         },
       },
       {
@@ -53,8 +53,7 @@ const VolumeListTable = (props) => {
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
-          width: '5rem',
-          paddingRight: '0.714rem',
+          width: '4rem',
         },
         Cell: ({ value }) => {
           return (
@@ -62,9 +61,7 @@ const VolumeListTable = (props) => {
               size="large"
               percentage={value}
               buildinLabel={`${value}%`}
-              // @ts-expect-error - FIXME when you are working on it
               color={theme.infoSecondary}
-              // @ts-expect-error - FIXME when you are working on it
               backgroundColor={theme.buttonSecondary}
             />
           );
@@ -75,8 +72,7 @@ const VolumeListTable = (props) => {
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'right',
-          width: '5.714rem',
-          paddingRight: '1rem',
+          width: '5rem',
         },
       },
       {
@@ -84,8 +80,7 @@ const VolumeListTable = (props) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          width: '3.929rem',
-          paddingRight: '0.714rem',
+          width: '3rem',
         },
         Cell: (cellProps) => {
           const volume = volumeListData?.find(
@@ -148,8 +143,7 @@ const VolumeListTable = (props) => {
         accessor: 'latency',
         cellStyle: {
           textAlign: 'right',
-          width: '4.643rem',
-          paddingRight: '1rem',
+          width: '4rem',
         },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? (
@@ -186,60 +180,40 @@ const VolumeListTable = (props) => {
   };
 
   return (
-    <Box height={'100%'}>
-      <Table
-        columns={columns}
-        data={volumeListData}
-        defaultSortingKey={'health'}
-        // @ts-expect-error - FIXME when you are working on it
-        getRowId={(row) => row.name}
-      >
-        <Box
-          display="flex"
-          justifyContent={'space-between'}
-          pt={'16px'}
-          px={'16px'}
-        >
-          <Table.SearchWithQueryParams
-            displayedName={{
-              singular: 'volume',
-              plural: 'volumes',
-            }}
-          />
-          <Button
-            variant={'primary'}
-            label={intl.formatMessage({
-              id: 'create_new_volume',
-            })}
-            icon={<Icon name="Create-add" />}
-            onClick={() => {
-              history.push('/volumes/createVolume');
-            }}
-            data-cy="create_volume_button"
-          />
-        </Box>
-        <Table.SingleSelectableContent
-          rowHeight="h40"
-          separationLineVariant="backgroundLevel1"
-          backgroundVariant="backgroundLevel2"
-          selectedId={volumeName}
-          onRowSelected={onClickRow}
-          children={(Rows) => {
-            if (volumeListData.length === 0) {
-              return (
-                <NoResult>
-                  {intl.formatMessage({
-                    id: 'no_volume_provisioned',
-                  })}
-                </NoResult>
-              );
-            }
-
-            return <>{Rows}</>;
+    <Table
+      columns={columns}
+      data={volumeListData}
+      defaultSortingKey={'health'}
+      // @ts-expect-error - FIXME when you are working on it
+      getRowId={(row) => row.name}
+      entityName={{
+        en: {
+          singular: 'volume',
+          plural: 'volumes',
+        },
+      }}
+    >
+      <Wrap padding={spacing.r16}>
+        <Table.SearchWithQueryParams />
+        <Button
+          variant={'primary'}
+          label={intl.formatMessage({
+            id: 'create_new_volume',
+          })}
+          icon={<Icon name="Create-add" />}
+          onClick={() => {
+            history.push('/volumes/createVolume');
           }}
+          data-cy="create_volume_button"
         />
-      </Table>
-    </Box>
+      </Wrap>
+      <Table.SingleSelectableContent
+        rowHeight="h40"
+        separationLineVariant="backgroundLevel1"
+        selectedId={volumeName}
+        onRowSelected={onClickRow}
+      />
+    </Table>
   );
 };
 

@@ -16,6 +16,7 @@ const ActiveAlertsFilter = () => {
 
   return (
     <HealthSelector
+      size="1/2"
       id="alert_filter"
       onChange={(newValue) => {
         query.set('severity', newValue);

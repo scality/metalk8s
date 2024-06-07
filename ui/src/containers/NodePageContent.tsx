@@ -39,10 +39,12 @@ const NodePageContent = (props) => {
   if (!nodeTableData.length && isFirstLoadingDone) {
     return (
       <EmptyState
-        label={'Node'}
+        listedResource={{
+          singular: 'node',
+          plural: 'nodes',
+        }}
         link="/nodes/create"
         icon="Node-backend"
-        history={history}
       />
     );
   }

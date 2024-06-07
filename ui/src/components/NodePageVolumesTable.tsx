@@ -1,34 +1,30 @@
 import React from 'react';
 import { useHistory } from 'react-router';
 import styled, { useTheme } from 'styled-components';
-import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import isEqual from 'lodash.isequal';
 import CircleStatus from './CircleStatus';
-import { ProgressBar, Tooltip, ConstrainedText, Link } from '@scality/core-ui';
-import { Table } from '@scality/core-ui/dist/next';
+import {
+  ProgressBar,
+  Tooltip,
+  ConstrainedText,
+  Link,
+  spacing,
+  Icon,
+  Wrap,
+} from '@scality/core-ui';
+import { Box, Table, Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import { formatSizeForDisplay } from '../services/utils';
 import { UnknownIcon, TooltipContent } from './TableRow';
-import { Button } from '@scality/core-ui/dist/next';
 import {
   VOLUME_CONDITION_LINK,
   VOLUME_CONDITION_UNLINK,
   VOLUME_CONDITION_EXCLAMATION,
 } from '../constants';
-import { Icon } from '@scality/core-ui';
 import { Latency } from './Latency';
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.textPrimary};
   height: 100%;
-`;
-const CreateVolumeButton = styled(Button)`
-  margin-left: ${padding.larger};
-`;
-const ActionContainer = styled.span`
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: space-between;
-  padding: ${padding.large} ${padding.base} 26px 20px;
 `;
 const VolumeListTable = React.memo((props) => {
   // @ts-expect-error - FIXME when you are working on it
@@ -92,8 +88,8 @@ const VolumeListTable = React.memo((props) => {
         cellStyle: {
           textAlign: 'center',
           width: '8.571rem',
-          marginRight: spacing.sp8,
-          marginLeft: spacing.sp8,
+          marginRight: spacing.r8,
+          marginLeft: spacing.r8,
         },
         Cell: ({ value }) => {
           return (
@@ -101,9 +97,7 @@ const VolumeListTable = React.memo((props) => {
               size="large"
               percentage={value}
               buildinLabel={`${value}%`}
-              // @ts-expect-error - FIXME when you are working on it
               color={theme.infoSecondary}
-              // @ts-expect-error - FIXME when you are working on it
               backgroundColor={theme.buttonSecondary}
             />
           );
@@ -215,8 +209,9 @@ const VolumeListTable = React.memo((props) => {
   }, [volumeListData, theme, history, nodeName]);
   return (
     <VolumeListContainer>
-      <ActionContainer>
-        <CreateVolumeButton
+      <Wrap padding={spacing.r16}>
+        <p></p>
+        <Button
           variant={'secondary'}
           label={intl.formatMessage({
             id: 'create_new_volume',
@@ -232,12 +227,21 @@ const VolumeListTable = React.memo((props) => {
           }}
           data-cy="create_volume_button"
         />
-      </ActionContainer>
-      <Table columns={columns} data={volumeListData} defaultSortingKey="health">
+      </Wrap>
+      <Table
+        columns={columns}
+        data={volumeListData}
+        defaultSortingKey="health"
+        entityName={{
+          en: {
+            singular: 'volume',
+            plural: 'volumes',
+          },
+        }}
+      >
         <Table.SingleSelectableContent
           rowHeight="h40"
           separationLineVariant="backgroundLevel3"
-          backgroundVariant="backgroundLevel1"
         />
       </Table>
     </VolumeListContainer>

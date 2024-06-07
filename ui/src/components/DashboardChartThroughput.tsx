@@ -93,10 +93,7 @@ const DashboardChartThroughputWithoutQuantile = () => {
         (serie) => {
           if (serie.key === `${lastNodeName}-write`) {
             return `${defaultRenderTooltipSerie(serie)}</table>
-            <hr style="border-color: ${
-              // @ts-expect-error - FIXME when you are working on it
-              theme.border
-            };"/><table>`;
+            <hr style="border-color: ${theme.border};"/><table>`;
           } else {
             return defaultRenderTooltipSerie(serie);
           }

@@ -3,14 +3,20 @@ import { useHistory } from 'react-router';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
-import { Icon, Stack, Text } from '@scality/core-ui';
+import {
+  ConstrainedText,
+  Icon,
+  Stack,
+  Text,
+  Wrap,
+  spacing,
+} from '@scality/core-ui';
 import { Box, Button, Table } from '@scality/core-ui/dist/next';
 import { useURLQuery } from '../services/utils';
 import CircleStatus from './CircleStatus';
 const StatusText = styled.div`
   color: ${(props) => {
-    // @ts-expect-error - FIXME when you are working on it
-    return props.textColor;
+    return props.color;
   }};
 `;
 
@@ -39,15 +45,26 @@ const NodeListTable = ({ nodeTableData }) => {
         Header: 'Description',
         accessor: 'name',
         cellStyle: {
-          flex: 1,
+          flex: '0.8',
+          minWidth: '5rem',
+          width: 'unset',
         },
         Cell: ({ value }) => {
           const { name, controlPlaneIP, workloadPlaneIP } = value;
           return (
             <>
-              <Text data-cy="node_table_name_cell" variant="Basic" isEmphazed>
-                {value.displayName || name}
-              </Text>
+              <ConstrainedText
+                text={
+                  <Text
+                    data-cy="node_table_name_cell"
+                    variant="Basic"
+                    isEmphazed
+                  >
+                    {name}
+                  </Text>
+                }
+              ></ConstrainedText>
+
               <Stack>
                 {controlPlaneIP ? (
                   <Text variant="Smaller" color="textSecondary">
@@ -82,8 +99,7 @@ const NodeListTable = ({ nodeTableData }) => {
           const { statusTextColor, computedStatus } = cellProps.value;
           return computedStatus.map((status) => {
             return (
-              // @ts-expect-error - FIXME when you are working on it
-              <StatusText key={status} textColor={statusTextColor}>
+              <StatusText key={status} color={statusTextColor}>
                 {intl.formatMessage({
                   id: `${status}`,
                 })}
@@ -127,26 +143,22 @@ const NodeListTable = ({ nodeTableData }) => {
     [history, location.pathname, path, query],
   );
   return (
-    <Box height={'100%'}>
+    <Box height="100%">
       <Table
         columns={columns}
         data={nodeTableData}
         defaultSortingKey={'health'}
+        entityName={{
+          en: {
+            singular: 'node',
+            plural: 'nodes',
+          },
+        }}
         // @ts-expect-error - FIXME when you are working on it
         getRowId={(row) => row.name.name}
       >
-        <Box
-          display="flex"
-          justifyContent={'space-between'}
-          pt={'16px'}
-          px={'16px'}
-        >
-          <Table.SearchWithQueryParams
-            displayedName={{
-              singular: 'node',
-              plural: 'nodes',
-            }}
-          />
+        <Wrap padding={spacing.r16}>
+          <Table.SearchWithQueryParams />
           <Button
             variant="primary"
             label={intl.formatMessage({
@@ -158,16 +170,12 @@ const NodeListTable = ({ nodeTableData }) => {
             }}
             data-cy="create_node_button"
           />
-        </Box>
+        </Wrap>
         <Table.SingleSelectableContent
           rowHeight="h64"
           separationLineVariant="backgroundLevel1"
-          backgroundVariant="backgroundLevel2"
           selectedId={selectedNodeName}
           onRowSelected={onClickRow}
-          children={(Rows) => {
-            return <>{Rows}</>;
-          }}
         />
       </Table>
     </Box>
