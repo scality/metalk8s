@@ -8,7 +8,11 @@
 Create kube-apiserver private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - keysize: 2048
+{%- else %}
+    - bits: 2048
+{%- endif %}
     - user: root
     - group: root
     - mode: '0600'
@@ -32,7 +36,11 @@ Create kube-apiserver private key:
 Generate kube-apiserver certificate:
   x509.certificate_managed:
     - name: {{ certificates.server.files.apiserver.path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - private_key: {{ private_key_path }}
+{%- else %}
+    - public_key: {{ private_key_path }}
+{%- endif %}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ kube_api.cert.server_signing_policy }}
     - CN: kube-apiserver

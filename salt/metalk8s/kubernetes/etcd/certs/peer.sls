@@ -6,7 +6,11 @@
 Create etcd peer private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - keysize: 2048
+{%- else %}
+    - bits: 2048
+{%- endif %}
     - user: root
     - group: root
     - mode: '0600'
@@ -18,7 +22,11 @@ Create etcd peer private key:
 Generate etcd peer certificate:
   x509.certificate_managed:
     - name: {{ certificates.server.files['etcd-peer'].path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - private_key: {{ private_key_path }}
+{%- else %}
+    - public_key: {{ private_key_path }}
+{%- endif %}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ etcd.cert.peer_signing_policy }}
     - CN: "{{ grains['fqdn'] }}"

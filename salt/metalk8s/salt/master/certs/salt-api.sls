@@ -8,7 +8,11 @@
 Create Salt API private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - keysize: 2048
+{%- else %}
+    - bits: 2048
+{%- endif %}
     - user: root
     - group: root
     - mode: '0600'
@@ -30,7 +34,11 @@ Create Salt API private key:
 Generate Salt API certificate:
   x509.certificate_managed:
     - name: {{ certificates.server.files['salt-api'].path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - private_key: {{ private_key_path }}
+{%- else %}
+    - public_key: {{ private_key_path }}
+{%- endif %}
 {%- if salt.config.get('file_client') != 'local' %}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
 {%- endif %}

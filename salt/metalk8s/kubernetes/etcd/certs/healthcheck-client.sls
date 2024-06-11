@@ -6,7 +6,11 @@
 Create etcd healthcheck client private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - keysize: 2048
+{%- else %}
+    - bits: 2048
+{%- endif %}
     - user: root
     - group: root
     - mode: '0600'
@@ -18,7 +22,11 @@ Create etcd healthcheck client private key:
 Generate etcd healthcheck client certificate:
   x509.certificate_managed:
     - name: {{ certificates.client.files['etcd-healthcheck'].path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - private_key: {{ private_key_path }}
+{%- else %}
+    - public_key: {{ private_key_path }}
+{%- endif %}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ etcd.cert.healthcheck_client_signing_policy }}
     - CN: kube-etcd-healthcheck-client

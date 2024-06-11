@@ -54,14 +54,25 @@ def managed(
 
     client_priv_key = __salt__["x509.create_private_key"](text=True, verbose=False)
 
-    client_cert = __salt__["x509.create_certificate"](
-        text=True,
-        private_key=client_priv_key,  # pub key is sourced from priv key
-        ca_server=ca_server,
-        signing_policy=signing_policy,
-        days_valid=days_valid,
-        **client_cert_info,
-    )
+    if __salt__["salt_version.greater_than"]("Sulfur"):
+        client_cert = __salt__["x509.create_certificate"](
+            text=True,
+            private_key=client_priv_key,  # pub key is sourced from priv key
+            ca_server=ca_server,
+            signing_policy=signing_policy,
+            days_valid=days_valid,
+            **client_cert_info,
+        )
+    else:
+        client_cert = __salt__["x509.create_certificate"](
+            text=True,
+            public_key=client_priv_key,  # pub key is sourced from priv key
+            ca_server=ca_server,
+            signing_policy=signing_policy,
+            days_valid=days_valid,
+            **client_cert_info,
+        )
+
 
     dataset = {
         "apiVersion": "v1",

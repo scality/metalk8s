@@ -3,7 +3,11 @@
 Create SA private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - keysize: 2048
+{%- else %}
+    - bits: 2048
+{%- endif %}
     - user: root
     - group: root
     - mode: '0600'

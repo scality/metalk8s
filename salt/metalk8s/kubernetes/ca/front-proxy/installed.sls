@@ -5,7 +5,11 @@
 Create front proxy CA private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - keysize: 4096
+{%- else %}
+    - bits: 4096
+{%- endif %}
     - user: root
     - group: root
     - mode: '0600'

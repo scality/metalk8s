@@ -5,7 +5,11 @@
 Create backup server private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - keysize: 4096
+{%- else %}
+    - bits: 4096
+{%- endif %}
     - user: root
     - group: root
     - mode: '0600'
@@ -24,7 +28,11 @@ Create backup server private key:
 Generate backup server certificate:
   x509.certificate_managed:
     - name: {{ certificates.server.files["backup-server"].path }}
+{%- if salt["salt_version.greater_than"]("Sulfur") %}
     - private_key: {{ private_key_path }}
+{%- else %}
+    - public_key: {{ private_key_path }}
+{%- endif %}
     - ca_server: {{ pillar.metalk8s.ca.minion }}
     - signing_policy: {{ backup_server.cert.server_signing_policy }}
     - CN: backup
