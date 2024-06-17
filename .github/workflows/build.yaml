@@ -68,7 +68,21 @@ jobs:
           sudo apt-get install --no-install-recommends -y \
             genisoimage \
             isomd5sum \
-            hardlink
+            hardlink \
+            libgpgme-dev libassuan-dev libbtrfs-dev pkg-config libdevmapper-dev
+      - name: Install skopeo
+        # NOTE: We install skopeo from sources since the version available in "classic"
+        #      repositories is too old and not compatible with docker > 1.25 (which is the one embedded
+        #      in the image we use here)
+        env:
+          SKOPEO_VERSION: 1.15.1
+        run: |
+          curl -Lo skopeo.tar.gz https://github.com/containers/skopeo/archive/refs/tags/v${SKOPEO_VERSION}.tar.gz && \
+          tar -zxf skopeo.tar.gz && \
+          cd skopeo-${SKOPEO_VERSION} && \
+          make bin/skopeo && \
+          sudo mv bin/skopeo /usr/local/bin/ && \
+          cd .. && rm -rf skopeo.tar.gz skopeo-${SKOPEO_VERSION}
       - name: Build everything
         run: ./doit.sh -n 4 --verbosity 2 --failure-verbosity 2
       - name: Prepare artifacts
