@@ -2,6 +2,12 @@
 
 ## Release 127.0.3 (in development)
 
+### Enhancements
+
+- The `etcdHightCommitDurations` window was increased to 30 minutes
+  in order to avoid false positives
+  (PR[#4341](https://github.com/scality/metalk8s/pull/4341))
+
 ## Release 127.0.2
 
 ### Enhancements
