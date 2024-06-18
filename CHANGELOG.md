@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## Release 127.0.2 (in development)
+## Release 127.0.3 (in development)
+
+## Release 127.0.2
 
 ### Enhancements
 
