@@ -45,6 +45,14 @@ Create fluent-bit ConfigMap:
                 DB             /run/fluent-bit/flb_kube.db
                 Mem_Buf_Limit  50MB
             [INPUT]
+                Name           tail
+                Path           /var/log/audit/audit.log
+                Tag            audit.*
+                Mem_Buf_Limit  100MB
+                Parser         json
+                Path_Key       filename
+                DB             /run/fluent-bit/flb_audit.db
+            [INPUT]
                 Name           systemd
                 Tag            host.*
                 DB             /run/fluent-bit/flb_journal.db

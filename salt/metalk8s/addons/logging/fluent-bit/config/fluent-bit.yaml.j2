@@ -35,6 +35,16 @@ spec:
         Line_Format: json
         Log_Level: warn
         Workers: 4
+      - Name: loki
+        Match: audit.*
+        Host: loki
+        Port: 3100
+        Tenant_ID: '""'
+        Labels: "job=fluent-bit, stream=audit"
+        Label_Keys: "$hostname, $stream"
+        Line_Format: json
+        Log_Level: warn
+        Workers: 4
     {%- else %}
     output: []
     {%- endif %}
