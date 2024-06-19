@@ -54201,7 +54201,7 @@ spec:
       expr: |-
         histogram_quantile(0.99, rate(etcd_disk_backend_commit_duration_seconds_bucket{job=~".*etcd.*"}[5m]))
         > 0.25
-      for: 10m
+      for: 30m
       labels:
         severity: warning
     - alert: etcdDatabaseQuotaLowSpace
