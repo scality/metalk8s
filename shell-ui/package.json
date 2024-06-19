@@ -34,7 +34,6 @@
     "babel-jest": "^26.6.3",
     "babel-loader": "^8.2.2",
     "babel-plugin-styled-components": "^1.12.0",
-    "canvas": "2.9.1",
     "css-loader": "^5.2.6",
     "file-loader": "^6.2.0",
     "fs-extra": "^10.0.0",
@@ -58,7 +57,6 @@
   "dependencies": {
     "@scality/core-ui": "0.124.0",
     "@scality/module-federation": "^1.2.3",
-    "canvas": "^2.9.3",
     "downshift": "^8.0.0",
     "oidc-client": "^1.11.3",
     "oidc-react": "1.1.5",
