@@ -3,14 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  {{#each htmlWebpackPlugin.files.js}}
-  <link rel="preload" as="script" href="{{this}}" />
-  {{/each}}
   <title>Document</title>
-  <script language="javascript">window.shellUIRemoteEntryUrl = "/shell/remoteEntry.js?version={{htmlWebpackPlugin.options.version}}"</script>
+  <script language="javascript">window.shellUIRemoteEntryUrl = "/shell/remoteEntry.js?version=<%=version%>"</script>
 </head>
 <body>
   <div id="app"></div>
 </body>
 </html>
-
