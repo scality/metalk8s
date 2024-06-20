@@ -99,9 +99,23 @@
 - Do no longer use `latest` for `storage-operator` image
   (PR[#4299](https://github.com/scality/metalk8s/pull/4299))
 
-## Release 127.0.3 (in development)
+## Release 127.0.4 (in development)
+
+## Release 127.0.3
 
 ### Enhancements
+
+- `sosreport` now can be used with the option `--upload-protocol s3`
+  to save reports directly in S3 buckets
+  (PR[#4328](https://github.com/scality/metalk8s/pull/4328))
+
+- The `VRID` attribution is now randomized to minimize conflicts
+  with other systems
+  (PR[#4330](https://github.com/scality/metalk8s/pull/4330))
+
+- The max log file size per container is raised to 50Mi. 
+  The default was 10 Mi.
+  (PR[#4336](https://github.com/scality/metalk8s/pull/4336))
 
 - The `etcdHightCommitDurations` window was increased to 30 minutes
   in order to avoid false positives
@@ -115,18 +129,6 @@
   `metalk8s_kubernetes.object_present` Salt state
   due to another component modifying the wanted object
   (PR[#4317](https://github.com/scality/metalk8s/pull/4317))
-
-- `sosreport` now can be used with the option `--upload-protocol s3`
-  to save reports directly in S3 buckets
-  (PR[#4328](https://github.com/scality/metalk8s/pull/4328))
-
-- The `VRID` attribution is now randomized to minimize conflicts
-  with other systems
-  (PR[#4330](https://github.com/scality/metalk8s/pull/4330))
-
-- The max log file size per container is raised to 50Mi. 
-  The default was 10 Mi.
-  (PR[#4336](https://github.com/scality/metalk8s/pull/4336))
 
 ### Bug fixes
 
