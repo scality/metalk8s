@@ -49,7 +49,9 @@
     "test:nowatch": "CI=true jest --env=jsdom --reporters=default --reporters=jest-junit",
     "test:integration": "cypress run --spec 'cypress/integration/**/*.spec.js'",
     "test:e2e": "cypress run --spec 'cypress/integration/e2e/**/*.feature'",
-    "jest-preview": "jest-preview"
+    "jest-preview": "jest-preview",
+    "rsstart": "rspack serve -c rspack.config.ts",
+    "rsbuild": "rspack build -c rspack.config.ts"
   },
   "eslintConfig": {
     "extends": [
@@ -77,6 +79,8 @@
     "@babel/preset-typescript": "^7.21.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.0-beta.8",
     "@redux-saga/testing-utils": "^1.0.2",
+    "@rspack/cli": "^0.7.4",
+    "@rspack/core": "^0.7.4",
     "@testing-library/dom": "^9.3.1",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.3",
@@ -126,6 +130,7 @@
     "react-test-renderer": "^17.0.1",
     "source-map-explorer": "^2.0.1",
     "style-loader": "^2.0.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "url-loader": "^4.1.1",
     "webpack": "^5.17.0",
