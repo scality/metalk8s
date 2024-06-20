@@ -51,6 +51,11 @@ const config: Configuration = {
                 syntax: 'typescript',
                 tsx: true,
               },
+              transform: {
+                react: {
+                  runtime: 'automatic',
+                },
+              },
             },
           },
         },
@@ -218,6 +223,18 @@ const config: Configuration = {
       excludedChunks: ['shell'],
     }),
   ],
+  devServer: {
+    port: 8084,
+    historyApiFallback: {
+      rewrites: [{ from: /^\/.*$/, to: '/shell/index.html' }],
+    },
+    client: {
+      overlay: {
+        warnings: false,
+        errors: true,
+      },
+    },
+  },
 };
 
 export = config;

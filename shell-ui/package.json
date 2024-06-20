@@ -60,6 +60,7 @@
     "webpack-dev-server": "^4.1.0"
   },
   "dependencies": {
+    "@module-federation/enhanced": "^0.1.21",
     "@scality/core-ui": "0.124.0",
     "@scality/module-federation": "^1.2.3",
     "downshift": "^8.0.0",
