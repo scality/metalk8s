@@ -3,16 +3,15 @@ import { RouteProps, matchPath, useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 
+import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { Layout } from '@scality/core-ui/dist/components/layout/v2/index';
 import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
-import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
 
 import { useIntl } from 'react-intl';
 import { useTheme } from 'styled-components';
 import { UserData, useAuth, useLogOut } from '../auth/AuthProvider';
 import {
-  BuildtimeWebFinger,
   NonFederatedView,
   ViewDefinition,
   useConfigRetriever,
@@ -209,27 +208,6 @@ export const useNavbarLinksToActions = (
       ) {
         return;
       }
-
-      const microAppConfiguration:
-        | BuildtimeWebFinger
-        | { spec: { remoteEntryPath: string } } = retrieveConfiguration({
-        configType: 'build',
-        name: link.view.app.name,
-      }) || {
-        spec: {
-          remoteEntryPath: '',
-        },
-      };
-      const remoteEntryUrl = link.view.isFederated
-        ? link.view.app.url +
-          microAppConfiguration.spec.remoteEntryPath +
-          '?version=' +
-          link.view.app.version
-        : '';
-
-      prefetch(remoteEntryUrl).catch((e) =>
-        console.error(`Failed to preload ${remoteEntryUrl}`, e),
-      );
     });
   }, [JSON.stringify(links)]);
 

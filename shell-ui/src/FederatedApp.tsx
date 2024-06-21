@@ -1,43 +1,39 @@
-import '@fortawesome/fontawesome-free/css/all.css';
-import React from 'react';
-import { useEffect, useMemo } from 'react';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { ScrollbarWrapper } from '@scality/core-ui/dist/components/scrollbarwrapper/ScrollbarWrapper.component';
-import { SolutionsNavbar } from './navbar';
-import type {
+import { ToastProvider } from '@scality/core-ui/dist/components/toast/ToastProvider';
+import {
+  FederatedComponent,
   FederatedComponentProps,
   SolutionUI,
 } from '@scality/module-federation';
-// import { FederatedComponent } from '@scality/module-federation';
-import { UIListProvider } from './initFederation/UIListProvider';
+import { createBrowserHistory } from 'history';
+import React, { useEffect, useMemo } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { Route, Router, Switch } from 'react-router-dom';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+
+import NotificationCenterProvider from './NotificationCenterProvider';
+import { AuthConfigProvider, useAuthConfig } from './auth/AuthConfigProvider';
+import { AuthProvider, useAuth } from './auth/AuthProvider';
+import { FirstTimeLoginProvider } from './auth/FirstTimeLoginProvider';
+import './index.css';
 import {
   ConfigurationProvider,
   FederatedView,
   useConfigRetriever,
   useDiscoveredViews,
 } from './initFederation/ConfigurationProviders';
-import { Route, Switch, Router } from 'react-router-dom';
 import {
   ShellConfigProvider,
   useShellConfig,
 } from './initFederation/ShellConfigProvider';
-import { AuthConfigProvider, useAuthConfig } from './auth/AuthConfigProvider';
-import { AuthProvider, useAuth } from './auth/AuthProvider';
-import { createBrowserHistory } from 'history';
-import { ErrorBoundary } from 'react-error-boundary';
-import { LanguageProvider, useLanguage } from './navbar/lang';
-import './index.css';
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
-import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
-import { ToastProvider } from '@scality/core-ui/dist/components/toast/ToastProvider';
-import {
-  ShellThemeSelectorProvider,
-  useShellThemeSelector,
-} from './initFederation/ShellThemeSelectorProvider';
-import NotificationCenterProvider from './NotificationCenterProvider';
-import { FirstTimeLoginProvider } from './auth/FirstTimeLoginProvider';
-import { FederatedComponent } from './TMPModuleFederation';
+import { ShellThemeSelectorProvider } from './initFederation/ShellThemeSelectorProvider';
+import { UIListProvider } from './initFederation/UIListProvider';
+import { SolutionsNavbar } from './navbar';
+import { LanguageProvider, useLanguage } from './navbar/lang';
 
 export const queryClient = new QueryClient();
 
@@ -160,7 +156,7 @@ function InternalRouter() {
               [],
             );
             return (
-              <Router history={federatedAppHistory}>
+              <Router history={federatedAppHistory} key={app.name}>
                 <FederatedRoute
                   url={
                     app.url +
@@ -173,6 +169,13 @@ function InternalRouter() {
                   scope={view.scope}
                   app={app}
                   groups={groups}
+                  renderOnLoading={
+                    <Loader
+                      size="massive"
+                      centered={true}
+                      aria-label="loading"
+                    />
+                  }
                 />
               </Router>
             );

@@ -2,7 +2,7 @@ import { useConfigRetriever } from '../initFederation/ConfigurationProviders';
 import { useDeployedApps } from '../initFederation/UIListProvider';
 import type { FederatedModuleInfo } from '../initFederation/ConfigurationProviders';
 import type { SolutionUI } from '@scality/module-federation';
-// import { FederatedComponent } from '@scality/module-federation';
+import { FederatedComponent } from '@scality/module-federation';
 import { Fragment, useCallback, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useEffect } from 'react';
@@ -10,7 +10,6 @@ import { useNavbar } from './navbarHooks';
 import { useFirstTimeLogin } from '../auth/FirstTimeLoginProvider';
 import { useAuth } from '../auth/AuthProvider';
 import { useNotificationCenter } from '../useNotificationCenter';
-import { FederatedComponent } from '../TMPModuleFederation';
 
 export const NavbarUpdaterComponents = () => {
   const deployedApps = useDeployedApps();
