@@ -13,16 +13,12 @@ import React, {
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import {
-  init,
   loadRemote,
   registerRemotes,
 } from '@module-federation/enhanced/runtime';
-import toto from 'react-dom';
 
 type Module = any;
 
-declare var __webpack_init_sharing__: (scope: string) => Promise<void>;
-declare var __webpack_share_scopes__: { default: any };
 declare global {
   interface Window {
     [scope: string]: {
@@ -32,118 +28,13 @@ declare global {
   }
 }
 
-// export function loadModule(
-//   scope: string,
-//   module: string,
-// ): () => Promise<Module> {
-//   return async () => {
-//     // Initializes the share scope. This fills it with known provided modules from this build and all remotesk
-//     await __webpack_init_sharing__('default');
-//     const container = window[scope]; // or get the container somewhere else
-//     // Initialize the container, it may provide shared modules
-//     await container.init(__webpack_share_scopes__.default);
-//     const factory = await window[scope].get(module);
-//     const Module = factory();
-//     return Module;
-//   };
-// }
-
-import deps from '../package.json';
-
-window.React1 = require('react');
-
-console.log('deps', deps);
-
-// const shared = {
-//   ...Object.fromEntries(
-//     Object.entries(deps.dependencies).map(([key, version]) => [key, {}]),
-//   ),
-//   '@fortawesome/react-fontawesome': {
-//     eager: true,
-//     singleton: true,
-//   },
-//   '@fortawesome/fontawesome-svg-core': {
-//     eager: true,
-//     singleton: true,
-//   },
-//   '@scality/core-ui': {
-//     singleton: true,
-//   },
-//   'react-intl': {
-//     eager: true,
-//     singleton: true,
-//   },
-//   '@scality/module-federation': {
-//     singleton: true,
-//     eager: true,
-//   },
-//   react: {
-//     singleton: true,
-//     eager: true,
-//     requiredVersion: deps.react,
-//   },
-//   'styled-components': {
-//     singleton: true,
-//     eager: true,
-//     requiredVersion: deps['styled-components'],
-//   },
-//   'styled-system': {
-//     singleton: true,
-//     eager: true,
-//     requiredVersion: deps['styled-system'],
-//   },
-//   'react-dom': {
-//     singleton: true,
-//     eager: true,
-//     requiredVersion: deps['react-dom'],
-//   },
-//   'react-query': {
-//     singleton: true,
-//     eager: true,
-//   },
-//   'react-router': {
-//     singleton: true,
-//     eager: true,
-//   },
-//   'react-router-dom': {
-//     singleton: true,
-//     eager: true,
-//   },
-//   polished: {
-//     singleton: true,
-//     eager: true,
-//   },
-//   'oidc-client': {
-//     singleton: true,
-//     eager: true,
-//   },
-//   'oidc-react': {
-//     singleton: true,
-//     eager: true,
-//   },
-//   'react-error-boundary': {
-//     singleton: true,
-//     eager: true,
-//   },
-//   '@js-temporal/polyfill': {
-//     singleton: true,
-//     eager: true,
-//   },
-//   downshift: {
-//     singleton: true,
-//     eager: true,
-//   },
-// };
-
-// console.log('shared', shared);
-
 export function loadModule(
   scope: string,
   module: string,
 ): () => Promise<Module> {
   return async () => {
-    console.log('React.version', React.version);
-    console.log('ReactDOM.version', toto.version);
+    // console.log('React.version', React.version);
+    // console.log('ReactDOM.version', toto.version);
     // // Initializes the share scope. This fills it with known provided modules from this build and all remotesk
     // await __webpack_init_sharing__('default');
     // const container = window[scope]; // or get the container somewhere else
@@ -153,12 +44,7 @@ export function loadModule(
     // const Module = factory();
     // return Module;
 
-    registerRemotes([
-      {
-        name: 'metalk8s',
-        entry: 'http://localhost:3000/mf-manifest.json',
-      },
-    ]);
+    console.log('scope', scope, module);
 
     const m2 = module.substring(2);
 
@@ -311,27 +197,18 @@ export function FederatedComponent({
   app,
   props,
 }: FederatedComponentProps & { props: any; app: SolutionUI }): ReactNode {
-  const { status } = useDynamicScripts({
-    urls: [url],
-  });
-
   const Component = useMemo(() => {
-    if (status === 'success') {
-      return lazy(loadModule(scope, module));
-    }
-    return () => <div></div>;
-  }, [scope, module, status]);
+    registerRemotes([
+      {
+        name: scope,
+        entry: url,
+      },
+    ]);
+    return lazy(loadModule(scope, module));
+  }, [scope, module]);
 
   if (!url || !scope || !module) {
     throw new Error("Can't federate a component without url, scope and module");
-  }
-
-  if (status === 'loading' || status === 'idle') {
-    return <Loader size="massive" centered={true} aria-label="loading" />; // TODO display the previous module while lazy loading the new one
-  }
-
-  if (status === 'error') {
-    return <ErrorPage500 data-cy="sc-error-page500" />;
   }
 
   return (
@@ -351,7 +228,15 @@ export const lazyWithModules = <Props extends {}>(
 ) => {
   return React.lazy(async () => {
     const loadedModules = await Promise.all(
-      modules.map((mod) => loadModule(mod.scope, mod.module)()),
+      modules.map((mod) => {
+        registerRemotes([
+          {
+            name: mod.scope,
+            entry: mod.url,
+          },
+        ]);
+        return loadModule(mod.scope, mod.module)();
+      }),
     );
     const moduleExports = loadedModules.reduce(
       (current, loadedModule, index) => ({
@@ -383,12 +268,6 @@ export const ComponentWithFederatedImports = <Props extends {}>({
     module: string;
   }[];
 }): ReactNode => {
-  const { status } = useDynamicScripts({
-    urls: federatedImports.map(
-      (federatedImport) => federatedImport.remoteEntryUrl,
-    ),
-  });
-
   const Component = useMemo(
     () =>
       lazyWithModules(
@@ -401,14 +280,6 @@ export const ComponentWithFederatedImports = <Props extends {}>({
       ),
     [JSON.stringify(federatedImports)],
   );
-
-  if (status === 'loading' || status === 'idle') {
-    return <Loader size="massive" centered={true} aria-label="loading" />; // TODO display the previous module while lazy loading the new one
-  }
-
-  if (status === 'error' && renderOnError) {
-    return renderOnError;
-  }
 
   return (
     <Suspense
