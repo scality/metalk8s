@@ -22,3 +22,7 @@ yarn-error.log*
 # cypress
 cypress/screenshots/
 cypress/videos/
+
+# federated types
+@mf-types/
+build_ts/
