@@ -4,6 +4,9 @@ import { Configuration } from '@rspack/cli';
 import rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
 
+const controlPlaneIP = '{{IP}}';
+const controlPlaneBaseUrl = `https://${controlPlaneIP}:8443`;
+
 const config: Configuration = {
   entry: './src/index.tsx',
   output: {
@@ -76,32 +79,15 @@ const config: Configuration = {
       },
       {
         test: /\.(jpe?g|gif|png|ttf|eot|svg)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: '[name].[ext]?[hash]',
-              outputPath: 'static/media/',
-            },
-          },
-        ],
+        type: 'asset',
       },
       {
         test: /\.woff(2)?$/,
-        use: [
-          {
-            loader: 'url-loader',
-            options: {
-              limit: 10000,
-              mimetype: 'application/fontwoff',
-              outputPath: 'static/media/',
-            },
-          },
-        ],
+        type: 'asset/resource',
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        type: 'css',
       },
     ],
   },
@@ -109,16 +95,6 @@ const config: Configuration = {
     modules: ['node_modules'],
     extensions: ['.js', '.jsx', '.css', '.json', '.ts', '.tsx'],
   },
-  // performance: {
-  //   hints: 'warning',
-  //   // ~1.2 MiB for production
-  //   maxAssetSize: process.env.NODE_ENV === 'production' ? 1_300_000 : Infinity,
-  //   assetFilter: (assetFilename) => {
-  //     return (
-  //       !assetFilename.endsWith('.map.gz') && assetFilename.endsWith('.gz')
-  //     );
-  //   },
-  // },
   plugins: [
     new ModuleFederationPlugin({
       name: 'shell',
@@ -142,14 +118,6 @@ const config: Configuration = {
         ...Object.fromEntries(
           Object.entries(deps).map(([key, version]) => [key, {}]),
         ),
-        '@fortawesome/react-fontawesome': {
-          eager: true,
-          singleton: true,
-        },
-        '@fortawesome/fontawesome-svg-core': {
-          eager: true,
-          singleton: true,
-        },
         '@scality/core-ui': {
           singleton: true,
         },
@@ -239,11 +207,28 @@ const config: Configuration = {
         errors: true,
       },
     },
-    proxy: {
-      context: ['/static/js', '/.well-known'],
-      target: 'http://localhost:3000',
-      secure: false,
-    },
+    static: path.join(__dirname, 'public'),
+    proxy: [
+      {
+        context: ['/static/js', '/.well-known'],
+        target: 'http://localhost:3000',
+        secure: false,
+      },
+      {
+        context: [
+          '/auth',
+          '/api/kubernetes',
+          '/api/salt',
+          '/api/prometheus',
+          '/api/alertmanager',
+          '/api/loki',
+          '/grafana',
+          '/docs',
+        ],
+        target: controlPlaneBaseUrl,
+        secure: false,
+      },
+    ],
   },
 };
 
