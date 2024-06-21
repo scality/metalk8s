@@ -9,7 +9,7 @@ import type {
   FederatedComponentProps,
   SolutionUI,
 } from '@scality/module-federation';
-import { FederatedComponent } from '@scality/module-federation';
+// import { FederatedComponent } from '@scality/module-federation';
 import { UIListProvider } from './initFederation/UIListProvider';
 import {
   ConfigurationProvider,
@@ -37,6 +37,7 @@ import {
 } from './initFederation/ShellThemeSelectorProvider';
 import NotificationCenterProvider from './NotificationCenterProvider';
 import { FirstTimeLoginProvider } from './auth/FirstTimeLoginProvider';
+import { FederatedComponent } from './TMPModuleFederation';
 
 export const queryClient = new QueryClient();
 
