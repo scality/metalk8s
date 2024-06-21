@@ -1,8 +1,10 @@
-const path = require('path');
-const deps = require('./package.json').dependencies;
+import path from 'path';
+import packageJson from './package.json';
 import { Configuration } from '@rspack/cli';
 import rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
+
+const deps = packageJson.dependencies;
 
 const controlPlaneIP = '{{IP}}';
 const controlPlaneBaseUrl = `https://${controlPlaneIP}:8443`;
@@ -199,7 +201,7 @@ const config: Configuration = {
   devServer: {
     port: 8084,
     historyApiFallback: {
-      rewrites: [{ from: /^\/.*$/, to: '/shell/index.html' }],
+      rewrites: [{ from: /./, to: '/shell/index.html' }],
     },
     client: {
       overlay: {
