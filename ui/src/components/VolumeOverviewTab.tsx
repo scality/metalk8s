@@ -27,7 +27,7 @@ import {
   spacing,
   Icon,
 } from '@scality/core-ui';
-import { Button } from '@scality/core-ui/dist/next';
+import { Box, Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import {
   VolumeTab,
@@ -192,14 +192,9 @@ const VolumeDetailCard = (props) => {
           data-cy="delete_volume_button"
         />
       </VolumeTitleSection>
-      {/*TODO: To be replaced by new <Box></Box> component*/}
+
       {!isVolumeUsageRetrievable && (
-        <div
-          style={{
-            width: '48rem',
-            padding: '0 0 2rem 20px',
-          }}
-        >
+        <Box padding="0 20px 2rem 20px">
           <Banner
             variant="warning"
             icon={<Icon name="Exclamation-triangle" />}
@@ -211,7 +206,7 @@ const VolumeDetailCard = (props) => {
               id: 'some_data_not_retrieved',
             })}
           </Banner>
-        </div>
+        </Box>
       )}
 
       <VolumeDetailCardContainer>
