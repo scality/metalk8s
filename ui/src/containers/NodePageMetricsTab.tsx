@@ -2,9 +2,9 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import { Toggle, BasicText, Icon } from '@scality/core-ui';
+import { Toggle, spacing, Icon } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
-import { spacing } from '@scality/core-ui/dist/style/theme';
+
 import { useIntl } from 'react-intl';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/next';
 import { UNIT_RANGE_BS } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
@@ -70,7 +70,7 @@ const GraphGrid = styled.div`
   .wpbandwidth {
     grid-area: wpbandwidth;
   }
-  padding-left: ${spacing.sp12};
+  padding-left: ${spacing.r12};
   /* 100vh - navbar height - tab height - padding - action container height */
   height: calc(100vh - 3.357rem - 2.857rem - 40px - 2.286rem);
   overflow-y: auto;
@@ -81,29 +81,25 @@ const MetricsToggleWrapper = styled.div`
   flex: 1;
 
   .sc-toggle {
-    margin-right: ${spacing.sp8};
+    margin-right: ${spacing.r8};
   }
 `;
 const NoDataAvailable = styled.div`
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: ${spacing.r4};
+  padding-top: ${spacing.r40};
+  height: 1rem;
 `;
 export const RenderNoDataAvailable = () => {
   const intl = useIntl();
   return (
     <NoDataAvailable>
-      <BasicText>
-        <Icon
-          name="Exclamation-triangle"
-          // @ts-expect-error - FIXME when you are working on it
-          style={{
-            paddingRight: `${spacing.sp4}`,
-          }}
-        />
-        {intl.formatMessage({
-          id: 'no_data_available_for_metrics',
-        })}
-      </BasicText>
+      <Icon name="Exclamation-circle" />
+      {intl.formatMessage({
+        id: 'no_data_available_for_metrics',
+      })}
     </NoDataAvailable>
   );
 };
@@ -303,13 +299,7 @@ const NodePageMetricsTab = ({
           </GraphGrid>
         </SyncedCursorCharts>
       ) : (
-        <div
-          style={{
-            paddingTop: `${spacing.sp40}`,
-          }}
-        >
-          <RenderNoDataAvailable />
-        </div>
+        <RenderNoDataAvailable />
       )}
     </NodeTab>
   );

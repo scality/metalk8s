@@ -2,14 +2,10 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { Button } from '@scality/core-ui/dist/next';
-import { padding, fontSize, spacing } from '@scality/core-ui/dist/style/theme';
+import { fontSize } from '@scality/core-ui/dist/style/theme';
 import { VOLUME_CONDITION_LINK, GRAFANA_DASHBOARDS } from '../constants';
 import { useIntl } from 'react-intl';
-import {
-  VolumeTab,
-  MetricsActionContainer,
-  GraphWrapper,
-} from './style/CommonLayoutStyle';
+import { VolumeTab, MetricsActionContainer } from './style/CommonLayoutStyle';
 import {
   VolumeIOPSChart,
   VolumeLatencyChart,
@@ -18,10 +14,8 @@ import {
 } from './VolumeCharts';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
 import TimespanSelector from '../containers/TimespanSelector';
-import { Icon } from '@scality/core-ui';
-const MetricGraphCardContainer = styled.div`
-  min-height: 270px;
-`;
+import { Icon, spacing } from '@scality/core-ui';
+
 const GraphGrid = styled.div`
   display: grid;
   gap: 8px;
@@ -44,7 +38,7 @@ const GraphGrid = styled.div`
   .iops {
     grid-area: iops;
   }
-  padding-left: ${spacing.sp12};
+  padding-left: ${spacing.r12};
   height: calc(
     100vh - 48px - 2.857rem - 40px - 2.286rem
   ); //100vh - navbar height - tab height - padding - action container height
@@ -54,7 +48,7 @@ const GraphGrid = styled.div`
 const NoMetricsText = styled.div`
   color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
-  padding: ${padding.small} 0 0 ${padding.larger};
+  padding: ${spacing.r8} 0 0 ${spacing.r24};
 `;
 
 const MetricsTab = (props) => {
@@ -71,68 +65,60 @@ const MetricsTab = (props) => {
   const config = useSelector((state) => state.config);
   return (
     <VolumeTab>
-      <MetricGraphCardContainer>
-        <MetricsActionContainer>
-          {config.api?.url_grafana && volumeNamespace && volumePVCName && (
-            <a
-              href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.volumes}?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-cy="advanced_metrics_volume_detailed"
-            >
-              <Button
-                label={intl.formatMessage({
-                  id: 'advanced_metrics',
-                })}
-                variant={'secondary'}
-                icon={<Icon name="External-link" />}
-              />
-            </a>
-          )}
-          {volumeCondition === VOLUME_CONDITION_LINK && <TimespanSelector />}
-        </MetricsActionContainer>
-        {volumeCondition === VOLUME_CONDITION_LINK ? (
-          <GraphGrid id="graph_container">
-            {/* @ts-expect-error - FIXME when you are working on it */}
-            <SyncedCursorCharts>
-              <GraphWrapper className="usage">
-                <VolumeUsageChart
-                  pvcName={volumePVCName}
-                  namespace={volumeNamespace}
-                  volumeName={volumeName}
-                />
-              </GraphWrapper>
-              <GraphWrapper className="latency">
-                <VolumeLatencyChart
-                  instanceIp={instanceIp}
-                  deviceName={deviceName}
-                  volumeName={volumeName}
-                />
-              </GraphWrapper>
-              <GraphWrapper className="throughput">
-                <VolumeThroughputChart
-                  instanceIp={instanceIp}
-                  deviceName={deviceName}
-                  volumeName={volumeName}
-                />
-              </GraphWrapper>
-              <GraphWrapper className="iops">
-                <VolumeIOPSChart
-                  instanceIp={instanceIp}
-                  deviceName={deviceName}
-                  volumeName={volumeName}
-                />
-              </GraphWrapper>
-            </SyncedCursorCharts>
-          </GraphGrid>
-        ) : (
-          <NoMetricsText>
-            {intl.formatMessage({
-              id: 'volume_is_not_bound',
-            })}
-          </NoMetricsText>
+      <MetricsActionContainer>
+        {config.api?.url_grafana && volumeNamespace && volumePVCName && (
+          <a
+            href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.volumes}?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-cy="advanced_metrics_volume_detailed"
+          >
+            <Button
+              label={intl.formatMessage({
+                id: 'advanced_metrics',
+              })}
+              variant={'secondary'}
+              icon={<Icon name="External-link" />}
+            />
+          </a>
         )}
-      </MetricGraphCardContainer>
+        {volumeCondition === VOLUME_CONDITION_LINK && <TimespanSelector />}
+      </MetricsActionContainer>
+      {volumeCondition === VOLUME_CONDITION_LINK ? (
+        <SyncedCursorCharts>
+          <GraphGrid id="graph_container">
+            <VolumeUsageChart
+              pvcName={volumePVCName}
+              namespace={volumeNamespace}
+              volumeName={volumeName}
+            />
+
+            <VolumeLatencyChart
+              instanceIp={instanceIp}
+              deviceName={deviceName}
+              volumeName={volumeName}
+            />
+
+            <VolumeThroughputChart
+              instanceIp={instanceIp}
+              deviceName={deviceName}
+              volumeName={volumeName}
+            />
+
+            <VolumeIOPSChart
+              instanceIp={instanceIp}
+              deviceName={deviceName}
+              volumeName={volumeName}
+            />
+          </GraphGrid>
+        </SyncedCursorCharts>
+      ) : (
+        <NoMetricsText>
+          {intl.formatMessage({
+            id: 'volume_is_not_bound',
+          })}
+        </NoMetricsText>
+      )}
     </VolumeTab>
   );
 };
