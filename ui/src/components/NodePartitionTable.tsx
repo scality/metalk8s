@@ -28,7 +28,10 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       accessor: 'health',
       cellStyle: {
         textAlign: 'center',
-        width: '6.25rem',
+        width: 'unset',
+        minWidth: '3rem',
+        maxWidth: '4rem',
+        flex: 0.5,
       },
       Cell: ({ value }) => {
         return <CircleStatus className="fas fa-circle" status={value} />;
@@ -39,7 +42,9 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       accessor: 'partitionPath',
       cellStyle: {
         textAlign: 'left',
-        flex: 1,
+        width: 'unset',
+        minWidth: '4rem',
+        flex: 0.75,
       },
     },
     {
@@ -47,7 +52,8 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       accessor: 'usage',
       cellStyle: {
         textAlign: 'center',
-        flex: 1,
+        width: 'unset',
+        flex: 0.5,
       },
       Cell: ({ value }) => {
         return (
@@ -67,7 +73,8 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       accessor: 'size',
       cellStyle: {
         textAlign: 'right',
-        width: '6.25rem',
+        flex: 0.5,
+        width: 'unset',
         marginRight: spacing.r16,
       },
     },

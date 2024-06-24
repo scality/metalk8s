@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import styled from 'styled-components';
 import {
   refreshVolumesAction,
   stopRefreshVolumesAction,
@@ -17,19 +16,7 @@ import {
 } from '../ducks/app/monitoring';
 import NodePageVolumesTable from '../components/NodePageVolumesTable';
 import { useRefreshEffect } from '../services/utils';
-import { fontSize } from '@scality/core-ui/dist/style/theme';
-import { NodeTab } from './style/CommonLayoutStyle';
 import { useVolumesWithAlerts } from '../hooks';
-// Overriding overflow for the Tab since the table components has inner scroll
-export const NodesVolumesTab = styled(NodeTab)`
-  overflow: hidden;
-`;
-const TabContent = styled.div`
-  height: 78vh;
-  .sc-progressbarcontainer {
-    font-size: ${fontSize.small};
-  }
-`;
 
 const NodePageVolumesTab = (props) => {
   const { nodeName } = props;
@@ -58,15 +45,11 @@ const NodePageVolumesTab = (props) => {
     [dispatch],
   );
   return (
-    <NodesVolumesTab>
-      <TabContent>
-        <NodePageVolumesTable
-          // @ts-expect-error - FIXME when you are working on it
-          volumeListData={volumeListData}
-          nodeName={nodeName}
-        ></NodePageVolumesTable>
-      </TabContent>
-    </NodesVolumesTab>
+    <NodePageVolumesTable
+      // @ts-expect-error - FIXME when you are working on it
+      volumeListData={volumeListData}
+      nodeName={nodeName}
+    ></NodePageVolumesTable>
   );
 };
 
