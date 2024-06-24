@@ -19,7 +19,7 @@ gpgkey=https://repo.saltproject.io/salt/py3/redhat/\$releasever/\$basearch/minor
  && dnf update -y \
  && dnf install -y salt-master salt-api salt-ssh openssh-clients procps-ng \
  && dnf install -y git \
- && salt-pip install --upgrade pip \
+ && salt-pip install pip==24.0 \
  && salt-pip install "git+https://github.com/kubernetes-client/python.git@v27.2.0#egg=kubernetes" \
  && salt-pip install "protobuf <= 3.20.1" "etcd3 != 0.11.0" \
  && dnf remove -y git \
