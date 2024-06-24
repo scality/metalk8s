@@ -181,7 +181,6 @@ const NotificationCenter = () => {
                 {isAtLeastOneNotificationUnread && (
                   <TextBadge
                     text={`${notifications.filter((n) => !n.readOn).length}`}
-                    // @ts-expect-error - FIXME when you are working on it
                     variant="selectedActive"
                   />
                 )}
