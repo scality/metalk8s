@@ -1,18 +1,17 @@
-import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
+import { fontSize } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './style/CommonLayoutStyle';
 import { useIntl } from 'react-intl';
+import { spacing } from '@scality/core-ui';
 const NodeObjectContent = styled.div`
-  padding: ${padding.large} 50px 0 ${padding.larger};
+  padding: ${spacing.r16};
   white-space: pre-wrap;
-  height: 78vh;
-  font-size: ${fontSize.base};
+  font-size: ${fontSize.small};
 `;
 const ErrorText = styled.div`
   text-align: center;
-  padding: ${padding.base};
+  padding: ${spacing.r16};
 `;
 
 const NodePageDetailsTab = (props) => {
