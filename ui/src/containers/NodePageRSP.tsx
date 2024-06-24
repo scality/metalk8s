@@ -153,8 +153,7 @@ const NodePageRSP = (props) => {
           <div style={{ flex: 'none' }}>
             <Icon name="Node-backend" size="2x" color={color} withWrapper />
           </div>
-
-          <div style={{ overflow: 'hidden', width: '40rem' }}>
+          <div style={{ overflow: 'hidden' }}>
             <Text color="textPrimary" variant="Large">
               <ConstrainedText
                 text={currentNode.name.displayName || name}
