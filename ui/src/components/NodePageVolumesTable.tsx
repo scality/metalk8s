@@ -214,7 +214,17 @@ const VolumeListTable = React.memo((props) => {
     ]; // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [volumeListData, theme, history, nodeName]);
   return (
-    <VolumeListContainer>
+    <Table
+      columns={columns}
+      data={volumeListData}
+      defaultSortingKey="health"
+      entityName={{
+        en: {
+          singular: 'volume',
+          plural: 'volumes',
+        },
+      }}
+    >
       <Wrap padding={spacing.r16}>
         <p></p>
         <Button
@@ -234,23 +244,11 @@ const VolumeListTable = React.memo((props) => {
           data-cy="create_volume_button"
         />
       </Wrap>
-      <Table
-        columns={columns}
-        data={volumeListData}
-        defaultSortingKey="health"
-        entityName={{
-          en: {
-            singular: 'volume',
-            plural: 'volumes',
-          },
-        }}
-      >
-        <Table.SingleSelectableContent
-          rowHeight="h40"
-          separationLineVariant="backgroundLevel3"
-        />
-      </Table>
-    </VolumeListContainer>
+      <Table.SingleSelectableContent
+        rowHeight="h40"
+        separationLineVariant="backgroundLevel3"
+      />
+    </Table>
   );
 }, isEqual);
 export default VolumeListTable;
