@@ -1,6 +1,7 @@
 # CHANGELOG
 
-## Release 128.0.0-alpha.3
+## Release 128.0.0 (in development)
+
 ### Enhancements
 
 - Bump Kubernetes version to
