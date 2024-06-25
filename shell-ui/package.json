@@ -56,7 +56,7 @@
     "webpack-dev-server": "^4.1.0"
   },
   "dependencies": {
-    "@scality/core-ui": "0.127.0",
+    "@scality/core-ui": "0.128.0",
     "@scality/module-federation": "^1.2.3",
     "canvas": "^2.9.3",
     "downshift": "^8.0.0",
