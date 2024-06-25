@@ -7,7 +7,7 @@
 Create Workload-Plane Ingress server private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-{%- if salt["salt_version.greater_than"]("Sulfur") %}
+{%- if salt["salt_version.greater_than"]("Phosphorus") %}
     - keysize: 4096
 {%- else %}
     - bits: 4096
@@ -34,7 +34,7 @@ Create Workload-Plane Ingress server private key:
 Generate Workload-Plane Ingress server certificate:
   x509.certificate_managed:
     - name: {{ certificates.server.files['workload-plane-ingress'].path }}
-{%- if salt["salt_version.greater_than"]("Sulfur") %}
+{%- if salt["salt_version.greater_than"]("Phosphorus") %}
     - private_key: {{ private_key_path }}
 {%- else %}
     - public_key: {{ private_key_path }}

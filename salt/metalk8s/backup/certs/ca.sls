@@ -5,7 +5,7 @@
 Create backup server CA private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-{%- if salt["salt_version.greater_than"]("Sulfur") %}
+{%- if salt["salt_version.greater_than"]("Phosphorus") %}
     - keysize: 4096
 {%- else %}
     - bits: 4096

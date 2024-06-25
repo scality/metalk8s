@@ -54,7 +54,7 @@ def managed(
 
     client_priv_key = __salt__["x509.create_private_key"](text=True, verbose=False)
 
-    if __salt__["salt_version.greater_than"]("Sulfur"):
+    if __salt__["salt_version.greater_than"]("Phosphorus"):
         client_cert = __salt__["x509.create_certificate"](
             text=True,
             private_key=client_priv_key,  # pub key is sourced from priv key

@@ -3,7 +3,7 @@
 Create SA private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-{%- if salt["salt_version.greater_than"]("Sulfur") %}
+{%- if salt["salt_version.greater_than"]("Phosphorus") %}
     - keysize: 2048
 {%- else %}
     - bits: 2048

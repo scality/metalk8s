@@ -6,7 +6,7 @@
 Create etcd server private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-{%- if salt["salt_version.greater_than"]("Sulfur") %}
+{%- if salt["salt_version.greater_than"]("Phosphorus") %}
     - keysize: 2048
 {%- else %}
     - bits: 2048
@@ -22,7 +22,7 @@ Create etcd server private key:
 Generate etcd server certificate:
   x509.certificate_managed:
     - name: {{ certificates.server.files.etcd.path }}
-{%- if salt["salt_version.greater_than"]("Sulfur") %}
+{%- if salt["salt_version.greater_than"]("Phosphorus") %}
     - private_key: {{ private_key_path }}
 {%- else %}
     - public_key: {{ private_key_path }}
