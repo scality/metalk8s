@@ -212,6 +212,7 @@ const VolumePageContent = (props) => {
               ) : null
             }
             data-cy="alerts_tab_volume_page"
+            withoutPadding
           >
             <AlertsTab
               alerts={alertlist}
