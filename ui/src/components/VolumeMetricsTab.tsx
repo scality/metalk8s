@@ -39,10 +39,8 @@ const GraphGrid = styled.div`
     grid-area: iops;
   }
   padding-left: ${spacing.r12};
-  height: calc(
-    100vh - 48px - 2.857rem - 40px - 2.286rem
-  ); //100vh - navbar height - tab height - padding - action container height
-  overflow-y: auto;
+  height: calc(100% - 3rem); //100% - padding - action container height
+  overflow: auto;
 `;
 // No data rendering should be extracted to an common style
 const NoMetricsText = styled.div`
@@ -64,7 +62,7 @@ const MetricsTab = (props) => {
   // @ts-expect-error - FIXME when you are working on it
   const config = useSelector((state) => state.config);
   return (
-    <VolumeTab>
+    <>
       <MetricsActionContainer>
         {config.api?.url_grafana && volumeNamespace && volumePVCName && (
           <a
@@ -119,7 +117,7 @@ const MetricsTab = (props) => {
           })}
         </NoMetricsText>
       )}
-    </VolumeTab>
+    </>
   );
 };
 

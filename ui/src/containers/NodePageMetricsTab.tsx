@@ -71,9 +71,9 @@ const GraphGrid = styled.div`
     grid-area: wpbandwidth;
   }
   padding-left: ${spacing.r12};
-  /* 100vh - navbar height - tab height - padding - action container height */
-  height: calc(100vh - 3.357rem - 2.857rem - 40px - 2.286rem);
-  overflow-y: auto;
+  /* 100% - padding - action container height */
+  height: calc(100% - 3rem);
+  overflow: auto;
 `;
 const MetricsToggleWrapper = styled.div`
   display: flex;
@@ -143,7 +143,7 @@ const NodePageMetricsTab = ({
   };
 
   return (
-    <NodeTab>
+    <>
       <MetricsActionContainer>
         <MetricsToggleWrapper>
           {instanceIP && (
@@ -301,7 +301,7 @@ const NodePageMetricsTab = ({
       ) : (
         <RenderNoDataAvailable />
       )}
-    </NodeTab>
+    </>
   );
 };
 
