@@ -5,7 +5,6 @@ import { NodeTab } from './style/CommonLayoutStyle';
 import { useIntl } from 'react-intl';
 import { spacing } from '@scality/core-ui';
 const NodeObjectContent = styled.div`
-  padding: ${spacing.r16};
   white-space: pre-wrap;
   font-size: ${fontSize.small};
 `;

@@ -48,7 +48,7 @@ const VolumeDetailCardContainer = styled.div`
 `;
 const VolumeTitleSection = styled.div`
   color: ${(props) => props.theme.textPrimary};
-  padding: ${spacing.r20} ${spacing.r16} ${spacing.r24} ${spacing.r20};
+  padding: 0 0 ${spacing.r24} 0;
   display: flex;
   justify-content: space-between;
 `;
@@ -197,7 +197,7 @@ const VolumeDetailCard = (props) => {
         <Box padding="0 20px 2rem 20px">
           <Banner
             variant="warning"
-            icon={<Icon name="Exclamation-triangle" />}
+            icon={<Icon name="Exclamation-circle" />}
             title={intl.formatMessage({
               id: 'monitoring_information_unavailable',
             })}

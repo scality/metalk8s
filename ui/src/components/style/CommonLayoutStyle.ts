@@ -67,7 +67,7 @@ export const MetricsActionContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  padding: ${spacing.r20} ${spacing.r16};
+  padding-bottom: ${spacing.r16};
   position: sticky;
   top: 0px;
   z-index: 100;

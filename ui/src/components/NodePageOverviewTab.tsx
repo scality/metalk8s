@@ -38,7 +38,7 @@ const NodeNameContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: ${spacing.r20} 0 ${spacing.r24} ${spacing.r20};
+  padding: 0 0 ${spacing.r24} 0;
 `;
 const StatusText = styled.span<{ textColor }>`
   color: ${(props) => {

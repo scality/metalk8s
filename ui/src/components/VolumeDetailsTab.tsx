@@ -7,7 +7,6 @@ import { spacing } from '@scality/core-ui';
 const VolumeObjectContent = styled.div`
   white-space: pre-wrap;
   font-size: ${fontSize.small};
-  padding: ${spacing.r16};
 `;
 const ErrorText = styled.div`
   text-align: center;
