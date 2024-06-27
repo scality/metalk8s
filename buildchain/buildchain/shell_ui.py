@@ -73,10 +73,8 @@ def run_shell_ui_builder(cmd: str) -> docker_command.DockerRun:
             "src",
             "public",
             "index-template.html",
-            "webpack.common.js",
-            "webpack.config.prd.js",
+            "rspack.config.ts",
             "babel.config.js",
-            ".flowconfig",
         ],
     )
 
