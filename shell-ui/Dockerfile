@@ -14,7 +14,7 @@ COPY package.json package-lock.json tsconfig.json /home/node/
 ENV npm_config_cache /home/node/app/.npm
 RUN npm config set unsafe-perm true && npm ci --legacy-peer-deps
 
-COPY index-template.html webpack.*.js babel.config.js tsconfig.json .flowconfig /home/node/
+COPY index-template.html rspack.config.ts tsconfig.json /home/node/
 COPY public /home/node/public
 COPY src /home/node/src
 
