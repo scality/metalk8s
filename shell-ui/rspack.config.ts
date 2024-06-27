@@ -3,14 +3,19 @@ import packageJson from './package.json';
 import { Configuration } from '@rspack/cli';
 import rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
+import { RsdoctorRspackPlugin } from '@rsdoctor/rspack-plugin';
 
 const deps = packageJson.dependencies;
 
 const controlPlaneIP = '{{IP}}';
 const controlPlaneBaseUrl = `https://${controlPlaneIP}:8443`;
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const config: Configuration = {
   entry: './src/index.tsx',
+  mode: isProduction ? 'production' : 'development',
+  devtool: isProduction ? false : 'eval',
   output: {
     filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'build'),
@@ -70,14 +75,6 @@ const config: Configuration = {
           },
         },
         type: 'javascript/auto',
-      },
-      {
-        test: /\.html$/,
-        use: [
-          {
-            loader: 'html-loader',
-          },
-        ],
       },
       {
         test: /\.(jpe?g|gif|png|ttf|eot|svg)$/,
@@ -197,7 +194,18 @@ const config: Configuration = {
       filename: './index.html',
       excludedChunks: ['shell'],
     }),
-  ],
+    new rspack.CopyRspackPlugin({
+      patterns: [
+        {
+          from: 'public',
+        },
+      ],
+    }),
+    process.env.RSDOCTOR &&
+      new RsdoctorRspackPlugin({
+        // plugin options
+      }),
+  ].filter(Boolean),
   devServer: {
     port: 8084,
     historyApiFallback: {
