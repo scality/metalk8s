@@ -15,7 +15,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const config: Configuration = {
   entry: './src/index.tsx',
   mode: isProduction ? 'production' : 'development',
-  devtool: isProduction ? false : 'eval',
+  devtool: isProduction ? false : 'source-map',
   output: {
     filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'build'),
@@ -197,14 +197,11 @@ const config: Configuration = {
     new rspack.CopyRspackPlugin({
       patterns: [
         {
-          from: 'public',
+          from: 'public/shell',
         },
       ],
     }),
-    process.env.RSDOCTOR &&
-      new RsdoctorRspackPlugin({
-        // plugin options
-      }),
+    process.env.RSDOCTOR && new RsdoctorRspackPlugin({}),
   ].filter(Boolean),
   devServer: {
     port: 8084,
