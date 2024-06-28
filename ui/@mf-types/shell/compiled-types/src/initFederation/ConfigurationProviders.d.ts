@@ -1,5 +1,6 @@
-import React from 'react';
+import { IconName } from '@scality/core-ui/dist/components/icon/Icon.component';
 import type { SolutionUI } from '@scality/module-federation';
+import React from 'react';
 export type OAuth2ProxyConfig = {
     kind: 'OAuth2Proxy';
 };
@@ -71,7 +72,7 @@ export type FederatedView = {
     app: SolutionUI;
     view: View;
     groups?: string[];
-    icon?: string;
+    icon?: IconName;
     navbarGroup: 'main' | 'subLogin';
 };
 export type NonFederatedView = {
@@ -86,7 +87,7 @@ export type NonFederatedView = {
     isExternal: boolean;
     groups?: string[];
     navbarGroup: 'main' | 'subLogin';
-    icon?: string;
+    icon?: IconName;
 };
 export type ViewDefinition = FederatedView | NonFederatedView;
 export declare function useDiscoveredViews(): ViewDefinition[];
