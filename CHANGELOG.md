@@ -4,6 +4,10 @@
 
 ### Enhancements
 
+- Add configuration in fluentbit and loki to support auditd logs.
+  Logs dashboard was updated to replace deprecated visualizations.
+  (PR[#4348](https://github.com/scality/metalk8s/pull/4348))
+
 - Bump Kubernetes version to
   [1.28.8](https://github.com/kubernetes/kubernetes/releases/tag/v1.28.8)
   (PR[#4283](https://github.com/scality/metalk8s/pull/4283))
