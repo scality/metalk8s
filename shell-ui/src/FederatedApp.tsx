@@ -23,7 +23,9 @@ import {
   ConfigurationProvider,
   FederatedView,
   useConfigRetriever,
+  useConfig,
   useDiscoveredViews,
+  useLinkOpener,
 } from './initFederation/ConfigurationProviders';
 import {
   ShellConfigProvider,
@@ -34,8 +36,95 @@ import { ShellThemeSelectorProvider } from './initFederation/ShellThemeSelectorP
 import { UIListProvider } from './initFederation/UIListProvider';
 import { SolutionsNavbar } from './navbar';
 import { LanguageProvider, useLanguage } from './navbar/lang';
+import AlertProvider from './alerts/AlertProvider';
+import {
+  getAlertingAlertSelectors,
+  getAuthenticationAlertSelectors,
+  getBootstrapAlertSelectors,
+  getDashboardingAlertSelectors,
+  getIngressControllerAlertSelectors,
+  getK8SMasterAlertSelectors,
+  getLoggingAlertSelectors,
+  getMonitoringAlertSelectors,
+  getNetworksAlertSelectors,
+  getNodesAlertSelectors,
+  getPlatformAlertSelectors,
+  getServicesAlertSelectors,
+  getVolumesAlertSelectors,
+  useAlerts,
+  useHighestSeverityAlerts,
+} from './alerts';
 
 export const queryClient = new QueryClient();
+
+export type ShellTypes = {
+  shellHooks: {
+    useAuthConfig: typeof useAuthConfig;
+    useAuth: typeof useAuth;
+    useConfigRetriever: typeof useConfigRetriever;
+    useDiscoveredViews: typeof useDiscoveredViews;
+    useShellConfig: typeof useShellConfig;
+    useLanguage: typeof useLanguage;
+    useConfig: typeof useConfig;
+    useLinkOpener: typeof useLinkOpener;
+  };
+  shellAlerts: {
+    AlertsProvider: typeof AlertProvider;
+    hooks: {
+      useAlerts: typeof useAlerts;
+      useHighestSeverityAlerts: typeof useHighestSeverityAlerts;
+    };
+    alertSelectors: {
+      getPlatformAlertSelectors: typeof getPlatformAlertSelectors;
+      getNodesAlertSelectors: typeof getNodesAlertSelectors;
+      getVolumesAlertSelectors: typeof getVolumesAlertSelectors;
+      getNetworksAlertSelectors: typeof getNetworksAlertSelectors;
+      getServicesAlertSelectors: typeof getServicesAlertSelectors;
+      getK8SMasterAlertSelectors: typeof getK8SMasterAlertSelectors;
+      getBootstrapAlertSelectors: typeof getBootstrapAlertSelectors;
+      getMonitoringAlertSelectors: typeof getMonitoringAlertSelectors;
+      getAlertingAlertSelectors: typeof getAlertingAlertSelectors;
+      getLoggingAlertSelectors: typeof getLoggingAlertSelectors;
+      getDashboardingAlertSelectors: typeof getDashboardingAlertSelectors;
+      getIngressControllerAlertSelectors: typeof getIngressControllerAlertSelectors;
+      getAuthenticationAlertSelectors: typeof getAuthenticationAlertSelectors;
+    };
+  };
+};
+
+window.shellHooks = {
+  useAuthConfig,
+  useAuth,
+  useConfigRetriever,
+  useDiscoveredViews,
+  useShellConfig,
+  useLanguage,
+  useConfig,
+  useLinkOpener: useLinkOpener,
+};
+
+window.shellAlerts = {
+  AlertsProvider: AlertProvider,
+  hooks: {
+    useAlerts: useAlerts,
+    useHighestSeverityAlerts: useHighestSeverityAlerts,
+  },
+  alertSelectors: {
+    getPlatformAlertSelectors: getPlatformAlertSelectors,
+    getNodesAlertSelectors: getNodesAlertSelectors,
+    getVolumesAlertSelectors: getVolumesAlertSelectors,
+    getNetworksAlertSelectors: getNetworksAlertSelectors,
+    getServicesAlertSelectors: getServicesAlertSelectors,
+    getK8SMasterAlertSelectors: getK8SMasterAlertSelectors,
+    getBootstrapAlertSelectors: getBootstrapAlertSelectors,
+    getMonitoringAlertSelectors: getMonitoringAlertSelectors,
+    getAlertingAlertSelectors: getAlertingAlertSelectors,
+    getLoggingAlertSelectors: getLoggingAlertSelectors,
+    getDashboardingAlertSelectors: getDashboardingAlertSelectors,
+    getIngressControllerAlertSelectors: getIngressControllerAlertSelectors,
+    getAuthenticationAlertSelectors: getAuthenticationAlertSelectors,
+  },
+};
 
 function FederatedRoute({
   url,

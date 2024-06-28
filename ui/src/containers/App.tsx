@@ -1,21 +1,26 @@
 import { MetricsTimeSpanProvider } from '@scality/core-ui/dist/next';
 import Layout from './Layout';
 import AlertProvider from './AlertProvider';
-import ConfigProvider from './ConfigProvider';
 import FederatedIntlProvider from './IntlProvider';
 import StartTimeProvider from './StartTimeProvider';
+import { ShellTypes } from 'shell/App';
+
+declare global {
+  interface Window {
+    shellHooks: ShellTypes['shellHooks'];
+    shellAlerts: ShellTypes['shellAlerts'];
+  }
+}
 
 const App = () => {
   return (
     <FederatedIntlProvider>
       <MetricsTimeSpanProvider>
-        <ConfigProvider>
-          <StartTimeProvider>
-            <AlertProvider>
-              <Layout />
-            </AlertProvider>
-          </StartTimeProvider>
-        </ConfigProvider>
+        <StartTimeProvider>
+          <AlertProvider>
+            <Layout />
+          </AlertProvider>
+        </StartTimeProvider>
       </MetricsTimeSpanProvider>
     </FederatedIntlProvider>
   );

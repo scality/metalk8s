@@ -1,4 +1,4 @@
-import React, { createContext, useMemo } from 'react';
+import React, { ReactNode, createContext, useMemo } from 'react';
 import { Route } from 'react-router-dom';
 import { useHistory } from 'react-router';
 import { ErrorPage500, ErrorPageAuth, ErrorPage401 } from '@scality/core-ui';
@@ -104,19 +104,11 @@ const ShellUIContext = createContext<{
 } | null>(null);
 
 export const useAuth = () => {
-  const context = React.useContext(ShellUIContext);
-  if (context === null) {
-    throw new Error('useAuth must be used within PrivateRoute');
-  }
-  return context.useAuth();
+  return window.shellHooks.useAuth();
 };
 
 export const useShellConfig = () => {
-  const context = React.useContext(ShellUIContext);
-  if (context === null) {
-    throw new Error('useShellConfig must be used within PrivateRoute');
-  }
-  return context.useShellConfig();
+  return window.shellHooks.useShellConfig();
 };
 
 const AccessRouteGuard = ({ component, ...rest }) => {
@@ -130,14 +122,15 @@ const AccessRouteGuard = ({ component, ...rest }) => {
   return <Route {...rest} component={component} />;
 };
 
-const InternalPrivateRoute = ({ moduleExports, component, ...rest }) => {
+const PrivateRoute = ({ component, ...rest }: PrivateRouteProps) => {
+  rest.canAccess = rest.canAccess ? rest.canAccess : () => true;
   const { language, api } = useTypedSelector((state) => state.config);
   const { isAuthError } = useTypedSelector(
     (state) => state.app.authError,
     (left, right) => left.isAuthError === right.isAuthError,
   );
   const url_support = api?.url_support;
-  const { userData } = moduleExports['./auth/AuthProvider'].useAuth();
+  const { userData } = window.shellHooks.useAuth();
 
   const dispatch = useDispatch();
   const history = useHistory();
@@ -157,18 +150,7 @@ const InternalPrivateRoute = ({ moduleExports, component, ...rest }) => {
       />
     );
   } else if (userData.token && userData.username) {
-    return (
-      <ShellUIContext.Provider
-        value={{
-          useAuth: moduleExports['./auth/AuthProvider'].useAuth,
-          useShellConfig:
-            moduleExports['./moduleFederation/ShellConfigurationProvider']
-              .useShellConfig,
-        }}
-      >
-        <AccessRouteGuard {...rest} component={component} />
-      </ShellUIContext.Provider>
-    );
+    return <AccessRouteGuard {...rest} component={component} />;
   } else {
     return (
       <ErrorPageAuth
@@ -180,36 +162,10 @@ const InternalPrivateRoute = ({ moduleExports, component, ...rest }) => {
   }
 };
 type PrivateRouteProps = {
-  component: any;
+  component: ReactNode;
   path: string;
   exact?: boolean;
   canAccess?: (roles: UserRoles, userAccessRight: UserAccessRight) => boolean;
-};
-const PrivateRoute = (props: PrivateRouteProps) => {
-  const newProps = { ...props };
-  newProps.canAccess = newProps.canAccess ? newProps.canAccess : () => true;
-
-  return (
-    <ComponentWithFederatedImports
-      componentWithInjectedImports={InternalPrivateRoute}
-      componentProps={newProps}
-      renderOnError={<ErrorPage500 data-cy="sc-error-page500" />}
-      federatedImports={[
-        {
-          // @ts-expect-error - FIXME when you are working on it
-          remoteEntryUrl: window.shellUIRemoteEntryUrl,
-          scope: 'shell',
-          module: './auth/AuthProvider',
-        },
-        {
-          // @ts-expect-error - FIXME when you are working on it
-          remoteEntryUrl: window.shellUIRemoteEntryUrl,
-          scope: 'shell',
-          module: './moduleFederation/ShellConfigurationProvider',
-        },
-      ]}
-    />
-  );
 };
 
 export default PrivateRoute;

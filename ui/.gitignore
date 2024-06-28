@@ -24,5 +24,4 @@ cypress/screenshots/
 cypress/videos/
 
 # federated types
-@mf-types/
 build_ts/

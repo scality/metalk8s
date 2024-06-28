@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './FederatedApp';
+import App, { ShellTypes } from './FederatedApp';
 import { NotificationCenterContextType } from './NotificationCenterProvider';
 import { History } from 'history';
 import {
@@ -17,6 +17,8 @@ declare global {
         null | (BuildtimeWebFinger | RuntimeWebFinger)[]
       >;
     };
+    shellHooks: ShellTypes['shellHooks'];
+    shellAlerts: ShellTypes['shellAlerts'];
   }
 }
 

@@ -136,6 +136,9 @@ const config: Configuration = {
         './AlertsNavbarUpdater':
           './src/components/AlertNavbarUpdaterComponent.tsx',
       },
+      remotes: {
+        shell: 'shell@http://localhost:8084/shell/mf-manifest.json',
+      },
       shared: {
         ...Object.fromEntries(
           Object.entries(deps).map(([key, version]) => [key, {}]),

@@ -134,13 +134,13 @@ export function useConfigRetriever(): {
     },
   };
 }
-export function useConfig({
+export function useConfig<T extends 'build' | 'run'>({
   configType,
   name,
 }: {
-  configType: 'build' | 'run';
+  configType: T;
   name: string;
-}): RuntimeWebFinger | BuildtimeWebFinger | null {
+}): null | T extends 'run' ? RuntimeWebFinger : BuildtimeWebFinger {
   const { retrieveConfiguration } = useConfigRetriever();
   const webFingerContextValue = useContext(
     window.shellContexts.WebFingersContext,

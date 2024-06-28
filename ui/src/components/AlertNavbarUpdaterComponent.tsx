@@ -7,7 +7,6 @@ import {
   AppConfigProviderWithoutRedux,
   useConfig,
 } from '../FederableApp';
-import ConfigProvider from '../containers/ConfigProvider';
 
 type Notification = {
   id: string;
@@ -33,18 +32,16 @@ export default function AlertNavbarUpdaterComponent({
 }) {
   return (
     <FederatedIntlProvider>
-      <ConfigProvider>
-        <AppConfigProvider
-          componentWithInjectedImports={AppConfigProviderWithoutRedux}
-        >
-          <AlertProvider>
-            <AlertNavbarUpdaterComponentInternal
-              publishNotification={publishNotification}
-              unPublishNotification={unPublishNotification}
-            />
-          </AlertProvider>
-        </AppConfigProvider>
-      </ConfigProvider>
+      <AppConfigProvider
+        componentWithInjectedImports={AppConfigProviderWithoutRedux}
+      >
+        <AlertProvider>
+          <AlertNavbarUpdaterComponentInternal
+            publishNotification={publishNotification}
+            unPublishNotification={unPublishNotification}
+          />
+        </AlertProvider>
+      </AppConfigProvider>
     </FederatedIntlProvider>
   );
 }
