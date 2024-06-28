@@ -4,7 +4,10 @@ import { useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 
 import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
-import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
+import {
+  Icon,
+  IconName,
+} from '@scality/core-ui/dist/components/icon/Icon.component';
 import { Layout } from '@scality/core-ui/dist/components/layout/v2/index';
 import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
 
@@ -53,7 +56,7 @@ const NavbarDropDownItem = styled.div`
 `;
 const NavbarDropDownItemIcon = styled.div`
   padding-right: 10px;
-  color: ${(props) => props.theme.textSecondary};
+  color: ${(props) => props.theme.textPrimary};
 `;
 const NavbarDropDownItemLabel = styled.div`
   flex-grow: 1;
@@ -68,7 +71,7 @@ const Item = ({
   label,
   isExternal,
 }: {
-  icon?: string;
+  icon?: IconName;
   label: string;
   isExternal?: boolean;
 }) => {
@@ -76,7 +79,7 @@ const Item = ({
     <NavbarDropDownItem>
       {icon && (
         <NavbarDropDownItemIcon>
-          <i className={icon} />
+          <Icon name={icon} />
         </NavbarDropDownItemIcon>
       )}
       <NavbarDropDownItemLabel>{label}</NavbarDropDownItemLabel>
@@ -406,7 +409,7 @@ export const Navbar = ({
         {
           label: (
             <Item
-              icon={'fas fa-sign-out-alt'}
+              icon="Log-out"
               label={intl.formatMessage({
                 id: 'sign-out',
               })}
@@ -446,7 +449,11 @@ export const Navbar = ({
             setThemeMode(switchThemeTo);
           }}
           icon={
-            <i className={`fas fa-${themeMode === 'dark' ? 'sun' : 'moon'}`} />
+            themeMode === 'dark' ? (
+              <Icon name="LightMode" color={theme.textPrimary} />
+            ) : (
+              <Icon name="DarkMode" color={theme.textPrimary} />
+            )
           }
           tooltip={{
             overlay: `Switch to ${switchThemeTo} theme`,

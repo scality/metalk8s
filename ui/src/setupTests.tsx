@@ -99,7 +99,7 @@ jest.mock('./containers/PrivateRoute', () => ({
             {
               kind: 'artesca-base-ui',
               view: 'license',
-              icon: 'fas fa-file-invoice',
+              icon: 'License',
             },
           ],
         },

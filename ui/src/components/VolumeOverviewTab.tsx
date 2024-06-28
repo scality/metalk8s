@@ -1,46 +1,41 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
-import { useHistory } from 'react-router';
-import styled, { useTheme } from 'styled-components';
-import {
-  fontSize,
-  fontWeight,
-  padding,
-} from '@scality/core-ui/dist/style/theme';
-import CircleStatus from './CircleStatus';
-import ActiveAlertsCounter from './ActiveAlertsCounter';
-import { isVolumeDeletable } from '../services/NodeVolumesUtils';
-import { deleteVolumeAction } from '../ducks/app/volumes';
-import {
-  VOLUME_CONDITION_LINK,
-  STATUS_CRITICAL,
-  STATUS_WARNING,
-  LVM_LOGICAL_VOLUME,
-} from '../constants';
 import {
   Banner,
   FormattedDateTime,
+  Icon,
   Link,
   Modal,
   ProgressBar,
   spacing,
-  Icon,
 } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
+import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
+import { useState } from 'react';
 import { useIntl } from 'react-intl';
+import { useDispatch } from 'react-redux';
+import { useHistory } from 'react-router';
+import { useLocation } from 'react-router-dom';
+import styled, { useTheme } from 'styled-components';
 import {
-  VolumeTab,
+  LVM_LOGICAL_VOLUME,
+  STATUS_CRITICAL,
+  STATUS_WARNING,
+  VOLUME_CONDITION_LINK,
+} from '../constants';
+import { RenderNoDataAvailable } from '../containers/NodePageMetricsTab';
+import { deleteVolumeAction } from '../ducks/app/volumes';
+import { isVolumeDeletable } from '../services/NodeVolumesUtils';
+import { formatSizeForDisplay } from '../services/utils';
+import ActiveAlertsCounter from './ActiveAlertsCounter';
+import CircleStatus from './CircleStatus';
+import {
+  ActiveAlertTitle,
+  ActiveAlertWrapper,
   OverviewInformationLabel,
   OverviewInformationSpan,
   OverviewInformationValue,
-  OverviewClickableInformationValue,
   OverviewResourceName,
-  ActiveAlertTitle,
-  ActiveAlertWrapper,
+  VolumeTab,
 } from './style/CommonLayoutStyle';
-import { formatSizeForDisplay } from '../services/utils';
-import { RenderNoDataAvailable } from '../containers/NodePageMetricsTab';
 const VolumeDetailCardContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -174,7 +169,7 @@ const VolumeDetailCard = (props) => {
     <VolumeTab>
       <VolumeTitleSection data-cy="volume_detail_card_name">
         <div>
-          <CircleStatus className="fas fa-circle" status={health} />
+          <CircleStatus status={health} />
           <OverviewResourceName>{name}</OverviewResourceName>
         </div>
         <Button

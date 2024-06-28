@@ -1,12 +1,12 @@
-import React from 'react';
-import { createContext, useContext } from 'react';
+import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import { IconName } from '@scality/core-ui/dist/components/icon/Icon.component';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import type { SolutionUI } from '@scality/module-federation';
+import React, { createContext, useContext } from 'react';
 import { useQueries } from 'react-query';
 import { useShellConfig } from './ShellConfigProvider';
-import { useDeployedApps, useDeployedAppsRetriever } from './UIListProvider';
-import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
-import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { useShellHistory } from './ShellHistoryProvider';
-import type { SolutionUI } from '@scality/module-federation';
+import { useDeployedApps, useDeployedAppsRetriever } from './UIListProvider';
 
 if (!window.shellContexts) {
   // @ts-expect-error - FIXME when you are working on it
@@ -160,7 +160,7 @@ export type FederatedView = {
   app: SolutionUI;
   view: View;
   groups?: string[];
-  icon?: string;
+  icon?: IconName;
   navbarGroup: 'main' | 'subLogin';
 };
 export type NonFederatedView = {
@@ -175,7 +175,7 @@ export type NonFederatedView = {
   isExternal: boolean;
   groups?: string[];
   navbarGroup: 'main' | 'subLogin';
-  icon?: string;
+  icon?: IconName;
 };
 export type ViewDefinition = FederatedView | NonFederatedView;
 export function useDiscoveredViews(): ViewDefinition[] {

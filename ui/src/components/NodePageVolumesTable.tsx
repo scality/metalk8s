@@ -1,27 +1,27 @@
-import React from 'react';
-import { useHistory } from 'react-router';
-import styled, { useTheme } from 'styled-components';
-import isEqual from 'lodash.isequal';
-import CircleStatus from './CircleStatus';
 import {
+  ConstrainedText,
+  Icon,
+  Link,
   ProgressBar,
   Tooltip,
-  ConstrainedText,
-  Link,
-  spacing,
-  Icon,
   Wrap,
+  spacing,
 } from '@scality/core-ui';
-import { Box, Table, Button } from '@scality/core-ui/dist/next';
+import { Button, Table } from '@scality/core-ui/dist/next';
+import isEqual from 'lodash.isequal';
+import React from 'react';
 import { useIntl } from 'react-intl';
-import { formatSizeForDisplay } from '../services/utils';
-import { UnknownIcon, TooltipContent } from './TableRow';
+import { useHistory } from 'react-router';
+import styled, { useTheme } from 'styled-components';
 import {
+  VOLUME_CONDITION_EXCLAMATION,
   VOLUME_CONDITION_LINK,
   VOLUME_CONDITION_UNLINK,
-  VOLUME_CONDITION_EXCLAMATION,
 } from '../constants';
+import { formatSizeForDisplay } from '../services/utils';
+import CircleStatus from './CircleStatus';
 import { Latency } from './Latency';
+import { TooltipContent, UnknownIcon } from './TableRow';
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.textPrimary};
   height: 100%;
@@ -47,9 +47,7 @@ const VolumeListTable = React.memo((props) => {
           paddingRight: '0.714rem',
         },
         Cell: (cellProps) => {
-          return (
-            <CircleStatus className="fas fa-circle" status={cellProps.value} />
-          );
+          return <CircleStatus status={cellProps.value} />;
         },
         sortType: 'health',
       },
