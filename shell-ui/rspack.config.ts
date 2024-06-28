@@ -17,7 +17,9 @@ const config: Configuration = {
   mode: isProduction ? 'production' : 'development',
   devtool: isProduction ? false : 'source-map',
   output: {
-    filename: '[name].[contenthash].js',
+    filename: 'static/js/[name].[contenthash].js',
+    assetModuleFilename: 'static/assets/[name].[hash][ext][query]',
+    cssFilename: 'static/css/[name].[contenthash].css',
     path: path.resolve(__dirname, 'build'),
     publicPath: '/shell/',
   },
