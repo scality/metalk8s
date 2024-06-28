@@ -166,6 +166,7 @@ export type UserData = {
 
 export function useAuth(): {
   userData?: UserData;
+  getToken: () => Promise<string | null>;
 } {
   const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
 
@@ -196,6 +197,7 @@ export function useAuth(): {
   if (!auth || !auth.userData) {
     return {
       userData: undefined,
+      getToken: () => Promise.resolve(null),
     };
   }
 
@@ -208,6 +210,11 @@ export function useAuth(): {
       id: auth.userData.profile?.sub,
       // @ts-expect-error - FIXME when you are working on it
       original: auth.userData,
+    },
+    getToken: async () => {
+      return auth.userManager.getUser().then((user) => {
+        return user?.access_token;
+      });
     },
   };
 }
