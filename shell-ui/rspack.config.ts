@@ -140,11 +140,6 @@ const config: Configuration = {
           eager: true,
           requiredVersion: deps['styled-components'],
         },
-        'styled-system': {
-          singleton: true,
-          eager: true,
-          requiredVersion: deps['styled-system'],
-        },
         'react-dom': {
           singleton: true,
           eager: true,
@@ -162,10 +157,6 @@ const config: Configuration = {
           singleton: true,
           eager: true,
         },
-        polished: {
-          singleton: true,
-          eager: true,
-        },
         'oidc-client': {
           singleton: true,
           eager: true,
@@ -175,10 +166,6 @@ const config: Configuration = {
           eager: true,
         },
         'react-error-boundary': {
-          singleton: true,
-          eager: true,
-        },
-        '@js-temporal/polyfill': {
           singleton: true,
           eager: true,
         },
