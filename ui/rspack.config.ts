@@ -1,26 +1,29 @@
+import path from 'path';
+import packageJson from './package.json';
 import { Configuration } from '@rspack/cli';
 import rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
-const path = require('path');
-const deps = require('./package.json').dependencies;
+
+const deps = packageJson.dependencies;
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 const config: Configuration = {
   entry: {
     metalk8s_ui: './src/index.ts',
   },
+  mode: isProduction ? 'production' : 'development',
+  devtool: isProduction ? false : 'source-map',
   output: {
     filename: 'static/js/[name].[contenthash].js',
+    assetModuleFilename: 'static/assets/[name].[hash][ext][query]',
+    cssFilename: 'static/css/[name].[contenthash].css',
     path: path.resolve(__dirname, 'build'),
     publicPath: '/',
   },
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.jsx', '.css', '.json', '.ts', '.tsx'],
-    alias: {
-      _: [path.resolve(__dirname, 'public')],
-      'vega-lite': 'vega-lite/build/vega-lite.min.js',
-    },
-    fallback: { querystring: require.resolve('querystring-es3') },
   },
   module: {
     rules: [
@@ -78,54 +81,19 @@ const config: Configuration = {
         type: 'javascript/auto',
       },
       {
-        test: /\.html$/,
-        use: [
-          {
-            loader: 'html-loader',
-          },
-        ],
-      },
-      {
         test: /\.(jpe?g|gif|png|ttf|eot|svg)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: '[name].[ext]?[hash]',
-              outputPath: 'static/media/',
-            },
-          },
-        ],
+        type: 'asset',
       },
       {
         test: /\.woff(2)?$/,
-        use: [
-          {
-            loader: 'url-loader',
-            options: {
-              limit: 10000,
-              mimetype: 'application/fontwoff',
-              outputPath: 'static/media/',
-            },
-          },
-        ],
+        type: 'asset/resource',
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        type: 'css',
       },
     ],
   },
-  // performance: {
-  //   hints: 'warning',
-  //   // ~1.2 MiB for production
-  //   maxAssetSize: process.env.NODE_ENV === 'production' ? 1_300_000 : Infinity,
-  //   assetFilter: (assetFilename) => {
-  //     return (
-  //       !assetFilename.endsWith('.map.gz') && assetFilename.endsWith('.gz')
-  //     );
-  //   },
-  // },
   plugins: [
     new ModuleFederationPlugin({
       name: 'metalk8s',
@@ -164,7 +132,7 @@ const config: Configuration = {
       },
     }),
     new rspack.DefinePlugin({
-      NODE_ENV: JSON.stringify('production'), // FIXME should be an env variable
+      NODE_ENV: process.env.NODE_ENV,
       PUBLIC_URL: JSON.stringify('/'),
     }),
   ],
