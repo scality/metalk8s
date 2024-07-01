@@ -1,10 +1,8 @@
-import React from 'react';
 import { screen } from '@testing-library/react';
+import { STATUS_CRITICAL, STATUS_HEALTH, STATUS_WARNING } from '../constants';
+import { useHighestSeverityAlerts } from '../containers/AlertProvider';
 import DashboardServices from './DashboardServices';
 import { render } from './__TEST__/util';
-import type { Alert } from '../services/alertUtils';
-import { useHighestSeverityAlerts } from '../containers/AlertProvider';
-import { STATUS_WARNING, STATUS_CRITICAL, STATUS_HEALTH } from '../constants';
 const alertsCritical = [
   {
     id: 'alert1',
