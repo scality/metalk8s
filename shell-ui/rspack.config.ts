@@ -7,7 +7,7 @@ import { RsdoctorRspackPlugin } from '@rsdoctor/rspack-plugin';
 
 const deps = packageJson.dependencies;
 
-const controlPlaneIP = '{{IP}}';
+const controlPlaneIP = '13.48.197.10';
 const controlPlaneBaseUrl = `https://${controlPlaneIP}:8443`;
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -197,6 +197,7 @@ const config: Configuration = {
     historyApiFallback: {
       rewrites: [{ from: /./, to: '/shell/index.html' }],
     },
+    hot: !isProduction,
     client: {
       overlay: {
         warnings: false,

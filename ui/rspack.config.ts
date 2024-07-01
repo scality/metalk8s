@@ -104,9 +104,11 @@ const config: Configuration = {
         './AlertsNavbarUpdater':
           './src/components/AlertNavbarUpdaterComponent.tsx',
       },
-      remotes: {
-        shell: 'shell@http://localhost:8084/shell/mf-manifest.json',
-      },
+      remotes: !isProduction
+        ? {
+            shell: 'shell@http://localhost:8084/shell/mf-manifest.json',
+          }
+        : undefined,
       shared: {
         ...Object.fromEntries(
           Object.entries(deps).map(([key, version]) => [key, {}]),
@@ -138,6 +140,7 @@ const config: Configuration = {
   ],
   devServer: {
     port: 3000,
+    hot: !isProduction,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
