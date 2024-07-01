@@ -16,7 +16,6 @@ import { MetricsTimeSpanProvider } from '@scality/core-ui/dist/components/linete
 import reducer from '../../ducks/reducer';
 import translations_en from '../../translations/en.json';
 import StartTimeProvider from '../../containers/StartTimeProvider';
-import { ConfigContext } from '../../FederableApp';
 import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
 import { ToastProvider } from '@scality/core-ui';
 
@@ -70,10 +69,7 @@ export const metalK8sConfig = {
   ui_base_path: '/platform',
   url_support: 'https://github.com/scality/metalk8s/discussions/new',
 };
-export const AllTheProviders = (
-  initialPath: string = '/',
-  metalk8sConfig = metalK8sConfig,
-) => {
+export const AllTheProviders = (initialPath: string = '/') => {
   return ({ children }: { children: React.ReactNode }) => {
     const history = createMemoryHistory();
     history.push(initialPath);
@@ -98,11 +94,7 @@ export const AllTheProviders = (
                   <MetricsTimeSpanProvider>
                     <StartTimeProvider>
                       <AlertProvider>
-                        <ThemeProvider theme={theme}>
-                          <ConfigContext.Provider value={metalk8sConfig}>
-                            {children}
-                          </ConfigContext.Provider>
-                        </ThemeProvider>
+                        <ThemeProvider theme={theme}>{children}</ThemeProvider>
                       </AlertProvider>
                     </StartTimeProvider>
                   </MetricsTimeSpanProvider>
@@ -127,11 +119,7 @@ export const AllTheProviders = (
                   <MetricsTimeSpanProvider>
                     <StartTimeProvider>
                       <AlertProvider>
-                        <ThemeProvider theme={theme}>
-                          <ConfigContext.Provider value={metalk8sConfig}>
-                            {children}
-                          </ConfigContext.Provider>
-                        </ThemeProvider>
+                        <ThemeProvider theme={theme}>{children}</ThemeProvider>
                       </AlertProvider>
                     </StartTimeProvider>
                   </MetricsTimeSpanProvider>
@@ -148,7 +136,7 @@ export const AllTheProviders = (
 const customRender = (
   ui: React.ReactNode,
   options = {},
-  providersArgs: [string, typeof metalK8sConfig] = ['/', metalK8sConfig],
+  providersArgs: [string] = ['/'],
 ) =>
   // @ts-expect-error - FIXME when you are working on it
   render(ui, {

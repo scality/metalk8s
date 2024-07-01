@@ -5,6 +5,7 @@ import { setupServer } from 'msw/node';
 import { mockOffsetSize } from '../tests/mocks/util';
 import NodePageOverviewTab from './NodePageOverviewTab';
 import { render, metalK8sConfig } from './__TEST__/util';
+import { useConfig } from '../FederableApp';
 
 const SUT = jest.fn();
 
@@ -158,6 +159,23 @@ describe('NodePageOverviewTab', () => {
   });
 
   it('should not be able to modify display name when feature is disabled', async () => {
+    useConfig.mockImplementation(() => {
+      const metalK8sConfig = {
+        url: '/api/kubernetes',
+        url_salt: '/api/salt',
+        url_prometheus: '/api/prometheus',
+        url_grafana: '/grafana',
+        url_doc: '/docs',
+        url_alertmanager: '/api/alertmanager',
+        url_loki: '/api/loki',
+        flags: [],
+        ui_base_path: '/platform',
+        url_support: 'https://github.com/scality/metalk8s/discussions/new',
+      };
+
+      return metalK8sConfig;
+    });
+
     const props = {
       nodeName: 'mock-node',
       nodeTableData: [
@@ -188,10 +206,7 @@ describe('NodePageOverviewTab', () => {
       volumeS: [],
     };
 
-    render(<NodePageOverviewTab {...props} />, {}, [
-      '/',
-      { ...metalK8sConfig, flags: [] },
-    ]);
+    render(<NodePageOverviewTab {...props} />, {}, ['/']);
 
     expect(screen.queryAllByText('Display Name')).toHaveLength(0);
   });
