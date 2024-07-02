@@ -3,7 +3,7 @@ import { IconName } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import type { SolutionUI } from '@scality/module-federation';
 import React, { createContext, useContext } from 'react';
-import { useQueries } from 'react-query';
+import { useQueries, UseQueryResult } from 'react-query';
 import { useShellConfig } from './ShellConfigProvider';
 import { useShellHistory } from './ShellHistoryProvider';
 import { useDeployedApps, useDeployedAppsRetriever } from './UIListProvider';
@@ -15,7 +15,11 @@ if (!window.shellContexts) {
 
 if (!window.shellContexts.WebFingersContext) {
   window.shellContexts.WebFingersContext = createContext<
-    null | (BuildtimeWebFinger | RuntimeWebFinger)[]
+    | null
+    | UseQueryResult<
+        BuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>,
+        unknown
+      >[]
   >(null);
 }
 
@@ -32,7 +36,7 @@ export type OIDCConfig = {
   providerLogout?: boolean;
   defaultDexConnector?: string;
 };
-export type RuntimeWebFinger = {
+export type RuntimeWebFinger<C> = {
   kind: 'MicroAppRuntimeConfiguration';
   apiVersion: 'ui.scality.com/v1alpha1';
   metadata: {
@@ -41,7 +45,7 @@ export type RuntimeWebFinger = {
   };
   spec: {
     title: string;
-    selfConfiguration: any;
+    selfConfiguration: C;
     auth: OIDCConfig | OAuth2ProxyConfig;
   };
 };
@@ -76,10 +80,10 @@ export type BuildtimeWebFinger = {
   };
 };
 export function useConfigRetriever(): {
-  retrieveConfiguration: <T extends 'build' | 'run'>(arg0: {
-    configType: T;
+  retrieveConfiguration: <T extends 'build' | Record<string, unknown>>(arg0: {
+    configType: T extends 'build' ? 'build' : 'run';
     name: string;
-  }) => (T extends 'run' ? RuntimeWebFinger : BuildtimeWebFinger) | null;
+  }) => (T extends 'build' ? BuildtimeWebFinger : RuntimeWebFinger<T>) | null;
 } {
   const { retrieveDeployedApps } = useDeployedAppsRetriever();
   const webFingerContextValue = useContext(
@@ -93,6 +97,7 @@ export function useConfigRetriever(): {
   }
 
   return {
+    // @ts-expect-error - impossible to type
     retrieveConfiguration: ({ configType, name }) => {
       if (configType !== 'build' && configType !== 'run') {
         throw new Error(
@@ -111,17 +116,13 @@ export function useConfigRetriever(): {
       const configs = webFingerContextValue
         .filter((webFinger) => {
           return (
-            // @ts-expect-error - FIXME when you are working on it
             webFinger.status === 'success' &&
             ((configType === 'build' &&
-              // @ts-expect-error - FIXME when you are working on it
               webFinger.data.kind === 'MicroAppConfiguration') ||
               (configType === 'run' &&
-                // @ts-expect-error - FIXME when you are working on it
                 webFinger.data.kind === 'MicroAppRuntimeConfiguration'))
           );
         })
-        // @ts-expect-error - FIXME when you are working on it
         .map((webFinger) => webFinger.data);
       ///TODO validate web fingers against JsonSchemas
       return configs.find(
@@ -134,13 +135,13 @@ export function useConfigRetriever(): {
     },
   };
 }
-export function useConfig<T extends 'build' | 'run'>({
+export function useConfig<T extends 'build' | Record<string, unknown>>({
   configType,
   name,
 }: {
-  configType: T;
+  configType: T extends 'build' ? 'build' : 'run';
   name: string;
-}): null | T extends 'run' ? RuntimeWebFinger : BuildtimeWebFinger {
+}): null | T extends 'build' ? BuildtimeWebFinger : RuntimeWebFinger<T> {
   const { retrieveConfiguration } = useConfigRetriever();
   const webFingerContextValue = useContext(
     window.shellContexts.WebFingersContext,
@@ -219,7 +220,7 @@ export function useDiscoveredViews(): ViewDefinition[] {
     }
 
     const app = matchingApps[0];
-    const appBuildConfig = retrieveConfiguration({
+    const appBuildConfig = retrieveConfiguration<'build'>({
       configType: 'build',
       name: app.name,
     });
@@ -253,14 +254,14 @@ export const useLinkOpener = () => {
     openLink: (
       to:
         | {
-            isExternal: boolean;
+            isExternal?: boolean;
             app: SolutionUI;
             view: View;
             isFederated: true;
           }
         | {
             isFederated: false;
-            isExternal: boolean;
+            isExternal?: boolean;
             url: string;
           },
     ) => {
@@ -296,7 +297,7 @@ export const ConfigurationProvider = ({
             `${ui.url}/.well-known/micro-app-configuration?version=${ui.version}`,
           ).then((r) => {
             if (r.ok) {
-              return r.json();
+              return r.json() as Promise<BuildtimeWebFinger>;
             } else {
               return Promise.reject();
             }
@@ -311,7 +312,9 @@ export const ConfigurationProvider = ({
             `${ui.url}/.well-known/runtime-app-configuration?version=${ui.version}`,
           ).then((r) => {
             if (r.ok) {
-              return r.json();
+              return r.json() as Promise<
+                RuntimeWebFinger<Record<string, unknown>>
+              >;
             } else {
               return Promise.reject();
             }
@@ -331,7 +334,6 @@ export const ConfigurationProvider = ({
     ? 'loading'
     : 'success';
   return (
-    // @ts-expect-error - FIXME when you are working on it
     <window.shellContexts.WebFingersContext.Provider value={results}>
       {(globalStatus === 'loading' || globalStatus === 'idle') && (
         <Loader size="massive" centered={true} aria-label="loading" />

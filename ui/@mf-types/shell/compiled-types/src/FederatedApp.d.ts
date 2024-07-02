@@ -1,13 +1,16 @@
 import React from 'react';
 import { QueryClient } from 'react-query';
+import { NotificationCenterContextType } from './NotificationCenterProvider';
 import { useAuthConfig } from './auth/AuthConfigProvider';
 import { useAuth } from './auth/AuthProvider';
 import './index.css';
-import { useConfigRetriever, useConfig, useDiscoveredViews, useLinkOpener } from './initFederation/ConfigurationProviders';
+import { useConfigRetriever, useConfig, useDiscoveredViews, useLinkOpener, BuildtimeWebFinger, RuntimeWebFinger } from './initFederation/ConfigurationProviders';
 import { useShellConfig } from './initFederation/ShellConfigProvider';
 import { useLanguage } from './navbar/lang';
 import AlertProvider from './alerts/AlertProvider';
 import { getAlertingAlertSelectors, getAuthenticationAlertSelectors, getBootstrapAlertSelectors, getDashboardingAlertSelectors, getIngressControllerAlertSelectors, getK8SMasterAlertSelectors, getLoggingAlertSelectors, getMonitoringAlertSelectors, getNetworksAlertSelectors, getNodesAlertSelectors, getPlatformAlertSelectors, getServicesAlertSelectors, getVolumesAlertSelectors, useAlerts, useHighestSeverityAlerts } from './alerts';
+import { useHistory } from 'react-router';
+import { UseQueryResult } from 'react-query/types/react';
 export declare const queryClient: QueryClient;
 export type ShellTypes = {
     shellHooks: {
@@ -43,6 +46,17 @@ export type ShellTypes = {
         };
     };
 };
+declare global {
+    interface Window {
+        shellContexts: {
+            ShellHistoryContext: React.Context<ReturnType<typeof useHistory> | null>;
+            NotificationContext: React.Context<null | NotificationCenterContextType>;
+            WebFingersContext: React.Context<null | UseQueryResult<BuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>, unknown>[]>;
+        };
+        shellHooks: ShellTypes['shellHooks'];
+        shellAlerts: ShellTypes['shellAlerts'];
+    }
+}
 export declare function WithInitFederationProviders({ children, }: {
     children: React.ReactNode;
 }): JSX.Element;

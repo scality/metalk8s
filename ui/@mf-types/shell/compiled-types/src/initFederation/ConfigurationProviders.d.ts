@@ -14,7 +14,7 @@ export type OIDCConfig = {
     providerLogout?: boolean;
     defaultDexConnector?: string;
 };
-export type RuntimeWebFinger = {
+export type RuntimeWebFinger<C> = {
     kind: 'MicroAppRuntimeConfiguration';
     apiVersion: 'ui.scality.com/v1alpha1';
     metadata: {
@@ -23,7 +23,7 @@ export type RuntimeWebFinger = {
     };
     spec: {
         title: string;
-        selfConfiguration: any;
+        selfConfiguration: C;
         auth: OIDCConfig | OAuth2ProxyConfig;
     };
 };
@@ -58,15 +58,15 @@ export type BuildtimeWebFinger = {
     };
 };
 export declare function useConfigRetriever(): {
-    retrieveConfiguration: <T extends 'build' | 'run'>(arg0: {
-        configType: T;
+    retrieveConfiguration: <T extends 'build' | Record<string, unknown>>(arg0: {
+        configType: T extends 'build' ? 'build' : 'run';
         name: string;
-    }) => (T extends 'run' ? RuntimeWebFinger : BuildtimeWebFinger) | null;
+    }) => (T extends 'build' ? BuildtimeWebFinger : RuntimeWebFinger<T>) | null;
 };
-export declare function useConfig<T extends 'build' | 'run'>({ configType, name, }: {
-    configType: T;
+export declare function useConfig<T extends 'build' | Record<string, unknown>>({ configType, name, }: {
+    configType: T extends 'build' ? 'build' : 'run';
     name: string;
-}): null | T extends 'run' ? RuntimeWebFinger : BuildtimeWebFinger;
+}): null | T extends 'build' ? BuildtimeWebFinger : RuntimeWebFinger<T>;
 export type FederatedView = {
     isFederated: true;
     app: SolutionUI;
@@ -93,13 +93,13 @@ export type ViewDefinition = FederatedView | NonFederatedView;
 export declare function useDiscoveredViews(): ViewDefinition[];
 export declare const useLinkOpener: () => {
     openLink: (to: {
-        isExternal: boolean;
+        isExternal?: boolean;
         app: SolutionUI;
         view: View;
         isFederated: true;
     } | {
         isFederated: false;
-        isExternal: boolean;
+        isExternal?: boolean;
         url: string;
     }) => void;
 };

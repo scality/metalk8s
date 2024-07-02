@@ -1,23 +1,22 @@
-import React from 'react';
-import styled from 'styled-components';
-import { useIntl } from 'react-intl';
 import {
   FormattedDateTime,
-  Tooltip,
-  StatusText,
   Icon,
+  StatusText,
+  Tooltip,
   spacing,
 } from '@scality/core-ui';
 import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
-import type { Alert } from '../services/alertUtils';
-import type { Status } from '../containers/AlertProvider';
-import CircleStatus from './CircleStatus';
+import { useIntl } from 'react-intl';
+import { useHistory } from 'react-router';
+import styled from 'styled-components';
 import { STATUS_HEALTH } from '../constants';
+import type { Status } from '../containers/AlertProvider';
 import {
   useDiscoveredViews,
   useLinkOpener,
 } from '../containers/ConfigProvider';
-import { useHistory } from 'react-router';
+import type { Alert } from '../services/alertUtils';
+import CircleStatus from './CircleStatus';
 const ServiceItemLabelWrapper = styled.div`
   display: flex;
   align-items: baseline;
@@ -90,9 +89,9 @@ const HealthItem = ({
   const { openLink } = useLinkOpener();
   const history = useHistory();
   const discoveredViews = useDiscoveredViews();
-  const alertView = discoveredViews.find(
-    (view) => view.view.path === '/alerts',
-  );
+  const alertView = discoveredViews.find((view) => {
+    return view.isFederated && view.view.path === '/alerts';
+  });
 
   if (!alerts.length && status === STATUS_HEALTH) {
     return (

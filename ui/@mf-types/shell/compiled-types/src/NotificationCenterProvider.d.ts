@@ -1,4 +1,4 @@
-import { Dispatch } from 'react';
+import React, { Dispatch } from 'react';
 export type Notification = {
     id: string;
     title: string;
@@ -14,7 +14,7 @@ export type NotificationCenterContextType = {
     notifications: InternalNotification[];
     dispatch: Dispatch<NotificationCenterActions>;
 };
-export declare const NotificationCenterContext: any;
+export declare const NotificationCenterContext: React.Context<NotificationCenterContextType>;
 export declare enum NotificationActionType {
     PUBLISH = 0,
     UNPUBLISH = 1,

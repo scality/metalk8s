@@ -14,7 +14,9 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { Route, Router, Switch } from 'react-router-dom';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 
-import NotificationCenterProvider from './NotificationCenterProvider';
+import NotificationCenterProvider, {
+  NotificationCenterContextType,
+} from './NotificationCenterProvider';
 import { AuthConfigProvider, useAuthConfig } from './auth/AuthConfigProvider';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { FirstTimeLoginProvider } from './auth/FirstTimeLoginProvider';
@@ -26,6 +28,8 @@ import {
   useConfig,
   useDiscoveredViews,
   useLinkOpener,
+  BuildtimeWebFinger,
+  RuntimeWebFinger,
 } from './initFederation/ConfigurationProviders';
 import {
   ShellConfigProvider,
@@ -54,6 +58,8 @@ import {
   useAlerts,
   useHighestSeverityAlerts,
 } from './alerts';
+import { useHistory } from 'react-router';
+import { UseQueryResult } from 'react-query/types/react';
 
 export const queryClient = new QueryClient();
 
@@ -91,6 +97,24 @@ export type ShellTypes = {
     };
   };
 };
+
+declare global {
+  interface Window {
+    shellContexts: {
+      ShellHistoryContext: React.Context<ReturnType<typeof useHistory> | null>;
+      NotificationContext: React.Context<null | NotificationCenterContextType>;
+      WebFingersContext: React.Context<
+        | null
+        | UseQueryResult<
+            BuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>,
+            unknown
+          >[]
+      >;
+    };
+    shellHooks: ShellTypes['shellHooks'];
+    shellAlerts: ShellTypes['shellAlerts'];
+  }
+}
 
 window.shellHooks = {
   useAuthConfig,
@@ -140,7 +164,7 @@ function FederatedRoute({
   const { setAuthConfig } = useAuthConfig();
   const { language } = useLanguage();
   useEffect(() => {
-    const runtimeAppConfig = retrieveConfiguration({
+    const runtimeAppConfig = retrieveConfiguration<Record<string, unknown>>({
       configType: 'run',
       name: app.name,
     });
@@ -183,7 +207,7 @@ function ProtectedFederatedRoute({
     userData &&
     (groups?.some((group) => userData.groups.includes(group)) ?? true)
   ) {
-    const appBuildConfig = retrieveConfiguration({
+    const appBuildConfig = retrieveConfiguration<'build'>({
       configType: 'build',
       name: app.name,
     });
@@ -249,7 +273,7 @@ function InternalRouter() {
                 <FederatedRoute
                   url={
                     app.url +
-                    retrieveConfiguration({
+                    retrieveConfiguration<'build'>({
                       configType: 'build',
                       name: app.name,
                     })?.spec.remoteEntryPath

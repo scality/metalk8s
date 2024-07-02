@@ -2,11 +2,7 @@ import { PropsWithChildren } from 'react';
 import { UserData } from '../auth/AuthProvider';
 export declare const InstanceNameProvider: ({ children }: PropsWithChildren<{}>) => JSX.Element;
 export declare const useInstanceName: () => string;
-export declare const useInstanceNameAdapter: () => {
-    remoteEntryUrl: string;
-    module: string;
-    scope: string;
-};
+export declare const useInstanceNameAdapter: () => any;
 export declare const _InternalInstanceName: ({ moduleExports, }: {
     moduleExports: {
         [moduleName: string]: {

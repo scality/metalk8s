@@ -73,10 +73,21 @@ const RouterWithBaseName = ({ children }) => {
     </Router>
   );
 };
-
+type Config = {
+  url: string;
+  url_salt: string;
+  url_prometheus: string;
+  url_grafana: string;
+  url_doc: string;
+  url_alertmanager: string;
+  url_loki: string;
+  flags?: string[];
+  ui_base_path?: string;
+  url_support?: string;
+};
 export const useConfig = () => {
   const { name } = useCurrentApp();
-  const runtimeConfiguration = window.shellHooks.useConfig({
+  const runtimeConfiguration = window.shellHooks.useConfig<Config>({
     configType: 'run',
     name,
   });

@@ -3,14 +3,6 @@ import Layout from './Layout';
 import AlertProvider from './AlertProvider';
 import FederatedIntlProvider from './IntlProvider';
 import StartTimeProvider from './StartTimeProvider';
-import { ShellTypes } from 'shell/App';
-
-declare global {
-  interface Window {
-    shellHooks: ShellTypes['shellHooks'];
-    shellAlerts: ShellTypes['shellAlerts'];
-  }
-}
 
 const App = () => {
   return (

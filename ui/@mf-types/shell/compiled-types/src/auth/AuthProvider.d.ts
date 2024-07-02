@@ -11,6 +11,7 @@ export type UserData = {
 };
 export declare function useAuth(): {
     userData?: UserData;
+    getToken: () => Promise<string | null>;
 };
 export declare function useLogOut(): {
     logOut: () => void;
