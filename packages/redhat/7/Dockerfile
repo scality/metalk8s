@@ -8,6 +8,11 @@ ARG SALT_VERSION
 ARG K8S_SHORT_VERSION
 ARG GO_VERSION=1.19.13
 
+# CentOS 7 is EOL and mirrorlist does no longer exists
+# as a temporary workaround (waiting for drop of CentOS 7 support)
+# let's use another mirror
+RUN sed -i 's/^mirrorlist=/#mirrorlist=/; s/^#baseurl=/baseurl=/; s/mirror\.centos\.org/vault\.centos\.org/' /etc/yum.repos.d/*.repo
+
 ADD common/yum_repositories/*.repo /etc/yum.repos.d/
 RUN sed -i s/@SALT_VERSION@/$SALT_VERSION/ /etc/yum.repos.d/saltstack.repo
 RUN sed -i s/@K8S_SHORT_VERSION@/$K8S_SHORT_VERSION/ /etc/yum.repos.d/kubernetes.repo
