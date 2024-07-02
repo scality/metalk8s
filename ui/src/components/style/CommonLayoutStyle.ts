@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { fontWeight, fontSize } from '@scality/core-ui/dist/style/theme';
 import { spacing } from '@scality/core-ui';
+import { Box } from '@scality/core-ui/dist/next';
 export const CenteredPageContainer = styled.div`
   display: flex;
   justify-content: space-around;
@@ -162,4 +163,9 @@ export const ActiveAlertWrapper = styled.div`
   flex-direction: column;
   padding: 0 ${spacing.r16} 0 ${spacing.r20};
   width: 200px;
+`;
+export const NotBoundContainer = styled(Box)`
+  display: flex;
+  justify-content: center;
+  color: ${(props) => props.theme.textSecondary};
 `;

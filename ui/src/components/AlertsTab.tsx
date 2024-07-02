@@ -5,12 +5,15 @@ import { Alert } from '../services/alertUtils';
 import { useURLQuery } from '../services/utils';
 import ActiveAlertsFilter from './ActiveAlertsFilters';
 import CircleStatus from './CircleStatus';
+import { useIntl } from 'react-intl';
+import { NotBoundContainer } from './style/CommonLayoutStyle';
 
 const AlertsTab = ({
   alerts,
+  status,
 }: {
   alerts: Alert[];
-  children?: (rows: JSX.Element) => JSX.Element;
+  status: 'idle' | 'loading' | 'error' | 'success';
 }) => {
   const query = useURLQuery();
   // Retrieve the severity filter from URL.
@@ -21,7 +24,6 @@ const AlertsTab = ({
   if (alertSeverity?.length === 0 || alertSeverity?.includes('all')) {
     alertSeverity.push(STATUS_WARNING, STATUS_CRITICAL);
   }
-
   const activeAlertListData =
     alerts
       ?.map((alert) => {
@@ -93,6 +95,7 @@ const AlertsTab = ({
       <Table
         columns={columns}
         data={activeAlertListData}
+        status={status}
         entityName={{
           en: {
             singular: 'acitve alert',
