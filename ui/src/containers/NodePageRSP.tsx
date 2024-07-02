@@ -197,7 +197,7 @@ const NodePageRSP = (props) => {
           data-cy="alerts_tab_node_page"
           withoutPadding
         >
-          <AlertsTab alerts={alertsNode} />
+          <AlertsTab alerts={alertsNode} status={alertList.status} />
         </Tabs.Tab>
         <Tabs.Tab
           path={`${url}/metrics`}
