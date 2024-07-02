@@ -198,11 +198,9 @@ const Layout = () => {
               return userAccessRight.canConfigureEmailNotification;
             }}
           />
-          <Route
-            component={() => (
-              <ErrorPage404 data-cy="sc-error-page404" locale={language} />
-            )}
-          />
+          <Route>
+            <ErrorPage404 data-cy="sc-error-page404" locale={language} />
+          </Route>
         </Switch>
       </Suspense>
     </AppContainer>
