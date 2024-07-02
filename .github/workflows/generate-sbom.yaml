@@ -62,7 +62,7 @@ jobs:
           path: ${{ env.BASE_PATH }}/repo/metalk8s
 
       - name: Generate sbom for repository
-        uses: scality/sbom@v1.2.2
+        uses: scality/sbom@v1.2.4
         with:
           target: ${{ env.BASE_PATH }}/repo/metalk8s
           output-dir: ${{ env.SBOM_PATH }}
@@ -98,7 +98,7 @@ jobs:
           echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Generate sbom for extracted ISO
-        uses: scality/sbom@v1.2.2
+        uses: scality/sbom@v1.2.4
         with:
           target: ${{ env.BASE_PATH }}/iso/metalk8s.iso
           output-dir: ${{ env.SBOM_PATH }}
