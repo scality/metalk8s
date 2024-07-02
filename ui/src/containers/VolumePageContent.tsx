@@ -4,8 +4,8 @@ import {
   EmptyState,
   TextBadge,
   TwoPanelLayout,
+  spacing,
 } from '@scality/core-ui';
-import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
 import { Tabs } from '@scality/core-ui/dist/next';
 import { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
@@ -19,6 +19,7 @@ import {
   LeftSideInstanceList,
   NoInstanceSelected,
   NoInstanceSelectedContainer,
+  NotBoundContainer,
   RightSidePanel,
 } from '../components/style/CommonLayoutStyle';
 import {
@@ -212,31 +213,17 @@ const VolumePageContent = (props) => {
               ) : null
             }
             data-cy="alerts_tab_volume_page"
+            withoutPadding
           >
-            <AlertsTab
-              alerts={alertlist}
-              children={(Rows) => {
-                if (!PVCName) {
-                  return (
-                    <NoResult>
-                      {intl.formatMessage({
-                        id: 'volume_is_not_bound',
-                      })}
-                    </NoResult>
-                  );
-                } else if (PVCName && alertlist?.length === 0) {
-                  return (
-                    <NoResult>
-                      {intl.formatMessage({
-                        id: 'no_active_alerts',
-                      })}
-                    </NoResult>
-                  );
-                }
-
-                return <>{Rows}</>;
-              }}
-            />
+            {PVCName ? (
+              <AlertsTab alerts={alertlist} status={alertsVolume.status} />
+            ) : (
+              <NotBoundContainer pt={spacing.r32}>
+                {intl.formatMessage({
+                  id: 'volume_is_not_bound',
+                })}
+              </NotBoundContainer>
+            )}
           </Tabs.Tab>
           <Tabs.Tab
             path={`${match.url}/metrics`}

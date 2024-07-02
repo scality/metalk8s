@@ -1,4 +1,4 @@
-import { ConstrainedText, spacing, FormattedDateTime } from '@scality/core-ui';
+import { ConstrainedText, FormattedDateTime, spacing } from '@scality/core-ui';
 import { Box, Table } from '@scality/core-ui/dist/next';
 import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
 import { Alert } from '../services/alertUtils';
@@ -8,9 +8,10 @@ import CircleStatus from './CircleStatus';
 
 const AlertsTab = ({
   alerts,
+  status,
 }: {
   alerts: Alert[];
-  children?: (rows: JSX.Element) => JSX.Element;
+  status: 'idle' | 'loading' | 'error' | 'success';
 }) => {
   const query = useURLQuery();
   // Retrieve the severity filter from URL.
@@ -21,7 +22,6 @@ const AlertsTab = ({
   if (alertSeverity?.length === 0 || alertSeverity?.includes('all')) {
     alertSeverity.push(STATUS_WARNING, STATUS_CRITICAL);
   }
-
   const activeAlertListData =
     alerts
       ?.map((alert) => {
@@ -39,6 +39,7 @@ const AlertsTab = ({
       accessor: 'name',
       cellStyle: {
         flex: 1,
+        width: 'unset',
       },
     },
     {
@@ -47,6 +48,7 @@ const AlertsTab = ({
       cellStyle: {
         flex: 0.5,
         textAlign: 'center',
+        width: 'unset',
       },
       Cell: ({ value }) => {
         return <CircleStatus name="Circle-health" status={value} />;
@@ -57,6 +59,7 @@ const AlertsTab = ({
       accessor: 'alertDescription',
       cellStyle: {
         flex: 3,
+        width: 'unset',
         paddingLeft: '1rem',
       },
       Cell: ({ value }) => {
@@ -70,6 +73,7 @@ const AlertsTab = ({
         textAlign: 'right',
         flex: 1,
         marginRight: spacing.r16,
+        width: 'unset',
       },
       Cell: ({ value }) => {
         return (
@@ -86,23 +90,22 @@ const AlertsTab = ({
       <Box display="flex" justifyContent="flex-end" padding={spacing.r16}>
         <ActiveAlertsFilter />
       </Box>
-      <Box pt="1rem" flex={1}>
-        <Table
-          columns={columns}
-          data={activeAlertListData}
-          entityName={{
-            en: {
-              singular: 'acitve alert',
-              plural: 'active alerts',
-            },
-          }}
-        >
-          <Table.SingleSelectableContent
-            rowHeight="h48"
-            separationLineVariant="backgroundLevel2"
-          />
-        </Table>
-      </Box>
+      <Table
+        columns={columns}
+        data={activeAlertListData}
+        status={status}
+        entityName={{
+          en: {
+            singular: 'acitve alert',
+            plural: 'active alerts',
+          },
+        }}
+      >
+        <Table.SingleSelectableContent
+          rowHeight="h48"
+          separationLineVariant="backgroundLevel2"
+        />
+      </Table>
     </Box>
   );
 };
