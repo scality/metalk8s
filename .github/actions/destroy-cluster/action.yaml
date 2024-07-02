@@ -21,7 +21,7 @@ inputs:
   TERRAFORM_SNAPSHOT_TAG:
     description: "Tag to checkout for the scality/terraform-snapshot repository"
     required: false
-    default: "0.15.0"
+    default: "0.17.0"
 
   # Cloud configuration
   CLOUD:
