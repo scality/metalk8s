@@ -21,7 +21,7 @@ export const NavbarUpdaterComponents = () => {
     remoteEntryPath: string;
   })[] = deployedApps
     .flatMap((app) => {
-      const appBuildConfig = retrieveConfiguration({
+      const appBuildConfig = retrieveConfiguration<'build'>({
         configType: 'build',
         name: app.name,
       });

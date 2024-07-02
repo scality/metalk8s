@@ -402,7 +402,6 @@ export const Navbar = ({
           ),
           selected: action.selected,
           onClick: () => {
-            // @ts-expect-error - FIXME when you are working on it
             openLink(action.link.view);
           },
         })),
