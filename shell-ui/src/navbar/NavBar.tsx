@@ -13,9 +13,12 @@ import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/
 
 import { useIntl } from 'react-intl';
 import { useTheme } from 'styled-components';
+import { SolutionUI } from '@scality/module-federation';
+
 import { UserData, useAuth, useLogOut } from '../auth/AuthProvider';
 import {
   NonFederatedView,
+  View,
   ViewDefinition,
   useConfigRetriever,
   useDiscoveredViews,
@@ -100,16 +103,14 @@ const Link = ({
   children: React.ReactNode;
   to:
     | {
-        isExternal: boolean;
-        // @ts-expect-error - FIXME when you are working on it
+        isExternal?: boolean;
         app: SolutionUI;
-        // @ts-expect-error - FIXME when you are working on it
         view: View;
         isFederated: true;
       }
     | {
         isFederated: false;
-        isExternal: boolean;
+        isExternal?: boolean;
         url: string;
       };
 }) => {
@@ -325,15 +326,18 @@ export const Navbar = ({
     }
   }, [navbarMainActions]);
 
-  const mainTabs = navbarMainActions.map((action) => ({
-    link: action.link.render ? (
-      <action.link.render selected={action.selected} />
-    ) : (
-      // @ts-expect-error - FIXME when you are working on it
-      <Link to={action.link.view}>{action.link.view.view.label[language]}</Link>
-    ),
-    selected: action.selected,
-  }));
+  const mainTabs = navbarMainActions.map((action) => {
+    return {
+      link: action.link.render ? (
+        <action.link.render selected={action.selected} />
+      ) : (
+        <Link to={action.link.view}>
+          {action.link.view.view.label[language]}
+        </Link>
+      ),
+      selected: action.selected,
+    };
+  });
 
   const secondaryTabs = navbarSecondaryActions.map((action) => ({
     type: 'custom' as const,
