@@ -345,7 +345,6 @@ export const Navbar = ({
       action.link.render ? (
         <action.link.render selected={action.selected} />
       ) : (
-        // @ts-expect-error - FIXME when you are working on it
         <Link to={action.link.view}>
           {action.link.view.view.label[language]}
         </Link>
