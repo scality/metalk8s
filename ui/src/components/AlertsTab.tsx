@@ -98,7 +98,7 @@ const AlertsTab = ({
         status={status}
         entityName={{
           en: {
-            singular: 'acitve alert',
+            singular: 'active alert',
             plural: 'active alerts',
           },
         }}
