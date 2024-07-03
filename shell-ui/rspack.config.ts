@@ -7,7 +7,7 @@ import { RsdoctorRspackPlugin } from '@rsdoctor/rspack-plugin';
 
 const deps = packageJson.dependencies;
 
-const controlPlaneIP = '13.48.197.10';
+const controlPlaneIP = '{{IP}}';
 const controlPlaneBaseUrl = `https://${controlPlaneIP}:8443`;
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -184,11 +184,7 @@ const config: Configuration = {
       excludedChunks: ['shell'],
     }),
     new rspack.CopyRspackPlugin({
-      patterns: [
-        {
-          from: 'public/shell',
-        },
-      ],
+      patterns: [{ from: 'public/shell' }],
     }),
     process.env.RSDOCTOR && new RsdoctorRspackPlugin({}),
   ].filter(Boolean),

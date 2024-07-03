@@ -133,6 +133,9 @@ const config: Configuration = {
         },
       },
     }),
+    new rspack.CopyRspackPlugin({
+      patterns: [{ from: 'public' }],
+    }),
     new rspack.DefinePlugin({
       NODE_ENV: process.env.NODE_ENV,
       PUBLIC_URL: JSON.stringify('/'),
