@@ -463,7 +463,7 @@ jobs:
       - name: Install UI dependencies
         run: |
           cd ui
-          npm ci --legacy-peer-deps --no-optional
+          npm ci --legacy-peer-deps
       - name: Build UI
         run: |
           cd ui
