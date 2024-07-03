@@ -230,7 +230,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "20"
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v4
@@ -273,7 +273,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "20"
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v4
@@ -309,7 +309,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "20"
       - name: Cache node modules
         uses: actions/cache@v4
         env:
@@ -438,7 +438,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "20"
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v4
@@ -516,7 +516,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "20"
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v4
