@@ -124,6 +124,7 @@ def run_ui_builder(cmd: str) -> docker_command.DockerRun:
             "public",
             "src",
             "rspack.config.ts",
+            "@mf-types",
         ],
     )
 
