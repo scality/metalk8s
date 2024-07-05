@@ -6,6 +6,7 @@ import { useAuth } from './auth/AuthProvider';
 import './index.css';
 import { useConfigRetriever, useConfig, useDiscoveredViews, useLinkOpener, BuildtimeWebFinger, RuntimeWebFinger } from './initFederation/ConfigurationProviders';
 import { useShellConfig } from './initFederation/ShellConfigProvider';
+import { useDeployedApps } from './initFederation/UIListProvider';
 import { useLanguage } from './navbar/lang';
 import AlertProvider from './alerts/AlertProvider';
 import { getAlertingAlertSelectors, getAuthenticationAlertSelectors, getBootstrapAlertSelectors, getDashboardingAlertSelectors, getIngressControllerAlertSelectors, getK8SMasterAlertSelectors, getLoggingAlertSelectors, getMonitoringAlertSelectors, getNetworksAlertSelectors, getNodesAlertSelectors, getPlatformAlertSelectors, getServicesAlertSelectors, getVolumesAlertSelectors, useAlerts, useHighestSeverityAlerts } from './alerts';
@@ -22,6 +23,7 @@ export type ShellTypes = {
         useLanguage: typeof useLanguage;
         useConfig: typeof useConfig;
         useLinkOpener: typeof useLinkOpener;
+        useDeployedApps: typeof useDeployedApps;
     };
     shellAlerts: {
         AlertsProvider: typeof AlertProvider;
