@@ -59,7 +59,8 @@ import {
   useHighestSeverityAlerts,
 } from './alerts';
 import { useHistory } from 'react-router';
-import { UseQueryResult } from 'react-query/types/react';
+import { useQuery, UseQueryResult } from 'react-query';
+import { loadShare } from '@module-federation/enhanced/runtime';
 
 export const queryClient = new QueryClient();
 
@@ -312,14 +313,34 @@ function InternalApp() {
     const history = createBrowserHistory({});
     return history;
   }, []);
+
+  const { status } = useQuery({
+    queryKey: ['load-share-deps'],
+    queryFn: async () => {
+      return Promise.all([
+        loadShare('react'),
+        loadShare('react-dom'),
+        loadShare('react-router'),
+        loadShare('react-query'),
+        loadShare('styled-components'),
+      ]);
+    },
+  });
+
   return (
     <Router history={history}>
       <ShellHistoryProvider>
         <FirstTimeLoginProvider>
           <NotificationCenterProvider>
-            <SolutionsNavbar>
-              <InternalRouter />
-            </SolutionsNavbar>
+            {(status === 'idle' || status === 'loading') && (
+              <Loader size="massive" centered={true} aria-label="loading" />
+            )}
+            {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
+            {status === 'success' && (
+              <SolutionsNavbar>
+                <InternalRouter />
+              </SolutionsNavbar>
+            )}
           </NotificationCenterProvider>
         </FirstTimeLoginProvider>
       </ShellHistoryProvider>
