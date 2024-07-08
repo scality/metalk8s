@@ -1,7 +1,7 @@
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { IconName } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
-import type { SolutionUI } from '@scality/module-federation';
+import { SolutionUI } from '@scality/module-federation';
 import React, { createContext, useContext } from 'react';
 import { useQueries, UseQueryResult } from 'react-query';
 import { useShellConfig } from './ShellConfigProvider';
