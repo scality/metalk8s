@@ -20,7 +20,7 @@ Image = namedtuple("Image", ("name", "version", "digest"))
 
 K8S_VERSION_MAJOR: str = "1"
 K8S_VERSION_MINOR: str = "27"
-K8S_VERSION_PATCH: str = "6"
+K8S_VERSION_PATCH: str = "15"
 
 K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
 K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
@@ -151,22 +151,22 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="kube-apiserver",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:5e7a0196a7908cb49bcbf751d2546a008c329ff1e70c26c1cd542e0ada4b623c",
+        digest="sha256:bbbc0eb287dbb7507948b1c05ac8f221d1a504e04572e61d4700ff18b2a3afd0",
     ),
     Image(
         name="kube-controller-manager",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:c76ca5b0cf607f82c54d51c3c6766da30c9a9f684065e1cac761ea9b07b74e97",
+        digest="sha256:9ff408d91018df95a8505149e778bc7815b261ba8798497ae9319beb2b73304a",
     ),
     Image(
         name="kube-proxy",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:8e9eff2f6d0b398f9ac5f5a15c1cb7d5f468f28d64a78d593d57f72a969a54ef",
+        digest="sha256:23c54b01075318fe6991b224192faf6d65e9412b954b335efe326977deb30332",
     ),
     Image(
         name="kube-scheduler",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:bb227512d96e93dd3fe356cef552cc3f78905f36330b762adde23c3f0943d57b",
+        digest="sha256:9a7746f46e126b23098a844b5e3df34ee44b14b666d540a1e92a21ca7bbaac99",
     ),
     Image(
         name="kube-state-metrics",
