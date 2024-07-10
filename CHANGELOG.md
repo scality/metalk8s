@@ -2,6 +2,12 @@
 
 ## Release 127.0.4 (in development)
 
+### Enhancements
+
+- Bump Kubernetes version to
+  [1.27.15](https://github.com/kubernetes/kubernetes/releases/tag/v1.27.15)
+  (PR[#4361](https://github.com/scality/metalk8s/pull/4361))
+
 ## Release 127.0.3
 
 ### Enhancements
