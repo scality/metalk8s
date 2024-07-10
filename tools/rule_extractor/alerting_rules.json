@@ -870,6 +870,12 @@
         "severity": "warning"
     },
     {
+        "message": "Requests in Kubernetes SD are failing.",
+        "name": "PrometheusKubernetesListWatchFailures",
+        "query": "increase(prometheus_sd_kubernetes_failures_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
+        "severity": "warning"
+    },
+    {
         "message": "Prometheus has dropped targets because some scrape configs have exceeded the labels limit.",
         "name": "PrometheusLabelLimitHit",
         "query": "increase(prometheus_target_scrape_pool_exceeded_label_limits_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
