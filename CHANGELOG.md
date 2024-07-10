@@ -2,6 +2,12 @@
 
 ## Release 127.0.4 (in development)
 
+### Enhancements
+
+- Bump the alpine base image used by `metalk8s-alert-logger`
+  and `metalk8s-keepalived` image to `alpine:3.20.1`
+  (PR[#4362](https://github.com/scality/metalk8s/pull/4362))
+
 ## Release 127.0.3
 
 ### Enhancements
