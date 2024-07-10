@@ -36,8 +36,14 @@ import {
   useShellConfig,
 } from './initFederation/ShellConfigProvider';
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
-import { ShellThemeSelectorProvider } from './initFederation/ShellThemeSelectorProvider';
-import { UIListProvider } from './initFederation/UIListProvider';
+import {
+  ShellThemeSelectorProvider,
+  useShellThemeSelector,
+} from './initFederation/ShellThemeSelectorProvider';
+import {
+  UIListProvider,
+  useDeployedApps,
+} from './initFederation/UIListProvider';
 import { SolutionsNavbar } from './navbar';
 import { LanguageProvider, useLanguage } from './navbar/lang';
 import AlertProvider from './alerts/AlertProvider';
@@ -74,6 +80,8 @@ export type ShellTypes = {
     useLanguage: typeof useLanguage;
     useConfig: typeof useConfig;
     useLinkOpener: typeof useLinkOpener;
+    useDeployedApps: typeof useDeployedApps;
+    useShellThemeSelector: typeof useShellThemeSelector;
   };
   shellAlerts: {
     AlertsProvider: typeof AlertProvider;
@@ -126,6 +134,8 @@ window.shellHooks = {
   useLanguage,
   useConfig,
   useLinkOpener: useLinkOpener,
+  useDeployedApps: useDeployedApps,
+  useShellThemeSelector: useShellThemeSelector,
 };
 
 window.shellAlerts = {
@@ -323,6 +333,7 @@ function InternalApp() {
         loadShare('react-router'),
         loadShare('react-query'),
         loadShare('styled-components'),
+        loadShare('@scality/module-federation'),
       ]);
     },
   });
