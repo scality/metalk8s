@@ -8,6 +8,9 @@
   [1.27.15](https://github.com/kubernetes/kubernetes/releases/tag/v1.27.15)
   (PR[#4361](https://github.com/scality/metalk8s/pull/4361))
 
+- Bump etcd version to [3.5.14](https://github.com/etcd-io/etcd/releases/tag/v3.5.14)
+  (PR[#4361](https://github.com/scality/metalk8s/pull/4361))
+
 ## Release 127.0.3
 
 ### Enhancements
