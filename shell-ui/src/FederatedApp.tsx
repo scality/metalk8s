@@ -331,6 +331,7 @@ function InternalApp() {
         loadShare('react'),
         loadShare('react-dom'),
         loadShare('react-router'),
+        loadShare('react-router-dom'),
         loadShare('react-query'),
         loadShare('styled-components'),
         loadShare('@scality/module-federation'),
