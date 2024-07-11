@@ -1,5 +1,4 @@
 import type { V1NodeList } from '@kubernetes/client-node';
-import '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
 import type { Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import React, {
