@@ -1,5 +1,5 @@
 import { IconName } from '@scality/core-ui/dist/components/icon/Icon.component';
-import type { SolutionUI } from '@scality/module-federation';
+import { SolutionUI } from '@scality/module-federation';
 import React from 'react';
 export type OAuth2ProxyConfig = {
     kind: 'OAuth2Proxy';

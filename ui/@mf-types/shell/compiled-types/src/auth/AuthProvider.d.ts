@@ -1,3 +1,4 @@
+import { User } from 'oidc-client';
 import React from 'react';
 export declare function AuthProvider({ children }: {
     children: React.ReactNode;
@@ -8,6 +9,7 @@ export type UserData = {
     groups: string[];
     email: string;
     id: string;
+    original: User;
 };
 export declare function useAuth(): {
     userData?: UserData;
