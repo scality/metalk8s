@@ -1,15 +1,14 @@
+import { SolutionUI } from '@scality/module-federation';
+import { FederatedComponent } from '@scality/module-federation';
+import { Fragment } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+import { useAuth } from '../auth/AuthProvider';
+import { useFirstTimeLogin } from '../auth/FirstTimeLoginProvider';
+import type { FederatedModuleInfo } from '../initFederation/ConfigurationProviders';
 import { useConfigRetriever } from '../initFederation/ConfigurationProviders';
 import { useDeployedApps } from '../initFederation/UIListProvider';
-import type { FederatedModuleInfo } from '../initFederation/ConfigurationProviders';
-import type { SolutionUI } from '@scality/module-federation';
-import { FederatedComponent } from '@scality/module-federation';
-import { Fragment, useCallback, useState } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
-import { useEffect } from 'react';
-import { useNavbar } from './navbarHooks';
-import { useFirstTimeLogin } from '../auth/FirstTimeLoginProvider';
-import { useAuth } from '../auth/AuthProvider';
 import { useNotificationCenter } from '../useNotificationCenter';
+import { useNavbar } from './navbarHooks';
 
 export const NavbarUpdaterComponents = () => {
   const deployedApps = useDeployedApps();
@@ -35,34 +34,6 @@ export const NavbarUpdaterComponents = () => {
         : [];
     })
     .filter((appBuildConfig) => !!appBuildConfig);
-  const [areMicroAppsReady, setMicroAppsAreReady] = useState(false);
-  const areRemoteEntriesFileParsed = useCallback(() => {
-    if (componentsToFederate.length > 0) {
-      return (
-        componentsToFederate
-          .map((component) => {
-            return window[component.scope];
-          })
-          .filter((scope) => !!scope).length === componentsToFederate.length
-      );
-    }
-
-    return false;
-  }, [componentsToFederate]);
-  useEffect(() => {
-    let timerId;
-
-    const timer = () => {
-      if (areRemoteEntriesFileParsed()) {
-        setMicroAppsAreReady(true);
-      } else {
-        timerId = setTimeout(timer, 1000);
-      }
-    };
-
-    timerId = setTimeout(timer, 1000);
-    return () => clearTimeout(timerId);
-  }, [areRemoteEntriesFileParsed, setMicroAppsAreReady]);
   const { firstTimeLogin } = useFirstTimeLogin();
   const { userData } = useAuth();
   return (
@@ -70,26 +41,22 @@ export const NavbarUpdaterComponents = () => {
       {componentsToFederate.map((component, index) => {
         return (
           <Fragment key={index}>
-            {!areMicroAppsReady ? (
-              <></>
-            ) : (
-              <ErrorBoundary FallbackComponent={() => <></>}>
-                <FederatedComponent
-                  key={component.module}
-                  url={`${component.app.url}${component.remoteEntryPath}?version=${component.app.version}`}
-                  module={component.module}
-                  scope={component.scope}
-                  app={component.app}
-                  props={{
-                    navbarManagementProps,
-                    publishNotification: publish,
-                    unPublishNotification: unPublish,
-                    isFirstTimeLogin: firstTimeLogin,
-                    userData,
-                  }}
-                />
-              </ErrorBoundary>
-            )}{' '}
+            <ErrorBoundary FallbackComponent={() => <></>}>
+              <FederatedComponent
+                key={component.module}
+                url={`${component.app.url}${component.remoteEntryPath}?version=${component.app.version}`}
+                module={component.module}
+                scope={component.scope}
+                app={component.app}
+                props={{
+                  navbarManagementProps,
+                  publishNotification: publish,
+                  unPublishNotification: unPublish,
+                  isFirstTimeLogin: firstTimeLogin,
+                  userData,
+                }}
+              />
+            </ErrorBoundary>
           </Fragment>
         );
       })}
