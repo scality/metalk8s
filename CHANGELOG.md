@@ -21,6 +21,12 @@
 - Bump Calico version to [3.28.0](https://github.com/projectcalico/calico/releases/tag/v3.28.0)
   (PR[#4363](https://github.com/scality/metalk8s/pull/4363))
 
+- Bump dex chart version to
+  [0.18.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.18.0)
+  Dex itself has been bumped accordingly to
+  [v2.40.0](https://github.com/dexidp/dex/releases/tag/v2.40.0)
+  (PR[#4367](https://github.com/scality/metalk8s/pull/4367))
+
 ## Release 127.0.3
 
 ### Enhancements
