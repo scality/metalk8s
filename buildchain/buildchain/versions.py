@@ -76,7 +76,7 @@ ROCKY_BASE_IMAGE_SHA256: str = (
     "c464612ef7e3d54d658c3eaa4778b5cdc990ec7a4d9ab63b0f00c9994c6ce980"
 )
 
-ETCD_VERSION: str = "3.5.12"
+ETCD_VERSION: str = "3.5.14"
 ETCD_IMAGE_VERSION: str = f"{ETCD_VERSION}-0"
 NGINX_IMAGE_VERSION: str = "1.25.4-alpine"
 NODEJS_IMAGE_VERSION: str = "16.14.0"
@@ -125,8 +125,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="coredns",
-        version="v1.10.1",
-        digest="sha256:a0ead06651cf580044aeb0a0feba63591858fb2e43ade8c9dea45a6a89ae7e5e",
+        version="v1.11.1",
+        digest="sha256:1eeb4c7316bacb1d4c8ead65571cd92dd21e27359f0d4917f1a5822a73b75db1",
     ),
     Image(
         name="dex",
@@ -136,7 +136,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="etcd",
         version=ETCD_IMAGE_VERSION,
-        digest="sha256:44a8e24dcbba3470ee1fee21d5e88d128c936e9b55d4bc51fbef8086f8ed123b",
+        digest="sha256:661a9ab3d439dcf93593726a9ecbefa44e246709aa813a95d64c3848716710ce",
     ),
     Image(
         name="grafana",
