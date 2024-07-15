@@ -38,17 +38,6 @@
       "tooltip": "",
       "type": "link",
       "url": "/grafana/d/a7e130cb82be229d6f3edbfd0a438001/logs"
-    },
-    {
-      "icon": "dashboard",
-      "includeVars": true,
-      "keepTime": true,
-      "tags": [],
-      "targetBlank": true,
-      "title": "Fluent Bit",
-      "tooltip": "",
-      "type": "link",
-      "url": "/grafana/d/fluentbit/fluent-bit"
     }
   ],
   "panels": [

@@ -111,6 +111,26 @@ Deploy Kubernetes service config objects:
   - require_in:
     - salt: Deploy Kubernetes objects
 
+{#- In MetalK8s 127.0 we changed the fluent-bit dashboard,
+    so we have to remove the new one when dowgrading
+    to avoid conflicts
+    This can be removed in `development/129.0` #}
+{%- if salt.pkg.version_cmp(dest_version, '127.0.0') == -1 %}
+
+Delete the new fluent-bit dashboard:
+  metalk8s_kubernetes.object_absent:
+    - name: fluent-bit-dashboard-fluent-bit
+    - namespace: metalk8s-logging
+    - apiVersion: v1
+    - kind: ConfigMap
+    - require:
+      - salt: Deploy Kubernetes service config objects
+    - require_in:
+      - salt: Deploy Kubernetes objects
+
+{%- endif %}
+
+
 Deploy Kubernetes objects:
   salt.runner:
     - name: state.orchestrate
