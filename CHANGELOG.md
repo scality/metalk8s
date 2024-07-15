@@ -2,6 +2,12 @@
 
 ## Release 127.0.4 (in development)
 
+- Bump fluent-bit chart version to
+  [0.47.2](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.47.2)
+  The fluent-bit image has been bumped accordingly to
+  [3.1.2](https://github.com/fluent/fluent-bit/releases/tag/v3.1.2)
+  (PR[#4366](https://github.com/scality/metalk8s/pull/4366))
+
 ## Release 127.0.3
 
 ### Enhancements
