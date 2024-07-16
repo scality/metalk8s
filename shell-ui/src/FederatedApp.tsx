@@ -248,9 +248,6 @@ function InternalRouter() {
       )
         //Sort the exact and strict routes first, to make sure to match the exact first.
         .sort((a, b) => {
-          if (a.view.path === '/') {
-            return -1;
-          }
           if (a.view.exact && !b.view.exact) {
             return -1;
           }
@@ -262,6 +259,9 @@ function InternalRouter() {
           }
           if (!a.view.strict && b.view.strict) {
             return 1;
+          }
+          if (a.view.path === '/') {
+            return -1;
           }
           return 0;
         })
