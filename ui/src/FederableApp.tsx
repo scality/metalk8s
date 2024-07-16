@@ -1,7 +1,7 @@
 import 'regenerator-runtime/runtime';
 import { PropsWithChildren, ReactNode, useEffect, useMemo } from 'react';
 import { Provider, useDispatch } from 'react-redux';
-import { createStore, applyMiddleware, compose } from 'redux';
+import { createStore, applyMiddleware, compose, Store } from 'redux';
 import { Router } from 'react-router-dom';
 import createSagaMiddleware from 'redux-saga';
 import { useCurrentApp } from '@scality/module-federation';
@@ -30,7 +30,7 @@ const sagaMiddleware = createSagaMiddleware({
   },
 });
 const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware));
-export const store = createStore(reducer, enhancer);
+export const store: Store = createStore(reducer, enhancer);
 // @ts-expect-error - FIXME when you are working on it
 if (window.Cypress) window.__store__ = store;
 sagaMiddleware.run(sagas);
