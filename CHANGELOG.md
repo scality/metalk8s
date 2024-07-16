@@ -4,6 +4,9 @@
 
 ### Enhancements
 
+- Bump CoreDNS version to [v1.11.1](https://github.com/coredns/coredns/releases/tag/v1.11.1)
+  (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
+
 - Bump etcd version to [3.5.14](https://github.com/etcd-io/etcd/releases/tag/v3.5.14)
   (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
 
