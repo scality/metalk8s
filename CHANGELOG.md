@@ -4,6 +4,9 @@
 
 ### Enhancements
 
+- Bump etcd version to [3.5.14](https://github.com/etcd-io/etcd/releases/tag/v3.5.14)
+  (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
+
 - Bump Kubernetes version to
   [1.28.11](https://github.com/kubernetes/kubernetes/releases/tag/v1.28.11)
   (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
