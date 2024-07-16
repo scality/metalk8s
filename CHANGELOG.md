@@ -7,23 +7,16 @@
 - Bump CoreDNS version to [v1.11.1](https://github.com/coredns/coredns/releases/tag/v1.11.1)
   (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
 
-- Bump etcd version to [3.5.14](https://github.com/etcd-io/etcd/releases/tag/v3.5.14)
-  (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
-
-- Bump Kubernetes version to
-  [1.28.11](https://github.com/kubernetes/kubernetes/releases/tag/v1.28.11)
-  (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
-
 - Add configuration in fluentbit and loki to support auditd logs.
   Logs dashboard was updated to replace deprecated visualizations.
   (PR[#4348](https://github.com/scality/metalk8s/pull/4348))
 
 - Bump Kubernetes version to
-  [1.28.8](https://github.com/kubernetes/kubernetes/releases/tag/v1.28.8)
-  (PR[#4283](https://github.com/scality/metalk8s/pull/4283))
+  [1.28.11](https://github.com/kubernetes/kubernetes/releases/tag/v1.28.11)
+  (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
 
-- Bump etcd version to [3.5.12](https://github.com/etcd-io/etcd/releases/tag/v3.5.12)
-  (PR[#4283](https://github.com/scality/metalk8s/pull/4283))
+- Bump etcd version to [3.5.14](https://github.com/etcd-io/etcd/releases/tag/v3.5.14)
+  (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
 
 - Bump containerd to [1.6.31](https://github.com/containerd/containerd/releases/tag/v1.6.31)
   (PR[#4292](https://github.com/scality/metalk8s/pull/4292))
