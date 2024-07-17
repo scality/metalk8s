@@ -9,7 +9,7 @@ on:
         type: string
       artifacts-url:
         description: >-
-          URL from which to retrieve an OS image and all ARTESCA artifacts
+          URL from which to retrieve an OS image and all metalk8s artifacts
           (defaults to the current workflow run artifacts)
         type: string
         required: false
@@ -23,7 +23,7 @@ on:
         type: string
       artifacts-url:
         description: >-
-          URL from which to retrieve an OS image and all ARTESCA artifacts
+          URL from which to retrieve an OS image and all metalk8s artifacts
           (defaults to the current workflow run artifacts)
         type: string
         required: false
