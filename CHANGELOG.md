@@ -111,6 +111,9 @@
   and `metalk8s-keepalived` image to `alpine:3.20.1`
   (PR[#4362](https://github.com/scality/metalk8s/pull/4362))
 
+- Bump Calico version to [3.28.0](https://github.com/projectcalico/calico/releases/tag/v3.28.0)
+  (PR[#4363](https://github.com/scality/metalk8s/pull/4363))
+
 ## Release 127.0.3
 
 ### Enhancements
