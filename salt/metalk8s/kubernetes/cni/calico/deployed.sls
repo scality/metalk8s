@@ -8,7 +8,7 @@
 # Various changes to the original are made, based on how we deploy Calico (and
 # its CNI plugins etc.) within MetalK8s.
 
-# It comes from: https://github.com/projectcalico/calico/blob/v3.27.3/manifests/calico.yaml
+# It comes from: https://github.com/projectcalico/calico/blob/v3.28.0/manifests/calico.yaml
 
 ---
 # Source: calico/templates/calico-kube-controllers.yaml
@@ -1260,6 +1260,9 @@ spec:
                   is not secure, it should not be exposed to the internet.
                 type: integer
               debugSimulateCalcGraphHangAfter:
+                pattern: ^([0-9]+(\\.[0-9]+)?(ms|s|m|h))*$
+                type: string
+              debugSimulateDataplaneApplyDelay:
                 pattern: ^([0-9]+(\\.[0-9]+)?(ms|s|m|h))*$
                 type: string
               debugSimulateDataplaneHangAfter:

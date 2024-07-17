@@ -25,7 +25,7 @@ K8S_VERSION_PATCH: str = "8"
 K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
 K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
-CALICO_VERSION: str = "3.27.3"
+CALICO_VERSION: str = "3.28.0"
 SALT_VERSION: str = "3002.9"
 CONTAINERD_VERSION: str = "1.6.31"
 
@@ -111,17 +111,17 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="calico-cni",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:1f2c6a13d436b2ae056edd46552d23279d3aaf5d79152fb88cd959b634acfd6f",
+        digest="sha256:cef0c907b8f4cadc63701d371e6f24d325795bcf0be84d6a517e33000ff35f70",
     ),
     Image(
         name="calico-node",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:78dadbe45a1a76f685d5fa777fdec807a86368b8e748cb27dad14723e233803c",
+        digest="sha256:385bf6391fea031649b8575799248762a2caece86e6e3f33ffee19c0c096e6a8",
     ),
     Image(
         name="calico-kube-controllers",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:3e8bc2000187cc71346538aaa8e10cd7941ba75f744e315f48b3a3293399a495",
+        digest="sha256:8f04e4772a2b3fa752bc7fb98cc89c7fa0ab88a341115ee8c5b6faa4180053fd",
     ),
     Image(
         name="coredns",
