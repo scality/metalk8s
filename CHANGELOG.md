@@ -21,8 +21,8 @@
 - Bump containerd to [1.6.31](https://github.com/containerd/containerd/releases/tag/v1.6.31)
   (PR[#4292](https://github.com/scality/metalk8s/pull/4292))
 
-- Bump Calico version to [3.27.3](https://github.com/projectcalico/calico/releases/tag/v3.27.3)
-  (PR[#4291](https://github.com/scality/metalk8s/pull/4291))
+- Bump Calico version to [3.28.0](https://github.com/projectcalico/calico/releases/tag/v3.28.0)
+  (PR[#4363](https://github.com/scality/metalk8s/pull/4363))
 
 - Bump kube-prometheus-stack chart version to
   [57.2.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-57.2.0)
