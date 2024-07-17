@@ -18,6 +18,9 @@
 - Bump CoreDNS version to [v1.11.1](https://github.com/coredns/coredns/releases/tag/v1.11.1)
   (PR[#4361](https://github.com/scality/metalk8s/pull/4361))
 
+- Bump Calico version to [3.28.0](https://github.com/projectcalico/calico/releases/tag/v3.28.0)
+  (PR[#4363](https://github.com/scality/metalk8s/pull/4363))
+
 ## Release 127.0.3
 
 ### Enhancements
