@@ -1,0 +1,90 @@
+{
+  "name": "metalk8s",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "dockerDashComposeVersion": "none"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        //Create TODO and FIXME tree
+        "Gruntfuggly.todo-tree",
+        //Python support
+        "ms-python.python",
+        //Python test explorer
+        "littlefoxteam.vscode-python-test-adapter",
+        //PEP Pyton formatter
+        "ms-python.black-formatter",
+        //Python debugger
+        "ms-python.debugpy",
+        //Jinja colorization
+        "wholroyd.jinja",
+        //Go support
+        "golang.go",
+        //Remote container support
+        "ms-vscode-remote.remote-containers",
+        //YAML support
+        "redhat.vscode-yaml",
+        //Multi language formatter
+        "esbenp.prettier-vscode",
+        //Makefile support
+        "ms-vscode.makefile-tools",
+        //HashiCorp HCL support
+        "HashiCorp.HCL",
+        //HashiCorp terraform support
+        "HashiCorp.terraform",
+        //Github Action helper
+        "github.vscode-github-actions",
+        //Kickstart support
+        "peterjonsson.kickstart-language-support",
+        //Docker helper
+        "ms-azuretools.vscode-docker",
+        //Gherkin support and helper
+        "CucumberOpen.cucumber-official",
+        //Mardown support
+        "yzhang.markdown-all-in-one",
+        //RPM suppoort
+        "1dot75cm.RPMSpec",
+        //Shell linter
+        "timonwong.shellcheck",
+        //Compare text selections
+        "ryu1kn.partial-diff",
+        //JavaScript linter
+        "dbaeumer.vscode-eslint",
+        //Smithy support
+        "Smithy.smithy-vscode-extension",
+        //Ginko support
+        "joselitofilho.ginkgotestexplorer",
+        //PlantUML support
+        "jebbs.plantuml",
+        //HTML/XML tag renaming
+        "formulahendry.auto-rename-tag",
+        //RST support
+        "lextudio.restructuredtext",
+        "trond-snekvik.simple-rst",
+        //Sphynx support
+        "swyddfa.esbonio"
+      ],
+      "settings": {
+        "telemetry.telemetryLevel": "off",
+        "redhat.telemetry.enabled": false,
+        "editor.renderWhitespace": "all",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/usr/bin/zsh"
+          }
+        },
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "python.terminal.activateEnvironment": false
+      }
+    }
+  },
+  "remoteUser": "vscode",
+  "postCreateCommand": ".devcontainer/setup.sh"
+}
