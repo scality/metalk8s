@@ -17,7 +17,7 @@ COPY index-template.html rspack.config.ts tsconfig.json /home/node/
 COPY public /home/node/public
 COPY src /home/node/src
 
-RUN npm run build
+RUN npm run rsbuild
 
 FROM nginx:${NGINX_IMAGE_VERSION}
 
