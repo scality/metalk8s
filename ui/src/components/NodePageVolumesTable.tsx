@@ -43,8 +43,9 @@ const VolumeListTable = React.memo((props) => {
         accessor: 'health',
         cellStyle: {
           textAlign: 'center',
-          width: '5rem',
-          paddingRight: '0.714rem',
+          width: 'unset',
+          flex: 0.5,
+          maxWidth: '4rem',
         },
         Cell: (cellProps) => {
           return <CircleStatus status={cellProps.value} />;
@@ -56,8 +57,9 @@ const VolumeListTable = React.memo((props) => {
         accessor: 'name',
         cellStyle: {
           textAlign: 'left',
-          flex: 1,
-          minWidth: '6.429rem',
+          width: 'unset',
+          flex: 1.25,
+          minWidth: '4rem',
         },
         Cell: ({ value, row }) => {
           return (
@@ -85,9 +87,9 @@ const VolumeListTable = React.memo((props) => {
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
-          width: '8.571rem',
-          marginRight: spacing.r8,
-          marginLeft: spacing.r8,
+          width: 'unset',
+          minWidth: '4rem',
+          flex: 1,
         },
         Cell: ({ value }) => {
           return (
@@ -106,8 +108,9 @@ const VolumeListTable = React.memo((props) => {
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'right',
-          width: '6rem',
-          paddingRight: '0.357rem',
+          width: 'unset',
+          minWidth: '3rem',
+          flex: 0.75,
         },
         sortType: (row1, row2) => {
           const size1 = row1?.original?.storageCapacityBytes;
@@ -124,7 +127,9 @@ const VolumeListTable = React.memo((props) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          width: '6rem',
+          minWidth: '3rem',
+          width: 'unset',
+          flex: 0.5,
         },
         Cell: (cellProps) => {
           const volume = volumeListData?.find(
@@ -194,8 +199,9 @@ const VolumeListTable = React.memo((props) => {
         accessor: 'latency',
         cellStyle: {
           textAlign: 'right',
-          width: '5.357rem',
-          paddingRight: '1rem',
+          flex: 0.75,
+          width: 'unset',
+          minWidth: '3rem',
         },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? (
@@ -206,7 +212,17 @@ const VolumeListTable = React.memo((props) => {
     ]; // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [volumeListData, theme, history, nodeName]);
   return (
-    <VolumeListContainer>
+    <Table
+      columns={columns}
+      data={volumeListData}
+      defaultSortingKey="health"
+      entityName={{
+        en: {
+          singular: 'volume',
+          plural: 'volumes',
+        },
+      }}
+    >
       <Wrap padding={spacing.r16}>
         <p></p>
         <Button
@@ -226,23 +242,11 @@ const VolumeListTable = React.memo((props) => {
           data-cy="create_volume_button"
         />
       </Wrap>
-      <Table
-        columns={columns}
-        data={volumeListData}
-        defaultSortingKey="health"
-        entityName={{
-          en: {
-            singular: 'volume',
-            plural: 'volumes',
-          },
-        }}
-      >
-        <Table.SingleSelectableContent
-          rowHeight="h40"
-          separationLineVariant="backgroundLevel3"
-        />
-      </Table>
-    </VolumeListContainer>
+      <Table.SingleSelectableContent
+        rowHeight="h40"
+        separationLineVariant="backgroundLevel3"
+      />
+    </Table>
   );
 }, isEqual);
 export default VolumeListTable;

@@ -7,7 +7,7 @@ import {
   ProgressBar,
   spacing,
 } from '@scality/core-ui';
-import { Button } from '@scality/core-ui/dist/next';
+import { Box, Button } from '@scality/core-ui/dist/next';
 import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
 import { useState } from 'react';
 import { useIntl } from 'react-intl';
@@ -43,7 +43,7 @@ const VolumeDetailCardContainer = styled.div`
 `;
 const VolumeTitleSection = styled.div`
   color: ${(props) => props.theme.textPrimary};
-  padding: ${spacing.r20} ${spacing.r16} ${spacing.r24} ${spacing.r20};
+  padding: 0 0 ${spacing.r24} 0;
   display: flex;
   justify-content: space-between;
 `;
@@ -187,17 +187,12 @@ const VolumeDetailCard = (props) => {
           data-cy="delete_volume_button"
         />
       </VolumeTitleSection>
-      {/*TODO: To be replaced by new <Box></Box> component*/}
+
       {!isVolumeUsageRetrievable && (
-        <div
-          style={{
-            width: '48rem',
-            padding: '0 0 2rem 20px',
-          }}
-        >
+        <Box padding="0 20px 2rem 20px">
           <Banner
             variant="warning"
-            icon={<Icon name="Exclamation-triangle" />}
+            icon={<Icon name="Exclamation-circle" />}
             title={intl.formatMessage({
               id: 'monitoring_information_unavailable',
             })}
@@ -206,7 +201,7 @@ const VolumeDetailCard = (props) => {
               id: 'some_data_not_retrieved',
             })}
           </Banner>
-        </div>
+        </Box>
       )}
 
       <VolumeDetailCardContainer>

@@ -35,7 +35,8 @@ const NodeListTable = ({ nodeTableData }) => {
         accessor: 'health',
         cellStyle: {
           textAlign: 'center',
-          width: '5rem',
+          width: 'unset',
+          flex: 0.5,
         },
         Cell: ({ value }) => {
           return <CircleStatus status={value.health} />;
@@ -45,9 +46,10 @@ const NodeListTable = ({ nodeTableData }) => {
         Header: 'Description',
         accessor: 'name',
         cellStyle: {
-          flex: '0.8',
-          minWidth: '5rem',
+          textAlign: 'left',
+          minWidth: '4rem',
           width: 'unset',
+          flex: 2,
         },
         Cell: ({ value }) => {
           const { name, controlPlaneIP, workloadPlaneIP } = value;
@@ -85,7 +87,7 @@ const NodeListTable = ({ nodeTableData }) => {
         Header: 'Roles',
         accessor: 'roles',
         cellStyle: {
-          flex: 0.5,
+          flex: 1,
         },
       },
       {
@@ -93,7 +95,9 @@ const NodeListTable = ({ nodeTableData }) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          width: '5rem',
+          minWidth: '4rem',
+          width: 'unset',
+          flex: 0.5,
         },
         Cell: (cellProps) => {
           const { statusTextColor, computedStatus } = cellProps.value;
@@ -143,42 +147,40 @@ const NodeListTable = ({ nodeTableData }) => {
     [history, location.pathname, path, query],
   );
   return (
-    <Box height="100%">
-      <Table
-        columns={columns}
-        data={nodeTableData}
-        defaultSortingKey={'health'}
-        entityName={{
-          en: {
-            singular: 'node',
-            plural: 'nodes',
-          },
-        }}
-        // @ts-expect-error - FIXME when you are working on it
-        getRowId={(row) => row.name.name}
-      >
-        <Wrap padding={spacing.r16}>
-          <Table.SearchWithQueryParams />
-          <Button
-            variant="primary"
-            label={intl.formatMessage({
-              id: 'create_new_node',
-            })}
-            icon={<Icon name="Create-add" />}
-            onClick={() => {
-              history.push('/nodes/create');
-            }}
-            data-cy="create_node_button"
-          />
-        </Wrap>
-        <Table.SingleSelectableContent
-          rowHeight="h64"
-          separationLineVariant="backgroundLevel1"
-          selectedId={selectedNodeName}
-          onRowSelected={onClickRow}
+    <Table
+      columns={columns}
+      data={nodeTableData}
+      defaultSortingKey={'health'}
+      entityName={{
+        en: {
+          singular: 'node',
+          plural: 'nodes',
+        },
+      }}
+      // @ts-expect-error - FIXME when you are working on it
+      getRowId={(row) => row.name.name}
+    >
+      <Wrap padding={spacing.r16}>
+        <Table.SearchWithQueryParams />
+        <Button
+          variant="primary"
+          label={intl.formatMessage({
+            id: 'create_new_node',
+          })}
+          icon={<Icon name="Create-add" />}
+          onClick={() => {
+            history.push('/nodes/create');
+          }}
+          data-cy="create_node_button"
         />
-      </Table>
-    </Box>
+      </Wrap>
+      <Table.SingleSelectableContent
+        rowHeight="h64"
+        separationLineVariant="backgroundLevel1"
+        selectedId={selectedNodeName}
+        onRowSelected={onClickRow}
+      />
+    </Table>
   );
 };
 

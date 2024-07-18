@@ -1,17 +1,16 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useIntl } from 'react-intl';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
+import { fontSize } from '@scality/core-ui/dist/style/theme';
 import { VolumeTab } from './style/CommonLayoutStyle';
+import { spacing } from '@scality/core-ui';
 const VolumeObjectContent = styled.div`
   white-space: pre-wrap;
-  font-size: ${fontSize.base};
-  padding: ${padding.small};
-  height: 78vh;
+  font-size: ${fontSize.small};
 `;
 const ErrorText = styled.div`
   text-align: center;
-  padding: ${padding.base};
+  padding: ${spacing.r16};
 `;
 
 const VolumeDetailsTab = (props) => {

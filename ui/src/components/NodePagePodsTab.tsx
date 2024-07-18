@@ -61,9 +61,9 @@ const NodePagePodsTab = React.memo((props) => {
         Header: 'Name',
         accessor: 'name',
         cellStyle: {
-          width: '100%',
-          maxWidth: '20rem',
-          minWidth: '5rem',
+          width: 'unset',
+          flex: 1.5,
+          minWidth: '4rem',
           marginRight: spacing.r8,
         },
       },
@@ -71,8 +71,10 @@ const NodePagePodsTab = React.memo((props) => {
         Header: 'Status',
         accessor: 'status',
         cellStyle: {
+          width: 'unset',
           maxWidth: '7rem',
           marginRight: spacing.r8,
+          flex: 1,
         },
         sortType: (rowa, rowb) => {
           const {
@@ -106,8 +108,10 @@ const NodePagePodsTab = React.memo((props) => {
         Header: 'Age',
         accessor: 'age',
         cellStyle: {
+          width: 'unset',
           maxWidth: '5rem',
           marginRight: spacing.r8,
+          flex: 0.5,
         },
         Cell: ({ value }) => {
           return fromMilliSectoAge(Date.now() - value);
@@ -117,8 +121,9 @@ const NodePagePodsTab = React.memo((props) => {
         Header: 'Namespace',
         accessor: 'namespace',
         cellStyle: {
-          maxWidth: '7rem',
-          minWidth: '5rem',
+          width: 'unset',
+          minWidth: '4rem',
+          flex: 1,
           marginRight: spacing.r8,
         },
       },
@@ -128,7 +133,7 @@ const NodePagePodsTab = React.memo((props) => {
         cellStyle: {
           minWidth: '3rem',
           textAlign: 'center',
-          width: spacing.r40,
+          flex: 0.5,
           marginRight: spacing.r16,
         },
         Cell: ({ value }) => {
@@ -158,24 +163,22 @@ const NodePagePodsTab = React.memo((props) => {
   );
   return (
     <NodeTab>
-      <PodTableContainer>
-        <Table
-          columns={columns}
-          data={pods}
-          defaultSortingKey={'status'}
-          entityName={{
-            en: {
-              singular: 'pod',
-              plural: 'pods',
-            },
-          }}
-        >
-          <Table.SingleSelectableContent
-            rowHeight="h48"
-            separationLineVariant="backgroundLevel3"
-          />
-        </Table>
-      </PodTableContainer>
+      <Table
+        columns={columns}
+        data={pods}
+        defaultSortingKey={'status'}
+        entityName={{
+          en: {
+            singular: 'pod',
+            plural: 'pods',
+          },
+        }}
+      >
+        <Table.SingleSelectableContent
+          rowHeight="h48"
+          separationLineVariant="backgroundLevel3"
+        />
+      </Table>
     </NodeTab>
   );
 }, isEqual);

@@ -5,6 +5,8 @@ import { Alert } from '../services/alertUtils';
 import { useURLQuery } from '../services/utils';
 import ActiveAlertsFilter from './ActiveAlertsFilters';
 import CircleStatus from './CircleStatus';
+import { useIntl } from 'react-intl';
+import { NotBoundContainer } from './style/CommonLayoutStyle';
 
 const AlertsTab = ({
   alerts,
@@ -96,7 +98,7 @@ const AlertsTab = ({
         status={status}
         entityName={{
           en: {
-            singular: 'acitve alert',
+            singular: 'active alert',
             plural: 'active alerts',
           },
         }}

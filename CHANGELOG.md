@@ -4,22 +4,25 @@
 
 ### Enhancements
 
+- Bump CoreDNS version to [v1.11.1](https://github.com/coredns/coredns/releases/tag/v1.11.1)
+  (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
+
 - Add configuration in fluentbit and loki to support auditd logs.
   Logs dashboard was updated to replace deprecated visualizations.
   (PR[#4348](https://github.com/scality/metalk8s/pull/4348))
 
 - Bump Kubernetes version to
-  [1.28.8](https://github.com/kubernetes/kubernetes/releases/tag/v1.28.8)
-  (PR[#4283](https://github.com/scality/metalk8s/pull/4283))
+  [1.28.11](https://github.com/kubernetes/kubernetes/releases/tag/v1.28.11)
+  (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
 
-- Bump etcd version to [3.5.12](https://github.com/etcd-io/etcd/releases/tag/v3.5.12)
-  (PR[#4283](https://github.com/scality/metalk8s/pull/4283))
+- Bump etcd version to [3.5.14](https://github.com/etcd-io/etcd/releases/tag/v3.5.14)
+  (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
 
 - Bump containerd to [1.6.31](https://github.com/containerd/containerd/releases/tag/v1.6.31)
   (PR[#4292](https://github.com/scality/metalk8s/pull/4292))
 
-- Bump Calico version to [3.27.3](https://github.com/projectcalico/calico/releases/tag/v3.27.3)
-  (PR[#4291](https://github.com/scality/metalk8s/pull/4291))
+- Bump Calico version to [3.28.0](https://github.com/projectcalico/calico/releases/tag/v3.28.0)
+  (PR[#4363](https://github.com/scality/metalk8s/pull/4363))
 
 - Bump kube-prometheus-stack chart version to
   [57.2.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-57.2.0)
@@ -51,10 +54,10 @@
   (PR[#4301](https://github.com/scality/metalk8s/pull/4301))
 
 - Bump dex chart version to
-  [0.17.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.17.0)
+  [0.18.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.18.0)
   Dex itself has been bumped accordingly to
-  [v2.39.0](https://github.com/dexidp/dex/releases/tag/v2.39.0)
-  (PR[#4284](https://github.com/scality/metalk8s/pull/4284))
+  [v2.40.0](https://github.com/dexidp/dex/releases/tag/v2.40.0)
+  (PR[#4367](https://github.com/scality/metalk8s/pull/4367))
 
 - Bump Loki chart version to
   [5.47.1](https://github.com/grafana/loki/releases/tag/helm-loki-5.47.1)
@@ -104,6 +107,31 @@
   (PR[#4299](https://github.com/scality/metalk8s/pull/4299))
 
 ## Release 127.0.4 (in development)
+
+### Enhancements
+
+- Bump the alpine base image used by `metalk8s-alert-logger`
+  and `metalk8s-keepalived` image to `alpine:3.20.1`
+  (PR[#4362](https://github.com/scality/metalk8s/pull/4362))
+
+- Bump Kubernetes version to
+  [1.27.15](https://github.com/kubernetes/kubernetes/releases/tag/v1.27.15)
+  (PR[#4361](https://github.com/scality/metalk8s/pull/4361))
+
+- Bump etcd version to [3.5.14](https://github.com/etcd-io/etcd/releases/tag/v3.5.14)
+  (PR[#4361](https://github.com/scality/metalk8s/pull/4361))
+
+- Bump CoreDNS version to [v1.11.1](https://github.com/coredns/coredns/releases/tag/v1.11.1)
+  (PR[#4361](https://github.com/scality/metalk8s/pull/4361))
+
+- Bump Calico version to [3.28.0](https://github.com/projectcalico/calico/releases/tag/v3.28.0)
+  (PR[#4363](https://github.com/scality/metalk8s/pull/4363))
+
+- Bump dex chart version to
+  [0.18.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.18.0)
+  Dex itself has been bumped accordingly to
+  [v2.40.0](https://github.com/dexidp/dex/releases/tag/v2.40.0)
+  (PR[#4367](https://github.com/scality/metalk8s/pull/4367))
 
 ## Release 127.0.3
 

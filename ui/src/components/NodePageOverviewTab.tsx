@@ -33,27 +33,21 @@ import {
   OverviewInformationValue,
   OverviewInformationWrapper,
 } from './style/CommonLayoutStyle';
-const TabContentContainer = styled.div`
-  overflow-y: auto;
-  // 100vh subtract the height of navbar and tab header
-  height: calc(100vh - 40px - 2.8rem);
-`;
+
 const NodeNameContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: ${spacing.r20} 0 ${spacing.r24} ${spacing.r20};
+  padding: 0 0 ${spacing.r24} 0;
 `;
-const StatusText = styled.span`
+const StatusText = styled.span<{ textColor }>`
   color: ${(props) => {
-    // @ts-expect-error - FIXME when you are working on it
     return props.textColor;
   }};
 `;
 const Detail = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  flex-direction: column;
 `;
 const DeployButton = styled(Button)`
   margin-right: ${spacing.r16};
@@ -109,8 +103,12 @@ const NodePageOverviewTab = (props) => {
     );
     activeJob = sortedJobs[0];
   }
+  type Step = {
+    title: string;
+    content?: React.ReactNode;
+  };
 
-  let steps = [
+  let steps: Step[] = [
     {
       title: intl.formatMessage({
         id: 'node_registered',
@@ -134,7 +132,6 @@ const NodePageOverviewTab = (props) => {
         title: intl.formatMessage({
           id: 'completed',
         }),
-        // @ts-expect-error - FIXME when you are working on it
         content: (
           <span>
             {!status.success && (
@@ -153,7 +150,6 @@ const NodePageOverviewTab = (props) => {
         title: intl.formatMessage({
           id: 'deploying',
         }),
-        // @ts-expect-error - FIXME when you are working on it
         content: <Loader size="larger" />,
       });
     }
@@ -183,220 +179,215 @@ const NodePageOverviewTab = (props) => {
 
   return (
     <NodeTab>
-      <TabContentContainer>
-        <NodeNameContainer>
-          <p></p>
-          {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN &&
-          !currentNodeReturnByK8S.internalIP ? (
-            !currentNodeReturnByK8S?.deploying ? (
-              <DeployButton
-                label={intl.formatMessage({
-                  id: 'deploy',
-                })}
-                variant="secondary"
-                onClick={() => {
-                  dispatch(
-                    deployNodeAction({
-                      name: nodeName,
-                    }),
-                  );
-                }}
-              />
-            ) : (
-              <DeployButton
-                label={intl.formatMessage({
-                  id: 'deploying',
-                })}
-                disabled
-                variant="primary"
-                icon={<Loader size="smaller" />}
-              />
-            )
-          ) : null}
-        </NodeNameContainer>
-
-        <Detail>
-          <div>
-            <OverviewInformationSpan>
-              <OverviewInformationLabel>Node ID</OverviewInformationLabel>
-              <OverviewInformationWrapper>
-                <OverviewInformationValue>
-                  {currentNode?.id}
-                </OverviewInformationValue>
-              </OverviewInformationWrapper>
-            </OverviewInformationSpan>
-            {isDisplayNodeNameShown && (
-              <Stack
-                direction="horizontal"
-                style={{ paddingLeft: 20, paddingBottom: 20 }}
-              >
-                <OverviewInformationLabel>
-                  Display Name
-                </OverviewInformationLabel>
-                <InlineInput
-                  key={currentNode?.name?.displayName}
-                  id="node-name-input"
-                  autoFocus
-                  changeMutation={mutation}
-                  defaultValue={
-                    currentNode?.name?.displayName || currentNode?.name?.name
-                  }
-                />
-              </Stack>
-            )}
-            <OverviewInformationSpan>
-              <OverviewInformationLabel>Name</OverviewInformationLabel>
-              <OverviewInformationWrapper>
-                <OverviewInformationValue>
-                  {currentNode?.name?.name}
-                </OverviewInformationValue>
-              </OverviewInformationWrapper>
-            </OverviewInformationSpan>
-            <OverviewInformationSpan>
-              <OverviewInformationLabel>
-                Control Plane IP
-              </OverviewInformationLabel>
-              <OverviewInformationWrapper>
-                <OverviewInformationValue>
-                  {currentNode?.name?.controlPlaneIP}
-                </OverviewInformationValue>
-              </OverviewInformationWrapper>
-            </OverviewInformationSpan>
-            <OverviewInformationSpan>
-              <OverviewInformationLabel>
-                Workload Plane IP
-              </OverviewInformationLabel>
-              <OverviewInformationWrapper>
-                <OverviewInformationValue>
-                  {currentNode?.name?.workloadPlaneIP}
-                </OverviewInformationValue>
-              </OverviewInformationWrapper>
-            </OverviewInformationSpan>
-            <OverviewInformationSpan>
-              <OverviewInformationLabel>Roles</OverviewInformationLabel>
-              <OverviewInformationWrapper>
-                <OverviewInformationValue>
-                  {currentNode?.roles}
-                </OverviewInformationValue>
-              </OverviewInformationWrapper>
-            </OverviewInformationSpan>
-            <OverviewInformationSpan>
-              <OverviewInformationLabel>Status</OverviewInformationLabel>
-              <OverviewInformationWrapper>
-                <OverviewInformationValue>
-                  {currentNode?.status?.computedStatus?.map((cond) => {
-                    return (
-                      <StatusText
-                        key={cond}
-                        // @ts-expect-error - FIXME when you are working on it
-                        textColor={currentNode?.status?.statusColor}
-                      >
-                        {intl.formatMessage({
-                          id: `${cond}`,
-                        })}
-                      </StatusText>
-                    );
-                  })}
-                </OverviewInformationValue>
-              </OverviewInformationWrapper>
-            </OverviewInformationSpan>
-            <OverviewInformationSpan>
-              <OverviewInformationLabel>
-                {intl.formatMessage({
-                  id: 'creationTime',
-                })}
-              </OverviewInformationLabel>
-              {creationTimestamp ? (
-                <OverviewInformationWrapper>
-                  <OverviewInformationValue>
-                    <FormattedDateTime
-                      format="date-time-second"
-                      value={creationTimestamp}
-                    />
-                  </OverviewInformationValue>
-                </OverviewInformationWrapper>
-              ) : (
-                ''
-              )}
-            </OverviewInformationSpan>
-            <OverviewInformationSpan>
-              <OverviewInformationLabel>K8s Version</OverviewInformationLabel>
-              <OverviewInformationWrapper>
-                <OverviewInformationValue>
-                  {currentNodeReturnByK8S?.kubeletVersion}
-                </OverviewInformationValue>
-              </OverviewInformationWrapper>
-            </OverviewInformationSpan>
-            <OverviewInformationSpan>
-              <OverviewInformationLabel>Volumes</OverviewInformationLabel>
-              <OverviewInformationWrapper>
-                <OverviewInformationValue>
-                  {volumesAttachedCurrentNode?.length ??
-                    intl.formatMessage({
-                      id: 'unknown',
-                    })}
-                </OverviewInformationValue>
-              </OverviewInformationWrapper>
-            </OverviewInformationSpan>
-            <OverviewInformationSpan>
-              <OverviewInformationLabel>Pods</OverviewInformationLabel>
-              <OverviewInformationWrapper>
-                <OverviewInformationValue>
-                  {podsScheduledOnCurrentNode?.length ??
-                    intl.formatMessage({
-                      id: 'unknown',
-                    })}
-                </OverviewInformationValue>
-              </OverviewInformationWrapper>
-            </OverviewInformationSpan>
-          </div>
-          <ActiveAlertWrapper>
-            <ActiveAlertTitle>
-              {intl.formatMessage({
-                id: 'active_alerts',
+      <NodeNameContainer>
+        <p></p>
+        {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN &&
+        !currentNodeReturnByK8S.internalIP ? (
+          !currentNodeReturnByK8S?.deploying ? (
+            <DeployButton
+              label={intl.formatMessage({
+                id: 'deploy',
               })}
-            </ActiveAlertTitle>
-            <ActiveAlertsCounter
-              criticalCounter={currentNode?.health?.criticalAlertsCounter}
-              warningCounter={currentNode?.health?.warningAlertsCounter}
-            ></ActiveAlertsCounter>
-          </ActiveAlertWrapper>
-        </Detail>
-
-        {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (
-          <NodeDeploymentWrapper>
-            <NodeDeploymentTitle>
-              {intl.formatMessage({
-                id: 'deployment',
-              })}
-            </NodeDeploymentTitle>
-            {activeJob === undefined ? (
-              <InfoMessage>
-                {intl.formatMessage(
-                  {
-                    id: 'no_deployment_found',
-                  },
-                  {
+              variant="secondary"
+              onClick={() => {
+                dispatch(
+                  deployNodeAction({
                     name: nodeName,
-                  },
-                )}
-              </InfoMessage>
-            ) : activeJob.completed && isEmpty(activeJob.status) ? (
-              <InfoMessage>
-                {intl.formatMessage({
-                  id: 'refreshing_job',
-                })}
-              </InfoMessage>
-            ) : (
-              <NodeDeploymentContent>
-                <NodeDeploymentStatus>
-                  <Steppers steps={steps} activeStep={activeStep} />
-                </NodeDeploymentStatus>
-              </NodeDeploymentContent>
-            )}
-          </NodeDeploymentWrapper>
+                  }),
+                );
+              }}
+            />
+          ) : (
+            <DeployButton
+              label={intl.formatMessage({
+                id: 'deploying',
+              })}
+              disabled
+              variant="primary"
+              icon={<Loader size="smaller" />}
+            />
+          )
         ) : null}
-      </TabContentContainer>
+      </NodeNameContainer>
+
+      <Detail>
+        <div>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>Node ID</OverviewInformationLabel>
+            <OverviewInformationWrapper>
+              <OverviewInformationValue>
+                {currentNode?.id}
+              </OverviewInformationValue>
+            </OverviewInformationWrapper>
+          </OverviewInformationSpan>
+          {isDisplayNodeNameShown && (
+            <Stack
+              direction="horizontal"
+              style={{ paddingLeft: 20, paddingBottom: 20 }}
+            >
+              <OverviewInformationLabel>Display Name</OverviewInformationLabel>
+              <InlineInput
+                key={currentNode?.name?.displayName}
+                id="node-name-input"
+                autoFocus
+                changeMutation={mutation}
+                defaultValue={
+                  currentNode?.name?.displayName || currentNode?.name?.name
+                }
+              />
+            </Stack>
+          )}
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>Name</OverviewInformationLabel>
+            <OverviewInformationWrapper>
+              <OverviewInformationValue>
+                {currentNode?.name?.name}
+              </OverviewInformationValue>
+            </OverviewInformationWrapper>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>
+              Control Plane IP
+            </OverviewInformationLabel>
+            <OverviewInformationWrapper>
+              <OverviewInformationValue>
+                {currentNode?.name?.controlPlaneIP}
+              </OverviewInformationValue>
+            </OverviewInformationWrapper>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>
+              Workload Plane IP
+            </OverviewInformationLabel>
+            <OverviewInformationWrapper>
+              <OverviewInformationValue>
+                {currentNode?.name?.workloadPlaneIP}
+              </OverviewInformationValue>
+            </OverviewInformationWrapper>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>Roles</OverviewInformationLabel>
+            <OverviewInformationWrapper>
+              <OverviewInformationValue>
+                {currentNode?.roles}
+              </OverviewInformationValue>
+            </OverviewInformationWrapper>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>Status</OverviewInformationLabel>
+            <OverviewInformationWrapper>
+              <OverviewInformationValue>
+                {currentNode?.status?.computedStatus?.map((cond) => {
+                  return (
+                    <StatusText
+                      key={cond}
+                      textColor={currentNode?.status?.statusColor}
+                    >
+                      {intl.formatMessage({
+                        id: `${cond}`,
+                      })}
+                    </StatusText>
+                  );
+                })}
+              </OverviewInformationValue>
+            </OverviewInformationWrapper>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>
+              {intl.formatMessage({
+                id: 'creationTime',
+              })}
+            </OverviewInformationLabel>
+            {creationTimestamp ? (
+              <OverviewInformationWrapper>
+                <OverviewInformationValue>
+                  <FormattedDateTime
+                    format="date-time-second"
+                    value={creationTimestamp}
+                  />
+                </OverviewInformationValue>
+              </OverviewInformationWrapper>
+            ) : (
+              ''
+            )}
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>K8s Version</OverviewInformationLabel>
+            <OverviewInformationWrapper>
+              <OverviewInformationValue>
+                {currentNodeReturnByK8S?.kubeletVersion}
+              </OverviewInformationValue>
+            </OverviewInformationWrapper>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>Volumes</OverviewInformationLabel>
+            <OverviewInformationWrapper>
+              <OverviewInformationValue>
+                {volumesAttachedCurrentNode?.length ??
+                  intl.formatMessage({
+                    id: 'unknown',
+                  })}
+              </OverviewInformationValue>
+            </OverviewInformationWrapper>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>Pods</OverviewInformationLabel>
+            <OverviewInformationWrapper>
+              <OverviewInformationValue>
+                {podsScheduledOnCurrentNode?.length ??
+                  intl.formatMessage({
+                    id: 'unknown',
+                  })}
+              </OverviewInformationValue>
+            </OverviewInformationWrapper>
+          </OverviewInformationSpan>
+        </div>
+        <ActiveAlertWrapper>
+          <ActiveAlertTitle>
+            {intl.formatMessage({
+              id: 'active_alerts',
+            })}
+          </ActiveAlertTitle>
+          <ActiveAlertsCounter
+            criticalCounter={currentNode?.health?.criticalAlertsCounter}
+            warningCounter={currentNode?.health?.warningAlertsCounter}
+          ></ActiveAlertsCounter>
+        </ActiveAlertWrapper>
+      </Detail>
+
+      {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (
+        <NodeDeploymentWrapper>
+          <NodeDeploymentTitle>
+            {intl.formatMessage({
+              id: 'deployment',
+            })}
+          </NodeDeploymentTitle>
+          {activeJob === undefined ? (
+            <InfoMessage>
+              {intl.formatMessage(
+                {
+                  id: 'no_deployment_found',
+                },
+                {
+                  name: nodeName,
+                },
+              )}
+            </InfoMessage>
+          ) : activeJob.completed && isEmpty(activeJob.status) ? (
+            <InfoMessage>
+              {intl.formatMessage({
+                id: 'refreshing_job',
+              })}
+            </InfoMessage>
+          ) : (
+            <NodeDeploymentContent>
+              <NodeDeploymentStatus>
+                <Steppers steps={steps} activeStep={activeStep} />
+              </NodeDeploymentStatus>
+            </NodeDeploymentContent>
+          )}
+        </NodeDeploymentWrapper>
+      ) : null}
     </NodeTab>
   );
 };

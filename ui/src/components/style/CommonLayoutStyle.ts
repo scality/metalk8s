@@ -1,10 +1,6 @@
 import styled from 'styled-components';
-import {
-  padding,
-  fontWeight,
-  fontSize,
-  spacing,
-} from '@scality/core-ui/dist/style/theme';
+import { fontWeight, fontSize } from '@scality/core-ui/dist/style/theme';
+import { spacing } from '@scality/core-ui';
 import { Box } from '@scality/core-ui/dist/next';
 export const CenteredPageContainer = styled.div`
   display: flex;
@@ -16,8 +12,9 @@ export const LeftSideInstanceList = styled.div`
   background-color: ${(props) => props.theme.backgroundLevel2};
 `;
 export const RightSidePanel = styled.div`
-  flex: 1;
-  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 export const NoInstanceSelectedContainer = styled.div`
   flex: 1;
@@ -52,7 +49,7 @@ export const NodeTab = styled.div`
   color: ${(props) => props.theme.textPrimary};
 `;
 export const SortCaretWrapper = styled.span`
-  padding-left: ${spacing.sp4};
+  padding-left: ${spacing.r4};
   position: absolute;
 `;
 export const SortIncentive = styled.span`
@@ -60,7 +57,7 @@ export const SortIncentive = styled.span`
   display: none;
 `;
 export const TableHeader = styled.div`
-  padding-bottom: ${padding.base};
+  padding-bottom: ${spacing.r16};
   &:hover {
     ${SortIncentive} {
       display: block;
@@ -71,7 +68,7 @@ export const MetricsActionContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  padding: ${padding.large} ${padding.base};
+  padding-bottom: ${spacing.r16};
   position: sticky;
   top: 0px;
   z-index: 100;
@@ -96,10 +93,10 @@ export const GraphTitle = styled.div`
   font-size: 1rem;
   font-weight: ${fontWeight.bold};
   color: ${(props) => props.theme.textPrimary};
-  padding: ${padding.base} 0 0 ${padding.larger};
+  padding: ${spacing.r16} 0 0 ${spacing.r24};
   display: flex;
   .sc-loader {
-    padding-left: ${padding.small};
+    padding-left: ${spacing.r8};
   }
 `;
 export const GraphWrapper = styled.div`
@@ -118,11 +115,11 @@ export const GraphsWrapper = styled.div`
 export const TitlePage = styled.div`
   color: ${(props) => props.theme.textPrimary};
   font-size: 24px;
-  padding: ${padding.small} 0 0 ${padding.large};
+  padding: ${spacing.r8} 0 0 ${spacing.r20};
 `;
 export const PageSubtitle = styled.h3`
   color: ${(props) => props.theme.textPrimary};
-  margin: ${padding.small} 0;
+  margin: ${spacing.r8} 0;
   display: flex;
   align-items: center;
 `;
@@ -132,8 +129,8 @@ export const OverviewInformationLabel = styled.span`
   color: ${(props) => props.theme.textSecondary};
 `;
 export const OverviewInformationSpan = styled.div`
-  padding-bottom: ${padding.large};
-  padding-left: ${padding.large};
+  padding-bottom: ${spacing.r20};
+  padding-left: ${spacing.r20};
   display: flex;
 `;
 export const OverviewInformationWrapper = styled.div`
@@ -153,21 +150,20 @@ export const OverviewClickableInformationValue = styled.span`
 `;
 export const OverviewResourceName = styled.span`
   font-size: ${fontSize.larger};
-  padding-left: ${padding.smaller};
+  padding-left: ${spacing.r4};
 `;
 export const ActiveAlertTitle = styled.div`
   color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
-  padding: 0 0 ${padding.base} 0;
+  padding: 0 0 ${spacing.r16} 0;
 `;
 export const ActiveAlertWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 0 ${padding.base} 0 0;
+  padding: 0 ${spacing.r16} 0 ${spacing.r20};
   width: 200px;
 `;
-
 export const NotBoundContainer = styled(Box)`
   display: flex;
   justify-content: center;

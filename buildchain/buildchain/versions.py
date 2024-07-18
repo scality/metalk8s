@@ -20,12 +20,12 @@ Image = namedtuple("Image", ("name", "version", "digest"))
 
 K8S_VERSION_MAJOR: str = "1"
 K8S_VERSION_MINOR: str = "28"
-K8S_VERSION_PATCH: str = "8"
+K8S_VERSION_PATCH: str = "11"
 
 K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
 K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
-CALICO_VERSION: str = "3.27.3"
+CALICO_VERSION: str = "3.28.0"
 SALT_VERSION: str = "3002.9"
 CONTAINERD_VERSION: str = "1.6.31"
 
@@ -76,7 +76,7 @@ ROCKY_BASE_IMAGE_SHA256: str = (
     "c464612ef7e3d54d658c3eaa4778b5cdc990ec7a4d9ab63b0f00c9994c6ce980"
 )
 
-ETCD_VERSION: str = "3.5.12"
+ETCD_VERSION: str = "3.5.14"
 ETCD_IMAGE_VERSION: str = f"{ETCD_VERSION}-0"
 NGINX_IMAGE_VERSION: str = "1.25.4-alpine"
 NODEJS_IMAGE_VERSION: str = "16.14.0"
@@ -100,8 +100,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     # Remote images
     Image(
         name="alpine",
-        version="3.19.1",
-        digest="sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b",
+        version="3.20.1",
+        digest="sha256:b89d9c93e9ed3597455c90a0b88a8bbb5cb7188438f70953fede212a0c4394e0",
     ),
     Image(
         name="alertmanager",
@@ -111,32 +111,32 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="calico-cni",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:1f2c6a13d436b2ae056edd46552d23279d3aaf5d79152fb88cd959b634acfd6f",
+        digest="sha256:cef0c907b8f4cadc63701d371e6f24d325795bcf0be84d6a517e33000ff35f70",
     ),
     Image(
         name="calico-node",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:78dadbe45a1a76f685d5fa777fdec807a86368b8e748cb27dad14723e233803c",
+        digest="sha256:385bf6391fea031649b8575799248762a2caece86e6e3f33ffee19c0c096e6a8",
     ),
     Image(
         name="calico-kube-controllers",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:3e8bc2000187cc71346538aaa8e10cd7941ba75f744e315f48b3a3293399a495",
+        digest="sha256:8f04e4772a2b3fa752bc7fb98cc89c7fa0ab88a341115ee8c5b6faa4180053fd",
     ),
     Image(
         name="coredns",
-        version="v1.10.1",
-        digest="sha256:a0ead06651cf580044aeb0a0feba63591858fb2e43ade8c9dea45a6a89ae7e5e",
+        version="v1.11.1",
+        digest="sha256:1eeb4c7316bacb1d4c8ead65571cd92dd21e27359f0d4917f1a5822a73b75db1",
     ),
     Image(
         name="dex",
-        version="v2.39.0",
-        digest="sha256:935ef4c1ae6537bcbdec79f5a799cf2e2a123808d45c3af7e41b77767cd3ff6f",
+        version="v2.40.0",
+        digest="sha256:3e35d5d0f7dbd33fbadc36a71ff58cf4097ab98d73d22f6cb9a6471a32e028af",
     ),
     Image(
         name="etcd",
         version=ETCD_IMAGE_VERSION,
-        digest="sha256:44a8e24dcbba3470ee1fee21d5e88d128c936e9b55d4bc51fbef8086f8ed123b",
+        digest="sha256:661a9ab3d439dcf93593726a9ecbefa44e246709aa813a95d64c3848716710ce",
     ),
     Image(
         name="grafana",
@@ -151,22 +151,22 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="kube-apiserver",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:7e7f3c806333528451a1e0bfdf17da0341adaea7d50a703db9c2005c474a97b9",
+        digest="sha256:aec9d1701c304eee8607d728a39baaa511d65bef6dd9861010618f63fbadeb10",
     ),
     Image(
         name="kube-controller-manager",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:f3d0e8da9d1532e081e719a985e89a0cfe1a29d127773ad8e2c2fee1dd10fd00",
+        digest="sha256:6014c3572ec683841bbb16f87b94da28ee0254b95e2dba2d1850d62bd0111f09",
     ),
     Image(
         name="kube-proxy",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:9e9dd46799712c58e1a49f973374ffa9ad4e5a6175896e5d805a8738bf5c5865",
+        digest="sha256:ae4b671d4cfc23dd75030bb4490207cd939b3b11a799bcb4119698cd712eb5b4",
     ),
     Image(
         name="kube-scheduler",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:4d61604f259d3c91d8b3ec7a6a999f5eae9aff371567151cd5165eaa698c6d7b",
+        digest="sha256:46cf7475c8daffb743c856a1aea0ddea35e5acd2418be18b1e22cf98d9c9b445",
     ),
     Image(
         name="kube-state-metrics",

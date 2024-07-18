@@ -33,9 +33,9 @@ const VolumeListTable = (props) => {
         accessor: 'name',
         cellStyle: {
           textAlign: 'left',
-          minWidth: '5rem',
+          minWidth: '4rem',
           width: 'unset',
-          flex: '1 2',
+          flex: 1,
         },
       },
       {
@@ -43,9 +43,9 @@ const VolumeListTable = (props) => {
         accessor: 'node',
         cellStyle: {
           textAlign: 'left',
-          minWidth: '4rem',
-          flex: '0.8 2 3rem',
+          flex: 1,
           width: 'unset',
+          minWidth: '4rem',
         },
       },
       {
@@ -53,7 +53,7 @@ const VolumeListTable = (props) => {
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
-          width: '4rem',
+          width: '4.5rem',
         },
         Cell: ({ value }) => {
           return (
@@ -72,7 +72,7 @@ const VolumeListTable = (props) => {
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'right',
-          width: '5rem',
+          width: '4rem',
         },
       },
       {
@@ -143,7 +143,7 @@ const VolumeListTable = (props) => {
         accessor: 'latency',
         cellStyle: {
           textAlign: 'right',
-          width: '4rem',
+          width: '3.5rem',
         },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? (

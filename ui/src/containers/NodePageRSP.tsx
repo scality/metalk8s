@@ -153,8 +153,7 @@ const NodePageRSP = (props) => {
           <div style={{ flex: 'none' }}>
             <Icon name="Node-backend" size="2x" color={color} withWrapper />
           </div>
-
-          <div style={{ overflow: 'hidden', width: '40rem' }}>
+          <div style={{ overflow: 'hidden' }}>
             <Text color="textPrimary" variant="Large">
               <ConstrainedText
                 text={currentNode.name.displayName || name}
@@ -196,6 +195,7 @@ const NodePageRSP = (props) => {
             ) : null
           }
           data-cy="alerts_tab_node_page"
+          withoutPadding
         >
           <AlertsTab alerts={alertsNode} status={alertList.status} />
         </Tabs.Tab>
@@ -220,6 +220,7 @@ const NodePageRSP = (props) => {
           label={intl.formatMessage({
             id: 'volumes',
           })}
+          withoutPadding
         >
           <NodePageVolumesTab nodeName={name} />
         </Tabs.Tab>
@@ -229,6 +230,7 @@ const NodePageRSP = (props) => {
           label={intl.formatMessage({
             id: 'pods',
           })}
+          withoutPadding
         >
           {/* @ts-expect-error - FIXME when you are working on it */}
           <NodePagePodsTab pods={podsListData} />
@@ -237,6 +239,7 @@ const NodePageRSP = (props) => {
           data-cy="partition_tab_node_page"
           path={`${url}/partitions`}
           label="Partitions"
+          withoutPadding
         >
           <NodePagePartitionTabs instanceIP={instanceIP} />
         </Tabs.Tab>
