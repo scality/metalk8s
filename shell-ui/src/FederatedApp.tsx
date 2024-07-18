@@ -68,6 +68,22 @@ import { useHistory } from 'react-router';
 import { useQuery, UseQueryResult } from 'react-query';
 import { loadShare } from '@module-federation/enhanced/runtime';
 
+/**
+ * This is a mock function to replace the real loadShare function when running tests.
+ *
+ * jest.mock('@module-federation/enhanced/runtime', () => {}, { virtual: true });
+ * in SetupTests.tsx will mock the module for @scality/module-federation
+ *
+ * However, this does not work when we use it in directly in our code.
+ * Since this is only an issue during the test, we check if we are in a test environment
+ * and replace the function with a mock function at runtime.
+ */
+const mockLoadShare: typeof loadShare = () => {
+  return Promise.resolve(false);
+};
+const loadShareModule =
+  process.env.NODE_ENV === 'test' ? mockLoadShare : loadShare;
+
 export const queryClient = new QueryClient();
 
 export type ShellTypes = {
@@ -328,13 +344,13 @@ function InternalApp() {
     queryKey: ['load-share-deps'],
     queryFn: async () => {
       return Promise.all([
-        loadShare('react'),
-        loadShare('react-dom'),
-        loadShare('react-router'),
-        loadShare('react-router-dom'),
-        loadShare('react-query'),
-        loadShare('styled-components'),
-        loadShare('@scality/module-federation'),
+        loadShareModule('react'),
+        loadShareModule('react-dom'),
+        loadShareModule('react-router'),
+        loadShareModule('react-router-dom'),
+        loadShareModule('react-query'),
+        loadShareModule('styled-components'),
+        loadShareModule('@scality/module-federation'),
       ]);
     },
   });
