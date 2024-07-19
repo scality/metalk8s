@@ -1,4 +1,4 @@
-import { ConstrainedText, spacing, FormattedDateTime } from '@scality/core-ui';
+import { ConstrainedText, FormattedDateTime, spacing } from '@scality/core-ui';
 import { Box, Table } from '@scality/core-ui/dist/next';
 import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
 import { Alert } from '../services/alertUtils';

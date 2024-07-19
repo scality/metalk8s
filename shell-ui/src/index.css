@@ -1,3 +1,4 @@
+@import '@scality/core-ui/dist/index.css';
 
 /* Set base font size to achieve responsive font */
 html { font-size: max(14px, calc(0.2em + 0.8vw)); } 

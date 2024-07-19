@@ -12,8 +12,8 @@ import {
   spacing,
   Stack,
   Icon,
-  GlobalHealthBar,
 } from '@scality/core-ui';
+import { GlobalHealthBar } from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
 
 import {
   highestAlertToStatus,

@@ -149,13 +149,13 @@ Create metalk8s-shell-ui-config ConfigMap:
                     label:
                       en: "Documentation"
                       fr: "Documentation"
-                    icon: "fas fa-clipboard-list"
+                    icon: "Documentation"
                     isExternal: true
                   - url: "{{ cp_ingress_url }}/about"
                     label:
                       en: "About"
                       fr: "À propos"
-                    icon: "fas fa-question-circle"
+                    icon: "Info"
               options:
                 main:
                   "{{ metalk8s_ui_url }}":
@@ -171,12 +171,12 @@ Create metalk8s-shell-ui-config ConfigMap:
                   "{{ cp_ingress_url }}/docs/{{ stripped_base_path }}":
                     en: "Documentation"
                     fr: "Documentation"
-                    icon: "fas fa-clipboard-list"
+                    icon: "Documentation"
                     isExternal: true
                   "{{ cp_ingress_url }}/about":
                     en: "About"
                     fr: "À propos"
-                    icon: "fas fa-question-circle"
+                    icon: "Info"
 
 {%- else %}
 
@@ -251,13 +251,13 @@ Convert old Metalk8s Shell UI ServiceConfiguration to new format:
                     label:
                       en: "Documentation"
                       fr: "Documentation"
-                    icon: "fas fa-clipboard-list"
+                    icon: "Documentation"
                     isExternal: true
                   - url: "{{ cp_ingress_url }}/about"
                     label:
                       en: "About"
                       fr: "À propos"
-                    icon: "fas fa-question-circle"
+                    icon: "Info"
               {%- if 'options' in config_data.spec %}
               options:
                 {{ config_data.spec.options | yaml(False) | indent(16) }}
@@ -277,12 +277,12 @@ Convert old Metalk8s Shell UI ServiceConfiguration to new format:
                   "{{ cp_ingress_url }}/docs/{{ stripped_base_path }}":
                     en: "Documentation"
                     fr: "Documentation"
-                    icon: "fas fa-clipboard-list"
+                    icon: "Documentation"
                     isExternal: true
                   "{{ cp_ingress_url }}/about":
                     en: "About"
                     fr: "À propos"
-                    icon: "fas fa-question-circle"
+                    icon: "Info"
               {%- endif %}
 
   {%- elif config_data.apiVersion == 'addons.metalk8s.scality.com/v1alpha2' %}

@@ -119,6 +119,7 @@ spec:
     "/(static.*)",
     "/" + stripped_base_path + "/(.well-known.*)" if stripped_base_path else "/(.well-known.*)",
     "/" + stripped_base_path + "/(static.*)" if stripped_base_path else "/(static.*)",
+    "/" + stripped_base_path + "/(mf-manifest.*)" if stripped_base_path else "/(mf-manifest.*)",
     "/(" + stripped_base_path + ".*)",
 ] %}
       - path: {{ path }}

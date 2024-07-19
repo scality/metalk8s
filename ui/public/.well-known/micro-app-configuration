@@ -5,7 +5,7 @@
     "kind": "metalk8s-ui"
   },
   "spec": {
-    "remoteEntryPath": "/static/js/remoteEntry.js",
+    "remoteEntryPath": "/mf-manifest.json",
     "views": {
       "platform": {
         "path": "/",

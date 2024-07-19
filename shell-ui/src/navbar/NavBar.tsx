@@ -3,17 +3,22 @@ import { RouteProps, matchPath, useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 
-import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
+import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
+import {
+  Icon,
+  IconName,
+} from '@scality/core-ui/dist/components/icon/Icon.component';
 import { Layout } from '@scality/core-ui/dist/components/layout/v2/index';
 import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
-import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
 
 import { useIntl } from 'react-intl';
 import { useTheme } from 'styled-components';
+import { SolutionUI } from '@scality/module-federation';
+
 import { UserData, useAuth, useLogOut } from '../auth/AuthProvider';
 import {
-  BuildtimeWebFinger,
   NonFederatedView,
+  View,
   ViewDefinition,
   useConfigRetriever,
   useDiscoveredViews,
@@ -54,7 +59,7 @@ const NavbarDropDownItem = styled.div`
 `;
 const NavbarDropDownItemIcon = styled.div`
   padding-right: 10px;
-  color: ${(props) => props.theme.textSecondary};
+  color: ${(props) => props.theme.textPrimary};
 `;
 const NavbarDropDownItemLabel = styled.div`
   flex-grow: 1;
@@ -69,7 +74,7 @@ const Item = ({
   label,
   isExternal,
 }: {
-  icon?: string;
+  icon?: IconName;
   label: string;
   isExternal?: boolean;
 }) => {
@@ -77,7 +82,7 @@ const Item = ({
     <NavbarDropDownItem>
       {icon && (
         <NavbarDropDownItemIcon>
-          <i className={icon} />
+          <Icon name={icon} />
         </NavbarDropDownItemIcon>
       )}
       <NavbarDropDownItemLabel>{label}</NavbarDropDownItemLabel>
@@ -98,16 +103,14 @@ const Link = ({
   children: React.ReactNode;
   to:
     | {
-        isExternal: boolean;
-        // @ts-expect-error - FIXME when you are working on it
+        isExternal?: boolean;
         app: SolutionUI;
-        // @ts-expect-error - FIXME when you are working on it
         view: View;
         isFederated: true;
       }
     | {
         isFederated: false;
-        isExternal: boolean;
+        isExternal?: boolean;
         url: string;
       };
 }) => {
@@ -192,46 +195,6 @@ export const useNavbarLinksToActions = (
         : normalizePath((link.view as NonFederatedView).url) ===
           window.location.origin + window.location.pathname,
     );
-  //Preload non current route
-  const { retrieveConfiguration } = useConfigRetriever();
-  useEffect(() => {
-    links.forEach((link) => {
-      if (!link.view.isFederated) {
-        return;
-      }
-
-      //Check if it is the current route
-      if (
-        !selectedTab ||
-        (selectedTab?.view.isFederated &&
-          link.view.app.name === selectedTab.view.app.name &&
-          link.view.view.path === selectedTab.view.view.path)
-      ) {
-        return;
-      }
-
-      const microAppConfiguration:
-        | BuildtimeWebFinger
-        | { spec: { remoteEntryPath: string } } = retrieveConfiguration({
-        configType: 'build',
-        name: link.view.app.name,
-      }) || {
-        spec: {
-          remoteEntryPath: '',
-        },
-      };
-      const remoteEntryUrl = link.view.isFederated
-        ? link.view.app.url +
-          microAppConfiguration.spec.remoteEntryPath +
-          '?version=' +
-          link.view.app.version
-        : '';
-
-      prefetch(remoteEntryUrl).catch((e) =>
-        console.error(`Failed to preload ${remoteEntryUrl}`, e),
-      );
-    });
-  }, [JSON.stringify(links)]);
 
   return links.map((link) => {
     return {
@@ -344,15 +307,18 @@ export const Navbar = ({
     }
   }, [navbarMainActions]);
 
-  const mainTabs = navbarMainActions.map((action) => ({
-    link: action.link.render ? (
-      <action.link.render selected={action.selected} />
-    ) : (
-      // @ts-expect-error - FIXME when you are working on it
-      <Link to={action.link.view}>{action.link.view.view.label[language]}</Link>
-    ),
-    selected: action.selected,
-  }));
+  const mainTabs = navbarMainActions.map((action) => {
+    return {
+      link: action.link.render ? (
+        <action.link.render selected={action.selected} />
+      ) : (
+        <Link to={action.link.view}>
+          {action.link.view.view.label[language]}
+        </Link>
+      ),
+      selected: action.selected,
+    };
+  });
 
   const secondaryTabs = navbarSecondaryActions.map((action) => ({
     type: 'custom' as const,
@@ -360,7 +326,6 @@ export const Navbar = ({
       action.link.render ? (
         <action.link.render selected={action.selected} />
       ) : (
-        // @ts-expect-error - FIXME when you are working on it
         <Link to={action.link.view}>
           {action.link.view.view.label[language]}
         </Link>
@@ -421,14 +386,13 @@ export const Navbar = ({
           ),
           selected: action.selected,
           onClick: () => {
-            // @ts-expect-error - FIXME when you are working on it
             openLink(action.link.view);
           },
         })),
         {
           label: (
             <Item
-              icon={'fas fa-sign-out-alt'}
+              icon="Log-out"
               label={intl.formatMessage({
                 id: 'sign-out',
               })}
@@ -468,7 +432,11 @@ export const Navbar = ({
             setThemeMode(switchThemeTo);
           }}
           icon={
-            <i className={`fas fa-${themeMode === 'dark' ? 'sun' : 'moon'}`} />
+            themeMode === 'dark' ? (
+              <Icon name="LightMode" color={theme.textPrimary} />
+            ) : (
+              <Icon name="DarkMode" color={theme.textPrimary} />
+            )
           }
           tooltip={{
             overlay: `Switch to ${switchThemeTo} theme`,

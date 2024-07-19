@@ -123,9 +123,8 @@ def run_ui_builder(cmd: str) -> docker_command.DockerRun:
         source_mounts=[
             "public",
             "src",
-            "webpack.common.js",
-            "webpack.prod.js",
-            "babel.config.js",
+            "rspack.config.ts",
+            "@mf-types",
         ],
     )
 

@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  {{#each htmlWebpackPlugin.files.js}}
-  <link rel="preload" as="script" href="{{this}}" />
-  {{/each}}
-  <title>Document</title>
-  <script language="javascript">window.shellUIRemoteEntryUrl = "/shell/remoteEntry.js?version={{htmlWebpackPlugin.options.version}}"</script>
-</head>
-<body>
-  <div id="app"></div>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script language="javascript">
+      window.shellUIRemoteEntryUrl = "/shell/mf-manifest.json?version=<%=version%>";
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
 </html>
-

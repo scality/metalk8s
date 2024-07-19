@@ -1,21 +1,20 @@
-import React from 'react';
-import { useCallback, useEffect } from 'react';
-import { useAuthConfig } from './AuthConfigProvider';
+import { MetadataService, User, WebStorageStateStore } from 'oidc-client';
 import {
-  AuthProvider as OIDCAuthProvider,
   AuthProviderProps,
+  AuthProvider as OIDCAuthProvider,
   UserManager,
   useAuth as useOauth2Auth,
 } from 'oidc-react';
+import React, { useCallback, useEffect } from 'react';
+import { useErrorBoundary } from 'react-error-boundary';
+import { useQuery } from 'react-query';
+import type {
+  OAuth2ProxyConfig,
+  OIDCConfig,
+} from '../initFederation/ConfigurationProviders';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { getUserGroups } from '../navbar/auth/permissionUtils';
-import { MetadataService, WebStorageStateStore } from 'oidc-client';
-import type {
-  OIDCConfig,
-  OAuth2ProxyConfig,
-} from '../initFederation/ConfigurationProviders';
-import { useQuery } from 'react-query';
-import { useErrorBoundary } from 'react-error-boundary';
+import { useAuthConfig } from './AuthConfigProvider';
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { authConfig } = useAuthConfig();
 
@@ -162,10 +161,12 @@ export type UserData = {
   groups: string[];
   email: string;
   id: string;
+  original: User;
 };
 
 export function useAuth(): {
   userData?: UserData;
+  getToken: () => Promise<string | null>;
 } {
   const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
 
@@ -196,6 +197,7 @@ export function useAuth(): {
   if (!auth || !auth.userData) {
     return {
       userData: undefined,
+      getToken: () => Promise.resolve(null),
     };
   }
 
@@ -206,8 +208,12 @@ export function useAuth(): {
       email: auth.userData.profile?.email,
       groups: getUserGroups(auth.userData, config.userGroupsMapping),
       id: auth.userData.profile?.sub,
-      // @ts-expect-error - FIXME when you are working on it
       original: auth.userData,
+    },
+    getToken: async () => {
+      return auth.userManager.getUser().then((user) => {
+        return user?.access_token;
+      });
     },
   };
 }

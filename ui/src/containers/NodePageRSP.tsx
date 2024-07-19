@@ -1,45 +1,45 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { useRouteMatch } from 'react-router';
 import { Tabs } from '@scality/core-ui/dist/next';
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useRouteMatch } from 'react-router';
+import { useParams } from 'react-router-dom';
 
 import {
   AppContainer,
+  ConstrainedText,
   Icon,
   Stack,
-  TextBadge,
   Text,
-  ConstrainedText,
+  TextBadge,
 } from '@scality/core-ui';
-import { fetchPodsAction } from '../ducks/app/pods';
-import { getPodsListData } from '../services/PodUtils';
-import { useURLQuery, useRefreshEffect } from '../services/utils';
-import {
-  updateNodeStatsFetchArgumentAction,
-  fetchNodeUNameInfoAction,
-} from '../ducks/app/monitoring';
-import {
-  refreshVolumesAction,
-  stopRefreshVolumesAction,
-} from '../ducks/app/volumes';
-import { readNodeAction } from '../ducks/app/nodes';
-import NodePageOverviewTab from '../components/NodePageOverviewTab';
+import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
+import { useIntl } from 'react-intl';
 import AlertsTab from '../components/AlertsTab';
-import NodePageMetricsTab from './NodePageMetricsTab';
-import NodePageVolumesTab from '../components/NodePageVolumesTab';
-import NodePagePodsTab from '../components/NodePagePodsTab';
-import NodePagePartitionTabs from '../components/NodePagePartitionTab';
+import { getStyle } from '../components/CircleStatus';
 import NodePageDetailsTab from '../components/NodeDetailsTab';
+import NodePageOverviewTab from '../components/NodePageOverviewTab';
+import NodePagePartitionTabs from '../components/NodePagePartitionTab';
+import NodePagePodsTab from '../components/NodePagePodsTab';
+import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import {
   NoInstanceSelected,
   RightSidePanel,
 } from '../components/style/CommonLayoutStyle';
 import { NODE_ALERTS_GROUP, PORT_NODE_EXPORTER } from '../constants';
+import {
+  fetchNodeUNameInfoAction,
+  updateNodeStatsFetchArgumentAction,
+} from '../ducks/app/monitoring';
+import { readNodeAction } from '../ducks/app/nodes';
+import { fetchPodsAction } from '../ducks/app/pods';
+import {
+  refreshVolumesAction,
+  stopRefreshVolumesAction,
+} from '../ducks/app/volumes';
+import { getPodsListData } from '../services/PodUtils';
+import { useRefreshEffect, useURLQuery } from '../services/utils';
 import { useAlerts } from './AlertProvider';
-import { useIntl } from 'react-intl';
-import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
-import { getStyle } from '../components/CircleStatus';
+import NodePageMetricsTab from './NodePageMetricsTab';
 const THREE_MINUTES = 3 * 60 * 1000;
 
 // <NodePageRSP> fetches the data for all the tabs given the current selected Node

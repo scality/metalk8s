@@ -1,16 +1,17 @@
-import React, { useMemo } from 'react';
-import styled from 'styled-components';
-import { useIntl } from 'react-intl';
-import { spacing } from '@scality/core-ui/dist/style/theme';
-import {
-  useLinkOpener,
-  useDiscoveredViews,
-} from '../containers/ConfigProvider';
-import { useHistory } from 'react-router';
 import { Text, TextBadge } from '@scality/core-ui';
-import { useAlertLibrary, useAlerts } from '../containers/AlertProvider';
-import { getChildrenAlerts } from '../services/alertUtils';
 import { Box } from '@scality/core-ui/dist/next';
+import { spacing } from '@scality/core-ui/dist/style/theme';
+import { useMemo } from 'react';
+import { useIntl } from 'react-intl';
+import { useHistory } from 'react-router';
+import styled from 'styled-components';
+import { useAlertLibrary, useAlerts } from '../containers/AlertProvider';
+import {
+  useDiscoveredViews,
+  useLinkOpener,
+} from '../containers/ConfigProvider';
+import { getChildrenAlerts } from '../services/alertUtils';
+
 const AlertsContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -36,9 +37,9 @@ const DashboardAlerts = () => {
   const { openLink } = useLinkOpener();
   const history = useHistory();
   const discoveredViews = useDiscoveredViews();
-  const alertView = discoveredViews.find(
-    (view) => view.view.path === '/alerts',
-  );
+  const alertView = discoveredViews.find((view) => {
+    return view.isFederated && view.view.path === '/alerts';
+  });
   const intl = useIntl();
   const alertsLibrary = useAlertLibrary();
   const topLevelAlerts = useAlerts(alertsLibrary.getPlatformAlertSelectors());

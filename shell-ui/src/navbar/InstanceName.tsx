@@ -54,7 +54,7 @@ export const useInstanceNameAdapter = () => {
   if (!mainApp) {
     return null;
   }
-  const mainAppConfiguration = retrieveConfiguration({
+  const mainAppConfiguration = retrieveConfiguration<'build'>({
     configType: 'build',
     name: mainApp.name,
   });

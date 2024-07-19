@@ -3,8 +3,7 @@ import type {
   RangeMatrixResult,
 } from './prometheus/api';
 import { lineColor1, PORT_NODE_EXPORTER } from '../constants';
-import type { Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-import '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
+import { Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
 import {
   spacing,
   lineColor3,

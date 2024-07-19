@@ -1,12 +1,13 @@
-import React, { createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
 import { useHistory } from 'react-router';
-import * as H from 'history';
 
-const ShellHistoryContext = createContext<null | H.History>(null);
+const ShellHistoryContext = createContext<ReturnType<
+  typeof useHistory<unknown>
+> | null>(null);
 if (!window.shellContexts) {
-  //@ts-ignore
   window.shellContexts = {
     ShellHistoryContext,
+    ...window.shellContexts,
   };
 }
 

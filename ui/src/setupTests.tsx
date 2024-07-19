@@ -13,6 +13,29 @@ window.fetch = (url, ...rest) =>
     ...rest,
   );
 
+jest.mock('./FederableApp', () => {
+  const original = jest.requireActual('./FederableApp');
+
+  const metalK8sConfig = {
+    url: '/api/kubernetes',
+    url_salt: '/api/salt',
+    url_prometheus: '/api/prometheus',
+    url_grafana: '/grafana',
+    url_doc: '/docs',
+    url_alertmanager: '/api/alertmanager',
+    url_loki: '/api/loki',
+    flags: ['dashboard', 'show_node_display_name'],
+    ui_base_path: '/platform',
+    url_support: 'https://github.com/scality/metalk8s/discussions/new',
+  };
+  return {
+    ...original,
+    useConfig: jest.fn(() => {
+      return metalK8sConfig;
+    }),
+  };
+});
+
 jest.mock('./containers/ConfigProvider', () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -99,7 +122,7 @@ jest.mock('./containers/PrivateRoute', () => ({
             {
               kind: 'artesca-base-ui',
               view: 'license',
-              icon: 'fas fa-file-invoice',
+              icon: 'License',
             },
           ],
         },

@@ -1,19 +1,10 @@
 import 'regenerator-runtime/runtime';
-import React, {
-  PropsWithChildren,
-  ReactNode,
-  createContext,
-  useEffect,
-  useMemo,
-} from 'react';
+import { PropsWithChildren, ReactNode, useEffect, useMemo } from 'react';
 import { Provider, useDispatch } from 'react-redux';
-import { createStore, applyMiddleware, compose } from 'redux';
+import { createStore, applyMiddleware, compose, Store } from 'redux';
 import { Router } from 'react-router-dom';
 import createSagaMiddleware from 'redux-saga';
-import {
-  ComponentWithFederatedImports,
-  useCurrentApp,
-} from '@scality/module-federation';
+import { useCurrentApp } from '@scality/module-federation';
 import { Loader, ToastProvider } from '@scality/core-ui';
 import { ErrorPage500 } from '@scality/core-ui';
 import App from './containers/App';
@@ -25,7 +16,6 @@ import { setHistory as setReduxHistory } from './ducks/history';
 import { setApiConfigAction } from './ducks/config';
 import { authErrorAction } from './ducks/app/authError';
 import { AuthError } from './services/errorhandler';
-import { Config } from './services/api';
 const composeEnhancers =
   // @ts-expect-error - FIXME when you are working on it
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
@@ -40,7 +30,7 @@ const sagaMiddleware = createSagaMiddleware({
   },
 });
 const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware));
-export const store = createStore(reducer, enhancer);
+export const store: Store = createStore(reducer, enhancer);
 // @ts-expect-error - FIXME when you are working on it
 if (window.Cypress) window.__store__ = store;
 sagaMiddleware.run(sagas);
@@ -83,41 +73,40 @@ const RouterWithBaseName = ({ children }) => {
     </Router>
   );
 };
-
-export const ConfigContext = createContext<Config | null>(null);
-
-export const useConfig = () => {
-  const context = React.useContext(ConfigContext);
-  if (context === null) {
-    throw new Error('useConfig must be used within AppConfigProvider');
-  }
-  return context;
+type Config = {
+  url: string;
+  url_salt: string;
+  url_prometheus: string;
+  url_grafana: string;
+  url_doc: string;
+  url_alertmanager: string;
+  url_loki: string;
+  flags?: string[];
+  ui_base_path?: string;
+  url_support?: string;
 };
-
-function InternalAppConfigProvider({ children, moduleExports }) {
-  const dispatch = useDispatch();
+export const useConfig = () => {
   const { name } = useCurrentApp();
-  const { status, api } = useTypedSelector((state) => state.config);
-  const runtimeConfiguration = moduleExports[
-    './moduleFederation/ConfigurationProvider'
-  ].useConfig({
+  const runtimeConfiguration = window.shellHooks.useConfig<Config>({
     configType: 'run',
     name,
   });
+
+  return runtimeConfiguration.spec.selfConfiguration;
+};
+
+function InternalAppConfigProvider({ children }) {
+  const dispatch = useDispatch();
+  const { status, api } = useTypedSelector((state) => state.config);
+  const config = useConfig();
   useEffect(() => {
     if (status === 'idle') {
-      dispatch(setApiConfigAction(runtimeConfiguration.spec.selfConfiguration));
+      dispatch(setApiConfigAction(config));
     } // eslint-disable-next-line
   }, [status]);
 
   if (api && status === 'success') {
-    return (
-      <ConfigContext.Provider
-        value={runtimeConfiguration.spec.selfConfiguration}
-      >
-        {children}
-      </ConfigContext.Provider>
-    );
+    return <>{children}</>;
   } else if (status === 'loading' || status === 'idle') {
     return <Loader size="massive" centered={true} aria-label="loading" />; // TODO display the previous module while lazy loading the new one
   } else if (status === 'error') {
@@ -125,21 +114,8 @@ function InternalAppConfigProvider({ children, moduleExports }) {
   }
 }
 
-export function AppConfigProviderWithoutRedux({ children, moduleExports }) {
-  const { name } = useCurrentApp();
-
-  const runtimeConfiguration = moduleExports[
-    './moduleFederation/ConfigurationProvider'
-  ].useConfig({
-    configType: 'run',
-    name,
-  });
-
-  return (
-    <ConfigContext.Provider value={runtimeConfiguration.spec.selfConfiguration}>
-      {children}
-    </ConfigContext.Provider>
-  );
+export function AppConfigProviderWithoutRedux({ children }) {
+  return <>{children}</>;
 }
 
 export const AppConfigProvider = ({
@@ -147,24 +123,11 @@ export const AppConfigProvider = ({
   componentWithInjectedImports,
 }: PropsWithChildren<{ componentWithInjectedImports?: ReactNode }>) => {
   if (!componentWithInjectedImports) {
-    componentWithInjectedImports = InternalAppConfigProvider;
+    return <InternalAppConfigProvider>{children}</InternalAppConfigProvider>;
   }
   return (
-    <ComponentWithFederatedImports
-      componentWithInjectedImports={componentWithInjectedImports}
-      renderOnError={<ErrorPage500 data-cy="sc-error-page500" />}
-      componentProps={{
-        children,
-      }}
-      federatedImports={[
-        {
-          scope: 'shell',
-          module: './moduleFederation/ConfigurationProvider',
-          // @ts-expect-error - FIXME when you are working on it
-          remoteEntryUrl: window.shellUIRemoteEntryUrl,
-        },
-      ]}
-    />
+    //@ts-expect-error
+    <componentWithInjectedImports>{children}</componentWithInjectedImports>
   );
 };
 

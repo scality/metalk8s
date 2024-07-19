@@ -1,24 +1,24 @@
-import React, { useCallback } from 'react';
-import { useTheme } from 'styled-components';
+import { useCallback } from 'react';
 import { useQuery } from 'react-query';
+import { useTheme } from 'styled-components';
 
 import { ProgressBar, spacing } from '@scality/core-ui';
 
 import { Table } from '@scality/core-ui/dist/next';
 import {
-  queryNodeFSUsage,
-  queryNodeFSSize,
-} from '../services/prometheus/fetchMetrics';
-import CircleStatus from './CircleStatus';
-import { getNodePartitionsTableData } from '../services/NodeVolumesUtils';
-import { useAlerts } from '../containers/AlertProvider';
-import {
-  NODE_FILESYSTEM_SPACE_FILLINGUP,
+  NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
   NODE_FILESYSTEM_ALMOST_OUTOF_SPACE,
   NODE_FILESYSTEM_FILES_FILLINGUP,
-  NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
+  NODE_FILESYSTEM_SPACE_FILLINGUP,
   PORT_NODE_EXPORTER,
 } from '../constants';
+import { useAlerts } from '../containers/AlertProvider';
+import { getNodePartitionsTableData } from '../services/NodeVolumesUtils';
+import {
+  queryNodeFSSize,
+  queryNodeFSUsage,
+} from '../services/prometheus/fetchMetrics';
+import CircleStatus from './CircleStatus';
 
 const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
   const theme = useTheme();
@@ -34,7 +34,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
         flex: 0.5,
       },
       Cell: ({ value }) => {
-        return <CircleStatus className="fas fa-circle" status={value} />;
+        return <CircleStatus status={value} />;
       },
     },
     {

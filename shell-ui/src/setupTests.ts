@@ -53,3 +53,5 @@ export function mockOidcReact() {
 }
 
 jest.mock('oidc-react', () => mockOidcReact());
+
+jest.mock('@module-federation/enhanced/runtime', () => {}, { virtual: true });

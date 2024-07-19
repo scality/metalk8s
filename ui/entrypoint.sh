@@ -5,7 +5,7 @@ set -eu
 build() {
     # Redirect everything to stderr, to get as much info as possible in case
     # of an error.
-    npm run build 1>&2
+    npm run rsbuild 1>&2
 }
 
 clean() {
