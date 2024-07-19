@@ -195,25 +195,6 @@ export const useNavbarLinksToActions = (
         : normalizePath((link.view as NonFederatedView).url) ===
           window.location.origin + window.location.pathname,
     );
-  //Preload non current route
-  const { retrieveConfiguration } = useConfigRetriever();
-  useEffect(() => {
-    links.forEach((link) => {
-      if (!link.view.isFederated) {
-        return;
-      }
-
-      //Check if it is the current route
-      if (
-        !selectedTab ||
-        (selectedTab?.view.isFederated &&
-          link.view.app.name === selectedTab.view.app.name &&
-          link.view.view.path === selectedTab.view.view.path)
-      ) {
-        return;
-      }
-    });
-  }, [JSON.stringify(links)]);
 
   return links.map((link) => {
     return {
