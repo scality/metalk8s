@@ -211,6 +211,13 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.THANOS_REPOSITORY: [
         "thanos",
     ],
+    constants.OPERATOR_FRAMEWORK_REPOSITORY: [
+        "olm",
+        "configmap-operator-registry",
+    ],
+    constants.OPERATORHUB_REPOSITORY: [
+        "catalog",
+    ],
 }
 
 REMOTE_NAMES: Dict[str, str] = {

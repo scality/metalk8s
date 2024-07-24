@@ -271,6 +271,21 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         version="2.2.2",
         digest="sha256:bc89a87cc9cd40c320644835b83170f49819dc3ea447e38c71dde27a181e7a9b",
     ),
+    Image(
+        name="olm",
+        version="v0.28.0",
+        digest="sha256:40d0363f4aa684319cd721c2fcf3321785380fdc74de8ef821317cd25a10782a",
+    ),
+    Image(
+        name="configmap-operator-registry",
+        version="v1.9.0",
+        digest="sha256:caf1851a51a86d1f1dd4e882cbac0887a54fdaaf5a2554bab5c3ba17ad944c58",
+    ),
+    Image(
+        name="catalog",
+        version="latest",
+        digest="sha256:ac22f95bc9d5b644eb6dbeb9f0fbc3757203891a81d1ceb2b2b66c223acfa057",
+    ),
 )
 
 CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}

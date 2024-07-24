@@ -31,6 +31,8 @@ PROMETHEUS_ADAPTER_REPOSITORY: str = f"{K8S_REPOSITORY}/prometheus-adapter"
 PROMETHEUS_OPERATOR_REPOSITORY: str = "quay.io/prometheus-operator"
 PROMETHEUS_REPOSITORY: str = "quay.io/prometheus"
 THANOS_REPOSITORY: str = "quay.io/thanos"
+OPERATOR_FRAMEWORK_REPOSITORY: str = "quay.io/operator-framework"
+OPERATORHUB_REPOSITORY: str = "quay.io/operatorhubio"
 
 # Paths {{{
 
