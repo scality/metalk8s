@@ -6,3 +6,37 @@ kind: IngressControllerConfig
 spec:
   config:
     allow-snippet-annotations: 'true'
+    keep-alive: '10'
+    hide-headers: 'Server,X-Powered-By'
+    ssl-protocols: 'TLSv1.3'
+    ssl-ciphers: 'EECDH:EDH:!NULL:!SSLv2:!RC4:!aNULL:!3DES:!IDEA'
+    client-header-timeout: '10'
+    client-body-timeout: '10'
+    proxy-body-size: '10m'
+    large-client-header-buffers: '2 1k'
+    enable-brotli: 'true'
+    brotli-level: '6'
+    403: |
+      <!DOCTYPE html>
+      <html>
+        <head><title>FORBIDDEN</title></head>
+        <body>FORBIDDEN</body>
+      </html>
+    404: |
+      <!DOCTYPE html>
+      <html>
+        <head><title>PAGE NOT FOUND</title></head>
+        <body>PAGE NOT FOUND</body>
+      </html>
+    500: |
+      <!DOCTYPE html>
+      <html>
+        <head><title>INTERNAL SERVER ERROR</title></head>
+        <body>INTERNAL SERVER ERROR</body>
+      </html>
+    503: |
+      <!DOCTYPE html>
+      <html>
+        <head><title>CUSTOM SERVICE UNAVAILABLE</title></head>
+        <body>CUSTOM SERVICE UNAVAILABLE</body>
+      </html>
