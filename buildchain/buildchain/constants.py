@@ -17,18 +17,18 @@ from buildchain import config, versions
 CMD_WIDTH: int = 14
 
 # URLs of the main container repositories.
+K8S_REPOSITORY: str = "registry.k8s.io"
 BITNAMI_REPOSITORY: str = "docker.io/bitnami"
 CALICO_REPOSITORY: str = "docker.io/calico"
-COREDNS_REPOSITORY: str = "k8s.gcr.io/coredns"
+COREDNS_REPOSITORY: str = f"{K8S_REPOSITORY}/coredns"
 DEX_REPOSITORY: str = "ghcr.io/dexidp"
 DOCKER_REPOSITORY: str = "docker.io/library"
 FLUENT_REPOSITORY: str = "docker.io/fluent"
-GOOGLE_REPOSITORY: str = "k8s.gcr.io"
 GRAFANA_REPOSITORY: str = "docker.io/grafana"
-INGRESS_REPOSITORY: str = "k8s.gcr.io/ingress-nginx"
+INGRESS_REPOSITORY: str = f"{K8S_REPOSITORY}/ingress-nginx"
 KIWIGRID_REPOSITORY: str = "quay.io/kiwigrid"
-KUBE_STATE_METRICS_REPOSITORY: str = "k8s.gcr.io/kube-state-metrics"
-PROMETHEUS_ADAPTER_REPOSITORY: str = "k8s.gcr.io/prometheus-adapter"
+KUBE_STATE_METRICS_REPOSITORY: str = f"{K8S_REPOSITORY}/kube-state-metrics"
+PROMETHEUS_ADAPTER_REPOSITORY: str = f"{K8S_REPOSITORY}/prometheus-adapter"
 PROMETHEUS_OPERATOR_REPOSITORY: str = "quay.io/prometheus-operator"
 PROMETHEUS_REPOSITORY: str = "quay.io/prometheus"
 THANOS_REPOSITORY: str = "quay.io/thanos"
