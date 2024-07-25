@@ -1,0 +1,257 @@
+---
+image: registry.metalk8s.lan/cert-manager-bundle:v1.15.0
+name: cert-manager.v1.15.0
+package: cert-manager
+properties:
+- type: olm.gvk
+  value:
+    group: acme.cert-manager.io
+    kind: Challenge
+    version: v1
+- type: olm.gvk
+  value:
+    group: acme.cert-manager.io
+    kind: Order
+    version: v1
+- type: olm.gvk
+  value:
+    group: cert-manager.io
+    kind: Certificate
+    version: v1
+- type: olm.gvk
+  value:
+    group: cert-manager.io
+    kind: CertificateRequest
+    version: v1
+- type: olm.gvk
+  value:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    version: v1
+- type: olm.gvk
+  value:
+    group: cert-manager.io
+    kind: Issuer
+    version: v1
+- type: olm.package
+  value:
+    packageName: cert-manager
+    version: 1.15.0
+- type: olm.csv.metadata
+  value:
+    annotations:
+      alm-examples: |-
+        [
+          {
+            "apiVersion": "cert-manager.io/v1",
+            "kind": "Issuer",
+            "metadata": {
+              "name": "example-issuer"
+            },
+            "spec": {
+              "selfSigned": {}
+            }
+          },
+          {
+            "apiVersion": "cert-manager.io/v1",
+            "kind": "ClusterIssuer",
+            "metadata": {
+              "name": "example-clusterissuer"
+            },
+            "spec": {
+              "selfSigned": {}
+            }
+          },
+          {
+            "apiVersion": "cert-manager.io/v1",
+            "kind": "Certificate",
+            "metadata": {
+              "name": "example-certificate"
+            },
+            "spec": {
+              "dnsNames": [
+                "example.com"
+              ],
+              "issuerRef": {
+                "name": "example-issuer"
+              },
+              "secretName": "example-certificate-tls"
+            }
+          },
+          {
+            "apiVersion": "cert-manager.io/v1",
+            "kind": "CertificateRequest",
+            "metadata": {
+              "name": "example-certificaterequest"
+            },
+            "spec": {}
+          },
+          {
+            "apiVersion": "acme.cert-manager.io/v1",
+            "kind": "Order",
+            "metadata": {
+              "name": "example-order"
+            },
+            "spec": {}
+          },
+          {
+            "apiVersion": "acme.cert-manager.io/v1",
+            "kind": "Challenge",
+            "metadata": {
+              "name": "example-challenge"
+            },
+            "spec": {}
+          }
+        ]
+      capabilities: Full Lifecycle
+      categories: Security
+      containerImage: registry.metalk8s.lan/cert-manager-controller:v1.15.0
+      createdAt: 2024-06-06T11:39:40
+      operators.operatorframework.io/builder: operator-sdk-v1.33.0
+      operators.operatorframework.io/internal-objects: |-
+        [
+          "challenges.acme.cert-manager.io",
+          "orders.acme.cert-manager.io"
+        ]
+      operators.operatorframework.io/project_layout: unknown
+      repository: https://github.com/cert-manager/cert-manager
+      support: The cert-manager maintainers
+    apiServiceDefinitions: {}
+    crdDescriptions:
+      owned:
+      - description: |-
+          A CertificateRequest is used to request a signed certificate from one of the
+          configured issuers.
+
+
+          All fields within the CertificateRequest's `spec` are immutable after creation.
+          A CertificateRequest will either succeed or fail, as denoted by its `Ready` status
+          condition and its `status.failureTime` field.
+
+
+          A CertificateRequest is a one-shot resource, meaning it represents a single
+          point in time request for a certificate and cannot be re-used.
+        displayName: CertificateRequest
+        kind: CertificateRequest
+        name: certificaterequests.cert-manager.io
+        version: v1
+      - description: |-
+          A Certificate resource should be created to ensure an up to date and signed
+          X.509 certificate is stored in the Kubernetes Secret resource named in `spec.secretName`.
+
+
+          The stored certificate will be renewed before it expires (as configured by `spec.renewBefore`).
+        displayName: Certificate
+        kind: Certificate
+        name: certificates.cert-manager.io
+        version: v1
+      - description: Challenge is a type to represent a Challenge request with an
+          ACME server
+        displayName: (Internal) Challenge
+        kind: Challenge
+        name: challenges.acme.cert-manager.io
+        version: v1
+      - description: |-
+          A ClusterIssuer represents a certificate issuing authority which can be
+          referenced as part of `issuerRef` fields.
+          It is similar to an Issuer, however it is cluster-scoped and therefore can
+          be referenced by resources that exist in *any* namespace, not just the same
+          namespace as the referent.
+        displayName: ClusterIssuer
+        kind: ClusterIssuer
+        name: clusterissuers.cert-manager.io
+        version: v1
+      - description: |-
+          An Issuer represents a certificate issuing authority which can be
+          referenced as part of `issuerRef` fields.
+          It is scoped to a single namespace and can therefore only be referenced by
+          resources within the same namespace.
+        displayName: Issuer
+        kind: Issuer
+        name: issuers.cert-manager.io
+        version: v1
+      - description: Order is a type to represent an Order with an ACME server
+        displayName: (Internal) Order
+        kind: Order
+        name: orders.acme.cert-manager.io
+        version: v1
+    description: |
+      cert-manager is a Kubernetes add-on to automate the management and issuance of TLS certificates from various issuing sources.
+      It will ensure certificates are valid and up to date periodically, and attempt to renew certificates at an appropriate time before expiry.
+
+      cert-manager has the following [built in issuers][]:
+
+      * ACME: sign certificates using Let's Encrypt (or any other [ACME][] compliant signer).
+      * Vault: sign certificates using HashiCorp Vault.
+      * Venafi: sign certificates using Venafi Cloud or Venafi Trust Protection Platform.
+      * SelfSigned: the private key of the certificate will be used to sign the certificate.
+      * CA: a private key stored as a Kubernetes Secret will be used to sign the certificate.
+
+      [built in issuers]: https://cert-manager.io/docs/configuration/#supported-issuer-types
+      [ACME]: https://datatracker.ietf.org/doc/html/rfc8555
+
+      cert-manager also supports [external issuers][],
+      which are out-of-tree components that provide support for other certificate authorities, such as:
+      [Google Cloud Certificate Authority](https://github.com/jetstack/google-cas-issuer),
+      [AWS Private Certificate Authority](https://github.com/cert-manager/aws-privateca-issuer), and
+      [Cloudflare Origin CA](https://github.com/cloudflare/origin-ca-issuer)
+
+      [external issuers]: https://cert-manager.io/docs/configuration/external/
+
+      In order to configure cert-manager to issue certificates, you must first create an Issuer or ClusterIssuer.
+      These resources represent a particular signing authority and tell cert-manager how to handle your certificate requests.
+      The [Issuer Documentation][] has more detail.
+
+      [configure cert-manager]: https://cert-manager.io/docs/configuration/
+      [Issuer Documentation]: https://cert-manager.io/docs/concepts/issuer/
+
+      Once an Issuer has been configured, you can create a Certificate resource,
+      which is a definition of a certificate request that is to be honored by an issuer
+      and which is to be kept up-to-date.
+      This is the usual way that you will interact with cert-manager to request signed certificates.
+      The [Certificate Documentation][] has more detail.
+
+      [Certificate Documentation]: https://cert-manager.io/docs/usage/certificate/
+    displayName: cert-manager
+    installModes:
+    - supported: false
+      type: OwnNamespace
+    - supported: false
+      type: SingleNamespace
+    - supported: false
+      type: MultiNamespace
+    - supported: true
+      type: AllNamespaces
+    keywords:
+    - TLS
+    - secrets
+    - security
+    - certificates
+    labels:
+      operatorframework.io/arch.amd64: supported
+      operatorframework.io/arch.arm64: supported
+      operatorframework.io/arch.ppc64le: supported
+      operatorframework.io/arch.s390x: supported
+    links:
+    - name: Documentation
+      url: https://cert-manager.io/
+    - name: Release Notes
+      url: https://cert-manager.io/docs/release-notes
+    maintainers:
+    - email: cert-manager-maintainers@googlegroups.com
+      name: The cert-manager maintainers
+    maturity: stable
+    minKubeVersion: 1.19.0-0
+    provider:
+      name: The cert-manager maintainers
+      url: https://cert-manager.io/
+relatedImages:
+- image: registry.metalk8s.lan/cert-manager-bundle:v1.15.0
+  name: ""
+- image: registry.metalk8s.lan/cert-manager-cainjector:v1.15.0
+  name: ""
+- image: registry.metalk8s.lan/cert-manager-controller:v1.15.0
+  name: ""
+- image: registry.metalk8s.lan/cert-manager-webhook:v1.15.0
+  name: ""
+schema: olm.bundle

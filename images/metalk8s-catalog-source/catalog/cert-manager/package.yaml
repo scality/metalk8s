@@ -1,0 +1,6 @@
+---
+defaultChannel: stable
+description: |
+  cert-manager operator
+name: cert-manager
+schema: olm.package

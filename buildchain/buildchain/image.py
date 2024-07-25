@@ -214,15 +214,17 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.OPERATOR_FRAMEWORK_REPOSITORY: [
         "olm",
         "configmap-operator-registry",
-    ],
-    constants.OPERATORHUB_REPOSITORY: [
-        "catalog",
+        "opm",
     ],
     constants.CERT_MANAGER_REPOSITORY: [
         "cert-manager-controller",
         "cert-manager-webhook",
         "cert-manager-cainjector",
         "cert-manager-acmesolver",
+    ],
+    # these are operator bundle images, no to be confused with the operator itself
+    constants.OPERATORHUBIO_REPOSITORY: [
+        "cert-manager",
     ],
 }
 
@@ -329,6 +331,28 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
             "VCS_REF": constants.GIT_REF or "<unknown>",
             "METALK8S_VERSION": versions.VERSION,
             "VERSION": versions.VERSION,
+        },
+    ),
+    _local_image(
+        name="metalk8s-catalog-source",
+        dockerfile=constants.ROOT
+        / "images"
+        / "metalk8s-catalog-source"
+        / "catalog.Dockerfile",
+        build_args={
+            "BASE_IMG": TO_PULL["opm"].remote_fullname_digest,
+        },
+    ),
+    _local_image(
+        name="cert-manager-bundle",
+        dockerfile=constants.ROOT
+        / "images"
+        / "metalk8s-olm-bundles"
+        / "cert-manager"
+        / "Dockerfile",
+        build_args={
+            "BASE_IMG": TO_PULL["cert-manager"].remote_fullname_digest,
+            "MK8S_VERSION": versions.VERSION,
         },
     ),
 )

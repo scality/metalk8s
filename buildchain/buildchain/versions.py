@@ -263,6 +263,16 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
+        name="metalk8s-catalog-source",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
+        name="cert-manager-bundle",
+        version=_version_prefix(CERT_MANAGER_VERSION),
+        digest=None,
+    ),
+    Image(
         name="loki",
         version="2.9.6",
         digest="sha256:6ca6e2cd3b6f45e0eb298da2920610fde63ecd8ab6c595d9c941c8559d1d9407",
@@ -283,9 +293,9 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:caf1851a51a86d1f1dd4e882cbac0887a54fdaaf5a2554bab5c3ba17ad944c58",
     ),
     Image(
-        name="catalog",
-        version="latest",
-        digest="sha256:ac22f95bc9d5b644eb6dbeb9f0fbc3757203891a81d1ceb2b2b66c223acfa057",
+        name="cert-manager",
+        version=_version_prefix(CERT_MANAGER_VERSION),
+        digest="sha256:f173d8f734184548699d1945099f4ebc4b64595f95e5ba9150cf2cc92af3478e",
     ),
     Image(
         name="cert-manager-controller",
@@ -306,6 +316,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         name="cert-manager-acmesolver",
         version=_version_prefix(CERT_MANAGER_VERSION),
         digest="sha256:feb7f20bbe553a7d22ada91578b118b5fbf8d030facd15612d735f18e6b27aac",
+    ),
+    Image(
+        name="opm",
+        version="v1.45.0",
+        digest="sha256:aad0452fe050a3300bdfdcbce7a612b2f9eeec3ad715f3ed1949de66183bda6b",
     ),
 )
 

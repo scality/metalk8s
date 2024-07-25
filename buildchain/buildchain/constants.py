@@ -32,7 +32,7 @@ PROMETHEUS_OPERATOR_REPOSITORY: str = "quay.io/prometheus-operator"
 PROMETHEUS_REPOSITORY: str = "quay.io/prometheus"
 THANOS_REPOSITORY: str = "quay.io/thanos"
 OPERATOR_FRAMEWORK_REPOSITORY: str = "quay.io/operator-framework"
-OPERATORHUB_REPOSITORY: str = "quay.io/operatorhubio"
+OPERATORHUBIO_REPOSITORY: str = "quay.io/operatorhubio"
 CERT_MANAGER_REPOSITORY: str = "quay.io/jetstack"
 
 # Paths {{{

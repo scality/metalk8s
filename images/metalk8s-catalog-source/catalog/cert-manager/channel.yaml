@@ -1,0 +1,6 @@
+---
+schema: olm.channel
+package: cert-manager
+name: stable
+entries:
+  - name: cert-manager.v1.15.0
