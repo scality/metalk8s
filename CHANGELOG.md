@@ -7,6 +7,10 @@
 - Remove `nodes-darwin` MacOS related grafana dashboard
   (PR[4178](https://github.com/scality/metalk8s/pull/4178))
 
+- Bump Kubernetes version to
+  [1.25.16](https://github.com/kubernetes/kubernetes/releases/tag/v1.25.16)
+  (PR[#4379](https://github.com/scality/metalk8s/pull/4379))
+
 ### Bug fixes
 
 - Fix a bug in retry logic for ETCd backup
