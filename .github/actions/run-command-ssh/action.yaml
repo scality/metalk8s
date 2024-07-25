@@ -16,7 +16,7 @@ inputs:
   SSH_OPTIONS:
     description: "Additional args passed to ssh"
     required: false
-    default: ""
+    default: "-o ServerAliveInterval=15"
 
 runs:
   using: "composite"
