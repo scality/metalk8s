@@ -1,6 +1,12 @@
 # CHANGELOG
 ## Release 124.1.7 (in development)
 
+### Enhancements
+
+- Bump Kubernetes version to
+  [1.24.17](https://github.com/kubernetes/kubernetes/releases/tag/v1.24.17)
+  (PR[#4378](https://github.com/scality/metalk8s/pull/4378))
+
 ## Release 124.1.6
 
 ### Bug fixes
