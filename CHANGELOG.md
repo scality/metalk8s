@@ -9,8 +9,8 @@
   (PR[#4362](https://github.com/scality/metalk8s/pull/4362))
 
 - Bump Kubernetes version to
-  [1.27.15](https://github.com/kubernetes/kubernetes/releases/tag/v1.27.15)
-  (PR[#4361](https://github.com/scality/metalk8s/pull/4361))
+  [1.27.16](https://github.com/kubernetes/kubernetes/releases/tag/v1.27.16)
+  (PR[#4381](https://github.com/scality/metalk8s/pull/4381))
 
 - Bump etcd version to [3.5.14](https://github.com/etcd-io/etcd/releases/tag/v3.5.14)
   (PR[#4361](https://github.com/scality/metalk8s/pull/4361))
