@@ -42,7 +42,6 @@ runs:
       with:
         COMMAND: |
           sudo ./sonobuoy run --kubeconfig=/etc/kubernetes/admin.conf --mode=certified-conformance --wait
-        SSH_OPTIONS: "-o ServerAliveInterval=15"
     - name: Retrieve conformance tests result
       uses: ./.github/actions/run-command-ssh
       with:
