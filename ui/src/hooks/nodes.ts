@@ -15,15 +15,24 @@ import {
   updateNodesAction,
 } from '../ducks/app/nodes';
 import { allJobsSelector } from '../ducks/app/salt';
-import { useTypedSelector } from '../hooks';
 import { useK8sApiConfig } from '../services/k8s/api';
 import { nodeKey } from '../services/k8s/core.key';
+import { useAuth } from '../containers/PrivateRoute';
+
 const FIVE_SECOND_IN_MS = 5000;
 export function useAllNodesQueryOption(deployingNodes) {
   const { coreV1 } = useK8sApiConfig();
+  const { getToken } = useAuth();
   return {
     queryKey: nodeKey.all,
-    queryFn: () => coreV1.listNode(),
+    queryFn: async () => {
+      coreV1.setDefaultAuthentication({
+        applyToRequest: async (req) => {
+          req.headers.authorization = `Bearer ${await getToken()}`;
+        },
+      });
+      return coreV1.listNode();
+    },
     select: (data) => {
       return data?.body?.items?.map((node) => {
         const statusType =
@@ -116,13 +125,13 @@ export function useRefreshNodes() {
 export const useUpdateNodeDisplayName = (name: string) => {
   const dispatch = useDispatch();
   const { url: kubernetesApiUrl } = useConfig();
-  const token = useTypedSelector((state) => state.oidc?.user?.token);
+  const { getToken } = useAuth();
 
   return useMutation({
     mutationFn: async ({ value }: { value: string }) => {
       const res = await fetch(`${kubernetesApiUrl}/api/v1/nodes/${name}`, {
         headers: {
-          authorization: `Bearer ${token}`,
+          authorization: `Bearer ${await getToken()}`,
           'content-type': 'application/merge-patch+json',
         },
         method: 'PATCH',

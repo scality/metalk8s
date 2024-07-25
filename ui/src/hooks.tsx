@@ -44,16 +44,24 @@ export const useTypedSelector: <TSelected>(
  */
 export const useNodes = (): V1NodeList => {
   const { coreV1 } = useK8sApiConfig();
+  const { getToken } = useAuth();
   const nodesQuery = useQuery(
     'nodesNames',
-    () =>
-      coreV1.listNode().then((res) => {
+    async () => {
+      coreV1.setDefaultAuthentication({
+        applyToRequest: async (req) => {
+          req.headers.authorization = `Bearer ${await getToken()}`;
+        },
+      });
+
+      return coreV1.listNode().then((res) => {
         if (res.response.statusCode === 200 && res.body?.items) {
           return res.body?.items;
         }
 
         return [];
-      }),
+      });
+    },
     {
       refetchOnMount: false,
       refetchOnWindowFocus: false,

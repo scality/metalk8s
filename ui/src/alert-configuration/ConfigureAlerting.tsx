@@ -1,9 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { useHistory } from 'react-router';
 import Joi from '@hapi/joi';
 import { joiResolver } from '@hookform/resolvers/joi';
-import { useTheme } from 'styled-components';
 import {
   AppContainer,
   Banner,
@@ -19,8 +15,15 @@ import {
   TextArea,
 } from '@scality/core-ui';
 import { Box, Button, Input, Select } from '@scality/core-ui/dist/next';
+import { useEffect, useRef } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
+import { useHistory } from 'react-router';
+import { useTheme } from 'styled-components';
 
+import { useAuth } from '../containers/PrivateRoute';
+import { addNotificationSuccessAction } from '../ducks/app/notifications';
+import { useConfig } from '../FederableApp';
 import {
   AlertConfiguration,
   AlertStoreLogLine,
@@ -30,9 +33,6 @@ import {
   useTestAlertConfiguration,
 } from './domain/AlertConfigurationDomain';
 import { Metalk8sCSCAlertConfigurationStore } from './infrastructure/Metalk8sCSCAlertConfigurationStore';
-import { useAuth } from '../containers/PrivateRoute';
-import { useConfig } from '../FederableApp';
-import { addNotificationSuccessAction } from '../ducks/app/notifications';
 
 const LogsBanner = ({ logs }: { logs: PromiseResult<AlertStoreLogLine[]> }) => {
   const firstLog =
@@ -138,15 +138,14 @@ export default function ConfigureAlerting() {
     url_alertmanager: alertManagerUrl,
   } = useConfig();
 
-  const { userData } = useAuth();
-  const token = userData?.token || '';
+  const { userData, getToken } = useAuth();
   const email = userData?.email || '';
 
   const alertConfigurationStore = new Metalk8sCSCAlertConfigurationStore(
     kubernetesApiUrl,
     saltApiUrl,
     alertManagerUrl,
-    token,
+    getToken,
     email,
   );
 

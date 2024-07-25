@@ -82,6 +82,7 @@ jest.mock('./containers/PrivateRoute', () => ({
         email: 'renard.admin@scality.com',
         groups: ['StorageManager', 'user', 'PlatformAdmin'],
       },
+      getToken: () => Promise.resolve('xxx-yyy-zzz-token'),
     };
   }),
   useShellConfig: jest.fn(() => {

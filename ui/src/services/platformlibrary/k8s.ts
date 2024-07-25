@@ -2,6 +2,10 @@ import { useQuery } from 'react-query';
 import { REFRESH_METRICS_GRAPH } from '../../constants';
 import { allSizeUnitsToBytes, bytesToSize } from '../utils';
 import { useK8sApiConfig } from '../k8s/api';
+import { useAuth } from '../../containers/PrivateRoute';
+
+export type getTokenType = ReturnType<typeof useAuth>['getToken'];
+
 const FIVE_SECOND_IN_MS = 5000;
 export const volumesKey = {
   all: ['volumes', 'list'],
@@ -10,15 +14,15 @@ export const volumesKey = {
 };
 export const getNodesCountQuery = (
   k8sUrl: string,
-  token?: string | null,
+  getToken: getTokenType,
 ): typeof useQuery => {
   return {
     // @ts-expect-error - FIXME when you are working on it
-    queryKey: 'countNodes',
-    queryFn: () =>
+    queryKey: ['countNodes'],
+    queryFn: async () =>
       fetch(`${k8sUrl}/api/v1/nodes`, {
         headers: {
-          authorization: `bearer ${token}`,
+          authorization: `bearer ${await getToken()}`,
         },
       })
         .then((r) => {
@@ -30,20 +34,19 @@ export const getNodesCountQuery = (
           return res.items.length;
         }),
     refetchInterval: REFRESH_METRICS_GRAPH,
-    enabled: token ? true : false,
   };
 };
 export const getVolumesCountQuery = (
   k8sUrl: string,
-  token?: string | null,
+  getToken: getTokenType,
 ): typeof useQuery => {
   return {
     // @ts-expect-error - FIXME when you are working on it
     queryKey: 'countVolumes',
-    queryFn: () =>
+    queryFn: async () =>
       fetch(`${k8sUrl}/api/v1/persistentvolumes`, {
         headers: {
-          authorization: `bearer ${token}`,
+          authorization: `bearer ${await getToken()}`,
         },
       })
         .then((r) => {
@@ -55,14 +58,21 @@ export const getVolumesCountQuery = (
           return res.items.length;
         }),
     refetchInterval: REFRESH_METRICS_GRAPH,
-    enabled: token ? true : false,
   };
 };
 export function useGetVolumeQueryOption() {
   const { customObjectsApi } = useK8sApiConfig();
+  const { getToken } = useAuth();
   return {
     queryKey: volumesKey.all,
-    queryFn: () => customObjectsApi.getMetalk8sV1alpha1VolumeList(),
+    queryFn: async () => {
+      customObjectsApi.customObjects.setDefaultAuthentication({
+        applyToRequest: async (req) => {
+          req.headers.authorization = `Bearer ${await getToken()}`;
+        },
+      });
+      return customObjectsApi.getMetalk8sV1alpha1VolumeList();
+    },
     select: (data) => data.body?.items,
     staleTime: FIVE_SECOND_IN_MS,
     enable: !!customObjectsApi,
@@ -70,18 +80,35 @@ export function useGetVolumeQueryOption() {
 }
 export function useGetCurrentVolumeObjectQueryOption(volumeName: string) {
   const { customObjectsApi } = useK8sApiConfig();
+  const { getToken } = useAuth();
   return {
     queryKey: volumesKey.volumeObject(volumeName),
     select: (data) => data.body,
-    queryFn: () => customObjectsApi.getMetalk8sV1alpha1Volume(volumeName),
+    queryFn: async () => {
+      customObjectsApi.customObjects.setDefaultAuthentication({
+        applyToRequest: async (req) => {
+          req.headers.authorization = `Bearer ${await getToken()}`;
+        },
+      });
+      return customObjectsApi.getMetalk8sV1alpha1Volume(volumeName);
+    },
     enable: !!customObjectsApi,
   };
 }
 export function useGetPersistentVolumeQueryOption() {
   const { coreV1 } = useK8sApiConfig();
+  const { getToken } = useAuth();
   return {
     queryKey: volumesKey.persitant,
-    queryFn: () => coreV1.listPersistentVolume(),
+    queryFn: () => {
+      coreV1.setDefaultAuthentication({
+        applyToRequest: async (req) => {
+          req.headers.authorization = `Bearer ${await getToken()}`;
+        },
+      });
+
+      return coreV1.listPersistentVolume();
+    },
     select: (data) => {
       return data.body?.items?.map((item) => {
         return {
