@@ -4,6 +4,10 @@
 
 ### Enhancements
 
+- Bump Kubernetes version to
+  [1.26.15](https://github.com/kubernetes/kubernetes/releases/tag/v1.26.15)
+  (PR[#4380](https://github.com/scality/metalk8s/pull/4380))
+
 - Update "Node Exporter Full" Dashboard
   (PR[#4268](https://github.com/scality/metalk8s/pull/4268))
 
