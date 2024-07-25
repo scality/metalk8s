@@ -81,6 +81,7 @@ ETCD_IMAGE_VERSION: str = f"{ETCD_VERSION}-0"
 NGINX_IMAGE_VERSION: str = "1.25.4-alpine"
 NODEJS_IMAGE_VERSION: str = "16.14.0"
 KEEPALIVED_VERSION: str = "2.2.8"
+CERT_MANAGER_VERSION: str = "1.15.0"
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
 # image, e.g. because the `Dockerfile` is changed, or one of the dependencies
@@ -285,6 +286,26 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         name="catalog",
         version="latest",
         digest="sha256:ac22f95bc9d5b644eb6dbeb9f0fbc3757203891a81d1ceb2b2b66c223acfa057",
+    ),
+    Image(
+        name="cert-manager-controller",
+        version=_version_prefix(CERT_MANAGER_VERSION),
+        digest="sha256:d3e33a240db1be4076d1d1766fbaddd8a2dc7533d89b9f85e2b65b5419dd36a9",
+    ),
+    Image(
+        name="cert-manager-webhook",
+        version=_version_prefix(CERT_MANAGER_VERSION),
+        digest="sha256:d3e33a240db1be4076d1d1766fbaddd8a2dc7533d89b9f85e2b65b5419dd36a9",
+    ),
+    Image(
+        name="cert-manager-cainjector",
+        version=_version_prefix(CERT_MANAGER_VERSION),
+        digest="sha256:001ccf30ce45cc214e293b570090e0ac1d22c364cfccc081f22311b28cdbbda8",
+    ),
+    Image(
+        name="cert-manager-acmesolver",
+        version=_version_prefix(CERT_MANAGER_VERSION),
+        digest="sha256:feb7f20bbe553a7d22ada91578b118b5fbf8d030facd15612d735f18e6b27aac",
     ),
 )
 

@@ -218,6 +218,12 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.OPERATORHUB_REPOSITORY: [
         "catalog",
     ],
+    constants.CERT_MANAGER_REPOSITORY: [
+        "cert-manager-controller",
+        "cert-manager-webhook",
+        "cert-manager-cainjector",
+        "cert-manager-acmesolver",
+    ],
 }
 
 REMOTE_NAMES: Dict[str, str] = {
