@@ -17,11 +17,11 @@ inputs:
   TERRAFORM_VERSION:
     description: "Terraform version to use"
     required: false
-    default: "1.3.6"
+    default: "1.8.2"
   TERRAFORM_SNAPSHOT_TAG:
     description: "Tag to checkout for the scality/terraform-snapshot repository"
     required: false
-    default: "0.9.0"
+    default: "0.17.0"
 
   # Cloud configuration
   CLOUD:
@@ -56,7 +56,7 @@ runs:
     - name: Install tools
       if: inputs.ARTIFACTS_URL
       shell: bash
-      run: sudo yum install -y unzip
+      run: sudo apt-get update && sudo apt-get install -y unzip
     - name: Install node
       if: inputs.ARTIFACTS_URL
       uses: actions/setup-node@v3

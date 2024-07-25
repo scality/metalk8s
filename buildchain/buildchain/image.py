@@ -178,10 +178,6 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.FLUENT_REPOSITORY: [
         "fluent-bit",
     ],
-    constants.GOOGLE_REPOSITORY: [
-        "nginx-ingress-defaultbackend-amd64",
-        "pause",
-    ],
     constants.GRAFANA_REPOSITORY: [
         "grafana",
         "loki",
@@ -190,7 +186,9 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "nginx-ingress-controller",
     ],
     constants.K8S_REPOSITORY: [
+        "pause",
         "etcd",
+        "nginx-ingress-defaultbackend-amd64",
         "kube-apiserver",
         "kube-controller-manager",
         "kube-proxy",

@@ -38,7 +38,6 @@ runs:
       uses: ./.github/actions/run-command-ssh
       with:
         NODE: bastion
-        SSH_OPTIONS: "-o ServerAliveInterval=15"
         COMMAND: |
           cd metalk8s
           export SSH_CONFIG_FILE=\"/home/centos/ssh_config\"
