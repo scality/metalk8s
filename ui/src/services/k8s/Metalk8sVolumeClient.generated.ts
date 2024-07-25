@@ -219,7 +219,7 @@ export type Metalk8sV1alpha1VolumeList = {
 };
 
 export class Metalk8sV1alpha1VolumeClient {
-  constructor(private customObjects: CustomObjectsApi) {}
+  constructor(public customObjects: CustomObjectsApi) {}
   async getMetalk8sV1alpha1VolumeList(): Promise<
     Result<Metalk8sV1alpha1VolumeList>
   > {

@@ -87,7 +87,7 @@ export function generateClient(
   ${listType}
   
   export class ${singleName}Client {
-  constructor(private customObjects: CustomObjectsApi) {}
+  constructor(public customObjects: CustomObjectsApi) {}
   async get${listName}(${
       isNamespacedScoped ? "namespace: string" : ""
     }): Promise<Result<${listName}>> {

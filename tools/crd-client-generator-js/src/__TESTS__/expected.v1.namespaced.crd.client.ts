@@ -72,7 +72,7 @@ export type V1alpha1DataServiceList = {
 };
 
 export class V1alpha1DataServiceClient {
-  constructor(private customObjects: CustomObjectsApi) {}
+  constructor(public customObjects: CustomObjectsApi) {}
   async getV1alpha1DataServiceList(
     namespace: string,
   ): Promise<Result<V1alpha1DataServiceList>> {
