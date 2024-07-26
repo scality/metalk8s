@@ -126,12 +126,18 @@ jobs:
       - name: Build shell-ui container image
         run: docker build . --tag shell-ui:v$SHELL_UI_VERSION
         working-directory: shell-ui
+      - name: Extract shell folder from shell-ui container
+        run: |
+          docker create --name shell-ui shell-ui:v$SHELL_UI_VERSION
+          docker cp shell-ui:/usr/share/nginx/html/shell .
+          docker rm shell-ui
+          tar cvf shell.tar shell
       - name: Save shell-ui container image
         run: >
           docker save shell-ui:v$SHELL_UI_VERSION |
           gzip > shell-ui.tar.gz
       - name: Prepare artifacts
-        run: mkdir -p "artifacts/images" && mv shell-ui.tar.gz artifacts/images/
+        run: mkdir -p "artifacts/images" && mv shell-ui.tar.gz artifacts/images/ && mv shell.tar artifacts/images/
       - name: Upload artifacts
         uses: scality/action-artifacts@v3
         with:

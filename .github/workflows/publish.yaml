@@ -18,10 +18,6 @@ on:
         required: true
       ARTIFACTS_PASSWORD:
         required: true
-      HARBOR_PROD_PROJECT:
-        required: true
-      HARBOR_DEV_PROJECT:
-        required: true
 
   # Push on development branch = PR merge
   push:
@@ -29,7 +25,8 @@ on:
       - "development/**"
 
 env:
-  REGISTRY_HOST: registry.scality.com
+  REGISTRY_HOST: ghcr.io
+  REGISTRY_PROJECT: "${{ github.repository }}"
   IS_STABLE: "false"
   IS_LATEST: "false"
 
@@ -38,17 +35,13 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          # NOTE: We fetch depth since fetch tags only does not works
+          # Sees: https://github.com/actions/checkout/issues/1471
+          fetch-depth: 0
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
-      # "Compute" the harbor project to use
-      - name: Set registry project to Prod
-        if: inputs.is_production
-        run: echo "REGISTRY_PROJECT=${{ secrets.HARBOR_PROD_PROJECT }}" >> $GITHUB_ENV
-      - name: Set registry project to Dev
-        if: "! inputs.is_production"
-        run: echo "REGISTRY_PROJECT=${{ secrets.HARBOR_DEV_PROJECT }}" >> $GITHUB_ENV
 
       # Retrieve Shell UI image from the build, load it and compute version
       - name: Retrieve artifacts url
@@ -65,6 +58,10 @@ jobs:
         run: >
           curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
           ${{ inputs.artifacts-url || steps.artifacts.outputs.link }}/images/shell-ui.tar.gz
+      - name: Retrieve shell archive from artifacts
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.artifacts-url || steps.artifacts.outputs.link }}/images/shell.tar
       - name: Load shell-ui image
         run: docker load < shell-ui.tar.gz
       - name: Retrieve product.txt from artifacts
@@ -107,14 +104,11 @@ jobs:
           fi
 
       # Tag shell-ui image before upload to registry
-      # (depending whether or not it's for production)
       - name: Tag shell-ui image with current version
         run: >
           docker tag "shell-ui:v${{ env.SHELL_UI_VERSION }}"
           "${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/shell-ui:v${{ env.SHELL_UI_VERSION }}"
       - name: Tag shell-ui image with commit short revision
-        # Only tag with commit short version when pushing on dev
-        if: "! inputs.is_production"
         run: >
           docker tag "shell-ui:v${{ env.SHELL_UI_VERSION }}"
           "${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/shell-ui:v${{ env.SHELL_UI_VERSION }}-${{ env.SHELL_UI_REF }}"
@@ -131,11 +125,36 @@ jobs:
 
       # Push image to the registry
       - name: Login to the registry
-        run: >
-          docker login "${{ env.REGISTRY_HOST }}"
-          --username "${{ secrets.REGISTRY_LOGIN }}" --password "${{ secrets.REGISTRY_PASSWORD }}"
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_HOST }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push shell-ui images to the registry
         run: >
           docker push --all-tags
           "${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/shell-ui"
 
+      - name: Get tag message
+        if: inputs.is_production
+        id: get_tag_message
+        # Explicitly fetching tags since checkout fetch-tags does not works well
+        # Sees: https://github.com/actions/checkout/issues/1471
+        run: |-
+          git fetch --tags
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          git tag -l --format='%(contents)' "${{ env.SHELL_UI_VERSION }}" | tail -n +4 >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - uses: softprops/action-gh-release@v2
+        if: inputs.is_production
+        with:
+          name: Metalk8s ${{ env.SHELL_UI_VERSION }}
+          tag_name: ${{ env.SHELL_UI_VERSION }}
+          body: ${{ steps.get_tag_message.outputs.message }}
+          prerelease: "${{ ! fromJSON(env.IS_STABLE) }}"
+          draft: false
+          files: |
+            shell.tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
