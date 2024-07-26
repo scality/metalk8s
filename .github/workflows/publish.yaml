@@ -36,10 +36,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          # NOTE: We fetch depth since fetch tags only does not works
-          # Sees: https://github.com/actions/checkout/issues/1471
-          fetch-depth: 0
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
