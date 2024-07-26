@@ -1,11 +1,15 @@
 # CHANGELOG
 
-## Release 125.0.7 (in development)
+## Release 125.0.8 (in development)
+
+## Release 125.0.7
 
 ### Removals
 
 - Remove `nodes-darwin` MacOS related grafana dashboard
   (PR[4178](https://github.com/scality/metalk8s/pull/4178))
+
+### Enhancements
 
 - Bump Kubernetes version to
   [1.25.16](https://github.com/kubernetes/kubernetes/releases/tag/v1.25.16)
