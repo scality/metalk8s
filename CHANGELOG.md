@@ -157,12 +157,16 @@
   following [Google's recommandations](https://cloud.google.com/kubernetes-engine/docs/concepts/plan-node-sizes#memory_and_cpu_reservations)
   (PR[#4134](https://github.com/scality/metalk8s/pull/4134))
 
-## Release 125.0.7 (in development)
+## Release 125.0.8 (in development)
+
+## Release 125.0.7
 
 ### Removals
 
 - Remove `nodes-darwin` MacOS related grafana dashboard
   (PR[4178](https://github.com/scality/metalk8s/pull/4178))
+
+### Enhancements
 
 - Bump Kubernetes version to
   [1.25.16](https://github.com/kubernetes/kubernetes/releases/tag/v1.25.16)
