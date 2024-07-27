@@ -199,7 +199,9 @@
   all Kubernetes resources and Prometheus metrics
   (PR[#4220](https://github.com/scality/metalk8s/pull/4220))
 
-## Release 126.0.3 (in development)
+## Release 126.0.4 (in development)
+
+## Release 126.0.3
 
 ### Enhancements
 
