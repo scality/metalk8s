@@ -14,7 +14,7 @@ jobs:
       - large
     steps:
       - name: Clean up old VMs in OpenStack
-        uses: scality/actions/actions-cleanup-openstack-vms@1.7.0
+        uses: scality/actions/actions-cleanup-openstack-vms@1.8.0
         with:
           AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
           AGE_HOURS: 6
