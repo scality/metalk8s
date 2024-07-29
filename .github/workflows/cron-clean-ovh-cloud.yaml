@@ -8,10 +8,7 @@ on:
 
 jobs:
   cleanup:
-    runs-on:
-      - self-hosted
-      - centos7
-      - large
+    runs-on: ubuntu-latest
     steps:
       - name: Clean up old VMs in OpenStack
         uses: scality/actions/actions-cleanup-openstack-vms@1.8.0
