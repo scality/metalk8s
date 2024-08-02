@@ -112,6 +112,11 @@
 
 ## Release 127.0.5 (in development)
 
+### Bug fixes
+
+- Fix the log dashboard that was not showing any logs
+  (PR[#4393](https://github.com/scality/metalk8s/pull/4393))
+
 ## Release 127.0.4
 
 ### Enhancements
