@@ -461,6 +461,11 @@ metadata:
     app.kubernetes.io/version: 1.10.0
     helm.sh/chart: ingress-nginx-4.10.0
     heritage: metalk8s
+  annotations:
+    nginx.ingress.kubernetes.io/limit-connections: '10'
+    nginx.ingress.kubernetes.io/limit-rps: '10'
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header Referrer-Policy 'no-referrer';
   name: nginx-control-plane
   namespace: metalk8s-ingress
 spec:
