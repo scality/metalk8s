@@ -116,6 +116,11 @@
 
 - Fix the log dashboard that was not showing any logs
   (PR[#4393](https://github.com/scality/metalk8s/pull/4393))
+- Bump ingress-nginx chart version to
+  [4.10.3](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.10.3)
+  The controller image has been bumped accordingly to
+  [v1.10.3](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.10.3)
+  (PR[#4395](https://github.com/scality/metalk8s/pull/4395))
 
 ## Release 127.0.4
 
