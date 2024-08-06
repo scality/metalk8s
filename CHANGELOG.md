@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## Release 127.0.6
+
 ## Release 127.0.5
 
 ### Bug fixes
