@@ -80,7 +80,7 @@ ETCD_VERSION: str = "3.5.14"
 ETCD_IMAGE_VERSION: str = f"{ETCD_VERSION}-0"
 NGINX_IMAGE_VERSION: str = "1.25.4-alpine"
 NODEJS_IMAGE_VERSION: str = "16.14.0"
-KEEPALIVED_VERSION: str = "2.2.8"
+KEEPALIVED_VERSION: str = "2.3.1"
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
 # image, e.g. because the `Dockerfile` is changed, or one of the dependencies
