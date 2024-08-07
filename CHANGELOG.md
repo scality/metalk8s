@@ -24,6 +24,10 @@
 - Bump Calico version to [3.28.0](https://github.com/projectcalico/calico/releases/tag/v3.28.0)
   (PR[#4363](https://github.com/scality/metalk8s/pull/4363))
 
+- Bump Loki chart version to
+  [5.48.0](https://github.com/grafana/loki/releases/tag/helm-loki-5.48.0)
+  (PR[#4401](https://github.com/scality/metalk8s/pull/4401))
+
 - Bump kube-prometheus-stack chart version to
   [61.3.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-61.3.0)
   (PR[#4365](https://github.com/scality/metalk8s/pull/4365))
