@@ -110,7 +110,9 @@
 - Do no longer use `latest` for `storage-operator` image
   (PR[#4299](https://github.com/scality/metalk8s/pull/4299))
 
-## Release 127.0.5 (in development)
+## Release 127.0.6 (in development)
+
+## Release 127.0.5
 
 ### Bug fixes
 
