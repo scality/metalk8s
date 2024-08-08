@@ -93,8 +93,8 @@
   images to `rockylinux:8.9.20231119`
   (PR[#4294](https://github.com/scality/metalk8s/pull/4294))
 
-- Bump nginx image to [1.25.4-alpine](https://github.com/nginx/nginx/releases/tag/release-1.25.4)
-  (PR[#4295](https://github.com/scality/metalk8s/pull/4295))
+- Bump nginx image to [1.27.0-alpine](https://github.com/nginx/nginx/releases/tag/release-1.27.0)
+  (PR[#4402](https://github.com/scality/metalk8s/pull/4402))
 
 - Bump Operator-SDK used by `metalk8s-operator` and `storage-operator` to
   [1.34.1](https://github.com/operator-framework/operator-sdk/releases/tag/v1.34.1)
