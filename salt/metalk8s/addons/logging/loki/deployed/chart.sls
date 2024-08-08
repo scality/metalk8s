@@ -17,7 +17,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.47.1
+    helm.sh/chart: loki-5.48.0
     heritage: metalk8s
   name: loki
   namespace: metalk8s-logging
@@ -34,7 +34,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.47.1
+    helm.sh/chart: loki-5.48.0
     heritage: metalk8s
   name: loki-runtime
   namespace: metalk8s-logging
@@ -48,7 +48,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.47.1
+    helm.sh/chart: loki-5.48.0
     heritage: metalk8s
   name: loki-clusterrole
   namespace: metalk8s-logging
@@ -72,7 +72,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.47.1
+    helm.sh/chart: loki-5.48.0
     heritage: metalk8s
   name: loki-clusterrolebinding
   namespace: metalk8s-logging
@@ -94,7 +94,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.47.1
+    helm.sh/chart: loki-5.48.0
     heritage: metalk8s
   name: loki-memberlist
   namespace: metalk8s-logging
@@ -121,7 +121,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.47.1
+    helm.sh/chart: loki-5.48.0
     heritage: metalk8s
     prometheus.io/service-monitor: 'false'
     variant: headless
@@ -148,7 +148,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.47.1
+    helm.sh/chart: loki-5.48.0
     heritage: metalk8s
   name: loki
   namespace: metalk8s-logging
@@ -178,7 +178,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.47.1
+    helm.sh/chart: loki-5.48.0
     heritage: metalk8s
   name: loki
   namespace: metalk8s-logging
@@ -304,7 +304,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.47.1
+    helm.sh/chart: loki-5.48.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
   name: loki

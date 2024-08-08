@@ -17,10 +17,11 @@ icon: https://grafana.com/docs/loki/latest/logo_and_name.png
 maintainers:
 - name: trevorwhitney
 - name: jeschkies
+- name: slim-bean
 name: loki
 sources:
 - https://github.com/grafana/loki
 - https://grafana.com/oss/loki/
 - https://grafana.com/docs/loki/latest/
 type: application
-version: 5.47.1
+version: 5.48.0
