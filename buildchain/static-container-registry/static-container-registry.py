@@ -118,6 +118,10 @@ location = /v2/{name_prefix:s}{name:s}/tags/list {{
     types {{ }} default_type "application/json";
     return 200 '{payload:s}';
 }}
+location = /v2/{name:s}/tags/list {{
+    types {{ }} default_type "application/json";
+    return 200 '{payload:s}';
+}}
 """.format(
             name=name,
             name_prefix=name_prefix.lstrip("/"),
@@ -145,6 +149,13 @@ location = "/v2/{name_prefix:s}{name:s}/manifests/{tag:s}" {{
     try_files manifest.json =404;
     error_page 404 @404_tag;
 }}
+location = "/v2/{name:s}/manifests/{tag:s}" {{
+    alias {server_root:s}/{name:s}/{tag:s}/;
+    types {{ }} default_type "application/vnd.docker.distribution.manifest.v2+json";
+    add_header 'Docker-Content-Digest' 'sha256:{digest:s}';
+    try_files manifest.json =404;
+    error_page 404 @404_tag;
+}}
 """.format(
                 name=name,
                 tag=tag,
@@ -156,6 +167,13 @@ location = "/v2/{name_prefix:s}{name:s}/manifests/{tag:s}" {{
             if hexdigest not in seen_digests:
                 yield """
 location = "/v2/{name_prefix:s}{name:s}/manifests/sha256:{digest:s}" {{
+    alias {server_root:s}/{name:s}/{tag:s}/;
+    types {{ }} default_type "application/vnd.docker.distribution.manifest.v2+json";
+    add_header 'Docker-Content-Digest' 'sha256:{digest:s}';
+    try_files manifest.json =404;
+    error_page 404 @404_tag;
+}}
+location = "/v2/{name:s}/manifests/sha256:{digest:s}" {{
     alias {server_root:s}/{name:s}/{tag:s}/;
     types {{ }} default_type "application/vnd.docker.distribution.manifest.v2+json";
     add_header 'Docker-Content-Digest' 'sha256:{digest:s}';
@@ -181,6 +199,10 @@ location = "/v2/{name_prefix:s}{name:s}/manifests/sha256:{digest:s}" {{
 
         yield """
 location ~ "/v2/{name_prefix:s}{name:s}/blobs/sha256:([a-f0-9]{{64}})" {{
+    alias {server_root:s}/{name:s}/;
+    try_files {paths:s} =404;
+}}
+location ~ "/v2/{name:s}/blobs/sha256:([a-f0-9]{{64}})" {{
     alias {server_root:s}/{name:s}/;
     try_files {paths:s} =404;
 }}
