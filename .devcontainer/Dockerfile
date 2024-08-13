@@ -12,6 +12,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         gcc \
         genisoimage \
         git \
+        glibc \
         isomd5sum \
         libassuan-dev \
         libbtrfs-dev \
@@ -24,6 +25,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         npm \
         pkg-config \
         plantuml \
+        podman \
         python3.10-gdbm \
         shellcheck \
         tk-dev \
@@ -88,3 +90,9 @@ RUN curl --fail -L -o /tmp/skopeo.tar.gz https://github.com/containers/skopeo/ar
     sudo mv bin/skopeo /usr/local/bin/ && \
     cd && \
     rm -rf /tmp/skopeo.tar.gz /tmp/skopeo-${SKOPEO_VERSION}
+
+# Install opm
+ARG OPM_VERSION=1.45.0
+
+RUN curl --fail -L -o /tmp/opm https://github.com/operator-framework/operator-registry/releases/download/${OPM_VERSION}/linux-amd64-opm && \
+    sudo mv /tmp/opm /usr/local/bin
