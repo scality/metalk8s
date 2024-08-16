@@ -52,6 +52,13 @@ include:
   name=pod_name, state="ready", ignore_not_found=True
 ) %}
 
+Ensure audit log path exist:
+  file.directory:
+    - name: /var/log/apiserver/
+    - user: root
+    - group: root
+    - mode: '0755'
+
 Create kube-apiserver Pod manifest:
   metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/kube-apiserver.yaml
@@ -85,19 +92,28 @@ Create kube-apiserver Pod manifest:
           - kube-apiserver
           - --advertise-address={{ host }}
           - --allow-privileged=true
+          - --anonymous-auth=false
+          - --audit-log-maxage=30
+          - --audit-log-maxbackup=10
+          - --audit-log-maxsize=100
+          - --audit-log-path=/var/log/apiserver/audit.log
           - --authorization-mode=Node,RBAC
           - --client-ca-file=/etc/kubernetes/pki/ca.crt
-          - --enable-admission-plugins=NodeRestriction
+          - --disable-admission-plugins=DenyServiceExternalIPs
+          - --enable-admission-plugins=NodeRestriction,AlwaysPullImages
           - --enable-bootstrap-token-auth=true
           - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
           - --etcd-certfile={{ certificates.client.files['apiserver-etcd'].path }}
           - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
           - --etcd-servers={{ etcd_servers | join(",") }}
+          - --kubelet-certificate-authority=/etc/kubernetes/pki/ca.crt
           - --kubelet-client-certificate={{ certificates.client.files['apiserver-kubelet'].path }}
           - --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key
           - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+          - --profiling=false
           - --proxy-client-cert-file={{ certificates.client.files['front-proxy'].path }}
           - --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key
+          - --request-timeout=300s
           - --requestheader-allowed-names=front-proxy-client
           - --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt
           - --requestheader-extra-headers-prefix=X-Remote-Extra-
@@ -106,9 +122,11 @@ Create kube-apiserver Pod manifest:
           - --secure-port=6443
           - --service-account-issuer=https://kubernetes.default.svc.{{ coredns.cluster_domain }}
           - --service-account-key-file=/etc/kubernetes/pki/sa.pub
+          - --service-account-lookup=true
           - --service-account-signing-key-file=/etc/kubernetes/pki/sa.key
           - --service-cluster-ip-range={{ networks.service }}
           - --tls-cert-file={{ certificates.server.files.apiserver.path }}
+          - --tls-cipher-suites=TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_CHACHA20_POLY1305_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,TLS_RSA_WITH_3DES_EDE_CBC_SHA,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_GCM_SHA384.
           - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
         # }
           - --bind-address={{ host }}
