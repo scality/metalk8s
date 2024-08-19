@@ -12,6 +12,16 @@ spec:
   displayName: Metalk8s Operators
   publisher: scality.com
   grpcPodConfig:
+    nodeSelector:
+      kubernetes.io/os: linux
+      node-role.kubernetes.io/infra: ""
+    tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/bootstrap
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/infra
+        operator: Exists
     securityContextConfig: restricted
   updateStrategy:
     registryPoll:

@@ -13,6 +13,8 @@ metadata:
     pod-security.kubernetes.io/audit-version: latest
     pod-security.kubernetes.io/warn: restricted
     pod-security.kubernetes.io/warn-version: latest
+  annotations:
+    scheduler.alpha.kubernetes.io/defaultTolerations: '[{"operator": "Exists", "effect": "NoSchedule", "key": "node-role.kubernetes.io/bootstrap"}, {"operator": "Exists", "effect": "NoSchedule", "key": "node-role.kubernetes.io/infra"}]'
 ---
 apiVersion: v1
 kind: Namespace
@@ -25,6 +27,8 @@ metadata:
     pod-security.kubernetes.io/audit-version: latest
     pod-security.kubernetes.io/warn: restricted
     pod-security.kubernetes.io/warn-version: latest
+  annotations:
+    scheduler.alpha.kubernetes.io/defaultTolerations: '[{"operator": "Exists", "effect": "NoSchedule", "key": "node-role.kubernetes.io/bootstrap"}, {"operator": "Exists", "effect": "NoSchedule", "key": "node-role.kubernetes.io/infra"}]'
 ---
 kind: ServiceAccount
 apiVersion: v1
