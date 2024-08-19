@@ -558,6 +558,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/map.jinja"),
     Path("salt/metalk8s/node/grains.sls"),
     Path("salt/metalk8s/node/rocky-linux-grains.sls"),
+    Path("salt/metalk8s/operators/cert-manager/deployed/init.sls"),
+    Path("salt/metalk8s/operators/cert-manager/deployed/subscribed.sls"),
     Path("salt/metalk8s/operators/olm/deployed/catalog.sls"),
     Path("salt/metalk8s/operators/olm/deployed/crds.sls"),
     Path("salt/metalk8s/operators/olm/deployed/init.sls"),

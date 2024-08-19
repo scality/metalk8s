@@ -6,4 +6,5 @@ include:
   - metalk8s.salt.master.deployed
   - metalk8s.backup.deployed
   - metalk8s.operators.olm.deployed
+  - metalk8s.operators.cert-manager.deployed
   - metalk8s.addons.metalk8s-operator.deployed
