@@ -303,6 +303,31 @@ def codegen_chart_thanos() -> types.TaskDict:
     }
 
 
+def codegen_chart_cert_manager() -> types.TaskDict:
+    """Generate the SLS file for Cert-Manager using the chart render script."""
+    target_sls = constants.ROOT / "salt/metalk8s/addons/cert-manager/deployed/chart.sls"
+    chart_dir = constants.CHART_ROOT / "cert-manager"
+    value_file = constants.CHART_ROOT / "cert-manager.yaml"
+    cmd = (
+        f"{constants.CHART_RENDER_CMD} cert-manager {value_file} {chart_dir} "
+        "--namespace metalk8s-certs "
+        f"--output {target_sls}"
+    )
+
+    file_dep = list(utils.git_ls(chart_dir))
+    file_dep.append(value_file)
+    file_dep.append(constants.CHART_RENDER_SCRIPT)
+
+    return {
+        "name": "chart_cert-manager",
+        "title": utils.title_with_subtask_name("CODEGEN"),
+        "doc": codegen_chart_cert_manager.__doc__,
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
+        "file_dep": file_dep,
+        "task_dep": ["check_for:tox", "check_for:helm"],
+    }
+
+
 # List of available code generation tasks.
 CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_storage_operator,
@@ -314,6 +339,7 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_loki,
     codegen_chart_prometheus_adapter,
     codegen_chart_thanos,
+    codegen_chart_cert_manager,
 )
 
 

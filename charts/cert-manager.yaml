@@ -1,0 +1,53 @@
+acmesolver:
+  image:
+    repository: '__image__(cert-manager-acmesolver)'
+
+image:
+  repository: '__image__(cert-manager-controller)'
+
+installCRDs: true
+
+replicaCount: 1
+
+nodeSelector: &node_selector
+  node-role.kubernetes.io/master: ''
+
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: true
+    labels:
+      metalk8s.scality.com/monitor: ''
+
+tolerations: &tolerations
+  - key: "node-role.kubernetes.io/bootstrap"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/infra"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+webhook:
+  replicaCount: 1
+
+  image:
+    repository: '__image__(cert-manager-webhook)'
+
+  nodeSelector: *node_selector
+
+  tolerations: *tolerations
+
+cainjector:
+  enabled: true
+
+  image:
+    repository: '__image__(cert-manager-cainjector)'
+
+  replicaCount: 1
+
+  nodeSelector: *node_selector
+
+  tolerations: *tolerations
+
+startupapicheck:
+  enabled: false
