@@ -261,6 +261,9 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
             "salt/metalk8s/addons/alert-tree/files/prometheus_rule.yaml"
         ),
     ),
+    Path("salt/metalk8s/addons/cert-manager/deployed/chart.sls"),
+    Path("salt/metalk8s/addons/cert-manager/deployed/init.sls"),
+    Path("salt/metalk8s/addons/cert-manager/deployed/namespace.sls"),
     Path("salt/metalk8s/addons/dex/ca/init.sls"),
     Path("salt/metalk8s/addons/dex/ca/installed.sls"),
     Path("salt/metalk8s/addons/dex/ca/advertised.sls"),

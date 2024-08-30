@@ -2,6 +2,7 @@ include:
   - .core
   - metalk8s.addons.alert-logger.deployed
   - metalk8s.addons.prometheus-operator.deployed
+  - metalk8s.addons.cert-manager.deployed
   - metalk8s.addons.nginx-ingress.deployed
   - metalk8s.addons.nginx-ingress-control-plane.deployed
   - metalk8s.addons.volumes.deployed
