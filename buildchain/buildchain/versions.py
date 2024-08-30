@@ -81,6 +81,7 @@ ETCD_IMAGE_VERSION: str = f"{ETCD_VERSION}-0"
 NGINX_IMAGE_VERSION: str = "1.27.0-alpine"
 NODEJS_IMAGE_VERSION: str = "16.14.0"
 KEEPALIVED_VERSION: str = "2.3.1"
+CERT_MANAGER_VERSION: str = "1.15.3"
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
 # image, e.g. because the `Dockerfile` is changed, or one of the dependencies
@@ -270,6 +271,26 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         name="fluent-bit",
         version="3.1.7",
         digest="a93d6119f67f804843f6d4d97dd8448389abed7e821e7513c5b8f387e57edfb9",
+    ),
+    Image(
+        name="cert-manager-controller",
+        version=_version_prefix(CERT_MANAGER_VERSION),
+        digest="sha256:eee34b3de2dd63f7e5ac459fc2d407662d433fd267d574557b76ee3c7d4bc44f",
+    ),
+    Image(
+        name="cert-manager-webhook",
+        version=_version_prefix(CERT_MANAGER_VERSION),
+        digest="sha256:fdcb9ac4963fa1bb0c9d7cad38f0ba2c65328aa436f8653c998594d936a96488",
+    ),
+    Image(
+        name="cert-manager-cainjector",
+        version=_version_prefix(CERT_MANAGER_VERSION),
+        digest="sha256:e0ce8ae280c8d7263663b6a6d3ea5e122632936cde9bdd5321cf7109199f51aa",
+    ),
+    Image(
+        name="cert-manager-acmesolver",
+        version=_version_prefix(CERT_MANAGER_VERSION),
+        digest="sha256:71468feed486c4cf3ca431d93f996771531ab2e68f261f1a15be845720802a8a",
     ),
 )
 

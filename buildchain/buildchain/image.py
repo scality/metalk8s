@@ -211,6 +211,12 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.THANOS_REPOSITORY: [
         "thanos",
     ],
+    constants.CERT_MANAGER_REPOSITORY: [
+        "cert-manager-controller",
+        "cert-manager-webhook",
+        "cert-manager-cainjector",
+        "cert-manager-acmesolver",
+    ],
 }
 
 REMOTE_NAMES: Dict[str, str] = {
