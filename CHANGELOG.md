@@ -21,8 +21,8 @@
 - Bump containerd to [1.6.35](https://github.com/containerd/containerd/releases/tag/v1.6.35)
   (PR[#4397](https://github.com/scality/metalk8s/pull/4397))
 
-- Bump Calico version to [3.28.0](https://github.com/projectcalico/calico/releases/tag/v3.28.0)
-  (PR[#4363](https://github.com/scality/metalk8s/pull/4363))
+- Bump Calico version to [3.28.1](https://github.com/projectcalico/calico/releases/tag/v3.28.1)
+  (PR[#4409](https://github.com/scality/metalk8s/pull/4409))
 
 - Bump Loki chart version to
   [5.48.0](https://github.com/grafana/loki/releases/tag/helm-loki-5.48.0)
