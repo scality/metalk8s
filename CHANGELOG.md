@@ -116,6 +116,12 @@
 
 ## Release 127.0.6 (in development)
 
+### Bug fixes
+
+- Fix the duplicated metrics in kube_state_metrics caused by duplicated entries in
+  control plane ingress external IPs.
+  (PR[#4411](https://github.com/scality/metalk8s/pull/4411))
+
 ## Release 127.0.5
 
 ### Bug fixes
