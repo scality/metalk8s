@@ -207,13 +207,13 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus-config-reloader",
-        version="v0.75.0",
-        digest="sha256:536f5709c0d8db50188d02c89ba3dd1df7be79124a7f624159ca3564b6168828",
+        version="v0.76.0",
+        digest="sha256:3ee47d8f6eae9e3997bd928525946c4eb06d5bb82bf1da69ca743169c331c6a0",
     ),
     Image(
         name="prometheus-operator",
-        version="v0.75.0",
-        digest="sha256:f347f1b2445e486f1fb05c6ab0fa35adafc3b6510af66423d16da068b31a5dec",
+        version="v0.76.0",
+        digest="sha256:fa92de738a8aefb879eddbbef5c3ffcd701dfc90e47aa83061392e137a4ec936",
     ),
     Image(
         name="thanos",

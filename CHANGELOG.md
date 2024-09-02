@@ -30,7 +30,7 @@
 
 - Bump kube-prometheus-stack chart version to
   [62.3.1](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-62.3.1)
-  (PR[#4365](https://github.com/scality/metalk8s/pull/4365))
+  (PR[#4410](https://github.com/scality/metalk8s/pull/4410))
 
   This change includes:
 
