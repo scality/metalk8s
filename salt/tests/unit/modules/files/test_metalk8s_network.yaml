@@ -263,7 +263,6 @@ get_control_plane_ingress_external_ips:
       bootstrap: 1.1.1.1
     result:
       - 1.1.1.1
-      - 1.1.1.1
 
   # 2. Nominal single node (using non-bootstrap IP)
   - cp_ingress_ip_ret: 1.1.1.4
@@ -284,7 +283,6 @@ get_control_plane_ingress_external_ips:
       node-1: 1.1.1.2
       node-2: 1.1.1.3
     result:
-      - 1.1.1.1
       - 1.1.1.1
       - 1.1.1.2
       - 1.1.1.3
@@ -318,7 +316,6 @@ get_control_plane_ingress_external_ips:
     result:
       - 1.1.1.2
       - 1.1.1.1
-      - 1.1.1.2
       - 1.1.1.3
 
   # 6. Multi node, one master node not yet in mine

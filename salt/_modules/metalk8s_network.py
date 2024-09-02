@@ -308,6 +308,11 @@ def get_control_plane_ingress_external_ips():
             f"Unable to get master Control Plane IPs: {mine_ret}"
         )
 
-    return [__salt__["metalk8s_network.get_control_plane_ingress_ip"]()] + sorted(
-        list(mine_ret.values())
-    )
+    control_plane_ingress_ip = __salt__[
+        "metalk8s_network.get_control_plane_ingress_ip"
+    ]()
+    mine_control_plane_ips = list(mine_ret.values())
+    if control_plane_ingress_ip in mine_control_plane_ips:
+        mine_control_plane_ips.remove(control_plane_ingress_ip)
+
+    return [control_plane_ingress_ip] + sorted(mine_control_plane_ips)
