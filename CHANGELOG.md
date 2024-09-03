@@ -4,13 +4,6 @@
 
 ### Enhancements
 
-- Bump CoreDNS version to [v1.11.1](https://github.com/coredns/coredns/releases/tag/v1.11.1)
-  (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
-
-- Add configuration in fluentbit and loki to support auditd logs.
-  Logs dashboard was updated to replace deprecated visualizations.
-  (PR[#4348](https://github.com/scality/metalk8s/pull/4348))
-
 - Bump Kubernetes version to
   [1.28.12](https://github.com/kubernetes/kubernetes/releases/tag/v1.28.12)
   (PR[#4382](https://github.com/scality/metalk8s/pull/4382))
@@ -23,6 +16,9 @@
 
 - Bump Calico version to [3.28.1](https://github.com/projectcalico/calico/releases/tag/v3.28.1)
   (PR[#4409](https://github.com/scality/metalk8s/pull/4409))
+
+- Bump CoreDNS version to [v1.11.1](https://github.com/coredns/coredns/releases/tag/v1.11.1)
+  (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
 
 - Bump Loki chart version to
   [5.48.0](https://github.com/grafana/loki/releases/tag/helm-loki-5.48.0)
@@ -105,6 +101,10 @@
   The Go version has been bumped accordingly to
   [1.20](https://golang.org/doc/devel/release.html#go1.20.minor)
   (PR[#4302](https://github.com/scality/metalk8s/pull/4302))
+
+- Add configuration in fluentbit and loki to support auditd logs.
+  Logs dashboard was updated to replace deprecated visualizations.
+  (PR[#4348](https://github.com/scality/metalk8s/pull/4348))
 
 - Anonymize diff when updating a Kubernetes Secret object from salt state
   (PR[#4313](https://github.com/scality/metalk8s/pull/4313))
