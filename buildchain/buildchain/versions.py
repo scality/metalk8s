@@ -202,8 +202,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus-adapter",
-        version="v0.11.2",
-        digest="sha256:4a3148185b8cdd3f938f938843de8a930041e81a6c069a121425344ed8384275",
+        version="v0.12.0",
+        digest="sha256:932eae60e2bcf9c4660d6442da066ef1a79b4ea7cc232c61c7303069216ca006",
     ),
     Image(
         name="prometheus-config-reloader",
