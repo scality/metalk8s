@@ -80,6 +80,18 @@ spec:
         storage: {size}
 """
 
+DEFAULT_SS_CLUSTERISSUER = """
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {name}
+  labels:
+    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/managed-by: metalk8s
+spec:
+  selfSigned: {{}}
+"""
+
 # }}}
 
 # See https://kubernetes.io/docs/concepts/architecture/nodes/#condition
@@ -224,6 +236,48 @@ class Client(abc.ABC):
             name="checking that {} {} is marked for deletion".format(self._kind, name),
         )
 
+    def wait_for_status(self, name, status, wait_for_key=None):
+        def _wait_for_status():
+            object = self.get(name)
+            assert object is not None, f"{self._kind} not found"
+
+            actual_status = object.get("status")
+            assert actual_status, f"Unexpected status expected {status}, got none"
+
+            phase = self.compute_phase(actual_status)
+            assert phase == status, "Unexpected status: expected {}, got {}".format(
+                status, phase
+            )
+
+            if wait_for_key is not None:
+                assert (
+                    wait_for_key in actual_status.keys()
+                ), f"{self._kind} status.{wait_for_key} has not been reconciled"
+
+            return object
+
+        return utils.retry(
+            _wait_for_status,
+            times=24,
+            wait=5,  # wait for 2mn
+            name=f"waiting for {self._kind} {name} to become {status}",
+        )
+
+    @staticmethod
+    def compute_phase(status):
+        for condition in status.get("conditions", []):
+            if condition["type"] != "Ready":
+                continue
+            if condition["status"] == "True":
+                return "Available"
+            elif condition["status"] == "False":
+                return "Failed"
+            elif condition["status"] == "Unknown":
+                return condition["reason"]
+            else:
+                assert False, "invalid condition status: {}".format(condition["status"])
+        return ""
+
     def list(self):
         """Return a list of existing objects."""
         return self._client.get(namespace=self._namespace).items
@@ -267,48 +321,6 @@ class VolumeClient(Client):
             body["spec"]["nodeName"], self._ssh_config
         )
         self._client.create(body=body)
-
-    def wait_for_status(self, name, status, wait_for_device_name=False):
-        def _wait_for_status():
-            volume = self.get(name)
-            assert volume is not None, "Volume not found"
-
-            actual_status = volume.get("status")
-            assert actual_status, f"Unexpected status expected {status}, got none"
-
-            phase = self.compute_phase(actual_status)
-            assert phase == status, "Unexpected status: expected {}, got {}".format(
-                status, phase
-            )
-
-            if wait_for_device_name:
-                assert (
-                    "deviceName" in actual_status.keys()
-                ), "Volume status.deviceName has not been reconciled"
-
-            return volume
-
-        return utils.retry(
-            _wait_for_status,
-            times=24,
-            wait=5,  # wait for 2mn
-            name="waiting for Volume {} to become {}".format(name, status),
-        )
-
-    @staticmethod
-    def compute_phase(volume_status):
-        for condition in volume_status.get("conditions", []):
-            if condition["type"] != "Ready":
-                continue
-            if condition["status"] == "True":
-                return "Available"
-            elif condition["status"] == "False":
-                return "Failed"
-            elif condition["status"] == "Unknown":
-                return condition["reason"]
-            else:
-                assert False, "invalid condition status: {}".format(condition["status"])
-        return ""
 
     @staticmethod
     def get_error(volume_status):
@@ -394,6 +406,33 @@ class StorageClassClient(Client):
             api_version="storage.k8s.io/v1",
             retry_count=10,
         )
+
+
+# }}}
+# SecretClient {{{
+
+
+class SecretClient(Client):
+    def __init__(self, k8s_client, namespace="metalk8s-certs"):
+        super().__init__(k8s_client, kind="Secret", namespace=namespace)
+
+
+# }}}
+# CertificateClient {{{
+
+
+class CertificateClient(Client):
+    def __init__(self, k8s_client, namespace="metalk8s-certs"):
+        super().__init__(k8s_client, kind="Certificate", namespace=namespace)
+
+
+# }}}
+# ClusterIssuerClient {{{
+
+
+class ClusterIssuerClient(Client):
+    def __init__(self, k8s_client):
+        super().__init__(k8s_client, kind="ClusterIssuer")
 
 
 # }}}

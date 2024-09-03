@@ -38,6 +38,21 @@ def sc_client(k8s_client):
     return kube_utils.StorageClassClient(k8s_client)
 
 
+@pytest.fixture
+def clusterissuer_client(k8s_client):
+    return kube_utils.ClusterIssuerClient(k8s_client)
+
+
+@pytest.fixture
+def cert_client(k8s_client):
+    return kube_utils.CertificateClient(k8s_client)
+
+
+@pytest.fixture
+def secret_client(k8s_client):
+    return kube_utils.SecretClient(k8s_client)
+
+
 # }}}
 # Helpers {{{
 
@@ -111,7 +126,7 @@ def test_volume(volume_client, name):
 
     try:
         yield volume_client.wait_for_status(
-            name, "Available", wait_for_device_name=True
+            name, "Available", wait_for_key="deviceName"
         )
     finally:
         volume_client.delete(name, sync=True)

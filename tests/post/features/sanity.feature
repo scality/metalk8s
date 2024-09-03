@@ -42,6 +42,9 @@ Feature: Cluster Sanity Checks
         | metalk8s-monitoring | prometheus-operator-operator           |
         | metalk8s-monitoring | thanos-query                           |
         | metalk8s-ui         | metalk8s-ui                            |
+        | metalk8s-certs      | cert-manager                           |
+        | metalk8s-certs      | cert-manager-cainjector                |
+        | metalk8s-certs      | cert-manager-webhook                   |
 
     Scenario Outline: DaemonSet has desired Pods ready
         Then the DaemonSet <name> in the <namespace> namespace has all desired Pods ready
