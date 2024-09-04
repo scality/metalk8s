@@ -1,9 +1,9 @@
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Added local internalTrafficPolicy for daemonsets"
+      description: "Made fluent-bit grafana dashboard uid configurable"
 apiVersion: v1
-appVersion: 2.2.2
+appVersion: 3.1.7
 description: Fast and lightweight log processor and forwarder or Linux, OSX and BSD
   family operating systems.
 home: https://fluentbit.io/
@@ -24,4 +24,4 @@ maintainers:
 name: fluent-bit
 sources:
 - https://github.com/fluent/fluent-bit/
-version: 0.44.0
+version: 0.47.9

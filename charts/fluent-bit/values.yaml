@@ -12,7 +12,7 @@ image:
   # Set to "-" to not use the default value
   tag:
   digest:
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 testFramework:
   enabled: true
@@ -101,6 +101,10 @@ service:
 #   prometheus.io/path: "/api/v1/metrics/prometheus"
 #   prometheus.io/port: "2020"
 #   prometheus.io/scrape: "true"
+  externalIPs: []
+  # externalIPs:
+  #  - 2.2.2.2
+
 
 serviceMonitor:
   enabled: false
@@ -178,6 +182,7 @@ dashboards:
   labelValue: 1
   annotations: {}
   namespace: ""
+  deterministicUid: false
 
 lifecycle: {}
 #   preStop:
@@ -314,10 +319,20 @@ envWithTpl: []
 
 envFrom: []
 
+# This supports either a structured array or a templatable string
 extraContainers: []
+
+# Array mode
+# extraContainers:
 #   - name: do-something
 #     image: busybox
 #     command: ['do', 'something']
+
+# String mode
+# extraContainers: |-
+#   - name: do-something
+#     image: bitnami/kubectl:{{ .Capabilities.KubeVersion.Major }}.{{ .Capabilities.KubeVersion.Minor }}
+#     command: ['kubectl', 'version']
 
 flush: 1
 

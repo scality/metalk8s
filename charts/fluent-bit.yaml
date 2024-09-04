@@ -56,3 +56,4 @@ serviceMonitor:
 
 dashboards:
   enabled: true
+  deterministicUid: true

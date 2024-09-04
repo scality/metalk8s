@@ -30,17 +30,6 @@
       "tooltip": "",
       "type": "link",
       "url": "/grafana/d/g6fe30815b172c9da7e813c15ddfe607/loki"
-    },
-    {
-      "icon": "dashboard",
-      "includeVars": true,
-      "keepTime": true,
-      "tags": [],
-      "targetBlank": true,
-      "title": "Fluent Bit",
-      "tooltip": "",
-      "type": "link",
-      "url": "/grafana/d/fluentbit/fluent-bit"
     }
   ],
   "liveNow": true,

@@ -4,6 +4,10 @@
 
 ### Enhancements
 
+- Bump fluent-bit chart version to [0.47.9](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.47.9)
+  The fluent-bit image has been bumped accordingly to [3.1.7](https://github.com/fluent/fluent-bit/releases/tag/v3.1.7)
+  (PR[#4414](https://github.com/scality/metalk8s/pull/4414))
+
 - Bump Kubernetes version to
   [1.28.12](https://github.com/kubernetes/kubernetes/releases/tag/v1.28.12)
   (PR[#4382](https://github.com/scality/metalk8s/pull/4382))
