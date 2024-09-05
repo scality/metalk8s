@@ -20,8 +20,16 @@
 - Bump CoreDNS version to [v1.11.1](https://github.com/coredns/coredns/releases/tag/v1.11.1)
   (PR[#4369](https://github.com/scality/metalk8s/pull/4369))
 
+- Bump fluent-bit chart version to
+  [0.47.9](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.47.9)
+  The fluent-bit image has been bumped accordingly to
+  [3.1.7](https://github.com/fluent/fluent-bit/releases/tag/v3.1.7)
+  (PR[#4415](https://github.com/scality/metalk8s/pull/4415))
+
 - Bump Loki chart version to
   [5.48.0](https://github.com/grafana/loki/releases/tag/helm-loki-5.48.0)
+  The Loki image has been bumped accordingly to
+  [2.9.6](https://github.com/grafana/loki/releases/tag/v2.9.6)
   (PR[#4401](https://github.com/scality/metalk8s/pull/4401))
 
 - Bump kube-prometheus-stack chart version to
@@ -62,18 +70,6 @@
   Dex itself has been bumped accordingly to
   [v2.40.0](https://github.com/dexidp/dex/releases/tag/v2.40.0)
   (PR[#4367](https://github.com/scality/metalk8s/pull/4367))
-
-- Bump Loki chart version to
-  [5.47.1](https://github.com/grafana/loki/releases/tag/helm-loki-5.47.1)
-  The Loki image has been bumped accordingly to
-  [2.9.6](https://github.com/grafana/loki/releases/tag/v2.9.6)
-  (PR[#4285](https://github.com/scality/metalk8s/pull/4285))
-
-- Bump fluent-bit chart version to
-  [0.44.0](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.44.0)
-  The fluent-bit image has been bumped accordingly to
-  [2.2.2](https://github.com/fluent/fluent-bit/releases/tag/v2.2.2)
-  (PR[#4286](https://github.com/scality/metalk8s/pull/4286))
 
 - Bump ingress-nginx chart version to
   [4.10.0](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.10.0)
