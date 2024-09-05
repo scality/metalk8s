@@ -120,7 +120,7 @@ def fixup_string(value):
     if "\n" in value:
         # Remove empty lines
         value = "\n".join(
-            line for line in value.splitlines() if not re.match("^\s*$", line)
+            line for line in value.splitlines() if not re.match(r"^\s*$", line)
         )
         return multiline_str(value)
     return value
