@@ -77,6 +77,7 @@ Create kubelet config file:
         healthzPort: 10248
         httpCheckFrequency: 0s
         imageMinimumGCAge: 0s
+        imageMaximumGCAge: 0s
         kind: KubeletConfiguration
         logging:
           flushFrequency: 0

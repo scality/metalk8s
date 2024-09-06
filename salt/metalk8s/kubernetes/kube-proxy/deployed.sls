@@ -59,8 +59,11 @@ Deploy kube-proxy (ConfigMap):
             conntrack:
               maxPerCore: null
               min: null
+              tcpBeLiberal: false
               tcpCloseWaitTimeout: null
               tcpEstablishedTimeout: null
+              udpStreamTimeout: 0s
+              udpTimeout: 0s
             detectLocal:
               bridgeInterface: ""
               interfaceNamePrefix: ""
@@ -92,6 +95,11 @@ Deploy kube-proxy (ConfigMap):
               verbosity: 0
             metricsBindAddress: @HOST_IP@:10249
             mode: ""
+            nftables:
+              masqueradeAll: false
+              masqueradeBit: null
+              minSyncPeriod: 0s
+              syncPeriod: 0s
             nodePortAddresses: {{ salt.metalk8s_network.get_nodeport_cidrs() | tojson }}
             oomScoreAdj: null
             portRange: ""
