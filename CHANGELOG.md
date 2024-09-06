@@ -8,6 +8,9 @@
   [1.29.8](https://github.com/kubernetes/kubernetes/releases/tag/v1.29.8)
   (PR[#4417](https://github.com/scality/metalk8s/pull/4417))
 
+- Bump etcd version to [3.5.15](https://github.com/etcd-io/etcd/releases/tag/v3.5.15)
+  (PR[#4417](https://github.com/scality/metalk8s/pull/4417))
+
 ## Release 128.0.0 (in development)
 
 ### Enhancements
