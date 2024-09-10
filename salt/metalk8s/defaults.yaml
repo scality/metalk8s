@@ -257,6 +257,12 @@ certificates:
           sls:
             - metalk8s.kubernetes.apiserver.kubeconfig
         watched: False
+      admin:
+        path: /etc/kubernetes/admin.conf
+        renew:
+          sls:
+            - metalk8s.kubernetes.apiserver.kubeconfig
+        watched: False
       controller-manager:
         path: /etc/kubernetes/controller-manager.conf
         renew:

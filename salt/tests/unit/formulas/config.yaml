@@ -532,6 +532,7 @@ metalk8s:
                       - /etc/kubernetes/pki/etcd/salt-master-etcd-client.crt
                       # Kubeconfig
                       - /etc/kubernetes/super-admin.conf
+                      - /etc/kubernetes/admin.conf
                       # Server
                       - /etc/kubernetes/pki/apiserver.crt
                     target: bootstrap
