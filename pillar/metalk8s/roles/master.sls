@@ -9,7 +9,7 @@ certificates:
         watched: True
   kubeconfig:
     files:
-      admin:
+      super-admin:
         watched: True
       controller-manager:
         watched: True

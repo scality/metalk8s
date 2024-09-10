@@ -251,8 +251,8 @@ certificates:
     days_remaining: 90
     days_valid: 365
     files:
-      admin:
-        path: /etc/kubernetes/admin.conf
+      super-admin:
+        path: /etc/kubernetes/super-admin.conf
         renew:
           sls:
             - metalk8s.kubernetes.apiserver.kubeconfig

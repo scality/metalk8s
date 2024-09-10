@@ -144,7 +144,7 @@ certificates:
         watched: true
   kubeconfig:
     files:
-      admin:
+      super-admin:
         watched: true
       controller-manager:
         watched: true
