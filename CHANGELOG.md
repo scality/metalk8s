@@ -116,6 +116,9 @@
 - Anonymize diff when updating a Kubernetes Secret object from salt state
   (PR[#4313](https://github.com/scality/metalk8s/pull/4313))
 
+- Include mtr and traceroute packages in metalk8s-utils image
+  (PR[#4419](https://github.com/scality/metalk8s/pull/4419))
+
 ### Bug fixes
 
 - Do no longer use `latest` for `storage-operator` image
