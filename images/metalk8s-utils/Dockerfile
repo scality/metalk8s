@@ -86,6 +86,7 @@ RUN dnf clean expire-cache && \
         lsof \
         ltrace \
         lvm2 \
+        mtr \
         net-tools \
         nethogs \
         nmap \
@@ -106,6 +107,7 @@ RUN dnf clean expire-cache && \
         tcpdump \
         telnet \
         tmux \
+        traceroute \
         util-linux \
         vim \
         wget \
