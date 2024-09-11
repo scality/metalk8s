@@ -4,6 +4,9 @@
 
 ### Enhancements
 
+- Implement super-admin user and bind admin to built-in cluster-admins role
+  (PR[#4418](https://github.com/scality/metalk8s/pull/4418))
+
 - Bump Kubernetes version to
   [1.29.8](https://github.com/kubernetes/kubernetes/releases/tag/v1.29.8)
   (PR[#4417](https://github.com/scality/metalk8s/pull/4417))

@@ -11,6 +11,8 @@ certificates:
     files:
       admin:
         watched: True
+      super-admin:
+        watched: True
       controller-manager:
         watched: True
       kubelet:

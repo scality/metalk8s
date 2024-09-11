@@ -13,6 +13,25 @@ include:
 
 {%- set apiserver = 'https://' ~ apiserver_ip ~ ':6443' %}
 
+Create kubeconfig file for super-admin:
+  metalk8s_kubeconfig.managed:
+    - name: {{ certificates.kubeconfig.files["super-admin"].path }}
+    - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
+    - signing_policy: {{ kube_api.cert.client_signing_policy }}
+    - client_cert_info:
+        CN: "kubernetes-super-admin"
+        O: "system:masters"
+    - apiserver: {{ apiserver }}
+    - cluster: {{ kubernetes.cluster }}
+    - days_valid: {{
+        certificates.kubeconfig.files["super-admin"].days_valid |
+        default(certificates.kubeconfig.days_valid) }}
+    - days_remaining: {{
+        certificates.kubeconfig.files["super-admin"].days_remaining |
+        default(certificates.kubeconfig.days_remaining) }}
+    - require:
+      - metalk8s_package_manager: Install m2crypto
+
 Create kubeconfig file for admin:
   metalk8s_kubeconfig.managed:
     - name: {{ certificates.kubeconfig.files.admin.path }}
@@ -20,7 +39,7 @@ Create kubeconfig file for admin:
     - signing_policy: {{ kube_api.cert.client_signing_policy }}
     - client_cert_info:
         CN: "kubernetes-admin"
-        O: "system:masters"
+        O: "kubeadm:cluster-admins"
     - apiserver: {{ apiserver }}
     - cluster: {{ kubernetes.cluster }}
     - days_valid: {{
