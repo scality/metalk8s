@@ -218,7 +218,7 @@ export type V1alpha1VolumeList = {
 };
 
 export class V1alpha1VolumeClient {
-  constructor(private customObjects: CustomObjectsApi) {}
+  constructor(public customObjects: CustomObjectsApi) {}
   async getV1alpha1VolumeList(
     namespace: string,
   ): Promise<Result<V1alpha1VolumeList>> {

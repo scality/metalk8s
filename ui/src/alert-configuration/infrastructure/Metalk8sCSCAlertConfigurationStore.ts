@@ -6,6 +6,7 @@ import {
 } from '../domain/AlertConfigurationDomain';
 import YAML from 'yaml';
 import { V1ConfigMap, V1NodeList } from '@kubernetes/client-node';
+import { getTokenType } from '../../services/platformlibrary/k8s';
 
 type AlertmanagerConfigKind = 'AlertmanagerConfig';
 
@@ -56,7 +57,7 @@ export class Metalk8sCSCAlertConfigurationStore
     private k8sApiBaseUrl: string,
     private saltApiBaseUrl: string,
     private alertManagerApiBaseUrl: string,
-    private token: string,
+    private getToken: getTokenType,
     private email: string,
   ) {}
 
@@ -71,7 +72,7 @@ export class Metalk8sCSCAlertConfigurationStore
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.token}`,
+          Authorization: `Bearer ${await this.getToken()}`,
         },
       },
     );
@@ -98,7 +99,7 @@ export class Metalk8sCSCAlertConfigurationStore
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/merge-patch+json',
-          Authorization: `Bearer ${this.token}`,
+          Authorization: `Bearer ${await this.getToken()}`,
         },
         body: JSON.stringify({
           data: {
@@ -117,7 +118,7 @@ export class Metalk8sCSCAlertConfigurationStore
       body: JSON.stringify({
         eauth: 'kubernetes_rbac',
         username: `oidc:${this.email}`,
-        token: this.token,
+        token: await this.getToken(),
       }),
     });
 
@@ -138,7 +139,7 @@ export class Metalk8sCSCAlertConfigurationStore
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.token}`,
+          Authorization: `Bearer ${await this.getToken()}`,
         },
       },
     );
@@ -482,7 +483,7 @@ export class Metalk8sCSCAlertConfigurationStore
           {
             method: 'GET',
             headers: {
-              Authorization: `Bearer ${this.token}`,
+              Authorization: `Bearer ${await this.getToken()}`,
             },
           },
         );
@@ -589,7 +590,7 @@ export class Metalk8sCSCAlertConfigurationStore
       {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${this.token}`,
+          Authorization: `Bearer ${await this.getToken()}`,
         },
       },
     );

@@ -1,24 +1,23 @@
-import React from 'react';
-import { useQuery } from 'react-query';
-import styled from 'styled-components';
-import { Card } from '@scality/core-ui';
-import { Loader } from '@scality/core-ui';
-import { StatusWrapper, Icon, spacing } from '@scality/core-ui';
+import { Card, Icon, Loader, spacing, StatusWrapper } from '@scality/core-ui';
 import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
+import { useQuery } from 'react-query';
+import { useHistory } from 'react-router';
+import styled from 'styled-components';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
-import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
+import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
+import {
+  highestAlertToStatus,
+  useAlertLibrary,
+  useHighestSeverityAlerts,
+} from '../containers/AlertProvider';
+import { useAuth } from '../containers/PrivateRoute';
 import { useTypedSelector } from '../hooks';
 import {
   getNodesCountQuery,
   getVolumesCountQuery,
 } from '../services/platformlibrary/k8s';
-import {
-  useAlertLibrary,
-  useHighestSeverityAlerts,
-  highestAlertToStatus,
-} from '../containers/AlertProvider';
-import { useHistory } from 'react-router';
+
 const InventoryContainer = styled.div`
   padding: 0px ${spacing.r2};
   display: flex;
@@ -63,15 +62,15 @@ const DashboardInventory = () => {
     alertsLibrary.getVolumesAlertSelectors(),
   );
   const volumesStatus = highestAlertToStatus(volumesAlerts);
-  const token = useTypedSelector((state) => state.oidc?.user?.token);
+  const { getToken } = useAuth();
   const config = useTypedSelector((state) => state.config.api?.url);
   const { data: volumesCount } = useQuery(
     // @ts-expect-error - FIXME when you are working on it
-    getVolumesCountQuery(config || '', token),
+    getVolumesCountQuery(config || '', getToken),
   );
   const { data: nodesCount } = useQuery(
     // @ts-expect-error - FIXME when you are working on it
-    getNodesCountQuery(config || '', token),
+    getNodesCountQuery(config || '', getToken),
   );
   const history = useHistory();
   return (
