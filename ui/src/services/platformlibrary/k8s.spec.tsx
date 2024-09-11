@@ -24,7 +24,7 @@ const persistentvolumes = {
   },
   items: [{}, {}, {}, {}, {}],
 };
-const token = 'eyxxxx';
+const token = () => Promise.resolve('eyxxxx');
 const server = setupServer(
   rest.get(`${k8sUrl}/api/v1/nodes`, (req, res, ctx) => {
     return res(ctx.json(nodes));
