@@ -161,54 +161,61 @@ export function useAuth(): {
   userData?: UserData;
   getToken: () => Promise<string | null>;
 } {
-  const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
+  try {
+    const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
 
-  const { config } = useShellConfig();
-  //Force logout when token is expired or we are missing expires_at claims
-  useQuery({
-    queryKey: ['removeUser'],
-    queryFn: () => {
-      // This query might be executed when useAuth is rendered simultaneously by 2 different components
-      // react-query is supposed to prevent this but in practice under certain conditions a race condition might trigger it twice
-      // We need to make sure we don't call removeUser twice in this case (which would cause a redirect loop)
-      // @ts-expect-error - FIXME when you are working on it
-      window.loggingOut = true;
-      return auth.userManager.removeUser().then(() => {
-        location.reload();
-      });
-    },
-    enabled: !!(
-      auth &&
-      auth.userManager &&
-      auth.userData &&
-      (auth.userData.expired || !auth.userData.expires_at) &&
-      // @ts-expect-error - FIXME when you are working on it
-      !window.loggingOut
-    ),
-  });
+    const { config } = useShellConfig();
+    //Force logout when token is expired or we are missing expires_at claims
+    useQuery({
+      queryKey: ['removeUser'],
+      queryFn: () => {
+        // This query might be executed when useAuth is rendered simultaneously by 2 different components
+        // react-query is supposed to prevent this but in practice under certain conditions a race condition might trigger it twice
+        // We need to make sure we don't call removeUser twice in this case (which would cause a redirect loop)
+        // @ts-expect-error - FIXME when you are working on it
+        window.loggingOut = true;
+        return auth.userManager.removeUser().then(() => {
+          location.reload();
+        });
+      },
+      enabled: !!(
+        auth &&
+        auth.userManager &&
+        auth.userData &&
+        (auth.userData.expired || !auth.userData.expires_at) &&
+        // @ts-expect-error - FIXME when you are working on it
+        !window.loggingOut
+      ),
+    });
 
-  if (!auth || !auth.userData) {
+    if (!auth || !auth.userData) {
+      return {
+        userData: undefined,
+        getToken: () => Promise.resolve(null),
+      };
+    }
+
+    return {
+      userData: {
+        token: auth.userData.access_token,
+        username: auth.userData.profile?.name,
+        email: auth.userData.profile?.email,
+        groups: getUserGroups(auth.userData, config.userGroupsMapping),
+        id: auth.userData.profile?.sub,
+        original: auth.userData,
+      },
+      getToken: async () => {
+        return auth.userManager.getUser().then((user) => {
+          return user?.access_token;
+        });
+      },
+    };
+  } catch (e) {
     return {
       userData: undefined,
-      getToken: () => Promise.resolve(null),
+      getToken: () => Promise.resolve('null'),
     };
   }
-
-  return {
-    userData: {
-      token: auth.userData.access_token,
-      username: auth.userData.profile?.name,
-      email: auth.userData.profile?.email,
-      groups: getUserGroups(auth.userData, config.userGroupsMapping),
-      id: auth.userData.profile?.sub,
-      original: auth.userData,
-    },
-    getToken: async () => {
-      return auth.userManager.getUser().then((user) => {
-        return user?.access_token;
-      });
-    },
-  };
 }
 
 function useInternalLogout(
