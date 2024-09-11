@@ -1,7 +1,7 @@
 import { UserManager } from 'oidc-react';
 export function logOut(userManager?: UserManager, providerLogout?: boolean) {
   if (userManager) {
-    userManager.revokeAccessToken();
+    userManager.revokeTokens();
 
     if (providerLogout) {
       userManager.signoutRedirect();

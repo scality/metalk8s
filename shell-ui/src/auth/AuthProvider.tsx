@@ -1,4 +1,4 @@
-import { MetadataService, User, WebStorageStateStore } from 'oidc-client';
+import { MetadataService, User, WebStorageStateStore } from 'oidc-client-ts';
 import {
   AuthProviderProps,
   AuthProvider as OIDCAuthProvider,
@@ -34,10 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 function defaultDexConnectorMetadataService(connectorId: string) {
-  // @ts-expect-error - FIXME when you are working on it
   class DexDefaultConnectorMetadataService extends MetadataService {
     getAuthorizationEndpoint() {
-      // @ts-expect-error - FIXME when you are working on it
       return this._getMetadataProperty('authorization_endpoint').then(
         (authorizationEndpoint) => {
           const queryParamas = new URLSearchParams(window.location.search);
@@ -46,7 +44,7 @@ function defaultDexConnectorMetadataService(connectorId: string) {
             return authorizationEndpoint + '?connector_id=' + connectorId;
           }
 
-          return authorizationEndpoint;
+          return authorizationEndpoint as string;
         },
       );
     }
@@ -69,30 +67,24 @@ function getAbsoluteRedirectUrl(redirectUrl?: string) {
 
 function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   const { authConfig } = useAuthConfig();
+  if (authConfig.kind === 'OAuth2Proxy') {
+    throw new Error('OAuth2Proxy authentication kind is not yet supported');
+  }
   const userManager = new UserManager({
-    // @ts-expect-error - FIXME when you are working on it
     authority: authConfig.providerUrl,
-    // @ts-expect-error - FIXME when you are working on it
     client_id: authConfig.clientId,
-    // @ts-expect-error - FIXME when you are working on it
     redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
-    // @ts-expect-error - FIXME when you are working on it
     silent_redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
-    // @ts-expect-error - FIXME when you are working on it
     post_logout_redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
-    // @ts-expect-error - FIXME when you are working on it
     response_type: authConfig.responseType || 'code',
-    // @ts-expect-error - FIXME when you are working on it
     scope: authConfig.scopes,
     loadUserInfo: true,
     automaticSilentRenew: true,
     monitorSession: false,
-    // @ts-expect-error - FIXME when you are working on it
     MetadataServiceCtor: authConfig.defaultDexConnector
-      ? // @ts-expect-error - FIXME when you are working on it
-        defaultDexConnectorMetadataService(authConfig.defaultDexConnector)
-      : // @ts-expect-error - FIXME when you are working on it
-        MetadataService,
+      ? defaultDexConnectorMetadataService(authConfig.defaultDexConnector)
+      : MetadataService,
+    // @ts-expect-error - FIXME when you are working on it
     userStore: new WebStorageStateStore({
       store: localStorage,
     }),
@@ -134,6 +126,7 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   const oidcConfig: AuthProviderProps = {
     onBeforeSignIn: () => {
       localStorage.setItem('redirectUrl', window.location.href);
+      return window.location.href;
     },
     onSignIn: () => {
       const savedRedirectUri = localStorage.getItem('redirectUrl');
@@ -237,29 +230,29 @@ function useInternalLogout(
         return;
       }
 
-      userManager.revokeAccessToken();
-
-      if (authConfig.providerLogout) {
-        userManager.signoutRedirect().catch((e) => {
-          if (e.message === 'no end session endpoint') {
-            console.log(
-              "OIDC provider doesn't support end session endpoint, fallback to clearing document cookies",
-            );
-            document.cookie.split(';').forEach(function (c) {
-              document.cookie =
-                c.trim().split('=')[0] +
-                '=;' +
-                'expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-            });
-          } else {
-            console.error(e);
-          }
-        });
-      } else {
-        userManager.removeUser().then(() => {
-          location.reload();
-        });
-      }
+      userManager.revokeTokens().then(() => {
+        if (authConfig.providerLogout) {
+          userManager.signoutRedirect().catch((e) => {
+            if (e.message === 'no end session endpoint') {
+              console.log(
+                "OIDC provider doesn't support end session endpoint, fallback to clearing document cookies",
+              );
+              document.cookie.split(';').forEach(function (c) {
+                document.cookie =
+                  c.trim().split('=')[0] +
+                  '=;' +
+                  'expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+              });
+            } else {
+              console.error(e);
+            }
+          });
+        } else {
+          userManager.removeUser().then(() => {
+            location.reload();
+          });
+        }
+      });
     }, [JSON.stringify(authConfig), userManager]),
   };
 }
