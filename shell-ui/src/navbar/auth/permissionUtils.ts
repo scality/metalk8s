@@ -29,7 +29,7 @@ export const getUserGroups = (
   user?: User,
   userGroupsMapping?: UserGroupsMapping,
 ): string[] => {
-  const userOIDCGroups: string[] = user?.profile?.groups || [];
+  const userOIDCGroups: string[] = (user?.profile?.groups as string[]) || [];
   const userMappedGroups = userGroupsMapping
     ? userGroupsMapping[user?.profile?.email || ''] || []
     : [];

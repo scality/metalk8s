@@ -157,7 +157,7 @@ const config: Configuration = {
           singleton: true,
           eager: true,
         },
-        'oidc-client': {
+        'oidc-client-ts': {
           singleton: true,
           eager: true,
         },

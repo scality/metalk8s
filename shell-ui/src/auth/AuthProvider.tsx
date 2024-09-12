@@ -1,4 +1,4 @@
-import { MetadataService, User, WebStorageStateStore } from 'oidc-client';
+import { MetadataService, User, WebStorageStateStore } from 'oidc-client-ts';
 import {
   AuthProviderProps,
   AuthProvider as OIDCAuthProvider,
@@ -34,10 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 function defaultDexConnectorMetadataService(connectorId: string) {
-  // @ts-expect-error - FIXME when you are working on it
   class DexDefaultConnectorMetadataService extends MetadataService {
     getAuthorizationEndpoint() {
-      // @ts-expect-error - FIXME when you are working on it
       return this._getMetadataProperty('authorization_endpoint').then(
         (authorizationEndpoint) => {
           const queryParamas = new URLSearchParams(window.location.search);
@@ -46,7 +44,7 @@ function defaultDexConnectorMetadataService(connectorId: string) {
             return authorizationEndpoint + '?connector_id=' + connectorId;
           }
 
-          return authorizationEndpoint;
+          return authorizationEndpoint as string;
         },
       );
     }
@@ -69,30 +67,24 @@ function getAbsoluteRedirectUrl(redirectUrl?: string) {
 
 function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   const { authConfig } = useAuthConfig();
+  if (authConfig.kind === 'OAuth2Proxy') {
+    throw new Error('OAuth2Proxy authentication kind is not yet supported');
+  }
   const userManager = new UserManager({
-    // @ts-expect-error - FIXME when you are working on it
     authority: authConfig.providerUrl,
-    // @ts-expect-error - FIXME when you are working on it
     client_id: authConfig.clientId,
-    // @ts-expect-error - FIXME when you are working on it
     redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
-    // @ts-expect-error - FIXME when you are working on it
     silent_redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
-    // @ts-expect-error - FIXME when you are working on it
     post_logout_redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
-    // @ts-expect-error - FIXME when you are working on it
     response_type: authConfig.responseType || 'code',
-    // @ts-expect-error - FIXME when you are working on it
     scope: authConfig.scopes,
     loadUserInfo: true,
     automaticSilentRenew: true,
     monitorSession: false,
-    // @ts-expect-error - FIXME when you are working on it
     MetadataServiceCtor: authConfig.defaultDexConnector
-      ? // @ts-expect-error - FIXME when you are working on it
-        defaultDexConnectorMetadataService(authConfig.defaultDexConnector)
-      : // @ts-expect-error - FIXME when you are working on it
-        MetadataService,
+      ? defaultDexConnectorMetadataService(authConfig.defaultDexConnector)
+      : MetadataService,
+    // @ts-expect-error - FIXME when you are working on it
     userStore: new WebStorageStateStore({
       store: localStorage,
     }),
@@ -134,6 +126,7 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   const oidcConfig: AuthProviderProps = {
     onBeforeSignIn: () => {
       localStorage.setItem('redirectUrl', window.location.href);
+      return window.location.href;
     },
     onSignIn: () => {
       const savedRedirectUri = localStorage.getItem('redirectUrl');
@@ -168,54 +161,61 @@ export function useAuth(): {
   userData?: UserData;
   getToken: () => Promise<string | null>;
 } {
-  const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
+  try {
+    const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
 
-  const { config } = useShellConfig();
-  //Force logout when token is expired or we are missing expires_at claims
-  useQuery({
-    queryKey: ['removeUser'],
-    queryFn: () => {
-      // This query might be executed when useAuth is rendered simultaneously by 2 different components
-      // react-query is supposed to prevent this but in practice under certain conditions a race condition might trigger it twice
-      // We need to make sure we don't call removeUser twice in this case (which would cause a redirect loop)
-      // @ts-expect-error - FIXME when you are working on it
-      window.loggingOut = true;
-      return auth.userManager.removeUser().then(() => {
-        location.reload();
-      });
-    },
-    enabled: !!(
-      auth &&
-      auth.userManager &&
-      auth.userData &&
-      (auth.userData.expired || !auth.userData.expires_at) &&
-      // @ts-expect-error - FIXME when you are working on it
-      !window.loggingOut
-    ),
-  });
+    const { config } = useShellConfig();
+    //Force logout when token is expired or we are missing expires_at claims
+    useQuery({
+      queryKey: ['removeUser'],
+      queryFn: () => {
+        // This query might be executed when useAuth is rendered simultaneously by 2 different components
+        // react-query is supposed to prevent this but in practice under certain conditions a race condition might trigger it twice
+        // We need to make sure we don't call removeUser twice in this case (which would cause a redirect loop)
+        // @ts-expect-error - FIXME when you are working on it
+        window.loggingOut = true;
+        return auth.userManager.removeUser().then(() => {
+          location.reload();
+        });
+      },
+      enabled: !!(
+        auth &&
+        auth.userManager &&
+        auth.userData &&
+        (auth.userData.expired || !auth.userData.expires_at) &&
+        // @ts-expect-error - FIXME when you are working on it
+        !window.loggingOut
+      ),
+    });
 
-  if (!auth || !auth.userData) {
+    if (!auth || !auth.userData) {
+      return {
+        userData: undefined,
+        getToken: () => Promise.resolve(null),
+      };
+    }
+
+    return {
+      userData: {
+        token: auth.userData.access_token,
+        username: auth.userData.profile?.name,
+        email: auth.userData.profile?.email,
+        groups: getUserGroups(auth.userData, config.userGroupsMapping),
+        id: auth.userData.profile?.sub,
+        original: auth.userData,
+      },
+      getToken: async () => {
+        return auth.userManager.getUser().then((user) => {
+          return user?.access_token;
+        });
+      },
+    };
+  } catch (e) {
     return {
       userData: undefined,
-      getToken: () => Promise.resolve(null),
+      getToken: () => Promise.resolve('null'),
     };
   }
-
-  return {
-    userData: {
-      token: auth.userData.access_token,
-      username: auth.userData.profile?.name,
-      email: auth.userData.profile?.email,
-      groups: getUserGroups(auth.userData, config.userGroupsMapping),
-      id: auth.userData.profile?.sub,
-      original: auth.userData,
-    },
-    getToken: async () => {
-      return auth.userManager.getUser().then((user) => {
-        return user?.access_token;
-      });
-    },
-  };
 }
 
 function useInternalLogout(
@@ -237,8 +237,6 @@ function useInternalLogout(
         return;
       }
 
-      userManager.revokeAccessToken();
-
       if (authConfig.providerLogout) {
         userManager.signoutRedirect().catch((e) => {
           if (e.message === 'no end session endpoint') {
@@ -256,8 +254,10 @@ function useInternalLogout(
           }
         });
       } else {
-        userManager.removeUser().then(() => {
-          location.reload();
+        userManager.revokeTokens().then(() => {
+          userManager.removeUser().then(() => {
+            location.reload();
+          });
         });
       }
     }, [JSON.stringify(authConfig), userManager]),
