@@ -237,29 +237,29 @@ function useInternalLogout(
         return;
       }
 
-      userManager.revokeTokens().then(() => {
-        if (authConfig.providerLogout) {
-          userManager.signoutRedirect().catch((e) => {
-            if (e.message === 'no end session endpoint') {
-              console.log(
-                "OIDC provider doesn't support end session endpoint, fallback to clearing document cookies",
-              );
-              document.cookie.split(';').forEach(function (c) {
-                document.cookie =
-                  c.trim().split('=')[0] +
-                  '=;' +
-                  'expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-              });
-            } else {
-              console.error(e);
-            }
-          });
-        } else {
+      if (authConfig.providerLogout) {
+        userManager.signoutRedirect().catch((e) => {
+          if (e.message === 'no end session endpoint') {
+            console.log(
+              "OIDC provider doesn't support end session endpoint, fallback to clearing document cookies",
+            );
+            document.cookie.split(';').forEach(function (c) {
+              document.cookie =
+                c.trim().split('=')[0] +
+                '=;' +
+                'expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+            });
+          } else {
+            console.error(e);
+          }
+        });
+      } else {
+        userManager.revokeTokens().then(() => {
           userManager.removeUser().then(() => {
             location.reload();
           });
-        }
-      });
+        });
+      }
     }, [JSON.stringify(authConfig), userManager]),
   };
 }
