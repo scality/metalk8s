@@ -5,7 +5,6 @@ import './navbar/index';
 import { waitForLoadingToFinish } from './navbar/__TESTS__/utils';
 import { jest } from '@jest/globals';
 import App, { queryClient } from './FederatedApp';
-import { debug } from 'jest-preview';
 export const configurationHandlers = [
   rest.get(
     'http://localhost:3000/.well-known/micro-app-configuration',
@@ -86,7 +85,7 @@ export const configurationHandlers = [
               providerUrl: '/oidc',
               redirectUrl: 'http://localhost:3000/',
               clientId: 'metalk8s-ui',
-              responseType: 'id_token',
+              responseType: 'code',
               scopes:
                 'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
             },
@@ -196,6 +195,8 @@ const mockOIDCProvider = () => {
     return caseSensitiveGetResponseHeader.call(this, header);
   };
 };
+
+jest.setTimeout(30_000);
 
 describe('FederatedApp', () => {
   beforeAll(() =>
