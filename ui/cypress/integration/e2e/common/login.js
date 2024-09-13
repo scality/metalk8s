@@ -6,7 +6,6 @@ Given('I am logged in', () => {
   cy.route('GET', '/oidc/.well-known/openid-configuration').as(
     'getOidcConfiguration',
   );
-  cy.wait('@getOidcConfiguration');
 
   //Check if we are redirected to the DEX login page
   cy.location('pathname').should('eq', '/oidc/auth');
@@ -33,10 +32,7 @@ Given('I am logged in', () => {
   };
   cy.wait('@saltAuthentication', timeOut);
 
-  cy.findByRole('navigation').should(
-    'contain',
-    userName,
-  );
+  cy.findByRole('navigation').should('contain', userName);
 });
 
 Then('I log out', () => {
@@ -44,7 +40,7 @@ Then('I log out', () => {
   cy.findByRole('navigation').within(() => {
     cy.findByText(userName).click();
     cy.findByText(/log out/i).click();
-  })
+  });
   //Check if we are redirected to the DEX login page
   cy.location('pathname').should('eq', '/oidc/auth');
 });
