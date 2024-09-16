@@ -77,7 +77,7 @@ spec:
       name: MetalK8s UI
       redirectURIs:
       - {{ control_plane_ingress_ep }}/{{ metalk8s_ui_config.spec.basePath.lstrip('/') }}
-      secret: ybrMJpVMQxsiZw26MhJzCjA2ut
+      public: true
     - id: grafana-ui
       name: Grafana UI
       redirectURIs:
