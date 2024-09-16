@@ -39,7 +39,7 @@ This will allow you to register localhost:8084 as a valid authentication
         redirectURIs:
           - https://<bootstrap_control_plane_ip>:8443/
           - http://localhost:8084/
-        secret: ybrMJpVMQxsiZw26MhJzCjA2ut
+        public: true
 
 You can retrieve the ``bootstrap_control_plane_ip`` by running:
 

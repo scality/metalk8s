@@ -100,7 +100,7 @@ jobs:
           source product.txt
           echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
 
-     ## Spawn {{{
+      ## Spawn {{{
       - name: Export environment variables for accessing the cloud
         uses: ./.github/actions/export-cloud-env
         with:
@@ -239,6 +239,16 @@ jobs:
         if: inputs.setup-idp
         uses: ./.github/actions/bastion-ui-tests
       # }}}
+
+      - name: Collect UI tests videos
+        if: always()
+        continue-on-error: true
+        run: |
+          export DEST_DIR="artifacts/ui-e2e-tests/${{ github.job }}"
+          mkdir -p ${DEST_DIR}
+          scp -F ssh_config \
+            "bastion:/home/centos/metalk8s/ui/cypress/videos/e2e/*" \
+            "${DEST_DIR}/"
 
       - name: Generate and Collect sosreport
         if: always()
