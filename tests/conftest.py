@@ -431,7 +431,7 @@ def dex_login(username, password, should_fail, control_plane_ingress_ep):
         auth_page = session.get(
             control_plane_ingress_ep + "/oidc/auth/local?",
             params={
-                "response_type": "id_token",
+                "response_type": "code",
                 "client_id": "metalk8s-ui",
                 "scope": "openid audience:server:client_id:oidc-auth-client",
                 "redirect_uri": control_plane_ingress_ep + "/",
