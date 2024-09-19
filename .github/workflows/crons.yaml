@@ -4,7 +4,11 @@ on:
   # NOTE: Schedule is only run on the latest commit of the default branch,
   # so we need to schedule Cron Jobs for all branches here
   schedule:
-    - cron: "1 0 * * 1-5"
+    # Run V 0 nightly every weekday at 23:00
+    - cron: "0 23 * * 1-5"
+
+    # Run V -1 nightly every weekday at 00:00
+    - cron: "0 0 * * 1-5"
 
 jobs:
   crons:
@@ -13,16 +17,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "Nightly for 129.0"
+          - name: "Nightly for MetalK8s 129.0"
+            cron: "0 23 * * 1-5"
             branch: "development/129.0"
             workflow: "nightly.yaml"
-          - name: "Nightly for 128.0"
+          - name: "Nightly for MetalK8s 128.0"
+            cron: "0 0 * * 1-5"
             branch: "development/128.0"
             workflow: "nightly.yaml"
     steps:
       - name: Checkout
+        if: github.event.schedule == matrix.cron
         uses: actions/checkout@v4
       - name: Run ${{ matrix.name }}
+        if: github.event.schedule == matrix.cron
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
         run: gh workflow run ${{ matrix.workflow }} --ref=${{ matrix.branch }}
