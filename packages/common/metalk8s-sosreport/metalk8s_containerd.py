@@ -64,12 +64,12 @@ class MetalK8sContainerd(Plugin, RedHatPlugin):
         ]
 
         self.add_journal(units="containerd")
-        self.add_cmd_output(["crictl {}".format(s) for s in subcmds])
+        self.add_cmd_output([f"crictl {s}" for s in subcmds])
         self.add_cmd_output("ls -alhR /etc/cni")
 
         ps_cmd = "crictl ps --quiet"
         if self.get_option("all"):
-            ps_cmd = "{} -a".format(ps_cmd)
+            ps_cmd = f"{ps_cmd} -a"
 
         img_cmd = "crictl images --quiet"
         pod_cmd = "crictl pods --quiet"
@@ -79,15 +79,15 @@ class MetalK8sContainerd(Plugin, RedHatPlugin):
         pods = self._get_crio_list(pod_cmd)
 
         for container in containers:
-            self.add_cmd_output("crictl inspect {}".format(container))
+            self.add_cmd_output(f"crictl inspect {container}")
             if self.get_option("logs"):
-                self.add_cmd_output("crictl logs -t {}".format(container))
+                self.add_cmd_output(f"crictl logs -t {container}")
 
         for image in images:
-            self.add_cmd_output("crictl inspecti {}".format(image))
+            self.add_cmd_output(f"crictl inspecti {image}")
 
         for pod in pods:
-            self.add_cmd_output("crictl inspectp {}".format(pod))
+            self.add_cmd_output(f"crictl inspectp {pod}")
 
     def _get_crio_list(self, cmd):
         ret = []

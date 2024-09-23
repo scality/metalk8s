@@ -1,7 +1,3 @@
 [MESSAGES CONTROL]
 
-disable=duplicate-code,
-  too-few-public-methods,
-  bad-continuation,
-  consider-using-f-string,
-  unspecified-encoding
+disable=duplicate-code

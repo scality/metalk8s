@@ -113,7 +113,7 @@ class MetalK8s(Plugin, RedHatPlugin):
         # We truncate the filename to 255 characters since it's the max
         full_path = os.path.join(dir_name, fname[:255])
 
-        with open(full_path, "a") as _file:
+        with open(full_path, "a", encoding="utf-8") as _file:
             yield _file
 
     def _setup_common(self):
@@ -181,11 +181,9 @@ class MetalK8s(Plugin, RedHatPlugin):
         def _handle_global():
             for kind, namespaces in ns_kind.items():
                 for namespace in namespaces:
-                    filename = "{}_ns_{}_list.txt".format(kind, namespace)
+                    filename = f"{kind}_ns_{namespace}_list.txt"
                     self.add_cmd_output(
-                        "{} get --namespace={} {}".format(
-                            self.kube_cmd, namespace, kind
-                        ),
+                        f"{self.kube_cmd} get --namespace={namespace} {kind}",
                         subdir=flat_dir,
                         suggest_filename=filename,
                     )
@@ -198,11 +196,9 @@ class MetalK8s(Plugin, RedHatPlugin):
                     )
 
                     if kind == "pod":
-                        filename = "{}_ns_{}_top.txt".format(kind, namespace)
+                        filename = f"{kind}_ns_{namespace}_top.txt"
                         self.add_cmd_output(
-                            "{} top --namespace={} {}".format(
-                                self.kube_cmd, namespace, kind
-                            ),
+                            f"{self.kube_cmd} top --namespace={namespace} {kind}",
                             subdir=flat_dir,
                             suggest_filename=filename,
                         )
@@ -215,9 +211,9 @@ class MetalK8s(Plugin, RedHatPlugin):
                         )
 
             for kind in no_ns_kind:
-                filename = "{}_list.txt".format(kind)
+                filename = f"{kind}_list.txt"
                 self.add_cmd_output(
-                    "{} get {}".format(self.kube_cmd, kind),
+                    f"{self.kube_cmd} get {kind}",
                     subdir=flat_dir,
                     suggest_filename=filename,
                 )
@@ -225,9 +221,9 @@ class MetalK8s(Plugin, RedHatPlugin):
                 _handle_symlinks(src_name=filename, dest_name="list.txt", kind=kind)
 
                 if kind == "node":
-                    filename = "{}_top.txt".format(kind)
+                    filename = f"{kind}_top.txt"
                     self.add_cmd_output(
-                        "{} top {}".format(self.kube_cmd, kind),
+                        f"{self.kube_cmd} top {kind}",
                         subdir=flat_dir,
                         suggest_filename=filename,
                     )
@@ -235,39 +231,34 @@ class MetalK8s(Plugin, RedHatPlugin):
                     _handle_symlinks(src_name=filename, dest_name="top.txt", kind=kind)
 
         def _handle_describe(prefix, obj):
-            cmd = "{} describe {} {}".format(
-                self.kube_cmd,
-                obj["kind"],
-                obj["metadata"]["name"],
-            )
+            cmd = f"{self.kube_cmd} describe {obj['kind']} {obj['metadata']['name']}"
             if obj["metadata"].get("namespace"):
                 cmd += " --namespace=" + obj["metadata"]["namespace"]
 
             self.add_cmd_output(
                 cmd,
                 subdir=flat_dir,
-                suggest_filename="{}_describe.txt".format(prefix),
+                suggest_filename=f"{prefix}_describe.txt",
             )
             _handle_symlinks(
-                src_name="{}_describe.txt".format(prefix),
-                dest_name="{}_describe.txt".format(obj["metadata"]["name"]),
+                src_name=f"{prefix}_describe.txt",
+                dest_name=f"{obj['metadata']['name']}_describe.txt",
                 kind=obj["kind"].lower(),
                 namespace=obj["metadata"].get("namespace"),
             )
 
         def _handle_pod_logs(prefix, obj):
-            cmd = "{} logs --all-containers --timestamps --since={} --namespace={} {}".format(
-                self.kube_cmd,
-                self.get_option("last"),
-                obj["metadata"]["namespace"],
-                obj["metadata"]["name"],
+            cmd = (
+                f"{self.kube_cmd} logs --all-containers --timestamps "
+                f"--since={self.get_option('last')} "
+                f"--namespace={obj['metadata']['namespace']} {obj['metadata']['name']}"
             )
             self.add_cmd_output(
-                cmd, subdir=flat_dir, suggest_filename="{}_logs.txt".format(prefix)
+                cmd, subdir=flat_dir, suggest_filename=f"{prefix}_logs.txt"
             )
             _handle_symlinks(
-                src_name="{}_logs.txt".format(prefix),
-                dest_name="{}_logs.txt".format(obj["metadata"]["name"]),
+                src_name=f"{prefix}_logs.txt",
+                dest_name=f"{obj['metadata']['name']}_logs.txt",
                 kind=obj["kind"].lower(),
                 namespace=obj["metadata"]["namespace"],
             )
@@ -278,13 +269,11 @@ class MetalK8s(Plugin, RedHatPlugin):
                     self.add_cmd_output(
                         cmd + " --previous",
                         subdir=flat_dir,
-                        suggest_filename="{}_logs_previous.txt".format(prefix),
+                        suggest_filename=f"{prefix}_logs_previous.txt",
                     )
                     _handle_symlinks(
-                        src_name="{}_logs_previous.txt".format(prefix),
-                        dest_name="{}_logs_previous.txt".format(
-                            obj["metadata"]["name"]
-                        ),
+                        src_name=f"{prefix}_logs_previous.txt",
+                        dest_name=f"{obj['metadata']['name']}_logs_previous.txt",
                         kind=obj["kind"].lower(),
                         namespace=obj["metadata"]["namespace"],
                     )
@@ -309,20 +298,18 @@ class MetalK8s(Plugin, RedHatPlugin):
                 obj_namespace = obj["involvedObject"].get("namespace")
                 suffix = "event"
 
-            prefix = "{}_{}{}".format(
-                obj_kind,
-                "ns_{}_".format(obj_namespace) if obj_namespace else "",
-                obj_name,
+            prefix = (
+                f"{obj_kind}_{f'ns_{obj_namespace}' if obj_namespace else ''}{obj_name}"
             )
 
             with self._custom_collection_file(
-                "{}_{}.json".format(prefix, suffix), subdir=flat_dir
+                f"{prefix}_{suffix}.json", subdir=flat_dir
             ) as obj_file:
                 obj_file.write(json.dumps(obj, indent=4))
 
             _handle_symlinks(
-                src_name="{}_{}.json".format(prefix, suffix),
-                dest_name="{}_{}.json".format(obj_name, suffix),
+                src_name=f"{prefix}_{suffix}.json",
+                dest_name=f"{obj_name}_{suffix}.json",
                 kind=obj_kind,
                 namespace=obj_namespace,
             )
@@ -336,16 +323,12 @@ class MetalK8s(Plugin, RedHatPlugin):
         # Retrieve Kubernetes resources types
         ns_resources = set(
             self.exec_cmd(
-                "{} api-resources --verbs=list --namespaced=true -o name".format(
-                    self.kube_cmd
-                )
+                f"{self.kube_cmd} api-resources --verbs=list --namespaced=true -o name"
             )["output"].splitlines()
         )
         no_ns_resources = set(
             self.exec_cmd(
-                "{} api-resources --verbs=list --namespaced=false -o name".format(
-                    self.kube_cmd
-                )
+                f"{self.kube_cmd} api-resources --verbs=list --namespaced=false -o name"
             )["output"].splitlines()
         )
 
@@ -363,17 +346,13 @@ class MetalK8s(Plugin, RedHatPlugin):
         # one by one is not efficient (too many calls to the APIServer)
         all_ns_obj = json.loads(
             self.exec_cmd(
-                "{} get --all-namespaces {} --output=json".format(
-                    self.kube_cmd, ",".join(ns_resources)
-                ),
+                f"{self.kube_cmd} get --all-namespaces {','.join(ns_resources)} --output=json",
                 stderr=False,
             )["output"]
         )["items"]
         all_no_ns_obj = json.loads(
             self.exec_cmd(
-                "{} get {} --output=json".format(
-                    self.kube_cmd, ",".join(no_ns_resources)
-                ),
+                f"{self.kube_cmd} get {','.join(no_ns_resources)} --output=json",
                 stderr=False,
             )["output"]
         )["items"]
@@ -389,21 +368,14 @@ class MetalK8s(Plugin, RedHatPlugin):
     def _setup_metrics(self):
         prom_svc = json.loads(
             self.exec_cmd(
-                "{} get svc -n metalk8s-monitoring thanos-query-http -o json".format(
-                    self.kube_cmd
-                )
+                f"{self.kube_cmd} get svc -n metalk8s-monitoring thanos-query-http -o json"
             )["output"]
         )
 
-        prom_endpoint = "http://{}:{}".format(
-            prom_svc["spec"]["clusterIP"],
-            prom_svc["spec"]["ports"][0]["port"],
-        )
+        prom_endpoint = f"http://{prom_svc['spec']['clusterIP']}:{prom_svc['spec']['ports'][0]['port']}"  # pylint: disable=line-too-long
 
         # Retrieve 1 point every <resolution> time for the last <last> time
-        query_range = "{}:{}".format(
-            self.get_option("last"), self.get_option("resolution")
-        )
+        query_range = f"{self.get_option('last')}:{self.get_option('resolution')}"
 
         # Retrieve all metrics
         # NOTE: Retrieving all metrics at once is not efficient since it
@@ -411,42 +383,34 @@ class MetalK8s(Plugin, RedHatPlugin):
         # and can cause the API to be unavailable.
         # We retrieve metrics one by one to avoid this issue.
         try:
-            metrics_res = requests.get(
-                "{}/api/v1/label/__name__/values".format(prom_endpoint)
-            )
+            metrics_res = requests.get(f"{prom_endpoint}/api/v1/label/__name__/values")
         except requests.exceptions.ConnectionError as exc:
-            self._log_error("Unable to connect to Prometheus API: {}".format(exc))
+            self._log_error(f"Unable to connect to Prometheus API: {exc}")
             return
 
         try:
             metrics_res.raise_for_status()
         except requests.exceptions.HTTPError as exc:
-            self._log_error(
-                "An error occurred while querying Prometheus API: {}".format(exc)
-            )
+            self._log_error(f"An error occurred while querying Prometheus API: {exc}")
             return
 
         try:
             metrics = metrics_res.json()["data"]
         except ValueError as exc:
             self._log_error(
-                "Invalid JSON returned by Prometheus API: {} {}".format(
-                    exc, metrics_res.text
-                )
+                f"Invalid JSON returned by Prometheus API: {exc} {metrics_res.text}"
             )
             return
 
         for metric in metrics:
             try:
                 res = requests.get(
-                    "{}/api/v1/query".format(prom_endpoint),
-                    params={"query": "{}[{}]".format(metric, query_range)},
+                    f"{prom_endpoint}/api/v1/query",
+                    params={"query": f"{metric}[{query_range}]"},
                 )
             except requests.exceptions.ConnectionError as exc:
                 self._log_error(
-                    "Unable to connect to Prometheus API for metric {}: {}".format(
-                        metric, exc
-                    )
+                    f"Unable to connect to Prometheus API for metric {metric}: {exc}"
                 )
                 continue
 
@@ -454,9 +418,7 @@ class MetalK8s(Plugin, RedHatPlugin):
                 res.raise_for_status()
             except requests.exceptions.HTTPError as exc:
                 self._log_error(
-                    "An error occurred while retrieving the metric {}: {}".format(
-                        metric, exc
-                    )
+                    f"An error occurred while retrieving the metric {metric}: {exc}"
                 )
                 continue
 
@@ -464,14 +426,12 @@ class MetalK8s(Plugin, RedHatPlugin):
                 res_json = res.json()
             except ValueError as exc:
                 self._log_error(
-                    "Invalid JSON returned for metric {}: {} {}".format(
-                        metric, exc, res.text
-                    )
+                    f"Invalid JSON returned for metric {metric}: {exc} {res.text}"
                 )
                 continue
 
             with self._custom_collection_file(
-                "{}.json".format(metric), subdir="metrics"
+                f"{metric}.json", subdir="metrics"
             ) as metric_file:
                 metric_file.write(json.dumps(res_json, indent=4))
 
@@ -484,11 +444,11 @@ class MetalK8s(Plugin, RedHatPlugin):
 
         # Retrieve Prometheus endpoint
         prom_endpoint_cmd = (
-            "{0} get endpoints "
+            f"{kube_cmd} get endpoints "
             "prometheus-operator-prometheus --output "
             "jsonpath='{{ .subsets[0].addresses[0].targetRef.name }} "
             "{{ .subsets[0].addresses[0].ip }}:"
-            "{{ .subsets[0].ports[0].port }}'".format(kube_cmd)
+            "{{ .subsets[0].ports[0].port }}'"
         )
         prom_endpoint_res = self.exec_cmd(prom_endpoint_cmd)
         prom_instance, prom_endpoint = prom_endpoint_res["output"].split()
@@ -498,23 +458,19 @@ class MetalK8s(Plugin, RedHatPlugin):
         # {"status":"success","data":{"name":"20210322T164646Z-7d0b9ca8be8e9981"}}
         # or in case of error:
         # {"status":"error","errorType":"unavailable","error":"admin APIs disabled"}
-        prom_snapshot_url = "http://{0}/api/v1/admin/tsdb/snapshot".format(
-            prom_endpoint
-        )
+        prom_snapshot_url = f"http://{prom_endpoint}/api/v1/admin/tsdb/snapshot"
         res = requests.post(prom_snapshot_url)
         try:
             res.raise_for_status()
         except requests.exceptions.HTTPError as exc:
-            self._log_error(
-                "An error occurred while querying Prometheus API: {0}".format(str(exc))
-            )
+            self._log_error(f"An error occurred while querying Prometheus API: {exc}")
             return
 
         try:
             res_json = res.json()
         except ValueError as exc:
             self._log_error(
-                "Invalid JSON returned by Prometheus API: {} {}".format(exc, res.text)
+                f"Invalid JSON returned by Prometheus API: {exc} {res.text}"
             )
             return
 
@@ -522,28 +478,23 @@ class MetalK8s(Plugin, RedHatPlugin):
             snapshot_name = res_json["data"]["name"]
         except KeyError:
             self._log_error(
-                "Unable to generate Prometheus snapshot: {0}".format(res_json["error"])
+                f"Unable to generate Prometheus snapshot: {res_json['error']}"
             )
             return
 
         # Copy snapshot locally
-        snapshot_archive_dir = "{0}/prometheus-snapshot".format(
-            self.archive.get_archive_path()
-        )
+        snapshot_archive_dir = f"{self.archive.get_archive_path()}/prometheus-snapshot"
 
         copy_snapshot_cmd = (
-            "{0} cp -c prometheus {1}:/prometheus/snapshots/{2} {3}".format(
-                kube_cmd, prom_instance, snapshot_name, snapshot_archive_dir
-            )
+            f"{kube_cmd} cp -c prometheus {prom_instance}:/prometheus/snapshots/{snapshot_name}"
+            f" {snapshot_archive_dir}"
         )
         self.exec_cmd(copy_snapshot_cmd)
 
         # Remove snapshot from Prometheus pod
         delete_snapshot_cmd = (
-            "{0} exec -c prometheus {1} -- "
-            "rm -rf /prometheus/snapshots/{2}".format(
-                kube_cmd, prom_instance, snapshot_name
-            )
+            f"{kube_cmd} exec -c prometheus {prom_instance} -- "
+            f"rm -rf /prometheus/snapshots/{snapshot_name}"
         )
         self.exec_cmd(delete_snapshot_cmd)
 
