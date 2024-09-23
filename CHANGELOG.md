@@ -2,6 +2,11 @@
 
 ## Release 129.0.0 (in development)
 
+### Removals
+
+- Drop RHEL 7 based OS support
+  (PR[#4430](https://github.com/scality/metalk8s/pull/4430))
+
 ### Enhancements
 
 - Implement super-admin user and bind admin to built-in cluster-admins role

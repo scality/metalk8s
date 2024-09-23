@@ -3,7 +3,7 @@
 # Please be mindful of the number of cases generated, as these will apply to
 # many formulas.
 default_case:
-  os: CentOS/7
+  os: CentOS/8
   saltenv: metalk8s-2.8.0
   minion_state: ready
   architecture: single-node
@@ -16,10 +16,8 @@ metalk8s:
 
   map.jinja:
     _cases:
-      "CentOS 7":
-        os: CentOS/7
-      "RHEL 7":
-        os: RedHat/7
+      "CentOS 8":
+        os: CentOS/8
       "RHEL 8":
         os: RedHat/8
 
@@ -905,10 +903,8 @@ metalk8s:
 
     redhat.sls:
       _cases:
-        "CentOS 7":
-          os: CentOS/7
-        "RHEL 7":
-          os: RedHat/7
+        "CentOS 8":
+          os: CentOS/8
         "RHEL 8":
           os: RedHat/8
 
@@ -1023,7 +1019,7 @@ metalk8s:
       installed.sls:
         _cases:
           "RedHat family":
-            os: CentOS/7
+            os: CentOS/8
 
   volumes:
     unprepared.sls:

@@ -179,7 +179,6 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - centos-7
           - rhel-8
           # NOTE: We add rocky-8 here even if it's already tested in pre-merge since
           # we also test solution install + upgrade there

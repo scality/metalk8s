@@ -116,7 +116,7 @@ class Saltenv(BaseOption):
 class OS(EnumOption):
     """Simulate one of the OS distributions supported by MetalK8s."""
 
-    ALLOWED_VALUES: FrozenSet[str] = frozenset(("CentOS/7", "RedHat/7", "RedHat/8"))
+    ALLOWED_VALUES: FrozenSet[str] = frozenset(("CentOS/8", "RedHat/8"))
 
     def update_context(self, context: Dict[str, Any]) -> None:
         os_name, release = self.value.split("/")

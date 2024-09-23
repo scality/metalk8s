@@ -65,8 +65,8 @@ RUN git clone https://github.com/pyenv/pyenv.git ~/.pyenv && \
     export PATH="$HOME/.pyenv/bin:$PATH" && eval "$(pyenv init -)"
 
 # Install pythons
-RUN ~/.pyenv/bin/pyenv install 3.10.12 3.6.15 2.7 && \
-    ~/.pyenv/bin/pyenv global 3.10.12 3.6.15 2.7
+RUN ~/.pyenv/bin/pyenv install 3.10.12 3.6.15 && \
+    ~/.pyenv/bin/pyenv global 3.10.12 3.6.15
     
 # Install python libs
 RUN ~/.pyenv/bin/pyenv exec pip install "tox~=4.4.12" "pre-commit~=3.3.3" "virtualenv<20.22.0" "esbonio>=0.12.0"

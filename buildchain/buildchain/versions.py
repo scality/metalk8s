@@ -29,7 +29,7 @@ CALICO_VERSION: str = "3.28.1"
 SALT_VERSION: str = "3002.9"
 CONTAINERD_VERSION: str = "1.6.35"
 
-CONTAINERD_RELEASE: str = "1"
+CONTAINERD_RELEASE: str = "2"
 SOSREPORT_RELEASE: str = "2"
 
 
@@ -380,20 +380,6 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="xfsprogs"),
     ),
     "redhat": {
-        "7": (
-            PackageVersion(
-                name="containerd",
-                version=CONTAINERD_VERSION,
-                release=f"{CONTAINERD_RELEASE}.el7",
-            ),
-            PackageVersion(name="container-selinux"),  # TODO #1710
-            PackageVersion(
-                name="metalk8s-sosreport",
-                version=NONSUFFIXED_VERSION,
-                release=f"{SOSREPORT_RELEASE}.el7",
-            ),
-            PackageVersion(name="yum-plugin-versionlock"),
-        ),
         "8": (
             PackageVersion(
                 name="containerd",

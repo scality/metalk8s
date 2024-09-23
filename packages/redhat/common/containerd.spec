@@ -23,44 +23,33 @@ export GOPATH=$GO_BUILD_PATH:%{gopath}
 %define gobuild(o:) %{expand:
 %global _dwz_low_mem_die_limit 0
 %ifnarch ppc64
-go build -buildmode pie -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp %{!?el7:no_btrfs}}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
+go build -buildmode pie -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp no_btrfs}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
 %else
-go build -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp %{!?el7:no_btrfs}}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
+go build -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp no_btrfs}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
 %endif
 }
 %endif
 
 
 Name:           containerd
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        An industry-standard container runtime
 License:        ASL 2.0
 URL:            https://containerd.io
 Source0:        %{gosource}
 Source1:        containerd.service
 Source2:        containerd.toml
-%if 0%{?el7}
-Source3:        60-containerd.conf
-%endif
 # Carve out code requiring github.com/Microsoft/hcsshim
 Patch0:         0001-Revert-commit-for-Windows-metrics.patch
 
 # NOTE: We do not require golang as we do not rely on the package to install it
 # BuildRequires:  golang >= 1.10
-%if 0%{?el7}
-BuildRequires:  btrfs-progs-devel
-BuildRequires:  go-md2man
-%endif
 BuildRequires:  libseccomp-devel
 BuildRequires:  systemd
 %{?systemd_requires}
 # NOTE: A bug in runc 1.1.3 seems to cause issues with "exec" in containers
 #       See https://github.com/containerd/containerd/issues/7219
-%if 0%{?el7}
-Requires:       runc < 1.1.3
-%else
 Requires:       (runc < 1:1.1.3 or runc > 1:1.1.3)
-%endif
 
 # vendored libraries
 # From github.com/containerd/containerd repository, checkout the corresponding version and run:
@@ -522,9 +511,6 @@ install -D -p -m 0644 _man/ctr.8 %{buildroot}%{_mandir}/man1/ctr.8
 install -D -p -m 0644 _man/containerd-config.toml.5 %{buildroot}%{_mandir}/man5/containerd-config.toml.5
 install -D -p -m 0644 %{S:1} %{buildroot}%{_unitdir}/containerd.service
 install -D -p -m 0644 %{S:2} %{buildroot}%{_sysconfdir}/containerd/config.toml
-%if 0%{?el7}
-install -D -p -m 0644 %{S:3} %{buildroot}%{_sysctldir}/60-containerd.conf
-%endif
 
 %if %{with tests}
 %check
@@ -534,9 +520,6 @@ install -D -p -m 0644 %{S:3} %{buildroot}%{_sysctldir}/60-containerd.conf
 
 %post
 %systemd_post containerd.service
-%if 0%{?el7}
-%sysctl_apply 60-containerd.conf
-%endif
 
 
 %preun
@@ -559,12 +542,12 @@ install -D -p -m 0644 %{S:3} %{buildroot}%{_sysctldir}/60-containerd.conf
 %{_unitdir}/containerd.service
 %dir %{_sysconfdir}/containerd
 %config(noreplace) %{_sysconfdir}/containerd/config.toml
-%if 0%{?el7}
-%{_sysctldir}/60-containerd.conf
-%endif
 
 
 %changelog
+* Mon Sep 23 2024 Teddy Andrieux <teddy.andrieux@scality.com> - 1.6.35-2
+- Drop RHEL 7 based support
+
 * Mon Aug 12 2024 Yoan Moscatelli <yoan.moscatelli@scality.com> - 1.6.35-1
 - Latest upstream in branch 1.6.x
 

@@ -63,21 +63,7 @@ repos:
         files: ^packages/common/metalk8s-sosreport/.*\.py$
         additional_dependencies:
           - requests
-        args:
-          - --rcfile=packages/common/metalk8s-sosreport/.pylintrc
-
-  # Python 2.7 specific
-  - repo: https://github.com/pre-commit/mirrors-pylint
-    # NOTE: Newer version does no longer support python2.7
-    rev: v1.9.1
-    hooks:
-      - id: pylint
-        name: Lint sos report plugin (python2.7)
-        language_version: python2.7
-        # Linting for sos report plugin files only
-        files: ^packages/common/metalk8s-sosreport/.*\.py$
-        additional_dependencies:
-          - requests
+          - git+https://github.com/sosreport/sos@4.7.2
         args:
           - --rcfile=packages/common/metalk8s-sosreport/.pylintrc
 

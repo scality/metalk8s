@@ -198,7 +198,7 @@ ipv6:
 kernel: Linux
 kernelparams:
   - - BOOT_IMAGE
-    - /boot/vmlinuz-3.10.0-1160.15.2.el7.x86_64
+    - /boot/vmlinuz-4.18.0-553.16.1.el8_10.x86_64
   - - root
     - /dev/md2
   - - ro
@@ -229,7 +229,7 @@ kernelparams:
     - '0'
   - - biosdevname
     - '0'
-kernelrelease: 3.10.0-1160.15.2.el7.x86_64
+kernelrelease: 4.18.0-553.16.1.el8_10.x86_64
 kernelversion: '#1 SMP Wed Feb 3 15:06:38 UTC 2021'
 locale_info:
   defaultencoding: UTF-8
@@ -237,7 +237,7 @@ locale_info:
   detectedencoding: UTF-8
   timezone: unknown
 localhost: ns631140750
-lsb_distrib_codename: CentOS Linux 7 (Core)
+lsb_distrib_codename: CentOS Linux 8 (Core)
 lsb_distrib_id: CentOS Linux
 lvm: {}
 machine_id: afec8d2527c836686dd418bb601d4f4f
@@ -255,15 +255,14 @@ num_gpus: 1
 os: CentOS
 os_family: RedHat
 osarch: x86_64
-oscodename: CentOS Linux 7 (Core)
-osfinger: CentOS Linux-7
+oscodename: CentOS Linux 8 (Core)
+osfinger: CentOS Linux-8
 osfullname: CentOS Linux
-osmajorrelease: 7
-osrelease: 7.9.2009
+osmajorrelease: 8
+osrelease: 8.10
 osrelease_info:
-  - 7
-  - 9
-  - 2009
+  - 8
+  - 10
 path: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin
 pid: 6928
 productname: X10DRH

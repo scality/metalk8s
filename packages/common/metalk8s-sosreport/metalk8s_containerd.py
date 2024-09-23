@@ -3,27 +3,20 @@
 There is some flags to enable/disable some specific data collection like
 Pod logs.
 
-NOTE: This plugin is used on different OS including CentOs 7 and Rocky 8
-which mean it need to work with both sos 3.x and sos 4.x and also with
-Python 2.7 and Python 3.6.
+NOTE: This plugin is used only on RedHat 8 based OS which mean it need to work
+with sos 4.x and also with Python 3.6.
 """
 
-HAS_PLUGIN_OPT = False
+from sos.report.plugins import Plugin, RedHatPlugin
 
-# sos plugin layout changed in sos 4.0
+# PluginOpt get added in sos 4.3 and must be used instead of
+# simple tuple starting from there
 try:
-    from sos.report.plugins import Plugin, RedHatPlugin
+    from sos.report.plugins import PluginOpt
 
-    # PluginOpt get added in sos 4.3 and must be used instead of
-    # simple tuple starting from there
-    try:
-        from sos.report.plugins import PluginOpt
-
-        HAS_PLUGIN_OPT = True
-    except ImportError:
-        pass
+    HAS_PLUGIN_OPT = True
 except ImportError:
-    from sos.plugins import Plugin, RedHatPlugin
+    HAS_PLUGIN_OPT = False
 
 
 class MetalK8sContainerd(Plugin, RedHatPlugin):

@@ -4,6 +4,7 @@ Prerequisites
 .. _MetalK8s: https://github.com/scality/metalk8s
 .. _CentOS: https://www.centos.org
 .. _RHEL: https://access.redhat.com/products/red-hat-enterprise-linux
+.. _Rocky: https://rockylinux.org
 .. _RHSM register: https://access.redhat.com/solutions/253273
 .. _Enable Optional repositories with RHSM: https://access.redhat.com/solutions/392003
 .. _Configure repositories with YUM: https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/system_administrators_guide/sec-configuring_yum_and_yum_repositories#sec-Managing_Yum_Repositories
@@ -11,7 +12,7 @@ Prerequisites
 .. _SaltStack: https://www.saltstack.com
 .. _Puppet: https://puppet.com
 
-MetalK8s_ clusters require machines running CentOS_\/RHEL_ 7.6 or higher as
+MetalK8s_ clusters require machines running CentOS_\/RHEL_/Rocky_ 8 as
 their operating system. These machines may be virtual or physical, with no
 difference in setup procedure. The number of machines to set up depends on the
 architecture you chose in :ref:`installation-intro-architecture`.
@@ -27,29 +28,6 @@ Proxies
 -------
 
 For nodes operating behind a proxy, see :ref:`Bootstrap Configuration`.
-
-Linux Kernel Version
---------------------
-
-Linux kernels shipped with CentOS/RHEL 7 and earlier are affected by a
-cgroups memory leak bug.
-
-This bug was fixed in kernel 3.10.0-1062.4.1. Use this kernel version or later.
-
-The version can be retrieved using:
-
-  .. code-block:: shell
-
-    $ uname -r
-
-If the installed version is lower than the one above, upgrade it with:
-
-  .. code-block:: shell
-
-    $ yum upgrade -y kernel-3.10.0-1062.4.1.el7
-    $ reboot
-
-These commands may require sudo or root access.
 
 Provisioning
 ------------
@@ -79,17 +57,11 @@ Repositories
 Each machine must have properly configured repositories with access to basic
 repository packages (depending on the operating system).
 
-CentOS:
+CentOS/Rocky:
 
-    - base
+    - appstream
+    - baseos
     - extras
-    - updates
-
-RHEL 7:
-
-    - rhel-7-server-rpms
-    - rhel-7-server-extras-rpms
-    - rhel-7-server-optional-rpms
 
 RHEL 8:
 
@@ -107,11 +79,11 @@ RHEL 8:
 
 To enable an existing repository:
 
-  CentOS:
+  CentOS/Rocky:
 
     .. code-block:: shell
 
-       yum-config-manager --enable <repo_name>
+       dnf config-manager --enable <repo_name>
 
   RHEL:
 
@@ -123,7 +95,7 @@ To add a new repository:
 
   .. code-block:: shell
 
-     yum-config-manager --add-repo <repo_url>
+     dnf config-manager --add-repo <repo_url>
 
   .. note::
 

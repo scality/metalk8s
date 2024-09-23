@@ -3,9 +3,8 @@
 There is some flags to enable/disable some specific data collection like
 Kubernetes resources and Pod logs.
 
-NOTE: This plugin is used on different OS including CentOs 7 and Rocky 8
-which mean it need to work with both sos 3.x and sos 4.x and also with
-Python 2.7 and Python 3.6.
+NOTE: This plugin is used only on RedHat 8 based OS which mean it need to work
+with sos 4.x and also with Python 3.6.
 """
 
 import contextlib
@@ -14,22 +13,16 @@ import os
 
 import requests
 
-HAS_PLUGIN_OPT = False
+from sos.report.plugins import Plugin, RedHatPlugin
 
-# sos plugin layout changed in sos 4.0
+# PluginOpt get added in sos 4.3 and must be used instead of
+# simple tuple starting from there
 try:
-    from sos.report.plugins import Plugin, RedHatPlugin
+    from sos.report.plugins import PluginOpt
 
-    # PluginOpt get added in sos 4.3 and must be used instead of
-    # simple tuple starting from there
-    try:
-        from sos.report.plugins import PluginOpt
-
-        HAS_PLUGIN_OPT = True
-    except ImportError:
-        pass
+    HAS_PLUGIN_OPT = True
 except ImportError:
-    from sos.plugins import Plugin, RedHatPlugin
+    HAS_PLUGIN_OPT = False
 
 
 class MetalK8s(Plugin, RedHatPlugin):
@@ -115,9 +108,7 @@ class MetalK8s(Plugin, RedHatPlugin):
         root_dir = self.get_cmd_output_path(make=False)
         dir_name = os.path.join(root_dir, subdir)
 
-        if not os.path.exists(dir_name):
-            # NOTE: We cannot use `exist_ok=True` since it's not available in Python 2.7
-            os.makedirs(dir_name)
+        os.makedirs(dir_name, exist_ok=True)
 
         # We truncate the filename to 255 characters since it's the max
         full_path = os.path.join(dir_name, fname[:255])
@@ -157,9 +148,7 @@ class MetalK8s(Plugin, RedHatPlugin):
             dest_dir = os.path.join(root_dir, relative_dest)
             dest = os.path.join(dest_dir, dest_name)
 
-            if not os.path.exists(dest_dir):
-                # NOTE: We cannot use `exist_ok=True` since it's not available in Python 2.7
-                os.makedirs(dest_dir)
+            os.makedirs(dest_dir, exist_ok=True)
 
             if os.path.lexists(dest):
                 # NOTE: If symlink already exists it means we have 2 objects with

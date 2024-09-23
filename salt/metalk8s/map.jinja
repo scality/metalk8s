@@ -5,13 +5,6 @@
 {% set version_defaults = salt['grains.filter_by'](
   salt['grains.filter_by']({
     'CentOS': {
-      7: {
-        'kubernetes': versions.kubernetes,
-        'repo': {
-          'packages': versions.packages.centos['7'],
-          'images': versions.images,
-        },
-      },
       8: {
         'kubernetes': versions.kubernetes,
         'repo': {
@@ -21,13 +14,6 @@
       },
     },
     'RedHat': {
-      7: {
-        'kubernetes': versions.kubernetes,
-        'repo': {
-          'packages': versions.packages.redhat['7'],
-          'images': versions.images,
-        },
-      },
       8: {
         'kubernetes': versions.kubernetes,
         'repo': {
@@ -43,7 +29,6 @@
 {% set packages = salt['grains.filter_by'](
   salt['grains.filter_by']({
     'RedHat': {
-      7: {},
       8: {
         'python36-psutil': 'python3-psutil',
         'python36-pyOpenSSL': 'python3-pyOpenSSL',
@@ -88,44 +73,6 @@
 {% set repo = salt['grains.filter_by'](
   salt['grains.filter_by']({
     'RedHat': {
-      7: {
-        'repositories': {
-          'metalk8s-epel': {
-            'humanname': 'EPEL',
-            'gpgcheck': 1,
-            'gpgkeys': [
-                'RPM-GPG-KEY-metalk8s-epel-7_1',
-            ],
-            'repo_gpg_check': 0,
-            'enabled': 1,
-          },
-          'metalk8s-kubernetes': {
-            'humanname': 'Kubernetes',
-            'gpgcheck': 1,
-            'gpgkeys': [
-                'RPM-GPG-KEY-metalk8s-kubernetes-7_1',
-            ],
-            'repo_gpg_check': 0,
-            'enabled': 1,
-          },
-          'metalk8s-saltstack': {
-            'humanname': 'SaltStack',
-            'gpgcheck': 1,
-            'gpgkeys': [
-                'RPM-GPG-KEY-metalk8s-saltstack-7_1',
-            ],
-            'repo_gpg_check': 0,
-            'enabled': 1,
-          },
-          'metalk8s-scality': {
-            'humanname': 'Scality',
-            'gpgcheck': 0,
-            'gpgkeys': [],
-            'repo_gpg_check': 0,
-            'enabled': 1,
-          },
-        }
-      },
       8: {
         'repositories': {
           'metalk8s-epel': {

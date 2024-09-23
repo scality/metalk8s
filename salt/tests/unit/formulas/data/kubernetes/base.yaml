@@ -426,12 +426,12 @@ items:
         architecture: amd64
         bootID: fdbc96df-027a-4877-bd23-5f5d33ce09a1
         containerRuntimeVersion: containerd://1.4.3
-        kernelVersion: 3.10.0-1160.15.2.el7.x86_64
+        kernelVersion: 4.18.0-553.16.1.el8_10.x86_64
         kubeProxyVersion: v1.19.7
         kubeletVersion: v1.19.7
         machineID: cc2c86fe566741e6a2ff6d399c5d5daa
         operatingSystem: linux
-        osImage: CentOS Linux 7 (Core)
+        osImage: CentOS Linux 8 (Core)
         systemUUID: EB0EB251-7413-4A0A-867E-0E129650C679
 
 ---

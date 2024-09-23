@@ -101,9 +101,9 @@ list_pkg_dependents:
       package_not_yet_installed: "2.14.15"
     rpm_qa_outputs:
       my_package: |
-        my_package-3.11.10.el7
+        my_package-3.11.10.el8
       my_second_package: |
-        my_second_package-1.11.12.el7
+        my_second_package-1.11.12.el8
       package_not_yet_installed: ""
     result:
       my_package: "3.11.12"
@@ -120,9 +120,9 @@ list_pkg_dependents:
     version: "3000.3"
     rpm_qa_outputs:
       salt-minion: |
-        salt-minion-2018.3.4-1.el7.noarch
+        salt-minion-2018.3.4-1.el8.noarch
       salt: |
-        salt-2018.3.4-1.el7.noarch
+        salt-2018.3.4-1.el8.noarch
     result:
       salt-minion: "3000.3"
       salt: "3000.3"
@@ -146,7 +146,7 @@ check_pkg_availability:
       my_second_package:
         version: null
       my_third_package:
-        version: "3.10.5-0.el7"
+        version: "3.10.5-0.el8"
     exclude: "my-excluded-package,my-second-excluded-package-1.2.3"
 
   # check 1 package not available - error when retrieving it

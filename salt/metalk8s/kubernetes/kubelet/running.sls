@@ -7,5 +7,3 @@ Ensure kubelet running:
     - enable: True
     - watch:
       - metalk8s_package_manager: Install kubelet
-    - require:
-      - module: Reload systemctl

@@ -17,7 +17,7 @@ def _load_yaml_data(path: Path) -> Any:
 
 @pytest.fixture(scope="session", name="base_grains")
 def fixture_base_grains() -> Any:
-    """Example set of grains found on a CentOS 7 minion running MetalK8s 2.7."""
+    """Example set of grains found on a CentOS 8 minion running MetalK8s 2.7."""
     return _load_yaml_data(paths.DATA_DIR / "base_grains.yaml")
 
 
