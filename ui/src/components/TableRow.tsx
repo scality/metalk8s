@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Tooltip, ConstrainedText, Icon } from '@scality/core-ui';
-import { fontWeight, padding } from '@scality/core-ui/dist/style/theme';
+import { Tooltip, ConstrainedText, Icon, spacing } from '@scality/core-ui';
+import { fontWeight } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
 const TableRowStyle = styled.div`
   &:hover,
@@ -37,10 +37,9 @@ export const UnknownIcon = ({ name }) => {
     <Icon
       name={name}
       color="textSecondary"
-      // @ts-expect-error - FIXME when you are working on it
       style={{
         height: 30,
-        paddingTop: padding.base,
+        paddingTop: spacing.r16,
       }}
     />
   );

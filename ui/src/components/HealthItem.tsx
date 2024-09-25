@@ -156,8 +156,8 @@ const HealthItem = ({
               {showArrow && (
                 <Icon
                   name="Angle-right"
-                  // @ts-expect-error - FIXME when you are working on it
                   style={{
+                    // @ts-expect-error - FIXME when you are working on it
                     selfAlign: 'flex-end',
                   }}
                 />
