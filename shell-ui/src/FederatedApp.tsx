@@ -408,6 +408,14 @@ const AppProviderWrapper = () => {
           );
         }
         if (error instanceof Error) {
+          if (error.message.includes('AbortError: The operation was aborted')) {
+            return (
+              <>
+                Loading of the application has been aborted due to a redirection
+                in progress.
+              </>
+            );
+          }
           return (
             <ErrorPage500
               data-cy="sc-error-page500"
