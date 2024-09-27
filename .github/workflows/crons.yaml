@@ -4,11 +4,11 @@ on:
   # NOTE: Schedule is only run on the latest commit of the default branch,
   # so we need to schedule Cron Jobs for all branches here
   schedule:
-    # Run V 0 nightly every weekday at 23:00
-    - cron: "0 23 * * 1-5"
+    # Run V 0 nightly every weekday at 01:00
+    - cron: "0 1 * * 1-5"
 
-    # Run V -1 nightly every weekday at 00:00
-    - cron: "0 0 * * 1-5"
+    # Run V -1 nightly every weekday at 02:00
+    - cron: "0 2 * * 1-5"
 
 jobs:
   crons:
@@ -18,11 +18,11 @@ jobs:
       matrix:
         include:
           - name: "Nightly for MetalK8s 129.0"
-            cron: "0 23 * * 1-5"
+            cron: "0 1 * * 1-5"
             branch: "development/129.0"
             workflow: "nightly.yaml"
           - name: "Nightly for MetalK8s 128.0"
-            cron: "0 0 * * 1-5"
+            cron: "0 2 * * 1-5"
             branch: "development/128.0"
             workflow: "nightly.yaml"
     steps:
