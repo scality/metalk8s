@@ -1,6 +1,11 @@
 # CHANGELOG
 
-## Release 128.0.1 (in development)
+## Release 128.0.1
+
+### Bug fixes
+
+- Fix tooltip positionning issues in the UI when using chrome 129+
+  (PR[#4441](https://github.com/scality/metalk8s/pull/4441))
 
 ## Release 128.0.0
 
