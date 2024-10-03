@@ -439,6 +439,10 @@ kind: IngressClass
 metadata:
   annotations:
     ingressclass.kubernetes.io/is-default-class: 'true'
+    nginx.ingress.kubernetes.io/limit-connections: '10'
+    nginx.ingress.kubernetes.io/limit-rps: '10'
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header Referrer-Policy 'no-referrer';
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx

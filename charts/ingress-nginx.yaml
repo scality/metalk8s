@@ -1,6 +1,9 @@
 controller:
   allowSnippetAnnotations: true
 
+  config:
+    custom-http-errors: "403,404,500,503"
+
   image:
     digest: null
     repository: __image__(nginx-ingress-controller)
@@ -19,12 +22,12 @@ controller:
   kind: DaemonSet
 
   tolerations:
-    - key: "node-role.kubernetes.io/bootstrap"
-      operator: "Exists"
-      effect: "NoSchedule"
-    - key: "node-role.kubernetes.io/infra"
-      operator: "Exists"
-      effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/bootstrap"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/infra"
+    operator: "Exists"
+    effect: "NoSchedule"
 
   service:
     type: ClusterIP
@@ -43,3 +46,24 @@ controller:
 
 defaultBackend:
   enabled: false
+  extraConfigMaps:
+  - name: cis
+    labels:
+      type: hardening
+    data:
+      keep-alive: '10'
+      hide-headers: 'Server,X-Powered-By'
+      ssl-protocols: 'TLSv1.3'
+      ssl-ciphers: 'ALL:!EXP:!NULL:!ADH:!LOW:!SSLv2:!SSLv3:!MD5:!RC4'
+      enable-ocsp: 'true'
+      client-header-timeout: '10'
+      client-body-timeout: '10'
+  - name: custom-404.html
+    labels:
+      type: custom-404
+    data:
+      custom-404.html: |
+        <html>
+        <head><title>Page Not Found</title></head>
+        <body><h1>404 - Page Not Found</h1></body>
+        </html>
