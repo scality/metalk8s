@@ -37,22 +37,6 @@ export const NavbarUpdaterComponents = () => {
     .filter((appBuildConfig) => !!appBuildConfig);
   const { firstTimeLogin } = useFirstTimeLogin();
   const { userData } = useAuth();
-  const history = useShellHistory();
-
-  useEffect(() => {
-    const handleDownloadUploadEvent = (event: CustomEvent) => {
-      history.push(event.detail);
-    };
-
-    window.addEventListener('downloadUploadEvent', handleDownloadUploadEvent);
-
-    return () => {
-      window.removeEventListener(
-        'downloadUploadEvent',
-        handleDownloadUploadEvent,
-      );
-    };
-  }, []);
 
   return (
     <>
