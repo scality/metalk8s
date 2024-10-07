@@ -20,7 +20,7 @@ pyinotify==0.9.6 ; sys_platform == "linux"
     # via
     #   -c platform-requirements.txt
     #   doit
-pyyaml==5.3.1
+pyyaml==5.4
     # via -r requirements.in
 requests==2.27.1
     # via docker
