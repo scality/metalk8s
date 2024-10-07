@@ -1,6 +1,6 @@
 import { SolutionUI } from '@scality/module-federation';
 import { FederatedComponent } from '@scality/module-federation';
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useAuth } from '../auth/AuthProvider';
 import { useFirstTimeLogin } from '../auth/FirstTimeLoginProvider';
@@ -9,6 +9,7 @@ import { useConfigRetriever } from '../initFederation/ConfigurationProviders';
 import { useDeployedApps } from '../initFederation/UIListProvider';
 import { useNotificationCenter } from '../useNotificationCenter';
 import { useNavbar } from './navbarHooks';
+import { useShellHistory } from '../initFederation/ShellHistoryProvider';
 
 export const NavbarUpdaterComponents = () => {
   const deployedApps = useDeployedApps();
@@ -36,6 +37,23 @@ export const NavbarUpdaterComponents = () => {
     .filter((appBuildConfig) => !!appBuildConfig);
   const { firstTimeLogin } = useFirstTimeLogin();
   const { userData } = useAuth();
+  const history = useShellHistory();
+
+  useEffect(() => {
+    const handleDownloadUploadEvent = (event: CustomEvent) => {
+      history.push(event.detail);
+    };
+
+    window.addEventListener('downloadUploadEvent', handleDownloadUploadEvent);
+
+    return () => {
+      window.removeEventListener(
+        'downloadUploadEvent',
+        handleDownloadUploadEvent,
+      );
+    };
+  }, []);
+
   return (
     <>
       {componentsToFederate.map((component, index) => {
