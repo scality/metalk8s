@@ -4,7 +4,7 @@
 #
 #    tox -e pip-compile
 #
-certifi==2021.10.8
+certifi==2024.7.4
     # via requests
 charset-normalizer==2.0.10
     # via requests
