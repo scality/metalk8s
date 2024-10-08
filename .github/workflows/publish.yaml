@@ -19,11 +19,6 @@ on:
       ARTIFACTS_PASSWORD:
         required: true
 
-  # Push on development branch = PR merge
-  push:
-    branches:
-      - "development/**"
-
 env:
   REGISTRY_HOST: ghcr.io
   REGISTRY_PROJECT: "${{ github.repository }}"
@@ -51,7 +46,7 @@ jobs:
         id: artifacts
         with:
           method: get
-          workflow-name: Pre-merge
+          workflow-name: Post-merge
           url: https://artifacts.scality.net
           user: ${{ secrets.ARTIFACTS_USER }}
           password: ${{ secrets.ARTIFACTS_PASSWORD }}

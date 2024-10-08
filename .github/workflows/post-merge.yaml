@@ -1,0 +1,21 @@
+name: Post merge
+
+on:
+  # Push on development branch = PR merge
+  push:
+    branches:
+      - development/*
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+    secrets: inherit
+
+  publish:
+    needs:
+      - build
+    uses: ./.github/workflows/publish.yaml
+    secrets: inherit
+    with:
+      is_production: false
+      artifacts-url: ${{ needs.build.outputs.artifact-link }}
