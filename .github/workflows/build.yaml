@@ -147,42 +147,11 @@ jobs:
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
           source: artifacts
 
-  docs:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
-      - name: Install Python 3
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-      - name: Install deps
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y plantuml
-          python3.10 -m pip install tox~=4.0.19
-      - name: Build documentation for ReadTheDocs
-        env:
-          # Fake that we are building in a ReadTheDocs environment
-          READTHEDOCS: "True"
-        run: tox --workdir /tmp/tox -e docs -- html
-      - name: Copy generated docs for ReadTheDocs
-        run: mkdir -p artifacts/docs/readthedocs && cp -r docs/_build/* artifacts/docs/readthedocs/
-      - name: Build documentation with Scality theme
-        run: rm -rf docs/_build && tox --workdir /tmp/tox -e docs -- html
-      - name: Copy generated docs with Scality theme
-        run: cp -r docs/_build/* artifacts/docs/ && cp CHANGELOG.md artifacts/docs/
-      - name: Upload artifacts
-        uses: scality/action-artifacts@v4
-        with:
-          method: upload
-          url: https://artifacts.scality.net
-          user: ${{ secrets.ARTIFACTS_USER }}
-          password: ${{ secrets.ARTIFACTS_PASSWORD }}
-          source: artifacts
+  build-docs:
+    uses: ./.github/workflows/build-docs.yaml
+    secrets: inherit
+    with:
+      ref: ${{ inputs.ref }}
 
   lint:
     runs-on: ubuntu-20.04
@@ -581,7 +550,7 @@ jobs:
     needs:
       - build
       - build-shell-ui
-      - docs
+      - build-docs
       - lint
       - unit_tests_ui
       - unit_tests_shell_ui
@@ -615,7 +584,7 @@ jobs:
     needs:
       - build
       - build-shell-ui
-      - docs
+      - build-docs
       - lint
       - unit_tests_ui
       - unit_tests_shell_ui
