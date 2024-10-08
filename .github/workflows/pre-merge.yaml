@@ -263,7 +263,7 @@ jobs:
       - name: Run all lib_alert_tree unit tests
         run: poetry run pytest -vv
 
-  write-final-failed-status:
+  write-final-status:
     runs-on: ubuntu-20.04
     needs:
       - e2e-tests
@@ -275,44 +275,14 @@ jobs:
       - unit_tests_storage_operator
       - unit_tests_salt
       - unit_tests_lib_alert_tree
-    if: failure()
+    if: always()
     steps:
-      - name: write failure status
-        run: |
-          mkdir -p artifacts
-          echo -n "FAILED" > artifacts/.final_status
-      - name: Upload artifacts
-        uses: scality/action-artifacts@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Upload final status
+        if: always()
+        uses: scality/actions/upload_final_status@1.8.0
         with:
-          method: upload
-          url: https://artifacts.scality.net
-          user: ${{ secrets.ARTIFACTS_USER }}
-          password: ${{ secrets.ARTIFACTS_PASSWORD }}
-          source: artifacts
-
-  write-final-success-status:
-    runs-on: ubuntu-20.04
-    needs:
-      - e2e-tests
-      - lint
-      - unit_tests_ui
-      - unit_tests_shell_ui
-      - unit_tests_crd_client_generator
-      - unit_tests_metalk8s_operator
-      - unit_tests_storage_operator
-      - unit_tests_salt
-      - unit_tests_lib_alert_tree
-    if: success()
-    steps:
-      - name: write failure status
-        run: |
-          mkdir -p artifacts
-          echo -n "SUCCESSFUL" > artifacts/.final_status
-      - name: Upload artifacts
-        uses: scality/action-artifacts@v4
-        with:
-          method: upload
-          url: https://artifacts.scality.net
-          user: ${{ secrets.ARTIFACTS_USER }}
-          password: ${{ secrets.ARTIFACTS_PASSWORD }}
-          source: artifacts
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          JOBS_RESULTS: ${{ join(needs.*.result) }}

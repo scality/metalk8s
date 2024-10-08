@@ -304,54 +304,21 @@ jobs:
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
           source: upload
 
-  write-final-failed-status:
+  write-final-status:
     runs-on: ubuntu-20.04
     needs:
       - build
       - build-shell-ui
       - build-docs
       - integration_tests_ui
-    if: failure()
+    if: always()
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Upload final status
+        if: always()
+        uses: scality/actions/upload_final_status@1.8.0
         with:
-          ref: ${{inputs.ref}}
-      - name: write failure status
-        run: |
-          mkdir -p artifacts
-          echo -n "FAILED" > artifacts/.final_status
-      - name: Upload artifacts
-        uses: scality/action-artifacts@v4
-        with:
-          method: upload
-          url: https://artifacts.scality.net
-          user: ${{ secrets.ARTIFACTS_USER }}
-          password: ${{ secrets.ARTIFACTS_PASSWORD }}
-          source: artifacts
-
-  write-final-success-status:
-    runs-on: ubuntu-20.04
-    needs:
-      - build
-      - build-shell-ui
-      - build-docs
-      - integration_tests_ui
-    if: success()
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{inputs.ref}}
-      - name: write failure status
-        run: |
-          mkdir -p artifacts
-          echo -n "SUCCESSFUL" > artifacts/.final_status
-      - name: Upload artifacts
-        uses: scality/action-artifacts@v4
-        with:
-          method: upload
-          url: https://artifacts.scality.net
-          user: ${{ secrets.ARTIFACTS_USER }}
-          password: ${{ secrets.ARTIFACTS_PASSWORD }}
-          source: artifacts
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          JOBS_RESULTS: ${{ join(needs.*.result) }}
