@@ -1,0 +1,53 @@
+name: "Build shell-ui"
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "the git revision to checkout"
+        default: ${{ github.ref }}
+        required: false
+        type: string
+    secrets:
+      ARTIFACTS_USER:
+        required: true
+      ARTIFACTS_PASSWORD:
+        required: true
+
+jobs:
+  shell-ui:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Compute shell-ui version
+        run: |
+          source VERSION
+          echo "SHELL_UI_VERSION=$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX" >> $GITHUB_ENV
+      - name: Build shell-ui container image
+        run: docker build . --tag shell-ui:v$SHELL_UI_VERSION
+        working-directory: shell-ui
+      - name: Extract shell folder from shell-ui container
+        run: |
+          docker create --name shell-ui shell-ui:v$SHELL_UI_VERSION
+          docker cp shell-ui:/usr/share/nginx/html/shell .
+          docker rm shell-ui
+          tar cvf shell.tar shell
+      - name: Save shell-ui container image
+        run: >
+          docker save shell-ui:v$SHELL_UI_VERSION |
+          gzip > shell-ui.tar.gz
+      - name: Prepare artifacts
+        run: mkdir -p "artifacts/images" && mv shell-ui.tar.gz artifacts/images/ && mv shell.tar artifacts/images/
+      - name: Upload artifacts
+        uses: scality/action-artifacts@v4
+        with:
+          method: upload
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+          source: artifacts
