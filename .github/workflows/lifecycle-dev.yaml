@@ -38,6 +38,7 @@ jobs:
         id: artifacts
         with:
           method: get
+          # This should be changed in `development/129.0` to `Post-merge`
           workflow-name: Pre-merge
           url: https://artifacts.scality.net
           user: ${{ secrets.ARTIFACTS_USER }}

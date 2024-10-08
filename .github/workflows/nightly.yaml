@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       artifacts-url:
-        description: Artifacts URL to use (fallback to the latest pre-merge build on this branch)
+        description: Artifacts URL to use (fallback to the latest post-merge build on this branch)
         type: string
         required: false
 
@@ -34,7 +34,7 @@ jobs:
         if: inputs.artifacts-url == ''
         with:
           method: get
-          workflow-name: Pre-merge
+          workflow-name: Post-merge
           url: https://artifacts.scality.net
           user: ${{ secrets.ARTIFACTS_USER }}
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
