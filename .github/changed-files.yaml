@@ -1,0 +1,84 @@
+docs:
+  - docs/**
+  - artwork/**
+  - .github/workflows/build-docs.yaml
+  - VERSION
+  - buildchain/buildchain/versions.py
+  - buildchain/buildchain/constants.py
+  - salt/metalk8s/defaults.yaml
+  - tools/lib-alert-tree/**
+  - tools/rule_extractor/alerting_rules.json
+  - tox.ini
+
+shell-ui:
+  - shell-ui/**
+  - .github/workflows/build-shell-ui.yaml
+  - VERSION
+
+unit-tests-ui: &ui
+  - ui/**
+
+unit-tests-shell-ui: &shell-ui
+  - shell-ui/**
+
+unit-tests-crd-client-generator:
+  - tools/crd-client-generator-js/**
+
+unit-tests-metalk8s-operator:
+  - operator/**
+
+unit-tests-storage-operator:
+  - storage-operator/**
+
+unit-tests-salt:
+  - salt/**
+  - tox.ini
+
+unit-tests-lib-alert-tree:
+  - tools/lib-alert-tree/**
+
+integration-tests-ui:
+  - *ui
+  - *shell-ui
+
+build:
+  - "**"
+  # Only consider pre-merge workflows
+  - "!.github/workflows/**"
+  - .github/workflows/pre-merge.yaml
+  - .github/workflows/build.yaml
+  - .github/workflows/e2e-tests.yaml
+  - .github/workflows/single-node-test.yaml
+  - .github/workflows/multi-node-test.yaml
+  # Filter out github stuff
+  - "!.github/CODEOWNERS"
+  - "!.github/changed-files.yaml"
+  - "!.github/dependabot.yaml"
+  - "!.github/ISSUE_TEMPLATE/**"
+  - "!.github/labeler.yaml"
+  - "!.github/PULL_REQUEST_TEMPLATE.md"
+  - "!.github/scripts/build-conformance-pr-content.sh"
+  - "!.github/scripts/stabilize_snapshot.py"
+  # Filter out docs
+  - "!docs/**"
+  - "!artwork/**"
+  - "!**/*.md"
+  # Filter out tools
+  - "!tools/**"
+  # Filter out charts
+  - "!charts/**"
+  # Filter out unit tests
+  - "!salt/tests"
+  - "!**/*_test.go"
+  # Filter out Solution operator lib
+  - "!solution-operator-lib/**"
+  # Filter out devX and tools
+  - "!.pre-commit-config.yaml"
+  - "!.devcontainer/**"
+  - "!.gitignore"
+  - "!LICENSE"
+  - "!README.md"
+  - "!CONTRIBUTING.md"
+  - "!CHANGELOG.md"
+  - "!Vagrantfile"
+  - "!vagrant_config.rb.example"
