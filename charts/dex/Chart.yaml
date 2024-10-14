@@ -1,12 +1,12 @@
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Dex 2.40.0 release"
+      description: "Dex 2.41.1 release"
   artifacthub.io/images: |
     - name: dex
-      image: ghcr.io/dexidp/dex:v2.40.0
+      image: ghcr.io/dexidp/dex:v2.41.1
 apiVersion: v2
-appVersion: 2.40.0
+appVersion: 2.41.1
 description: OpenID Connect (OIDC) identity and OAuth 2.0 provider with pluggable
   connectors.
 home: https://dexidp.io/
@@ -26,4 +26,4 @@ sources:
 - https://github.com/dexidp/dex
 - https://github.com/dexidp/helm-charts/tree/master/charts/dex
 type: application
-version: 0.18.0
+version: 0.19.1
