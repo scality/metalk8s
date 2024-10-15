@@ -245,7 +245,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Upload final status
         if: always()
-        uses: scality/actions/upload_final_status@1.9.0
+        uses: scality/actions/upload_final_status@1.10.0
         with:
           ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
           ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
