@@ -25,6 +25,12 @@
 - Bump etcd version to [3.5.15](https://github.com/etcd-io/etcd/releases/tag/v3.5.15)
   (PR[#4417](https://github.com/scality/metalk8s/pull/4417))
 
+- Bump ingress-nginx chart version to
+  [4.11.3](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.11.3)
+  The controller image has been bumped accordingly to
+  [v1.11.3](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.11.3)
+  (PR[#4452](https://github.com/scality/metalk8s/pull/4452))
+
 ## Release 128.0.1 (in development)
 
 ## Release 128.0.0
