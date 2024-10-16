@@ -8,7 +8,13 @@ loki:
     registry: ""
     repository: '__image__(loki)'
 
-  existingSecretForConfig: loki
+  # needs to be removed asap when https://github.com/grafana/loki/issues/14497 is fixed
+  schemaConfig:
+    remove: me 
+
+  configStorageType: Secret
+  configObjectName: loki
+  generatedConfigObjectName: ""
 
   podAnnotations:
     # Override default checksum as we want to manage it with salt
@@ -20,6 +26,8 @@ read:
   replicas: 0
 write:
   replicas: 0
+
+deploymentMode: SingleBinary
 
 singleBinary:
   targetModule: "all,table-manager"
@@ -60,11 +68,11 @@ monitoring:
     grafanaAgent:
       installOperator: false
 
-  lokiCanary:
-    enabled: false
-
   dashboards:
     enabled: false
+
+lokiCanary:
+  enabled: false
 
 gateway:
   enabled: false
