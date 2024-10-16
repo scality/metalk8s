@@ -25,6 +25,10 @@
 - Bump etcd version to [3.5.15](https://github.com/etcd-io/etcd/releases/tag/v3.5.15)
   (PR[#4417](https://github.com/scality/metalk8s/pull/4417))
 
+- Bump the rocky base image used by `salt-master` and `metalk8s-utils`
+  images to [latest version](https://hub.docker.com/layers/rockylinux/rockylinux/8/images/sha256-f514765516176a9aa4729ee83964e5a1900df95fd4bc7182cca64c7199b7eec7)
+  (PR[#4454](https://github.com/scality/metalk8s/pull/4454))
+
 ## Release 128.0.1 (in development)
 
 ## Release 128.0.0
