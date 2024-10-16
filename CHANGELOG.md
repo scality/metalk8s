@@ -10,8 +10,8 @@
 ## Additions
 
 - Add cert-manager chart version
-  [1.15.3](https://github.com/cert-manager/cert-manager/releases/tag/v1.15.3)
-  (PR[#4406](https://github.com/scality/metalk8s/pull/4406))
+  [1.16.1](https://github.com/cert-manager/cert-manager/releases/tag/v1.16.1)
+  (PR[#4446](https://github.com/scality/metalk8s/pull/4446))
 
 ### Enhancements
 
