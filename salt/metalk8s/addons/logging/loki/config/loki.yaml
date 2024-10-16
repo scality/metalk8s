@@ -11,8 +11,6 @@ spec:
         memory: "256Mi"
   config:
     auth_enabled: false
-    chunk_store_config:
-      max_look_back_period: 0s
     memberlist:
       abort_if_cluster_join_fails: false
       join_members:
@@ -28,15 +26,21 @@ spec:
       chunk_retain_period: 1m
       wal:
         dir: /var/loki/loki/wal
+        # ingester automatically flushes to long term storage on shutdown
+        # so new ingester replays WAL instead of transfers.
+        flush_on_shutdown: true
       lifecycler:
         ring:
           kvstore:
             store: memberlist
-      max_transfer_retries: 0
     limits_config:
-      enforce_metric_name: false
+      # introduced in schema v13 (loki 3)
+      allow_structured_metadata: false
+      # enforce_metric_name: true DEPRECATED
       reject_old_samples: true
       reject_old_samples_max_age: 168h
+      # moved from chunk_store_config
+      max_query_lookback: 0s
     schema_config:
       configs:
       - from: 2018-04-15

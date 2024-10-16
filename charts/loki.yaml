@@ -8,11 +8,22 @@ loki:
     registry: ""
     repository: '__image__(loki)'
 
-  existingSecretForConfig: loki
+  # needs to be removed asap when https://github.com/grafana/loki/issues/14497 is fixed
+  schemaConfig:
+    remove: me 
+
+  configStorageType: Secret
+  configObjectName: loki
+  generatedConfigObjectName: ""
 
   podAnnotations:
     # Override default checksum as we want to manage it with salt
     checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret", apiVersion="v1", namespace="metalk8s-logging", name="loki", path="data:config.yaml")'
+
+chunksCache:
+  enabled: false
+resultsCache:
+  enabled: false
 
 backend:
   replicas: 0
@@ -20,6 +31,8 @@ read:
   replicas: 0
 write:
   replicas: 0
+
+deploymentMode: SingleBinary
 
 singleBinary:
   targetModule: "all,table-manager"
@@ -60,11 +73,11 @@ monitoring:
     grafanaAgent:
       installOperator: false
 
-  lokiCanary:
-    enabled: false
-
   dashboards:
     enabled: false
+
+lokiCanary:
+  enabled: false
 
 gateway:
   enabled: false
