@@ -102,12 +102,15 @@ spec:
     {{- if .Values.defaultBackend.nodeSelector }}
       nodeSelector: {{ toYaml .Values.defaultBackend.nodeSelector | nindent 8 }}
     {{- end }}
-      serviceAccountName: {{ template "ingress-nginx.defaultBackend.serviceAccountName" . }}
+      serviceAccountName: {{ include "ingress-nginx.defaultBackend.serviceAccountName" . }}
     {{- if .Values.defaultBackend.tolerations }}
       tolerations: {{ toYaml .Values.defaultBackend.tolerations | nindent 8 }}
     {{- end }}
     {{- if .Values.defaultBackend.affinity }}
-      affinity: {{ toYaml .Values.defaultBackend.affinity | nindent 8 }}
+      affinity: {{ tpl (toYaml .Values.defaultBackend.affinity) $ | nindent 8 }}
+    {{- end }}
+    {{- if .Values.defaultBackend.topologySpreadConstraints }}
+      topologySpreadConstraints: {{ tpl (toYaml .Values.defaultBackend.topologySpreadConstraints) $ | nindent 8 }}
     {{- end }}
       terminationGracePeriodSeconds: 60
     {{- if .Values.defaultBackend.extraVolumes }}
