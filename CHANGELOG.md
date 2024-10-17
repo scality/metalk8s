@@ -25,6 +25,9 @@
 - Bump etcd version to [3.5.15](https://github.com/etcd-io/etcd/releases/tag/v3.5.15)
   (PR[#4417](https://github.com/scality/metalk8s/pull/4417))
 
+- Bump nginx image to [1.27.2-alpine](https://github.com/nginx/nginx/releases/tag/release-1.27.2)
+  (PR[#4455](https://github.com/scality/metalk8s/pull/4455))
+
 ## Release 128.0.1 (in development)
 
 ## Release 128.0.0
