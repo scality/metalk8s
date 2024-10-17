@@ -25,6 +25,10 @@
 - Bump etcd version to [3.5.15](https://github.com/etcd-io/etcd/releases/tag/v3.5.15)
   (PR[#4417](https://github.com/scality/metalk8s/pull/4417))
 
+- Bump the alpine base image used by `metalk8s-alert-logger`
+  and `metalk8s-keepalived` image to `alpine:3.20.3`
+  (PR[#4456](https://github.com/scality/metalk8s/pull/4456))
+
 ## Release 128.0.1 (in development)
 
 ## Release 128.0.0
