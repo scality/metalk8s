@@ -25,6 +25,9 @@
 - Bump etcd version to [3.5.15](https://github.com/etcd-io/etcd/releases/tag/v3.5.15)
   (PR[#4417](https://github.com/scality/metalk8s/pull/4417))
 
+- Bump Calico version to [3.28.2](https://github.com/projectcalico/calico/releases/tag/v3.28.2)
+  (PR[#4457](https://github.com/scality/metalk8s/pull/4457))
+
 ## Release 128.0.1 (in development)
 
 ## Release 128.0.0

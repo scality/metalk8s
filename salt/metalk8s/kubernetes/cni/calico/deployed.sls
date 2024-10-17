@@ -8,7 +8,7 @@
 # Various changes to the original are made, based on how we deploy Calico (and
 # its CNI plugins etc.) within MetalK8s.
 
-# It comes from: https://github.com/projectcalico/calico/blob/v3.28.0/manifests/calico.yaml
+# It comes from: https://github.com/projectcalico/calico/blob/v3.28.2/manifests/calico.yaml
 
 ---
 # Source: calico/templates/calico-kube-controllers.yaml
@@ -5065,9 +5065,11 @@ spec:
         - name: var-run-calico
           hostPath:
             path: /var/run/calico
+            type: DirectoryOrCreate
         - name: var-lib-calico
           hostPath:
             path: /var/lib/calico
+            type: DirectoryOrCreate
         - name: xtables-lock
           hostPath:
             path: /run/xtables.lock
@@ -5088,6 +5090,7 @@ spec:
         - name: cni-bin-dir
           hostPath:
             path: /opt/cni/bin
+            type: DirectoryOrCreate
         - name: cni-net-dir
           hostPath:
             path: /etc/cni/net.d
