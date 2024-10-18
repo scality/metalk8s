@@ -27,7 +27,7 @@ K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
 CALICO_VERSION: str = "3.28.1"
 SALT_VERSION: str = "3002.9"
-CONTAINERD_VERSION: str = "1.6.35"
+CONTAINERD_VERSION: str = "1.6.36"
 
 CONTAINERD_RELEASE: str = "2"
 SOSREPORT_RELEASE: str = "2"
@@ -193,8 +193,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="pause",
-        version="3.9",
-        digest="sha256:e6f1816883972d4be47bd48879a08919b96afcd344132622e4d444987919323c",
+        version="3.10",
+        digest="sha256:873ed75102791e5b0b8a7fcd41606c92fcec98d56d05ead4ac5131650004c136",
     ),
     Image(
         name="prometheus",

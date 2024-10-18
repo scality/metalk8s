@@ -25,6 +25,10 @@
 - Bump etcd version to [3.5.15](https://github.com/etcd-io/etcd/releases/tag/v3.5.15)
   (PR[#4417](https://github.com/scality/metalk8s/pull/4417))
 
+- Bump containerd to [1.6.36](https://github.com/containerd/containerd/releases/tag/v1.6.36)
+  The pause image has been bump to 3.10
+  (PR[#4460](https://github.com/scality/metalk8s/pull/4460))
+
 ## Release 128.0.1 (in development)
 
 ## Release 128.0.0
