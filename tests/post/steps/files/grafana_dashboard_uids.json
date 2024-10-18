@@ -19,6 +19,7 @@
     "Node Exporter / USE Method / Cluster": "3e97d1d02672cdd0861f4c97c64f89b2",
     "Node Exporter / USE Method / Node": "fac67cfbe174d3ef53eb473d73d9212f",
     "Node Exporter / Nodes": "fa49a4706d07a042595b664c87fb33ea",
+    "Node Exporter / AIX": "7e0a61e486f727d763fb1d86fdd629c2",
     "Nodes (Detailed)": "node-exporter-full",
     "Kubernetes / Persistent Volumes": "919b92a8e8041bd567af9edab12c840c",
     "Kubernetes / Networking / Pod": "7a18067ce943a40ae25454675c19ff5c",

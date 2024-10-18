@@ -386,13 +386,13 @@
     {
         "message": "etcd cluster has high number of leader changes.",
         "name": "etcdHighNumberOfLeaderChanges",
-        "query": "increase((max without (instance) (etcd_server_leader_changes_seen_total{job=~\".*etcd.*\"}) or 0 * absent(etcd_server_leader_changes_seen_total{job=~\".*etcd.*\"}))[15m:1m]) >= 4",
+        "query": "increase((max without (instance, pod) (etcd_server_leader_changes_seen_total{job=~\".*etcd.*\"}) or 0 * absent(etcd_server_leader_changes_seen_total{job=~\".*etcd.*\"}))[15m:1m]) >= 4",
         "severity": "warning"
     },
     {
         "message": "etcd cluster has insufficient number of members.",
         "name": "etcdInsufficientMembers",
-        "query": "sum without (instance) (up{job=~\".*etcd.*\"} == bool 1) < ((count without (instance) (up{job=~\".*etcd.*\"}) + 1) / 2)",
+        "query": "sum without (instance, pod) (up{job=~\".*etcd.*\"} == bool 1) < ((count without (instance, pod) (up{job=~\".*etcd.*\"}) + 1) / 2)",
         "severity": "critical"
     },
     {
@@ -404,7 +404,7 @@
     {
         "message": "etcd cluster members are down.",
         "name": "etcdMembersDown",
-        "query": "max without (endpoint) (sum without (instance) (up{job=~\".*etcd.*\"} == bool 0) or count without (To) (sum without (instance) (rate(etcd_network_peer_sent_failures_total{job=~\".*etcd.*\"}[2m])) > 0.01)) > 0",
+        "query": "max without (endpoint) (sum without (instance, pod) (up{job=~\".*etcd.*\"} == bool 0) or count without (To) (sum without (instance, pod) (rate(etcd_network_peer_sent_failures_total{job=~\".*etcd.*\"}[2m])) > 0.01)) > 0",
         "severity": "critical"
     },
     {
@@ -434,25 +434,25 @@
     {
         "message": "The API server is burning too much error budget.",
         "name": "KubeAPIErrorBudgetBurn",
-        "query": "sum(apiserver_request:burnrate1d) > (3 * 0.01) and sum(apiserver_request:burnrate2h) > (3 * 0.01)",
+        "query": "sum by (cluster) (apiserver_request:burnrate1d) > (3 * 0.01) and on (cluster) sum by (cluster) (apiserver_request:burnrate2h) > (3 * 0.01)",
         "severity": "warning"
     },
     {
         "message": "The API server is burning too much error budget.",
         "name": "KubeAPIErrorBudgetBurn",
-        "query": "sum(apiserver_request:burnrate1h) > (14.4 * 0.01) and sum(apiserver_request:burnrate5m) > (14.4 * 0.01)",
+        "query": "sum by (cluster) (apiserver_request:burnrate1h) > (14.4 * 0.01) and on (cluster) sum by (cluster) (apiserver_request:burnrate5m) > (14.4 * 0.01)",
         "severity": "critical"
     },
     {
         "message": "The API server is burning too much error budget.",
         "name": "KubeAPIErrorBudgetBurn",
-        "query": "sum(apiserver_request:burnrate3d) > (1 * 0.01) and sum(apiserver_request:burnrate6h) > (1 * 0.01)",
+        "query": "sum by (cluster) (apiserver_request:burnrate3d) > (1 * 0.01) and on (cluster) sum by (cluster) (apiserver_request:burnrate6h) > (1 * 0.01)",
         "severity": "warning"
     },
     {
         "message": "The API server is burning too much error budget.",
         "name": "KubeAPIErrorBudgetBurn",
-        "query": "sum(apiserver_request:burnrate6h) > (6 * 0.01) and sum(apiserver_request:burnrate30m) > (6 * 0.01)",
+        "query": "sum by (cluster) (apiserver_request:burnrate6h) > (6 * 0.01) and on (cluster) sum by (cluster) (apiserver_request:burnrate30m) > (6 * 0.01)",
         "severity": "critical"
     },
     {
@@ -566,7 +566,7 @@
     {
         "message": "StatefulSet update has not been rolled out.",
         "name": "KubeStatefulSetUpdateNotRolledOut",
-        "query": "(max without (revision) (kube_statefulset_status_current_revision{job=\"kube-state-metrics\",namespace=~\".*\"} unless kube_statefulset_status_update_revision{job=\"kube-state-metrics\",namespace=~\".*\"}) * (kube_statefulset_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"})) and (changes(kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"}[5m]) == 0)",
+        "query": "(max by (namespace, statefulset, job, cluster) (kube_statefulset_status_current_revision{job=\"kube-state-metrics\",namespace=~\".*\"} unless kube_statefulset_status_update_revision{job=\"kube-state-metrics\",namespace=~\".*\"}) * (kube_statefulset_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"})) and (changes(kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"}[5m]) == 0)",
         "severity": "warning"
     },
     {
@@ -578,7 +578,7 @@
     {
         "message": "Cluster has overcommitted CPU resource requests.",
         "name": "KubeCPUOvercommit",
-        "query": "sum by (cluster) (namespace_cpu:kube_pod_container_resource_requests:sum{job=\"kube-state-metrics\"}) - (sum by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) - max by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"})) > 0 and (sum by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) - max by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"})) > 0",
+        "query": "sum by (cluster) (namespace_cpu:kube_pod_container_resource_requests:sum) - (sum by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) - max by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"})) > 0 and (sum by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) - max by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"})) > 0",
         "severity": "warning"
     },
     {
@@ -668,7 +668,7 @@
     {
         "message": "The kubernetes apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.",
         "name": "KubeAPITerminatedRequests",
-        "query": "sum(rate(apiserver_request_terminations_total{job=\"apiserver\"}[10m])) / (sum(rate(apiserver_request_total{job=\"apiserver\"}[10m])) + sum(rate(apiserver_request_terminations_total{job=\"apiserver\"}[10m]))) > 0.2",
+        "query": "sum by (cluster) (rate(apiserver_request_terminations_total{job=\"apiserver\"}[10m])) / (sum by (cluster) (rate(apiserver_request_total{job=\"apiserver\"}[10m])) + sum by (cluster) (rate(apiserver_request_terminations_total{job=\"apiserver\"}[10m]))) > 0.2",
         "severity": "warning"
     },
     {
@@ -686,13 +686,13 @@
     {
         "message": "Client certificate is about to expire.",
         "name": "KubeClientCertificateExpiration",
-        "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and on (job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 86400",
+        "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and on (cluster, job) histogram_quantile(0.01, sum by (cluster, job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 86400",
         "severity": "critical"
     },
     {
         "message": "Client certificate is about to expire.",
         "name": "KubeClientCertificateExpiration",
-        "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and on (job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 604800",
+        "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and on (cluster, job) histogram_quantile(0.01, sum by (cluster, job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 604800",
         "severity": "warning"
     },
     {
