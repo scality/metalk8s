@@ -7,6 +7,40 @@
 
 {% raw %}
 
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app.kubernetes.io/component: memcached-chunks-cache
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/name: loki
+  name: loki-memcached-chunks-cache
+  namespace: metalk8s-logging
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: memcached-chunks-cache
+      app.kubernetes.io/instance: loki
+      app.kubernetes.io/name: loki
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app.kubernetes.io/component: memcached-results-cache
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/name: loki
+  name: loki-memcached-results-cache
+  namespace: metalk8s-logging
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: memcached-results-cache
+      app.kubernetes.io/instance: loki
+      app.kubernetes.io/name: loki
+---
 apiVersion: v1
 automountServiceAccountToken: true
 kind: ServiceAccount
@@ -16,8 +50,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.48.0
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
     heritage: metalk8s
   name: loki
   namespace: metalk8s-logging
@@ -33,8 +67,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.48.0
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
     heritage: metalk8s
   name: loki-runtime
   namespace: metalk8s-logging
@@ -47,8 +81,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.48.0
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
     heritage: metalk8s
   name: loki-clusterrole
   namespace: metalk8s-logging
@@ -71,8 +105,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.48.0
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
     heritage: metalk8s
   name: loki-clusterrolebinding
   namespace: metalk8s-logging
@@ -88,13 +122,74 @@ subjects:
 apiVersion: v1
 kind: Service
 metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/component: memcached-chunks-cache
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
+    heritage: metalk8s
+  name: loki-chunks-cache
+  namespace: metalk8s-logging
+spec:
+  clusterIP: None
+  ports:
+  - name: memcached-client
+    port: 11211
+    targetPort: 11211
+  - name: http-metrics
+    port: 9150
+    targetPort: 9150
+  selector:
+    app.kubernetes.io/component: memcached-chunks-cache
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/name: loki
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/component: memcached-results-cache
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
+    heritage: metalk8s
+  name: loki-results-cache
+  namespace: metalk8s-logging
+spec:
+  clusterIP: None
+  ports:
+  - name: memcached-client
+    port: 11211
+    targetPort: 11211
+  - name: http-metrics
+    port: 9150
+    targetPort: 9150
+  selector:
+    app.kubernetes.io/component: memcached-results-cache
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/name: loki
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: null
   labels:
     app.kubernetes.io/instance: loki
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.48.0
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
     heritage: metalk8s
   name: loki-memberlist
   namespace: metalk8s-logging
@@ -120,8 +215,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.48.0
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
     heritage: metalk8s
     prometheus.io/service-monitor: 'false'
     variant: headless
@@ -147,8 +242,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.48.0
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
     heritage: metalk8s
   name: loki
   namespace: metalk8s-logging
@@ -171,14 +266,206 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/component: memcached-chunks-cache
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
+    heritage: metalk8s
+    name: memcached-chunks-cache
+  name: loki-chunks-cache
+  namespace: metalk8s-logging
+spec:
+  podManagementPolicy: Parallel
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: memcached-chunks-cache
+      app.kubernetes.io/instance: loki
+      app.kubernetes.io/name: loki
+      name: memcached-chunks-cache
+  serviceName: loki-chunks-cache
+  template:
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/component: memcached-chunks-cache
+        app.kubernetes.io/instance: loki
+        app.kubernetes.io/name: loki
+        name: memcached-chunks-cache
+    spec:
+      affinity: {}
+      containers:
+      - args:
+        - -m 8192
+        - --extended=modern,track_sizes
+        - -I 5m
+        - -c 16384
+        - -v
+        - -u 11211
+        env: null
+        envFrom: null
+        image: memcached:1.6.23-alpine
+        imagePullPolicy: IfNotPresent
+        name: memcached
+        ports:
+        - containerPort: 11211
+          name: client
+        resources:
+          limits:
+            memory: 9830Mi
+          requests:
+            cpu: 500m
+            memory: 9830Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+      - args:
+        - --memcached.address=localhost:11211
+        - --web.listen-address=0.0.0.0:9150
+        image: prom/memcached-exporter:v0.14.2
+        imagePullPolicy: IfNotPresent
+        name: exporter
+        ports:
+        - containerPort: 9150
+          name: http-metrics
+        resources:
+          limits: {}
+          requests: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+      initContainers: []
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 11211
+        runAsGroup: 11211
+        runAsNonRoot: true
+        runAsUser: 11211
+      serviceAccountName: loki
+      terminationGracePeriodSeconds: 60
+      tolerations: []
+      topologySpreadConstraints: []
+  updateStrategy:
+    type: RollingUpdate
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/component: memcached-results-cache
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
+    heritage: metalk8s
+    name: memcached-results-cache
+  name: loki-results-cache
+  namespace: metalk8s-logging
+spec:
+  podManagementPolicy: Parallel
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: memcached-results-cache
+      app.kubernetes.io/instance: loki
+      app.kubernetes.io/name: loki
+      name: memcached-results-cache
+  serviceName: loki-results-cache
+  template:
+    metadata:
+      annotations: null
+      labels:
+        app.kubernetes.io/component: memcached-results-cache
+        app.kubernetes.io/instance: loki
+        app.kubernetes.io/name: loki
+        name: memcached-results-cache
+    spec:
+      affinity: {}
+      containers:
+      - args:
+        - -m 1024
+        - --extended=modern,track_sizes
+        - -I 5m
+        - -c 16384
+        - -v
+        - -u 11211
+        env: null
+        envFrom: null
+        image: memcached:1.6.23-alpine
+        imagePullPolicy: IfNotPresent
+        name: memcached
+        ports:
+        - containerPort: 11211
+          name: client
+        resources:
+          limits:
+            memory: 1229Mi
+          requests:
+            cpu: 500m
+            memory: 1229Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+      - args:
+        - --memcached.address=localhost:11211
+        - --web.listen-address=0.0.0.0:9150
+        image: prom/memcached-exporter:v0.14.2
+        imagePullPolicy: IfNotPresent
+        name: exporter
+        ports:
+        - containerPort: 9150
+          name: http-metrics
+        resources:
+          limits: {}
+          requests: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+      initContainers: []
+      nodeSelector: {}
+      securityContext:
+        fsGroup: 11211
+        runAsGroup: 11211
+        runAsNonRoot: true
+        runAsUser: 11211
+      serviceAccountName: loki
+      terminationGracePeriodSeconds: 60
+      tolerations: []
+      topologySpreadConstraints: []
+  updateStrategy:
+    type: RollingUpdate
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
   labels:
     app.kubernetes.io/component: single-binary
     app.kubernetes.io/instance: loki
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.48.0
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
     heritage: metalk8s
   name: loki
   namespace: metalk8s-logging
@@ -209,15 +496,34 @@ spec:
           - labelSelector:
               matchLabels:
                 app.kubernetes.io/component: single-binary
-                app.kubernetes.io/instance: loki
-                app.kubernetes.io/name: loki
             topologyKey: kubernetes.io/hostname
       automountServiceAccountToken: true
       containers:
+      - env:
+        - name: METHOD
+          value: WATCH
+        - name: LABEL
+          value: loki_rule
+        - name: FOLDER
+          value: /rules
+        - name: RESOURCE
+          value: both
+        - name: WATCH_SERVER_TIMEOUT
+          value: '60'
+        - name: WATCH_CLIENT_TIMEOUT
+          value: '60'
+        - name: LOG_LEVEL
+          value: INFO
+        image: kiwigrid/k8s-sidecar:1.27.5
+        imagePullPolicy: IfNotPresent
+        name: loki-sc-rules
+        volumeMounts:
+        - mountPath: /rules
+          name: sc-rules-volume
       - args:
         - -config.file=/etc/loki/config/config.yaml
         - -target=all,table-manager
-        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:2.9.6
+        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:3.1.1
         imagePullPolicy: IfNotPresent
         name: loki
         ports:
@@ -252,6 +558,8 @@ spec:
           name: runtime-config
         - mountPath: /var/loki
           name: storage
+        - mountPath: /rules
+          name: sc-rules-volume
       enableServiceLinks: true
       securityContext:
         fsGroup: 10001
@@ -276,6 +584,8 @@ spec:
       - configMap:
           name: loki-runtime
         name: runtime-config
+      - emptyDir: {}
+        name: sc-rules-volume
   updateStrategy:
     rollingUpdate:
       partition: 0
@@ -303,8 +613,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.9.6
-    helm.sh/chart: loki-5.48.0
+    app.kubernetes.io/version: 3.1.1
+    helm.sh/chart: loki-6.16.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
   name: loki

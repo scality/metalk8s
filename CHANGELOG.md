@@ -25,6 +25,12 @@
 - Bump etcd version to [3.5.15](https://github.com/etcd-io/etcd/releases/tag/v3.5.15)
   (PR[#4417](https://github.com/scality/metalk8s/pull/4417))
 
+- Bump Loki chart version to
+  [6.16.0](https://github.com/grafana/loki/releases/tag/helm-loki-6.16.0)
+  The Loki image has been bumped accordingly to
+  [3.1.1](https://github.com/grafana/loki/releases/tag/v3.1.1)
+  (PR[#4450](https://github.com/scality/metalk8s/pull/4450))
+
 ## Release 128.0.1 (in development)
 
 ## Release 128.0.0
