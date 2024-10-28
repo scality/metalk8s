@@ -212,10 +212,13 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "thanos",
     ],
     constants.CERT_MANAGER_REPOSITORY: [
-        "cert-manager-controller",
+        # "cert-manager-controller",
         "cert-manager-webhook",
         "cert-manager-cainjector",
         "cert-manager-acmesolver",
+    ],
+    constants.CHAINGUARD_REPOSITORY: [
+        "cert-manager-controller",
     ],
 }
 

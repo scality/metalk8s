@@ -9741,7 +9741,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: {% endraw -%}{{ build_image_name("cert-manager-controller", False) }}{%- raw %}:v1.15.3
+        image: {% endraw -%}{{ build_image_name("cert-manager-controller", False) }}{%- raw %}:1.15.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 8

@@ -274,8 +274,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="cert-manager-controller",
-        version=_version_prefix(CERT_MANAGER_VERSION),
-        digest="sha256:eee34b3de2dd63f7e5ac459fc2d407662d433fd267d574557b76ee3c7d4bc44f",
+        version=_version_prefix(CERT_MANAGER_VERSION, ""),
+        digest="sha256:284cbab7a2a83a182efe4fac7b8efa2fc1074d7f1170f11eebd4c9d462189067",
     ),
     Image(
         name="cert-manager-webhook",

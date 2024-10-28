@@ -24,6 +24,10 @@ on:
       - "w/**"
       - "q/*/**"
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   changed-files:
     runs-on: ubuntu-24.04

@@ -42,6 +42,16 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_LOGIN }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Login to Chainguard using pull token
+        uses: docker/login-action@v2
+        with:
+          registry: cgr.dev
+          username: ${{ secrets.CGR_DEV_TEST_LOGIN }}
+          password: ${{ secrets.CGR_DEV_TEST_PASSWORD }}
+      # - name: Login to Chainguard
+      #   uses: chainguard-dev/setup-chainctl@main
+      #   with:
+      #     identity: ${{ secrets.CGR_DEV_TEST_IDENTITY }}
       - name: Checkout
         uses: actions/checkout@v4
         with:

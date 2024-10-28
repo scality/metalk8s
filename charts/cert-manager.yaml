@@ -4,6 +4,7 @@ acmesolver:
 
 image:
   repository: '__image__(cert-manager-controller)'
+  tag: '1.15.3'
 
 installCRDs: true
 
