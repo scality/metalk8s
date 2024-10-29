@@ -116,11 +116,11 @@ backup_cas() {
 backup_etcd() {
     local -r etcd_snapshot="etcd_snapshot_$(date -u +%Y%m%d_%H%M%S)"
     local -r cmd=(
-      "ETCDCTL_API=3 etcdctl --endpoints https://127.0.0.1:2379"
-      "--cert /etc/kubernetes/pki/etcd/salt-master-etcd-client.crt"
-      "--key /etc/kubernetes/pki/etcd/salt-master-etcd-client.key"
-      "--cacert /etc/kubernetes/pki/etcd/ca.crt"
-      "snapshot save $etcd_snapshot"
+      "etcdctl" "--endpoints" "https://127.0.0.1:2379"
+      "--cert" "/etc/kubernetes/pki/etcd/salt-master-etcd-client.crt"
+      "--key" "/etc/kubernetes/pki/etcd/salt-master-etcd-client.key"
+      "--cacert" "/etc/kubernetes/pki/etcd/ca.crt"
+      "snapshot" "save" "$etcd_snapshot"
     )
     local etcd_container=''
     echo "Snapshot etcd"
@@ -129,7 +129,7 @@ backup_etcd() {
         --label io.kubernetes.container.name=etcd \
         --state Running)"
     echo "Running '${cmd[*]}' in etcd container $etcd_container"
-    crictl exec -i "$etcd_container" sh -c "${cmd[*]}"
+    crictl exec -i "$etcd_container" "${cmd[@]}"
 
     local -r rootfs_v1="/run/containerd/io.containerd.runtime.v1.linux/k8s.io/${etcd_container}/rootfs"
     local -r rootfs_v2="/run/containerd/io.containerd.runtime.v2.task/k8s.io/${etcd_container}/rootfs"

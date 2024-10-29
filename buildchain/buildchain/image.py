@@ -184,7 +184,6 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     ],
     constants.K8S_REPOSITORY: [
         "pause",
-        "etcd",
         "kube-apiserver",
         "kube-controller-manager",
         "kube-proxy",
@@ -219,6 +218,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     ],
     constants.CHAINGUARD_REPOSITORY: [
         "cert-manager-controller",
+        "etcd",
     ],
 }
 
