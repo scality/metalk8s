@@ -109,6 +109,7 @@ prometheus:
     image:
       registry: '__var__(repo.registry_endpoint)'
       repository: '__image_no_reg__(prometheus)'
+      tag: 2.55.0
 
     tolerations:
       - key: 'node-role.kubernetes.io/bootstrap'

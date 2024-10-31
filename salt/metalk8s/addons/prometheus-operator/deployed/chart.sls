@@ -72118,7 +72118,7 @@ spec:
   enableAdminAPI: {% endraw -%}{{ prometheus.spec.config.enable_admin_api }}{%- raw %}
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
   hostNetwork: false
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v2.55.0
+  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:2.55.0
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -72182,7 +72182,7 @@ spec:
     operator: Exists
   tsdb:
     outOfOrderTimeWindow: 0s
-  version: v2.55.0
+  version: 2.55.0
   walCompression: true
 ---
 apiVersion: monitoring.coreos.com/v1

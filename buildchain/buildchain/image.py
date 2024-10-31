@@ -205,7 +205,6 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.PROMETHEUS_REPOSITORY: [
         "alertmanager",
         "node-exporter",
-        "prometheus",
     ],
     constants.THANOS_REPOSITORY: [
         "thanos",
@@ -219,6 +218,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.CHAINGUARD_REPOSITORY: [
         "cert-manager-controller",
         "etcd",
+        "prometheus",
     ],
 }
 
