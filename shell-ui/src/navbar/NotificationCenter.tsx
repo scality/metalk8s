@@ -146,7 +146,6 @@ const NotificationCenter = () => {
                   : 'infoPrimary'
               }
               size="lg"
-              // @ts-expect-error - FIXME when you are working on it
               style={
                 isOpen
                   ? {
