@@ -1,7 +1,7 @@
 ARG BASE_IMAGE=cgr.dev/chainguard/wolfi-base
 
 ARG BUILD_IMAGE_NAME=golang
-ARG BUILD_IMAGE_TAG=1.17.0-alpine
+ARG BUILD_IMAGE_TAG=1.23.3-alpine
 FROM ${BUILD_IMAGE_NAME}:${BUILD_IMAGE_TAG} AS builder
 
 ENV CGO_ENABLED=0
@@ -16,7 +16,7 @@ COPY main.go go.mod "$PKG_PATH"
 WORKDIR "$PKG_PATH"
 
 RUN sed -i "s/@@ALERTMANAGER_VERSION@@/$ALERTMANAGER_VERSION/g" go.mod \
-  && go mod tidy -go=1.16 && go mod tidy -go=1.17 \
+  && go mod tidy -go=1.23 \
   && go install
 
 FROM ${BASE_IMAGE}
