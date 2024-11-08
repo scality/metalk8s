@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=docker.io/alpine
+ARG BASE_IMAGE=cgr.dev/chainguard/wolfi-base
 
 ARG BUILD_IMAGE_NAME=golang
 ARG BUILD_IMAGE_TAG=1.17.0-alpine

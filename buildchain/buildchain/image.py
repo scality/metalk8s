@@ -244,7 +244,7 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
     _local_image(
         name="metalk8s-alert-logger",
         build_args={
-            "BASE_IMAGE": TO_PULL["alpine"].remote_fullname_digest,
+            "BASE_IMAGE": TO_PULL["wolfi-base"].remote_fullname_digest,
         },
     ),
     _local_image(
