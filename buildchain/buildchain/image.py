@@ -217,6 +217,9 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "cert-manager-cainjector",
         "cert-manager-acmesolver",
     ],
+    constants.CGR_CHAINGUARD_REPOSITORY: [
+        "wolfi-base",
+    ],
 }
 
 REMOTE_NAMES: Dict[str, str] = {
@@ -247,7 +250,7 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
     _local_image(
         name="metalk8s-keepalived",
         build_args={
-            "BASE_IMAGE": TO_PULL["alpine"].remote_fullname_digest,
+            "BASE_IMAGE": TO_PULL["wolfi-base"].remote_fullname_digest,
             "BUILD_DATE": datetime.datetime.now(datetime.timezone.utc)
             .astimezone()
             .isoformat(),

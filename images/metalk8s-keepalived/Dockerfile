@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=docker.io/alpine
+ARG BASE_IMAGE=cgr.dev/chainguard/wolfi-base
 
 # NOTE: We need to build keepalived ourself to enable JSON, so that we can
 # use the JSON signal to get the current keepalived status in JSON format
@@ -10,7 +10,7 @@ ARG KEEPALIVED_VERSION
 
 WORKDIR /home/keepalived
 
-RUN apk add --no-cache make gcc curl autoconf automake musl-dev libnl3-dev libnftnl-dev openssl-dev \
+RUN apk add --no-cache make gcc curl autoconf automake glibc-dev libnl3-dev libnftnl-dev openssl-dev \
   && curl --fail -Lo keepalived.tar.gz https://github.com/acassen/keepalived/archive/refs/tags/v${KEEPALIVED_VERSION}.tar.gz \
   && tar xvf keepalived.tar.gz && cd "keepalived-${KEEPALIVED_VERSION}" \
   && ./autogen.sh \
@@ -44,12 +44,14 @@ COPY --chown=keepalived:keepalived entrypoint.sh /
 
 COPY --chown=keepalived:keepalived --from=build-step /keepalived /usr/sbin/
 
-RUN apk add --no-cache libcap \
+RUN apk add --no-cache libcap-utils \
   && setcap     cap_net_admin,cap_net_bind_service,cap_net_raw,cap_setuid,cap_setgid=+ep /usr/sbin/keepalived \
   && setcap -v  cap_net_admin,cap_net_bind_service,cap_net_raw,cap_setuid,cap_setgid=+ep /usr/sbin/keepalived \
-  && apk del libcap
+  && apk del libcap-utils
 
-RUN apk add --no-cache libnl3 libnftnl bash curl py3-jinja2 py3-yaml py3-netifaces
+RUN apk add --no-cache iproute2 libnl3 libnftnl bash curl python-3.12 py3.12-pip py3-yaml py3-jinja2
+RUN pip install netifaces-plus
+RUN apk del py3.12-pip
 
 USER keepalived
 
