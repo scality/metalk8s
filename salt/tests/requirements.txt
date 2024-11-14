@@ -6,20 +6,25 @@
 #
 attrs==22.2.0 \
     --hash=sha256:29e95c7f6778868dbd49170f98f8818f78f3dc5e0e37c0b1f474e3561b240836 \
-    --hash=sha256:c9227bfc2f01993c03f68db37d1d15c9690188323c067c641f1a35ca58185f99 \
+    --hash=sha256:c9227bfc2f01993c03f68db37d1d15c9690188323c067c641f1a35ca58185f99
     # via pytest
 cachetools==4.2.4 \
     --hash=sha256:89ea6f1b638d5a73a4f9226be57ac5e4f399d22770b92355f92dcb0f7f001693 \
-    --hash=sha256:92971d3cb7d2a97efff7c7bb1657f21a8f5fb309a37530537c71b1774189f2d1 \
+    --hash=sha256:92971d3cb7d2a97efff7c7bb1657f21a8f5fb309a37530537c71b1774189f2d1
     # via google-auth
 certifi==2024.8.30 \
     --hash=sha256:922820b53db7a7257ffbda3f597266d435245903d80737e34f8a45ff3e3230d8 \
-    --hash=sha256:bec941d2aa8195e248a60b31ff9f0558284cf01a52591ceda73ea9afffd69fd9 \
-    # via kubernetes, requests
+    --hash=sha256:bec941d2aa8195e248a60b31ff9f0558284cf01a52591ceda73ea9afffd69fd9
+    # via
+    #   kubernetes
+    #   requests
 charset-normalizer==2.0.12 \
     --hash=sha256:2857e29ff0d34db842cd7ca3230549d1a697f96ee6d3fb071cfa6c7393832597 \
-    --hash=sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df \
+    --hash=sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df
     # via requests
+contextvars==2.4 \
+    --hash=sha256:f38c908aaa59c14335eeea12abea5f443646216c4e29380d7bf34d2018e2c39e
+    # via salt
 coverage[toml]==6.2 \
     --hash=sha256:01774a2c2c729619760320270e42cd9e797427ecfddd32c2a7b639cdc481f3c0 \
     --hash=sha256:03b20e52b7d31be571c9c06b74746746d4eb82fc260e594dc662ed48145e9efd \
@@ -67,18 +72,18 @@ coverage[toml]==6.2 \
     --hash=sha256:f506af4f27def639ba45789fa6fde45f9a217da0be05f8910458e4557eed020c \
     --hash=sha256:f614fc9956d76d8a88a88bb41ddc12709caa755666f580af3a688899721efecd \
     --hash=sha256:f9afb5b746781fc2abce26193d1c817b7eb0e11459510fba65d2bd77fe161d9e \
-    --hash=sha256:fb8b8ee99b3fffe4fd86f4c81b35a6bf7e4462cba019997af2fe679365db0c49 \
+    --hash=sha256:fb8b8ee99b3fffe4fd86f4c81b35a6bf7e4462cba019997af2fe679365db0c49
     # via pytest-cov
 distro==1.9.0 \
     --hash=sha256:2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed \
-    --hash=sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2 \
+    --hash=sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2
     # via salt
 etcd3==0.12.0 \
-    --hash=sha256:89a704cb389bf0a010a1fa050ce19342d23bf6371ebda1c21cfe8ff3ed488726 \
-    # via -r /workspaces/metalk8s/salt/tests/requirements.in
+    --hash=sha256:89a704cb389bf0a010a1fa050ce19342d23bf6371ebda1c21cfe8ff3ed488726
+    # via -r requirements.in
 google-auth==2.22.0 \
     --hash=sha256:164cba9af4e6e4e40c3a4f90a1a6c12ee56f14c0b4868d1ca91b32826ab334ce \
-    --hash=sha256:d61d1b40897407b574da67da1a833bdc10d5a11642566e506565d1b1a46ba873 \
+    --hash=sha256:d61d1b40897407b574da67da1a833bdc10d5a11642566e506565d1b1a46ba873
     # via kubernetes
 grpcio==1.48.2 \
     --hash=sha256:0802b080b6b8603a065e505ce83190b6a06229b9a74d0a1681175271ac84fe12 \
@@ -126,28 +131,79 @@ grpcio==1.48.2 \
     --hash=sha256:f1d2cd5b1adecbcffee4ad6613f100e0b583ae2e253d2f8f685e7770ec72d622 \
     --hash=sha256:f3c0d0995a0cd8c7198cb49b8ce98b4936c5a70109f9246c58e69c898e4f7329 \
     --hash=sha256:f5697e4ab90a41a6a1202c1a3ec268a0d69f1cd127a4940d2b2521a0fbc1277b \
-    --hash=sha256:f6afd1f4b5e0ec320fb2b027a646944fee8b58ba00fb43d081968f77d1a6e925 \
+    --hash=sha256:f6afd1f4b5e0ec320fb2b027a646944fee8b58ba00fb43d081968f77d1a6e925
     # via etcd3
 idna==3.10 \
     --hash=sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9 \
-    --hash=sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3 \
+    --hash=sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3
     # via requests
-importlib-metadata==4.8.3 \
-    --hash=sha256:65a9576a5b2d58ca44d133c42a241905cc45e34d2c06fd5ba2bafa221e5d7b5e \
-    --hash=sha256:766abffff765960fcc18003801f7044eb6755ffae4521c8e8ce8e83b9c9b0668 \
-    # via pluggy, pytest
+immutables==0.21 \
+    --hash=sha256:07a37d8699255402a10784d4d45f2bcc00ca7dba8da763207a834b15767e6c62 \
+    --hash=sha256:14cb09d4f4577ad9ab8770a340dc2158e0a5ab5775cb34c75960167a31104212 \
+    --hash=sha256:1bdb5200518518601377e4877d5034e7c535e9ea8a9d601ed8b0eedef0c7becd \
+    --hash=sha256:21adc6b478a58692c79c5bf316b39d3fd0552441d2b38eef1782a7555deee484 \
+    --hash=sha256:22ba593f95044ac60d2af463f3dc86cd0e223f8c51df85dff65d663d93e19f51 \
+    --hash=sha256:25afc81a7bcf26c8364f85e52a14e0095344343e79493c73b0e9a765310a0bed \
+    --hash=sha256:338bede057250b33716a3e4892e15df0bf5a5ddbf1d67ead996b3e680b49ef9e \
+    --hash=sha256:39337bfb42f83dd787a81e2d00e90efa17c4a39a9cf1210b8a50dafe32438aae \
+    --hash=sha256:461dcb0f58a131045155e52a2c43de6ec2fe5ba19bdced6858a3abb63cee5111 \
+    --hash=sha256:4a7b5920bbfcaf038894c8ce4ed2eff0b31c3559810a61806db751be8ab4d703 \
+    --hash=sha256:583d2a63e444ce1538cc2bda56ae1f4a1a11473dbc0377c82b516bc7eec3b81e \
+    --hash=sha256:586e88ca7ed44b7bb2cd7b212abd2637b51bd95bdb4856ab111b44715a62071c \
+    --hash=sha256:5d780c38067047911a2e06a86ba063ba0055618ab5573c8198ef3f368e321303 \
+    --hash=sha256:5f8f507731d4d15e0c579aa77d8482471f988dc0f451e4bf3853ec36ccd42627 \
+    --hash=sha256:715f8e5f8e1c35f036f9ac62eaf8b672eec1cdc2b4f9b73864cc64eccc76661c \
+    --hash=sha256:71cbbc6fbe7e7321648047ff9273f4605f8bd5ce456841a65ef151080e9d3481 \
+    --hash=sha256:79674b51aa8dd983f9ac55f7f67b433b1df84a6b4f28ab860588389a5659485b \
+    --hash=sha256:7ff83390b05d3372acb9a0c928f6cc20c78e74ca20ed88eb941f84a63b65e444 \
+    --hash=sha256:8781c89583b68f604cf30f0978b722165824c3075888639fde771bf1a3e12dc0 \
+    --hash=sha256:8b10139b529a460e53fe8be699ebd848c54c8a33ebe67763bcfcc809a475a26f \
+    --hash=sha256:8b90702d1fe313e8273ae7abb46fc0f0a87b47c1c9a83aed9a161301146e655c \
+    --hash=sha256:9139fd80bb05501216f49c4306bb80d0c1a08c3f0f621ed2939bf52d7f762661 \
+    --hash=sha256:93c8350f8f7d0d9693f708229d9d0578e6f3b785ce6da4bced1da97137aacfad \
+    --hash=sha256:984106fa4345efd9f96de22e9949fc97bac8598bdebee03c20b2497a88bff3b7 \
+    --hash=sha256:9aab9d0f0016f6e0bfe7e4a4cb831ef20063da6468b1bbc71d06ef285781ee9e \
+    --hash=sha256:b24aa98f6cdae4ba15baf3aa00e84223bafcd0d3fd7f0443474527ec951845e1 \
+    --hash=sha256:b274a52da9b106db55eceb93fc1aea858c4e6f4740189e3548e38613eafc2021 \
+    --hash=sha256:b48b116aaca4500398058b5a87814857a60c4cb09417fecc12d7da0f5639b73d \
+    --hash=sha256:b55ffaf0449790242feb4c56ab799ea7af92801a0a43f9e2f4f8af2ab24dfc4a \
+    --hash=sha256:ba8bca21a1d034f4577ede1e9553a681dd01199c06b563f1a8316f2623b64985 \
+    --hash=sha256:bc7844c9fbb5bece5bfdf2bf8ea74d308f42f40b0665fd25c58abf56d7db024a \
+    --hash=sha256:c44f286c47dc0d4d7b5bf19fbe975e6d57c56d2878cea413e1ec7a4bfffb2727 \
+    --hash=sha256:ca912c1bb35615ccbe361a6bb76e6fd43827394102467967d5599d78b50dd0f4 \
+    --hash=sha256:cb9a378a4480381d7d3d63b0d201cf610eae0bf70e26a9306e3e631c9bd64010 \
+    --hash=sha256:ce604f81d9d8f26e60b52ebcb56bb5c0462c8ea50fb17868487d15f048a2f13e \
+    --hash=sha256:cf15314c39484b8947a4e20c3526021272510592fb2807b5136a2fcd6ab0151b \
+    --hash=sha256:cfcb23bd898f5a4ef88692b42c51f52ca7373a35ba4dcc215060a668639eb5da \
+    --hash=sha256:d01497713e71509c4481ffccdbe3a47b94969345f4e92f814d6626f7c0a4c304 \
+    --hash=sha256:dad7c0c74b285cc0e555ec0e97acbdc6f1862fcd16b99abd612df3243732e741 \
+    --hash=sha256:dd00c34f431c54c95e7b84bfdbdeacb4f039a6a24eb0c1f7aa4b168bb9a6ad0a \
+    --hash=sha256:e2aadf3bdd90daa0e8cb9c3cde4070e1021036e3b57f571a007ce24f323e47a9 \
+    --hash=sha256:e44346e2221a5a676c880ca8e0e6429fa24d1a4ae562573f5c04d7f2e759b030 \
+    --hash=sha256:e97ea83befad873712f283c0cccd630f70cba753e207b4868af28d5b85e9dc54 \
+    --hash=sha256:eac6e2868567289f88c6810f296940c328a1d38c9abc841eed04963102a27d12 \
+    --hash=sha256:ecff5274357dc18aae053e5e10b8eee5e9b4d6cc774d34148c992cb2eb787ec3 \
+    --hash=sha256:ef1ed262094b755903122c3c3a83ad0e0d5c3ab7887cda12b2fe878769d1ee0d \
+    --hash=sha256:f6a577f55eaaf763b685eef9710edbeb7ee95e2e5f54e7e5e0fd0f60ae2eb648 \
+    --hash=sha256:fc512d808662614feb17d2d92e98f611d69669a98c7af15910acf1dc72737038 \
+    --hash=sha256:fc6fc7e917e281361ad243be1a3cb56a7633de88ee67c94cdf5651958ead30d9
+    # via contextvars
 iniconfig==1.1.1 \
     --hash=sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3 \
-    --hash=sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32 \
+    --hash=sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32
     # via pytest
 jinja2==3.0.3 \
     --hash=sha256:077ce6014f7b40d03b47d1f1ca4b0fc8328a692bd284016f806ed0eaca390ad8 \
-    --hash=sha256:611bb273cd68f3b993fabdc4064fc858c5b47a973cb5aa7999ec1ba405c87cd7 \
+    --hash=sha256:611bb273cd68f3b993fabdc4064fc858c5b47a973cb5aa7999ec1ba405c87cd7
+    # via salt
+jmespath==1.0.1 \
+    --hash=sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980 \
+    --hash=sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe
     # via salt
 kubernetes==12.0.1 \
     --hash=sha256:23c85d8571df8f56e773f1a413bc081537536dc47e2b5e8dc2e6262edb2c57ca \
-    --hash=sha256:ec52ea01d52e2ec3da255992f7e859f3a76f2bdb51cf65ba8cd71dfc309d8daa \
-    # via -r /workspaces/metalk8s/salt/tests/requirements.in
+    --hash=sha256:ec52ea01d52e2ec3da255992f7e859f3a76f2bdb51cf65ba8cd71dfc309d8daa
+    # via -r requirements.in
 markupsafe==2.0.1 \
     --hash=sha256:01a9b8ea66f1658938f65b93a85ebe8bc016e6769611be228d797c9d998dd298 \
     --hash=sha256:023cb26ec21ece8dc3907c0e8320058b2e0cb3c55cf9564da612bc325bed5e64 \
@@ -217,12 +273,14 @@ markupsafe==2.0.1 \
     --hash=sha256:f826e31d18b516f653fe296d967d700fddad5901ae07c622bb3705955e1faa94 \
     --hash=sha256:f8ba0e8349a38d3001fae7eadded3f6606f0da5d748ee53cc1dab1d6527b9509 \
     --hash=sha256:f9081981fe268bd86831e5c75f7de206ef275defcb82bc70740ae6dc507aee51 \
-    --hash=sha256:fa130dd50c57d53368c9d59395cb5526eda596d3ffe36666cd81a44d56e48872 \
-    # via jinja2, salt
+    --hash=sha256:fa130dd50c57d53368c9d59395cb5526eda596d3ffe36666cd81a44d56e48872
+    # via
+    #   jinja2
+    #   salt
 mock==3.0.5 \
     --hash=sha256:83657d894c90d5681d62155c82bda9c1187827525880eda8ff5df4ec813437c3 \
-    --hash=sha256:d157e52d4e5b938c550f39eb2fd15610db062441a9c2747d3dbfa9298211d0f8 \
-    # via -r /workspaces/metalk8s/salt/tests/requirements.in
+    --hash=sha256:d157e52d4e5b938c550f39eb2fd15610db062441a9c2747d3dbfa9298211d0f8
+    # via -r requirements.in
 msgpack==1.0.5 \
     --hash=sha256:06f5174b5f8ed0ed919da0e62cbd4ffde676a374aba4020034da05fab67b9164 \
     --hash=sha256:0c05a4a96585525916b109bb85f8cb6511db1c6f5b9d9cbcbc940dc6b4be944b \
@@ -286,23 +344,23 @@ msgpack==1.0.5 \
     --hash=sha256:ed40e926fa2f297e8a653c954b732f125ef97bdd4c889f243182299de27e2aa9 \
     --hash=sha256:ef8108f8dedf204bb7b42994abf93882da1159728a2d4c5e82012edd92c9da9f \
     --hash=sha256:f933bbda5a3ee63b8834179096923b094b76f0c7a73c1cfe8f07ad608c58844b \
-    --hash=sha256:fe5c63197c55bce6385d9aee16c4d0641684628f63ace85f73571e65ad1c1e8d \
+    --hash=sha256:fe5c63197c55bce6385d9aee16c4d0641684628f63ace85f73571e65ad1c1e8d
     # via salt
 oauthlib==3.2.2 \
     --hash=sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca \
-    --hash=sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918 \
+    --hash=sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918
     # via requests-oauthlib
 packaging==21.3 \
     --hash=sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb \
-    --hash=sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522 \
+    --hash=sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522
     # via pytest
 parameterized==0.7.4 \
     --hash=sha256:190f8cc7230eee0b56b30d7f074fd4d165f7c45e6077582d0813c8557e738490 \
-    --hash=sha256:59ab908e31c01505a987a2be78854e19cb1630c047bbab7848169c371d614d56 \
-    # via -r /workspaces/metalk8s/salt/tests/requirements.in
+    --hash=sha256:59ab908e31c01505a987a2be78854e19cb1630c047bbab7848169c371d614d56
+    # via -r requirements.in
 pluggy==1.0.0 \
     --hash=sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159 \
-    --hash=sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3 \
+    --hash=sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3
     # via pytest
 protobuf==3.19.6 \
     --hash=sha256:010be24d5a44be7b0613750ab40bc8b8cedc796db468eae6c779b395f50d1fa1 \
@@ -329,7 +387,7 @@ protobuf==3.19.6 \
     --hash=sha256:bb6776bd18f01ffe9920e78e03a8676530a5d6c5911934c6a1ac6eb78973ecb6 \
     --hash=sha256:bbf5cea5048272e1c60d235c7bd12ce1b14b8a16e76917f371c718bd3005f045 \
     --hash=sha256:c0ccd3f940fe7f3b35a261b1dd1b4fc850c8fde9f74207015431f174be5976b3 \
-    --hash=sha256:d0b635cefebd7a8a0f92020562dead912f81f401af7e71f16bf9506ff3bdbb38 \
+    --hash=sha256:d0b635cefebd7a8a0f92020562dead912f81f401af7e71f16bf9506ff3bdbb38
     # via etcd3
 psutil==6.1.0 \
     --hash=sha256:000d1d1ebd634b4efb383f4034437384e44a6d455260aaee2eca1e9c1b55f047 \
@@ -348,20 +406,24 @@ psutil==6.1.0 \
     --hash=sha256:a8fb3752b491d246034fa4d279ff076501588ce8cbcdbb62c32fd7a377d996be \
     --hash=sha256:c0e0c00aa18ca2d3b2b991643b799a15fc8f0563d2ebb6040f64ce8dc027b942 \
     --hash=sha256:d905186d647b16755a800e7263d43df08b790d709d575105d419f8b6ef65423a \
-    --hash=sha256:ff34df86226c0227c52f38b919213157588a678d049688eded74c76c8ba4a5d0 \
-    # via -r /workspaces/metalk8s/salt/tests/requirements.in
+    --hash=sha256:ff34df86226c0227c52f38b919213157588a678d049688eded74c76c8ba4a5d0
+    # via
+    #   -r requirements.in
+    #   salt
 py==1.11.0 \
     --hash=sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719 \
-    --hash=sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378 \
+    --hash=sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378
     # via pytest
-pyasn1-modules==0.3.0 \
-    --hash=sha256:5bd01446b736eb9d31512a30d46c1ac3395d676c6f3cafa4c03eb54b9925631c \
-    --hash=sha256:d3ccd6ed470d9ffbc716be08bd90efbd44d0734bc9303818f7336070984a162d \
-    # via google-auth
 pyasn1==0.5.1 \
     --hash=sha256:4439847c58d40b1d0a573d07e3856e95333f1976294494c325775aeca506eb58 \
-    --hash=sha256:6d391a96e59b23130a5cfa74d6fd7f388dbbe26cc8f1edf39fdddf08d9d6676c \
-    # via pyasn1-modules, rsa
+    --hash=sha256:6d391a96e59b23130a5cfa74d6fd7f388dbbe26cc8f1edf39fdddf08d9d6676c
+    # via
+    #   pyasn1-modules
+    #   rsa
+pyasn1-modules==0.3.0 \
+    --hash=sha256:5bd01446b736eb9d31512a30d46c1ac3395d676c6f3cafa4c03eb54b9925631c \
+    --hash=sha256:d3ccd6ed470d9ffbc716be08bd90efbd44d0734bc9303818f7336070984a162d
+    # via google-auth
 pycryptodomex==3.21.0 \
     --hash=sha256:0df2608682db8279a9ebbaf05a72f62a321433522ed0e499bc486a6889b96bf3 \
     --hash=sha256:103c133d6cd832ae7266feb0a65b69e3a5e4dbbd6f3a3ae3211a557fd653f516 \
@@ -394,27 +456,29 @@ pycryptodomex==3.21.0 \
     --hash=sha256:dbeb84a399373df84a69e0919c1d733b89e049752426041deeb30d68e9867822 \
     --hash=sha256:e859e53d983b7fe18cb8f1b0e29d991a5c93be2c8dd25db7db1fe3bd3617f6f9 \
     --hash=sha256:ef046b2e6c425647971b51424f0f88d8a2e0a2a63d3531817968c42078895c00 \
-    --hash=sha256:feaecdce4e5c0045e7a287de0c4351284391fe170729aa9182f6bd967631b3a8 \
+    --hash=sha256:feaecdce4e5c0045e7a287de0c4351284391fe170729aa9182f6bd967631b3a8
     # via salt
 pyfakefs==4.6.3 \
     --hash=sha256:6df12a7cf657637a1b036bc20059727c642f92990e90fee2fb003daa3cda6ca1 \
-    --hash=sha256:8959fe7058ba7efa65694b7979e123e27921a58f557a88628be93f0a936e6757 \
-    # via -r /workspaces/metalk8s/salt/tests/requirements.in
+    --hash=sha256:8959fe7058ba7efa65694b7979e123e27921a58f557a88628be93f0a936e6757
+    # via -r requirements.in
 pyparsing==3.1.4 \
     --hash=sha256:a6a7ee4235a3f944aa1fa2249307708f893fe5717dc603503c6c7969c070fb7c \
-    --hash=sha256:f86ec8d1a83f11977c9a6ea7598e8c27fc5cddfa5b07ea2241edbbde1d7bc032 \
+    --hash=sha256:f86ec8d1a83f11977c9a6ea7598e8c27fc5cddfa5b07ea2241edbbde1d7bc032
     # via packaging
-pytest-cov==4.0.0 \
-    --hash=sha256:2feb1b751d66a8bd934e5edfa2e961d11309dc37b73b0eabe73b5945fee20f6b \
-    --hash=sha256:996b79efde6433cdbd0088872dbc5fb3ed7fe1578b68cdbba634f14bb8dd0470 \
-    # via -r /workspaces/metalk8s/salt/tests/requirements.in
 pytest==7.0.1 \
     --hash=sha256:9ce3ff477af913ecf6321fe337b93a2c0dcf2a0a1439c43f5452112c1e4280db \
-    --hash=sha256:e30905a0c131d3d94b89624a1cc5afec3e0ba2fbdb151867d8e0ebd49850f171 \
-    # via -r /workspaces/metalk8s/salt/tests/requirements.in, pytest-cov
+    --hash=sha256:e30905a0c131d3d94b89624a1cc5afec3e0ba2fbdb151867d8e0ebd49850f171
+    # via
+    #   -r requirements.in
+    #   pytest-cov
+pytest-cov==4.0.0 \
+    --hash=sha256:2feb1b751d66a8bd934e5edfa2e961d11309dc37b73b0eabe73b5945fee20f6b \
+    --hash=sha256:996b79efde6433cdbd0088872dbc5fb3ed7fe1578b68cdbba634f14bb8dd0470
+    # via -r requirements.in
 python-dateutil==2.9.0.post0 \
     --hash=sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3 \
-    --hash=sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427 \
+    --hash=sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427
     # via kubernetes
 pyyaml==6.0.1 \
     --hash=sha256:04ac92ad1925b2cff1db0cfebffb6ffc43457495c9b3c39d3fcae417d7125dc5 \
@@ -467,8 +531,10 @@ pyyaml==6.0.1 \
     --hash=sha256:faca3bdcf85b2fc05d06ff3fbc1f83e1391b3e724afa3feba7d13eeab355484c \
     --hash=sha256:fca0e3a251908a499833aa292323f32437106001d436eca0e6e7833256674585 \
     --hash=sha256:fd1592b3fdf65fff2ad0004b5e363300ef59ced41c2e6b3a99d4089fa8c5435d \
-    --hash=sha256:fd66fc5d0da6d9815ba2cebeb4205f95818ff4b79c3ebe268e75d961704af52f \
-    # via kubernetes, salt
+    --hash=sha256:fd66fc5d0da6d9815ba2cebeb4205f95818ff4b79c3ebe268e75d961704af52f
+    # via
+    #   kubernetes
+    #   salt
 pyzmq==25.1.2 \
     --hash=sha256:004ff469d21e86f0ef0369717351073e0e577428e514c47c8480770d5e24a565 \
     --hash=sha256:00a06faa7165634f0cac1abb27e54d7a0b3b44eb9994530b8ec73cf52e15353b \
@@ -562,54 +628,61 @@ pyzmq==25.1.2 \
     --hash=sha256:f8429b17cbb746c3e043cb986328da023657e79d5ed258b711c06a70c2ea7537 \
     --hash=sha256:fa99973d2ed20417744fca0073390ad65ce225b546febb0580358e36aa90dba6 \
     --hash=sha256:faf79a302f834d9e8304fafdc11d0d042266667ac45209afa57e5efc998e3872 \
-    --hash=sha256:fc31baa0c32a2ca660784d5af3b9487e13b61b3032cb01a115fce6588e1bed30 \
+    --hash=sha256:fc31baa0c32a2ca660784d5af3b9487e13b61b3032cb01a115fce6588e1bed30
     # via salt
-requests-oauthlib==2.0.0 \
-    --hash=sha256:7dd8a5c40426b779b0868c404bdef9768deccf22749cde15852df527e6269b36 \
-    --hash=sha256:b3dffaebd884d8cd778494369603a9e7b58d29111bf6b41bdc2dcd87203af4e9 \
-    # via kubernetes
 requests==2.27.1 \
     --hash=sha256:68d7c56fd5a8999887728ef304a6d12edc7be74f1cfa47714fc8b414525c9a61 \
-    --hash=sha256:f22fa1e554c9ddfd16e6e41ac79759e17be9e492b3587efa038054674760e72d \
-    # via kubernetes, requests-oauthlib, salt
+    --hash=sha256:f22fa1e554c9ddfd16e6e41ac79759e17be9e492b3587efa038054674760e72d
+    # via
+    #   kubernetes
+    #   requests-oauthlib
+    #   salt
+requests-oauthlib==2.0.0 \
+    --hash=sha256:7dd8a5c40426b779b0868c404bdef9768deccf22749cde15852df527e6269b36 \
+    --hash=sha256:b3dffaebd884d8cd778494369603a9e7b58d29111bf6b41bdc2dcd87203af4e9
+    # via kubernetes
 rsa==4.9 \
     --hash=sha256:90260d9058e514786967344d0ef75fa8727eed8a7d2e43ce9f4bcf1b536174f7 \
-    --hash=sha256:e38464a49c6c85d7f1351b0126661487a7e0a14a50f1675ec50eb34d4f20ef21 \
+    --hash=sha256:e38464a49c6c85d7f1351b0126661487a7e0a14a50f1675ec50eb34d4f20ef21
     # via google-auth
-salt==3002.9 \
-    --hash=sha256:204c0ee4ae3d7a37951f306cfa907362d69eeb4f3f82aa0ec4b66e3cfd89a9ac \
-    # via -r /workspaces/metalk8s/salt/tests/requirements.in
+salt==3005.5 \
+    --hash=sha256:51f33a1c72ea87ed7483258c8f4137f12c7a88a57d1237ad874e99eebda6e5b9
+    # via -r requirements.in
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
-    --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254 \
-    # via etcd3, google-auth, grpcio, kubernetes, mock, python-dateutil
+    --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
+    # via
+    #   etcd3
+    #   google-auth
+    #   grpcio
+    #   kubernetes
+    #   mock
+    #   python-dateutil
 tenacity==8.2.2 \
     --hash=sha256:2f277afb21b851637e8f52e6a613ff08734c347dc19ade928e519d7d2d8569b0 \
-    --hash=sha256:43af037822bd0029025877f3b2d97cc4d7bb0c2991000a3d59d71517c5c969e0 \
+    --hash=sha256:43af037822bd0029025877f3b2d97cc4d7bb0c2991000a3d59d71517c5c969e0
     # via etcd3
 tomli==1.2.3 \
     --hash=sha256:05b6166bff487dc068d322585c7ea4ef78deed501cc124060e0f238e89a9231f \
-    --hash=sha256:e3069e4be3ead9668e21cb9b074cd948f7b3113fd9c8bba083f48247aab8b11c \
-    # via coverage, pytest
-typing-extensions==4.1.1 \
-    --hash=sha256:1a9462dcc3347a79b1f1c0271fbe79e844580bb598bafa1ed208b94da3cdcd42 \
-    --hash=sha256:21c85e0fe4b9a155d0799430b0ad741cdce7e359660ccbd8b530613e8df88ce2 \
-    # via importlib-metadata
+    --hash=sha256:e3069e4be3ead9668e21cb9b074cd948f7b3113fd9c8bba083f48247aab8b11c
+    # via
+    #   coverage
+    #   pytest
 urllib3==1.26.20 \
     --hash=sha256:0ed14ccfbf1c30a9072c7ca157e4319b70d65f623e91e7b32fadb2853431016e \
-    --hash=sha256:40c2dc0c681e47eb8f90e7e27bf6ff7df2e677421fd46756da1161c39ca70d32 \
-    # via -r /workspaces/metalk8s/salt/tests/requirements.in, google-auth, kubernetes, requests
+    --hash=sha256:40c2dc0c681e47eb8f90e7e27bf6ff7df2e677421fd46756da1161c39ca70d32
+    # via
+    #   -r requirements.in
+    #   google-auth
+    #   kubernetes
+    #   requests
 websocket-client==1.3.1 \
     --hash=sha256:074e2ed575e7c822fc0940d31c3ac9bb2b1142c303eafcf3e304e6ce035522e8 \
-    --hash=sha256:6278a75065395418283f887de7c3beafb3aa68dada5cacbe4b214e8d26da499b \
+    --hash=sha256:6278a75065395418283f887de7c3beafb3aa68dada5cacbe4b214e8d26da499b
     # via kubernetes
-zipp==3.6.0 \
-    --hash=sha256:71c644c5369f4a6e07636f0aa966270449561fcea2e3d6747b8d23efaa9d7832 \
-    --hash=sha256:9fe5ea21568a0a70e50f273397638d39b03353731e6cbbb3fd8502a33fec40bc \
-    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 setuptools==59.6.0 \
     --hash=sha256:22c7348c6d2976a52632c67f7ab0cdf40147db7789f9aed18734643fe9cf3373 \
-    --hash=sha256:4ce92f1e1f8f01233ee9952c04f6b81d1e02939d6e1b488428154974a4d0783e \
+    --hash=sha256:4ce92f1e1f8f01233ee9952c04f6b81d1e02939d6e1b488428154974a4d0783e
     # via kubernetes
