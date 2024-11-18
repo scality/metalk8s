@@ -78,7 +78,8 @@
       "@scality/core-ui/types/styled.d.ts",
       "node",
       "jest",
-      "@testing-library/jest-dom"
+      "@testing-library/jest-dom",
     ] /* The type definition files to be included in the compilation. */
-  }
+  },
+  "exclude": ["@mf-types"]
 }

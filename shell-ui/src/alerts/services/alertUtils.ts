@@ -17,7 +17,7 @@ export type Alert = {
   description: string;
   startsAt: string;
   endsAt: string;
-  severity: string;
+  severity: Health;
   labels: AlertLabels;
   originalAlert: PrometheusAlert;
   status: string;
@@ -129,7 +129,6 @@ export const isAlertSelected = (
       if (Array.isArray(filters[key])) {
         if (Array.isArray(labels[key])) {
           return (
-            // @ts-expect-error - FIXME when you are working on it
             filters[key].find((val) => {
               return labels[key].includes(val);
             }) !== undefined

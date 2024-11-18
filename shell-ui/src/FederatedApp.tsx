@@ -309,13 +309,6 @@ function InternalRouter() {
                   scope={view.scope}
                   app={app}
                   groups={groups}
-                  renderOnLoading={
-                    <Loader
-                      size="massive"
-                      centered={true}
-                      aria-label="loading"
-                    />
-                  }
                 />
               </Router>
             );

@@ -11,6 +11,7 @@ import { jest } from '@jest/globals';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ToastProvider } from '@scality/core-ui/dist/components/toast/ToastProvider';
+import { UserData } from '../auth/AuthProvider';
 
 jest.mock('../initFederation/ConfigurationProviders', () => ({
   useConfigRetriever: () => ({
@@ -66,9 +67,9 @@ describe('InstanceName', () => {
   it('should display the instance name input when it resolved its configuration', async () => {
     //S
     const getInstanceName = jest
-      .fn<Promise<string>, unknown[]>()
+      .fn<(userData: UserData) => Promise<string>>()
       .mockResolvedValue('default');
-    const setInstanceName = jest.fn<Promise<void>, unknown[]>();
+    const setInstanceName = jest.fn<(userData: UserData) => Promise<void>>();
     render(
       <_InternalInstanceName
         moduleExports={{

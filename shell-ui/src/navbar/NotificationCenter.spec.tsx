@@ -8,7 +8,7 @@ import NotificationCenter from './NotificationCenter';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { prepareRenderMultipleHooks } from './__TESTS__/testMultipleHooks';
-import { MemoryRouter, Route, Switch } from 'react-router';
+import { MemoryRouter, Route, Switch } from 'react-router-dom';
 import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
 import { useNotificationCenter } from '../useNotificationCenter';
 
