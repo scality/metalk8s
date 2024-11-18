@@ -16,7 +16,7 @@ export type Alert = {
     description: string;
     startsAt: string;
     endsAt: string;
-    severity: string;
+    severity: Health;
     labels: AlertLabels;
     originalAlert: PrometheusAlert;
     status: string;

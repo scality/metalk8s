@@ -1,4 +1,4 @@
-import { User } from 'oidc-client';
+import { User } from 'oidc-client-ts';
 import React from 'react';
 export declare function AuthProvider({ children }: {
     children: React.ReactNode;

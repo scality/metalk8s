@@ -22,5 +22,5 @@ export type AlertLabels = {
 };
 export declare function getAlerts(alertManagerUrl: string): Promise<import("./alertUtils").Alert[]>;
 export declare const checkActiveAlertProvider: () => Promise<{
-    status: 'healthy' | 'critical';
+    status: "healthy" | "critical";
 }>;

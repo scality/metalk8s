@@ -1,4 +1,3 @@
-/// <reference types="react" />
 import type { ViewDefinition } from '../initFederation/ConfigurationProviders';
 import '../initFederation/ConfigurationProviders';
 export type Link = {

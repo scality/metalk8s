@@ -1,4 +1,3 @@
-/// <reference types="react" />
 import { CoreUITheme, CoreUIThemeName } from '@scality/core-ui/dist/style/theme';
 export type NavbarEntry = {
     groups?: string[];
