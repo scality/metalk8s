@@ -382,7 +382,7 @@ jobs:
       - name: Build Shell UI
         run: |
           cd shell-ui
-          npm run rsbuild
+          npm run build
       - name: Install UI dependencies
         run: |
           cd ui

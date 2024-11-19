@@ -20,6 +20,7 @@
     "@rsdoctor/rspack-plugin": "^0.3.5",
     "@rspack/cli": "^0.7.5",
     "@rspack/core": "^0.7.5",
+    "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
     "@testing-library/react-hooks": "^5.1.1",
