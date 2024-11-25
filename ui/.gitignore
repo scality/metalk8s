@@ -25,3 +25,4 @@ cypress/videos/
 
 # federated types
 build_ts/
+@mf-types/
