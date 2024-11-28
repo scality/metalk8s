@@ -1,0 +1,136 @@
+name: "Create Development Branch"
+run-name: Create a new development branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump-type:
+        description: "bump type"
+        required: true
+        type: choice
+        default: "major"
+        options:
+          - "major"
+          - "minor"
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-24.04
+    steps:
+      # validate branch
+      - name: Validate running branch
+        run: |
+          # we want to stop if this is not running on development branch
+          [[ "${{github.ref_name}}" =~ ^development/[0-9.]+$ ]] || exit 1
+      # create app token
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.ACTIONS_APP_ID }}
+          private-key: ${{ secrets.ACTIONS_APP_PRIVATE_KEY }}
+      # checkout
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+      # get version
+      - name: Get current version
+        run: |
+          source VERSION
+
+          SHORT_VERSION="$VERSION_MAJOR.$VERSION_MINOR"
+
+          echo "SHORT_VERSION=$SHORT_VERSION" >> $GITHUB_ENV
+      # calculate new version
+      - name: Calculate new version
+        run: |
+          source VERSION
+
+          if [[ "${{ inputs.bump-type }}" == "major" ]]; then
+            NEW_VERSION_MAJOR=$(($VERSION_MAJOR+1))
+            NEW_VERSION_MINOR=0
+          else
+            NEW_VERSION_MAJOR=$VERSION_MAJOR
+            NEW_VERSION_MINOR=$(($VERSION_MINOR+1))
+          fi
+
+          NEW_SHORT_VERSION="$NEW_VERSION_MAJOR.$NEW_VERSION_MINOR"
+
+          echo "NEW_SHORT_VERSION=$NEW_SHORT_VERSION" >> $GITHUB_ENV
+          echo "NEW_VERSION_MAJOR=$NEW_VERSION_MAJOR" >> $GITHUB_ENV
+          echo "NEW_VERSION_MINOR=$NEW_VERSION_MINOR" >> $GITHUB_ENV
+      # calculate new branch name
+      - name: Calculate new branch name
+        run: |
+          NEW_BRANCH_NAME="development/${{ env.NEW_SHORT_VERSION }}"
+          INIT_BRANCH_NAME="feature/init-dev-${{ env.NEW_SHORT_VERSION }}"
+
+          echo "NEW_BRANCH_NAME=$NEW_BRANCH_NAME" >> $GITHUB_ENV
+          echo "INIT_BRANCH_NAME=$INIT_BRANCH_NAME" >> $GITHUB_ENV
+      # create development branch
+      - name: Create new branch
+        run: |
+          git checkout -b "${{ env.NEW_BRANCH_NAME }}"
+      # push development branch
+      - name: Push new branch
+        run: |
+          git config --global user.email ${{ github.actor }}@scality.com
+          git config --global user.name ${{ github.actor }}
+          git push --set-upstream origin ${{ env.NEW_BRANCH_NAME }}
+      # create new branch
+      - name: Create an init branch
+        run: |
+          git checkout -b "${{ env.INIT_BRANCH_NAME }}"
+      # find mentions of new version: warn user
+      - name: Look for important messages
+        id: warn_user
+        run: |
+          link="https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/"
+          {
+            echo 'COMMENT<<EOF'
+            echo "# Mentions of ${{ env.NEW_SHORT_VERSION }} in ${{ github.ref_name }}"
+            git grep -rHn "${{ env.NEW_SHORT_VERSION }}" | sed -E "s;(.*):([0-9]+):.*;$link\1#L\2;"
+            echo EOF
+          } >> "$GITHUB_ENV"
+      # bump version
+      - name: Bump VERSION
+        run: |
+          cat << EOF > VERSION
+          VERSION_MAJOR=${{ env.NEW_VERSION_MAJOR }}
+          VERSION_MINOR=${{ env.NEW_VERSION_MINOR }}
+          VERSION_PATCH=0
+          VERSION_SUFFIX=-dev
+          EOF
+      # edit CHANGELOG
+      - name: add new entry to changelog
+        run: |
+          sed -i "s/# CHANGELOG/# CHANGELOG\n\n## Release ${{ env.NEW_SHORT_VERSION }}.0 (in development)/" CHANGELOG.md
+      # TODO: edit cron jobs
+      # push
+      - name: push to init branch
+        run: |
+          git add VERSION
+          git add CHANGELOG.md
+          git add .github/workflows/crons.yaml
+          git commit -m "Update version to ${{ env.NEW_SHORT_VERSION }}"
+          git push --set-upstream origin ${{ env.INIT_BRANCH_NAME }}
+      # create PR
+      - name: create PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: "${{ env.INIT_BRANCH_NAME }}",
+              base: "${{ env.NEW_BRANCH_NAME }}",
+              title: "Initialize ${{ env.NEW_BRANCH_NAME }} branch"
+            });
+
+            await github.rest.issues.createComment({
+              issue_number: pr.data.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `${{ env.COMMENT }}`
+            });
