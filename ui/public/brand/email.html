@@ -224,8 +224,7 @@
                                   align="center"
                                   class="links-color"
                                 >
-                                  <!--[if (lte ie 8)]><div style="display: inline-block; width: 258px; -mru-width: 0px"><!
-                                  [endif]-->
+                                  <!--[if (lte ie 8)]><div style="display: inline-block; width: 258px; -mru-width: 0px"><![endif]-->
                                   <!--[if (lte ie 8)]></div><![endif]-->
                                 </td>
                               </tr>
@@ -339,7 +338,10 @@
                                     "
                                   >
                                     <span style="font-weight: normal">
-                                      {{ .Alerts | len }} alert{{ if gt (len .Alerts) 1 }}s{{ end }} for {{ range .GroupLabels.SortedPairs }} {{ .Name }}={{ .Value }} {{ end }}</span
+                                      {{ .Alerts | len }} alert{{ if gt (len
+                                      .Alerts) 1 }}s{{ end }} for {{ range
+                                      .GroupLabels.SortedPairs }} {{ .Name }}={{
+                                      .Value }} {{ end }}</span
                                     >
                                   </td>
                                 </tr>
@@ -524,7 +526,8 @@
                                   "
                                 >
                                   <span style="font-weight: normal"
-                                    >{{ .Alerts.Firing | len }} Alert{{ if gt (len .Alerts.Firing) 1 }}s{{ end }}
+                                    >{{ .Alerts.Firing | len }} Alert{{ if gt
+                                    (len .Alerts.Firing) 1 }}s{{ end }}
                                     currently firing</span
                                   >
                                 </td>
@@ -612,18 +615,29 @@
                             <tr>
                               <td>
                                 {{ if eq .Labels.severity "critical" }}
-                                <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtdGltZXMtY2lyY2xlIGZhLXctMTYgZmEtMXggc2MtSFVyclcgZ2duVWxGIiB3aWR0aD0iMjQiIGNvbG9yPSIjRDY1NDVBIiBhcmlhLWhpZGRlbj0idHJ1ZSIgYXJpYS1sYWJlbD0iVGltZXMtY2lyY2xlIHN0YXR1cyBjcml0aWNhbCIgZGF0YS1pY29uPSJ0aW1lcy1jaXJjbGUiIGRhdGEtcHJlZml4PSJmYXMiIGZvY3VzYWJsZT0iZmFsc2UiIHJvbGU9ImltZyIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yNTYgOEMxMTkgOCA4IDExOSA4IDI1NnMxMTEgMjQ4IDI0OCAyNDggMjQ4LTExMSAyNDgtMjQ4UzM5MyA4IDI1NiA4em0xMjEuNiAzMTMuMWM0LjcgNC43IDQuNyAxMi4zIDAgMTdMMzM4IDM3Ny42Yy00LjcgNC43LTEyLjMgNC43LTE3IDBMMjU2IDMxMmwtNjUuMSA2NS42Yy00LjcgNC43LTEyLjMgNC43LTE3IDBMMTM0LjQgMzM4Yy00LjctNC43LTQuNy0xMi4zIDAtMTdsNjUuNi02NS02NS42LTY1LjFjLTQuNy00LjctNC43LTEyLjMgMC0xN2wzOS42LTM5LjZjNC43LTQuNyAxMi4zLTQuNyAxNyAwbDY1IDY1LjcgNjUuMS02NS42YzQuNy00LjcgMTIuMy00LjcgMTcgMGwzOS42IDM5LjZjNC43IDQuNyA0LjcgMTIuMyAwIDE3TDMxMiAyNTZsNjUuNiA2NS4xeiIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+Cg==" />
-                                {{ else if eq .Labels.severity "warning" }}
-                                <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtZXhjbGFtYXRpb24tY2lyY2xlIGZhLXctMTYgZmEtMXggc2MtZm9kVnhWIFlad3FvIiB3aWR0aD0iMjQiIGNvbG9yPSIjRjdGMjVBIiBhcmlhLWhpZGRlbj0idHJ1ZSIgYXJpYS1sYWJlbD0iRXhjbGFtYXRpb24tY2lyY2xlIHN0YXR1cyB3YXJuaW5nIiBkYXRhLWljb249ImV4Y2xhbWF0aW9uLWNpcmNsZSIgZGF0YS1wcmVmaXg9ImZhcyIgZm9jdXNhYmxlPSJmYWxzZSIgcm9sZT0iaW1nIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0ibTUwNCAyNTZjMCAxMzctMTExLjA0IDI0OC0yNDggMjQ4cy0yNDgtMTExLTI0OC0yNDhjMC0xMzYuOTIgMTExLjA0LTI0OCAyNDgtMjQ4czI0OCAxMTEuMDggMjQ4IDI0OHptLTI0OCA1MGMtMjUuNDA1IDAtNDYgMjAuNTk1LTQ2IDQ2czIwLjU5NSA0NiA0NiA0NiA0Ni0yMC41OTUgNDYtNDYtMjAuNTk1LTQ2LTQ2LTQ2em0tNDMuNjczLTE2NS4zNSA3LjQxOCAxMzZjMC4zNDcgNi4zNjQgNS42MDkgMTEuMzQ2IDExLjk4MiAxMS4zNDZoNDguNTQ2YzYuMzczIDAgMTEuNjM1LTQuOTgyIDExLjk4Mi0xMS4zNDZsNy40MTgtMTM2YzAuMzc1LTYuODc0LTUuMDk4LTEyLjY1NC0xMS45ODItMTIuNjU0aC02My4zODNjLTYuODg0IDAtMTIuMzU2IDUuNzgtMTEuOTgxIDEyLjY1NHoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPgo8L3N2Zz4K" />
-                                {{ else }} {{ .Labels.severity }} {{ end }}
+                                <img
+                                  src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtdGltZXMtY2lyY2xlIGZhLXctMTYgZmEtMXggc2MtSFVyclcgZ2duVWxGIiB3aWR0aD0iMjQiIGNvbG9yPSIjRDY1NDVBIiBhcmlhLWhpZGRlbj0idHJ1ZSIgYXJpYS1sYWJlbD0iVGltZXMtY2lyY2xlIHN0YXR1cyBjcml0aWNhbCIgZGF0YS1pY29uPSJ0aW1lcy1jaXJjbGUiIGRhdGEtcHJlZml4PSJmYXMiIGZvY3VzYWJsZT0iZmFsc2UiIHJvbGU9ImltZyIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yNTYgOEMxMTkgOCA4IDExOSA4IDI1NnMxMTEgMjQ4IDI0OCAyNDggMjQ4LTExMSAyNDgtMjQ4UzM5MyA4IDI1NiA4em0xMjEuNiAzMTMuMWM0LjcgNC43IDQuNyAxMi4zIDAgMTdMMzM4IDM3Ny42Yy00LjcgNC43LTEyLjMgNC43LTE3IDBMMjU2IDMxMmwtNjUuMSA2NS42Yy00LjcgNC43LTEyLjMgNC43LTE3IDBMMTM0LjQgMzM4Yy00LjctNC43LTQuNy0xMi4zIDAtMTdsNjUuNi02NS02NS42LTY1LjFjLTQuNy00LjctNC43LTEyLjMgMC0xN2wzOS42LTM5LjZjNC43LTQuNyAxMi4zLTQuNyAxNyAwbDY1IDY1LjcgNjUuMS02NS42YzQuNy00LjcgMTIuMy00LjcgMTcgMGwzOS42IDM5LjZjNC43IDQuNyA0LjcgMTIuMyAwIDE3TDMxMiAyNTZsNjUuNiA2NS4xeiIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+Cg=="
+                                />
+                                (critical) {{ else if eq .Labels.severity
+                                "warning" }}
+                                <img
+                                  src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtZXhjbGFtYXRpb24tY2lyY2xlIGZhLXctMTYgZmEtMXggc2MtZm9kVnhWIFlad3FvIiB3aWR0aD0iMjQiIGNvbG9yPSIjRjdGMjVBIiBhcmlhLWhpZGRlbj0idHJ1ZSIgYXJpYS1sYWJlbD0iRXhjbGFtYXRpb24tY2lyY2xlIHN0YXR1cyB3YXJuaW5nIiBkYXRhLWljb249ImV4Y2xhbWF0aW9uLWNpcmNsZSIgZGF0YS1wcmVmaXg9ImZhcyIgZm9jdXNhYmxlPSJmYWxzZSIgcm9sZT0iaW1nIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0ibTUwNCAyNTZjMCAxMzctMTExLjA0IDI0OC0yNDggMjQ4cy0yNDgtMTExLTI0OC0yNDhjMC0xMzYuOTIgMTExLjA0LTI0OCAyNDgtMjQ4czI0OCAxMTEuMDggMjQ4IDI0OHptLTI0OCA1MGMtMjUuNDA1IDAtNDYgMjAuNTk1LTQ2IDQ2czIwLjU5NSA0NiA0NiA0NiA0Ni0yMC41OTUgNDYtNDYtMjAuNTk1LTQ2LTQ2LTQ2em0tNDMuNjczLTE2NS4zNSA3LjQxOCAxMzZjMC4zNDcgNi4zNjQgNS42MDkgMTEuMzQ2IDExLjk4MiAxMS4zNDZoNDguNTQ2YzYuMzczIDAgMTEuNjM1LTQuOTgyIDExLjk4Mi0xMS4zNDZsNy40MTgtMTM2YzAuMzc1LTYuODc0LTUuMDk4LTEyLjY1NC0xMS45ODItMTIuNjU0aC02My4zODNjLTYuODg0IDAtMTIuMzU2IDUuNzgtMTEuOTgxIDEyLjY1NHoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPgo8L3N2Zz4K"
+                                />
+                                (warning) {{ else }} {{ .Labels.severity }} {{
+                                end }}
                               </td>
                               <td>{{ .Labels.alertname }}</td>
                               <td>
-                                {{if .Annotations.description }} {{ .Annotations.description }} {{ else if .Annotations.message }} {{ .Annotations.message }} {{ else if .Annotations.summary }} {{ .Annotations.summary }} {{ else }} No
+                                {{if .Annotations.description }} {{
+                                .Annotations.description }} {{ else if
+                                .Annotations.message }} {{ .Annotations.message
+                                }} {{ else if .Annotations.summary }} {{
+                                .Annotations.summary }} {{ else }} No
                                 description {{ end }}
                               </td>
                               <td>
-                                {{ .StartsAt.Format "2006-01-02 15:04:05 (Z07:00)" }}
+                                {{ .StartsAt.Format "2006-01-02 15:04:05
+                                (Z07:00)" }}
                               </td>
                             </tr>
                             {{ end }}
@@ -848,7 +862,8 @@
                                   "
                                 >
                                   <span style="font-weight: normal"
-                                    >{{ .Alerts.Resolved | len }} Alert{{ if gt (len .Alerts.Resolved) 1 }}s{{ end }}
+                                    >{{ .Alerts.Resolved | len }} Alert{{ if gt
+                                    (len .Alerts.Resolved) 1 }}s{{ end }}
                                     resolved</span
                                   >
                                 </td>
@@ -940,16 +955,24 @@
                                   src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtdGltZXMtY2lyY2xlIGZhLXctMTYgZmEtMXggc2MtSFVyclcgZ2duVWxGIiB3aWR0aD0iMjQiIGNvbG9yPSIjRDY1NDVBIiBhcmlhLWhpZGRlbj0idHJ1ZSIgYXJpYS1sYWJlbD0iVGltZXMtY2lyY2xlIHN0YXR1cyBjcml0aWNhbCIgZGF0YS1pY29uPSJ0aW1lcy1jaXJjbGUiIGRhdGEtcHJlZml4PSJmYXMiIGZvY3VzYWJsZT0iZmFsc2UiIHJvbGU9ImltZyIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yNTYgOEMxMTkgOCA4IDExOSA4IDI1NnMxMTEgMjQ4IDI0OCAyNDggMjQ4LTExMSAyNDgtMjQ4UzM5MyA4IDI1NiA4em0xMjEuNiAzMTMuMWM0LjcgNC43IDQuNyAxMi4zIDAgMTdMMzM4IDM3Ny42Yy00LjcgNC43LTEyLjMgNC43LTE3IDBMMjU2IDMxMmwtNjUuMSA2NS42Yy00LjcgNC43LTEyLjMgNC43LTE3IDBMMTM0LjQgMzM4Yy00LjctNC43LTQuNy0xMi4zIDAtMTdsNjUuNi02NS02NS42LTY1LjFjLTQuNy00LjctNC43LTEyLjMgMC0xN2wzOS42LTM5LjZjNC43LTQuNyAxMi4zLTQuNyAxNyAwbDY1IDY1LjcgNjUuMS02NS42YzQuNy00LjcgMTIuMy00LjcgMTcgMGwzOS42IDM5LjZjNC43IDQuNyA0LjcgMTIuMyAwIDE3TDMxMiAyNTZsNjUuNiA2NS4xeiIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+Cg=="
                                 />
                                 {{ else if eq .Labels.severity "warning" }}
-                                <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtZXhjbGFtYXRpb24tY2lyY2xlIGZhLXctMTYgZmEtMXggc2MtZm9kVnhWIFlad3FvIiB3aWR0aD0iMjQiIGNvbG9yPSIjRjdGMjVBIiBhcmlhLWhpZGRlbj0idHJ1ZSIgYXJpYS1sYWJlbD0iRXhjbGFtYXRpb24tY2lyY2xlIHN0YXR1cyB3YXJuaW5nIiBkYXRhLWljb249ImV4Y2xhbWF0aW9uLWNpcmNsZSIgZGF0YS1wcmVmaXg9ImZhcyIgZm9jdXNhYmxlPSJmYWxzZSIgcm9sZT0iaW1nIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0ibTUwNCAyNTZjMCAxMzctMTExLjA0IDI0OC0yNDggMjQ4cy0yNDgtMTExLTI0OC0yNDhjMC0xMzYuOTIgMTExLjA0LTI0OCAyNDgtMjQ4czI0OCAxMTEuMDggMjQ4IDI0OHptLTI0OCA1MGMtMjUuNDA1IDAtNDYgMjAuNTk1LTQ2IDQ2czIwLjU5NSA0NiA0NiA0NiA0Ni0yMC41OTUgNDYtNDYtMjAuNTk1LTQ2LTQ2LTQ2em0tNDMuNjczLTE2NS4zNSA3LjQxOCAxMzZjMC4zNDcgNi4zNjQgNS42MDkgMTEuMzQ2IDExLjk4MiAxMS4zNDZoNDguNTQ2YzYuMzczIDAgMTEuNjM1LTQuOTgyIDExLjk4Mi0xMS4zNDZsNy40MTgtMTM2YzAuMzc1LTYuODc0LTUuMDk4LTEyLjY1NC0xMS45ODItMTIuNjU0aC02My4zODNjLTYuODg0IDAtMTIuMzU2IDUuNzgtMTEuOTgxIDEyLjY1NHoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPgo8L3N2Zz4K" />
+                                <img
+                                  src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtZXhjbGFtYXRpb24tY2lyY2xlIGZhLXctMTYgZmEtMXggc2MtZm9kVnhWIFlad3FvIiB3aWR0aD0iMjQiIGNvbG9yPSIjRjdGMjVBIiBhcmlhLWhpZGRlbj0idHJ1ZSIgYXJpYS1sYWJlbD0iRXhjbGFtYXRpb24tY2lyY2xlIHN0YXR1cyB3YXJuaW5nIiBkYXRhLWljb249ImV4Y2xhbWF0aW9uLWNpcmNsZSIgZGF0YS1wcmVmaXg9ImZhcyIgZm9jdXNhYmxlPSJmYWxzZSIgcm9sZT0iaW1nIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0ibTUwNCAyNTZjMCAxMzctMTExLjA0IDI0OC0yNDggMjQ4cy0yNDgtMTExLTI0OC0yNDhjMC0xMzYuOTIgMTExLjA0LTI0OCAyNDgtMjQ4czI0OCAxMTEuMDggMjQ4IDI0OHptLTI0OCA1MGMtMjUuNDA1IDAtNDYgMjAuNTk1LTQ2IDQ2czIwLjU5NSA0NiA0NiA0NiA0Ni0yMC41OTUgNDYtNDYtMjAuNTk1LTQ2LTQ2LTQ2em0tNDMuNjczLTE2NS4zNSA3LjQxOCAxMzZjMC4zNDcgNi4zNjQgNS42MDkgMTEuMzQ2IDExLjk4MiAxMS4zNDZoNDguNTQ2YzYuMzczIDAgMTEuNjM1LTQuOTgyIDExLjk4Mi0xMS4zNDZsNy40MTgtMTM2YzAuMzc1LTYuODc0LTUuMDk4LTEyLjY1NC0xMS45ODItMTIuNjU0aC02My4zODNjLTYuODg0IDAtMTIuMzU2IDUuNzgtMTEuOTgxIDEyLjY1NHoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPgo8L3N2Zz4K"
+                                />
                                 {{ else }} {{ .Labels.severity }} {{ end }}
                               </td>
                               <td>{{ .Labels.alertname }}</td>
                               <td>
-                                {{if .Annotations.description }} {{ .Annotations.description }} {{ else if .Annotations.message }} {{ .Annotations.message }} {{ else if .Annotations.summary }} {{ .Annotations.summary }} {{ else }} No
+                                {{if .Annotations.description }} {{
+                                .Annotations.description }} {{ else if
+                                .Annotations.message }} {{ .Annotations.message
+                                }} {{ else if .Annotations.summary }} {{
+                                .Annotations.summary }} {{ else }} No
                                 description {{ end }}
                               </td>
                               <td>
-                                {{ .StartsAt.Format "2006-01-02 15:04:05 (Z07:00)" }} - {{ .EndsAt.Format "2006-01-02 15:04:05 (Z07:00)" }}
+                                {{ .StartsAt.Format "2006-01-02 15:04:05
+                                (Z07:00)" }} - {{ .EndsAt.Format "2006-01-02
+                                15:04:05 (Z07:00)" }}
                               </td>
                             </tr>
                             {{ end }}
