@@ -220,6 +220,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.OPERATOR_FRAMEWORK_REPOSITORYT: [
         "catalogd",
         "operator-controller",
+        "opm",
     ],
 }
 
@@ -338,6 +339,16 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
         build_context=constants.NGINX_OPERATOR_ROOT,
         build_args={
             "BUILDER_IMG": TO_PULL["alpine"].remote_fullname_digest,
+            "METALK8S_VERSION": versions.VERSION,
+        },
+    ),
+    _local_image(
+        name="metalk8s-catalog-source",
+        dockerfile=constants.CATALOG_SOURCE_ROOT / "catalog.Dockerfile",
+        build_context=constants.CATALOG_SOURCE_ROOT,
+        build_args={
+            "BASE_IMG": TO_PULL["opm"].remote_fullname_digest,
+            "SED_IMG": TO_PULL["alpine"].remote_fullname_digest,
             "METALK8S_VERSION": versions.VERSION,
         },
     ),

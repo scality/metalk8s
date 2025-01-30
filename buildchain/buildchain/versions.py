@@ -290,6 +290,16 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
+        name="opm",
+        version="v1.49.0",
+        digest="sha256:0bbe4054f2f88410ae364169379639c06b0e253d6e233bc24fcf2c0cd2d9803d",
+    ),
+    Image(
+        name="metalk8s-catalog-source",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
         name="loki",
         version="3.2.0",
         digest="sha256:882e30c20683a48a8b7ca123e6c19988980b4bd13d2ff221dfcbef0fdc631694",

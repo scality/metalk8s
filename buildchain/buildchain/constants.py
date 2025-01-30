@@ -66,6 +66,8 @@ STORAGE_OPERATOR_ROOT: Path = ROOT / "storage-operator"
 UI_BUILD_ROOT: Path = config.BUILD_ROOT / "ui"
 # Path to the shell-ui build root directory.
 SHELL_UI_BUILD_ROOT: Path = config.BUILD_ROOT / "shell-ui"
+# Path to the MetalK8s Catalog Source root directory
+CATALOG_SOURCE_ROOT: Path = ROOT / "catalog-source"
 
 # Docker entrypoints.
 REDHAT_ENTRYPOINT: Path = ROOT / "packages/redhat/common/entrypoint.sh"
