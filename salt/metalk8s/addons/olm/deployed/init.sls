@@ -1,4 +1,5 @@
 include:
+  - metalk8s.addons.cert-manager.deployed
   - .chart
 
 Wait for the Catalogd Controller Manager deployment to be Ready:
