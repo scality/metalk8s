@@ -19,3 +19,7 @@ def check_condition_status(kind: str, name: str, condition: str, status: str):
 
 def check_clustercatalog_serving(name: str):
     return check_condition_status("ClusterCatalog", name, "Serving", "True")
+
+
+def check_clusterextension_installed(name: str):
+    return check_condition_status("ClusterExtension", name, "Installed", "True")
