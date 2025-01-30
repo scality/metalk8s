@@ -1,0 +1,3 @@
+# NGINX-operator
+
+This operator manages IngressNginx CRs and uses them as a values file for the [ingress-nginx](https://github.com/kubernetes/ingress-nginx) helm chart.

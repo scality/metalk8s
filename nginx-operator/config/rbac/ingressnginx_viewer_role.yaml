@@ -1,0 +1,23 @@
+# permissions for end users to view ingressnginxes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: nginx-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: ingressnginx-viewer-role
+rules:
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - ingressnginxes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - ingressnginxes/status
+  verbs:
+  - get

@@ -58,6 +58,8 @@ VAGRANT_ROOT: Path = ROOT / ".vagrant"
 STATIC_CONTAINER_REGISTRY: Path = Path(ROOT, "buildchain/static-container-registry")
 # Path to the MetalK8s operator source directory
 METALK8S_OPERATOR_ROOT: Path = ROOT / "operator"
+# Path to the nginx-operator source directory.
+NGINX_OPERATOR_ROOT: Path = ROOT / "nginx-operator"
 # Path to the storage-operator source directory.
 STORAGE_OPERATOR_ROOT: Path = ROOT / "storage-operator"
 # Path to the UI build root directory.

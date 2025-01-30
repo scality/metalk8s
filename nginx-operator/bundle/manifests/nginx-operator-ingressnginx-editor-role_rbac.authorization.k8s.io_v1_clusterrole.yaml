@@ -1,0 +1,27 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: nginx-operator
+  name: nginx-operator-ingressnginx-editor-role
+rules:
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - ingressnginxes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - ingressnginxes/status
+  verbs:
+  - get

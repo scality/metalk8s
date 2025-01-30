@@ -1,0 +1,27 @@
+# permissions for end users to edit ingressnginxes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: nginx-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: ingressnginx-editor-role
+rules:
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - ingressnginxes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - ingressnginxes/status
+  verbs:
+  - get
