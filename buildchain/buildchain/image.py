@@ -217,6 +217,10 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "cert-manager-cainjector",
         "cert-manager-acmesolver",
     ],
+    constants.OPERATOR_FRAMEWORK_REPOSITORYT: [
+        "catalogd",
+        "operator-controller",
+    ],
 }
 
 REMOTE_NAMES: Dict[str, str] = {

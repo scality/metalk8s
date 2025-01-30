@@ -32,6 +32,8 @@ CONTAINERD_VERSION: str = "1.6.36"
 CONTAINERD_RELEASE: str = "1"
 SOSREPORT_RELEASE: str = "2"
 
+OLM_VERSION: str = "1.1.0"
+
 
 def load_version_information() -> None:
     """Load version information from `VERSION`."""
@@ -224,6 +226,16 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         name="thanos",
         version="v0.36.1",
         digest="sha256:e542959e1b36d5046083d1b64a7049c356b68a44a173c58b3ae7c0c9ada932d5",
+    ),
+    Image(
+        name="catalogd",
+        version=_version_prefix(OLM_VERSION),
+        digest="sha256:95477a136772765fa2cfb02a6e5fb52bcc167ef7b5333f9e238b0b13b9e72f7b",
+    ),
+    Image(
+        name="operator-controller",
+        version=_version_prefix(OLM_VERSION),
+        digest="sha256:6272919257e695fcdadf0b57cc0a272084ebf2caca7571e2e5d79d6a56a788fa",
     ),
     # Local images
     Image(

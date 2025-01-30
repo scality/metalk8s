@@ -333,6 +333,23 @@ def codegen_chart_cert_manager() -> types.TaskDict:
     }
 
 
+def codegen_olm() -> types.TaskDict:
+    """Generate the SLS file for OLMv1 using the render script."""
+    target_sls = constants.ROOT / "salt/metalk8s/addons/olm/deployed/chart.sls"
+    cmd = f"{constants.OLM_RENDER_CMD} " f"--output {target_sls}"
+
+    file_dep = [constants.OLM_RENDER_SCRIPT]
+
+    return {
+        "name": "olm",
+        "title": utils.title_with_subtask_name("CODEGEN"),
+        "doc": codegen_olm.__doc__,
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
+        "file_dep": file_dep,
+        "task_dep": ["check_for:tox"],
+    }
+
+
 # List of available code generation tasks.
 CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_storage_operator,
@@ -345,6 +362,7 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_prometheus_adapter,
     codegen_chart_thanos,
     codegen_chart_cert_manager,
+    codegen_olm,
 )
 
 
