@@ -45,6 +45,9 @@ Feature: Cluster Sanity Checks
         | metalk8s-certs      | cert-manager                           |
         | metalk8s-certs      | cert-manager-cainjector                |
         | metalk8s-certs      | cert-manager-webhook                   |
+        | olmv1-system        | catalogd-controller-manager            |
+        | olmv1-system        | operator-controller-controller-manager |
+        | nginx-operator      | nginx-operator-controller-manager      |
 
     Scenario Outline: DaemonSet has desired Pods ready
         Then the DaemonSet <name> in the <namespace> namespace has all desired Pods ready
