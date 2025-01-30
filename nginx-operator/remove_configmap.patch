@@ -1,0 +1,27 @@
+diff --git a/nginx-operator/helm-charts/ingress-nginx/templates/controller-configmap.yaml b/nginx-operator/helm-charts/ingress-nginx/templates/controller-configmap.yaml
+index 22080d115..e24a96742 100644
+--- a/nginx-operator/helm-charts/ingress-nginx/templates/controller-configmap.yaml
++++ b/nginx-operator/helm-charts/ingress-nginx/templates/controller-configmap.yaml
+@@ -1,3 +1,4 @@
++{{- if .Values.controller.generateConfigMap -}}
+ apiVersion: v1
+ kind: ConfigMap
+ metadata:
+@@ -26,3 +27,4 @@ data:
+ {{- range $key, $value := .Values.controller.config }}
+   {{- $key | nindent 2 }}: {{ tpl (toString $value) $ | quote }}
+ {{- end }}
++{{- end }}
+diff --git a/nginx-operator/helm-charts/ingress-nginx/values.yaml b/nginx-operator/helm-charts/ingress-nginx/values.yaml
+index f42a6821d..6c44a3a92 100644
+--- a/nginx-operator/helm-charts/ingress-nginx/values.yaml
++++ b/nginx-operator/helm-charts/ingress-nginx/values.yaml
+@@ -48,6 +48,8 @@ controller:
+   # -- Global configuration passed to the ConfigMap consumed by the controller. Values may contain Helm templates.
+   # Ref.: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/
+   config: {}
++  # -- whether to generate the configmap object or not
++  generateConfigMap: false
+   # -- Annotations to be added to the controller config configuration configmap.
+   configAnnotations: {}
+   # -- Will add custom headers before sending traffic to backends according to https://github.com/kubernetes/ingress-nginx/tree/main/docs/examples/customization/custom-headers
