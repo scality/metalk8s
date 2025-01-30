@@ -32,6 +32,7 @@ PROMETHEUS_OPERATOR_REPOSITORY: str = "quay.io/prometheus-operator"
 PROMETHEUS_REPOSITORY: str = "quay.io/prometheus"
 THANOS_REPOSITORY: str = "quay.io/thanos"
 CERT_MANAGER_REPOSITORY: str = "quay.io/jetstack"
+OPERATOR_FRAMEWORK_REPOSITORYT: str = "quay.io/operator-framework"
 
 # Paths {{{
 
@@ -75,6 +76,8 @@ UI_ASSETS: Path = UI_BRANDING / "assets"
 # Path to the chart files
 CHART_ROOT: Path = ROOT / "charts"
 CHART_RENDER_SCRIPT: Path = CHART_ROOT / "render.py"
+
+OLM_RENDER_SCRIPT: Path = ROOT / "olm/render.py"
 
 # }}}
 # Vagrant parameters {{{
@@ -145,6 +148,7 @@ METALK8S_OPERATOR_SDK_GENERATE_CMDS: List[List[str]] = [
 ]
 
 CHART_RENDER_CMD: str = f"tox -e chart-render -- --kube-version {versions.K8S_VERSION}"
+OLM_RENDER_CMD: str = f"tox -e olm-render -- -v v{versions.OLM_VERSION}"
 
 # For mypy, see `--no-implicit-reexport` documentation.
 __all__ = ["ROOT"]
