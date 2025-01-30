@@ -125,60 +125,6 @@ def codegen_chart_fluent_bit() -> types.TaskDict:
     }
 
 
-def codegen_chart_ingress_nginx() -> types.TaskDict:
-    """Generate the SLS file for NGINX Ingress using the chart render script."""
-    chart_dir = constants.CHART_ROOT / "ingress-nginx"
-    ingress_nginx_namespace = "metalk8s-ingress"
-    actions = []
-    file_dep = list(utils.git_ls(chart_dir))
-    file_dep.append(constants.CHART_RENDER_SCRIPT)
-
-    # Workload Plane Ingress
-    target_sls = (
-        constants.ROOT / "salt/metalk8s/addons/nginx-ingress/deployed/chart.sls"
-    )
-    chart_name = "ingress-nginx"
-    value_file = constants.CHART_ROOT / f"{chart_name}.yaml"
-    actions.append(
-        doit.action.CmdAction(
-            f"{constants.CHART_RENDER_CMD} {chart_name} {value_file} {chart_dir} "
-            f"--namespace {ingress_nginx_namespace} --remove-manifest ConfigMap "
-            f"{chart_name}-controller "
-            f"--output {target_sls}",
-            cwd=constants.ROOT,
-        )
-    )
-    file_dep.append(value_file)
-
-    # Control Plane Ingress
-    target_sls = (
-        constants.ROOT
-        / "salt/metalk8s/addons/nginx-ingress-control-plane"
-        / "deployed/chart.sls"
-    )
-    chart_name = "ingress-nginx-control-plane"
-    value_file = constants.CHART_ROOT / f"{chart_name}.yaml"
-    actions.append(
-        doit.action.CmdAction(
-            f"{constants.CHART_RENDER_CMD} {chart_name} {value_file} {chart_dir} "
-            f"--namespace {ingress_nginx_namespace} --remove-manifest ConfigMap "
-            f"{chart_name}-controller "
-            f"--output {target_sls}",
-            cwd=constants.ROOT,
-        )
-    )
-    file_dep.append(value_file)
-
-    return {
-        "name": "chart_ingress-nginx",
-        "title": utils.title_with_subtask_name("CODEGEN"),
-        "doc": codegen_chart_ingress_nginx.__doc__,
-        "actions": actions,
-        "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
-    }
-
-
 def codegen_chart_kube_prometheus_stack() -> types.TaskDict:
     """Generate the SLS file for Kube Prometheus Stack using the chart render script."""
     target_sls = (
@@ -356,7 +302,6 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_metalk8s_operator,
     codegen_chart_dex,
     codegen_chart_fluent_bit,
-    codegen_chart_ingress_nginx,
     codegen_chart_kube_prometheus_stack,
     codegen_chart_loki,
     codegen_chart_prometheus_adapter,
