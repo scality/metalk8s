@@ -1,4 +1,5 @@
 include:
+  - metalk8s.addons.nginx-operator.deployed
   - .namespace
   - .tls-secret
   - .chart
