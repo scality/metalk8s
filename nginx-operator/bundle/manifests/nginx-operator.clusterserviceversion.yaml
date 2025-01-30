@@ -1,0 +1,765 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "metalk8s.scality.com/v1alpha1",
+          "kind": "IngressNginx",
+          "metadata": {
+            "name": "ingressnginx-sample"
+          },
+          "spec": {
+            "commonLabels": {},
+            "controller": {
+              "addHeaders": {},
+              "admissionWebhooks": {
+                "annotations": {},
+                "certManager": {
+                  "admissionCert": {
+                    "duration": ""
+                  },
+                  "enabled": false,
+                  "rootCert": {
+                    "duration": ""
+                  }
+                },
+                "certificate": "/usr/local/certificates/cert",
+                "createSecretJob": {
+                  "name": "create",
+                  "resources": {},
+                  "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                      "drop": [
+                        "ALL"
+                      ]
+                    },
+                    "readOnlyRootFilesystem": true,
+                    "runAsNonRoot": true,
+                    "runAsUser": 65532,
+                    "seccompProfile": {
+                      "type": "RuntimeDefault"
+                    }
+                  }
+                },
+                "enabled": true,
+                "existingPsp": "",
+                "extraEnvs": [],
+                "failurePolicy": "Fail",
+                "key": "/usr/local/certificates/key",
+                "labels": {},
+                "name": "admission",
+                "namespaceSelector": {},
+                "objectSelector": {},
+                "patch": {
+                  "enabled": true,
+                  "image": {
+                    "digest": "sha256:a9f03b34a3cbfbb26d103a14046ab2c5130a80c3d69d526ff8063d2b37b9fd3f",
+                    "image": "ingress-nginx/kube-webhook-certgen",
+                    "pullPolicy": "IfNotPresent",
+                    "registry": "registry.k8s.io",
+                    "tag": "v1.4.4"
+                  },
+                  "labels": {},
+                  "networkPolicy": {
+                    "enabled": false
+                  },
+                  "nodeSelector": {
+                    "kubernetes.io/os": "linux"
+                  },
+                  "podAnnotations": {},
+                  "priorityClassName": "",
+                  "rbac": {
+                    "create": true
+                  },
+                  "securityContext": {},
+                  "serviceAccount": {
+                    "automountServiceAccountToken": true,
+                    "create": true,
+                    "name": ""
+                  },
+                  "tolerations": []
+                },
+                "patchWebhookJob": {
+                  "name": "patch",
+                  "resources": {},
+                  "securityContext": {
+                    "allowPrivilegeEscalation": false,
+                    "capabilities": {
+                      "drop": [
+                        "ALL"
+                      ]
+                    },
+                    "readOnlyRootFilesystem": true,
+                    "runAsNonRoot": true,
+                    "runAsUser": 65532,
+                    "seccompProfile": {
+                      "type": "RuntimeDefault"
+                    }
+                  }
+                },
+                "port": 8443,
+                "service": {
+                  "annotations": {},
+                  "externalIPs": [],
+                  "loadBalancerSourceRanges": [],
+                  "servicePort": 443,
+                  "type": "ClusterIP"
+                }
+              },
+              "affinity": {},
+              "allowSnippetAnnotations": false,
+              "annotations": {},
+              "autoscaling": {
+                "annotations": {},
+                "behavior": {},
+                "enabled": false,
+                "maxReplicas": 11,
+                "minReplicas": 1,
+                "targetCPUUtilizationPercentage": 50,
+                "targetMemoryUtilizationPercentage": 50
+              },
+              "autoscalingTemplate": [],
+              "config": {},
+              "configAnnotations": {},
+              "configMapNamespace": "",
+              "containerName": "controller",
+              "containerPort": {
+                "http": 80,
+                "https": 443
+              },
+              "containerSecurityContext": {},
+              "customTemplate": {
+                "configMapKey": "",
+                "configMapName": ""
+              },
+              "disableLeaderElection": false,
+              "dnsConfig": {},
+              "dnsPolicy": "ClusterFirst",
+              "electionID": "",
+              "electionTTL": "",
+              "enableAnnotationValidations": false,
+              "enableMimalloc": true,
+              "enableTopologyAwareRouting": false,
+              "existingPsp": "",
+              "extraArgs": {},
+              "extraContainers": [],
+              "extraEnvs": [],
+              "extraInitContainers": [],
+              "extraModules": [],
+              "extraVolumeMounts": [],
+              "extraVolumes": [],
+              "healthCheckHost": "",
+              "healthCheckPath": "/healthz",
+              "hostAliases": [],
+              "hostNetwork": false,
+              "hostPort": {
+                "enabled": false,
+                "ports": {
+                  "http": 80,
+                  "https": 443
+                }
+              },
+              "hostname": {},
+              "image": {
+                "allowPrivilegeEscalation": false,
+                "chroot": false,
+                "digest": "sha256:d56f135b6462cfc476447cfe564b83a45e8bb7da2774963b00d12161112270b7",
+                "digestChroot": "sha256:22701f0fc0f2dd209ef782f4e281bfe2d8cccd50ededa00aec88e0cdbe7edd14",
+                "image": "ingress-nginx/controller",
+                "pullPolicy": "IfNotPresent",
+                "readOnlyRootFilesystem": false,
+                "registry": "registry.k8s.io",
+                "runAsNonRoot": true,
+                "runAsUser": 101,
+                "seccompProfile": {
+                  "type": "RuntimeDefault"
+                },
+                "tag": "v1.11.3"
+              },
+              "ingressClass": "nginx",
+              "ingressClassByName": false,
+              "ingressClassResource": {
+                "aliases": [],
+                "annotations": {},
+                "controllerValue": "k8s.io/ingress-nginx",
+                "default": false,
+                "enabled": true,
+                "name": "nginx",
+                "parameters": {}
+              },
+              "keda": {
+                "apiVersion": "keda.sh/v1alpha1",
+                "behavior": {},
+                "cooldownPeriod": 300,
+                "enabled": false,
+                "maxReplicas": 11,
+                "minReplicas": 1,
+                "pollingInterval": 30,
+                "restoreToOriginalReplicaCount": false,
+                "scaledObject": {
+                  "annotations": {}
+                },
+                "triggers": []
+              },
+              "kind": "Deployment",
+              "labels": {},
+              "lifecycle": {
+                "preStop": {
+                  "exec": {
+                    "command": [
+                      "/wait-shutdown"
+                    ]
+                  }
+                }
+              },
+              "livenessProbe": {
+                "failureThreshold": 5,
+                "httpGet": {
+                  "path": "/healthz",
+                  "port": 10254,
+                  "scheme": "HTTP"
+                },
+                "initialDelaySeconds": 10,
+                "periodSeconds": 10,
+                "successThreshold": 1,
+                "timeoutSeconds": 1
+              },
+              "maxmindLicenseKey": "",
+              "metrics": {
+                "enabled": false,
+                "port": 10254,
+                "portName": "metrics",
+                "prometheusRule": {
+                  "additionalLabels": {},
+                  "enabled": false,
+                  "rules": []
+                },
+                "service": {
+                  "annotations": {},
+                  "externalIPs": [],
+                  "labels": {},
+                  "loadBalancerSourceRanges": [],
+                  "servicePort": 10254,
+                  "type": "ClusterIP"
+                },
+                "serviceMonitor": {
+                  "additionalLabels": {},
+                  "annotations": {},
+                  "enabled": false,
+                  "metricRelabelings": [],
+                  "namespace": "",
+                  "namespaceSelector": {},
+                  "relabelings": [],
+                  "scrapeInterval": "30s",
+                  "targetLabels": []
+                }
+              },
+              "minAvailable": 1,
+              "minReadySeconds": 0,
+              "name": "controller",
+              "networkPolicy": {
+                "enabled": false
+              },
+              "nodeSelector": {
+                "kubernetes.io/os": "linux"
+              },
+              "opentelemetry": {
+                "containerSecurityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  },
+                  "readOnlyRootFilesystem": true,
+                  "runAsNonRoot": true,
+                  "runAsUser": 65532,
+                  "seccompProfile": {
+                    "type": "RuntimeDefault"
+                  }
+                },
+                "enabled": false,
+                "image": {
+                  "digest": "sha256:f7604ac0547ed64d79b98d92133234e66c2c8aade3c1f4809fed5eec1fb7f922",
+                  "distroless": true,
+                  "image": "ingress-nginx/opentelemetry-1.25.3",
+                  "registry": "registry.k8s.io",
+                  "tag": "v20240813-b933310d"
+                },
+                "name": "opentelemetry",
+                "resources": {}
+              },
+              "podAnnotations": {},
+              "podLabels": {},
+              "podSecurityContext": {},
+              "priorityClassName": "",
+              "proxySetHeaders": {},
+              "publishService": {
+                "enabled": true,
+                "pathOverride": ""
+              },
+              "readinessProbe": {
+                "failureThreshold": 3,
+                "httpGet": {
+                  "path": "/healthz",
+                  "port": 10254,
+                  "scheme": "HTTP"
+                },
+                "initialDelaySeconds": 10,
+                "periodSeconds": 10,
+                "successThreshold": 1,
+                "timeoutSeconds": 1
+              },
+              "replicaCount": 1,
+              "reportNodeInternalIp": false,
+              "resources": {
+                "requests": {
+                  "cpu": "100m",
+                  "memory": "90Mi"
+                }
+              },
+              "scope": {
+                "enabled": false,
+                "namespace": "",
+                "namespaceSelector": ""
+              },
+              "service": {
+                "annotations": {},
+                "appProtocol": true,
+                "clusterIP": "",
+                "enableHttp": true,
+                "enableHttps": true,
+                "enabled": true,
+                "external": {
+                  "enabled": true
+                },
+                "externalIPs": [],
+                "externalTrafficPolicy": "",
+                "internal": {
+                  "annotations": {},
+                  "appProtocol": true,
+                  "clusterIP": "",
+                  "enabled": false,
+                  "externalIPs": [],
+                  "externalTrafficPolicy": "",
+                  "ipFamilies": [
+                    "IPv4"
+                  ],
+                  "ipFamilyPolicy": "SingleStack",
+                  "loadBalancerClass": "",
+                  "loadBalancerIP": "",
+                  "loadBalancerSourceRanges": [],
+                  "nodePorts": {
+                    "http": "",
+                    "https": "",
+                    "tcp": {},
+                    "udp": {}
+                  },
+                  "ports": {},
+                  "sessionAffinity": "",
+                  "targetPorts": {},
+                  "type": ""
+                },
+                "ipFamilies": [
+                  "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "labels": {},
+                "loadBalancerClass": "",
+                "loadBalancerIP": "",
+                "loadBalancerSourceRanges": [],
+                "nodePorts": {
+                  "http": "",
+                  "https": "",
+                  "tcp": {},
+                  "udp": {}
+                },
+                "ports": {
+                  "http": 80,
+                  "https": 443
+                },
+                "sessionAffinity": "",
+                "targetPorts": {
+                  "http": "http",
+                  "https": "https"
+                },
+                "type": "LoadBalancer"
+              },
+              "shareProcessNamespace": false,
+              "sysctls": {},
+              "tcp": {
+                "annotations": {},
+                "configMapNamespace": ""
+              },
+              "terminationGracePeriodSeconds": 300,
+              "tolerations": [],
+              "topologySpreadConstraints": [],
+              "udp": {
+                "annotations": {},
+                "configMapNamespace": ""
+              },
+              "updateStrategy": {},
+              "watchIngressWithoutClass": false
+            },
+            "defaultBackend": {
+              "affinity": {},
+              "autoscaling": {
+                "annotations": {},
+                "enabled": false,
+                "maxReplicas": 2,
+                "minReplicas": 1,
+                "targetCPUUtilizationPercentage": 50,
+                "targetMemoryUtilizationPercentage": 50
+              },
+              "containerSecurityContext": {},
+              "enabled": false,
+              "existingPsp": "",
+              "extraArgs": {},
+              "extraConfigMaps": [],
+              "extraEnvs": [],
+              "extraVolumeMounts": [],
+              "extraVolumes": [],
+              "image": {
+                "allowPrivilegeEscalation": false,
+                "image": "defaultbackend-amd64",
+                "pullPolicy": "IfNotPresent",
+                "readOnlyRootFilesystem": true,
+                "registry": "registry.k8s.io",
+                "runAsNonRoot": true,
+                "runAsUser": 65534,
+                "seccompProfile": {
+                  "type": "RuntimeDefault"
+                },
+                "tag": "1.5"
+              },
+              "labels": {},
+              "livenessProbe": {
+                "failureThreshold": 3,
+                "initialDelaySeconds": 30,
+                "periodSeconds": 10,
+                "successThreshold": 1,
+                "timeoutSeconds": 5
+              },
+              "minAvailable": 1,
+              "minReadySeconds": 0,
+              "name": "defaultbackend",
+              "networkPolicy": {
+                "enabled": false
+              },
+              "nodeSelector": {
+                "kubernetes.io/os": "linux"
+              },
+              "podAnnotations": {},
+              "podLabels": {},
+              "podSecurityContext": {},
+              "port": 8080,
+              "priorityClassName": "",
+              "readinessProbe": {
+                "failureThreshold": 6,
+                "initialDelaySeconds": 0,
+                "periodSeconds": 5,
+                "successThreshold": 1,
+                "timeoutSeconds": 5
+              },
+              "replicaCount": 1,
+              "resources": {},
+              "service": {
+                "annotations": {},
+                "externalIPs": [],
+                "loadBalancerSourceRanges": [],
+                "servicePort": 80,
+                "type": "ClusterIP"
+              },
+              "serviceAccount": {
+                "automountServiceAccountToken": true,
+                "create": true,
+                "name": ""
+              },
+              "tolerations": [],
+              "topologySpreadConstraints": [],
+              "updateStrategy": {}
+            },
+            "dhParam": "",
+            "imagePullSecrets": [],
+            "namespaceOverride": "",
+            "podSecurityPolicy": {
+              "enabled": false
+            },
+            "portNamePrefix": "",
+            "rbac": {
+              "create": true,
+              "scope": false
+            },
+            "revisionHistoryLimit": 10,
+            "serviceAccount": {
+              "annotations": {},
+              "automountServiceAccountToken": true,
+              "create": true,
+              "name": ""
+            },
+            "tcp": {},
+            "udp": {}
+          }
+        }
+      ]
+    capabilities: Basic Install
+    createdAt: "2025-01-30T15:00:57Z"
+    operators.operatorframework.io/builder: operator-sdk-v1.39.1
+    operators.operatorframework.io/project_layout: helm.sdk.operatorframework.io/v1
+  name: nginx-operator.v4.12.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - kind: IngressNginx
+      name: ingressnginxes.metalk8s.scality.com
+      version: v1alpha1
+  description: Operator Manages Kubernetes Nginx Controllers
+  displayName: nginx-operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      clusterPermissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - namespaces
+          verbs:
+          - get
+        - apiGroups:
+          - ""
+          resources:
+          - secrets
+          verbs:
+          - '*'
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+        - apiGroups:
+          - metalk8s.scality.com
+          resources:
+          - ingressnginxes
+          - ingressnginxes/status
+          - ingressnginxes/finalizers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          - services
+          - services/finalizers
+          - endpoints
+          - persistentvolumeclaims
+          - events
+          - configmaps
+          - secrets
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          - daemonsets
+          - replicasets
+          - statefulsets
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - authentication.k8s.io
+          resources:
+          - tokenreviews
+          verbs:
+          - create
+        - apiGroups:
+          - authorization.k8s.io
+          resources:
+          - subjectaccessreviews
+          verbs:
+          - create
+        - apiGroups:
+          - monitoring.coreos.com
+          resources:
+          - servicemonitors
+          verbs:
+          - '*'
+        - apiGroups:
+          - networking.k8s.io
+          resources:
+          - ingressclasses
+          verbs:
+          - '*'
+        - apiGroups:
+          - ""
+          resources:
+          - serviceaccounts
+          verbs:
+          - '*'
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
+          - roles
+          - rolebindings
+          - clusterroles
+          - clusterrolebindings
+          verbs:
+          - '*'
+        serviceAccountName: nginx-operator-controller-manager
+      deployments:
+      - label:
+          app.kubernetes.io/managed-by: kustomize
+          app.kubernetes.io/name: nginx-operator
+          control-plane: controller-manager
+        name: nginx-operator-controller-manager
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              control-plane: controller-manager
+          strategy: {}
+          template:
+            metadata:
+              annotations:
+                kubectl.kubernetes.io/default-container: manager
+              labels:
+                control-plane: controller-manager
+            spec:
+              containers:
+              - args:
+                - --metrics-require-rbac
+                - --metrics-secure
+                - --metrics-bind-address=:8443
+                - --leader-elect
+                - --leader-election-id=nginx-operator
+                - --health-probe-bind-address=:8081
+                image: registry.metalk8s.lan/metalk8s-MK8S_VERSION_STUB/nginx-operator:v4.12.0
+                livenessProbe:
+                  httpGet:
+                    path: /healthz
+                    port: 8081
+                  initialDelaySeconds: 15
+                  periodSeconds: 20
+                name: manager
+                readinessProbe:
+                  httpGet:
+                    path: /readyz
+                    port: 8081
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                resources:
+                  limits:
+                    cpu: 500m
+                    memory: 128Mi
+                  requests:
+                    cpu: 10m
+                    memory: 64Mi
+                securityContext:
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                    - ALL
+              nodeSelector:
+                kubernetes.io/os: linux
+                node-role.kubernetes.io/infra: ""
+              securityContext:
+                runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
+              serviceAccountName: nginx-operator-controller-manager
+              terminationGracePeriodSeconds: 10
+              tolerations:
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/bootstrap
+                operator: Exists
+              - effect: NoSchedule
+                key: node-role.kubernetes.io/infra
+                operator: Exists
+      permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+        serviceAccountName: nginx-operator-controller-manager
+    strategy: deployment
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - operator
+  - scality
+  - metalk8s
+  - nginx
+  - kubernetes
+  links:
+  - name: Nginx Operator
+    url: https://nginx-operator.domain
+  maintainers:
+  - email: ayoub.nasr@scality.com
+    name: Ayoub Nasr
+  maturity: alpha
+  provider:
+    name: scality
+    url: scality.com
+  version: 4.12.0

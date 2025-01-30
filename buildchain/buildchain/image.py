@@ -327,6 +327,20 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
             "VERSION": versions.VERSION,
         },
     ),
+    _local_image(
+        name="nginx-operator",
+        dockerfile=constants.NGINX_OPERATOR_ROOT / "Dockerfile",
+        build_context=constants.NGINX_OPERATOR_ROOT,
+    ),
+    _local_image(
+        name="nginx-operator-bundle",
+        dockerfile=constants.NGINX_OPERATOR_ROOT / "bundle.Dockerfile",
+        build_context=constants.NGINX_OPERATOR_ROOT,
+        build_args={
+            "BUILDER_IMG": TO_PULL["alpine"].remote_fullname_digest,
+            "METALK8S_VERSION": versions.VERSION,
+        },
+    ),
 )
 # }}}
 

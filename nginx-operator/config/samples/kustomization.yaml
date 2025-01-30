@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- metalk8s_v1alpha1_ingressnginx.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

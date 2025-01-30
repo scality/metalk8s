@@ -1,0 +1,46 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: nginx-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions: {}
+  description: Operator Manages Kubernetes Nginx Controllers
+  displayName: nginx-operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - operator
+  - scality
+  - metalk8s
+  - nginx
+  - kubernetes
+  links:
+  - name: Nginx Operator
+    url: https://nginx-operator.domain
+  maintainers:
+  - email: ayoub.nasr@scality.com
+    name: Ayoub Nasr
+  maturity: alpha
+  provider:
+    name: scality
+    url: scality.com
+  version: 0.0.0
