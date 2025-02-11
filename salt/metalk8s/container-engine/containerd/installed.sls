@@ -112,6 +112,9 @@ Configure registry IP in containerd conf:
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ repo.registry_endpoint }}"]
         endpoint = [{{ registry_eps | join(",") }}]
 
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."registry.metalk8s.lan"]
+        endpoint = [{{ registry_eps | join(",") }}]
+
         [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
         runtime_type = "io.containerd.runc.v2"
         [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
