@@ -1,0 +1,48 @@
+clustercatalog_serving:
+  - name: serving-catalog
+    manifest:
+      status:
+        conditions:
+          - type: "Serving"
+            status: "True"
+            reason: "Serving"
+            message: "Serving"
+    expected_result: True
+  - name: failed-catalog
+    manifest:
+      status:
+        conditions:
+          - type: "Serving"
+            status: "False"
+            reason: "Failed"
+            message: "Failed"
+    expected_result: False
+  - name: unknown-state
+    manifest:
+      status:
+        conditions: []
+    expected_result: False
+clusterextension_installed:
+  - name: extension-installed
+    manifest:
+      status:
+        conditions:
+          - type: "Installed"
+            status: "True"
+            reason: "Installed"
+            message: "Installed"
+    expected_result: True
+  - name: failed-install
+    manifest:
+      status:
+        conditions:
+          - type: "Installed"
+            status: "False"
+            reason: "Failed"
+            message: "Failed"
+    expected_result: False
+  - name: unknown-install-state
+    manifest:
+      status:
+        conditions: []
+    expected_result: False
