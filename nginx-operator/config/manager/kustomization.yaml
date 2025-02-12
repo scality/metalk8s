@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: registry.metalk8s.lan/metalk8s-MK8S_VERSION_STUB/nginx-operator
-  newTag: v4.12.0
+  newTag: v4.11.3

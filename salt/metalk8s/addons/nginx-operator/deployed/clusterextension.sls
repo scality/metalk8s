@@ -13,4 +13,4 @@ spec:
     sourceType: Catalog
     catalog:
       packageName: nginx-operator
-      version: "v4.12.0"
+      version: "v4.11.3"

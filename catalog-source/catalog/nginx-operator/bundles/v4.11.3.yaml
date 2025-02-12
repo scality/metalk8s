@@ -1,6 +1,6 @@
 ---
-image: registry.metalk8s.lan/metalk8s-MK8S_VERSION_STUB/nginx-operator-bundle:v4.12.0
-name: nginx-operator.v4.12.0
+image: registry.metalk8s.lan/metalk8s-MK8S_VERSION_STUB/nginx-operator-bundle:v4.11.3
+name: nginx-operator.v4.11.3
 package: nginx-operator
 properties:
 - type: olm.gvk
@@ -11,7 +11,7 @@ properties:
 - type: olm.package
   value:
     packageName: nginx-operator
-    version: 4.12.0
+    version: 4.11.3
 - type: olm.csv.metadata
   value:
     annotations:
@@ -519,7 +519,7 @@ properties:
           }
         ]
       capabilities: Basic Install
-      createdAt: "2025-01-30T15:00:57Z"
+      createdAt: "2025-02-12T09:00:14Z"
       operators.operatorframework.io/builder: operator-sdk-v1.39.1
       operators.operatorframework.io/project_layout: helm.sdk.operatorframework.io/v1
     apiServiceDefinitions: {}
@@ -556,8 +556,8 @@ properties:
       name: scality
       url: scality.com
 relatedImages:
-- image: registry.metalk8s.lan/metalk8s-MK8S_VERSION_STUB/nginx-operator-bundle:v4.12.0
+- image: registry.metalk8s.lan/metalk8s-MK8S_VERSION_STUB/nginx-operator-bundle:v4.11.3
   name: ""
-- image: registry.metalk8s.lan/metalk8s-MK8S_VERSION_STUB/nginx-operator:v4.12.0
+- image: registry.metalk8s.lan/metalk8s-MK8S_VERSION_STUB/nginx-operator:v4.11.3
   name: ""
 schema: olm.bundle

@@ -28,7 +28,7 @@ K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 CALICO_VERSION: str = "3.29.0"
 SALT_VERSION: str = "3002.9"
 CONTAINERD_VERSION: str = "1.6.36"
-NGINX_OPERATOR_VERSION: str = "4.12.0"
+NGINX_OPERATOR_VERSION: str = "4.11.3"
 
 CONTAINERD_RELEASE: str = "1"
 SOSREPORT_RELEASE: str = "2"
@@ -190,8 +190,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="nginx-ingress-controller",
-        version="v1.12.0",
-        digest="sha256:e6b8de175acda6ca913891f0f727bca4527e797d52688cbe9fec9040d6f6b6fa",
+        version="v1.11.3",
+        digest="sha256:d56f135b6462cfc476447cfe564b83a45e8bb7da2774963b00d12161112270b7",
     ),
     Image(
         name="node-exporter",
