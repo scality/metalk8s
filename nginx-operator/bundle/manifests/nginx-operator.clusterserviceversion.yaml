@@ -509,7 +509,7 @@ metadata:
     createdAt: "2025-02-13T16:39:21Z"
     operators.operatorframework.io/builder: operator-sdk-v1.39.1
     operators.operatorframework.io/project_layout: helm.sdk.operatorframework.io/v1
-  name: nginx-operator.v4.12.0
+  name: nginx-operator.v4.11.3
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -660,7 +660,7 @@ spec:
                 - --leader-elect
                 - --leader-election-id=nginx-operator
                 - --health-probe-bind-address=:8081
-                image: registry.metalk8s.lan/metalk8s-MK8S_VERSION_STUB/nginx-operator:v4.12.0
+                image: registry.metalk8s.lan/metalk8s-MK8S_VERSION_STUB/nginx-operator:v4.11.3
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -762,4 +762,4 @@ spec:
   provider:
     name: scality
     url: scality.com
-  version: 4.12.0
+  version: 4.11.3

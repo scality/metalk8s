@@ -3,4 +3,4 @@ schema: olm.channel
 package: nginx-operator
 name: stable
 entries:
-  - name: nginx-operator.v4.12.0
+  - name: nginx-operator.v4.11.3

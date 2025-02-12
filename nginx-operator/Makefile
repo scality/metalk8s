@@ -6,7 +6,7 @@
 #
 # We keep this aligned with the chart version
 # Will also be set in versions.py
-VERSION ?= 4.12.0
+VERSION ?= 4.11.3
 
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
