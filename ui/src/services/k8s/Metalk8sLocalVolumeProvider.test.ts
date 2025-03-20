@@ -85,6 +85,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
                 nodeName: 'test-node',
                 lvmLogicalVolume: { vgName: 'test-lvm', size: '10Gi' },
               },
+              status: { deviceName: 'test-lvm' },
             },
             {
               metadata: { name: 'test-sparseLoop' },
@@ -94,6 +95,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
                   size: '1Gi',
                 },
               },
+              status: { deviceName: 'test-sparseLoop' },
             },
           ],
         },
