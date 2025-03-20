@@ -8,17 +8,10 @@ import {
   FederatedComponentProps,
   SolutionUI,
 } from '@scality/module-federation';
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useTransition,
-  useRef,
-  useState,
-} from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { QueryClient } from 'react-query';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
+import { BrowserRouter, Route, Routes } from 'react-router';
 
 import { loadShare } from '@module-federation/enhanced/runtime';
 import { useQuery } from 'react-query';
@@ -242,23 +235,21 @@ function InternalApp() {
   });
 
   return (
-    <BrowserRouter>
-      <ShellHistoryProvider>
-        <FirstTimeLoginProvider>
-          <NotificationCenterProvider>
-            {(status === 'idle' || status === 'loading') && (
-              <Loader size="massive" centered={true} aria-label="loading" />
-            )}
-            {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
-            {status === 'success' && (
-              <SolutionsNavbar>
-                <InternalRouter />
-              </SolutionsNavbar>
-            )}
-          </NotificationCenterProvider>
-        </FirstTimeLoginProvider>
-      </ShellHistoryProvider>
-    </BrowserRouter>
+    <ShellHistoryProvider>
+      <FirstTimeLoginProvider>
+        <NotificationCenterProvider>
+          {(status === 'idle' || status === 'loading') && (
+            <Loader size="massive" centered={true} aria-label="loading" />
+          )}
+          {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
+          {status === 'success' && (
+            <SolutionsNavbar>
+              <InternalRouter />
+            </SolutionsNavbar>
+          )}
+        </NotificationCenterProvider>
+      </FirstTimeLoginProvider>
+    </ShellHistoryProvider>
   );
 }
 
@@ -272,7 +263,9 @@ export function WithInitFederationProviders({
     <UIListProvider discoveryURL={shellConfig.discoveryUrl}>
       <ConfigurationProvider>
         <AuthConfigProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <BrowserRouter>
+            <AuthProvider>{children}</AuthProvider>
+          </BrowserRouter>
         </AuthConfigProvider>
       </ConfigurationProvider>
     </UIListProvider>
