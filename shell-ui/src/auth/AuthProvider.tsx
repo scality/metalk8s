@@ -15,6 +15,7 @@ import type {
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { getUserGroups } from '../navbar/auth/permissionUtils';
 import { useAuthConfig } from './AuthConfigProvider';
+import { useNavigate } from 'react-router';
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { authConfig } = useAuthConfig();
 
@@ -101,6 +102,7 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
   const { logOut } = useInternalLogout(userManager, authConfig);
+  const navigate = useNavigate();
   //Force logout on silent renewal error
   useEffect(() => {
     const onSilentRenewError = (err) => {
@@ -125,15 +127,13 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   }, [logOut]);
   const oidcConfig: AuthProviderProps = {
     onBeforeSignIn: () => {
-      localStorage.setItem('redirectUrl', window.location.href);
-      return window.location.href;
+      return location.pathname + location.search + location.hash;
     },
-    onSignIn: () => {
-      const savedRedirectUri = localStorage.getItem('redirectUrl');
-      localStorage.removeItem('redirectUrl');
+    onSignIn: (userData) => {
+      const savedRedirectUri = userData.state;
 
       if (savedRedirectUri) {
-        location.href = savedRedirectUri;
+        navigate(savedRedirectUri);
       } else {
         const searchParams = new URLSearchParams(location.search);
         searchParams.delete('state');
