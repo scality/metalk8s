@@ -21,7 +21,9 @@ linters:
   enable:
     - dupl
     - errcheck
-    - exportloopref
+    - ginkgolinter
+    - prealloc
+    - revive
     - goconst
     - gocyclo
     - gofmt
@@ -32,9 +34,12 @@ linters:
     - lll
     - misspell
     - nakedret
-    - prealloc
     - staticcheck
     - typecheck
     - unconvert
     - unparam
     - unused
+linters-settings:
+  revive:
+    rules:
+      - name: comment-spacings
