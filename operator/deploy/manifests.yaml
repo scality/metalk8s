@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.15.0
+    controller-gen.kubebuilder.io/version: v0.16.1
   labels:
     app.kubernetes.io/created-by: metalk8s
     app.kubernetes.io/part-of: metalk8s
@@ -222,12 +222,7 @@ spec:
                       - Unknown
                       type: string
                     type:
-                      description: |-
-                        type of condition in CamelCase or in foo.example.com/CamelCase.
-                        ---
-                        Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be
-                        useful (see .node.status.conditions), the ability to deconflict is important.
-                        The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
                       maxLength: 316
                       pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
                       type: string
@@ -268,7 +263,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.15.0
+    controller-gen.kubebuilder.io/version: v0.16.1
   labels:
     app.kubernetes.io/created-by: metalk8s
     app.kubernetes.io/part-of: metalk8s
@@ -443,12 +438,7 @@ spec:
                       - Unknown
                       type: string
                     type:
-                      description: |-
-                        type of condition in CamelCase or in foo.example.com/CamelCase.
-                        ---
-                        Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be
-                        useful (see .node.status.conditions), the ability to deconflict is important.
-                        The regex it matches is (dns1123SubdomainFmt/)?(qualifiedNameFmt)
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
                       maxLength: 316
                       pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
                       type: string
@@ -536,6 +526,7 @@ rules:
   - ""
   resources:
   - configmaps
+  - namespaces
   verbs:
   - create
   - delete
@@ -551,18 +542,6 @@ rules:
   verbs:
   - create
   - patch
-- apiGroups:
-  - ""
-  resources:
-  - namespaces
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
 - apiGroups:
   - ""
   resources:
@@ -587,31 +566,6 @@ rules:
   - metalk8s.scality.com
   resources:
   - clusterconfigs
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - metalk8s.scality.com
-  resources:
-  - clusterconfigs/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - metalk8s.scality.com
-  resources:
-  - clusterconfigs/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - metalk8s.scality.com
-  resources:
   - virtualippools
   verbs:
   - create
@@ -624,12 +578,14 @@ rules:
 - apiGroups:
   - metalk8s.scality.com
   resources:
+  - clusterconfigs/finalizers
   - virtualippools/finalizers
   verbs:
   - update
 - apiGroups:
   - metalk8s.scality.com
   resources:
+  - clusterconfigs/status
   - virtualippools/status
   verbs:
   - get

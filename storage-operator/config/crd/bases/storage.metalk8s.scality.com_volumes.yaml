@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.15.0
+    controller-gen.kubebuilder.io/version: v0.16.1
   name: volumes.storage.metalk8s.scality.com
 spec:
   group: storage.metalk8s.scality.com
@@ -135,7 +135,6 @@ spec:
                               Tip: Ensure that the filesystem type is supported by the host operating system.
                               Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
                               More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore
-                              TODO: how do we prevent errors in the filesystem from compromising the machine
                             type: string
                           partition:
                             description: |-
@@ -175,6 +174,7 @@ spec:
                               storage
                             type: string
                           fsType:
+                            default: ext4
                             description: |-
                               fsType is Filesystem type to mount.
                               Must be a filesystem type supported by the host operating system.
@@ -188,6 +188,7 @@ spec:
                               shared'
                             type: string
                           readOnly:
+                            default: false
                             description: |-
                               readOnly Defaults to false (read/write). ReadOnly here will force
                               the ReadOnly setting in VolumeMounts.
@@ -342,7 +343,6 @@ spec:
                               the event) or if no container name is specified "spec.containers[2]" (container with
                               index 2 in this pod). This syntax is chosen only to have some well-defined way of
                               referencing a part of an object.
-                              TODO: this design is not final and this field is subject to change in the future.
                             type: string
                           kind:
                             description: |-
@@ -505,7 +505,6 @@ spec:
                               fsType is the filesystem type to mount.
                               Must be a filesystem type supported by the host operating system.
                               Ex. "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
-                              TODO: how do we prevent errors in the filesystem from compromising the machine
                             type: string
                           lun:
                             description: 'lun is Optional: FC target lun number'
@@ -607,7 +606,6 @@ spec:
                               Tip: Ensure that the filesystem type is supported by the host operating system.
                               Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
                               More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk
-                              TODO: how do we prevent errors in the filesystem from compromising the machine
                             type: string
                           partition:
                             description: |-
@@ -706,7 +704,6 @@ spec:
                               Tip: Ensure that the filesystem type is supported by the host operating system.
                               Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
                               More info: https://kubernetes.io/docs/concepts/storage/volumes#iscsi
-                              TODO: how do we prevent errors in the filesystem from compromising the machine
                             type: string
                           initiatorName:
                             description: |-
@@ -718,6 +715,7 @@ spec:
                             description: iqn is Target iSCSI Qualified Name.
                             type: string
                           iscsiInterface:
+                            default: default
                             description: |-
                               iscsiInterface is the interface Name that uses an iSCSI transport.
                               Defaults to 'default' (tcp).
@@ -1006,7 +1004,6 @@ spec:
                               Tip: Ensure that the filesystem type is supported by the host operating system.
                               Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
                               More info: https://kubernetes.io/docs/concepts/storage/volumes#rbd
-                              TODO: how do we prevent errors in the filesystem from compromising the machine
                             type: string
                           image:
                             description: |-
@@ -1014,6 +1011,7 @@ spec:
                               More info: https://examples.k8s.io/volumes/rbd/README.md#how-to-use-it
                             type: string
                           keyring:
+                            default: /etc/ceph/keyring
                             description: |-
                               keyring is the path to key ring for RBDUser.
                               Default is /etc/ceph/keyring.
@@ -1028,6 +1026,7 @@ spec:
                             type: array
                             x-kubernetes-list-type: atomic
                           pool:
+                            default: rbd
                             description: |-
                               pool is the rados pool name.
                               Default is rbd.
@@ -1057,6 +1056,7 @@ spec:
                             type: object
                             x-kubernetes-map-type: atomic
                           user:
+                            default: admin
                             description: |-
                               user is the rados user name.
                               Default is admin.
@@ -1071,6 +1071,7 @@ spec:
                           attached and mounted on Kubernetes nodes.
                         properties:
                           fsType:
+                            default: xfs
                             description: |-
                               fsType is the filesystem type to mount.
                               Must be a filesystem type supported by the host operating system.
@@ -1110,6 +1111,7 @@ spec:
                               SSL communication with Gateway, default false
                             type: boolean
                           storageMode:
+                            default: ThinProvisioned
                             description: |-
                               storageMode indicates whether the storage for a volume should be ThickProvisioned or ThinProvisioned.
                               Default is ThinProvisioned.
@@ -1170,7 +1172,6 @@ spec:
                                   the event) or if no container name is specified "spec.containers[2]" (container with
                                   index 2 in this pod). This syntax is chosen only to have some well-defined way of
                                   referencing a part of an object.
-                                  TODO: this design is not final and this field is subject to change in the future.
                                 type: string
                               kind:
                                 description: |-
@@ -1222,7 +1223,7 @@ spec:
                           after a volume has been updated successfully to a new class.
                           For an unbound PersistentVolume, the volumeAttributesClassName will be matched with unbound
                           PersistentVolumeClaims during the binding process.
-                          This is an alpha field and requires enabling VolumeAttributesClass feature.
+                          This is a beta field and requires enabling VolumeAttributesClass feature (off by default).
                         type: string
                       volumeMode:
                         description: |-

@@ -8,6 +8,7 @@ rules:
   - ""
   resources:
   - configmaps
+  - namespaces
   verbs:
   - create
   - delete
@@ -23,18 +24,6 @@ rules:
   verbs:
   - create
   - patch
-- apiGroups:
-  - ""
-  resources:
-  - namespaces
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
 - apiGroups:
   - ""
   resources:
@@ -59,31 +48,6 @@ rules:
   - metalk8s.scality.com
   resources:
   - clusterconfigs
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - metalk8s.scality.com
-  resources:
-  - clusterconfigs/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - metalk8s.scality.com
-  resources:
-  - clusterconfigs/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - metalk8s.scality.com
-  resources:
   - virtualippools
   verbs:
   - create
@@ -96,12 +60,14 @@ rules:
 - apiGroups:
   - metalk8s.scality.com
   resources:
+  - clusterconfigs/finalizers
   - virtualippools/finalizers
   verbs:
   - update
 - apiGroups:
   - metalk8s.scality.com
   resources:
+  - clusterconfigs/status
   - virtualippools/status
   verbs:
   - get
