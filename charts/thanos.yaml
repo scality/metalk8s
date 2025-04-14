@@ -47,3 +47,7 @@ query:
 
   nodeSelector:
     node-role.kubernetes.io/infra: ''
+
+global:
+  security:
+    allowInsecureImages: true
