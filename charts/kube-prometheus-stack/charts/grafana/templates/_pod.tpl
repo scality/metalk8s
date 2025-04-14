@@ -6,6 +6,7 @@ schedulerName: "{{ . }}"
 {{- end }}
 serviceAccountName: {{ include "grafana.serviceAccountName" . }}
 automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+shareProcessNamespace: {{ .Values.shareProcessNamespace }}
 {{- with .Values.securityContext }}
 securityContext:
   {{- toYaml . | nindent 2 }}
@@ -126,10 +127,10 @@ initContainers:
       - name: METHOD
         value: "LIST"
       - name: LABEL
-        value: "{{ .Values.sidecar.alerts.label }}"
+        value: "{{ tpl .Values.sidecar.alerts.label $root }}"
       {{- with .Values.sidecar.alerts.labelValue }}
       - name: LABEL_VALUE
-        value: {{ quote . }}
+        value: {{ quote (tpl . $root) }}
       {{- end }}
       {{- if or .Values.sidecar.logLevel .Values.sidecar.alerts.logLevel }}
       - name: LOG_LEVEL
@@ -204,10 +205,10 @@ initContainers:
       - name: METHOD
         value: "LIST"
       - name: LABEL
-        value: "{{ .Values.sidecar.datasources.label }}"
+        value: "{{ tpl .Values.sidecar.datasources.label $root }}"
       {{- with .Values.sidecar.datasources.labelValue }}
       - name: LABEL_VALUE
-        value: {{ quote . }}
+        value: {{ quote (tpl . $root) }}
       {{- end }}
       {{- if or .Values.sidecar.logLevel .Values.sidecar.datasources.logLevel }}
       - name: LOG_LEVEL
@@ -262,10 +263,10 @@ initContainers:
       - name: METHOD
         value: LIST
       - name: LABEL
-        value: "{{ .Values.sidecar.notifiers.label }}"
+        value: "{{ tpl .Values.sidecar.notifiers.label $root }}"
       {{- with .Values.sidecar.notifiers.labelValue }}
       - name: LABEL_VALUE
-        value: {{ quote . }}
+        value: {{ quote (tpl . $root) }}
       {{- end }}
       {{- if or .Values.sidecar.logLevel .Values.sidecar.notifiers.logLevel }}
       - name: LOG_LEVEL
@@ -339,10 +340,10 @@ containers:
       - name: METHOD
         value: {{ .Values.sidecar.alerts.watchMethod }}
       - name: LABEL
-        value: "{{ .Values.sidecar.alerts.label }}"
+        value: "{{ tpl .Values.sidecar.alerts.label $root }}"
       {{- with .Values.sidecar.alerts.labelValue }}
       - name: LABEL_VALUE
-        value: {{ quote . }}
+        value: {{ quote (tpl . $root) }}
       {{- end }}
       {{- if or .Values.sidecar.logLevel .Values.sidecar.alerts.logLevel }}
       - name: LOG_LEVEL
@@ -402,6 +403,18 @@ containers:
       - name: WATCH_CLIENT_TIMEOUT
         value: "{{ .Values.sidecar.alerts.watchClientTimeout }}"
       {{- end }}
+      {{- if .Values.sidecar.alerts.maxTotalRetries }}
+      - name: REQ_RETRY_TOTAL
+        value: "{{ .Values.sidecar.alerts.maxTotalRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.alerts.maxConnectRetries }}
+      - name: REQ_RETRY_CONNECT
+        value: "{{ .Values.sidecar.alerts.maxConnectRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.alerts.maxReadRetries }}
+      - name: REQ_RETRY_READ
+        value: "{{ .Values.sidecar.alerts.maxReadRetries }}"
+      {{- end }}
     {{- with .Values.sidecar.livenessProbe }}
     livenessProbe:
       {{- toYaml . | nindent 6 }}
@@ -451,10 +464,10 @@ containers:
       - name: METHOD
         value: {{ .Values.sidecar.dashboards.watchMethod }}
       - name: LABEL
-        value: "{{ .Values.sidecar.dashboards.label }}"
+        value: "{{ tpl .Values.sidecar.dashboards.label $root }}"
       {{- with .Values.sidecar.dashboards.labelValue }}
       - name: LABEL_VALUE
-        value: {{ quote . }}
+        value: {{ quote (tpl . $root) }}
       {{- end }}
       {{- if or .Values.sidecar.logLevel .Values.sidecar.dashboards.logLevel }}
       - name: LOG_LEVEL
@@ -518,6 +531,18 @@ containers:
       - name: WATCH_CLIENT_TIMEOUT
         value: {{ .Values.sidecar.dashboards.watchClientTimeout | quote }}
       {{- end }}
+      {{- if .Values.sidecar.dashboards.maxTotalRetries }}
+      - name: REQ_RETRY_TOTAL
+        value: "{{ .Values.sidecar.dashboards.maxTotalRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.dashboards.maxConnectRetries }}
+      - name: REQ_RETRY_CONNECT
+        value: "{{ .Values.sidecar.dashboards.maxConnectRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.dashboards.maxReadRetries }}
+      - name: REQ_RETRY_READ
+        value: "{{ .Values.sidecar.dashboards.maxReadRetries }}"
+      {{- end }}
     {{- with .Values.sidecar.livenessProbe }}
     livenessProbe:
       {{- toYaml . | nindent 6 }}
@@ -567,10 +592,10 @@ containers:
       - name: METHOD
         value: {{ .Values.sidecar.datasources.watchMethod }}
       - name: LABEL
-        value: "{{ .Values.sidecar.datasources.label }}"
+        value: "{{ tpl .Values.sidecar.datasources.label $root }}"
       {{- with .Values.sidecar.datasources.labelValue }}
       - name: LABEL_VALUE
-        value: {{ quote . }}
+        value: {{ quote (tpl . $root) }}
       {{- end }}
       {{- if or .Values.sidecar.logLevel .Values.sidecar.datasources.logLevel }}
       - name: LOG_LEVEL
@@ -630,6 +655,18 @@ containers:
       - name: WATCH_CLIENT_TIMEOUT
         value: "{{ .Values.sidecar.datasources.watchClientTimeout }}"
       {{- end }}
+      {{- if .Values.sidecar.datasources.maxTotalRetries }}
+      - name: REQ_RETRY_TOTAL
+        value: "{{ .Values.sidecar.datasources.maxTotalRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.datasources.maxConnectRetries }}
+      - name: REQ_RETRY_CONNECT
+        value: "{{ .Values.sidecar.datasources.maxConnectRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.datasources.maxReadRetries }}
+      - name: REQ_RETRY_READ
+        value: "{{ .Values.sidecar.datasources.maxReadRetries }}"
+      {{- end }}
     {{- with .Values.sidecar.livenessProbe }}
     livenessProbe:
       {{- toYaml . | nindent 6 }}
@@ -674,10 +711,10 @@ containers:
       - name: METHOD
         value: {{ .Values.sidecar.notifiers.watchMethod }}
       - name: LABEL
-        value: "{{ .Values.sidecar.notifiers.label }}"
+        value: "{{ tpl .Values.sidecar.notifiers.label $root }}"
       {{- with .Values.sidecar.notifiers.labelValue }}
       - name: LABEL_VALUE
-        value: {{ quote . }}
+        value: {{ quote (tpl . $root) }}
       {{- end }}
       {{- if or .Values.sidecar.logLevel .Values.sidecar.notifiers.logLevel }}
       - name: LOG_LEVEL
@@ -737,6 +774,18 @@ containers:
       - name: WATCH_CLIENT_TIMEOUT
         value: "{{ .Values.sidecar.notifiers.watchClientTimeout }}"
       {{- end }}
+      {{- if .Values.sidecar.notifiers.maxTotalRetries }}
+      - name: REQ_RETRY_TOTAL
+        value: "{{ .Values.sidecar.notifiers.maxTotalRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.notifiers.maxConnectRetries }}
+      - name: REQ_RETRY_CONNECT
+        value: "{{ .Values.sidecar.notifiers.maxConnectRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.notifiers.maxReadRetries }}
+      - name: REQ_RETRY_READ
+        value: "{{ .Values.sidecar.notifiers.maxReadRetries }}"
+      {{- end }}
     {{- with .Values.sidecar.livenessProbe }}
     livenessProbe:
       {{- toYaml . | nindent 6 }}
@@ -781,10 +830,10 @@ containers:
       - name: METHOD
         value: {{ .Values.sidecar.plugins.watchMethod }}
       - name: LABEL
-        value: "{{ .Values.sidecar.plugins.label }}"
+        value: "{{ tpl .Values.sidecar.plugins.label $root }}"
       {{- if .Values.sidecar.plugins.labelValue }}
       - name: LABEL_VALUE
-        value: {{ quote .Values.sidecar.plugins.labelValue }}
+        value: {{ quote (tpl .Values.sidecar.plugins.labelValue $) }}
       {{- end }}
       {{- if or .Values.sidecar.logLevel .Values.sidecar.plugins.logLevel }}
       - name: LOG_LEVEL
@@ -843,6 +892,18 @@ containers:
       {{- end }}
       - name: WATCH_CLIENT_TIMEOUT
         value: "{{ .Values.sidecar.plugins.watchClientTimeout }}"
+      {{- end }}
+      {{- if .Values.sidecar.plugins.maxTotalRetries }}
+      - name: REQ_RETRY_TOTAL
+        value: "{{ .Values.sidecar.plugins.maxTotalRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.plugins.maxConnectRetries }}
+      - name: REQ_RETRY_CONNECT
+        value: "{{ .Values.sidecar.plugins.maxConnectRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.plugins.maxReadRetries }}
+      - name: REQ_RETRY_READ
+        value: "{{ .Values.sidecar.plugins.maxReadRetries }}"
       {{- end }}
     {{- with .Values.sidecar.livenessProbe }}
     livenessProbe:
@@ -1028,6 +1089,9 @@ containers:
       - name: {{ .Values.gossipPortName }}-udp
         containerPort: 9094
         protocol: UDP
+      - name: profiling
+        containerPort: 6060
+        protocol: TCP
     env:
       - name: POD_IP
         valueFrom:
