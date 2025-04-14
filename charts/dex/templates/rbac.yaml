@@ -3,6 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: {{ include "dex.fullname" . }}
+  namespace: {{ include "dex.namespace" . }}
   labels:
     {{- include "dex.labels" . | nindent 4 }}
 rules:
@@ -14,15 +15,16 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: {{ include "dex.fullname" . }}
+  namespace: {{ include "dex.namespace" . }}
   labels:
     {{- include "dex.labels" . | nindent 4 }}
 roleRef:
   kind: Role
   apiGroup: rbac.authorization.k8s.io
-  name: {{ include "dex.fullname" . }}  
+  name: {{ include "dex.fullname" . }}
 subjects:
 - kind: ServiceAccount
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "dex.namespace" . }}
   name: {{ include "dex.serviceAccountName" . }}
 {{- if .Values.rbac.createClusterScoped }}
 ---
@@ -49,7 +51,7 @@ roleRef:
   name: {{ include "dex.fullname" . }}
 subjects:
 - kind: ServiceAccount
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "dex.namespace" . }}
   name: {{ include "dex.serviceAccountName" . }}
 {{- end }}
 {{- end }}

@@ -7,9 +7,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   name: {{ include "dex.fullname" . }}
-  {{- with .Values.serviceMonitor.namespace }}
-  namespace: {{ . }}
-  {{- end }}
+  namespace: {{ include "dex.serviceMonitor.namespace" . }}
   labels:
     {{- include "dex.labels" . | nindent 4 }}
     {{- with .Values.serviceMonitor.labels }}
@@ -50,5 +48,5 @@ spec:
       {{- include "dex.selectorLabels" . | nindent 6 }}
   namespaceSelector:
     matchNames:
-      - {{ .Release.Namespace }}
+      - {{ include "dex.namespace" . }}
 {{- end }}

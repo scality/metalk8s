@@ -29,6 +29,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
     listNode: jest.fn(),
     listPersistentVolume: jest.fn(),
     deletePersistentVolume: jest.fn(),
+    readPersistentVolume: jest.fn(),
   } as unknown as CoreV1Api;
 
   beforeEach(() => {
@@ -78,7 +79,10 @@ describe('Metalk8sLocalVolumeProvider', () => {
               metadata: { name: 'test-volume' },
               spec: {
                 nodeName: 'test-node',
-                rawBlockDevice: { devicePath: '/dev/sda' },
+                rawBlockDevice: { devicePath: '/dev/sdb' },
+              },
+              status: {
+                deviceName: 'sda',
               },
             },
             {
@@ -86,6 +90,9 @@ describe('Metalk8sLocalVolumeProvider', () => {
               spec: {
                 nodeName: 'test-node',
                 lvmLogicalVolume: { vgName: 'test-lvm', size: '10Gi' },
+              },
+              status: {
+                deviceName: 'test-lvm',
               },
             },
             {
@@ -95,6 +102,9 @@ describe('Metalk8sLocalVolumeProvider', () => {
                 sparseLoopDevice: {
                   size: '1Gi',
                 },
+              },
+              status: {
+                deviceName: 'loop1',
               },
             },
           ],
@@ -112,13 +122,13 @@ describe('Metalk8sLocalVolumeProvider', () => {
       });
       expect(volumes[1]).toMatchObject({
         IP: '192.168.1.100',
-        devicePath: 'test-lvm',
+        devicePath: '/dev/test-lvm',
         nodeName: 'test-node',
         volumeType: VolumeType.Virtual,
       });
       expect(volumes[2]).toMatchObject({
         IP: '192.168.1.100',
-        devicePath: 'test-sparseLoop',
+        devicePath: '/dev/loop1',
         nodeName: 'test-node',
         volumeType: VolumeType.Virtual,
       });
@@ -232,12 +242,15 @@ describe('Metalk8sLocalVolumeProvider', () => {
       expect(result).toBe(false);
     });
 
-    it('should return true if the volume is provisioned', async () => {
+    it('should return volume if the volume is provisioned', async () => {
       //S
       (
         mockCustomObjectsApi.getClusterCustomObject as jest.Mock
       ).mockResolvedValue({
-        status: { conditions: [{ type: 'Ready', status: 'True' }] },
+        body: { status: { conditions: [{ type: 'Ready', status: 'True' }] } },
+      });
+      (mockCoreV1Api.readPersistentVolume as jest.Mock).mockResolvedValue({
+        status: { phase: 'Bound' },
       });
       //E
       const result = await provider.isVolumeProvisioned({
@@ -248,7 +261,12 @@ describe('Metalk8sLocalVolumeProvider', () => {
         volumeName: 'test-volume',
       });
       //V
-      expect(result).toBe(true);
+      expect(result).toMatchObject({
+        IP: '192.168.1.100',
+        devicePath: '/dev/sda',
+        volumeType: VolumeType.Hardware,
+        nodeName: 'test-node',
+      });
     });
 
     it('should raise an error if the volume is failed to provisioned', async () => {
@@ -256,14 +274,16 @@ describe('Metalk8sLocalVolumeProvider', () => {
       (
         mockCustomObjectsApi.getClusterCustomObject as jest.Mock
       ).mockResolvedValue({
-        status: {
-          conditions: [
-            {
-              type: 'Ready',
-              status: 'False',
-              reason: 'Volume is not provisioned',
-            },
-          ],
+        body: {
+          status: {
+            conditions: [
+              {
+                type: 'Ready',
+                status: 'False',
+                reason: 'Volume is not provisioned',
+              },
+            ],
+          },
         },
       });
       //E+V
@@ -333,6 +353,11 @@ describe('Metalk8sLocalVolumeProvider', () => {
             nodeName: 'test-node',
             rawBlockDevice: { devicePath: '/dev/sda' },
             storageClassName: 'ssd-ext4',
+            template: {
+              metadata: {
+                labels: { 'xcore.scality.com/volume-type': 'data' },
+              },
+            },
           },
         },
       );

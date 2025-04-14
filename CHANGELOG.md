@@ -11,6 +11,12 @@
 - Bump etcd version to [3.5.16](https://github.com/etcd-io/etcd/releases/tag/v3.5.16)
   (PR[#4497](https://github.com/scality/metalk8s/pull/4497))
 
+- Bump dex chart version to
+  [0.23.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.23.0)
+  Dex itself has been bumped accordingly to
+  [v2.42.0](https://github.com/dexidp/dex/releases/tag/v2.42.0)
+  (PR[#4558](https://github.com/scality/metalk8s/pull/4558))
+
 ## Release 129.0.1 (in development)
 
 ### Enhancements

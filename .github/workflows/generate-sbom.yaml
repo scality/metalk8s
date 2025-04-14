@@ -31,7 +31,7 @@ on:
 
 jobs:
   generate-sbom:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       BASE_PATH: ${{ github.workspace }}/metalk8s_sbom
       SBOM_PATH: ${{ github.workspace }}/artifacts/sbom
@@ -49,23 +49,8 @@ jobs:
       - name: Create directories
         shell: bash
         run: |
-          mkdir -p ${{ env.BASE_PATH }}/repo
           mkdir -p ${{ env.BASE_PATH }}/iso
           mkdir -p ${{ env.SBOM_PATH }}
-
-      - name: Checkout repo for scanning
-        uses: actions/checkout@v4  
-        with:  
-          fetch-depth: 0  
-          fetch-tags: true
-          ref: ${{ inputs.ref }}
-          path: ${{ env.BASE_PATH }}/repo/metalk8s
-
-      - name: Generate sbom for repository
-        uses: scality/sbom@v1.2.2
-        with:
-          target: ${{ env.BASE_PATH }}/repo/metalk8s
-          output-dir: ${{ env.SBOM_PATH }}
 
       - name: Get artifacts URL
         if: ${{ ! inputs.artifacts-url }}
@@ -98,24 +83,31 @@ jobs:
           echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Generate sbom for extracted ISO
-        uses: scality/sbom@v1.2.2
+        uses: scality/sbom@v2.1.0
         with:
           target: ${{ env.BASE_PATH }}/iso/metalk8s.iso
-          output-dir: ${{ env.SBOM_PATH }}
+          target_type: iso
+          output_dir: ${{ env.SBOM_PATH }}
           version: ${{ env.METALK8S_VERSION }}
+          vuln: true
+          vuln_output_format: cyclonedx-json, html
+          merge: true
+          merge_hierarchical: true
 
       - name: Generate archive
         shell: bash
         run: |
           cd ${{ env.SBOM_PATH }}
-          tar -czf sbom_metalk8s.tar.gz *.json
+          tar -czf sbom_metalk8s.tar.gz *.json *.html
 
       - name: Clean up
         shell: bash
         run: |
-          rm -rf ${{ env.BASE_PATH }}/repo
           rm -rf ${{ env.BASE_PATH }}/iso
-          rm -f ${{ env.SBOM_PATH }}/*.json
+          find ${{ env.SBOM_PATH }} -mindepth 1 \
+            -not -name 'sbom_metalk8s.tar.gz' \
+            -not -name '*_merged_sbom_vuln.html' \
+            -exec rm -rf {} +
             
       - name: Generate Job result
         if: always()

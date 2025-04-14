@@ -237,9 +237,8 @@ export class Metalk8sV1alpha1VolumeClient {
 
   async getMetalk8sV1alpha1Volume(
     Metalk8sV1alpha1VolumeName: string,
-  ): Promise<Result<Metalk8sV1alpha1Volume>> {
+  ): Promise<Result<{ body: Metalk8sV1alpha1Volume }>> {
     try {
-      // @ts-expect-error - FIXME when you are working on it
       return await this.customObjects.getClusterCustomObject(
         'storage.metalk8s.scality.com',
         'v1alpha1',

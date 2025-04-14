@@ -19,8 +19,14 @@ image:
   # -- Image tag override for the default value (chart appVersion).
   tag: ""
 
+  # -- When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
+  digest: ""
+
 # -- Reference to one or more secrets to be used when [pulling images](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret) (from private registries).
 imagePullSecrets: []
+
+# -- A namespace in place of the release namespace for all resources.
+namespaceOverride: ""
 
 # -- A name in place of the chart name for `app:` labels.
 nameOverride: ""
@@ -161,6 +167,9 @@ service:
 
   # -- Internal cluster service IP (when applicable)
   clusterIP: ""
+
+  # -- Load balancer service IP (when applicable)
+  loadBalancerIP: ""
 
   ports:
     http:

@@ -6,6 +6,31 @@ Expand the name of the chart.
 {{- end }}
 
 {{/*
+Namespace for all resources to be installed into
+If not defined in values file then the helm release namespace is used
+By default this is not set so the helm release namespace will be used
+
+This gets around an problem within helm discussed here
+https://github.com/helm/helm/issues/5358
+*/}}
+{{- define "dex.namespace" -}}
+{{ .Values.namespaceOverride | default (.Release.Namespace | trunc 63 | trimSuffix "-") }}
+{{- end -}}
+
+{{/*
+    Override the namespace for the serviceMonitor
+
+    Fallback to the namespaceOverride if serviceMonitor.namespace is not set
+*/}}
+{{- define "dex.serviceMonitor.namespace" -}}
+{{- if .Values.serviceMonitor.namespace }}
+{{- .Values.serviceMonitor.namespace -}}
+{{- else }}
+{{- template "dex.namespace" . -}}
+{{- end }}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
