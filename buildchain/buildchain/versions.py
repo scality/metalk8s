@@ -202,8 +202,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus",
-        version="v2.55.0",
-        digest="sha256:378f4e03703557d1c6419e6caccf922f96e6d88a530f7431d66a4c4f4b1000fe",
+        version="v2.55.1",
+        digest="sha256:2659f4c2ebb718e7695cb9b25ffa7d6be64db013daba13e05c875451cf51b0d3",
     ),
     Image(
         name="prometheus-adapter",
@@ -212,18 +212,18 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus-config-reloader",
-        version="v0.77.2",
-        digest="sha256:c96d4fb1d57f4e7a6504d8da7d1ee9254018039939842bf65e86563b66e5a14f",
+        version="v0.81.0",
+        digest="sha256:959d47672fbff2776a04ec62b8afcec89e8c036af84dc5fade50019dab212746",
     ),
     Image(
         name="prometheus-operator",
-        version="v0.77.2",
-        digest="sha256:af92db7eac86d012085969ba2c4a5fb97b99cc2720dce805038b28ca4395ec4b",
+        version="v0.81.0",
+        digest="sha256:5f6a204b252e901b97486ff409c74f48cdbb4cf83731355b08f1155febad6822",
     ),
     Image(
         name="thanos",
-        version="v0.36.1",
-        digest="sha256:e542959e1b36d5046083d1b64a7049c356b68a44a173c58b3ae7c0c9ada932d5",
+        version="v0.38.0",
+        digest="sha256:365873d05a2f59dbaf3d40f526d3b8a2e66b9882dd6cab9396d16e8410aa46e6",
     ),
     # Local images
     Image(
