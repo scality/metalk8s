@@ -16,6 +16,33 @@
   Dex itself has been bumped accordingly to
   [v2.42.0](https://github.com/dexidp/dex/releases/tag/v2.42.0)
   (PR[#4558](https://github.com/scality/metalk8s/pull/4558))
+  
+- Bump kube-prometheus-stack chart version to
+  [70.4.2](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-70.4.2)
+  (PR[#4569](https://github.com/scality/metalk8s/pull/4569))
+
+  This change includes:
+
+  - Bump prometheus-operator version to
+    [0.81.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.81.0)
+  - Bump Alertmanager container version to
+    [0.28.1](https://github.com/prometheus/alertmanager/releases/tag/v0.28.1)
+  - Bump Prometheus container version to
+    [2.55.1](https://github.com/prometheus/prometheus/releases/tag/v2.55.1)
+  - Bump Thanos container version to
+    [0.38.0](https://github.com/thanos-io/thanos/releases/tag/v0.38.0)
+  - Bump kube-state-metrics chart version to
+    [5.31.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-state-metrics-5.31.0)
+  - Bump prometheus-node-exporter chart version to
+    [4.45.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-node-exporter-4.45.0)
+  - Bump grafana chart version to
+    [8.11.0](https://github.com/grafana/helm-charts/releases/tag/grafana-8.11.0)
+
+- Bump thanos chart from Banzaicloud to Bitnami version
+  [16.0.3](https://github.com/bitnami/charts/tree/main/bitnami/thanos)
+  with Thanos version
+  [0.38.0](https://github.com/thanos-io/thanos/releases/tag/v0.38.0)
+  (PR[#4569](https://github.com/scality/metalk8s/pull/4569))
 
 ## Release 129.0.1 (in development)
 
@@ -75,9 +102,9 @@
   This change includes:
 
   - Bump Prometheus container version to
-    [2.55.0](https://github.com/prometheus/prometheus/releases/tag/v2.55.0)
+    [2.55.1](https://github.com/prometheus/prometheus/releases/tag/v2.55.1)
   - Bump Thanos container version to
-    [0.36.1](https://github.com/thanos-io/thanos/releases/tag/v0.36.1)
+    [0.38.0](https://github.com/thanos-io/thanos/releases/tag/v0.38.0)
   - Bump grafana chart version to
     [8.5.8](https://github.com/grafana/helm-charts/releases/tag/grafana-8.5.8),
     Grafana container version to
@@ -93,7 +120,7 @@
     and node-exporter container version to
     [1.8.2](https://github.com/prometheus/node_exporter/releases/tag/v1.8.2)
   - Bump prometheus-operator and prometheus-config-reloader containers version to
-    [0.77.2](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.77.2)
+    [0.81.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.81.0)
 
 - Bump Prometheus Adapter chart version to
   [4.11.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-4.11.0)
@@ -1583,7 +1610,7 @@
 
 - Filter out some filesystem (NSFS, iso9660) from node exporter since
   metrics for those filesystem does not bring any value
-  (PR[#3661](https:github.com/scality/metalk8s/pull/3661))
+  (PR[#3661](https://github.com/scality/metalk8s/pull/3661))
 
 ## Release 2.10.8
 
