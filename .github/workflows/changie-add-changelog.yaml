@@ -1,0 +1,97 @@
+---
+name: "create changelog"
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  pull-requests: write
+  contents: write
+  packages: write
+
+jobs:
+  create-changelog:
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.event.comment.body, '/changie') && github.event.issue.pull_request }}
+    steps:
+      - name: Like comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.issue
+            github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id: context.payload.comment.id,
+              content: "+1",
+            });
+
+      - uses: actions/github-script@v7
+        id: get-pr
+        with:
+          script: |
+            const request = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            }
+            core.info(`Getting PR #${request.pull_number} from ${request.owner}/${request.repo}`)
+            try {
+              const result = await github.rest.pulls.get(request)
+              return result.data
+            } catch (err) {
+              core.setFailed(`Request failed with error ${err}`)
+            }
+
+      - name: Setup outputs
+        id: setup
+        run: |
+          KIND=$(echo $COMMENT | cut -d " " -f2)
+          BODY=$(echo $COMMENT | cut -d " " -f3-)
+          echo "Creating change of kind: $KIND and body: $BODY"
+          echo "kind=$KIND" >> $GITHUB_OUTPUT
+          echo "body=$BODY" >> $GITHUB_OUTPUT
+        env:
+          COMMENT: ${{ github.event.comment.body }}
+
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ fromJSON(steps.get-pr.outputs.result).head.ref }}
+
+      - name: Configure git repository
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: New changie changes
+        uses: miniscruff/changie-action@v1.0.1
+        with:
+          version: latest
+          args: >
+            new
+            --kind="${{env.KIND}}"
+            --body="${{env.BODY}}"
+            --custom Issue="${{env.ISSUE}}"
+        env:
+          KIND: ${{ steps.setup.outputs.kind }}
+          BODY: ${{ steps.setup.outputs.body }}
+          ISSUE: ${{ github.event.issue.number }}
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --local user.name "${{ github.actor }}"
+          git add .changes/unreleased
+          git commit -m '${{ steps.setup.outputs.body }}'
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.ACTIONS_APP_ID }}
+          private-key: ${{ secrets.ACTIONS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.8.0
+        with:
+          github_token: ${{ steps.app-token.outputs.token }}
+          branch: ${{ fromJSON(steps.get-pr.outputs.result).head.ref }}
