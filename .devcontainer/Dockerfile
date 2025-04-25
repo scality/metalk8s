@@ -111,3 +111,9 @@ RUN curl --fail -L -o /tmp/skopeo.tar.gz https://github.com/containers/skopeo/ar
     sudo mv bin/skopeo /usr/local/bin/ && \
     cd && \
     rm -rf /tmp/skopeo.tar.gz /tmp/skopeo-${SKOPEO_VERSION}
+
+ARG CHANGIE_VERSION=1.21.1
+
+RUN curl --fail -L -o /tmp/changie.deb https://github.com/miniscruff/changie/releases/download/v${CHANGIE_VERSION}/changie_${CHANGIE_VERSION}_linux_amd64.deb && \
+    sudo dpkg -i /tmp/changie.deb && \
+    rm -f /tmp/changie.deb
