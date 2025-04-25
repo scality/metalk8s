@@ -1,0 +1,67 @@
+---
+name: "check changelog"
+
+on:
+  pull_request:
+    types:
+      # On by default if you specify no types.
+      - "opened"
+      - "reopened"
+      - "synchronize"
+      # For `skip-label` only.
+      - "labeled"
+      - "unlabeled"
+env:
+  PR_COMMENT: |-
+    # Missing a changelog file.
+
+    To create a new changelog file, write a comment in the PR
+    using the `/changie` command: `/changie <kind> <change description>`
+
+    Supported kind are:
+
+    * Added
+    * Changed
+    * Deprecated
+    * Removed
+    * Fixed
+    * Security
+    * Enhanced
+
+    Examples:
+
+    * `/changie Added new FAQ question`
+    * `/changie Fixed typo in a blog post`
+    * `/changie Removed outdated section`
+    * `/changie Changed website layout`
+
+    > Note: If no changelog is needed on this PR, label it with
+    `skip changelog` to bypass this check.
+
+jobs:
+  check-changelog:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.pull_request.labels.*.name, 'skip changelog')"
+    steps:
+      - name: "Clone repository"
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - name: Get changed files in the docs folder
+        id: changelogs
+        uses: tj-actions/changed-files@v46
+        with:
+          files: |
+            .changes/unreleased/**.yaml
+            CHANGELOG.md
+
+      - name: Missing Changelog PR notification
+        if: "steps.changelogs.outputs.any_changed == 'false'"
+        uses: actions-cool/maintain-one-comment@v3
+        with:
+          body: ${{ env.PR_COMMENT }}
+
+      - name: Fail as the changelog is missing
+        if: steps.changelogs.outputs.any_changed == 'false'
+        run: exit 1
