@@ -1,0 +1,5 @@
+kind: Added
+body: Use [Changie](https://changie.dev) to manage CHANGELOG generation and management.
+time: 2025-04-25T10:01:15.197409405+02:00
+custom:
+    Pull: "4586"
