@@ -217,8 +217,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus-operator",
-        version="v0.77.2",
-        digest="sha256:af92db7eac86d012085969ba2c4a5fb97b99cc2720dce805038b28ca4395ec4b",
+        version="v0.82.0",
+        digest="sha256:1c5cdfc2f5fe97ebaa91e750fae62f0915abaa79c85acb30bc523eae93297f50",
     ),
     Image(
         name="thanos",
