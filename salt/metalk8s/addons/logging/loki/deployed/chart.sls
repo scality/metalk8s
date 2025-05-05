@@ -13,12 +13,9 @@ kind: ServiceAccount
 metadata:
   labels:
     app.kubernetes.io/instance: loki
-    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 3.2.0
-    helm.sh/chart: loki-6.20.0
-    heritage: metalk8s
+    app.kubernetes.io/version: 3.4.2
+    helm.sh/chart: loki-6.29.0
   name: loki
   namespace: metalk8s-logging
 ---
@@ -30,12 +27,9 @@ kind: ConfigMap
 metadata:
   labels:
     app.kubernetes.io/instance: loki
-    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 3.2.0
-    helm.sh/chart: loki-6.20.0
-    heritage: metalk8s
+    app.kubernetes.io/version: 3.4.2
+    helm.sh/chart: loki-6.29.0
   name: loki-runtime
   namespace: metalk8s-logging
 ---
@@ -44,12 +38,9 @@ kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/instance: loki
-    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 3.2.0
-    helm.sh/chart: loki-6.20.0
-    heritage: metalk8s
+    app.kubernetes.io/version: 3.4.2
+    helm.sh/chart: loki-6.29.0
   name: loki-clusterrole
   namespace: metalk8s-logging
 rules:
@@ -68,12 +59,9 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app.kubernetes.io/instance: loki
-    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 3.2.0
-    helm.sh/chart: loki-6.20.0
-    heritage: metalk8s
+    app.kubernetes.io/version: 3.4.2
+    helm.sh/chart: loki-6.29.0
   name: loki-clusterrolebinding
   namespace: metalk8s-logging
 roleRef:
@@ -91,12 +79,9 @@ metadata:
   annotations: null
   labels:
     app.kubernetes.io/instance: loki
-    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 3.2.0
-    helm.sh/chart: loki-6.20.0
-    heritage: metalk8s
+    app.kubernetes.io/version: 3.4.2
+    helm.sh/chart: loki-6.29.0
   name: loki-memberlist
   namespace: metalk8s-logging
 spec:
@@ -118,12 +103,9 @@ metadata:
   annotations: null
   labels:
     app.kubernetes.io/instance: loki
-    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 3.2.0
-    helm.sh/chart: loki-6.20.0
-    heritage: metalk8s
+    app.kubernetes.io/version: 3.4.2
+    helm.sh/chart: loki-6.29.0
     prometheus.io/service-monitor: 'false'
     variant: headless
   name: loki-headless
@@ -145,12 +127,9 @@ metadata:
   annotations: null
   labels:
     app.kubernetes.io/instance: loki
-    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 3.2.0
-    helm.sh/chart: loki-6.20.0
-    heritage: metalk8s
+    app.kubernetes.io/version: 3.4.2
+    helm.sh/chart: loki-6.29.0
   name: loki
   namespace: metalk8s-logging
 spec:
@@ -175,12 +154,10 @@ metadata:
   labels:
     app.kubernetes.io/component: single-binary
     app.kubernetes.io/instance: loki
-    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 3.2.0
-    helm.sh/chart: loki-6.20.0
-    heritage: metalk8s
+    app.kubernetes.io/part-of: memberlist
+    app.kubernetes.io/version: 3.4.2
+    helm.sh/chart: loki-6.29.0
   name: loki
   namespace: metalk8s-logging
 spec:
@@ -228,16 +205,22 @@ spec:
           value: '60'
         - name: LOG_LEVEL
           value: INFO
-        image: kiwigrid/k8s-sidecar:1.28.0
+        image: kiwigrid/k8s-sidecar:1.30.2
         imagePullPolicy: IfNotPresent
         name: loki-sc-rules
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
         volumeMounts:
         - mountPath: /rules
           name: sc-rules-volume
       - args:
         - -config.file=/etc/loki/config/config.yaml
         - -target=all,table-manager
-        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:3.2.0
+        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:3.4.2
         imagePullPolicy: IfNotPresent
         name: loki
         ports:
@@ -324,12 +307,9 @@ kind: ServiceMonitor
 metadata:
   labels:
     app.kubernetes.io/instance: loki
-    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 3.2.0
-    helm.sh/chart: loki-6.20.0
-    heritage: metalk8s
+    app.kubernetes.io/version: 3.4.2
+    helm.sh/chart: loki-6.29.0
     metalk8s.scality.com/monitor: ''
   name: loki
   namespace: metalk8s-logging

@@ -247,7 +247,7 @@ jobs:
           export DEST_DIR="artifacts/ui-e2e-tests/${{ github.job }}"
           mkdir -p ${DEST_DIR}
           scp -F ssh_config \
-            "bastion:/home/centos/metalk8s/ui/cypress/videos/e2e/*" \
+            "bastion:metalk8s/ui/cypress/videos/e2e/*" \
             "${DEST_DIR}/"
 
       - name: Generate and Collect sosreport

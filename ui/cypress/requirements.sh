@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script is designed to run on RHEL/CentOS with `sudo` installed
+# This script is designed to run on RHEL/Rocky with `sudo` installed
 # Mainly used in the CI
 
 if ! [ -f /etc/redhat-release ]; then
@@ -10,9 +10,8 @@ fi
 
 set -xue -o pipefail
 
-YUM_OPTS=(
+DNF_OPTS=(
     --assumeyes
-    --setopt 'skip_missing_names_on_install=False'
 )
 NPM_OPTS=(
     --no-save
@@ -37,7 +36,13 @@ NODE_PACKAGES=(
 
 curl -sL https://rpm.nodesource.com/setup_16.x | sudo bash -
 
-sudo yum install "${YUM_OPTS[@]}" "${RPM_PACKAGES[@]}"
+# NOTE: We have to set the crypto policies to SHA1 because of the
+#       outdated version of nodejs
+sudo update-crypto-policies --set DEFAULT:SHA1
+
+sudo dnf install "${DNF_OPTS[@]}" "${RPM_PACKAGES[@]}"
+
+sudo update-crypto-policies --set DEFAULT
 
 npm install "${NPM_OPTS[@]}" "${NODE_PACKAGES[@]}"
 

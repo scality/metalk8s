@@ -23,10 +23,8 @@ runs:
       with:
         NODE: bastion
         COMMAND: |
-          sudo yum clean all
-          sudo yum install -y epel-release
-          sudo yum -y update
-          sudo yum install -y chromium
+           sudo dnf install -y epel-release
+           sudo dnf install -y chromium
 
     - name: Run UI tests from Bastion
       uses: ./.github/actions/run-command-ssh

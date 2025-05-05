@@ -18,7 +18,7 @@ gpgkey=https://downloads.scality.com/repository/redhat/\$releasever/saltstack/%s
  && microdnf update -y \
  && microdnf install -y glibc-all-langpacks langpacks-en python3-pip epel-release \
  && pip3 install "pip == 21.3.1" \
- && pip3 install "protobuf ~= 3.19.4" "etcd3 != 0.11.0" "kubernetes ~= 12.0.1" \
+ && pip3 install "protobuf ~= 3.19.4" "etcd3 != 0.11.0" "kubernetes ~= 30.1.0" \
  && microdnf install -y salt-master salt-api salt-ssh openssh-clients procps-ng \
  && microdnf remove -y epel-release \
  && microdnf clean all

@@ -14,6 +14,13 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Install git and tox on bastion
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: bastion
+        COMMAND: |
+          sudo dnf install -y git python3-pip
+          pip3 install --user tox
     - name: Clone MetalK8s repository on Bastion
       uses: ./.github/actions/run-command-ssh
       with:

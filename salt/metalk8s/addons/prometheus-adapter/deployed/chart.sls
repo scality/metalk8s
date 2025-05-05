@@ -8,6 +8,7 @@
 {% raw %}
 
 apiVersion: v1
+automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
   labels:
@@ -17,7 +18,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter
   namespace: metalk8s-monitoring
@@ -130,7 +131,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter
   namespace: metalk8s-monitoring
@@ -145,7 +146,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter-resource-reader
   namespace: metalk8s-monitoring
@@ -172,7 +173,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter-server-resources
   namespace: metalk8s-monitoring
@@ -194,7 +195,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter-metrics
   namespace: metalk8s-monitoring
@@ -220,7 +221,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter-system-auth-delegator
   namespace: metalk8s-monitoring
@@ -243,7 +244,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter-resource-reader
   namespace: metalk8s-monitoring
@@ -266,7 +267,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter-hpa-controller
   namespace: metalk8s-monitoring
@@ -289,7 +290,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter-hpa-controller-metrics
   namespace: metalk8s-monitoring
@@ -312,7 +313,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter-auth-reader
   namespace: kube-system
@@ -335,7 +336,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter
   namespace: metalk8s-monitoring
@@ -360,7 +361,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: prometheus-adapter
   namespace: metalk8s-monitoring
@@ -378,7 +379,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 97ca6e9c3c8caba2e2aba1d72f3c8c5da8157421a2682c11ebc7e29c6980835c
+        checksum/config: 279409461d8d7b609f44dee4111e1092b02935387fb219080b82b867c3d66113
       labels:
         app.kubernetes.io/component: metrics
         app.kubernetes.io/instance: prometheus-adapter
@@ -386,11 +387,12 @@ spec:
         app.kubernetes.io/name: prometheus-adapter
         app.kubernetes.io/part-of: metalk8s
         app.kubernetes.io/version: v0.12.0
-        helm.sh/chart: prometheus-adapter-4.11.0
+        helm.sh/chart: prometheus-adapter-4.14.1
         heritage: metalk8s
       name: prometheus-adapter
     spec:
       affinity: {}
+      automountServiceAccountToken: true
       containers:
       - args:
         - /adapter
@@ -467,7 +469,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: v1beta1.custom.metrics.k8s.io
   namespace: metalk8s-monitoring
@@ -491,7 +493,7 @@ metadata:
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: v0.12.0
-    helm.sh/chart: prometheus-adapter-4.11.0
+    helm.sh/chart: prometheus-adapter-4.14.1
     heritage: metalk8s
   name: v1beta1.metrics.k8s.io
   namespace: metalk8s-monitoring
