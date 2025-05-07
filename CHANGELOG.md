@@ -59,25 +59,28 @@
   (PR[#4563](https://github.com/scality/metalk8s/pull/4563))
 
 - Bump kube-prometheus-stack chart version to
-  [70.7.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-70.7.0)
+  [72.0.1](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-72.0.1)
   (PR[#4591](https://github.com/scality/metalk8s/pull/4591))
 
   This change includes:
 
+  - Bump prometheus-operator image version to
+    [v0.82.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.82.0)
   - Bump Prometheus container version to
-    [2.55.1](https://github.com/prometheus/prometheus/releases/tag/v2.55.1)
+    [3.3.1](https://github.com/prometheus/prometheus/releases/tag/v3.3.1)
   - Bump grafana chart version to
-    [8.12.1](https://github.com/grafana/helm-charts/releases/tag/grafana-8.12.1),
+    [8.14.2](https://github.com/grafana/helm-charts/releases/tag/grafana-8.14.2),
   - Grafana container version to
-    [11.6.0](https://github.com/grafana/grafana/releases/tag/v11.6.0)
+    [11.6.1](https://github.com/grafana/grafana/releases/tag/v11.6.1)
   - Bump kube-state-metrics chart version to
-    [5.32.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-state-metrics-5.32.0)
+    [5.33.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-state-metrics-5.33.0)
     and kube-state-metrics container version to
     [2.15.0](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.15.0)
   - Bump prometheus-node-exporter chart version to
-    [4.45.2](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-node-exporter-4.45.2)
+    [4.46.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-node-exporter-4.46.0)
     and node-exporter container version to
     [1.9.1](https://github.com/prometheus/node_exporter/releases/tag/v1.9.1)
+
 
 ## Release 129.0.3 (in development)
 
