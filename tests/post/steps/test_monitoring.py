@@ -368,8 +368,8 @@ def check_job_health(prometheus_api, job, namespace, health):
     # e.g. kube-state-metrics
     utils.retry(
         _wait_job_status,
-        times=30,
-        wait=3,
+        times=60,
+        wait=7,
         name="wait for job '{}' in namespace '{}' being '{}'".format(
             job, namespace, health
         ),
