@@ -131,7 +131,10 @@ export const useNavbarLinksToActions = (
   const location = useLocation();
   const doesRouteMatch = useCallback(
     ({ path, exact }: { path: string; exact: boolean }) => {
-      return matchPath(path + (exact ? '' : '*'), location.pathname);
+      if (exact) {
+        return matchPath(path, location.pathname);
+      }
+      return matchPath(path + '/*', location.pathname);
     },
     [location],
   );
