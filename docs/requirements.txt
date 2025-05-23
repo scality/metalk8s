@@ -113,7 +113,7 @@ sphinxcontrib-spelling==7.7.0
     # via -r requirements.in
 stevedore==3.5.2
     # via doc8
-tornado==6.4.2
+tornado==6.5.1
     # via livereload
 treelib==1.6.4
     # via -r ../tools/lib-alert-tree/requirements.txt
