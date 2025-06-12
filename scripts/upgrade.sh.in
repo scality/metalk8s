@@ -78,6 +78,7 @@ trap cleanup EXIT
 
 upgrade_bootstrap () {
     "$SALT_CALL" saltutil.sync_all saltenv="$SALTENV"
+    "$SALT_CALL" saltutil.refresh_grains
 
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
@@ -86,6 +87,7 @@ upgrade_bootstrap () {
 
     # Upgrade salt-master in local mode since salt-master will restart
     "$SALT_CALL" --local saltutil.sync_all saltenv="$SALTENV" refresh=True
+    "$SALT_CALL" --local saltutil.refresh_grains
     "$SALT_CALL" --local --retcode-passthrough state.sls \
         metalk8s.salt.master.installed saltenv="$SALTENV"
 }

@@ -18,6 +18,14 @@ Sync {{ node }} minion:
     - kwarg:
         saltenv: metalk8s-{{ dest_version }}
 
+Refresh {{ node }} grains:
+  salt.function:
+    - name: saltutil.refresh_grains
+    - tgt: {{ node }}
+    - timeout: 120
+    - require:
+      - salt: Sync {{ node }} minion
+
 Check pillar on {{ node }}:
   salt.function:
     - name: metalk8s.check_pillar_keys
@@ -32,7 +40,7 @@ Check pillar on {{ node }}:
     - retry:
         attempts: 5
     - require:
-      - salt: Sync {{ node }} minion
+      - salt: Refresh {{ node }} grains
 
 Deploy etcd {{ node }} to {{ dest_version }}:
   salt.state:

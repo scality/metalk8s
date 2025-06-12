@@ -133,6 +133,9 @@ orchestrate_bootstrap() {
             refresh=True \
             saltenv=metalk8s-@@VERSION
 
+    run "Refreshing grains on bootstrap minion" \
+        salt-call --state-output=mixed saltutil.refresh_grains
+
     run "Deploying bootstrap node (this may take a while)" \
         "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
             metalk8s.orchestrate.bootstrap \

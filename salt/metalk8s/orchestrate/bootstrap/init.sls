@@ -90,6 +90,14 @@ Sync bootstrap minion:
   - kwarg:
       saltenv: metalk8s-{{ version }}
 
+Refresh bootstrap minion grains:
+  salt.function:
+  - name: saltutil.refresh_grains
+  - tgt: {{ pillar.bootstrap_id }}
+  - timeout: 120
+  - require:
+    - salt: Sync bootstrap minion
+
 Deploy CA role on bootstrap minion:
   salt.state:
   - tgt: {{ pillar.bootstrap_id }}
@@ -98,7 +106,7 @@ Deploy CA role on bootstrap minion:
   - saltenv: metalk8s-{{ version }}
   - pillar: {{ pillar_data | tojson }}
   - require:
-    - salt: Sync bootstrap minion
+    - salt: Refresh bootstrap minion grains
 
 Bring bootstrap minion to highstate:
   salt.state:
@@ -106,7 +114,7 @@ Bring bootstrap minion to highstate:
   - highstate: true
   - pillar: {{ pillar_data | tojson }}
   - require:
-    - salt: Sync bootstrap minion
+    - salt: Refresh bootstrap minion grains
     - salt: Deploy CA role on bootstrap minion
 
 Wait for API server to be available:
