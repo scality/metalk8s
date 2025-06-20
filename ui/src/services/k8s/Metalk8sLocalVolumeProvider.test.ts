@@ -372,9 +372,32 @@ describe('Metalk8sLocalVolumeProvider', () => {
 
     it('should raise an error if volume creation fails', async () => {
       //S
+      (mockCoreV1Api.listNode as jest.Mock).mockResolvedValue({
+        body: {
+          apiVersion: 'v1',
+          kind: 'NodeList',
+          items: [
+            {
+              metadata: {
+                name: 'test-node',
+              },
+              status: {
+                addresses: [{ type: 'InternalIP', address: '192.168.1.100' }],
+              },
+            },
+          ],
+        },
+      });
       (
         mockCustomObjectsApi.createClusterCustomObject as jest.Mock
-      ).mockRejectedValue(new Error('Error'));
+      ).mockResolvedValue({
+        error: {
+          message: 'Error',
+          body: {
+            code: 500,
+          },
+        },
+      });
       //E+V
       await expect(
         provider.attachHardwareVolume({
@@ -398,6 +421,50 @@ describe('Metalk8sLocalVolumeProvider', () => {
           type: HardwareDiskType.NVMe,
         }),
       ).rejects.toThrow('Failed to fetch nodes: Error');
+    });
+
+    it('should return volume info if volume already exists (409 conflict)', async () => {
+      //S
+      (mockCoreV1Api.listNode as jest.Mock).mockResolvedValue({
+        body: {
+          apiVersion: 'v1',
+          kind: 'NodeList',
+          items: [
+            {
+              metadata: {
+                name: 'test-node',
+              },
+              status: {
+                addresses: [{ type: 'InternalIP', address: '192.168.1.100' }],
+              },
+            },
+          ],
+        },
+      });
+      (
+        mockCustomObjectsApi.createClusterCustomObject as jest.Mock
+      ).mockResolvedValue({
+        error: {
+          body: {
+            code: 409,
+          },
+          message: 'Volume already exists',
+        },
+      });
+      //E
+      const result = await provider.attachHardwareVolume({
+        IP: '192.168.1.100',
+        devicePath: '/dev/sda',
+        type: HardwareDiskType.SATA,
+      });
+      //V
+      expect(result).toEqual({
+        IP: '192.168.1.100',
+        devicePath: '/dev/sda',
+        nodeName: 'test-node',
+        volumeType: VolumeType.Hardware,
+        volumeName: 'storage-data-192.168.1.100-dev-sda',
+      });
     });
   });
 });
