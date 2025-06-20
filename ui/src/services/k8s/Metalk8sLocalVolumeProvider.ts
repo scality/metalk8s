@@ -258,6 +258,17 @@ export default class Metalk8sLocalVolumeProvider {
         },
       },
     });
+
+    if (isError(volume) && volume.error.body.code === 409) {
+      return {
+        IP,
+        devicePath,
+        nodeName,
+        volumeType: VolumeType.Hardware,
+        volumeName,
+      };
+    }
+
     if (isError(volume)) {
       throw new Error(
         `Failed to attach hardware volume: ${volume.error.message}`,
