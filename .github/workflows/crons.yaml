@@ -19,15 +19,15 @@ jobs:
         include:
           # these helper comments are needed by the dev branch workflow
           # please do not edit them unless you're changing the version as well
-          # current=130.0
-          - name: "Nightly for MetalK8s 130.0"
+          # current=131.0
+          - name: "Nightly for MetalK8s 131.0"
             cron: "0 1 * * 1-5"
-            branch: "development/130.0"
+            branch: "development/131.0"
             workflow: "nightly.yaml"
-          # old=129.0
-          - name: "Nightly for MetalK8s 129.0"
+          # old=130.0
+          - name: "Nightly for MetalK8s 130.0"
             cron: "0 2 * * 1-5"
-            branch: "development/129.0"
+            branch: "development/130.0"
             workflow: "nightly.yaml"
     steps:
       - name: Checkout
