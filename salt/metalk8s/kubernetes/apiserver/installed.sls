@@ -181,5 +181,6 @@ Make sure kube-apiserver container is up and ready:
     - ca_bundle: /etc/kubernetes/pki/ca.crt
     - status: 200
     - match: 'ok'
+    - request_interval: 1
     - require:
       - module: Make sure kube-apiserver container is up and ready

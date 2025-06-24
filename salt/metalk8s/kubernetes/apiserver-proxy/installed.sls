@@ -38,6 +38,7 @@ Make sure apiserver-proxy is available:
   http.wait_for_successful_query:
   - name: http://127.0.0.1:7080/healthz
   - status: 200
+  - request_interval: 1
   - require:
     - module: Delay after apiserver-proxy deployment
 

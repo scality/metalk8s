@@ -34,6 +34,7 @@ Wait for API server to be available on {{ node }}:
   - match: 'ok'
   - status: 200
   - verify_ssl: false
+  - request_interval: 1
   - require:
     - salt: Execute the downgrade prechecks
   {%- if loop.previtem is defined %}
