@@ -115,6 +115,7 @@ Wait for API server to be available:
   - match: 'ok'
   - status: 200
   - verify_ssl: false
+  - request_interval: 1
   - require:
     - salt: Bring bootstrap minion to highstate
 

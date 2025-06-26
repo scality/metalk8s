@@ -4,6 +4,11 @@
 
 ## Release 130.0.1 (in development)
 
+### Enhancements
+
+- Add 1 second request interval on every salt call using http.wait_for_successful_query
+  (PR[#4609](https://github.com/scality/metalk8s/pull/4609))
+
 ## Release 130.0.0
 
 ### Enhancements

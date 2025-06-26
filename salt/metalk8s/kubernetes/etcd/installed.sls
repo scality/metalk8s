@@ -115,6 +115,7 @@ Waiting for etcd running:
       - /etc/kubernetes/pki/etcd/server.key
     - status: 200
     - match: '{"health":"true","reason":""}'
+    - request_interval: 1
     - require:
       - module: Delay after etcd pod deployment
 

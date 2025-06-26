@@ -100,5 +100,6 @@ Wait for Repositories container to answer:
    - name: http://{{ grains.metalk8s.control_plane_ip }}:{{
      repo.port }}/{{ saltenv }}/
    - status: 200
+   - request_interval: 1
    - require:
      - module: Ensure repositories container is up

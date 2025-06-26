@@ -254,6 +254,7 @@ Wait for API server to be available before highstate:
   - match: 'ok'
   - status: 200
   - verify_ssl: false
+  - request_interval: 1
 
 Check pillar before highstate:
   salt.function:
@@ -299,6 +300,7 @@ Wait for API server to be available:
   - match: 'ok'
   - status: 200
   - verify_ssl: false
+  - request_interval: 1
 
 Uncordon the node:
   metalk8s_cordon.node_uncordoned:

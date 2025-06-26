@@ -25,5 +25,6 @@ Wait for an API server to be available through local proxy:
     - match: 'ok'
     - status: 200
     - verify_ssl: false
+    - request_interval: 1
     - require:
       - salt: Prepare for Salt Master upgrade

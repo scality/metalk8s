@@ -71,6 +71,7 @@ Wait for Salt API to answer:
   http.wait_for_successful_query:
     - name: https://{{ salt_ip }}:4507/
     - ca_bundle: /etc/kubernetes/pki/ca.crt
+    - request_interval: 1
     - status: 200
     - require:
       - module: Make sure salt master container is up
