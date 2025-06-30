@@ -108,7 +108,7 @@ def check_exec(host, k8s_client, command, label, namespace):
     with host.sudo():
         host.check_output(
             "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
-            "exec --namespace %s %s %s",
+            "exec --namespace %s %s -- %s",
             namespace,
             pod.metadata.name,
             command,

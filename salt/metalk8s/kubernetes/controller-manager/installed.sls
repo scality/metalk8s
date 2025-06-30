@@ -51,8 +51,10 @@ Create kube-controller-manager Pod manifest:
             containerPort: 10257
         volumes:
           {%- if grains['os_family'] == 'RedHat' %}
-          - path: /etc/pki
-            name: etc-pki
+          - path: /etc/pki/ca-trust
+            name: etc-pki-ca-trust
+          - path: /etc/pki/tls/certs
+            name: etc-pki-tls-certs
           {%- endif %}
           - path: /etc/kubernetes/pki
             name: k8s-certs

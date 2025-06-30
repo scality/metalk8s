@@ -113,7 +113,7 @@ Create kube-apiserver Pod manifest:
         # }
           - --bind-address={{ host }}
           - --encryption-provider-config={{ encryption_k8s_path }}
-          - --cors-allowed-origins=.*
+          - --cors-allowed-origins=^.*$
           {%- if oidc_config %}
           - --oidc-issuer-url={{ oidc_config.issuerURL }}
           - --oidc-client-id={{ oidc_config.clientID }}
@@ -133,8 +133,10 @@ Create kube-apiserver Pod manifest:
             type: File
             name: k8s-encryption
           {%- if grains['os_family'] == 'RedHat' %}
-          - path: /etc/pki
-            name: etc-pki
+          - path: /etc/pki/ca-trust
+            name: etc-pki-ca-trust
+          - path: /etc/pki/tls/certs
+            name: etc-pki-tls-certs
           {%- endif %}
           - path: /etc/kubernetes/pki
             name: k8s-certs
