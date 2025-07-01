@@ -7,6 +7,11 @@
 - Add 1 second request interval on every salt call using http.wait_for_successful_query
   (PR[#4609](https://github.com/scality/metalk8s/pull/4609))
 
+### Bug fixes
+
+- Make sure the apiserver is running after reconfiguring the pod
+  (PR[#4611](https://github.com/scality/metalk8s/pull/4611))
+
 ## Release 130.0.0
 
 ### Enhancements
