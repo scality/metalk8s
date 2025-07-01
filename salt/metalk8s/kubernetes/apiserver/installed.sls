@@ -163,9 +163,18 @@ Restart kubelet to make it pick up the manifest changes:
         timeout: 120
         raise_on_timeout: false
     - require_in:
-      - module: Make sure kube-apiserver container is up and ready
+      - module: Delay after kube-apiserver Pod deployment
 
 {%- endif %}
+
+# This is a bit ugly but currently we have no easy way to find if the
+# pod has been updated already or not, so we need to wait a bit
+Delay after kube-apiserver Pod deployment:
+  module.wait:
+    - test.sleep:
+      - length: 10
+    - watch:
+      - metalk8s: Create kube-apiserver Pod manifest
 
 Make sure kube-apiserver container is up and ready:
   module.run:
@@ -173,6 +182,8 @@ Make sure kube-apiserver container is up and ready:
       - name: kube-apiserver
       - state: running
       - timeout: 120
+    - require:
+      - module: Delay after kube-apiserver Pod deployment
     - onchanges:
       - metalk8s: Create kube-apiserver Pod manifest
   http.wait_for_successful_query:

@@ -205,7 +205,7 @@ def check_pods_running():
             "--all",
             "--all-namespaces",
             "--for=condition=Ready",
-            "--timeout=10s",
+            "--timeout=60s",
             "--selector=!job-name",  # We filter out Jobs (they can't be Ready)
             capture_output=True,
             check=True,

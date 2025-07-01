@@ -38,6 +38,7 @@ Deploy apiserver {{ node }} to {{ dest_version }}:
     - tgt: {{ node }}
     - sls:
       - metalk8s.kubernetes.apiserver
+      - metalk8s.kubernetes.apiserver-proxy
     - saltenv: metalk8s-{{ dest_version }}
     - require:
       - salt: Check pillar on {{ node }}
