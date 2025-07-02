@@ -8,12 +8,21 @@
   [1.31.10](https://github.com/kubernetes/kubernetes/releases/tag/v1.31.10)
   (PR[#4610](https://github.com/scality/metalk8s/pull/4610))
 
-## Release 130.0.1 (in development)
+## Release 130.0.3 (in development)
+
+## Release 130.0.2
+
+## Release 130.0.1
 
 ### Enhancements
 
 - Add 1 second request interval on every salt call using http.wait_for_successful_query
   (PR[#4609](https://github.com/scality/metalk8s/pull/4609))
+
+### Bug fixes
+
+- Make sure the apiserver is running after reconfiguring the pod
+  (PR[#4611](https://github.com/scality/metalk8s/pull/4611))
 
 ## Release 130.0.0
 
