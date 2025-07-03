@@ -3,13 +3,13 @@
 # NOTE: the MetalK8s repository root is supposed to be mounted at
 # `/usr/src/metalk8s` when running the container
 
-FROM docker.io/ubuntu:20.04
+FROM docker.io/ubuntu:22.04
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get install --no-install-recommends -y \
         sudo \
-        enchant \
+        enchant-2 \
         curl \
         git \
         make \
