@@ -360,7 +360,7 @@ data:
   ipsec-key-file: /etc/ipsec/keys
   enable-ipsec-key-watcher: "true"
   ipsec-key-rotation-duration: "5m"
-  enable-ipsec-encrypted-overlay: "true"
+  enable-ipsec-encrypted-overlay: "false"
 
   enable-xt-socket-fallback: "true"
   install-no-conntrack-iptables-rules: "false"
