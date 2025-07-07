@@ -353,6 +353,14 @@ export function useFederatedRoutes(): FederatedRoute[] {
   const { retrieveDeployedApps } = useDeployedAppsRetriever();
   const deployedApps = retrieveDeployedApps();
 
+  deployedApps.forEach((app) => {
+    if (app.appHistoryBasePath.endsWith('/')) {
+      throw new Error(
+        `appHistoryBasePath of app ${app.name} ends with a /, this is not allowed`,
+      );
+    }
+  });
+
   const federatedRoutes = deployedApps.flatMap((app) => {
     const appBuildConfig = retrieveConfiguration<'build'>({
       configType: 'build',
