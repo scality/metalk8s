@@ -8,7 +8,9 @@
   [1.31.10](https://github.com/kubernetes/kubernetes/releases/tag/v1.31.10)
   (PR[#4610](https://github.com/scality/metalk8s/pull/4610))
 
-## Release 130.0.3 (in development)
+## Release 130.0.4 (in development)
+
+## Release 130.0.3
 
 ## Release 130.0.2
 
