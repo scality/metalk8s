@@ -26,7 +26,6 @@ except ImportError:
 
 
 class MetalK8s(Plugin, RedHatPlugin):
-
     """Metalk8s plugin"""
 
     plugin_name = "metalk8s"
@@ -134,6 +133,18 @@ class MetalK8s(Plugin, RedHatPlugin):
 
         for service in services:
             self.add_journal(units=service)
+
+        # Add DNS troubleshooting outputs
+        # We're using bash -c to ensure that the command is run in a
+        # bash shell, which is needed for the `time` command to work properly
+        # since it's a shell builtin.
+        self.add_cmd_output(
+            "bash -c 'time hostname -f'", suggest_filename="time_hostname_-f"
+        )
+        self.add_cmd_output(
+            "bash -c 'time salt-call --local test.ping'",
+            suggest_filename="time_salt_call_--local_test_ping",
+        )
 
     def _setup_k8s_resources(
         self,

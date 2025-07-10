@@ -8,6 +8,9 @@
   [1.31.10](https://github.com/kubernetes/kubernetes/releases/tag/v1.31.10)
   (PR[#4610](https://github.com/scality/metalk8s/pull/4610))
 
+- Add DNS troubleshooting outputs to `sosreport` plugin
+  (PR[#4621](https://github.com/scality/metalk8s/pull/4621))
+
 ## Release 130.0.4 (in development)
 
 ## Release 130.0.3
