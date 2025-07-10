@@ -8,23 +8,15 @@ import {
   FederatedComponentProps,
   SolutionUI,
 } from '@scality/module-federation';
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useTransition,
-  useRef,
-  useState,
-} from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { QueryClient } from 'react-query';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
+import { BrowserRouter, Route, Routes } from 'react-router';
 
 import { loadShare } from '@module-federation/enhanced/runtime';
 import { useQuery } from 'react-query';
-import NotificationCenterProvider from './NotificationCenterProvider';
 import { AuthConfigProvider, useAuthConfig } from './auth/AuthConfigProvider';
-import { AuthProvider, useAuth } from './auth/AuthProvider';
+import { AuthProvider } from './auth/AuthProvider';
 import { FirstTimeLoginProvider } from './auth/FirstTimeLoginProvider';
 import {
   ShellAlerts,
@@ -35,9 +27,8 @@ import {
 import './index.css';
 import {
   ConfigurationProvider,
-  FederatedView,
   useConfigRetriever,
-  useDiscoveredViews,
+  useFederatedRoutes,
 } from './initFederation/ConfigurationProviders';
 import {
   ShellConfigProvider,
@@ -48,6 +39,7 @@ import { ShellThemeSelectorProvider } from './initFederation/ShellThemeSelectorP
 import { UIListProvider } from './initFederation/UIListProvider';
 import { SolutionsNavbar } from './navbar';
 import { LanguageProvider, useLanguage } from './navbar/lang';
+import NotificationCenterProvider from './NotificationCenterProvider';
 import { QueryClientProvider } from './QueryClientProvider';
 
 /**
@@ -73,19 +65,14 @@ export type FederatedAppProps = {
   shellAlerts: ShellAlerts;
 };
 
-function FederatedRoute({
-  url,
-  scope,
-  module,
-  app,
-  groups,
-}: FederatedComponentProps & {
-  groups?: string[];
+type FederatedRouteProps = Pick<FederatedComponentProps, 'scope' | 'module'> & {
   app: SolutionUI;
-}) {
+};
+function FederatedRoute({ scope, module, app }: FederatedRouteProps) {
   const { retrieveConfiguration } = useConfigRetriever();
   const { setAuthConfig } = useAuthConfig();
   const { language } = useLanguage();
+
   useEffect(() => {
     const runtimeAppConfig = retrieveConfiguration<Record<string, unknown>>({
       configType: 'run',
@@ -96,50 +83,23 @@ function FederatedRoute({
       setAuthConfig(runtimeAppConfig.spec.auth);
     }
   }, [retrieveConfiguration]);
-  return (
-    <ErrorBoundary
-      FallbackComponent={() => (
-        <ErrorPage500 data-cy="sc-error-page500" locale={language} />
-      )}
-    >
-      <ProtectedFederatedRoute
-        url={url}
-        scope={scope}
-        module={module}
-        app={app}
-        groups={groups}
-      />
-    </ErrorBoundary>
-  );
-}
-
-function ProtectedFederatedRoute({
-  url,
-  scope,
-  module,
-  app,
-  groups,
-}: FederatedComponentProps & {
-  groups?: string[];
-  app: SolutionUI;
-}) {
-  const { userData } = useAuth();
-  const { retrieveConfiguration } = useConfigRetriever();
 
   const federatedAppProps: FederatedAppProps = {
     shellHooks,
     shellAlerts,
   };
 
-  if (
-    userData &&
-    (groups?.some((group) => userData.groups.includes(group)) ?? true)
-  ) {
-    const appBuildConfig = retrieveConfiguration<'build'>({
-      configType: 'build',
-      name: app.name,
-    });
-    return (
+  const appBuildConfig = retrieveConfiguration<'build'>({
+    configType: 'build',
+    name: app.name,
+  });
+
+  return (
+    <ErrorBoundary
+      FallbackComponent={() => (
+        <ErrorPage500 data-cy="sc-error-page500" locale={language} />
+      )}
+    >
       <FederatedComponent
         url={`${app.url}${appBuildConfig?.spec.remoteEntryPath}?version=${app.version}`}
         module={module}
@@ -147,25 +107,18 @@ function ProtectedFederatedRoute({
         scope={scope}
         app={app}
       />
-    );
-  }
-
-  return <></>;
+    </ErrorBoundary>
+  );
 }
 
 function InternalRouter() {
-  const discoveredViews = useDiscoveredViews();
-  const { retrieveConfiguration } = useConfigRetriever();
+  const federatedRoutes = useFederatedRoutes();
 
   const routes = useMemo(
     () =>
-      (
-        discoveredViews.filter(
-          (discoveredView) => discoveredView.isFederated,
-        ) as FederatedView[]
-      )
-        //Sort the exact and strict routes first, to make sure to match the exact first.
-        .sort((a, b) => {
+      //Sort the exact and strict routes first, to make sure to match the exact first.
+      federatedRoutes
+        .toSorted((a, b) => {
           if (a.view.exact && !b.view.exact) {
             return -1;
           }
@@ -183,30 +136,15 @@ function InternalRouter() {
           }
           return 0;
         })
-
-        .map(({ app, view, groups }) => ({
+        .map(({ app, view }) => ({
           path: app.appHistoryBasePath + view.path,
           basename: app.appHistoryBasePath,
-          exact: view.exact,
-          strict: view.strict,
           sensitive: view.sensitive,
           element: (
-            <FederatedRoute
-              url={
-                app.url +
-                retrieveConfiguration<'build'>({
-                  configType: 'build',
-                  name: app.name,
-                })?.spec.remoteEntryPath
-              }
-              module={view.module}
-              scope={view.scope}
-              app={app}
-              groups={groups}
-            />
+            <FederatedRoute module={view.module} scope={view.scope} app={app} />
           ),
         })),
-    [JSON.stringify(discoveredViews)],
+    [JSON.stringify(federatedRoutes)],
   );
 
   return (
