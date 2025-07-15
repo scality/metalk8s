@@ -64,11 +64,21 @@ export type BuildtimeWebFinger = {
     instanceNameAdapter?: FederatedModuleInfo;
   };
 };
+
+export type EnrichedBuildtimeWebFinger = BuildtimeWebFinger & {
+  metadata: {
+    // This information is not present in the original webFinger, it's filled by the ConfigurationProvider
+    url: string;
+  };
+};
 export function useConfigRetriever(): {
   retrieveConfiguration: <T extends 'build' | Record<string, unknown>>(arg0: {
     configType: T extends 'build' ? 'build' : 'run';
     name: string;
-  }) => (T extends 'build' ? BuildtimeWebFinger : RuntimeWebFinger<T>) | null;
+    url?: string;
+  }) =>
+    | (T extends 'build' ? EnrichedBuildtimeWebFinger : RuntimeWebFinger<T>)
+    | null;
 } {
   const { state: webFingerContextValue } = useWebFingersStore();
   const { retrieveDeployedApps } = useDeployedAppsRetriever();
@@ -81,7 +91,7 @@ export function useConfigRetriever(): {
 
   return {
     // @ts-expect-error - impossible to type
-    retrieveConfiguration: ({ configType, name }) => {
+    retrieveConfiguration: ({ configType, name, url }) => {
       if (configType !== 'build' && configType !== 'run') {
         throw new Error(
           `Invalid configType : it should be build or run but received ${configType}`,
@@ -108,13 +118,24 @@ export function useConfigRetriever(): {
         })
         .map((webFinger) => webFinger.data);
       ///TODO validate web fingers against JsonSchemas
-      const config = configs.find(
-        (webFinger) =>
-          (webFinger.kind === 'MicroAppRuntimeConfiguration' &&
-            webFinger.metadata.name === name) ||
-          (webFinger.kind === 'MicroAppConfiguration' &&
-            webFinger.metadata.kind === apps[0].kind),
-      );
+      const config = configs.find((webFinger) => {
+        if (
+          webFinger.kind === 'MicroAppRuntimeConfiguration' &&
+          webFinger.metadata.name === name
+        ) {
+          return true;
+        }
+        if (
+          webFinger.kind === 'MicroAppConfiguration' &&
+          webFinger.metadata.kind === apps[0].kind
+        ) {
+          if (url) {
+            return webFinger.metadata.url === url;
+          }
+          return true;
+        }
+        return false;
+      });
 
       if (!config) {
         const listOfKnownConfigurations = JSON.stringify(configs, null, 2);
@@ -145,7 +166,9 @@ export function useConfig<T extends 'build' | Record<string, unknown>>({
 }: {
   configType: T extends 'build' ? 'build' : 'run';
   name: string;
-}): null | T extends 'build' ? BuildtimeWebFinger : RuntimeWebFinger<T> {
+}): null | T extends 'build'
+  ? EnrichedBuildtimeWebFinger
+  : RuntimeWebFinger<T> {
   // Utiliser le nouveau hook useWebFingersStore
   const { state: webFingerContextValue } = useWebFingersStore();
 
@@ -191,7 +214,7 @@ export type ViewDefinition = FederatedView | NonFederatedView;
 class WebFingersStore {
   private listeners: Set<() => void> = new Set();
   private _state: UseQueryResult<
-    BuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>,
+    EnrichedBuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>,
     unknown
   >[] = [];
 
@@ -208,11 +231,11 @@ class WebFingersStore {
 
   private isStateEqual(
     currentState: UseQueryResult<
-      BuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>,
+      EnrichedBuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>,
       unknown
     >[],
     newState: UseQueryResult<
-      BuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>,
+      EnrichedBuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>,
       unknown
     >[],
   ) {
@@ -227,7 +250,7 @@ class WebFingersStore {
 
   updateState = (
     newState: UseQueryResult<
-      BuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>,
+      EnrichedBuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>,
       unknown
     >[],
   ) => {
@@ -256,7 +279,7 @@ export function useDiscoveredViews(): ViewDefinition[] {
   const { retrieveConfiguration } = useConfigRetriever();
   const { retrieveDeployedApps } = useDeployedAppsRetriever();
   const { config: shellConfig } = useShellConfig();
-  const deployedApps = retrieveDeployedApps();
+
   const discoveredViews = [
     ...shellConfig.navbar.main.map((entry) => ({
       ...entry,
@@ -318,9 +341,54 @@ export function useDiscoveredViews(): ViewDefinition[] {
 
     return [];
   }) as ViewDefinition[];
-
   return discoveredViews;
 }
+
+type FederatedRoute = {
+  app: SolutionUI;
+  view: View;
+};
+export function useFederatedRoutes(): FederatedRoute[] {
+  const { retrieveConfiguration } = useConfigRetriever();
+  const { retrieveDeployedApps } = useDeployedAppsRetriever();
+  const deployedApps = retrieveDeployedApps();
+
+  const federatedRoutes = React.useMemo(() => {
+    return deployedApps.flatMap((app) => {
+      // Validate base path once per app during iteration
+      if (app.appHistoryBasePath.endsWith('/')) {
+        throw new Error(
+          `appHistoryBasePath of app ${app.name} ends with a /, this is not allowed`,
+        );
+      }
+
+      const appBuildConfig = retrieveConfiguration<'build'>({
+        configType: 'build',
+        name: app.name,
+        url: app.url,
+      });
+
+      if (!appBuildConfig) {
+        return [];
+      }
+
+      const routesFromSingleApp = Object.entries(appBuildConfig.spec.views).map(
+        ([view]) => {
+          return {
+            kind: app.kind,
+            view: appBuildConfig.spec.views[view],
+            app,
+          };
+        },
+      );
+
+      return routesFromSingleApp;
+    });
+  }, [deployedApps, retrieveConfiguration]);
+
+  return federatedRoutes;
+}
+
 export const useLinkOpener = () => {
   const navigate = useShellHistory();
   return {
@@ -361,6 +429,7 @@ export const ConfigurationProvider = ({
 }) => {
   const { updateWebFingersState } = useWebFingersStore();
   const deployedUIs = useDeployedApps();
+
   const results = useQueries(
     deployedUIs.flatMap((ui) => [
       {
@@ -369,9 +438,29 @@ export const ConfigurationProvider = ({
         queryFn: () => {
           return fetch(
             `${ui.url}/.well-known/micro-app-configuration?version=${ui.version}`,
-          ).then((r) => {
+          ).then(async (r) => {
             if (r.ok) {
-              return r.json() as Promise<BuildtimeWebFinger>;
+              const json: BuildtimeWebFinger = await r.json();
+
+              // @ts-expect-error - At this point, the url is not defined, but the user may define it by error
+              // so we are going to check and warn the user if needed.
+              const shouldNotBeDefinedUrl = json.metadata.url;
+
+              if (shouldNotBeDefinedUrl != null) {
+                console.warn(
+                  `MicroApp's MicroAppConfiguration url is already set to ${shouldNotBeDefinedUrl}.
+                  This information will be overridden by the value discovered in discoveryUrl.`,
+                );
+              }
+
+              const enrichedJson: EnrichedBuildtimeWebFinger = {
+                ...json,
+                metadata: {
+                  ...json.metadata,
+                  url: ui.url,
+                },
+              };
+              return enrichedJson;
             } else {
               return Promise.reject();
             }
@@ -403,6 +492,7 @@ export const ConfigurationProvider = ({
   }, [results]);
 
   const statuses = Array.from(new Set(results.map((result) => result.status)));
+
   const globalStatus = statuses.includes('error')
     ? 'error'
     : statuses.includes('loading')
