@@ -307,6 +307,8 @@ configure_salt_minion_local_mode() {
 
     "$SALT_CALL" --file-root="$file_root" \
         --local --retcode-passthrough saltutil.sync_all saltenv=base
+    "$SALT_CALL" --file-root="$file_root" \
+        --local --retcode-passthrough saltutil.refresh_grains
     # Workaround waiting for Rocky Linux support in Salt
     "$SALT_CALL" --file-root="$file_root" \
         --local --retcode-passthrough state.sls \

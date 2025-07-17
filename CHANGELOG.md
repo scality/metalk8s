@@ -18,6 +18,12 @@
 - Make sure the apiserver is running after reconfiguring the pod
   (PR[#4611](https://github.com/scality/metalk8s/pull/4611))
 
+### Enhancements
+
+- Add a `saltutil.refresh_grains` after each `saltutil.sync_all` 
+  to ensure the grains are up to date 
+  (PR[#4598](https://github.com/scality/metalk8s/pull/4598))
+
 ## Release 130.0.0
 
 ### Enhancements
@@ -77,11 +83,12 @@
   (PR[#4563](https://github.com/scality/metalk8s/pull/4563))
 
 - Add a hash annotation to force restart backup server on 
-  certifacate renewal (PR[#4590](https://github.com/scality/metalk8s/pull/4590))
+  certificate renewal (PR[#4590](https://github.com/scality/metalk8s/pull/4590))
 
 - Add alerts for a CronJob owned Job failure and another one for
-  non-CronJob owned Job failure 
+  non-CronJob owned Job failure
   (PR[#4584](https://github.com/scality/metalk8s/pull/4584))
+
 
 ## Release 129.0.3 (in development)
 

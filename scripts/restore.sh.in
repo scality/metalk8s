@@ -203,6 +203,8 @@ configure_salt_master() {
         refresh=True \
         saltenv=metalk8s-@@VERSION
 
+    "${SALT_CALL}" --retcode-passthrough saltutil.refresh_grains
+
     "${SALT_CALL}" --retcode-passthrough --state-output=mixed state.sls \
         metalk8s.kubernetes.kubelet \
         saltenv=metalk8s-@@VERSION \
