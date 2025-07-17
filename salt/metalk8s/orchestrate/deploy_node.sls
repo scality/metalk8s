@@ -108,6 +108,14 @@ Sync module on the node:
     - kwarg:
         saltenv: metalk8s-{{ version }}
 
+Refresh the node grains:
+  salt.function:
+    - name: saltutil.refresh_grains
+    - tgt: {{ node_name }}
+    - timeout: 120
+    - require:
+      - salt: Sync module on the node
+
 Set grains:
   salt.state:
     - tgt: {{ node_name }}
@@ -115,7 +123,7 @@ Set grains:
     - sls:
       - metalk8s.node.grains
     - require:
-      - salt: Sync module on the node
+      - salt: Refresh the node grains
 
 Refresh the mine:
   salt.function:
@@ -167,7 +175,7 @@ Check pillar before salt-minion configuration:
     - retry:
         attempts: 5
     - require:
-      - salt: Sync module on the node
+      - salt: Refresh the node grains
 
 Reconfigure salt-minion:
   salt.state:
@@ -216,7 +224,7 @@ Check pillar before etcd deployment:
     - retry:
         attempts: 5
     - require:
-      - salt: Sync module on the node
+      - salt: Refresh the node grains
       - salt: Wait minion available
 
 Install etcd node:
@@ -271,7 +279,7 @@ Check pillar before highstate:
     - retry:
         attempts: 5
     - require:
-      - salt: Sync module on the node
+      - salt: Refresh the node grains
       - http: Wait for API server to be available before highstate
 
 Run the highstate:
