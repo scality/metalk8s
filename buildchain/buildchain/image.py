@@ -217,6 +217,9 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "cert-manager-cainjector",
         "cert-manager-acmesolver",
     ],
+    constants.SCALITY_REPOSITORY: [
+        "ui-operator",
+    ],
 }
 
 REMOTE_NAMES: Dict[str, str] = {

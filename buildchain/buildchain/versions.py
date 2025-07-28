@@ -267,6 +267,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
+        name="ui-operator",
+        version="0.1.0",
+        digest="sha256:5a039b2f16fab190e26e21f27f2662752c0a0f2799afeb102df85b3cf605b754",
+    ),
+    Image(
         name="loki",
         version="3.4.2",
         digest="sha256:58a6c186ce78ba04d58bfe2a927eff296ba733a430df09645d56cdc158f3ba08",
