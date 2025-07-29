@@ -11,6 +11,10 @@
 - Add DNS troubleshooting outputs to `sosreport` plugin
   (PR[#4621](https://github.com/scality/metalk8s/pull/4621))
 
+- Bump Fluent Bit image version to [4.0.3](https://github.com/fluent/fluent-bit/releases/tag/v4.0.3)
+  and Fluent Bit Helm chart version to [0.50.0](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.50.0)
+  (PR[#4627](https://github.com/scality/metalk8s/pull/4627))
+
 ## Release 130.0.4 (in development)
 
 ## Release 130.0.3
