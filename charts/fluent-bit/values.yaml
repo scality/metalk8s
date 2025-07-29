@@ -103,6 +103,7 @@ service:
   internalTrafficPolicy:
   loadBalancerClass:
   loadBalancerSourceRanges: []
+  loadBalancerIP:
   labels: {}
   # nodePort: 30020
   # clusterIP: 172.16.10.1
@@ -242,6 +243,9 @@ autoscaling:
 
     # List of resources that the vertical pod autoscaler can control. Defaults to cpu and memory
     controlledResources: []
+
+    # Values that the vertical pod autoscaler can control. Allowed values are RequestsAndLimits and RequestsOnly. Default is RequestsAndLimits.
+    controlledValues:
 
     # Define the max allowed resources for the pod
     maxAllowed: {}
