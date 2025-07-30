@@ -125,6 +125,13 @@ Create fluent-bit ConfigMap:
                 Add            namespace unknown
                 Add            pod unknown
                 Add            stream unknown
+            [FILTER]
+                Name         parser
+                match        audit.*
+                key_name     log
+                parser       extract_audit_log_timestamp
+                preserve_key On
+                reserve_data On
             {%- for output in fluent_bit.spec.config.output %}
             [Output]
                 {%- for key, value in output.items() %}
@@ -139,3 +146,9 @@ Create fluent-bit ConfigMap:
                 Time_Key    time
                 Time_Format %Y-%m-%dT%H:%M:%S.%L%z
                 Time_Keep   Off
+            [PARSER]
+                Name        extract_audit_log_timestamp
+                Format      regex
+                Regex       ^type=\w+\s+msg=audit\((?<timestamp>\d+\.\d+):\d+\):\s*.*$
+                Time_Key    timestamp
+                Time_Format %s.%L
