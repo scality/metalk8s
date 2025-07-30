@@ -1,4 +1,5 @@
 include:
+  - .namespace
   - .manifests
 
 Wait for the UI Operator to be Ready:

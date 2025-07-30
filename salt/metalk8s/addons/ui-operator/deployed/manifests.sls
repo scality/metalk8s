@@ -27,6 +27,7 @@ Deploy UI Operator:
               labels:
                 app.kubernetes.io/name: ui-operator
             spec:
+              serviceAccountName: ui-operator
               containers:
               - name: ui-operator
                 image: {{ ui_operator_image }}

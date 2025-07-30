@@ -450,6 +450,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
         ),
         context={"CRDs": _download_ui_operator_crds()},
     ),
+    Path("salt/metalk8s/addons/ui-operator/deployed/rbac.sls"),
     Path("salt/metalk8s/addons/ui-operator/post-upgrade.sls"),
     Path("salt/metalk8s/addons/solutions/deployed/configmap.sls"),
     Path("salt/metalk8s/addons/solutions/deployed/init.sls"),
