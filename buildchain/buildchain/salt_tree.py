@@ -28,6 +28,7 @@ Overview:
 
 import abc
 import importlib
+import urllib.request
 from pathlib import Path
 import sys
 from typing import Any, Dict, Iterator, Tuple, Union
@@ -196,6 +197,14 @@ class AlertingRulesManifest(targets.AtomicTarget):
             }
         )
         return task
+
+
+def _download_ui_operator_crds() -> str:
+    """Download UI Operator CRDs from GitHub releases."""
+    url = "https://github.com/scality/ui-operator/releases/download/0.1.1/ui-operator-crds-0.1.1.yaml"
+    
+    with urllib.request.urlopen(url) as response:
+        return response.read().decode('utf-8')
 
 
 PILLAR_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
@@ -412,6 +421,16 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/ui-operator/deployed/init.sls"),
     Path("salt/metalk8s/addons/ui-operator/deployed/manifests.sls"),
     Path("salt/metalk8s/addons/ui-operator/deployed/namespace.sls"),
+    targets.TemplateFile(
+        task_name="ui-operator-crds.sls",
+        source=constants.ROOT.joinpath(
+            "salt/metalk8s/addons/ui-operator/deployed/crds.sls.in"
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            "salt/metalk8s/addons/ui-operator/deployed/crds.sls"
+        ),
+        context={"CRDs": _download_ui_operator_crds()},
+    ),
     Path("salt/metalk8s/addons/ui-operator/post-upgrade.sls"),
     Path("salt/metalk8s/addons/solutions/deployed/configmap.sls"),
     Path("salt/metalk8s/addons/solutions/deployed/init.sls"),
