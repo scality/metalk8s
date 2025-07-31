@@ -38,6 +38,17 @@ daemonSetVolumes:
 - name: runlog
   hostPath:
     path: /run/log
+- name: syslog-cert
+  secret:
+    secretName: syslog-cert
+    optional: true
+    items:
+    - key: ca.crt
+      path: ca.crt
+    - key: client.crt
+      path: client.crt
+    - key: client.key
+      path: client.key
 
 daemonSetVolumeMounts:
 - name: run
@@ -48,6 +59,8 @@ daemonSetVolumeMounts:
 - name: runlog
   mountPath: /run/log
   readOnly: true
+- name: syslog-cert
+  mountPath: /fluent-bit/etc/tls/
 
 serviceMonitor:
   enabled: true

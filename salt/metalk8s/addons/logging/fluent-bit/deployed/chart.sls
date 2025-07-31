@@ -1735,6 +1735,8 @@ spec:
         - mountPath: /run/log
           name: runlog
           readOnly: true
+        - mountPath: /fluent-bit/etc/tls/
+          name: syslog-cert
       dnsPolicy: ClusterFirst
       hostNetwork: false
       serviceAccountName: fluent-bit
@@ -1764,6 +1766,17 @@ spec:
       - hostPath:
           path: /run/log
         name: runlog
+      - name: syslog-cert
+        secret:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          - key: client.crt
+            path: client.crt
+          - key: client.key
+            path: client.key
+          optional: true
+          secretName: syslog-cert
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor

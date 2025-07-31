@@ -12,8 +12,9 @@ spec:
       limits:
         memory: 1Gi
   config:
-    {%- if pillar.addons.loki.enabled %}
+    {%- if pillar.addons.loki.enabled or pillar.addons.fluent-bit.siem.enabled %}
     output:
+      {%- if pillar.addons.loki.enabled %}
       - Name: loki
         Match: kube.*
         Host: loki
@@ -45,6 +46,21 @@ spec:
         Line_Format: json
         Log_Level: warn
         Workers: 4
+      {%- else %}
+      - Name: syslog
+        Match: audit.*
+        host: {{ pillar.addons.fluent-bit.siem.host }}
+        port: 6514
+        mode: tcp
+        format: rfc5424
+        tls: on
+        tls.verify: on
+        tls.ca_file: /fluent-bit/etc/tls/ca.crt
+        tls.crt_file: /fluent-bit/etc/tls/client.crt
+        tls.key_file: /fluent-bit/etc/tls/client.key
+        workers: 2
+        log_level: warn
+      {%- endif %}
     {%- else %}
     output: []
     {%- endif %}
