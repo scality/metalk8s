@@ -214,8 +214,8 @@ def _download_ui_operator_crds() -> str:
         if error.code == 404:
             raise RuntimeError(
                 f"Failed to download UI Operator CRDs: File not found at {url}\n"
-                f"Please ensure that UI Operator version {versions.UI_OPERATOR_VERSION} "
-                f"has been released and the CRDs file is available."
+                f"Please ensure that UI Operator version {versions.UI_OPERATOR_VERSION}"
+                f" has been released and the CRDs file is available."
             ) from error
         raise RuntimeError(
             f"Failed to download UI Operator CRDs from {url}: HTTP {error.code}"
