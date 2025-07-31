@@ -201,10 +201,29 @@ class AlertingRulesManifest(targets.AtomicTarget):
 
 def _download_ui_operator_crds() -> str:
     """Download UI Operator CRDs from GitHub releases."""
-    url = "https://github.com/scality/ui-operator/releases/download/0.1.1/ui-operator-crds-0.1.1.yaml"
-    
-    with urllib.request.urlopen(url) as response:
-        return response.read().decode('utf-8')
+    url = (
+        f"https://github.com/scality/ui-operator/releases/download/"
+        f"{versions.UI_OPERATOR_VERSION}/ui-operator-crds-"
+        f"{versions.UI_OPERATOR_VERSION}.yaml"
+    )
+
+    try:
+        with urllib.request.urlopen(url) as response:
+            return str(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            raise RuntimeError(
+                f"Failed to download UI Operator CRDs: File not found at {url}\n"
+                f"Please ensure that UI Operator version {versions.UI_OPERATOR_VERSION} "
+                f"has been released and the CRDs file is available."
+            ) from error
+        raise RuntimeError(
+            f"Failed to download UI Operator CRDs from {url}: HTTP {error.code}"
+        ) from error
+    except urllib.error.URLError as error:
+        raise RuntimeError(
+            f"Failed to download UI Operator CRDs from {url}: {error.reason}"
+        ) from error
 
 
 PILLAR_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
