@@ -1,6 +1,3 @@
-include:
-- .namespace
-
 {%- set metalk8s_ui_defaults = salt.slsutil.renderer(
         'salt://metalk8s/addons/ui/config/metalk8s-ui-config.yaml.j2', saltenv=saltenv
     )

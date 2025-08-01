@@ -1,6 +1,3 @@
-include:
-  - .namespace
-
 {%- set metalk8s_ui_config = salt.metalk8s_kubernetes.get_object(
         kind='ConfigMap',
         apiVersion='v1',
