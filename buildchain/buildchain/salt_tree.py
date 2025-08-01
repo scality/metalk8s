@@ -425,7 +425,6 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     ),
     Path("salt/metalk8s/addons/ui/deployed/ui-configuration.sls"),
     Path("salt/metalk8s/addons/ui/deployed/files/metalk8s-ui-deployment.yaml.j2"),
-    Path("salt/metalk8s/addons/ui/deployed/namespace.sls"),
     targets.TemplateFile(
         task_name="salt/metalk8s/addons/ui/deployed/ui.sls",
         source=constants.ROOT.joinpath("salt/metalk8s/addons/ui/deployed/ui.sls.in"),
