@@ -27,6 +27,16 @@ Deploy UI Operator:
               labels:
                 app.kubernetes.io/name: ui-operator
             spec:
+              tolerations:
+              - key: "node-role.kubernetes.io/bootstrap"
+                operator: "Exists"
+                effect: "NoSchedule"
+              - key: "node-role.kubernetes.io/infra"
+                operator: "Exists"
+                effect: "NoSchedule"
+              nodeSelector:
+                kubernetes.io/os: linux
+                node-role.kubernetes.io/infra: ''
               serviceAccountName: ui-operator
               containers:
               - name: ui-operator
