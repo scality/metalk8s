@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## Release 132.0.0 (in development)
+
 ## Release 131.0.0 (in development)
 
 ### Enhancements
