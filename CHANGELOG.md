@@ -2,6 +2,14 @@
 
 ## Release 132.0.0 (in development)
 
+### Enhancements
+
+- Bump Kubernetes version to [1.32.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.32.7)
+  (PR[#4637](https://github.com/scality/metalk8s/pull/4637))
+
+- Bump coredns version to [1.12.2](https://github.com/coredns/coredns/releases/tag/v1.12.2)
+  (PR[#4637](https://github.com/scality/metalk8s/pull/4637))
+
 ## Release 131.0.0 (in development)
 
 ### Enhancements
