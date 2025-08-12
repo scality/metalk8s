@@ -9,6 +9,10 @@ commonLabels:
   app.kubernetes.io/managed-by: 'metalk8s'
   metalk8s.scality.com/monitor: ''
 
+customRules:
+  NodeSystemSaturation:
+    for: "30m"
+
 # NOTE: cannot use this at the moment because kube-state-metrics uses it incorrectly
 # global:
 #   imageRegistry: '__var__(repo.registry_endpoint)'

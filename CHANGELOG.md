@@ -25,6 +25,11 @@
   and Fluent Bit Helm chart version to [0.50.0](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.50.0)
   (PR[#4627](https://github.com/scality/metalk8s/pull/4627))
 
+### Bug Fixes
+
+- Fix a Bug where NodeSystemSaturation alert triggers too early after only 15 minutes of high load
+  (PR[#4641](https://github.com/scality/metalk8s/pull/4641))
+
 ## Release 130.0.4 (in development)
 
 ## Release 130.0.3

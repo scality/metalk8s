@@ -74765,7 +74765,7 @@ spec:
       expr: |-
         node_load1{job="node-exporter"}
         / count without (cpu, mode) (node_cpu_seconds_total{job="node-exporter", mode="idle"}) > 2
-      for: 15m
+      for: 30m
       labels:
         severity: warning
     - alert: NodeMemoryMajorPagesFaults
