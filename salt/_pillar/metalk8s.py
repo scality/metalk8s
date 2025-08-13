@@ -168,6 +168,7 @@ def _load_addons(config_data):
     addons_data.setdefault("dex", {}).setdefault("enabled", True)
     addons_data.setdefault("loki", {}).setdefault("enabled", True)
     addons_data.setdefault("fluent-bit", {}).setdefault("enabled", True)
+    addons_data.setdefault("shell-ui", {}).setdefault("enabled", True)
 
     return addons_data
 
