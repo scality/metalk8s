@@ -5,6 +5,15 @@ include:
 
 {%- set ui_operator_image = build_image_name('ui-operator') %}
 
+{%- set ui_operator = salt.metalk8s_kubernetes.get_object(
+        kind='Deployment',
+        apiVersion='apps/v1',
+        namespace='metalk8s-ui',
+        name='ui-operator',
+  )
+%}
+
+{%- if ui_operator is none %}
 Deploy UI Operator:
   metalk8s_kubernetes.object_present:
     - manifest:
@@ -78,3 +87,14 @@ Deploy UI Operator:
               terminationGracePeriodSeconds: 10
     - require:
       - sls: metalk8s.addons.ui-operator.deployed.namespace
+{%- else %}
+
+Update UI Operator:
+  metalk8s_kubernetes.object_updated:
+    - name: ui-operator
+    - kind: Deployment
+    - apiVersion: apps/v1
+    - patch:
+        spec:
+          image: {{ ui_operator_image }}
+{%- endif %}
