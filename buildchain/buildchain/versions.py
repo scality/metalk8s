@@ -86,7 +86,7 @@ NGINX_IMAGE_VERSION: str = "1.27.5-alpine"
 NODEJS_IMAGE_VERSION: str = "20.11.1"
 KEEPALIVED_VERSION: str = "2.3.3"
 CERT_MANAGER_VERSION: str = "1.17.1"
-UI_OPERATOR_VERSION: str = "0.1.1"
+UI_OPERATOR_VERSION: str = "1.0.5"
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
 # image, e.g. because the `Dockerfile` is changed, or one of the dependencies
@@ -270,7 +270,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="ui-operator",
         version=UI_OPERATOR_VERSION,
-        digest="sha256:5a039b2f16fab190e26e21f27f2662752c0a0f2799afeb102df85b3cf605b754",
+        digest="sha256:c007400f44f392a923d0567eaaab570cc67cba70e036b908a5e6a14736c43ea2",
     ),
     Image(
         name="loki",
