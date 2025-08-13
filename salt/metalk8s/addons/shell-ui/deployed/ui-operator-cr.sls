@@ -2,15 +2,15 @@
 
 {%- set shell_ui_image = build_image_name('shell-ui') %}
 
-{%- set shell_ui_cp_component = salt.metalk8s_kubernetes.get_object(
-        kind='ScalityUIComponent',
+{%- set shell_ui_cp = salt.metalk8s_kubernetes.get_object(
+        kind='ScalityUI',
         apiVersion='ui.scality.com/v1alpha1',
         namespace='metalk8s-ui',
         name='shell-ui-cp',
   )
 %}
 
-{%- if shell_ui_cp_component is none %}
+{%- if shell_ui_cp is none %}
 
 Create ScalityUI for control plane:
   metalk8s_kubernetes.object_present:
@@ -63,15 +63,15 @@ Update ScalityUI for control plane:
 {%- endif %}
 
 
-{%- set shell_ui_wp_component = salt.metalk8s_kubernetes.get_object(
-        kind='ScalityUIComponent',
+{%- set shell_ui_wp = salt.metalk8s_kubernetes.get_object(
+        kind='ScalityUI',
         apiVersion='ui.scality.com/v1alpha1',
         namespace='metalk8s-ui',
         name='shell-ui-wp',
   )
 %}
 
-{%- if shell_ui_wp_component is none %}
+{%- if shell_ui_wp is none %}
 Create ScalityUI for workload plane:
   metalk8s_kubernetes.object_present:
     - manifest:
