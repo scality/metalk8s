@@ -61,6 +61,7 @@ Update ScalityUI for control plane:
           image: {{ shell_ui_image }}
           auth:
             redirectUrl: "{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/"
+    - content_type: application/merge-patch+json
 {%- endif %}
 
 
@@ -122,4 +123,5 @@ Update ScalityUI for workload plane:
           image: {{ shell_ui_image }}
           auth:
             redirectUrl: "{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/"
+    - content_type: application/merge-patch+json
 {%- endif %}

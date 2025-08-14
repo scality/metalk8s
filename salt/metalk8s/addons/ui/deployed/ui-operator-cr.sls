@@ -35,6 +35,7 @@ Update metalk8s-ui ScalityUIComponent:
     - patch:
         spec:
           image: {{ metalk8s_ui_image }}
+    - content_type: application/merge-patch+json
 {%- endif %}
 
 
