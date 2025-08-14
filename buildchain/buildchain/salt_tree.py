@@ -408,33 +408,10 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/ui/deployed/dependencies.sls"),
     Path("salt/metalk8s/addons/ui/deployed/ingress.sls"),
     Path("salt/metalk8s/addons/ui/deployed/init.sls"),
-    Path("salt/metalk8s/addons/ui/config/metalk8s-shell-ui-config.yaml.j2"),
+    Path("salt/metalk8s/addons/ui/deployed/ui-operator-cr.sls"),
     Path("salt/metalk8s/addons/ui/config/metalk8s-ui-config.yaml.j2"),
+    Path("salt/metalk8s/addons/ui/config/metalk8s-shell-ui-config.yaml.j2"),
     Path("salt/metalk8s/addons/ui/config/workloadplane-shell-ui-config.yaml.j2"),
-    targets.TemplateFile(
-        task_name="salt/metalk8s/addons/ui/config/deployed-ui-apps.yaml.j2",
-        source=constants.ROOT.joinpath(
-            "salt/metalk8s/addons/ui/config/deployed-ui-apps.yaml.j2.in"
-        ),
-        destination=constants.ISO_ROOT.joinpath(
-            "salt/metalk8s/addons/ui/config/deployed-ui-apps.yaml.j2"
-        ),
-        context={
-            "VERSION": versions.VERSION,
-        },
-    ),
-    Path("salt/metalk8s/addons/ui/deployed/ui-configuration.sls"),
-    Path("salt/metalk8s/addons/ui/deployed/files/metalk8s-ui-deployment.yaml.j2"),
-    targets.TemplateFile(
-        task_name="salt/metalk8s/addons/ui/deployed/ui.sls",
-        source=constants.ROOT.joinpath("salt/metalk8s/addons/ui/deployed/ui.sls.in"),
-        destination=constants.ISO_ROOT.joinpath(
-            "salt/metalk8s/addons/ui/deployed/ui.sls"
-        ),
-        context={
-            "ShellUIVersion": versions.SHELL_UI_VERSION,
-        },
-    ),
     Path("salt/metalk8s/addons/ui/post-upgrade.sls"),
     Path("salt/metalk8s/addons/ui-operator/deployed/init.sls"),
     Path("salt/metalk8s/addons/ui-operator/deployed/manifests.sls"),
@@ -451,6 +428,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     ),
     Path("salt/metalk8s/addons/ui-operator/deployed/rbac.sls"),
     Path("salt/metalk8s/addons/ui-operator/post-upgrade.sls"),
+    Path("salt/metalk8s/addons/shell-ui/deployed/init.sls"),
+    Path("salt/metalk8s/addons/shell-ui/deployed/ui-operator-cr.sls"),
     Path("salt/metalk8s/addons/solutions/deployed/configmap.sls"),
     Path("salt/metalk8s/addons/solutions/deployed/init.sls"),
     Path("salt/metalk8s/addons/solutions/deployed/namespace.sls"),

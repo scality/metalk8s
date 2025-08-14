@@ -1,5 +1,4 @@
 include:
 - .dependencies
-- .ui-configuration
-- .ui
+- .ui-operator-cr
 - .ingress

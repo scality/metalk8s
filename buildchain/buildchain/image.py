@@ -269,6 +269,11 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
         },
     ),
     _local_image(
+        name="shell-ui",
+        dockerfile=constants.ROOT / "shell-ui/Dockerfile",
+        build_context=constants.ROOT / "shell-ui",
+    ),
+    _local_image(
         name="metalk8s-ui",
         build_context=targets.ExplicitContext(
             dockerfile=constants.ROOT / "images/metalk8s-ui/Dockerfile",

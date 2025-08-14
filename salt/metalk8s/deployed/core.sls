@@ -7,3 +7,4 @@ include:
   - metalk8s.salt.master.deployed
   - metalk8s.backup.deployed
   - metalk8s.addons.metalk8s-operator.deployed
+  - metalk8s.addons.ui-operator.deployed.crds
