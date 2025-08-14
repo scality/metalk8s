@@ -55,6 +55,7 @@ Update ScalityUI for control plane:
     - name: shell-ui-cp
     - kind: ScalityUI
     - apiVersion: ui.scality.com/v1alpha1
+    - namespace: metalk8s-ui
     - patch:
         spec:
           image: {{ shell_ui_image }}
@@ -115,6 +116,7 @@ Update ScalityUI for workload plane:
     - name: shell-ui-wp
     - kind: ScalityUI
     - apiVersion: ui.scality.com/v1alpha1
+    - namespace: metalk8s-ui
     - patch:
         spec:
           image: {{ shell_ui_image }}

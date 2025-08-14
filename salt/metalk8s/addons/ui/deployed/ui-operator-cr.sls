@@ -31,6 +31,7 @@ Update metalk8s-ui ScalityUIComponent:
     - name: metalk8s-ui
     - kind: ScalityUIComponent
     - apiVersion: ui.scality.com/v1alpha1
+    - namespace: metalk8s-ui
     - patch:
         spec:
           image: {{ metalk8s_ui_image }}
