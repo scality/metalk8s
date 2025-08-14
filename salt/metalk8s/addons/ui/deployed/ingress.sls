@@ -95,45 +95,6 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: metalk8s-ui
-  namespace: metalk8s-ui
-  labels:
-    app: metalk8s-ui
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: metalk8s-ui
-    app.kubernetes.io/part-of: metalk8s
-    heritage: metalk8s
-  annotations:
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-spec:
-  ingressClassName: "nginx-control-plane"
-  rules:
-  - http:
-      paths:
-{% for path in [
-    "/(brand.*)",
-    "/(config.json)",
-    "/(manifest.json)",
-    "/(shell.*)",
-    "/(static.*)",
-    "/" + stripped_base_path + "/(.well-known.*)" if stripped_base_path else "/(.well-known.*)",
-    "/" + stripped_base_path + "/(static.*)" if stripped_base_path else "/(static.*)",
-    "/" + stripped_base_path + "/(mf-manifest.*)" if stripped_base_path else "/(mf-manifest.*)",
-    "/(" + stripped_base_path + ".*)",
-] %}
-      - path: {{ path }}
-        pathType: Prefix
-        backend:
-          service:
-            name: metalk8s-ui
-            port:
-              number: 80
-{% endfor %}
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: HTTP
     nginx.ingress.kubernetes.io/use-regex: "true"

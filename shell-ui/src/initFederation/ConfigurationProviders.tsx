@@ -395,16 +395,16 @@ export const useLinkOpener = () => {
     openLink: (
       to:
         | {
-            isExternal?: boolean;
-            app: SolutionUI;
-            view: View;
-            isFederated: true;
-          }
+          isExternal?: boolean;
+          app: SolutionUI;
+          view: View;
+          isFederated: true;
+        }
         | {
-            isFederated: false;
-            isExternal?: boolean;
-            url: string;
-          },
+          isFederated: false;
+          isExternal?: boolean;
+          url: string;
+        },
     ) => {
       if (to.isExternal) {
         if (to.isFederated) {
@@ -496,12 +496,12 @@ export const ConfigurationProvider = ({
   const globalStatus = statuses.includes('error')
     ? 'error'
     : statuses.includes('loading')
-    ? 'loading'
-    : statuses.includes('idle') && !statuses.includes('success')
-    ? 'idle'
-    : statuses.includes('idle') && statuses.includes('success')
-    ? 'loading'
-    : 'success';
+      ? 'loading'
+      : statuses.includes('idle') && !statuses.includes('success')
+        ? 'idle'
+        : statuses.includes('idle') && statuses.includes('success')
+          ? 'loading'
+          : 'success';
 
   return (
     <>

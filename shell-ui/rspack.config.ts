@@ -173,6 +173,10 @@ const config: Configuration = {
           singleton: true,
           eager: true,
         },
+        zod: {
+          singleton: true,
+          eager: true,
+        },
       },
     }),
     new rspack.HtmlRspackPlugin({

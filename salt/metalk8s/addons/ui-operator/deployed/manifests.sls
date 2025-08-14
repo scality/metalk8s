@@ -1,8 +1,5 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
-include:
-  - .namespace
-
 {%- set ui_operator_image = build_image_name('ui-operator') %}
 
 Deploy UI Operator:
@@ -76,5 +73,3 @@ Deploy UI Operator:
               securityContext:
                 runAsNonRoot: true
               terminationGracePeriodSeconds: 10
-    - require:
-      - sls: metalk8s.addons.ui-operator.deployed.namespace

@@ -58,16 +58,22 @@ export type BuildtimeWebFinger = {
         instanceNameAdapter?: FederatedModuleInfo;
     };
 };
+export type EnrichedBuildtimeWebFinger = BuildtimeWebFinger & {
+    metadata: {
+        url: string;
+    };
+};
 export declare function useConfigRetriever(): {
     retrieveConfiguration: <T extends 'build' | Record<string, unknown>>(arg0: {
         configType: T extends 'build' ? 'build' : 'run';
         name: string;
-    }) => (T extends 'build' ? BuildtimeWebFinger : RuntimeWebFinger<T>) | null;
+        url?: string;
+    }) => (T extends 'build' ? EnrichedBuildtimeWebFinger : RuntimeWebFinger<T>) | null;
 };
 export declare function useConfig<T extends 'build' | Record<string, unknown>>({ configType, name, }: {
     configType: T extends 'build' ? 'build' : 'run';
     name: string;
-}): null | T extends 'build' ? BuildtimeWebFinger : RuntimeWebFinger<T>;
+}): null | T extends 'build' ? EnrichedBuildtimeWebFinger : RuntimeWebFinger<T>;
 export type FederatedView = {
     isFederated: true;
     app: SolutionUI;
@@ -92,10 +98,15 @@ export type NonFederatedView = {
 };
 export type ViewDefinition = FederatedView | NonFederatedView;
 export declare function useWebFingersStore(): {
-    state: UseQueryResult<BuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>, unknown>[];
-    updateWebFingersState: (newState: UseQueryResult<BuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>, unknown>[]) => void;
+    state: UseQueryResult<EnrichedBuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>, unknown>[];
+    updateWebFingersState: (newState: UseQueryResult<EnrichedBuildtimeWebFinger | RuntimeWebFinger<Record<string, unknown>>, unknown>[]) => void;
 };
 export declare function useDiscoveredViews(): ViewDefinition[];
+type FederatedRoute = {
+    app: SolutionUI;
+    view: View;
+};
+export declare function useFederatedRoutes(): FederatedRoute[];
 export declare const useLinkOpener: () => {
     openLink: (to: {
         isExternal?: boolean;
@@ -111,3 +122,4 @@ export declare const useLinkOpener: () => {
 export declare const ConfigurationProvider: ({ children, }: {
     children: React.ReactNode;
 }) => import("react/jsx-runtime").JSX.Element;
+export {};
