@@ -17,6 +17,9 @@
 
 ### Bug Fixes
 
+- Disable HTTP directory listing for RPM repository to improve security
+  (PR[#4651](https://github.com/scality/metalk8s/pull/4651))
+
 - Fix a Bug where NodeSystemSaturation alert triggers too early after only 15 minutes of high load
   (PR[#4641](https://github.com/scality/metalk8s/pull/4641))
 

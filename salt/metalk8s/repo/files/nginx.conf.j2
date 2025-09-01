@@ -2,9 +2,24 @@ server {
     listen       {{ listening_address }}:{{ listening_port }};
     server_name  localhost;
 
+    # Return 200 OK for root path health checks
+    location = / {
+        return 200 '';
+        add_header Content-Type text/plain;
+    }
+
+    # Return 200 OK for saltenv path health checks
+    {%- for env in archives.keys() %}
+    location = /{{ env }}/ {
+        return 200 '';
+        add_header Content-Type text/plain;
+    }
+    {%- endfor %}
+
     location / {
         root   /var/www/repositories;
-        autoindex on;
+        # Security fix: Disable directory listing to prevent exposing repository structure
+        autoindex off;
     }
 
     include conf.d/*.inc;

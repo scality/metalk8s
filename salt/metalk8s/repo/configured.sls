@@ -15,6 +15,7 @@ Generate repositories nginx configuration:
     - defaults:
         listening_address: {{ grains.metalk8s.control_plane_ip }}
         listening_port: {{ repo.port }}
+        archives: {{ archives }}
 
 Deploy common container registry nginx configuration:
   file.managed:
