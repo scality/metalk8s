@@ -119,7 +119,7 @@ jobs:
           git push --set-upstream origin ${{ env.INIT_BRANCH_NAME }}
       # create PR
       - name: create PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const pr = await github.rest.pulls.create({
