@@ -32,7 +32,7 @@ jobs:
     steps:
       - name: Checkout
         if: github.event.schedule == matrix.cron
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Run ${{ matrix.name }}
         if: github.event.schedule == matrix.cron
         env:

@@ -42,7 +42,7 @@ jobs:
       build: ${{ startsWith(github.ref_name, 'development/') || steps.diff.outputs.build_any_modified == 'true' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Get base sha
@@ -139,7 +139,7 @@ jobs:
         shell: bash
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set safe directory (since container is root and not user 1001)
         run: git config --global --add safe.directory $GITHUB_WORKSPACE
       - name: Run all linting targets
@@ -151,7 +151,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install node
         uses: actions/setup-node@v5
         with:
@@ -194,7 +194,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install node
         uses: actions/setup-node@v5
         with:
@@ -230,7 +230,7 @@ jobs:
         working-directory: "tools/crd-client-generator-js"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install node
         uses: actions/setup-node@v5
         with:
@@ -273,7 +273,7 @@ jobs:
     if: needs.changed-files.outputs.unit-tests-metalk8s-operator == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set safe directory (since container is root and not user 1001)
         run: git config --global --add safe.directory $GITHUB_WORKSPACE
       - name: Run all MetalK8s operator unit and integration tests
@@ -300,7 +300,7 @@ jobs:
     if: needs.changed-files.outputs.unit-tests-storage-operator == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set safe directory (since container is root and not user 1001)
         run: git config --global --add safe.directory $GITHUB_WORKSPACE
       - name: Run all storage-operator unit and integration tests
@@ -326,7 +326,7 @@ jobs:
     if: needs.changed-files.outputs.unit-tests-salt == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set safe directory (since container is root and not user 1001)
         run: git config --global --add safe.directory $GITHUB_WORKSPACE
       - name: Run all salt unit tests
@@ -353,7 +353,7 @@ jobs:
     if: needs.changed-files.outputs.unit-tests-lib-alert-tree == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set safe directory (since container is root and not user 1001)
         run: git config --global --add safe.directory $GITHUB_WORKSPACE
       - name: Install lib_alert_tree
@@ -368,7 +368,7 @@ jobs:
     permissions: write-all
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Install node
@@ -448,7 +448,7 @@ jobs:
           - 80:80
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install node
         uses: actions/setup-node@v5
         with:
@@ -531,7 +531,7 @@ jobs:
     if: always()
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Upload final status
         if: always()
         uses: scality/actions/upload_final_status@1.13.0

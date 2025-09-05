@@ -27,7 +27,7 @@ jobs:
       version_full: ${{ steps.get-version.outputs.version_full }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Retrieve artifacts url
         uses: scality/action-artifacts@v4
         id: artifacts
@@ -64,7 +64,7 @@ jobs:
       artifacts-link: ${{ needs.retrieve-info.outputs.artifacts-link }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Fetch tags
         run: git fetch --tags
       - name: Get previous patch version
@@ -111,7 +111,7 @@ jobs:
       artifacts-link: ${{ needs.retrieve-info.outputs.artifacts-link }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Get previous minor version
@@ -242,7 +242,7 @@ jobs:
     if: always()
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Upload final status
         if: always()
         uses: scality/actions/upload_final_status@1.13.0
