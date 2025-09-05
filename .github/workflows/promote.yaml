@@ -25,7 +25,7 @@ jobs:
       artifact-link: ${{ steps.promote.outputs.link }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Promote artifacts
         id: promote
         uses: scality/action-artifacts@v4
