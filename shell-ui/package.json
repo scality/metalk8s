@@ -16,7 +16,7 @@
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-react": "^7.12.10",
     "@babel/preset-typescript": "^7.21.0",
-    "@module-federation/enhanced": "^0.2.3",
+    "@module-federation/enhanced": "^0.18.4",
     "@rsdoctor/rspack-plugin": "^0.3.5",
     "@rspack/cli": "^0.7.5",
     "@rspack/core": "^0.7.5",
