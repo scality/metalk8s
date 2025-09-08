@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Button } from '@scality/core-ui/dist/next';
+import { Box, Button } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
 import { GRAFANA_DASHBOARDS } from '../constants';
@@ -14,7 +14,7 @@ import DashboardChartSystemLoad from './DashboardChartSystemLoad';
 import DashboardChartMemory from './DashboardChartMemory';
 import { useShowQuantileChart, useTypedSelector } from '../hooks';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
-import { Tooltip, Icon, SmallerText, SpacedBox } from '@scality/core-ui';
+import { Icon, SmallerText, Stack, IconHelp, spacing } from '@scality/core-ui';
 const MetricsContainer = styled.div`
   padding: 2px ${padding.smaller};
   display: flex;
@@ -29,6 +29,29 @@ const PanelActions = styled.div`
   justify-content: space-between;
 `;
 
+export const QuantileHelpTooltip = () => {
+  const intl = useIntl();
+  return (
+    <IconHelp
+      placement="bottom"
+      tooltipMessage={
+        <Stack direction="vertical" gap="r8">
+          {intl
+            .formatMessage({
+              id: 'metric_quantile_explanation',
+            })
+            .split('\n')
+            .map((line, key) => (
+              <SmallerText key={`globalheathexplanation-${key}`}>
+                {line}
+              </SmallerText>
+            ))}
+        </Stack>
+      }
+    />
+  );
+};
+
 const DashboardMetrics = () => {
   const intl = useIntl();
   // App config, used to generated Advanced metrics button link
@@ -38,40 +61,12 @@ const DashboardMetrics = () => {
     <MetricsContainer id="dashboard-metrics-container">
       <PanelActions>
         <PageSubtitle>
-          <SpacedBox mr={8}>
-            {' '}
+          <Box mr={spacing.r8}>
             {intl.formatMessage({
               id: 'metrics',
             })}
-          </SpacedBox>
-          {isShowQuantileChart && (
-            <Tooltip
-              placement="bottom"
-              overlay={
-                <SmallerText
-                  // @ts-expect-error - FIXME when you are working on it
-                  style={{
-                    minWidth: '30rem',
-                    display: 'block',
-                    textAlign: 'left',
-                  }}
-                >
-                  {intl
-                    .formatMessage({
-                      id: 'metric_quantile_explanation',
-                    })
-                    .split('\n')
-                    .map((line, key) => (
-                      <SpacedBox key={`globalheathexplanation-${key}`} mb={8}>
-                        {line}
-                      </SpacedBox>
-                    ))}
-                </SmallerText>
-              }
-            >
-              <Icon name="Info" color="buttonSecondary" />
-            </Tooltip>
-          )}
+          </Box>
+          {isShowQuantileChart && <QuantileHelpTooltip />}
         </PageSubtitle>
 
         {url_grafana && (
