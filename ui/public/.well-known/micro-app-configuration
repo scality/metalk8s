@@ -45,6 +45,6 @@
         "scope": "metalk8s"
       }
     ],
-    "publicPath": "/"
+    "publicPath": "/metalk8s"
   }
 }
