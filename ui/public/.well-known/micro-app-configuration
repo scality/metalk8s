@@ -8,7 +8,7 @@
     "remoteEntryPath": "/mf-manifest.json",
     "views": {
       "platform": {
-        "path": "/",
+        "path": "/metalk8s",
         "label": {
           "en": "Platform",
           "fr": "Plateforme"
@@ -45,6 +45,6 @@
         "scope": "metalk8s"
       }
     ],
-    "publicPath": "/"
+    "publicPath": "/metalk8s"
   }
 }
