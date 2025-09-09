@@ -408,8 +408,9 @@ jobs:
         run: |
           mkdir -p service
           mkdir -p service/shell
-          cp -r ui/build/* service/
-          cp -r ui/build/.well-known service/.well-known
+          mkdir -p service/metalk8s
+          cp -r ui/build/* service/metalk8s/
+          cp -r ui/build/.well-known service/metalk8s/.well-known
           cp -r shell-ui/build/* service/shell/
       - name: Build container with nginx configuration for integration tests
         run: |
