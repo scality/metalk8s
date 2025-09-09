@@ -3,7 +3,7 @@
     "kind": "metalk8s-ui",
     "name": "metalk8s.eu-west-1",
     "version": "local-dev",
-    "url": "http://localhost",
+    "url": "http://localhost/metalk8s",
     "appHistoryBasePath": ""
   }
 ]
