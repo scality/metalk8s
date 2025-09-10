@@ -13,8 +13,7 @@ import {
   Stack,
   Icon,
 } from '@scality/core-ui';
-import { GlobalHealthBar } from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
-
+import { GlobalHealthBar as GlobalHealthBarRecharts } from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBarRecharts.component';
 import {
   highestAlertToStatus,
   useAlertLibrary,
@@ -38,12 +37,16 @@ const PlatformStatusIcon = styled.div`
   font-size: 2rem;
 `;
 
+const StyledEmphaseText = styled(EmphaseText)`
+  letter-spacing: ${spacing.r2};
+`;
+
 const DashboardGlobalHealth = () => {
   const intl = useIntl();
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
   const alertsLibrary = useAlertLibrary();
   const { duration } = useMetricsTimeSpan();
-  const { data: alertSegments, status: historyAlertStatus } = useQuery(
+  const { data: alerts, status: historyAlertStatus } = useQuery(
     getClusterAlertSegmentQuery(duration),
   );
   const platformHighestSeverityAlert = useHighestSeverityAlerts(
@@ -68,87 +71,57 @@ const DashboardGlobalHealth = () => {
         </Box>
         <Box flex="2">
           <HealthBarContainer>
-            <div
+            <Stack
               style={{
                 display: 'flex',
                 alignItems: 'center',
               }}
+              gap="r20"
             >
-              <Box
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-                mr={20}
-              >
-                <Box
-                  mr={8}
-                  style={{
-                    letterSpacing: spacing.r2,
-                  }}
-                >
-                  <EmphaseText>Global Health</EmphaseText>
-                </Box>
+              <StyledEmphaseText>Global Health</StyledEmphaseText>
 
-                <Tooltip
-                  placement="bottom"
-                  overlay={
-                    <SmallerText>
-                      {intl
-                        .formatMessage({
-                          id: 'global_health_explanation',
-                        })
-                        .split('\n')
-                        .map((line, key) => (
-                          <Box key={`globalheathexplanation-${key}`} mb={8}>
-                            {line}
-                          </Box>
-                        ))}
-                    </SmallerText>
-                  }
-                  overlayStyle={{
-                    minWidth: '30rem',
-                    display: 'block',
-                  }}
-                >
-                  <Icon name="Info" color="buttonSecondary" />
-                </Tooltip>
-              </Box>
-              <EmphaseText>
-                <CircleStatus status={platformStatus} />
-              </EmphaseText>
-              {historyAlertStatus === 'loading' && (
-                <Box ml={8}>
-                  <Loader size={'larger'} />
-                </Box>
-              )}
-            </div>
-            <Box mr={20}>
-              <GlobalHealthBar
-                id={'platform_globalhealth'}
-                alerts={
-                  historyAlertStatus === 'error'
-                    ? [
-                        {
-                          startsAt: startingTimeISO,
-                          endsAt: currentTimeISO,
-                          severity: 'unavailable',
-                          description:
-                            'Failed to load alert history for the selected period',
-                        },
-                      ]
-                    : alertSegments || []
+              <Tooltip
+                placement="bottom"
+                overlay={
+                  <SmallerText>
+                    {intl
+                      .formatMessage({
+                        id: 'global_health_explanation',
+                      })
+                      .split('\n')
+                      .map((line, key) => (
+                        <Box key={`globalheathexplanation-${key}`} mb={8}>
+                          {line}
+                        </Box>
+                      ))}
+                  </SmallerText>
                 }
-                start={startingTimeISO}
-                end={currentTimeISO}
-              />
-            </Box>
+                overlayStyle={{
+                  minWidth: '30rem',
+                  display: 'block',
+                }}
+              >
+                <Icon name="Info" color="buttonSecondary" />
+              </Tooltip>
+              <CircleStatus status={platformStatus} />
+            </Stack>
+
+            {historyAlertStatus === 'loading' && (
+              <Box ml={8}>
+                <Loader size={'larger'} />
+              </Box>
+            )}
+
+            <GlobalHealthBarRecharts
+              id={'platform_globalhealth'}
+              alerts={alerts || []}
+              start={new Date(startingTimeISO)}
+              end={new Date(currentTimeISO)}
+            />
           </HealthBarContainer>
         </Box>
-        <Box flex="2">
-          <Box ml={24}>
-            <DashboardAlerts />
-          </Box>
+        <Box flex="2" ml={24}>
+          <DashboardAlerts />
         </Box>
       </Stack>
     </AppContainer.OverallSummary>
