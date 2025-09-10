@@ -25,7 +25,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     outputs:
       artifact-name: ${{ steps.upload.outputs.name }}
       artifact-link: ${{ steps.upload.outputs.link }}
@@ -128,7 +128,7 @@ jobs:
       ref: ${{ inputs.ref }}
 
   write-final-status:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs:
       - build
       - build-shell-ui

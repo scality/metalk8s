@@ -1,6 +1,6 @@
 include:
-  - metalk8s.kubernetes.kube-proxy.deployed
-  - metalk8s.kubernetes.cni.calico.deployed
+  - metalk8s.kubernetes.gateway-api-crds.deployed
+  - metalk8s.kubernetes.cni.cilium.deployed
   - metalk8s.kubernetes.coredns.deployed
   - metalk8s.kubernetes.admin.deployed
   - metalk8s.repo.deployed
