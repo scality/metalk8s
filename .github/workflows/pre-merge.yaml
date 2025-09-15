@@ -55,7 +55,7 @@ jobs:
           echo "BASE_SHA=$(git merge-base HEAD origin/$branch)" >> $GITHUB_ENV
       - name: Get changed files
         id: diff
-        uses: tj-actions/changed-files@v46
+        uses: tj-actions/changed-files@v47
         with:
           base_sha: ${{ env.BASE_SHA }}
           files_yaml_from_source_file: .github/changed-files.yaml
