@@ -5,15 +5,17 @@ import {
   EmphaseText,
   LargerText,
   SmallerText,
-  Tooltip,
   StatusWrapper,
   Loader,
   AppContainer,
   spacing,
   Stack,
-  Icon,
+  IconHelp,
 } from '@scality/core-ui';
-import { GlobalHealthBar as GlobalHealthBarRecharts } from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBarRecharts.component';
+import {
+  Alert,
+  GlobalHealthBar as GlobalHealthBarRecharts,
+} from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBarRecharts.component';
 import {
   highestAlertToStatus,
   useAlertLibrary,
@@ -80,44 +82,51 @@ const DashboardGlobalHealth = () => {
             >
               <StyledEmphaseText>Global Health</StyledEmphaseText>
 
-              <Tooltip
+              <IconHelp
                 placement="bottom"
-                overlay={
-                  <SmallerText>
+                tooltipMessage={
+                  <Stack direction="vertical" gap="r4">
                     {intl
                       .formatMessage({
                         id: 'global_health_explanation',
                       })
                       .split('\n')
                       .map((line, key) => (
-                        <Box key={`globalheathexplanation-${key}`} mb={8}>
+                        <SmallerText key={`globalheathexplanation-${key}`}>
                           {line}
-                        </Box>
+                        </SmallerText>
                       ))}
-                  </SmallerText>
+                  </Stack>
                 }
-                overlayStyle={{
-                  minWidth: '30rem',
-                  display: 'block',
-                }}
-              >
-                <Icon name="Info" color="buttonSecondary" />
-              </Tooltip>
+              />
               <CircleStatus status={platformStatus} />
             </Stack>
 
-            {historyAlertStatus === 'loading' && (
-              <Box ml={8}>
+            {historyAlertStatus === 'loading' ? (
+              <Box ml={8} height={50}>
                 <Loader size={'larger'} />
               </Box>
+            ) : (
+              <GlobalHealthBarRecharts
+                id={'platform_globalhealth'}
+                alerts={
+                  historyAlertStatus === 'error'
+                    ? // @ts-expect-error - FIXME when you are working on it
+                      ([
+                        {
+                          startsAt: startingTimeISO,
+                          endsAt: currentTimeISO,
+                          severity: 'unavailable',
+                          description:
+                            'Failed to load alert history for the selected period',
+                        },
+                      ] as Alert[])
+                    : alerts || []
+                }
+                start={new Date(startingTimeISO)}
+                end={new Date(currentTimeISO)}
+              />
             )}
-
-            <GlobalHealthBarRecharts
-              id={'platform_globalhealth'}
-              alerts={alerts || []}
-              start={new Date(startingTimeISO)}
-              end={new Date(currentTimeISO)}
-            />
           </HealthBarContainer>
         </Box>
         <Box flex="2" ml={24}>
