@@ -1,9 +1,12 @@
 import { useCallback } from 'react';
 import type { UseQueryOptions } from 'react-query';
 import 'react-query';
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
+import {
+  LineTimeSerieChart,
+  useMetricsTimeSpan,
+} from '@scality/core-ui/dist/next';
 import { getSeriesForSymmetricalChart } from '../services/graphUtils';
-import { HEIGHT_SYMMETRICAL_CHART } from '../constants';
+import { HEIGHT_SYMMETRICAL_CHART, NODE_SYNC_ID } from '../constants';
 import { NodesState } from '../ducks/app/nodes';
 import { useSymetricalChartSeries } from '../hooks';
 
@@ -43,6 +46,7 @@ const MetricSymmetricalChart = ({
   planeInterface?: string;
   isPlaneInterfaceRequired?: boolean;
 }) => {
+  const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: useCallback(
       (timeSpanProps) => {
@@ -92,10 +96,11 @@ const MetricSymmetricalChart = ({
     ),
     transformPrometheusDataToSeries: useCallback(
       (resultsAbove, resultsBelow) => {
+        let allSeries;
         if (showAvg) {
           const [resultAbove, resultAboveAvg] = resultsAbove;
           const [resultBelow, resultBelowAvg] = resultsBelow;
-          return getSeriesForSymmetricalChart(
+          allSeries = getSeriesForSymmetricalChart(
             resultAbove,
             resultBelow,
             nodeName,
@@ -107,7 +112,7 @@ const MetricSymmetricalChart = ({
         } else {
           const [resultAbove] = resultsAbove;
           const [resultBelow] = resultsBelow;
-          return getSeriesForSymmetricalChart(
+          allSeries = getSeriesForSymmetricalChart(
             resultAbove,
             resultBelow,
             nodeName,
@@ -115,22 +120,39 @@ const MetricSymmetricalChart = ({
             metricPrefixBelow,
           );
         }
+
+        // Filter series for LineTimeSerieChart above/below structure
+        const aboveSeries = allSeries.filter(
+          (serie) => serie.metricPrefix === metricPrefixAbove,
+        );
+        const belowSeries = allSeries.filter(
+          (serie) => serie.metricPrefix === metricPrefixBelow,
+        );
+
+        return {
+          above: aboveSeries,
+          below: belowSeries,
+        };
       },
       [showAvg, nodeName, metricPrefixAbove, metricPrefixBelow],
     ),
   });
   return (
-    <LineTemporalChart
-      series={series}
+    <LineTimeSerieChart
+      series={{
+        above: series.above,
+        below: series.below,
+      }}
       height={HEIGHT_SYMMETRICAL_CHART}
+      interval={interval}
+      duration={duration}
       title={title}
       startingTimeStamp={startingTimeStamp}
       yAxisType={'symmetrical'}
       yAxisTitle={yAxisTitle}
-      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
-      isLegendHidden={false}
       unitRange={unitRange}
+      syncId={NODE_SYNC_ID}
     />
   );
 };

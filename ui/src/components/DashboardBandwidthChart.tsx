@@ -1,19 +1,25 @@
-import React, { useEffect, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
-import { UNIT_RANGE_BS } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
+import { Stack } from '@scality/core-ui';
 import {
-  getMultipleSymmetricalSeries,
-  getNodesInterfacesString,
-  renderTooltipSeperationLine,
-} from '../services/graphUtils';
+  ChartLegend,
+  ChartLegendWrapper,
+  LineTimeSerieChart,
+  useMetricsTimeSpan,
+} from '@scality/core-ui/dist/next';
+import { fontSize } from '@scality/core-ui/dist/style/theme';
+import { useCallback, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
   useNodeAddressesSelector,
+  useNodeColors,
   useNodes,
   useShowQuantileChart,
   useSymetricalChartSeries,
 } from '../hooks';
+import {
+  getMultipleSymmetricalSeries,
+  getNodesInterfacesString,
+} from '../services/graphUtils';
 import {
   getNodesPlanesBandwidthInOutpassingThresholdQuery,
   getNodesPlanesBandwidthInQuantileQuery,
@@ -23,8 +29,7 @@ import {
   getNodesPlanesBandwidthOutQuery,
 } from '../services/platformlibrary/metrics';
 import SymmetricalQuantileChart from './SymmetricalQuantileChart';
-import { defaultRenderTooltipSerie } from '@scality/core-ui/dist/components/linetemporalchart/tooltip';
-import { useTheme } from 'styled-components';
+import { UNIT_RANGE_BS } from '../constants';
 
 const DashboardBandwidthChartWithoutQuantile = ({
   title,
@@ -33,23 +38,23 @@ const DashboardBandwidthChartWithoutQuantile = ({
   title: string;
   plane: 'controlPlane' | 'workloadPlane';
 }) => {
-  const theme = useTheme();
   const nodes = useNodes();
   const nodeAddresses = useNodeAddressesSelector(nodes);
   // @ts-expect-error - FIXME when you are working on it
   const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const devices = getNodesInterfacesString(nodeIPsInfo);
-  const nodesPlaneInterface = {};
+  const nodesPlaneInterface = useMemo(() => {
+    const nodesPlaneInterface = {};
+    for (const [key, value] of Object.entries(nodeIPsInfo)) {
+      nodesPlaneInterface[key] =
+        // @ts-expect-error - FIXME when you are working on it
+        plane === 'controlPlane' ? value.controlPlane : value.workloadPlane;
+    }
+    return nodesPlaneInterface;
+  }, [nodeIPsInfo, plane]);
 
-  for (const [key, value] of Object.entries(nodeIPsInfo)) {
-    nodesPlaneInterface[key] =
-      // @ts-expect-error - FIXME when you are working on it
-      plane === 'controlPlane' ? value.controlPlane : value.workloadPlane;
-  }
+  const { interval, duration } = useMetricsTimeSpan();
 
-  // will be used to draw the line speration lines
-  // @ts-expect-error - FIXME when you are working on it
-  const lastNodeName = nodes?.slice(-1)[0]?.metadata?.name;
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: (timeSpanProps) => [
       // @ts-expect-error - FIXME when you are working on it
@@ -59,13 +64,14 @@ const DashboardBandwidthChartWithoutQuantile = ({
       // @ts-expect-error - FIXME when you are working on it
       getNodesPlanesBandwidthOutQuery(timeSpanProps, devices),
     ],
+    // @ts-expect-error - FIXME when you are working on it
     transformPrometheusDataToSeries: useCallback(
       ([prometheusResultAbove], [prometheusResultBelow]) => {
         if (!prometheusResultAbove || !prometheusResultBelow) {
           return [];
         }
 
-        return getMultipleSymmetricalSeries(
+        const allSeries = getMultipleSymmetricalSeries(
           prometheusResultAbove,
           prometheusResultBelow,
           'in',
@@ -73,35 +79,49 @@ const DashboardBandwidthChartWithoutQuantile = ({
           nodeAddresses,
           nodesPlaneInterface,
         );
+
+        const aboveSeries = allSeries.filter(
+          (serie) => serie.metricPrefix === 'in',
+        );
+
+        const belowSeries = allSeries.filter(
+          (serie) => serie.metricPrefix === 'out',
+        );
+        return {
+          above: aboveSeries,
+          below: belowSeries,
+        };
       },
+
       [JSON.stringify(nodeAddresses), JSON.stringify(nodesPlaneInterface)],
     ),
   });
+  const colorSet = useNodeColors(nodes);
+
   return (
-    <LineTemporalChart
-      series={series}
-      height={150}
-      title={title}
-      startingTimeStamp={startingTimeStamp}
-      yAxisType={'symmetrical'}
-      yAxisTitle={'in(+) / out(-)'}
-      isLegendHidden={false}
-      // @ts-expect-error - FIXME when you are working on it
-      isLoading={isLoading}
-      unitRange={UNIT_RANGE_BS}
-      renderTooltipSerie={useCallback(
-        (serie) => {
-          if (serie.key === `${lastNodeName}-in`) {
-            return `${defaultRenderTooltipSerie(
-              serie,
-            )}${renderTooltipSeperationLine(theme.border)}`;
-          } else {
-            return defaultRenderTooltipSerie(serie);
-          }
-        },
-        [lastNodeName, theme],
-      )}
-    />
+    <ChartLegendWrapper colorSet={colorSet}>
+      <Stack direction="vertical" gap="r1" style={{ fontSize: fontSize.small }}>
+        <LineTimeSerieChart
+          series={{
+            above: series.above,
+
+            below: series.below,
+          }}
+          unitRange={UNIT_RANGE_BS}
+          height={150}
+          interval={interval}
+          duration={duration}
+          title={title}
+          startingTimeStamp={startingTimeStamp}
+          yAxisType={'symmetrical'}
+          yAxisTitle={'in(+) / out(-)'}
+          isLoading={isLoading}
+          syncId="dashboard"
+        />
+
+        <ChartLegend shape="line" legendSize={'Smaller'} />
+      </Stack>
+    </ChartLegendWrapper>
   );
 };
 

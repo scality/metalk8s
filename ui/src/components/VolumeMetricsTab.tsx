@@ -1,10 +1,11 @@
-import React from 'react';
+import { Button } from '@scality/core-ui/dist/next';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Button } from '@scality/core-ui/dist/next';
-
-import { VOLUME_CONDITION_LINK, GRAFANA_DASHBOARDS } from '../constants';
+import { Icon, spacing } from '@scality/core-ui';
 import { useIntl } from 'react-intl';
+import { GRAFANA_DASHBOARDS, VOLUME_CONDITION_LINK } from '../constants';
+
+import TimespanSelector from '../containers/TimespanSelector';
 import {
   MetricsActionContainer,
   NotBoundContainer,
@@ -15,34 +16,17 @@ import {
   VolumeThroughputChart,
   VolumeUsageChart,
 } from './VolumeCharts';
-import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
-import TimespanSelector from '../containers/TimespanSelector';
-import { Icon, spacing } from '@scality/core-ui';
 
 const GraphGrid = styled.div`
   display: grid;
-  gap: 8px;
-  grid-template:
-    'usage latency' 1fr
-    'throughput iops' 1fr
-    / 1fr 1fr;
-  .sc-vegachart svg {
-    background-color: inherit !important;
-  }
-  .usage {
-    grid-area: usage;
-  }
-  .latency {
-    grid-area: latency;
-  }
-  .throughput {
-    grid-area: throughput;
-  }
-  .iops {
-    grid-area: iops;
-  }
+  gap: ${spacing.r16};
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  align-content: start;
+
   padding-left: ${spacing.r12};
-  height: calc(100% - 3rem); //100% - padding - action container height
+  padding-bottom: ${spacing.r16};
+  max-height: calc(100% - 3rem); //100% - padding - action container height
   overflow: auto;
 `;
 
@@ -58,6 +42,7 @@ const MetricsTab = (props) => {
   const intl = useIntl();
   // @ts-expect-error - FIXME when you are working on it
   const config = useSelector((state) => state.config);
+
   return (
     <>
       {volumeCondition === VOLUME_CONDITION_LINK ? (
@@ -81,33 +66,32 @@ const MetricsTab = (props) => {
             )}
             {volumeCondition === VOLUME_CONDITION_LINK && <TimespanSelector />}
           </MetricsActionContainer>
-          <SyncedCursorCharts>
-            <GraphGrid id="graph_container">
-              <VolumeUsageChart
-                pvcName={volumePVCName}
-                namespace={volumeNamespace}
-                volumeName={volumeName}
-              />
 
-              <VolumeLatencyChart
-                instanceIp={instanceIp}
-                deviceName={deviceName}
-                volumeName={volumeName}
-              />
+          <GraphGrid id="graph_container">
+            <VolumeUsageChart
+              pvcName={volumePVCName}
+              namespace={volumeNamespace}
+              volumeName={volumeName}
+            />
 
-              <VolumeThroughputChart
-                instanceIp={instanceIp}
-                deviceName={deviceName}
-                volumeName={volumeName}
-              />
+            <VolumeLatencyChart
+              instanceIp={instanceIp}
+              deviceName={deviceName}
+              volumeName={volumeName}
+            />
 
-              <VolumeIOPSChart
-                instanceIp={instanceIp}
-                deviceName={deviceName}
-                volumeName={volumeName}
-              />
-            </GraphGrid>
-          </SyncedCursorCharts>
+            <VolumeThroughputChart
+              instanceIp={instanceIp}
+              deviceName={deviceName}
+              volumeName={volumeName}
+            />
+
+            <VolumeIOPSChart
+              instanceIp={instanceIp}
+              deviceName={deviceName}
+              volumeName={volumeName}
+            />
+          </GraphGrid>
         </>
       ) : (
         <NotBoundContainer pt={spacing.r16}>

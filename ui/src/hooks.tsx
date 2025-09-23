@@ -1,10 +1,11 @@
-import type { V1NodeList } from '@kubernetes/client-node';
+import type { V1Node } from '@kubernetes/client-node';
 import type { Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import React, {
   createContext,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -12,6 +13,7 @@ import type { UseQueryOptions, UseQueryResult } from 'react-query';
 import { useQueries, useQuery } from 'react-query';
 import { useSelector } from 'react-redux';
 import {
+  CHART_COLOR_VALUES,
   NODES_LIMIT_QUANTILE,
   REFRESH_METRICS_GRAPH,
   SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
@@ -42,7 +44,7 @@ export const useTypedSelector: <TSelected>(
 /**
  * It retrieves the nodes data through react-queries
  */
-export const useNodes = (): V1NodeList => {
+export const useNodes = (): V1Node[] => {
   const { coreV1 } = useK8sApiConfig();
   const { getToken } = useAuth();
   const nodesQuery = useQuery(
@@ -68,16 +70,14 @@ export const useNodes = (): V1NodeList => {
       refetchInterval: REFRESH_METRICS_GRAPH,
     },
   );
-  // @ts-expect-error - FIXME when you are working on it
   return nodesQuery.data || [];
 };
 export const useNodeAddressesSelector = (
-  nodes: V1NodeList,
+  nodes: V1Node[],
 ): Array<{
   internalIP: string;
   name: string;
 }> => {
-  // @ts-expect-error - FIXME when you are working on it
   return nodes.map((item) => {
     return {
       internalIP: item?.status?.addresses?.find(
@@ -149,17 +149,17 @@ export const useSingleChartSerie = ({
   ) => Serie[];
 }) => {
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
-  const { frequency } = useMetricsTimeSpan();
+  const { interval } = useMetricsTimeSpan();
   const startTimeRef = useRef(startingTimeISO);
   const chartStartTimeRef = useRef(startingTimeISO);
-  const [series, setSeries] = useState([]);
+  const [series, setSeries] = useState<Serie[]>([]);
   startTimeRef.current = startingTimeISO;
   const query = useQuery(
     // @ts-expect-error - FIXME when you are working on it
     getQuery({
       startingTimeISO,
       currentTimeISO,
-      frequency,
+      frequency: interval,
     }),
   );
   const isLoading = query.isLoading;
@@ -186,19 +186,19 @@ export const useChartSeries = ({
   ) => Serie[];
 }) => {
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
-  const { frequency } = useMetricsTimeSpan();
+  const { interval } = useMetricsTimeSpan();
   const startTimeRef = useRef(startingTimeISO);
   const chartStartTimeRef = useRef(startingTimeISO);
-  const [series, setSeries] = useState([]);
+  const [series, setSeries] = useState<Serie[]>([]);
   startTimeRef.current = startingTimeISO;
   const queries = useQueries(
     getQueries({
       startingTimeISO,
       currentTimeISO,
-      frequency,
+      frequency: interval,
     }),
   );
-  const isLoading = queries.find((query) => query.isLoading);
+  const isLoading = queries.some((query) => query.isLoading);
   const queriesData = queries
     .map((query) => {
       return query.data;
@@ -235,33 +235,42 @@ export const useSymetricalChartSeries = ({
   transformPrometheusDataToSeries: (
     prometheusResultAbove: PrometheusQueryResult[],
     prometheusResultBelow: PrometheusQueryResult[],
-  ) => Serie[];
+  ) => {
+    above: Serie[];
+    below: Serie[];
+  };
 }) => {
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
-  const { frequency } = useMetricsTimeSpan();
+  const { interval } = useMetricsTimeSpan();
   const startTimeRef = useRef(startingTimeISO);
   const chartStartTimeRef = useRef(startingTimeISO);
-  const [series, setSeries] = useState([]);
+  const [series, setSeries] = useState<{
+    above: Serie[];
+    below: Serie[];
+  }>({ above: [], below: [] });
   startTimeRef.current = startingTimeISO;
   const aboveQueries = useQueries(
     // @ts-expect-error - FIXME when you are working on it
     getAboveQueries({
       startingTimeISO,
       currentTimeISO,
-      frequency,
+      frequency: interval,
     }),
   );
+
   const belowQueries = useQueries(
     // @ts-expect-error - FIXME when you are working on it
     getBelowQueries({
       startingTimeISO,
       currentTimeISO,
-      frequency,
+      frequency: interval,
     }),
   );
+
   const isLoading =
-    aboveQueries.find((query) => query.isLoading) ||
-    belowQueries.find((query) => query.isLoading);
+    aboveQueries.some((query) => query.isLoading || query.isIdle) ||
+    belowQueries.some((query) => query.isLoading || query.isIdle);
+
   const queriesAboveData = aboveQueries
     .map((query) => query.data)
     /* useQueries is running the requests in paralel and given that
@@ -296,7 +305,7 @@ export const useSymetricalChartSeries = ({
     JSON.stringify(queriesBelowData),
   ]);
   return {
-    series: series || [],
+    series: series || { above: [], below: [] },
     startingTimeStamp: Date.parse(chartStartTimeRef.current) / 1000,
     isLoading,
   };
@@ -308,17 +317,16 @@ export const useQuantileOnHover = ({
   getQuantileHoverQuery: (
     timestamp?: string, // to be check the type
     threshold?: number,
-    // @ts-expect-error - FIXME when you are working on it
-    operator: '>' | '<',
-    isOnHoverFetchingRequired: boolean,
+    operator?: '>' | '<',
+    isOnHoverFetchingRequired?: boolean,
     devices?: string,
   ) => UseQueryOptions;
   metricPrefix?: string;
 }) => {
   const [hoverTimestamp, setHoverTimestamp] = useState<number>(0);
-  const [threshold90, setThreshold90] = useState();
-  const [threshold5, setThreshold5] = useState();
-  const [median, setMedian] = useState();
+  const [threshold90, setThreshold90] = useState<number>();
+  const [threshold5, setThreshold5] = useState<number>();
+  const [median, setMedian] = useState<number>();
   const [valueBase, setValueBase] = useState(1);
   // @ts-expect-error - FIXME when you are working on it
   const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
@@ -351,19 +359,16 @@ export const useQuantileOnHover = ({
       if (!hoverTimestamp || datum.timestamp !== hoverTimestamp) {
         setHoverTimestamp(datum.timestamp);
         setThreshold90(
-          // @ts-expect-error - FIXME when you are working on it
           metricPrefix
             ? Math.abs(datum.originalData[`Q90-${metricPrefix}`])
             : Math.abs(datum.originalData['Q90']),
         );
         setThreshold5(
-          // @ts-expect-error - FIXME when you are working on it
           metricPrefix
             ? Math.abs(datum.originalData[`Q5-${metricPrefix}`])
             : Math.abs(datum.originalData['Q5']),
         );
         setMedian(
-          // @ts-expect-error - FIXME when you are working on it
           metricPrefix
             ? Math.abs(datum.originalData[`Median-${metricPrefix}`])
             : Math.abs(datum.originalData['Median']),
@@ -389,9 +394,48 @@ export const useShowQuantileChart = (): {
   return {
     isShowQuantileChart:
       (flags && flags.includes('force_quantile_chart')) ||
-      // @ts-expect-error - FIXME when you are working on it
-      nodes?.length > NODES_LIMIT_QUANTILE,
+      nodes.length > NODES_LIMIT_QUANTILE,
   };
+};
+
+// Chart color hooks
+
+/**
+ * Hook to create dynamic color mapping for chart series
+ * @param items - Array of items that need color mapping
+ * @param getKey - Function to extract the key from each item (defaults to item => item)
+ * @returns Record mapping each key to a color
+ */
+export const useChartColors = function <T>(
+  items: T[],
+  getKey: (item: T) => string = (item) => String(item),
+): Record<string, string> {
+  return useMemo(() => {
+    const colorMapping: Record<string, string> = {};
+
+    items.forEach((item, index) => {
+      const key = getKey(item);
+      // Cycle through available colors
+      const colorIndex = index % CHART_COLOR_VALUES.length;
+      colorMapping[key] = CHART_COLOR_VALUES[colorIndex];
+    });
+
+    return colorMapping;
+  }, [items, getKey]);
+};
+
+/**
+ * Hook specifically for node color mapping
+ * @param nodes - Array of node objects with metadata containing optional name
+ * @returns Record mapping each node name to a color
+ */
+export const useNodeColors = (
+  nodes: Array<{ metadata?: { name?: string } }>,
+): Record<string, string> => {
+  return useChartColors(
+    nodes.filter((node) => node.metadata?.name),
+    (node) => node.metadata!.name!,
+  );
 };
 
 export type UserRoles = {

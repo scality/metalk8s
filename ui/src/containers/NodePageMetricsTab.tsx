@@ -1,12 +1,14 @@
 import { Icon, Toggle, spacing } from '@scality/core-ui';
-import { Button } from '@scality/core-ui/dist/next';
+import {
+  Button,
+  ChartLegend,
+  ChartLegendWrapper,
+} from '@scality/core-ui/dist/next';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 
-import { UNIT_RANGE_BS } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-import { SyncedCursorCharts } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import MetricChart from '../components/MetricChart';
 import MetricSymmetricalChart from '../components/MetricSymmetricalChart';
@@ -14,10 +16,14 @@ import {
   GraphWrapper,
   MetricsActionContainer,
 } from '../components/style/CommonLayoutStyle';
-import { GRAFANA_DASHBOARDS, PORT_NODE_EXPORTER } from '../constants';
+import {
+  GRAFANA_DASHBOARDS,
+  PORT_NODE_EXPORTER,
+  UNIT_RANGE_BS,
+} from '../constants';
 import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import type { NodesState } from '../ducks/app/nodes';
-import { useTypedSelector } from '../hooks';
+import { useTypedSelector, useChartColors } from '../hooks';
 import {
   getCPUUsageAvgQuery,
   getCPUUsageQuery,
@@ -124,6 +130,9 @@ const NodePageMetricsTab = ({
   const showAvg = useTypedSelector(
     (state) => state.app.monitoring.nodeStats.showAvg,
   );
+
+  // Create color set for this single node
+  const colorSet = useChartColors([nodeName]);
   // To redirect to the right Node(Detailed) dashboard in Grafana
   const unameInfos = useTypedSelector(
     (state) => state.app.monitoring.unameInfo,
@@ -185,7 +194,7 @@ const NodePageMetricsTab = ({
         {instanceIP && <TimespanSelector />}
       </MetricsActionContainer>
       {instanceIP ? (
-        <SyncedCursorCharts>
+        <ChartLegendWrapper colorSet={colorSet}>
           <GraphGrid id="graph_container">
             <GraphWrapper className="cpuusage">
               <MetricChart
@@ -199,6 +208,7 @@ const NodePageMetricsTab = ({
                 // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getCPUUsageAvgQuery}
               ></MetricChart>
+              <ChartLegend shape="line" legendSize="Smaller" />
             </GraphWrapper>
             <GraphWrapper className="systemload">
               <MetricChart
@@ -212,6 +222,7 @@ const NodePageMetricsTab = ({
                 // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getSystemLoadAvgQuery}
               ></MetricChart>
+              <ChartLegend shape="line" legendSize="Smaller" />
             </GraphWrapper>
             <GraphWrapper className="memory">
               <MetricChart
@@ -225,6 +236,7 @@ const NodePageMetricsTab = ({
                 // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getMemoryAvgQuery}
               ></MetricChart>
+              <ChartLegend shape="line" legendSize="Smaller" />
             </GraphWrapper>
             <GraphWrapper className="iops">
               <MetricSymmetricalChart
@@ -246,6 +258,7 @@ const NodePageMetricsTab = ({
                 metricPrefixBelow={'read'}
                 isPlaneInterfaceRequired={false}
               ></MetricSymmetricalChart>
+              <ChartLegend shape="line" legendSize="Smaller" />
             </GraphWrapper>
             <GraphWrapper className="cpbandwidth">
               <MetricSymmetricalChart
@@ -270,6 +283,7 @@ const NodePageMetricsTab = ({
                 unitRange={UNIT_RANGE_BS}
                 isPlaneInterfaceRequired={true}
               ></MetricSymmetricalChart>
+              <ChartLegend shape="line" legendSize="Smaller" />
             </GraphWrapper>
             <GraphWrapper className="wpbandwidth">
               <MetricSymmetricalChart
@@ -294,9 +308,10 @@ const NodePageMetricsTab = ({
                 unitRange={UNIT_RANGE_BS}
                 isPlaneInterfaceRequired={true}
               ></MetricSymmetricalChart>
+              <ChartLegend shape="line" legendSize="Smaller" />
             </GraphWrapper>
           </GraphGrid>
-        </SyncedCursorCharts>
+        </ChartLegendWrapper>
       ) : (
         <RenderNoDataAvailable />
       )}

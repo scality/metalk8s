@@ -1,5 +1,11 @@
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
-import { useCallback } from 'react';
+import {
+  LineTimeSerieChart,
+  useMetricsTimeSpan,
+  useChartId,
+} from '@scality/core-ui/dist/next';
+import { useChartLegend } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
+
+import { useCallback, useEffect } from 'react';
 import {
   useNodeAddressesSelector,
   useNodes,
@@ -34,25 +40,43 @@ const DashboardChartSystemLoad = () => {
 };
 
 const DashboardChartSystemLoadWithoutQuantiles = () => {
-  const nodeAddresses = useNodeAddressesSelector(useNodes());
+  const chartId = useChartId();
+  const { register } = useChartLegend();
+  const nodes = useNodes();
+  const nodeAddresses = useNodeAddressesSelector(nodes);
+
+  const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
     getQuery: (timeSpanProps) =>
       // @ts-expect-error - FIXME when you are working on it
       getNodesSystemLoadQuery(timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) =>
-        getMultiResourceSeriesForChart(prometheusResult, nodeAddresses), // eslint-disable-next-line react-hooks/exhaustive-deps
+        getMultiResourceSeriesForChart(prometheusResult, nodeAddresses),
+      //Expect warning because of complex dependency
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [JSON.stringify(nodeAddresses)],
     ),
   });
+
+  // Register series names with ChartLegendWrapper
+  useEffect(() => {
+    if (series && series.length > 0) {
+      const seriesNames = series.map((s) => s.resource);
+      register(chartId, seriesNames);
+    }
+  }, [chartId, register, series]);
+
   return (
-    <LineTemporalChart
+    <LineTimeSerieChart
       series={series}
-      height={80}
+      height={110}
+      interval={interval}
+      duration={duration}
       title="System Load"
       startingTimeStamp={startingTimeStamp}
-      isLegendHidden={true}
       isLoading={isLoading}
+      syncId="dashboard"
     />
   );
 };

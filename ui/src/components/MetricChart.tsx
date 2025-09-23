@@ -1,9 +1,12 @@
 import { useCallback } from 'react';
 import type { UseQueryOptions } from 'react-query';
 import 'react-query';
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
+import {
+  LineTimeSerieChart,
+  useMetricsTimeSpan,
+} from '@scality/core-ui/dist/next';
 import { convertPrometheusResultToSerieWithAverage } from '../services/graphUtils';
-import { HEIGHT_DEFAULT_CHART } from '../constants';
+import { HEIGHT_DEFAULT_CHART, NODE_SYNC_ID } from '../constants';
 import { useChartSeries } from '../hooks';
 
 const MetricChart = ({
@@ -28,6 +31,7 @@ const MetricChart = ({
     label: string;
   }[];
 }) => {
+  const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useChartSeries({
     getQueries: useCallback(
       (timeSpanProps) => {
@@ -63,15 +67,17 @@ const MetricChart = ({
     ),
   });
   return (
-    <LineTemporalChart
+    <LineTimeSerieChart
       series={series}
       height={HEIGHT_DEFAULT_CHART}
+      interval={interval}
+      duration={duration}
       title={title}
       startingTimeStamp={startingTimeStamp}
       yAxisType={yAxisType}
-      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
       unitRange={unitRange}
+      syncId={NODE_SYNC_ID}
     />
   );
 };
