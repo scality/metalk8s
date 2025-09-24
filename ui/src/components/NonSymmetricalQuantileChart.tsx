@@ -101,7 +101,6 @@ const NonSymmetricalQuantileChart = ({
       // @ts-expect-error - FIXME when you are working on it
       yAxisType={yAxisType}
       isLegendHidden={isLegendHidden}
-      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoadingQuantile}
       onHover={onHover}
       renderTooltipSerie={useCallback(

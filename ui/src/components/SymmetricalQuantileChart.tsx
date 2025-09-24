@@ -69,6 +69,7 @@ const SymmetricalQuantileChart = ({
       getBelowQuantileQuery(timeSpanProps, 0.5, devices),
       getBelowQuantileQuery(timeSpanProps, 0.9, devices),
     ],
+    // @ts-expect-error - FIXME when you are working on it
     transformPrometheusDataToSeries: useCallback(
       (prometheusResultAbove, prometheusResultBelow) => {
         if (!prometheusResultAbove || !prometheusResultBelow) {
@@ -179,11 +180,11 @@ const SymmetricalQuantileChart = ({
   );
   return (
     <LineTemporalChart
+      // @ts-ignore To be fixed after migration of LineTemporalChart to LineTimeSerieChart
       series={seriesQuantile}
       height={150}
       title={title}
       startingTimeStamp={startingTimeStampQuantile}
-      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoadingQuantile}
       yAxisType={'symmetrical'}
       onHover={useCallback(
