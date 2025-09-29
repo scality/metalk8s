@@ -26,9 +26,7 @@ const DashboardChartCpuUsage = () => {
     <>
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileQuery={getNodesCPUUsageQuantileQuery}
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileHoverQuery={getNodesCPUUsageOutpassingThresholdQuery}
           title={'CPU Usage'}
           yAxisType={'percentage'}

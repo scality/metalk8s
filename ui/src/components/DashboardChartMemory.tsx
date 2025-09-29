@@ -26,9 +26,7 @@ const DashboardChartMemory = () => {
     <>
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileQuery={getNodesMemoryQuantileQuery}
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileHoverQuery={getNodesMemoryOutpassingThresholdQuery}
           title={'Memory'}
           yAxisType={'percentage'}

@@ -301,12 +301,17 @@ export const getNodesMemoryQuantileQuery = (
   quantile: number,
 ) => {
   const nodesMemoryQuantilePromQL = `quantile(${quantile}, sum(100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes)) by(instance))`;
-  return _getPromRangeMatrixQuery(
-    // @ts-expect-error - FIXME when you are working on it
-    ['NodesMemoryQuantile', quantile],
+  console.log(
+    `DEBUG Memory quantile ${quantile} query:`,
+    nodesMemoryQuantilePromQL,
+  );
+  const query = _getPromRangeMatrixQuery(
+    ['NodesMemoryQuantile', String(quantile)],
     nodesMemoryQuantilePromQL,
     timespanProps,
   );
+  console.log('DEBUG Memory quantile query:', query);
+  return query;
 };
 export const getNodesMemoryOutpassingThresholdQuery = (
   timestamp?: string,

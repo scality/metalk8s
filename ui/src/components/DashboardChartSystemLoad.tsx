@@ -26,11 +26,10 @@ const DashboardChartSystemLoad = () => {
     <>
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileQuery={getNodesSystemLoadQuantileQuery}
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileHoverQuery={getNodesSystemLoadOutpassingThresholdQuery}
           title={'System Load'}
+          yAxisType={'percentage'}
         />
       ) : (
         <DashboardChartSystemLoadWithoutQuantiles />

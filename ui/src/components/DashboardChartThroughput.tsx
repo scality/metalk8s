@@ -28,7 +28,7 @@ const DashboardChartThroughput = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
   return (
     <>
-      {isShowQuantileChart ? (
+      {!isShowQuantileChart ? (
         <SymmetricalQuantileChart
           getAboveQuantileQuery={getNodesThroughputWriteQuantileQuery}
           getBelowQuantileQuery={getNodesThroughputReadQuantileQuery}
@@ -83,17 +83,7 @@ const DashboardChartThroughputWithoutQuantile = () => {
           nodeAddresses,
         );
 
-        const aboveSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'write',
-        );
-
-        const belowSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'read',
-        );
-        return {
-          above: aboveSeries,
-          below: belowSeries,
-        };
+        return allSeries;
       },
       //Expect warning because of complex dependency
       // eslint-disable-next-line react-hooks/exhaustive-deps

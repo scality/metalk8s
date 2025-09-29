@@ -120,19 +120,7 @@ const MetricSymmetricalChart = ({
             metricPrefixBelow,
           );
         }
-
-        // Filter series for LineTimeSerieChart above/below structure
-        const aboveSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === metricPrefixAbove,
-        );
-        const belowSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === metricPrefixBelow,
-        );
-
-        return {
-          above: aboveSeries,
-          below: belowSeries,
-        };
+        return allSeries;
       },
       [showAvg, nodeName, metricPrefixAbove, metricPrefixBelow],
     ),

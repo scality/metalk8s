@@ -103,6 +103,10 @@ export const NODES_LIMIT_QUANTILE = 8;
 export const NODE_SYNC_ID = 'nodeMetrics';
 export const DASHBOARD_SYNC_ID = 'dashboard';
 
+// Testing flag to multiply nodes for quantile chart testing
+// Set to 1 for production, 3+ for testing quantile behavior with more nodes
+export const TESTING_MULTIPLY_NODES = 3;
+
 // Chart color values for consistent coloring across components
 export const CHART_COLOR_VALUES = [
   chartColors.lineColor1, // #A14FBF - Purple

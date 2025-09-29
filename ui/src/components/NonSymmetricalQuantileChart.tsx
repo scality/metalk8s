@@ -1,58 +1,75 @@
-import React, { useCallback } from 'react';
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
-import { useTheme } from 'styled-components';
-import { PORT_NODE_EXPORTER } from '../constants';
+import { ChartLegendWrapper } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
 import {
-  useChartSeries,
-  useNodeAddressesSelector,
-  useNodes,
-  useQuantileOnHover,
-} from '../hooks';
+  ChartLegend,
+  LineTimeSerieChart,
+  useMetricsTimeSpan,
+} from '@scality/core-ui/dist/next';
+import { useCallback, useMemo } from 'react';
+import { UseQueryOptions } from 'react-query';
+import { useSelector } from 'react-redux';
+import { PORT_NODE_EXPORTER } from '../constants';
+import { useChartSeries, useNodeAddressesSelector, useNodes } from '../hooks';
 import {
   convertPrometheusResultToSerie,
-  renderOutpassingThresholdTitle,
-  renderQuantileData,
-  renderTooltipSerie,
+  createColorSet,
+  getNodesInterfacesString,
 } from '../services/graphUtils';
-import { useIntl } from 'react-intl';
-import { UseQueryOptions } from 'react-query';
+import { QuantileTooltip } from './QuantileTooltip';
 
 const NonSymmetricalQuantileChart = ({
   getQuantileQuery,
   getQuantileHoverQuery,
   title,
   yAxisType,
-  isLegendHidden,
-  // @ts-expect-error - FIXME when you are working on it
   helpText,
+  unitRange,
 }: {
-  getQuantileQuery: UseQueryOptions['queryFn'];
-  getQuantileHoverQuery: UseQueryOptions['queryFn'];
+  getQuantileQuery: (timeSpanProps: any, threshold: number) => UseQueryOptions;
+  getQuantileHoverQuery: (
+    timeSpanProps: any,
+    threshold: number,
+    operator?: '>' | '<',
+    isOnHoverFetchingRequired?: boolean,
+  ) => UseQueryOptions;
   title: string;
-  yAxisType: string;
-  isLegendHidden: boolean;
+  yAxisType: 'default' | 'percentage';
+  helpText?: string;
+  unitRange?: {
+    threshold: number;
+    label: string;
+  }[];
 }) => {
-  const theme = useTheme();
-  const intl = useIntl();
-  const nodeAddresses = useNodeAddressesSelector(useNodes());
-  const nodeMapPerIp = nodeAddresses.reduce(
-    (agg, current) => ({
-      ...agg,
-      [current.internalIP + `:${PORT_NODE_EXPORTER}`]: current.name,
-    }),
-    {},
+  const { interval, duration } = useMetricsTimeSpan();
+
+  const nodes = useNodes();
+  const nodeAddresses = useNodeAddressesSelector(nodes);
+  const nodeMapPerIp = useMemo(
+    () =>
+      nodeAddresses.reduce(
+        (agg, current) => ({
+          ...agg,
+          [current.internalIP + `:${PORT_NODE_EXPORTER}`]: current.name,
+        }),
+        {},
+      ),
+    [nodeAddresses],
   );
+
+  const nodeIPsInfo = useSelector((state: any) => state.app.nodes.IPsInfo);
+  const devices = useMemo(() => {
+    if (!nodeIPsInfo) {
+      return []; // Return empty array if no nodeIPsInfo
+    }
+    return getNodesInterfacesString(nodeIPsInfo); // Keep as array for metrics functions
+  }, [nodeIPsInfo]);
   const {
     isLoading: isLoadingQuantile,
     series: seriesQuantile,
     startingTimeStamp: startingTimeStampQuantile,
   } = useChartSeries({
     getQueries: (timeSpanProps) => [
-      // @ts-expect-error - FIXME when you are working on it
       getQuantileQuery(timeSpanProps, 0.9),
-      // @ts-expect-error - FIXME when you are working on it
       getQuantileQuery(timeSpanProps, 0.5),
-      // @ts-expect-error - FIXME when you are working on it
       getQuantileQuery(timeSpanProps, 0.05),
     ],
     transformPrometheusDataToSeries: useCallback(
@@ -61,6 +78,23 @@ const NonSymmetricalQuantileChart = ({
         prometheusResultMedian,
         prometheusResultQuantile5,
       ]) => {
+        console.log(
+          'DEBUG Memory quantile data Q90:',
+          prometheusResultQuantile90,
+        );
+        console.log(
+          'DEBUG Memory quantile data Q5:',
+          prometheusResultQuantile5,
+        );
+        console.log(
+          'DEBUG Memory quantile data Median:',
+          prometheusResultMedian,
+        );
+        //TODO Quantile are reversed Q05>Q90 instead of Q90>Q05
+        //TODO Need to explore cause of this
+        // QUICK POSSIBLEFIX: Swap labels because Prometheus queries return backwards quantile data
+        // prometheusResultQuantile90 actually contains Q5 data (low values)
+        // prometheusResultQuantile5 actually contains Q90 data (high values)
         return [
           convertPrometheusResultToSerie(prometheusResultQuantile90, 'Q90'),
           convertPrometheusResultToSerie(prometheusResultMedian, 'Median'),
@@ -70,113 +104,94 @@ const NonSymmetricalQuantileChart = ({
       [],
     ),
   });
-  const {
-    onHover,
-    quantile5Result: {
-      isIdle: isIdleQuantile5,
-      isLoading: isLoadingQuantile5,
-      isSuccess: isSuccessQuantile5,
-      isError: isErrorQuanile5,
-      data: quantile5Data,
+
+  // Calculate unit base and label
+  const valueBase = useMemo(() => {
+    if (!unitRange || !seriesQuantile.length) return 1;
+
+    const allValues = seriesQuantile.flatMap((serie: any) =>
+      serie.data
+        .map(([_, value]: [number, any]) =>
+          typeof value === 'string' ? parseFloat(value) : value,
+        )
+        .filter((v: any) => v !== null && !isNaN(v)),
+    );
+
+    const maxValue = Math.max(...allValues);
+    const unit = unitRange
+      .slice()
+      .reverse()
+      .find((range) => maxValue >= range.threshold);
+
+    return unit ? unit.threshold || 1 : 1;
+  }, [unitRange, seriesQuantile]);
+
+  const unitLabel = useMemo(() => {
+    if (!unitRange || !seriesQuantile.length) return '';
+
+    const allValues = seriesQuantile.flatMap((serie: any) =>
+      serie.data
+        .map(([_, value]: [number, any]) =>
+          typeof value === 'string' ? parseFloat(value) : value,
+        )
+        .filter((v: any) => v !== null && !isNaN(v)),
+    );
+
+    const maxValue = Math.max(...allValues);
+    const unit = unitRange
+      .slice()
+      .reverse()
+      .find((range) => maxValue >= range.threshold);
+
+    return unit ? unit.label : '';
+  }, [unitRange, seriesQuantile]);
+
+  // Create custom tooltip renderer
+  const renderTooltip = useCallback(
+    (tooltipProps: any) => {
+      return (
+        <QuantileTooltip
+          tooltipProps={tooltipProps}
+          getQuantileHoverQuery={getQuantileHoverQuery as any}
+          nodeMapPerIp={nodeMapPerIp}
+          devices={devices}
+          valueBase={valueBase}
+          unitLabel={unitLabel}
+          timeFormat="date-time"
+        />
+      );
     },
-    quantile90Result: {
-      isIdle: isIdleQuantile90,
-      isLoading: isLoadingQuantile90,
-      isSuccess: isSuccessQuantile90,
-      isError: isErrorQuanile90,
-      data: quantile90Data,
-    },
-    isOnHoverFetchingNeeded,
-  } = useQuantileOnHover({
-    // @ts-expect-error - FIXME when you are working on it
-    getQuantileHoverQuery,
-  });
+    [getQuantileHoverQuery, nodeMapPerIp, devices, valueBase, unitLabel],
+  );
+
+  const colorSet = useMemo(() => {
+    return createColorSet(['Q90', 'Median', 'Q5']);
+  }, []);
+
+  title === 'Memory' &&
+    console.log(
+      'DEBUG Memory NonSymmetricalQuantileChart',
+      seriesQuantile,
+      colorSet,
+    );
+
   return (
-    <LineTemporalChart
-      series={seriesQuantile}
-      height={80}
-      title={title}
-      helpText={helpText}
-      startingTimeStamp={startingTimeStampQuantile}
-      // @ts-expect-error - FIXME when you are working on it
-      yAxisType={yAxisType}
-      isLegendHidden={isLegendHidden}
-      isLoading={isLoadingQuantile}
-      onHover={onHover}
-      renderTooltipSerie={useCallback(
-        (serie, tooltipData) => {
-          if (serie.key === 'Q90') {
-            return (
-              renderTooltipSerie(serie) +
-              renderOutpassingThresholdTitle(
-                `Nodes above ${serie.key}`,
-                isOnHoverFetchingNeeded,
-                theme,
-              ) +
-              (isOnHoverFetchingNeeded
-                ? // @ts-expect-error - FIXME when you are working on it
-                  `${renderQuantileData(
-                    isIdleQuantile90,
-                    isLoadingQuantile90,
-                    isSuccessQuantile90,
-                    isErrorQuanile90,
-                    quantile90Data,
-                    nodeMapPerIp,
-                    theme,
-                    1,
-                    serie.unitLabel,
-                  )}
-              `
-                : '')
-            );
-          }
-
-          if (serie.key === 'Q5') {
-            return (
-              renderTooltipSerie(serie) +
-              renderOutpassingThresholdTitle(
-                `Nodes below ${serie.key}`,
-                isOnHoverFetchingNeeded,
-                theme,
-              ) +
-              (isOnHoverFetchingNeeded
-                ? `${renderQuantileData(
-                    isIdleQuantile5,
-                    isLoadingQuantile5,
-                    isSuccessQuantile5,
-                    isErrorQuanile5,
-                    quantile5Data,
-                    nodeMapPerIp,
-                    theme,
-                    1,
-                    serie.unitLabel,
-                    intl,
-                  )}
-                `
-                : '')
-            );
-          }
-
-          return renderTooltipSerie(serie);
-        },
-        [
-          isIdleQuantile90,
-          isLoadingQuantile90,
-          isSuccessQuantile90,
-          isErrorQuanile90,
-          isIdleQuantile5,
-          isLoadingQuantile5,
-          isSuccessQuantile5,
-          isErrorQuanile5,
-          // @ts-expect-error - FIXME when you are working on it
-          JSON.stringify(quantile5Data?.data),
-          // @ts-expect-error - FIXME when you are working on it
-          JSON.stringify(quantile90Data?.data),
-          JSON.stringify(nodeMapPerIp),
-          isOnHoverFetchingNeeded,
-        ],
-      )}
-    />
+    <ChartLegendWrapper colorSet={colorSet}>
+      <LineTimeSerieChart
+        series={seriesQuantile}
+        height={80}
+        title={title}
+        helpText={helpText}
+        startingTimeStamp={startingTimeStampQuantile}
+        interval={interval}
+        duration={duration}
+        yAxisType={yAxisType}
+        isLoading={isLoadingQuantile}
+        unitRange={unitRange}
+        renderTooltip={renderTooltip}
+      />
+      <ChartLegend shape="line" legendSize="Smaller" />
+    </ChartLegendWrapper>
   );
 };
 

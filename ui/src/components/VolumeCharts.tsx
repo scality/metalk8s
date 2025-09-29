@@ -1,9 +1,9 @@
 import { Stack } from '@scality/core-ui';
-import { ChartLegendWrapper } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
 import {
   ChartLegend,
   LineTimeSerieChart,
   useMetricsTimeSpan,
+  ChartLegendWrapper,
 } from '@scality/core-ui/dist/next';
 import { useCallback } from 'react';
 import {
@@ -59,18 +59,7 @@ export const VolumeThroughputChart = ({
           'read',
         );
 
-        // Filter series for LineTimeSerieChart above/below structure
-        const aboveSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'write',
-        );
-        const belowSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'read',
-        );
-
-        return {
-          above: aboveSeries,
-          below: belowSeries,
-        };
+        return allSeries;
       },
       [volumeName],
     ),
@@ -128,18 +117,7 @@ export const VolumeLatencyChart = ({
           'read',
         );
 
-        // Filter series for LineTimeSerieChart above/below structure
-        const aboveSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'write',
-        );
-        const belowSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'read',
-        );
-
-        return {
-          above: aboveSeries,
-          below: belowSeries,
-        };
+        return allSeries;
       },
       [volumeName],
     ),
@@ -197,18 +175,7 @@ export const VolumeIOPSChart = ({
           'read',
         );
 
-        // Filter series for LineTimeSerieChart above/below structure
-        const aboveSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'write',
-        );
-        const belowSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'read',
-        );
-
-        return {
-          above: aboveSeries,
-          below: belowSeries,
-        };
+        return allSeries;
       },
       [volumeName],
     ),

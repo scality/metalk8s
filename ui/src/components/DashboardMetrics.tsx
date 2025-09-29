@@ -96,10 +96,10 @@ const DashboardMetrics = () => {
       <DashboardScrollableArea>
         <ChartLegendWrapper colorSet={createColorSet}>
           <GraphsWrapper>
-            <DashboardChartCpuUsage />
+            {/* <DashboardChartCpuUsage /> */}
             <DashboardChartMemory />
-            <DashboardChartSystemLoad />
-            <DashboardChartThroughput />
+            {/* <DashboardChartSystemLoad /> */}
+            {/* <DashboardChartThroughput /> */}
           </GraphsWrapper>
           <ChartLegend shape="line" legendSize={'Smaller'} />
         </ChartLegendWrapper>

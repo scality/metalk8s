@@ -1,24 +1,24 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { UNIT_RANGE_BS } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
-import { useTheme } from 'styled-components';
+import {
+  LineTimeSerieChart,
+  useMetricsTimeSpan,
+  ChartLegend,
+} from '@scality/core-ui/dist/next';
+import { ChartLegendWrapper } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
 import { PORT_NODE_EXPORTER } from '../constants';
 import {
   useNodeAddressesSelector,
   useNodes,
-  useQuantileOnHover,
   useSymetricalChartSeries,
 } from '../hooks';
 import {
+  createColorSet,
   getNodesInterfacesString,
   getQuantileSymmetricalSeries,
-  renderQuantileData,
-  renderTooltipSerie,
-  renderOutpassingThresholdTitle,
-  renderTooltipSeperationLine,
 } from '../services/graphUtils';
-import { useIntl } from 'react-intl';
+import { QuantileTooltip } from './QuantileTooltip';
 
 const SymmetricalQuantileChart = ({
   getAboveQuantileQuery,
@@ -29,7 +29,6 @@ const SymmetricalQuantileChart = ({
   metricPrefixBelow,
   title,
   yAxisTitle,
-  isLegendHidden,
 }: {
   getAboveQuantileQuery;
   getBelowQuantileQuery;
@@ -39,20 +38,30 @@ const SymmetricalQuantileChart = ({
   metricPrefixBelow: string;
   title: string;
   yAxisTitle: string;
-  isLegendHidden?: Boolean;
 }) => {
-  const theme = useTheme();
-  const intl = useIntl();
-  const nodeAddresses = useNodeAddressesSelector(useNodes());
-  // @ts-expect-error - FIXME when you are working on it
-  const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
-  const devices = getNodesInterfacesString(nodeIPsInfo);
-  const nodeMapPerIp = nodeAddresses.reduce(
-    (agg, current) => ({
-      ...agg,
-      [current.internalIP + `:${PORT_NODE_EXPORTER}`]: current.name,
-    }),
-    {},
+  const { interval, duration } = useMetricsTimeSpan();
+  console.log('DEBUG SymmetricalQuantileChart');
+
+  // Create node mappings
+  const nodes = useNodes();
+  const nodeAddresses = useNodeAddressesSelector(nodes);
+  const nodeIPsInfo = useSelector((state: any) => state.app.nodes.IPsInfo);
+  const devices = useMemo(() => {
+    if (!nodeIPsInfo) {
+      return []; // Return empty array if no nodeIPsInfo
+    }
+    return getNodesInterfacesString(nodeIPsInfo); // Keep as array for metrics functions
+  }, [nodeIPsInfo]);
+  const nodeMapPerIp = useMemo(
+    () =>
+      nodeAddresses.reduce(
+        (agg, current) => ({
+          ...agg,
+          [current.internalIP + `:${PORT_NODE_EXPORTER}`]: current.name,
+        }),
+        {},
+      ),
+    [nodeAddresses],
   );
   const {
     isLoading: isLoadingQuantile,
@@ -90,198 +99,128 @@ const SymmetricalQuantileChart = ({
       [metricPrefixAbove, metricPrefixBelow],
     ),
   });
-  const {
-    quantile5Result: {
-      isIdle: isIdleQuantile5,
-      isLoading: isLoadingQuantile5,
-      isSuccess: isSuccessQuantile5,
-      isError: isErrorQuantile5,
-      data: quantile5Data,
-    },
-    quantile90Result: {
-      isIdle: isIdleQuantile90In,
-      isLoading: isLoadingQuantile90In,
-      isSuccess: isSuccessQuantile90In,
-      isError: isErrorQuantile90In,
-      data: quantile90InData,
-    },
-    valueBase,
-    isOnHoverFetchingNeeded,
-    onHover: onHoverIn,
-  } = useQuantileOnHover({
-    getQuantileHoverQuery: getAboveQuantileHoverQuery,
-    metricPrefix: metricPrefixAbove,
-  });
-  const {
-    quantile5Result: {
-      isIdle: isIdleQuantile5Out,
-      isLoading: isLoadingQuantile5Out,
-      isSuccess: isSuccessQuantile5Out,
-      isError: isErrorQuantile5Out,
-      data: quantile5OutData,
-    },
-    quantile90Result: {
-      isIdle: isIdleQuantile90Out,
-      isLoading: isLoadingQuantile90Out,
-      isSuccess: isSuccessQuantile90Out,
-      isError: isErrorQuantile90Out,
-      data: quantile90OutData,
-    },
-    onHover: onHoverOut,
-    isOnHoverFetchingNeeded: isOnHoverFetchingNeededOut,
-  } = useQuantileOnHover({
-    getQuantileHoverQuery: getBelowQuantileHoverQuery,
-    metricPrefix: metricPrefixBelow,
-  });
-  const renderTooltip = useCallback(
-    (
-      serie,
-      isIdle,
-      isLoading,
-      isSuccess,
-      isError,
-      data,
-      aboveOrBelow,
-      isBelow,
-    ) => {
-      const isOutpassingDataDisplayed =
-        (!isBelow && isOnHoverFetchingNeeded) ||
-        (isBelow && isOnHoverFetchingNeededOut);
+
+  // Calculate unit base (using first series data)
+  const valueBase = useMemo(() => {
+    if (!seriesQuantile.above?.length && !seriesQuantile.below?.length)
+      return 1;
+
+    const allSeries = [
+      ...(seriesQuantile.above || []),
+      ...(seriesQuantile.below || []),
+    ];
+    const allValues = allSeries.flatMap((serie: any) =>
+      serie.data
+        .map(([_, value]: [number, any]) =>
+          typeof value === 'string' ? parseFloat(value) : Math.abs(value),
+        )
+        .filter((v: any) => v !== null && !isNaN(v)),
+    );
+
+    const maxValue = Math.max(...allValues);
+    const unit = UNIT_RANGE_BS.slice()
+      .reverse()
+      .find((range: any) => maxValue >= range.threshold);
+
+    return unit ? unit.threshold || 1 : 1;
+  }, [seriesQuantile]);
+
+  const unitLabel = useMemo(() => {
+    if (!seriesQuantile.above?.length && !seriesQuantile.below?.length)
+      return '';
+
+    const allSeries = [
+      ...(seriesQuantile.above || []),
+      ...(seriesQuantile.below || []),
+    ];
+    const allValues = allSeries.flatMap((serie: any) =>
+      serie.data
+        .map(([_, value]: [number, any]) =>
+          typeof value === 'string' ? parseFloat(value) : Math.abs(value),
+        )
+        .filter((v: any) => v !== null && !isNaN(v)),
+    );
+
+    const maxValue = Math.max(...allValues);
+    const unit = UNIT_RANGE_BS.slice()
+      .reverse()
+      .find((range: any) => maxValue >= range.threshold);
+
+    return unit ? unit.label : '';
+  }, [seriesQuantile]);
+
+  // Create separate tooltip renderers for above/below
+  const renderAboveTooltip = useCallback(
+    (tooltipProps: any) => {
       return (
-        renderTooltipSerie(serie) +
-        renderOutpassingThresholdTitle(
-          `Nodes ${aboveOrBelow} ${serie.key}`,
-          isOutpassingDataDisplayed,
-          theme,
-        ) +
-        (isOutpassingDataDisplayed
-          ? `${renderQuantileData(
-              isIdle,
-              isLoading,
-              isSuccess,
-              isError,
-              data,
-              nodeMapPerIp,
-              theme,
-              valueBase,
-              serie.unitLabel,
-              intl,
-            )}`
-          : ``)
+        <QuantileTooltip
+          tooltipProps={tooltipProps}
+          getQuantileHoverQuery={getAboveQuantileHoverQuery as any}
+          nodeMapPerIp={nodeMapPerIp}
+          devices={devices}
+          valueBase={valueBase}
+          unitLabel={unitLabel}
+          timeFormat="date-time"
+        />
       );
     },
-    [
-      nodeMapPerIp,
-      theme,
-      valueBase,
-      isOnHoverFetchingNeeded,
-      isOnHoverFetchingNeededOut,
-    ],
+    [getAboveQuantileHoverQuery, nodeMapPerIp, devices, valueBase, unitLabel],
   );
+
+  const renderBelowTooltip = useCallback(
+    (tooltipProps: any) => {
+      return (
+        <QuantileTooltip
+          tooltipProps={tooltipProps}
+          getQuantileHoverQuery={getBelowQuantileHoverQuery as any}
+          nodeMapPerIp={nodeMapPerIp}
+          devices={devices}
+          valueBase={valueBase}
+          unitLabel={unitLabel}
+          timeFormat="date-time"
+        />
+      );
+    },
+    [getBelowQuantileHoverQuery, nodeMapPerIp, devices, valueBase, unitLabel],
+  );
+  const colorSet = useMemo(() => {
+    const allSeriesNames = [
+      seriesQuantile.above.map((s: any) => s.resource || s.name),
+      seriesQuantile.below.map((s: any) => s.resource || s.name),
+    ];
+    return createColorSet(allSeriesNames.flat());
+  }, [seriesQuantile]);
   return (
-    <LineTemporalChart
-      // @ts-ignore To be fixed after migration of LineTemporalChart to LineTimeSerieChart
-      series={seriesQuantile}
-      height={150}
-      title={title}
-      startingTimeStamp={startingTimeStampQuantile}
-      isLoading={isLoadingQuantile}
-      yAxisType={'symmetrical'}
-      onHover={useCallback(
-        (datum) => {
-          onHoverIn(datum);
-          onHoverOut(datum);
-        },
-        [onHoverIn, onHoverOut],
-      )}
-      yAxisTitle={yAxisTitle}
-      // @ts-expect-error - FIXME when you are working on it
-      isLegendHidden={isLegendHidden}
-      unitRange={UNIT_RANGE_BS}
-      renderTooltipSerie={useCallback(
-        (serie) => {
-          if (serie.key === `Q90-${metricPrefixAbove}`) {
-            return renderTooltip(
-              serie,
-              isIdleQuantile90In,
-              isLoadingQuantile90In,
-              isSuccessQuantile90In,
-              isErrorQuantile90In,
-              quantile90InData,
-              'above',
-              false,
-            );
-          }
+    <ChartLegendWrapper colorSet={colorSet}>
+      <ChartLegend shape="line" legendSize="Smaller" />
+      <LineTimeSerieChart
+        series={{
+          above: seriesQuantile.above || [],
+          below: seriesQuantile.below || [],
+        }}
+        height={150}
+        title={title}
+        startingTimeStamp={startingTimeStampQuantile}
+        interval={interval}
+        duration={duration}
+        isLoading={isLoadingQuantile}
+        yAxisType={'symmetrical'}
+        yAxisTitle={yAxisTitle}
+        unitRange={UNIT_RANGE_BS}
+        renderTooltip={(tooltipProps) => {
+          // Determine if this is above or below series based on the data
+          const payload = tooltipProps.payload || [];
+          const hasNegativeValues = payload.some(
+            (entry: any) => entry.value && Number(entry.value) < 0,
+          );
 
-          if (serie.key === `Q5-${metricPrefixAbove}`) {
-            return `${renderTooltip(
-              serie,
-              isIdleQuantile5,
-              isLoadingQuantile5,
-              isSuccessQuantile5,
-              isErrorQuantile5,
-              quantile5Data,
-              'below',
-              false,
-            )}${renderTooltipSeperationLine(theme.border)}
-            `;
-          }
-
-          if (serie.key === `Q90-${metricPrefixBelow}`) {
-            return renderTooltip(
-              serie,
-              isIdleQuantile90Out,
-              isLoadingQuantile90Out,
-              isSuccessQuantile90Out,
-              isErrorQuantile90Out,
-              quantile90OutData,
-              'above',
-              true,
-            );
-          }
-
-          if (serie.key === `Q5-${metricPrefixBelow}`) {
-            return renderTooltip(
-              serie,
-              isIdleQuantile5Out,
-              isLoadingQuantile5Out,
-              isSuccessQuantile5Out,
-              isErrorQuantile5Out,
-              quantile5OutData,
-              'below',
-              true,
-            );
-          }
-
-          return renderTooltipSerie(serie);
-        },
-        [
-          isIdleQuantile90In,
-          isLoadingQuantile90In,
-          isSuccessQuantile90In,
-          isIdleQuantile5,
-          isLoadingQuantile5,
-          isSuccessQuantile5,
-          isIdleQuantile90Out,
-          isLoadingQuantile90Out,
-          isSuccessQuantile90Out,
-          isIdleQuantile5Out,
-          isLoadingQuantile5Out,
-          isSuccessQuantile5Out,
-          // @ts-expect-error - FIXME when you are working on it
-          JSON.stringify(quantile5Data?.data),
-          // @ts-expect-error - FIXME when you are working on it
-          JSON.stringify(quantile90InData?.data),
-          // @ts-expect-error - FIXME when you are working on it
-          JSON.stringify(quantile90OutData?.data),
-          // @ts-expect-error - FIXME when you are working on it
-          JSON.stringify(quantile5OutData?.data),
-          JSON.stringify(nodeMapPerIp),
-          metricPrefixAbove,
-          metricPrefixBelow,
-        ],
-      )}
-    />
+          return hasNegativeValues
+            ? renderBelowTooltip(tooltipProps)
+            : renderAboveTooltip(tooltipProps);
+        }}
+      />
+      <ChartLegend shape="line" legendSize="Smaller" />
+    </ChartLegendWrapper>
   );
 };
 

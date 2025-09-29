@@ -26,6 +26,7 @@ export const PanelActions = styled.div`
 const DashboardNetwork = () => {
   const intl = useIntl();
   const { isShowQuantileChart } = useShowQuantileChart();
+  console.log('DEBUG DashboardNetwork', isShowQuantileChart);
   return (
     <NetworkContainer
       style={{

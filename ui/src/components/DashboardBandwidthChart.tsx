@@ -80,17 +80,7 @@ const DashboardBandwidthChartWithoutQuantile = ({
           nodesPlaneInterface,
         );
 
-        const aboveSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'in',
-        );
-
-        const belowSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'out',
-        );
-        return {
-          above: aboveSeries,
-          below: belowSeries,
-        };
+        return allSeries;
       },
 
       [JSON.stringify(nodeAddresses), JSON.stringify(nodesPlaneInterface)],
@@ -139,7 +129,7 @@ const DashboardBandwidthChart = ({
   const { isShowQuantileChart } = useShowQuantileChart();
   return (
     <>
-      {isShowQuantileChart ? (
+      {!isShowQuantileChart ? (
         <SymmetricalQuantileChart
           getAboveQuantileQuery={getNodesPlanesBandwidthInQuantileQuery}
           getBelowQuantileQuery={getNodesPlanesBandwidthOutQuantileQuery}
