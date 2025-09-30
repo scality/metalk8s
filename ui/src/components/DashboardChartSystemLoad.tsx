@@ -46,9 +46,7 @@ const DashboardChartSystemLoadWithoutQuantiles = () => {
 
   const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
-    getQuery: (timeSpanProps) =>
-      // @ts-expect-error - FIXME when you are working on it
-      getNodesSystemLoadQuery(timeSpanProps),
+    getQuery: (timeSpanProps) => getNodesSystemLoadQuery(timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) =>
         getMultiResourceSeriesForChart(prometheusResult, nodeAddresses),

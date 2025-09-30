@@ -47,7 +47,6 @@ const DashboardChartMemoryWithoutQuantiles = () => {
 
   const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
-    // @ts-expect-error - FIXME when you are working on it
     getQuery: (timeSpanProps) => getNodesMemoryQuery(timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) => {
