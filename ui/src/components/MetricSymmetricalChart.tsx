@@ -92,7 +92,15 @@ const MetricSymmetricalChart = ({
           ];
         }
       },
-      [instanceIP, showAvg, planeInterface, JSON.stringify(nodesIPsInfo)],
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [
+        instanceIP,
+        showAvg,
+        planeInterface,
+        JSON.stringify(nodesIPsInfo),
+        getMetricBelowQuery,
+        getMetricBelowAvgQuery,
+      ],
     ),
     transformPrometheusDataToSeries: useCallback(
       (resultsAbove, resultsBelow) => {

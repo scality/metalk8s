@@ -29,7 +29,7 @@ import {
   getNodesPlanesBandwidthOutQuery,
 } from '../services/platformlibrary/metrics';
 import SymmetricalQuantileChart from './SymmetricalQuantileChart';
-import { UNIT_RANGE_BS } from '../constants';
+import { HEIGHT_SYMMETRICAL_CHART, UNIT_RANGE_BS } from '../constants';
 
 const DashboardBandwidthChartWithoutQuantile = ({
   title,
@@ -82,7 +82,7 @@ const DashboardBandwidthChartWithoutQuantile = ({
 
         return allSeries;
       },
-
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [JSON.stringify(nodeAddresses), JSON.stringify(nodesPlaneInterface)],
     ),
   });
@@ -98,7 +98,7 @@ const DashboardBandwidthChartWithoutQuantile = ({
             below: series.below,
           }}
           unitRange={UNIT_RANGE_BS}
-          height={150}
+          height={HEIGHT_SYMMETRICAL_CHART}
           interval={interval}
           duration={duration}
           title={title}
@@ -127,9 +127,10 @@ const DashboardBandwidthChart = ({
     dispatch(fetchNodesAction());
   }, [dispatch]);
   const { isShowQuantileChart } = useShowQuantileChart();
+
   return (
     <>
-      {!isShowQuantileChart ? (
+      {isShowQuantileChart ? (
         <SymmetricalQuantileChart
           getAboveQuantileQuery={getNodesPlanesBandwidthInQuantileQuery}
           getBelowQuantileQuery={getNodesPlanesBandwidthOutQuantileQuery}

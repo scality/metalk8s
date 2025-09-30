@@ -86,10 +86,14 @@ export const NODE_ALERTS_GROUP = [
 export const CIRCLE_BASE_SIZE = 'CIRCLE_BASE_SIZE';
 export const CIRCLE_DOUBLE_SIZE = 'CIRCLE_DOUBLE_SIZE';
 // LineChart colors
-export const lineColor1 = '#A14FBF';
-export const lineColor2 = '#BE9A40';
-export const lineColor3 = '#4BE4E2';
-export const lineColor4 = '#DC90F1';
+export const lineColor1 = chartColors.lineColor1;
+export const lineColor2 = chartColors.lineColor2;
+export const lineColor3 = chartColors.lineColor3;
+export const lineColor4 = chartColors.lineColor4;
+export const lineColor5 = chartColors.lineColor5;
+export const lineColor6 = chartColors.lineColor6;
+export const lineColor7 = chartColors.lineColor7;
+export const lineColor8 = chartColors.lineColor8;
 // Grafana dashboard UIDs (for stable links)
 export const GRAFANA_DASHBOARDS = {
   logs: 'a7e130cb82be229d6f3edbfd0a438001',
@@ -108,16 +112,7 @@ export const DASHBOARD_SYNC_ID = 'dashboard';
 export const TESTING_MULTIPLY_NODES = 3;
 
 // Chart color values for consistent coloring across components
-export const CHART_COLOR_VALUES = [
-  chartColors.lineColor1, // #A14FBF - Purple
-  chartColors.lineColor2, // #BE9A40 - Gold
-  chartColors.lineColor3, // #4BE4E2 - Cyan
-  chartColors.lineColor4, // #245A83 - Blue
-  chartColors.lineColor5, // #E3FF73 - Light Green
-  chartColors.lineColor6, // #BE2543 - Red
-  chartColors.lineColor7, // #FD8144 - Orange
-  chartColors.lineColor8, // #F6B187 - Light Orange
-];
+export const CHART_COLOR_VALUES = Object.values(chartColors);
 export const UNIT_RANGE_BS = [
   {
     threshold: 0,

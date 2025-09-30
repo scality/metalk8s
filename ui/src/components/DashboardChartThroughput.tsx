@@ -28,7 +28,7 @@ const DashboardChartThroughput = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
   return (
     <>
-      {!isShowQuantileChart ? (
+      {isShowQuantileChart ? (
         <SymmetricalQuantileChart
           getAboveQuantileQuery={getNodesThroughputWriteQuantileQuery}
           getBelowQuantileQuery={getNodesThroughputReadQuantileQuery}

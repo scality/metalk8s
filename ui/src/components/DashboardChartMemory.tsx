@@ -19,6 +19,7 @@ import {
 } from '../services/platformlibrary/metrics';
 import { getMultiResourceSeriesForChart } from '../services/graphUtils';
 import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
+import { HEIGHT_DEFAULT_CHART } from '../constants';
 
 const DashboardChartMemory = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
@@ -73,7 +74,7 @@ const DashboardChartMemoryWithoutQuantiles = () => {
   return (
     <LineTimeSerieChart
       series={series}
-      height={110}
+      height={HEIGHT_DEFAULT_CHART}
       interval={interval}
       duration={duration}
       title="Memory"

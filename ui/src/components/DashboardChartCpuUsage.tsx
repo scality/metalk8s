@@ -19,6 +19,7 @@ import {
   getNodesCPUUsageQuery,
 } from '../services/platformlibrary/metrics';
 import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
+import { HEIGHT_DEFAULT_CHART } from '../constants';
 
 const DashboardChartCpuUsage = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
@@ -68,7 +69,7 @@ const DashboardChartCpuUsageWithoutQuantils = () => {
   return (
     <LineTimeSerieChart
       series={series}
-      height={110}
+      height={HEIGHT_DEFAULT_CHART}
       interval={interval}
       duration={duration}
       title="CPU Usage"
