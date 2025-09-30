@@ -1,24 +1,25 @@
-import React, { useCallback, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { ChartLegendWrapper } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
 import { UNIT_RANGE_BS } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
 import {
+  ChartLegend,
   LineTimeSerieChart,
   useMetricsTimeSpan,
-  ChartLegend,
 } from '@scality/core-ui/dist/next';
-import { ChartLegendWrapper } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
-import { PORT_NODE_EXPORTER } from '../constants';
+import { useCallback, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import { HEIGHT_SYMMETRICAL_CHART, PORT_NODE_EXPORTER } from '../constants';
 import {
   useNodeAddressesSelector,
   useNodes,
   useSymetricalChartSeries,
 } from '../hooks';
 import {
-  createColorSet,
+  createSymmetricalQuantileColorSet,
   getNodesInterfacesString,
   getQuantileSymmetricalSeries,
+  getTimeFormatForInterval,
 } from '../services/graphUtils';
-import { QuantileTooltip } from './QuantileTooltip';
+import { SymmetricalQuantileTooltip } from './SymmetricalQuantileTooltip';
 
 const SymmetricalQuantileChart = ({
   getAboveQuantileQuery,
@@ -40,9 +41,8 @@ const SymmetricalQuantileChart = ({
   yAxisTitle: string;
 }) => {
   const { interval, duration } = useMetricsTimeSpan();
-  console.log('DEBUG SymmetricalQuantileChart');
 
-  // Create node mappings
+  // Get nodeIPsInfo for devices (still needed for quantile queries)
   const nodes = useNodes();
   const nodeAddresses = useNodeAddressesSelector(nodes);
   const nodeIPsInfo = useSelector((state: any) => state.app.nodes.IPsInfo);
@@ -149,56 +149,24 @@ const SymmetricalQuantileChart = ({
     return unit ? unit.label : '';
   }, [seriesQuantile]);
 
-  // Create separate tooltip renderers for above/below
-  const renderAboveTooltip = useCallback(
-    (tooltipProps: any) => {
-      return (
-        <QuantileTooltip
-          tooltipProps={tooltipProps}
-          getQuantileHoverQuery={getAboveQuantileHoverQuery as any}
-          nodeMapPerIp={nodeMapPerIp}
-          devices={devices}
-          valueBase={valueBase}
-          unitLabel={unitLabel}
-          timeFormat="date-time"
-        />
-      );
-    },
-    [getAboveQuantileHoverQuery, nodeMapPerIp, devices, valueBase, unitLabel],
-  );
-
-  const renderBelowTooltip = useCallback(
-    (tooltipProps: any) => {
-      return (
-        <QuantileTooltip
-          tooltipProps={tooltipProps}
-          getQuantileHoverQuery={getBelowQuantileHoverQuery as any}
-          nodeMapPerIp={nodeMapPerIp}
-          devices={devices}
-          valueBase={valueBase}
-          unitLabel={unitLabel}
-          timeFormat="date-time"
-        />
-      );
-    },
-    [getBelowQuantileHoverQuery, nodeMapPerIp, devices, valueBase, unitLabel],
-  );
   const colorSet = useMemo(() => {
-    const allSeriesNames = [
-      seriesQuantile.above.map((s: any) => s.resource || s.name),
-      seriesQuantile.below.map((s: any) => s.resource || s.name),
-    ];
-    return createColorSet(allSeriesNames.flat());
+    return createSymmetricalQuantileColorSet(
+      seriesQuantile.above || [],
+      seriesQuantile.below || [],
+    );
   }, [seriesQuantile]);
+
+  const timeFormat = useMemo(() => {
+    return getTimeFormatForInterval(interval);
+  }, [interval]);
   return (
     <ChartLegendWrapper colorSet={colorSet}>
-      <ChartLegend shape="line" legendSize="Smaller" />
       <LineTimeSerieChart
         series={{
           above: seriesQuantile.above || [],
           below: seriesQuantile.below || [],
         }}
-        height={150}
+        height={HEIGHT_SYMMETRICAL_CHART}
         title={title}
         startingTimeStamp={startingTimeStampQuantile}
         interval={interval}
@@ -208,15 +176,20 @@ const SymmetricalQuantileChart = ({
         yAxisTitle={yAxisTitle}
         unitRange={UNIT_RANGE_BS}
         renderTooltip={(tooltipProps) => {
-          // Determine if this is above or below series based on the data
-          const payload = tooltipProps.payload || [];
-          const hasNegativeValues = payload.some(
-            (entry: any) => entry.value && Number(entry.value) < 0,
+          return (
+            <SymmetricalQuantileTooltip
+              tooltipProps={tooltipProps}
+              metricPrefixAbove={metricPrefixAbove}
+              metricPrefixBelow={metricPrefixBelow}
+              valueBase={valueBase}
+              unitLabel={unitLabel}
+              timeFormat={timeFormat}
+              getAboveQuantileHoverQuery={getAboveQuantileHoverQuery}
+              getBelowQuantileHoverQuery={getBelowQuantileHoverQuery}
+              nodeMapPerIp={nodeMapPerIp}
+              devices={devices}
+            />
           );
-
-          return hasNegativeValues
-            ? renderBelowTooltip(tooltipProps)
-            : renderAboveTooltip(tooltipProps);
         }}
       />
       <ChartLegend shape="line" legendSize="Smaller" />

@@ -5,18 +5,19 @@ import type {
 import {
   CHART_COLOR_VALUES,
   lineColor1,
-  PORT_NODE_EXPORTER,
-} from '../constants';
-
-import type { Serie } from '@scality/core-ui/dist/components/linetimeseriechart/linetimeseriechart.component';
-import {
+  lineColor2,
   lineColor3,
   lineColor4,
   lineColor5,
   lineColor6,
   lineColor7,
-  lineColor8,
-} from '@scality/core-ui/dist/style/theme';
+  PORT_NODE_EXPORTER,
+  SAMPLE_FREQUENCY_LAST_ONE_HOUR,
+  SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
+  SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
+} from '../constants';
+
+import type { Serie } from '@scality/core-ui/dist/components/linetimeseriechart/linetimeseriechart.component';
 
 export const getMultiResourceSeriesForChart = (
   results: PrometheusQueryResult,
@@ -67,80 +68,67 @@ export const fiterMetricValues = (
   );
 };
 // to retrieve Q90, median and Q5 for symmetrical chart
+// Results are in ascending order: [Q05, Q50, Q90]
 export const getQuantileSymmetricalSeries = (
   resultAbove: PrometheusQueryResult[],
   resultBelow: PrometheusQueryResult[],
   metricPrefixAbove: string,
   metricPrefixBelow: string,
-) => {
-  return [
-    {
-      ...convertPrometheusResultToSerie(resultAbove[2], 'Q90'),
-      metricPrefix: metricPrefixAbove,
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
+): {
+  above: Serie[];
+  below: Serie[];
+} => {
+  return {
+    above: [
+      {
+        ...convertPrometheusResultToSerie(
+          resultAbove[2],
+          `Q90-${metricPrefixAbove}`,
+        ),
+        metricPrefix: metricPrefixAbove,
       },
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
+      {
+        ...convertPrometheusResultToSerie(
+          resultAbove[1],
+          `Median-${metricPrefixAbove}`,
+        ),
+        metricPrefix: metricPrefixAbove,
       },
-      color: lineColor3,
-    },
-    {
-      ...convertPrometheusResultToSerie(resultAbove[1], 'Median'),
-      metricPrefix: metricPrefixAbove,
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
+      {
+        ...convertPrometheusResultToSerie(
+          resultAbove[0],
+          `Q5-${metricPrefixAbove}`,
+        ),
+        metricPrefix: metricPrefixAbove,
       },
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
+    ],
+    below: [
+      {
+        ...convertPrometheusResultToSerie(
+          resultBelow[0],
+          `Q5-${metricPrefixBelow}`,
+        ),
+
+        metricPrefix: metricPrefixBelow,
       },
-      color: lineColor5,
-    },
-    {
-      ...convertPrometheusResultToSerie(resultAbove[0], 'Q5'),
-      metricPrefix: metricPrefixAbove,
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
+      {
+        ...convertPrometheusResultToSerie(
+          resultBelow[1],
+          `Median-${metricPrefixBelow}`,
+        ),
+
+        metricPrefix: metricPrefixBelow,
       },
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
+      {
+        ...convertPrometheusResultToSerie(
+          resultBelow[2],
+          `Q90-${metricPrefixBelow}`,
+        ),
+
+        metricPrefix: metricPrefixBelow,
       },
-      color: lineColor4,
-    },
-    {
-      ...convertPrometheusResultToSerie(resultBelow[0], 'Q5'),
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      metricPrefix: metricPrefixBelow,
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      color: lineColor6,
-    },
-    {
-      ...convertPrometheusResultToSerie(resultBelow[1], 'Median'),
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      metricPrefix: metricPrefixBelow,
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      color: lineColor8,
-    },
-    {
-      ...convertPrometheusResultToSerie(resultBelow[2], 'Q90'),
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      metricPrefix: metricPrefixBelow,
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      color: lineColor7,
-    },
-  ];
+    ],
+  };
 };
 
 export const getMultipleSymmetricalSeries = (
@@ -230,7 +218,6 @@ export const convertPrometheusResultToSerie = (
     result.status === 'success' &&
     result.data.resultType === 'matrix'
   ) {
-    console.log('DEBUG convertPrometheusResultToSerie', result, serieName);
     const matrixResult: RangeMatrixResult['result'][number] =
       result?.data?.result[0];
     return convertMatrixResultToSerie(matrixResult, serieName);
@@ -377,10 +364,6 @@ export const getNodesInterfacesString = (nodeIPsInfo): [] => {
   return uniqueInterfaces;
 };
 
-export const renderTooltipSeperationLine = (seperationLineColor) => {
-  return `</table><hr style="border-color: ${seperationLineColor};"/><table>`;
-};
-
 // Shared function to create color mapping for chart series
 export const createColorSet = (
   seriesNames: string[],
@@ -392,4 +375,57 @@ export const createColorSet = (
     colorMapping[name] = CHART_COLOR_VALUES[colorIndex];
   });
   return colorMapping;
+};
+
+// Custom color mapping for symmetrical quantile chart
+export const createSymmetricalQuantileColorSet = (
+  aboveSeries: any[],
+  belowSeries: any[],
+): Record<string, string> => {
+  const colorMapping: Record<string, string> = {};
+
+  // Above series colors: Q90 = cyan, Median = yellow, Q5 = blue
+  aboveSeries.forEach((serie) => {
+    const name = serie.resource || serie.name;
+    if (name.includes('Q90')) {
+      colorMapping[name] = lineColor3; // cyan
+    } else if (name.includes('Median')) {
+      colorMapping[name] = lineColor5;
+    } else if (name.includes('Q5')) {
+      colorMapping[name] = lineColor4; // blue
+    }
+  });
+
+  // Below series colors: Q5 = red, Median = gold, Q90 = orange
+  belowSeries.forEach((serie) => {
+    const name = serie.resource || serie.name;
+    if (name.includes('Q5')) {
+      colorMapping[name] = lineColor6; // red
+    } else if (name.includes('Median')) {
+      colorMapping[name] = lineColor2; // gold
+    } else if (name.includes('Q90')) {
+      colorMapping[name] = lineColor7; // orange
+    }
+  });
+
+  return colorMapping;
+};
+
+// Utility function to determine time format based on interval
+export const getTimeFormatForInterval = (
+  interval: number,
+):
+  | 'day-month-abbreviated-hour-minute'
+  | 'day-month-abbreviated-hour-minute-second'
+  | 'long-date-without-weekday' => {
+  if (
+    interval === SAMPLE_FREQUENCY_LAST_SEVEN_DAYS ||
+    interval === SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS
+  ) {
+    return 'day-month-abbreviated-hour-minute';
+  }
+  if (interval === SAMPLE_FREQUENCY_LAST_ONE_HOUR) {
+    return 'day-month-abbreviated-hour-minute-second';
+  }
+  return 'long-date-without-weekday';
 };

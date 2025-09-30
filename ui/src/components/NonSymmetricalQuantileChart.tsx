@@ -13,6 +13,7 @@ import {
   convertPrometheusResultToSerie,
   createColorSet,
   getNodesInterfacesString,
+  getTimeFormatForInterval,
 } from '../services/graphUtils';
 import { QuantileTooltip } from './QuantileTooltip';
 
@@ -74,27 +75,10 @@ const NonSymmetricalQuantileChart = ({
     ],
     transformPrometheusDataToSeries: useCallback(
       ([
-        prometheusResultQuantile90,
-        prometheusResultMedian,
         prometheusResultQuantile5,
+        prometheusResultMedian,
+        prometheusResultQuantile90,
       ]) => {
-        console.log(
-          'DEBUG Memory quantile data Q90:',
-          prometheusResultQuantile90,
-        );
-        console.log(
-          'DEBUG Memory quantile data Q5:',
-          prometheusResultQuantile5,
-        );
-        console.log(
-          'DEBUG Memory quantile data Median:',
-          prometheusResultMedian,
-        );
-        //TODO Quantile are reversed Q05>Q90 instead of Q90>Q05
-        //TODO Need to explore cause of this
-        // QUICK POSSIBLEFIX: Swap labels because Prometheus queries return backwards quantile data
-        // prometheusResultQuantile90 actually contains Q5 data (low values)
-        // prometheusResultQuantile5 actually contains Q90 data (high values)
         return [
           convertPrometheusResultToSerie(prometheusResultQuantile90, 'Q90'),
           convertPrometheusResultToSerie(prometheusResultMedian, 'Median'),
@@ -127,6 +111,9 @@ const NonSymmetricalQuantileChart = ({
   }, [unitRange, seriesQuantile]);
 
   const unitLabel = useMemo(() => {
+    if (yAxisType === 'percentage') {
+      return '%';
+    }
     if (!unitRange || !seriesQuantile.length) return '';
 
     const allValues = seriesQuantile.flatMap((serie: any) =>
@@ -144,8 +131,11 @@ const NonSymmetricalQuantileChart = ({
       .find((range) => maxValue >= range.threshold);
 
     return unit ? unit.label : '';
-  }, [unitRange, seriesQuantile]);
+  }, [unitRange, seriesQuantile, yAxisType]);
 
+  const timeFormat = useMemo(() => {
+    return getTimeFormatForInterval(interval);
+  }, [interval]);
   // Create custom tooltip renderer
   const renderTooltip = useCallback(
     (tooltipProps: any) => {
@@ -157,29 +147,29 @@ const NonSymmetricalQuantileChart = ({
           devices={devices}
           valueBase={valueBase}
           unitLabel={unitLabel}
-          timeFormat="date-time"
+          timeFormat={timeFormat}
         />
       );
     },
-    [getQuantileHoverQuery, nodeMapPerIp, devices, valueBase, unitLabel],
+    [
+      getQuantileHoverQuery,
+      nodeMapPerIp,
+      devices,
+      valueBase,
+      unitLabel,
+      timeFormat,
+    ],
   );
 
   const colorSet = useMemo(() => {
     return createColorSet(['Q90', 'Median', 'Q5']);
   }, []);
 
-  title === 'Memory' &&
-    console.log(
-      'DEBUG Memory NonSymmetricalQuantileChart',
-      seriesQuantile,
-      colorSet,
-    );
-
   return (
     <ChartLegendWrapper colorSet={colorSet}>
       <LineTimeSerieChart
         series={seriesQuantile}
-        height={80}
+        height={110}
         title={title}
         helpText={helpText}
         startingTimeStamp={startingTimeStampQuantile}
