@@ -79,13 +79,12 @@ export const transformRegularPayload = (
   const medianItem = payload.find(
     (item) => item.name === 'Median' || item.dataKey === 'Median',
   );
-
-  if (!q90Item || !q5Item || !medianItem) return null;
+  if (!q90Item && !q5Item && !medianItem) return null;
 
   return {
-    q90: Math.abs(Number(q90Item.value)),
-    q5: Math.abs(Number(q5Item.value)),
-    median: Math.abs(Number(medianItem.value)),
+    q90: q90Item ? Math.abs(Number(q90Item.value)) : null,
+    q5: q5Item ? Math.abs(Number(q5Item.value)) : null,
+    median: medianItem ? Math.abs(Number(medianItem.value)) : null,
     timestamp: label ? new Date(label).getTime() / 1000 : 0,
   };
 };

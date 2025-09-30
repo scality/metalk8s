@@ -66,10 +66,10 @@ export const SymmetricalQuantileTooltip: React.FC<
   const isOnHoverFetchingNeeded = useMemo(() => {
     if (!quantileData) return false;
     return (
-      (quantileData.median.above !== quantileData.q90.above &&
-        quantileData.median.above !== quantileData.q5.above) ||
-      (quantileData.median.below !== quantileData.q90.below &&
-        quantileData.median.below !== quantileData.q5.below)
+      quantileData.median.above !== quantileData.q90.above ||
+      quantileData.median.above !== quantileData.q5.above ||
+      quantileData.median.below !== quantileData.q90.below ||
+      quantileData.median.below !== quantileData.q5.below
     );
   }, [quantileData]);
 
@@ -86,7 +86,8 @@ export const SymmetricalQuantileTooltip: React.FC<
       enabled:
         !!quantileData &&
         isOnHoverFetchingNeeded &&
-        !!getAboveQuantileHoverQuery,
+        !!getAboveQuantileHoverQuery &&
+        !!quantileData.q90.above,
     },
   );
 
@@ -102,7 +103,8 @@ export const SymmetricalQuantileTooltip: React.FC<
       enabled:
         !!quantileData &&
         isOnHoverFetchingNeeded &&
-        !!getAboveQuantileHoverQuery,
+        !!getAboveQuantileHoverQuery &&
+        !!quantileData.q5.above,
     },
   );
 
@@ -120,7 +122,7 @@ export const SymmetricalQuantileTooltip: React.FC<
         !!quantileData &&
         isOnHoverFetchingNeeded &&
         !!getBelowQuantileHoverQuery &&
-        quantileData.q90.below !== null,
+        !!quantileData.q90.below,
     },
   );
 
@@ -137,7 +139,7 @@ export const SymmetricalQuantileTooltip: React.FC<
         !!quantileData &&
         isOnHoverFetchingNeeded &&
         !!getBelowQuantileHoverQuery &&
-        quantileData.q5.below !== null,
+        !!quantileData.q5.below,
     },
   );
 

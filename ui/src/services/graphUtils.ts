@@ -4,7 +4,7 @@ import type {
 } from './prometheus/api';
 import {
   CHART_COLOR_VALUES,
-  lineColor1,
+  CLUSTER_AVERAGE,
   lineColor2,
   lineColor3,
   lineColor4,
@@ -41,7 +41,7 @@ export const getMultiResourceSeriesForChart = (
     return convertMatrixResultToSerie(matrixResult, node.name);
   });
 };
-// UPDATED: fiterMetricValues - Add error handling and proper typing
+
 export const fiterMetricValues = (
   prometheusResult: PrometheusQueryResult,
   labels: {
@@ -242,14 +242,12 @@ export const convertPrometheusResultToSerieWithAverage = (
   const series = [
     {
       ...convertPrometheusResultToSerie(result, serieName),
-      color: resultAvg ? lineColor1 : undefined, // when we display the average, average serie color should match with the metric color
     },
   ];
 
   if (resultAvg) {
     series.push({
-      ...convertPrometheusResultToSerie(resultAvg, 'Cluster Avg.'),
-      color: lineColor1,
+      ...convertPrometheusResultToSerie(resultAvg, CLUSTER_AVERAGE),
       isLineDashed: true,
     });
   }
@@ -299,10 +297,6 @@ export const getSeriesForSymmetricalChart = (
       getTooltipLabel: (metricPrefix, resource) => {
         return `${resource}-${metricPrefix}`;
       },
-      // For the legend, we display only two labels for the symmetrical chart: One is the `${node_name}`, the other is `Cluster Avg.`
-      getLegendLabel: (_, resource) => {
-        return `${resource}`;
-      },
     };
     series.below.push(serieBelow);
   }
@@ -316,13 +310,11 @@ export const getSeriesForSymmetricalChart = (
     const serieAvgAbove = {
       metricPrefix: metricPrefixAbove,
       data: resultAvgAbove?.data?.result[0]?.values || [],
-      resource: 'Cluster Avg.',
+      resource: CLUSTER_AVERAGE,
       getTooltipLabel: (metricPrefix, resource) => {
         return `${resource}-${metricPrefix}`;
       },
-      getLegendLabel: (_, resource) => {
-        return `${resource}`;
-      },
+      isLineDashed: true,
     };
     series.above.push(serieAvgAbove);
   }
@@ -343,6 +335,7 @@ export const getSeriesForSymmetricalChart = (
       getTooltipLabel: (metricPrefix, resource) => {
         return `${resource}-${metricPrefix}`;
       },
+      isLineDashed: true,
     };
     series.below.push(serieAvgBelow);
   }

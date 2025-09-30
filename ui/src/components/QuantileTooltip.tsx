@@ -47,7 +47,7 @@ export const QuantileTooltip: React.FC<QuantileTooltipProps> = ({
   const isOnHoverFetchingNeeded = useMemo(() => {
     if (!quantileData) return false;
     return (
-      quantileData.median !== quantileData.q90 &&
+      quantileData.median !== quantileData.q90 ||
       quantileData.median !== quantileData.q5
     );
   }, [quantileData]);
@@ -62,7 +62,7 @@ export const QuantileTooltip: React.FC<QuantileTooltipProps> = ({
       devices,
     ),
     {
-      enabled: !!quantileData && isOnHoverFetchingNeeded,
+      enabled: !!quantileData && isOnHoverFetchingNeeded && !!quantileData.q90,
     },
   );
 
@@ -75,7 +75,7 @@ export const QuantileTooltip: React.FC<QuantileTooltipProps> = ({
       devices,
     ),
     {
-      enabled: !!quantileData && isOnHoverFetchingNeeded,
+      enabled: !!quantileData && isOnHoverFetchingNeeded && !!quantileData.q5,
     },
   );
 
