@@ -9,6 +9,7 @@ import { getSeriesForSymmetricalChart } from '../services/graphUtils';
 import { HEIGHT_SYMMETRICAL_CHART, NODE_SYNC_ID } from '../constants';
 import { NodesState } from '../ducks/app/nodes';
 import { useSymetricalChartSeries } from '../hooks';
+import { TimeSpanProps } from '../services/platformlibrary/metrics';
 
 const MetricSymmetricalChart = ({
   title,
@@ -33,10 +34,28 @@ const MetricSymmetricalChart = ({
   instanceIP: string;
   showAvg: boolean;
   nodesIPsInfo: NodesState['IPsInfo'];
-  getMetricAboveQuery: UseQueryOptions;
-  getMetricBelowQuery: UseQueryOptions;
-  getMetricAboveAvgQuery: UseQueryOptions;
-  getMetricBelowAvgQuery: UseQueryOptions;
+  getMetricAboveQuery: (
+    instanceIP: string,
+    timeSpanProps: TimeSpanProps,
+    planeInterface: string,
+  ) => UseQueryOptions;
+  getMetricBelowQuery: (
+    instanceIP: string,
+    timeSpanProps: TimeSpanProps,
+    planeInterface: string,
+  ) => UseQueryOptions;
+  getMetricAboveAvgQuery: (
+    timeSpanProps: TimeSpanProps,
+    showAvg: boolean,
+    instanceIP: string,
+    nodesIPsInfo: NodesState['IPsInfo'],
+  ) => UseQueryOptions;
+  getMetricBelowAvgQuery: (
+    timeSpanProps: TimeSpanProps,
+    showAvg: boolean,
+    instanceIP: string,
+    nodesIPsInfo: NodesState['IPsInfo'],
+  ) => UseQueryOptions;
   metricPrefixAbove: string;
   metricPrefixBelow: string;
   unitRange?: {
@@ -52,9 +71,8 @@ const MetricSymmetricalChart = ({
       (timeSpanProps) => {
         if (showAvg) {
           return [
-            // @ts-expect-error - FIXME when you are working on it
             getMetricAboveQuery(instanceIP, timeSpanProps, planeInterface),
-            // @ts-expect-error - FIXME when you are working on it
+
             getMetricAboveAvgQuery(
               timeSpanProps,
               showAvg,
@@ -64,20 +82,25 @@ const MetricSymmetricalChart = ({
           ];
         } else {
           return [
-            // @ts-expect-error - FIXME when you are working on it
             getMetricAboveQuery(instanceIP, timeSpanProps, planeInterface),
           ];
         }
       },
-      [instanceIP, showAvg, planeInterface, JSON.stringify(nodesIPsInfo)],
+      [
+        instanceIP,
+        showAvg,
+        planeInterface,
+        JSON.stringify(nodesIPsInfo),
+        getMetricAboveQuery,
+        getMetricAboveAvgQuery,
+      ],
     ),
     getBelowQueries: useCallback(
       (timeSpanProps) => {
         if (showAvg) {
           return [
-            // @ts-expect-error - FIXME when you are working on it
             getMetricBelowQuery(instanceIP, timeSpanProps, planeInterface),
-            // @ts-expect-error - FIXME when you are working on it
+
             getMetricBelowAvgQuery(
               timeSpanProps,
               showAvg,
@@ -87,7 +110,6 @@ const MetricSymmetricalChart = ({
           ];
         } else {
           return [
-            // @ts-expect-error - FIXME when you are working on it
             getMetricBelowQuery(instanceIP, timeSpanProps, planeInterface),
           ];
         }

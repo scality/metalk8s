@@ -282,8 +282,8 @@ export const useSymetricalChartSeries = ({
   getBelowQueries,
   transformPrometheusDataToSeries, //It should be memoised using useCallback
 }: {
-  getAboveQueries: (timeSpanProps: TimeSpanProps) => UseQueryResult[];
-  getBelowQueries: (timeSpanProps: TimeSpanProps) => UseQueryResult[];
+  getAboveQueries: (timeSpanProps: TimeSpanProps) => UseQueryOptions[];
+  getBelowQueries: (timeSpanProps: TimeSpanProps) => UseQueryOptions[];
   transformPrometheusDataToSeries: (
     prometheusResultAbove: PrometheusQueryResult[],
     prometheusResultBelow: PrometheusQueryResult[],
@@ -303,7 +303,6 @@ export const useSymetricalChartSeries = ({
 
   startTimeRef.current = startingTimeISO;
   const aboveQueries = useQueries(
-    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries({
       startingTimeISO,
       currentTimeISO,
@@ -312,7 +311,6 @@ export const useSymetricalChartSeries = ({
   );
 
   const belowQueries = useQueries(
-    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries({
       startingTimeISO,
       currentTimeISO,

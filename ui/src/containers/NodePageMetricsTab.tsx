@@ -17,13 +17,15 @@ import {
   MetricsActionContainer,
 } from '../components/style/CommonLayoutStyle';
 import {
+  CLUSTER_AVERAGE,
   GRAFANA_DASHBOARDS,
+  lineColor1,
   PORT_NODE_EXPORTER,
   UNIT_RANGE_BS,
 } from '../constants';
 import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import type { NodesState } from '../ducks/app/nodes';
-import { useTypedSelector, useChartColors } from '../hooks';
+import { useTypedSelector } from '../hooks';
 import {
   getCPUUsageAvgQuery,
   getCPUUsageQuery,
@@ -131,8 +133,14 @@ const NodePageMetricsTab = ({
     (state) => state.app.monitoring.nodeStats.showAvg,
   );
 
-  // Create color set for this single node
-  const colorSet = useChartColors([nodeName]);
+  // Create color set
+
+  const colorSet = {
+    [nodeName]: lineColor1,
+  };
+  if (showAvg) {
+    colorSet[CLUSTER_AVERAGE] = lineColor1;
+  }
   // To redirect to the right Node(Detailed) dashboard in Grafana
   const unameInfos = useTypedSelector(
     (state) => state.app.monitoring.unameInfo,
@@ -203,9 +211,7 @@ const NodePageMetricsTab = ({
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricQuery={getCPUUsageQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getCPUUsageAvgQuery}
               ></MetricChart>
               <ChartLegend shape="line" legendSize="Smaller" />
@@ -217,9 +223,7 @@ const NodePageMetricsTab = ({
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricQuery={getSystemLoadQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getSystemLoadAvgQuery}
               ></MetricChart>
               <ChartLegend shape="line" legendSize="Smaller" />
@@ -231,9 +235,7 @@ const NodePageMetricsTab = ({
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricQuery={getMemoryQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getMemoryAvgQuery}
               ></MetricChart>
               <ChartLegend shape="line" legendSize="Smaller" />
@@ -242,17 +244,13 @@ const NodePageMetricsTab = ({
               <MetricSymmetricalChart
                 title={'IOPS'}
                 yAxisTitle={'write(+) / read(-)'}
-                yAxisType={'symmetrical'}
+                nodesIPsInfo={nodesIPsInfo}
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveQuery={getIOPSWriteQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowQuery={getIOPSReadQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveAvgQuery={getIOPSWriteAvgQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowAvgQuery={getIOPSReadAvgQuery}
                 metricPrefixAbove={'write'}
                 metricPrefixBelow={'read'}
@@ -264,18 +262,13 @@ const NodePageMetricsTab = ({
               <MetricSymmetricalChart
                 title={'Control Plane Bandwidth'}
                 yAxisTitle={'in(+) / out(-)'}
-                yAxisType={'symmetrical'}
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
                 nodesIPsInfo={nodesIPsInfo}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveQuery={getControlPlaneBandWidthInQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowQuery={getControlPlaneBandWidthOutQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveAvgQuery={getControlPlaneBandWidthAvgInQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowAvgQuery={getControlPlaneBandWidthAvgOutQuery}
                 metricPrefixAbove={'in'}
                 metricPrefixBelow={'out'}
@@ -289,18 +282,13 @@ const NodePageMetricsTab = ({
               <MetricSymmetricalChart
                 title={'Workload Plane Bandwidth'}
                 yAxisTitle={'in(+) / out(-)'}
-                yAxisType={'symmetrical'}
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
                 nodesIPsInfo={nodesIPsInfo}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveQuery={getWorkloadPlaneBandWidthInQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowQuery={getWorkloadPlaneBandWidthOutQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveAvgQuery={getWorkloadPlaneBandWidthAvgInQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowAvgQuery={getWorkloadPlaneBandWidthAvgOutQuery}
                 metricPrefixAbove={'in'}
                 metricPrefixBelow={'out'}

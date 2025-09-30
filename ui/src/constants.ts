@@ -156,3 +156,4 @@ export const UNIT_RANGE_SECONDS = [
 ];
 export const YAXIS_TITLE_READ_WRITE = 'write(+) / read(-)';
 export const YAXIS_TITLE_IN_OUT = 'in(+) / out(-)';
+export const CLUSTER_AVERAGE = 'Cluster Avg.';
