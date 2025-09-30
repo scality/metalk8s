@@ -10,7 +10,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import type { UseQueryOptions, UseQueryResult } from 'react-query';
+import type { UseQueryOptions } from 'react-query';
 import { useQueries, useQuery } from 'react-query';
 import { useSelector } from 'react-redux';
 import {
@@ -192,7 +192,7 @@ export const useSingleChartSerie = ({
   getQuery,
   transformPrometheusDataToSeries, //It should be memoised using useCallback
 }: {
-  getQuery: (timeSpanProps: TimeSpanProps) => UseQueryResult;
+  getQuery: (timeSpanProps: TimeSpanProps) => UseQueryOptions;
   transformPrometheusDataToSeries: (
     prometheusResult: PrometheusQueryResult,
   ) => Serie[];
@@ -205,7 +205,6 @@ export const useSingleChartSerie = ({
 
   startTimeRef.current = startingTimeISO;
   const query = useQuery(
-    // @ts-expect-error - FIXME when you are working on it
     getQuery({
       startingTimeISO,
       currentTimeISO,

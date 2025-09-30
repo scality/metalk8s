@@ -59,11 +59,9 @@ const DashboardChartThroughputWithoutQuantile = () => {
   const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: (timeSpanProps) => [
-      // @ts-expect-error - FIXME when you are working on it
       getNodesThroughputWriteQuery(timeSpanProps),
     ],
     getBelowQueries: (timeSpanProps) => [
-      // @ts-expect-error - FIXME when you are working on it
       getNodesThroughputReadQuery(timeSpanProps),
     ],
     transformPrometheusDataToSeries: useCallback(

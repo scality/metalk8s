@@ -41,11 +41,9 @@ export const VolumeThroughputChart = ({
 }) => {
   const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeThroughputWriteQuery(instanceIp, deviceName, timeSpanProps),
     ],
-    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeThroughputReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
@@ -99,11 +97,9 @@ export const VolumeLatencyChart = ({
 }) => {
   const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeLatencyWriteQuery(instanceIp, deviceName, timeSpanProps),
     ],
-    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeLatencyReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
@@ -157,11 +153,9 @@ export const VolumeIOPSChart = ({
 }) => {
   const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeIOPSWriteQuery(instanceIp, deviceName, timeSpanProps),
     ],
-    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeIOPSReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
@@ -214,7 +208,6 @@ export const VolumeUsageChart = ({
 }) => {
   const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSingleChartSerie({
-    // @ts-expect-error - FIXME when you are working on it
     getQuery: (timeSpanProps: TimeSpanProps) =>
       getVolumeUsageQuery(pvcName, namespace, timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
