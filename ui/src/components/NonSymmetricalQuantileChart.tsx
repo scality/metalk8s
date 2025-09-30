@@ -7,7 +7,7 @@ import {
 import { useCallback, useMemo } from 'react';
 import { UseQueryOptions } from 'react-query';
 import { useSelector } from 'react-redux';
-import { PORT_NODE_EXPORTER } from '../constants';
+import { HEIGHT_DEFAULT_CHART, PORT_NODE_EXPORTER } from '../constants';
 import { useChartSeries, useNodeAddressesSelector, useNodes } from '../hooks';
 import {
   convertPrometheusResultToSerie,
@@ -169,7 +169,7 @@ const NonSymmetricalQuantileChart = ({
     <ChartLegendWrapper colorSet={colorSet}>
       <LineTimeSerieChart
         series={seriesQuantile}
-        height={110}
+        height={HEIGHT_DEFAULT_CHART}
         title={title}
         helpText={helpText}
         startingTimeStamp={startingTimeStampQuantile}

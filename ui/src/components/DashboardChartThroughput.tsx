@@ -22,7 +22,11 @@ import {
 } from '../services/platformlibrary/metrics';
 import { getMultipleSymmetricalSeries } from '../services/graphUtils';
 import SymmetricalQuantileChart from './SymmetricalQuantileChart';
-import { UNIT_RANGE_BS, YAXIS_TITLE_READ_WRITE } from '../constants';
+import {
+  HEIGHT_SYMMETRICAL_CHART,
+  UNIT_RANGE_BS,
+  YAXIS_TITLE_READ_WRITE,
+} from '../constants';
 
 const DashboardChartThroughput = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
@@ -105,7 +109,7 @@ const DashboardChartThroughputWithoutQuantile = () => {
         above: series.above,
         below: series.below,
       }}
-      height={150}
+      height={HEIGHT_SYMMETRICAL_CHART}
       unitRange={UNIT_RANGE_BS}
       interval={interval}
       duration={duration}

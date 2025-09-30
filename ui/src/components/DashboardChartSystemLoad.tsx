@@ -19,6 +19,7 @@ import {
   getNodesSystemLoadQuery,
 } from '../services/platformlibrary/metrics';
 import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
+import { HEIGHT_DEFAULT_CHART } from '../constants';
 
 const DashboardChartSystemLoad = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
@@ -67,7 +68,7 @@ const DashboardChartSystemLoadWithoutQuantiles = () => {
   return (
     <LineTimeSerieChart
       series={series}
-      height={110}
+      height={HEIGHT_DEFAULT_CHART}
       interval={interval}
       duration={duration}
       title="System Load"

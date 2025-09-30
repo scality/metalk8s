@@ -7,6 +7,7 @@ import {
 } from '@scality/core-ui/dist/next';
 import { useCallback } from 'react';
 import {
+  HEIGHT_DEFAULT_CHART,
   UNIT_RANGE_BS,
   UNIT_RANGE_SECONDS,
   YAXIS_TITLE_READ_WRITE,
@@ -224,7 +225,7 @@ export const VolumeUsageChart = ({
       <Stack direction="vertical" gap="r1">
         <LineTimeSerieChart
           series={series}
-          height={160}
+          height={HEIGHT_DEFAULT_CHART}
           interval={interval}
           duration={duration}
           title="Usage"
