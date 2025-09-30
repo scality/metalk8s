@@ -19,7 +19,6 @@ import {
   REFRESH_METRICS_GRAPH,
   SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
   STATUS_NONE,
-  TESTING_MULTIPLY_NODES,
   VOLUME_CONDITION_LINK,
 } from './constants';
 import { useAlerts } from './containers/AlertProvider';
@@ -60,53 +59,7 @@ export const useNodes = (): V1Node[] => {
 
       return coreV1.listNode().then((res) => {
         if (res.response.statusCode === 200 && res.body?.items) {
-          const realNodes = res.body?.items;
-
-          // FOR TESTING: Multiply nodes to simulate larger cluster for quantile testing
-          if (
-            process.env.NODE_ENV === 'development' &&
-            TESTING_MULTIPLY_NODES > 1
-          ) {
-            const expandedNodes = [];
-
-            for (
-              let multiplier = 0;
-              multiplier < TESTING_MULTIPLY_NODES;
-              multiplier++
-            ) {
-              realNodes.forEach((node, index) => {
-                const clonedNode = JSON.parse(JSON.stringify(node)); // Deep clone
-
-                if (multiplier > 0) {
-                  // Modify name for clones
-                  clonedNode.metadata.name = `${node.metadata.name}-test-${multiplier}`;
-
-                  // Modify internal IP for clones to create unique instances
-                  if (clonedNode.status?.addresses) {
-                    clonedNode.status.addresses.forEach((addr) => {
-                      if (addr.type === 'InternalIP') {
-                        const parts = addr.address.split('.');
-                        // Increment last octet, wrapping if needed
-                        const lastOctet =
-                          parseInt(parts[3]) + multiplier * 10 + index;
-                        parts[3] = (lastOctet % 255).toString();
-                        addr.address = parts.join('.');
-                      }
-                    });
-                  }
-                }
-
-                expandedNodes.push(clonedNode);
-              });
-            }
-
-            console.log(
-              `🧪 TESTING: Expanded ${realNodes.length} real nodes to ${expandedNodes.length} nodes for quantile testing`,
-            );
-            return expandedNodes;
-          }
-
-          return realNodes;
+          return res.body.items;
         }
 
         return [];
@@ -442,9 +395,9 @@ export const useShowQuantileChart = (): {
   const nodes = useNodes();
   const { flags } = useTypedSelector((state) => state.config.api);
   return {
-    isShowQuantileChart: true, // TODO: remove this after fixing the quantile chart
-    // (flags && flags.includes('force_quantile_chart')) ||
-    // nodes.length > NODES_LIMIT_QUANTILE,
+    isShowQuantileChart:
+      (flags && flags.includes('force_quantile_chart')) ||
+      nodes.length > NODES_LIMIT_QUANTILE,
   };
 };
 
