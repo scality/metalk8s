@@ -277,7 +277,7 @@ export function addMissingDataPoint(
 
   return newValues;
 }
-export function getNaNSegments(points: [[number, number | null]]): {
+export function getNaNSegments(points: [number, number | string | null][]): {
   startsAt: number;
   endsAt?: number;
 }[] {
@@ -298,7 +298,6 @@ export function getNaNSegments(points: [[number, number | null]]): {
     };
   });
   const nullSegments = segments.filter(
-    // @ts-expect-error - FIXME when you are working on it
     (segment) => segment.value === NAN_STRING,
   );
   return nullSegments.reduce((mergedNullSegments, segment) => {
@@ -568,6 +567,6 @@ export const linuxDrivesNamingIncrement = (devicePath, increment) => {
  * (useQueries returns an array and the order of response objects is not always the
  *  same as the order in which the request were performed)
  */
-export const generateSelectWithKey = (key, isAverage) => ({
+export const generateSelectWithKey = (key, isAverage = false) => ({
   select: (data) => ({ ...data, key: !isAverage ? key : `${key}Avg` }),
 });

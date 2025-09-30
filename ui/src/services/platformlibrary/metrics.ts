@@ -10,10 +10,23 @@ import { addMissingDataPoint } from '@scality/core-ui/dist/components/linetempor
 import { generateSelectWithKey, getNaNSegments, getSegments } from '../utils';
 import { getFormattedLokiAlert } from '../loki/api';
 import { NAN_STRING } from '@scality/core-ui/dist/components/constants';
+
 export type TimeSpanProps = {
   startingTimeISO: string;
   currentTimeISO: string;
   frequency: number;
+};
+export const generateQuantileSelectWithKey = (
+  queryName: string,
+  quantile: number,
+) => {
+  const quantileKey = quantile === 0.9 ? '90' : quantile === 0.5 ? '50' : '05';
+  return {
+    select: (data) => ({
+      ...data,
+      key: `${queryName}${quantileKey}`,
+    }),
+  };
 };
 
 const _getPromRangeMatrixQuery = (
@@ -85,7 +98,6 @@ export const getCPUUsageQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: instanceIP !== '',
-    // @ts-expect-error - FIXME when you are working on it
     ...generateSelectWithKey('cpuUsage'),
   };
 };
@@ -111,13 +123,18 @@ export const getNodesCPUUsageQuantileQuery = (
   timespanProps: TimeSpanProps,
   quantile: number,
 ) => {
+  const queryName = 'NodesCpuUsageQuantile';
   const cpuNodesUsagePromQL = `quantile(${quantile}, 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100))`;
-  return _getPromRangeMatrixQuery(
-    // @ts-expect-error - FIXME when you are working on it
-    ['NodesCpuUsageQuantile', quantile],
+  const query = _getPromRangeMatrixQuery(
+    [queryName, String(quantile)],
     cpuNodesUsagePromQL,
     timespanProps,
   );
+
+  return {
+    ...query,
+    ...generateQuantileSelectWithKey(queryName, quantile),
+  };
 };
 export const getNodesCPUUsageOutpassingThresholdQuery = (
   timestamp?: string,
@@ -181,7 +198,6 @@ export const getSystemLoadQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    // @ts-expect-error - FIXME when you are working on it
     ...generateSelectWithKey('systemLoad'),
   };
 };
@@ -206,13 +222,18 @@ export const getNodesSystemLoadQuantileQuery = (
   timespanProps: TimeSpanProps,
   quantile: number,
 ) => {
+  const queryName = 'SystemLoadQuantile';
   const systemLoadQuantilePromQL = `quantile(${quantile}, (avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service,prometheus) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode))) * 100`;
-  return _getPromRangeMatrixQuery(
-    // @ts-expect-error - FIXME when you are working on it
-    ['SystemLoadQuantile', quantile],
+  const query = _getPromRangeMatrixQuery(
+    [queryName, `${quantile}`],
     systemLoadQuantilePromQL,
     timespanProps,
   );
+
+  return {
+    ...query,
+    ...generateQuantileSelectWithKey(queryName, quantile),
+  };
 };
 export const getNodesSystemLoadOutpassingThresholdQuery = (
   timestamp?: string,
@@ -275,7 +296,6 @@ export const getMemoryQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    // @ts-expect-error - FIXME when you are working on it
     ...generateSelectWithKey('memory'),
   };
 };
@@ -300,18 +320,18 @@ export const getNodesMemoryQuantileQuery = (
   timespanProps: TimeSpanProps,
   quantile: number,
 ) => {
+  const queryName = 'NodesMemoryQuantile';
   const nodesMemoryQuantilePromQL = `quantile(${quantile}, sum(100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes)) by(instance))`;
-  console.log(
-    `DEBUG Memory quantile ${quantile} query:`,
-    nodesMemoryQuantilePromQL,
-  );
   const query = _getPromRangeMatrixQuery(
-    ['NodesMemoryQuantile', String(quantile)],
+    [queryName, String(quantile)],
     nodesMemoryQuantilePromQL,
     timespanProps,
   );
-  console.log('DEBUG Memory quantile query:', query);
-  return query;
+
+  return {
+    ...query,
+    ...generateQuantileSelectWithKey(queryName, quantile),
+  };
 };
 export const getNodesMemoryOutpassingThresholdQuery = (
   timestamp?: string,
@@ -391,7 +411,6 @@ export const getControlPlaneBandWidthInQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: planeInterface !== '',
-    // @ts-expect-error - FIXME when you are working on it
     ...generateSelectWithKey('controlPlaneBandwidthIn'),
   };
 };
@@ -414,7 +433,6 @@ export const getControlPlaneBandWidthOutQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: planeInterface !== '',
-    // @ts-expect-error - FIXME when you are working on it
     ...generateSelectWithKey('controlPlaneBandwidthOut'),
   };
 };
@@ -661,17 +679,20 @@ export const getNodesPlanesBandwidthInQuantileQuery = (
   quantile: number,
   devices: string[],
 ) => {
+  const queryName = 'NodesPlanesBandwidthIn';
   const nodesPlanesBandwidthInQuery = `quantile(${quantile}, avg(irate(node_network_receive_bytes_total{device=~"${devices.join(
     '|',
   )}"}[5m])) by (instance,device))`;
+  const query = _getPromRangeMatrixQuery(
+    [queryName, ...devices, `${quantile}`],
+    nodesPlanesBandwidthInQuery,
+    timespanProps,
+  );
+
   return {
-    ..._getPromRangeMatrixQuery(
-      // @ts-expect-error - FIXME when you are working on it
-      ['NodesPlanesBandwidthIn', ...devices, quantile],
-      nodesPlanesBandwidthInQuery,
-      timespanProps,
-    ),
+    ...query,
     enabled: !!devices?.length,
+    ...generateQuantileSelectWithKey(queryName, quantile),
   };
 };
 export const getNodesPlanesBandwidthOutQuantileQuery = (
@@ -679,17 +700,20 @@ export const getNodesPlanesBandwidthOutQuantileQuery = (
   quantile: number,
   devices: string[],
 ) => {
+  const queryName = 'NodesPlanesBandwidthOut';
   const nodePlanesBandwidthOutQuery = `quantile(${quantile}, avg(irate(node_network_transmit_bytes_total{device=~"${devices.join(
     '|',
   )}"}[5m])) by (instance,device))`;
+  const query = _getPromRangeMatrixQuery(
+    [queryName, ...devices, `${quantile}`],
+    nodePlanesBandwidthOutQuery,
+    timespanProps,
+  );
+
   return {
-    ..._getPromRangeMatrixQuery(
-      // @ts-expect-error - FIXME when you are working on it
-      ['NodesPlanesBandwidthOut', ...devices, quantile],
-      nodePlanesBandwidthOutQuery,
-      timespanProps,
-    ),
+    ...query,
     enabled: !!devices?.length,
+    ...generateQuantileSelectWithKey(queryName, quantile),
   };
 };
 export const getNodesPlanesBandwidthInOutpassingThresholdQuery = (
@@ -705,8 +729,12 @@ export const getNodesPlanesBandwidthInOutpassingThresholdQuery = (
   )}"}[5m])) by (instance,device) ${operator}= ${threshold}`;
   return {
     ..._getInstantValueQuery(
-      // @ts-expect-error - FIXME when you are working on it
-      ['NodesBandwidthInOutpassingThreshold', timestamp, threshold, operator],
+      [
+        'NodesBandwidthInOutpassingThreshold',
+        timestamp,
+        `${threshold}`,
+        operator,
+      ],
       nodesBandwidthInOutpassingThresholdPromQL,
       timestamp,
     ),
@@ -720,18 +748,21 @@ export const getNodesPlanesBandwidthInOutpassingThresholdQuery = (
 export const getNodesPlanesBandwidthOutOutpassingThresholdQuery = (
   timestamp?: string,
   threshold?: number,
-  // @ts-expect-error - FIXME when you are working on it
-  operator: '>' | '<',
-  isOnHoverFetchingNeeded: boolean,
-  devices: string[],
+  operator?: '>' | '<',
+  isOnHoverFetchingNeeded?: boolean,
+  devices?: string[],
 ) => {
   const nodesBandwidthOutOutpassingThresholdPromQL = `avg(irate(node_network_transmit_bytes_total{device=~"${devices.join(
     '|',
   )}"}[5m])) by (instance,device) ${operator}= ${threshold}`;
   return {
     ..._getInstantValueQuery(
-      // @ts-expect-error - FIXME when you are working on it
-      ['NodesBandwidthOutOutpassingThreshold', timestamp, threshold, operator],
+      [
+        'NodesBandwidthOutOutpassingThreshold',
+        timestamp,
+        `${threshold}`,
+        operator,
+      ],
       nodesBandwidthOutOutpassingThresholdPromQL,
       timestamp,
     ),
@@ -760,7 +791,6 @@ export const getIOPSWriteQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    // @ts-expect-error - FIXME when you are working on it
     ...generateSelectWithKey('IOPSWrite'),
   };
 };
@@ -782,7 +812,6 @@ export const getIOPSReadQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    // @ts-expect-error - FIXME when you are working on it
     ...generateSelectWithKey('IOPSRead'),
   };
 };
@@ -905,25 +934,36 @@ export const getNodesThroughputWriteQuantileQuery = (
   timespanProps: TimeSpanProps,
   quantile: number,
 ) => {
+  const queryName = 'NodesThroughputWriteQuantile';
   const nodesThroughputWritePromQL = `quantile(${quantile},sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device))by(instance))`;
-  return _getPromRangeMatrixQuery(
-    // @ts-expect-error - FIXME when you are working on it
-    ['NodesThroughputWriteQuantile', quantile],
+  const query = _getPromRangeMatrixQuery(
+    [queryName, `${quantile}`],
     nodesThroughputWritePromQL,
     timespanProps,
   );
+
+  return {
+    ...query,
+    ...generateQuantileSelectWithKey(queryName, quantile),
+  };
 };
+
 export const getNodesThroughputReadQuantileQuery = (
   timespanProps: TimeSpanProps,
   quantile: number,
 ) => {
+  const queryName = 'NodesThroughputReadQueryQuantile';
   const nodesThroughputReadPromQL = `quantile(${quantile},sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device))by(instance))`;
-  return _getPromRangeMatrixQuery(
-    // @ts-expect-error - FIXME when you are working on it
-    ['NodesThroughputReadQueryQuantile', quantile],
+  const query = _getPromRangeMatrixQuery(
+    [queryName, `${quantile}`],
     nodesThroughputReadPromQL,
     timespanProps,
   );
+
+  return {
+    ...query,
+    ...generateQuantileSelectWithKey(queryName, quantile),
+  };
 };
 export const getNodesThroughputWriteOutpassingThresholdQuery = (
   timestamp?: string,
@@ -935,8 +975,7 @@ export const getNodesThroughputWriteOutpassingThresholdQuery = (
   const nodesThroughputWriteAboveBelowPromQL = `sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device))by(instance) ${operator}= ${threshold}`;
   return {
     ..._getInstantValueQuery(
-      // @ts-expect-error - FIXME when you are working on it
-      ['NodesThroughputWriteAboveBelow', timestamp, threshold, operator],
+      ['NodesThroughputWriteAboveBelow', timestamp, `${threshold}`, operator],
       nodesThroughputWriteAboveBelowPromQL,
       timestamp,
     ),
@@ -957,8 +996,7 @@ export const getNodesThroughputOutpassingThresholdQuery = (
   const nodesThroughputReadAboveBelowPromQL = `sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device))by(instance) ${operator}= ${threshold}`;
   return {
     ..._getInstantValueQuery(
-      // @ts-expect-error - FIXME when you are working on it
-      ['NodesThroughputReadAboveBelow', timestamp, threshold, operator],
+      ['NodesThroughputReadAboveBelow', timestamp, `${threshold}`, operator],
       nodesThroughputReadAboveBelowPromQL,
       timestamp,
     ),
@@ -1052,20 +1090,18 @@ export const getAlertsHistoryQuery = ({
     frequency,
     encodeURIComponent(query),
   )?.then((resolve) => {
-    // @ts-expect-error - FIXME when you are working on it
-    if (resolve.error) {
-      // @ts-expect-error - FIXME when you are working on it
+    if (resolve.status === 'error') {
       throw resolve.error;
     }
-
+    if (resolve.data.resultType !== 'matrix') {
+      throw new Error('Failed to fetch data from Prometheus');
+    }
     const points = addMissingDataPoint(
-      // @ts-expect-error - FIXME when you are working on it
       resolve.data.result[0].values,
       Date.parse(startingTimeISO) / 1000,
       Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
       frequency,
     );
-    // @ts-expect-error - FIXME when you are working on it
     return getNaNSegments(points).map((segment) => ({
       startsAt: new Date(segment.startsAt * 1000).toISOString(),
       endsAt: new Date(segment.endsAt * 1000).toISOString(),
@@ -1172,25 +1208,26 @@ export const getClusterAlertSegmentQuery = (duration: number) => {
       frequency,
       encodeURIComponent(query),
     )?.then((resolve) => {
-      // @ts-expect-error - FIXME when you are working on it
-      if (resolve.error) {
-        // @ts-expect-error - FIXME when you are working on it
+      if (resolve.status === 'error') {
         throw resolve.error;
       }
 
-      // @ts-expect-error - FIXME when you are working on it
+      if (resolve.data.resultType !== 'matrix') {
+        throw new Error('Failed to fetch data from Prometheus');
+      }
+
       const clusterAtRiskResult = resolve.data.result.find(
         (result) => result.metric.alertname === 'ClusterAtRisk',
       ) || {
         values: [],
       };
-      // @ts-expect-error - FIXME when you are working on it
+
       const clusterDegradedResult = resolve.data.result.find(
         (result) => result.metric.alertname === 'ClusterDegraded',
       ) || {
         values: [],
       };
-      // @ts-expect-error - FIXME when you are working on it
+
       const watchdogResult = resolve.data.result.find(
         (result) => result.metric.alertname === 'Watchdog',
       ) || {
