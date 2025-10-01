@@ -53,9 +53,10 @@ export const useChartLegendRegistration = ({
       }
     }
 
-    if (seriesNames.length > 0) {
-      const allSeriesNames = [...seriesNames, ...additionalNames];
-      register(chartId, allSeriesNames);
+    if (additionalNames) {
+      seriesNames.push(...additionalNames);
     }
+
+    register(chartId, seriesNames);
   }, [chartId, register, series, isSymmetrical, additionalNames]);
 };
