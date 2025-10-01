@@ -12,14 +12,9 @@ import styled from 'styled-components';
 import { useIntl } from 'react-intl';
 import MetricChart from '../components/MetricChart';
 import MetricSymmetricalChart from '../components/MetricSymmetricalChart';
+import { MetricsActionContainer } from '../components/style/CommonLayoutStyle';
 import {
-  GraphWrapper,
-  MetricsActionContainer,
-} from '../components/style/CommonLayoutStyle';
-import {
-  CLUSTER_AVERAGE,
   GRAFANA_DASHBOARDS,
-  lineColor1,
   PORT_NODE_EXPORTER,
   UNIT_RANGE_BS,
 } from '../constants';
@@ -48,39 +43,19 @@ import {
 } from '../services/platformlibrary/metrics';
 import { useURLQuery } from '../services/utils';
 import TimespanSelector from './TimespanSelector';
-const GraphGrid = styled.div`
-  display: grid;
-  gap: 8px;
-  grid-template:
-    'cpuusage systemload' 1fr
-    'memory iops' 1fr
-    'cpbandwidth wpbandwidth' 1fr
-    / 1fr 1fr;
-  .sc-vegachart svg {
-    background-color: inherit !important;
-  }
-  .cpuusage {
-    grid-area: cpuusage;
-  }
-  .systemload {
-    grid-area: systemload;
-  }
-  .memory {
-    grid-area: memory;
-  }
-  .iops {
-    grid-area: iops;
-  }
-  .cpbandwidth {
-    grid-area: cpbandwidth;
-  }
-  .wpbandwidth {
-    grid-area: wpbandwidth;
-  }
-  padding-left: ${spacing.r12};
+import { createColorSet } from '../services/graphUtils';
+export const ChartContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.r8};
   /* 100% - padding - action container height */
   height: calc(100% - 3rem);
-  overflow: auto;
+  padding-left: ${spacing.r12};
+`;
+export const GraphGrid = styled.div`
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
 `;
 const MetricsToggleWrapper = styled.div`
   display: flex;
@@ -133,14 +108,6 @@ const NodePageMetricsTab = ({
     (state) => state.app.monitoring.nodeStats.showAvg,
   );
 
-  // Create color set
-
-  const colorSet = {
-    [nodeName]: lineColor1,
-  };
-  if (showAvg) {
-    colorSet[CLUSTER_AVERAGE] = lineColor1;
-  }
   // To redirect to the right Node(Detailed) dashboard in Grafana
   const unameInfos = useTypedSelector(
     (state) => state.app.monitoring.unameInfo,
@@ -202,9 +169,9 @@ const NodePageMetricsTab = ({
         {instanceIP && <TimespanSelector />}
       </MetricsActionContainer>
       {instanceIP ? (
-        <ChartLegendWrapper colorSet={colorSet}>
-          <GraphGrid id="graph_container">
-            <GraphWrapper className="cpuusage">
+        <ChartLegendWrapper colorSet={createColorSet}>
+          <ChartContainer>
+            <GraphGrid id="graph_container">
               <MetricChart
                 title={'CPU Usage'}
                 yAxisType={'percentage'}
@@ -214,9 +181,7 @@ const NodePageMetricsTab = ({
                 getMetricQuery={getCPUUsageQuery}
                 getMetricAvgQuery={getCPUUsageAvgQuery}
               ></MetricChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-            <GraphWrapper className="systemload">
+
               <MetricChart
                 title={'CPU System Load'}
                 yAxisType={'default'}
@@ -226,9 +191,7 @@ const NodePageMetricsTab = ({
                 getMetricQuery={getSystemLoadQuery}
                 getMetricAvgQuery={getSystemLoadAvgQuery}
               ></MetricChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-            <GraphWrapper className="memory">
+
               <MetricChart
                 title={'Memory'}
                 yAxisType={'percentage'}
@@ -238,9 +201,7 @@ const NodePageMetricsTab = ({
                 getMetricQuery={getMemoryQuery}
                 getMetricAvgQuery={getMemoryAvgQuery}
               ></MetricChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-            <GraphWrapper className="iops">
+
               <MetricSymmetricalChart
                 title={'IOPS'}
                 yAxisTitle={'write(+) / read(-)'}
@@ -256,9 +217,7 @@ const NodePageMetricsTab = ({
                 metricPrefixBelow={'read'}
                 isPlaneInterfaceRequired={false}
               ></MetricSymmetricalChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-            <GraphWrapper className="cpbandwidth">
+
               <MetricSymmetricalChart
                 title={'Control Plane Bandwidth'}
                 yAxisTitle={'in(+) / out(-)'}
@@ -276,9 +235,7 @@ const NodePageMetricsTab = ({
                 unitRange={UNIT_RANGE_BS}
                 isPlaneInterfaceRequired={true}
               ></MetricSymmetricalChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-            <GraphWrapper className="wpbandwidth">
+
               <MetricSymmetricalChart
                 title={'Workload Plane Bandwidth'}
                 yAxisTitle={'in(+) / out(-)'}
@@ -296,9 +253,9 @@ const NodePageMetricsTab = ({
                 unitRange={UNIT_RANGE_BS}
                 isPlaneInterfaceRequired={true}
               ></MetricSymmetricalChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-          </GraphGrid>
+            </GraphGrid>
+            <ChartLegend shape="line" legendSize="Smaller" />
+          </ChartContainer>
         </ChartLegendWrapper>
       ) : (
         <RenderNoDataAvailable />

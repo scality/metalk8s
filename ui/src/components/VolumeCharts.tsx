@@ -1,9 +1,7 @@
-import { Stack } from '@scality/core-ui';
 import {
-  ChartLegend,
   LineTimeSerieChart,
   useMetricsTimeSpan,
-  ChartLegendWrapper,
+  useChartId,
 } from '@scality/core-ui/dist/next';
 import { useCallback } from 'react';
 import {
@@ -15,7 +13,6 @@ import {
 import { useSingleChartSerie, useSymetricalChartSeries } from '../hooks';
 import {
   convertPrometheusResultToSerieWithAverage,
-  createColorSet,
   getSeriesForSymmetricalChart,
 } from '../services/graphUtils';
 import type { TimeSpanProps } from '../services/platformlibrary/metrics';
@@ -28,6 +25,7 @@ import {
   getVolumeThroughputWriteQuery,
   getVolumeUsageQuery,
 } from '../services/platformlibrary/metrics';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 
 const VOLUME_SYNC_ID = 'volume';
 
@@ -40,6 +38,7 @@ export const VolumeThroughputChart = ({
   deviceName: string;
   volumeName: string;
 }) => {
+  const chartId = useChartId();
   const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
@@ -64,27 +63,22 @@ export const VolumeThroughputChart = ({
     ),
   });
 
+  useChartLegendRegistration({ chartId, series, isSymmetrical: true });
+
   return (
-    <ChartLegendWrapper
-      colorSet={createColorSet(series.above.map((s) => s.resource))}
-    >
-      <Stack direction="vertical" gap="r1">
-        <LineTimeSerieChart
-          series={series}
-          height={160}
-          interval={interval}
-          duration={duration}
-          title="Disk Throughput"
-          startingTimeStamp={startingTimeStamp}
-          yAxisType={'symmetrical'}
-          yAxisTitle={YAXIS_TITLE_READ_WRITE}
-          unitRange={UNIT_RANGE_BS}
-          isLoading={isLoading}
-          syncId={VOLUME_SYNC_ID}
-        />
-        <ChartLegend shape="line" legendSize="Smaller" />
-      </Stack>
-    </ChartLegendWrapper>
+    <LineTimeSerieChart
+      series={series}
+      height={160}
+      interval={interval}
+      duration={duration}
+      title="Disk Throughput"
+      startingTimeStamp={startingTimeStamp}
+      yAxisType={'symmetrical'}
+      yAxisTitle={YAXIS_TITLE_READ_WRITE}
+      unitRange={UNIT_RANGE_BS}
+      isLoading={isLoading}
+      syncId={VOLUME_SYNC_ID}
+    />
   );
 };
 export const VolumeLatencyChart = ({
@@ -96,6 +90,7 @@ export const VolumeLatencyChart = ({
   deviceName: string;
   volumeName: string;
 }) => {
+  const chartId = useChartId();
   const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
@@ -120,27 +115,22 @@ export const VolumeLatencyChart = ({
     ),
   });
 
+  useChartLegendRegistration({ chartId, series, isSymmetrical: true });
+
   return (
-    <ChartLegendWrapper
-      colorSet={createColorSet(series.above.map((s) => s.resource))}
-    >
-      <Stack direction="vertical" gap="r1">
-        <LineTimeSerieChart
-          series={series}
-          height={160}
-          interval={interval}
-          duration={duration}
-          title="Disk Latency"
-          startingTimeStamp={startingTimeStamp}
-          yAxisType={'symmetrical'}
-          yAxisTitle={YAXIS_TITLE_READ_WRITE}
-          unitRange={UNIT_RANGE_SECONDS}
-          isLoading={isLoading}
-          syncId={VOLUME_SYNC_ID}
-        />
-        <ChartLegend shape="line" legendSize="Smaller" />
-      </Stack>
-    </ChartLegendWrapper>
+    <LineTimeSerieChart
+      series={series}
+      height={160}
+      interval={interval}
+      duration={duration}
+      title="Disk Latency"
+      startingTimeStamp={startingTimeStamp}
+      yAxisType={'symmetrical'}
+      yAxisTitle={YAXIS_TITLE_READ_WRITE}
+      unitRange={UNIT_RANGE_SECONDS}
+      isLoading={isLoading}
+      syncId={VOLUME_SYNC_ID}
+    />
   );
 };
 export const VolumeIOPSChart = ({
@@ -152,6 +142,7 @@ export const VolumeIOPSChart = ({
   deviceName: string;
   volumeName: string;
 }) => {
+  const chartId = useChartId();
   const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
@@ -176,26 +167,21 @@ export const VolumeIOPSChart = ({
     ),
   });
 
+  useChartLegendRegistration({ chartId, series, isSymmetrical: true });
+
   return (
-    <ChartLegendWrapper
-      colorSet={createColorSet(series.above.map((s) => s.resource))}
-    >
-      <Stack direction="vertical" gap="r1">
-        <LineTimeSerieChart
-          series={series}
-          height={160}
-          interval={interval}
-          duration={duration}
-          title="IOPS"
-          startingTimeStamp={startingTimeStamp}
-          yAxisType={'symmetrical'}
-          yAxisTitle={YAXIS_TITLE_READ_WRITE}
-          isLoading={isLoading}
-          syncId={VOLUME_SYNC_ID}
-        />
-        <ChartLegend shape="line" legendSize="Smaller" />
-      </Stack>
-    </ChartLegendWrapper>
+    <LineTimeSerieChart
+      series={series}
+      height={160}
+      interval={interval}
+      duration={duration}
+      title="IOPS"
+      startingTimeStamp={startingTimeStamp}
+      yAxisType={'symmetrical'}
+      yAxisTitle={YAXIS_TITLE_READ_WRITE}
+      isLoading={isLoading}
+      syncId={VOLUME_SYNC_ID}
+    />
   );
 };
 export const VolumeUsageChart = ({
@@ -207,6 +193,7 @@ export const VolumeUsageChart = ({
   namespace: string;
   volumeName: string;
 }) => {
+  const chartId = useChartId();
   const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSingleChartSerie({
     getQuery: (timeSpanProps: TimeSpanProps) =>
@@ -218,24 +205,19 @@ export const VolumeUsageChart = ({
     ),
   });
 
+  useChartLegendRegistration({ chartId, series, isSymmetrical: false });
+
   return (
-    <ChartLegendWrapper
-      colorSet={createColorSet(series.map((s) => s.resource))}
-    >
-      <Stack direction="vertical" gap="r1">
-        <LineTimeSerieChart
-          series={series}
-          height={HEIGHT_DEFAULT_CHART}
-          interval={interval}
-          duration={duration}
-          title="Usage"
-          startingTimeStamp={startingTimeStamp}
-          yAxisType={'percentage'}
-          isLoading={isLoading}
-          syncId={VOLUME_SYNC_ID}
-        />
-        <ChartLegend shape="line" legendSize="Smaller" />
-      </Stack>
-    </ChartLegendWrapper>
+    <LineTimeSerieChart
+      series={series}
+      height={HEIGHT_DEFAULT_CHART}
+      interval={interval}
+      duration={duration}
+      title="Usage"
+      startingTimeStamp={startingTimeStamp}
+      yAxisType={'percentage'}
+      isLoading={isLoading}
+      syncId={VOLUME_SYNC_ID}
+    />
   );
 };

@@ -1,14 +1,20 @@
-import { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { UseQueryOptions } from 'react-query';
 import 'react-query';
 import {
   LineTimeSerieChart,
+  useChartId,
   useMetricsTimeSpan,
 } from '@scality/core-ui/dist/next';
 import { convertPrometheusResultToSerieWithAverage } from '../services/graphUtils';
-import { HEIGHT_DEFAULT_CHART, NODE_SYNC_ID } from '../constants';
+import {
+  CLUSTER_AVERAGE,
+  HEIGHT_DEFAULT_CHART,
+  NODE_SYNC_ID,
+} from '../constants';
 import { useChartSeries } from '../hooks';
 import { TimeSpanProps } from '../services/platformlibrary/metrics';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 
 const MetricChart = ({
   title,
@@ -38,6 +44,15 @@ const MetricChart = ({
     label: string;
   }[];
 }) => {
+  console.log(
+    'DEBUG MetricChart',
+    title,
+    yAxisType,
+    nodeName,
+    instanceIP,
+    showAvg,
+  );
+  const chartId = useChartId();
   const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useChartSeries({
     getQueries: useCallback(
@@ -68,6 +83,16 @@ const MetricChart = ({
       [nodeName, showAvg],
     ),
   });
+  const additionalNames = useMemo(
+    () => (showAvg ? [CLUSTER_AVERAGE] : []),
+    [showAvg],
+  );
+  useChartLegendRegistration({
+    chartId,
+    series,
+    isSymmetrical: false,
+    additionalNames,
+  });
   return (
     <LineTimeSerieChart
       series={series}
@@ -84,4 +109,4 @@ const MetricChart = ({
   );
 };
 
-export default MetricChart;
+export default React.memo(MetricChart);

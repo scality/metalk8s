@@ -3,9 +3,9 @@ import {
   useMetricsTimeSpan,
   useChartId,
 } from '@scality/core-ui/dist/next';
-import { useChartLegend } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import {
   useNodeAddressesSelector,
   useNodes,
@@ -56,7 +56,6 @@ const DashboardChartThroughput = () => {
 
 const DashboardChartThroughputWithoutQuantile = () => {
   const chartId = useChartId();
-  const { register } = useChartLegend();
   const nodes = useNodes();
   const nodeAddresses = useNodeAddressesSelector(nodes);
 
@@ -93,15 +92,7 @@ const DashboardChartThroughputWithoutQuantile = () => {
     ),
   });
 
-  // Register series names for symmetrical chart (above + below series)
-  useEffect(() => {
-    if (series && (series.above?.length > 0 || series.below?.length > 0)) {
-      const aboveNames = series.above?.map((s) => s.resource) || [];
-      const belowNames = series.below?.map((s) => s.resource) || [];
-      const allSeriesNames = [...aboveNames, ...belowNames];
-      register(chartId, allSeriesNames);
-    }
-  }, [chartId, register, series]);
+  useChartLegendRegistration({ chartId, series, isSymmetrical: true });
 
   return (
     <LineTimeSerieChart

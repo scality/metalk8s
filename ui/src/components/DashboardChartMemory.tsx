@@ -3,9 +3,8 @@ import {
   useMetricsTimeSpan,
   useChartId,
 } from '@scality/core-ui/dist/next';
-import { useChartLegend } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
-
-import { useCallback, useEffect } from 'react';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
+import { useCallback } from 'react';
 import {
   useNodes,
   useNodeAddressesSelector,
@@ -41,7 +40,6 @@ const DashboardChartMemory = () => {
 
 const DashboardChartMemoryWithoutQuantiles = () => {
   const chartId = useChartId();
-  const { register } = useChartLegend();
   const nodes = useNodes();
   const nodeAddresses = useNodeAddressesSelector(nodes);
 
@@ -62,13 +60,7 @@ const DashboardChartMemoryWithoutQuantiles = () => {
     ),
   });
 
-  // Register series names with ChartLegendWrapper
-  useEffect(() => {
-    if (series && series.length > 0) {
-      const seriesNames = series.map((s) => s.resource);
-      register(chartId, seriesNames);
-    }
-  }, [chartId, register, series]);
+  useChartLegendRegistration({ chartId, series, isSymmetrical: false });
 
   return (
     <LineTimeSerieChart

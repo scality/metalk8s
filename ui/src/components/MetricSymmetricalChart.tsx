@@ -1,15 +1,21 @@
-import { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { UseQueryOptions } from 'react-query';
 import 'react-query';
 import {
   LineTimeSerieChart,
+  useChartId,
   useMetricsTimeSpan,
 } from '@scality/core-ui/dist/next';
 import { getSeriesForSymmetricalChart } from '../services/graphUtils';
-import { HEIGHT_SYMMETRICAL_CHART, NODE_SYNC_ID } from '../constants';
+import {
+  CLUSTER_AVERAGE,
+  HEIGHT_SYMMETRICAL_CHART,
+  NODE_SYNC_ID,
+} from '../constants';
 import { NodesState } from '../ducks/app/nodes';
 import { useSymetricalChartSeries } from '../hooks';
 import { TimeSpanProps } from '../services/platformlibrary/metrics';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 
 const MetricSymmetricalChart = ({
   title,
@@ -65,6 +71,7 @@ const MetricSymmetricalChart = ({
   planeInterface?: string;
   isPlaneInterfaceRequired?: boolean;
 }) => {
+  const chartId = useChartId();
   const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: useCallback(
@@ -90,7 +97,7 @@ const MetricSymmetricalChart = ({
         instanceIP,
         showAvg,
         planeInterface,
-        JSON.stringify(nodesIPsInfo),
+        nodesIPsInfo,
         getMetricAboveQuery,
         getMetricAboveAvgQuery,
       ],
@@ -114,12 +121,11 @@ const MetricSymmetricalChart = ({
           ];
         }
       },
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       [
         instanceIP,
         showAvg,
         planeInterface,
-        JSON.stringify(nodesIPsInfo),
+        nodesIPsInfo,
         getMetricBelowQuery,
         getMetricBelowAvgQuery,
       ],
@@ -155,6 +161,16 @@ const MetricSymmetricalChart = ({
       [showAvg, nodeName, metricPrefixAbove, metricPrefixBelow],
     ),
   });
+  const additionalNames = useMemo(
+    () => (showAvg ? [CLUSTER_AVERAGE] : []),
+    [showAvg],
+  );
+  useChartLegendRegistration({
+    chartId,
+    series,
+    isSymmetrical: true,
+    additionalNames,
+  });
   return (
     <LineTimeSerieChart
       series={{
@@ -175,4 +191,4 @@ const MetricSymmetricalChart = ({
   );
 };
 
-export default MetricSymmetricalChart;
+export default React.memo(MetricSymmetricalChart);
