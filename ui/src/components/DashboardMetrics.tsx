@@ -1,9 +1,15 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Box, Button } from '@scality/core-ui/dist/next';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import {
+  Box,
+  Button,
+  ChartLegend,
+  ChartLegendWrapper,
+} from '@scality/core-ui/dist/next';
+
 import { useIntl } from 'react-intl';
 import { GRAFANA_DASHBOARDS } from '../constants';
+import { createColorSet } from '../services/graphUtils';
 import {
   PageSubtitle,
   GraphsWrapper,
@@ -16,7 +22,7 @@ import { useShowQuantileChart, useTypedSelector } from '../hooks';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
 import { Icon, SmallerText, Stack, IconHelp, spacing } from '@scality/core-ui';
 const MetricsContainer = styled.div`
-  padding: 2px ${padding.smaller};
+  padding: 2px ${spacing.f4};
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -24,7 +30,7 @@ const MetricsContainer = styled.div`
 `;
 const PanelActions = styled.div`
   display: flex;
-  padding: ${padding.small};
+  padding: ${spacing.f8};
   align-items: center;
   justify-content: space-between;
 `;
@@ -57,6 +63,7 @@ const DashboardMetrics = () => {
   // App config, used to generated Advanced metrics button link
   const { url_grafana } = useTypedSelector((state) => state.config.api);
   const { isShowQuantileChart } = useShowQuantileChart();
+
   return (
     <MetricsContainer id="dashboard-metrics-container">
       <PanelActions>
@@ -87,12 +94,15 @@ const DashboardMetrics = () => {
         )}
       </PanelActions>
       <DashboardScrollableArea>
-        <GraphsWrapper>
-          <DashboardChartCpuUsage />
-          <DashboardChartMemory />
-          <DashboardChartSystemLoad />
-          <DashboardChartThroughput />
-        </GraphsWrapper>
+        <ChartLegendWrapper colorSet={createColorSet}>
+          <GraphsWrapper>
+            <DashboardChartCpuUsage />
+            <DashboardChartMemory />
+            <DashboardChartSystemLoad />
+            <DashboardChartThroughput />
+          </GraphsWrapper>
+          <ChartLegend shape="line" legendSize={'Smaller'} />
+        </ChartLegendWrapper>
       </DashboardScrollableArea>
     </MetricsContainer>
   );

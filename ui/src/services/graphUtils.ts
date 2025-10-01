@@ -2,7 +2,11 @@ import type {
   PrometheusQueryResult,
   RangeMatrixResult,
 } from './prometheus/api';
-import { lineColor1, PORT_NODE_EXPORTER } from '../constants';
+import {
+  CHART_COLOR_VALUES,
+  lineColor1,
+  PORT_NODE_EXPORTER,
+} from '../constants';
 import { Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
 import {
   spacing,
@@ -172,6 +176,9 @@ export const getMultipleSymmetricalSeries = (
             return `${resource}-${metricPrefix}`;
           },
           getLegendLabel: null, //disable legend to avoid duplicated entries
+          renderTooltipSerie: (serie) => {
+            return `${serie.resource}-${serie.metricPrefix}`;
+          },
         },
       ];
     })
@@ -441,4 +448,17 @@ export const renderOutpassingThresholdTitle = (
 };
 export const renderTooltipSeperationLine = (seperationLineColor) => {
   return `</table><hr style="border-color: ${seperationLineColor};"/><table>`;
+};
+
+// Shared function to create color mapping for chart series
+export const createColorSet = (
+  seriesNames: string[],
+): Record<string, string> => {
+  const colorMapping: Record<string, string> = {};
+  seriesNames.forEach((name, index) => {
+    // Cycle through available colors
+    const colorIndex = index % CHART_COLOR_VALUES.length;
+    colorMapping[name] = CHART_COLOR_VALUES[colorIndex];
+  });
+  return colorMapping;
 };

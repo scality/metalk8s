@@ -1,3 +1,5 @@
+import { chartColors } from '@scality/core-ui/dist/style/theme';
+
 export const REFRESH_TIMEOUT = 15000;
 export const REFRESH_METRICS_GRAPH = 60000;
 export const FR_LANG = 'FR';
@@ -98,3 +100,60 @@ export const GRAFANA_DASHBOARDS = {
 export const HEIGHT_DEFAULT_CHART = 120;
 export const HEIGHT_SYMMETRICAL_CHART = 160;
 export const NODES_LIMIT_QUANTILE = 8;
+export const NODE_SYNC_ID = 'nodeMetrics';
+export const DASHBOARD_SYNC_ID = 'dashboard';
+
+// Chart color values for consistent coloring across components
+export const CHART_COLOR_VALUES = [
+  chartColors.lineColor1, // #A14FBF - Purple
+  chartColors.lineColor2, // #BE9A40 - Gold
+  chartColors.lineColor3, // #4BE4E2 - Cyan
+  chartColors.lineColor4, // #245A83 - Blue
+  chartColors.lineColor5, // #E3FF73 - Light Green
+  chartColors.lineColor6, // #BE2543 - Red
+  chartColors.lineColor7, // #FD8144 - Orange
+  chartColors.lineColor8, // #F6B187 - Light Orange
+];
+export const UNIT_RANGE_BS = [
+  {
+    threshold: 0,
+    label: 'B/s',
+  },
+  {
+    threshold: 1024,
+    label: 'KiB/s',
+  },
+  {
+    threshold: 1024 * 1024,
+    label: 'MiB/s',
+  },
+  {
+    threshold: 1024 * 1024 * 1024,
+    label: 'GiB/s',
+  },
+  {
+    threshold: 1024 * 1024 * 1024 * 1024,
+    label: 'TiB/s',
+  },
+];
+
+export const UNIT_RANGE_SECONDS = [
+  {
+    threshold: 0,
+    label: 'µs',
+  },
+  {
+    threshold: 1000,
+    label: 'ms',
+  },
+  {
+    threshold: 1000 * 1000,
+    label: 's',
+  },
+  {
+    threshold: 60 * 1000 * 1000,
+    label: 'm',
+  },
+];
+export const YAXIS_TITLE_READ_WRITE = 'write(+) / read(-)';
+export const YAXIS_TITLE_IN_OUT = 'in(+) / out(-)';

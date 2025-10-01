@@ -1,5 +1,11 @@
-import React, { useCallback } from 'react';
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
+import {
+  LineTimeSerieChart,
+  useMetricsTimeSpan,
+  useChartId,
+} from '@scality/core-ui/dist/next';
+import { useChartLegend } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
+
+import { useCallback, useEffect } from 'react';
 import {
   useNodes,
   useNodeAddressesSelector,
@@ -35,7 +41,12 @@ const DashboardChartMemory = () => {
 };
 
 const DashboardChartMemoryWithoutQuantiles = () => {
-  const nodeAddresses = useNodeAddressesSelector(useNodes());
+  const chartId = useChartId();
+  const { register } = useChartLegend();
+  const nodes = useNodes();
+  const nodeAddresses = useNodeAddressesSelector(nodes);
+
+  const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
     // @ts-expect-error - FIXME when you are working on it
     getQuery: (timeSpanProps) => getNodesMemoryQuery(timeSpanProps),
@@ -46,19 +57,32 @@ const DashboardChartMemoryWithoutQuantiles = () => {
           nodeAddresses,
         );
         return result;
-      }, // eslint-disable-next-line react-hooks/exhaustive-deps
+      },
+      //Expect warning because of complex dependency
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [JSON.stringify(nodeAddresses)],
     ),
   });
+
+  // Register series names with ChartLegendWrapper
+  useEffect(() => {
+    if (series && series.length > 0) {
+      const seriesNames = series.map((s) => s.resource);
+      register(chartId, seriesNames);
+    }
+  }, [chartId, register, series]);
+
   return (
-    <LineTemporalChart
+    <LineTimeSerieChart
       series={series}
-      height={80}
+      height={110}
+      interval={interval}
+      duration={duration}
       title="Memory"
       startingTimeStamp={startingTimeStamp}
       yAxisType={'percentage'}
-      isLegendHidden={true}
       isLoading={isLoading}
+      syncId="dashboard"
     />
   );
 };

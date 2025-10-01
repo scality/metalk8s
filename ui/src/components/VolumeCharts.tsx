@@ -1,9 +1,23 @@
-import React, { useCallback } from 'react';
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
+import { Stack } from '@scality/core-ui';
+import { ChartLegendWrapper } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
 import {
-  getSeriesForSymmetricalChart,
+  ChartLegend,
+  LineTimeSerieChart,
+  useMetricsTimeSpan,
+} from '@scality/core-ui/dist/next';
+import { useCallback } from 'react';
+import {
+  UNIT_RANGE_BS,
+  UNIT_RANGE_SECONDS,
+  YAXIS_TITLE_READ_WRITE,
+} from '../constants';
+import { useSingleChartSerie, useSymetricalChartSeries } from '../hooks';
+import {
   convertPrometheusResultToSerieWithAverage,
+  createColorSet,
+  getSeriesForSymmetricalChart,
 } from '../services/graphUtils';
+import type { TimeSpanProps } from '../services/platformlibrary/metrics';
 import {
   getVolumeIOPSReadQuery,
   getVolumeIOPSWriteQuery,
@@ -13,12 +27,9 @@ import {
   getVolumeThroughputWriteQuery,
   getVolumeUsageQuery,
 } from '../services/platformlibrary/metrics';
-import type { TimeSpanProps } from '../services/platformlibrary/metrics';
-import {
-  UNIT_RANGE_BS,
-  YAXIS_TITLE_READ_WRITE,
-} from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-import { useSingleChartSerie, useSymetricalChartSeries } from '../hooks';
+
+const VOLUME_SYNC_ID = 'volume';
+
 export const VolumeThroughputChart = ({
   instanceIp,
   deviceName,
@@ -28,6 +39,7 @@ export const VolumeThroughputChart = ({
   deviceName: string;
   volumeName: string;
 }) => {
+  const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
     // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
@@ -38,30 +50,53 @@ export const VolumeThroughputChart = ({
       getVolumeThroughputReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
     transformPrometheusDataToSeries: useCallback(
-      ([prometheusResultAbove], [prometheusResultBelow]) =>
-        getSeriesForSymmetricalChart(
+      ([prometheusResultAbove], [prometheusResultBelow]) => {
+        const allSeries = getSeriesForSymmetricalChart(
           prometheusResultAbove,
           prometheusResultBelow,
           volumeName,
           'write',
           'read',
-        ),
+        );
+
+        // Filter series for LineTimeSerieChart above/below structure
+        const aboveSeries = allSeries.filter(
+          (serie) => serie.metricPrefix === 'write',
+        );
+        const belowSeries = allSeries.filter(
+          (serie) => serie.metricPrefix === 'read',
+        );
+
+        return {
+          above: aboveSeries,
+          below: belowSeries,
+        };
+      },
       [volumeName],
     ),
   });
+
   return (
-    <LineTemporalChart
-      series={series}
-      height={160}
-      title="Disk Throughput"
-      startingTimeStamp={startingTimeStamp}
-      yAxisType={'symmetrical'}
-      yAxisTitle={YAXIS_TITLE_READ_WRITE}
-      unitRange={UNIT_RANGE_BS}
-      // @ts-expect-error - FIXME when you are working on it
-      isLoading={isLoading}
-      isLegendHidden={false}
-    />
+    <ChartLegendWrapper
+      colorSet={createColorSet(series.above.map((s) => s.resource))}
+    >
+      <Stack direction="vertical" gap="r1">
+        <LineTimeSerieChart
+          series={series}
+          height={160}
+          interval={interval}
+          duration={duration}
+          title="Disk Throughput"
+          startingTimeStamp={startingTimeStamp}
+          yAxisType={'symmetrical'}
+          yAxisTitle={YAXIS_TITLE_READ_WRITE}
+          unitRange={UNIT_RANGE_BS}
+          isLoading={isLoading}
+          syncId={VOLUME_SYNC_ID}
+        />
+        <ChartLegend shape="line" legendSize="Smaller" />
+      </Stack>
+    </ChartLegendWrapper>
   );
 };
 export const VolumeLatencyChart = ({
@@ -73,6 +108,7 @@ export const VolumeLatencyChart = ({
   deviceName: string;
   volumeName: string;
 }) => {
+  const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
     // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
@@ -83,47 +119,53 @@ export const VolumeLatencyChart = ({
       getVolumeLatencyReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
     transformPrometheusDataToSeries: useCallback(
-      ([prometheusResultAbove], [prometheusResultBelow]) =>
-        getSeriesForSymmetricalChart(
+      ([prometheusResultAbove], [prometheusResultBelow]) => {
+        const allSeries = getSeriesForSymmetricalChart(
           prometheusResultAbove,
           prometheusResultBelow,
           volumeName,
           'write',
           'read',
-        ),
+        );
+
+        // Filter series for LineTimeSerieChart above/below structure
+        const aboveSeries = allSeries.filter(
+          (serie) => serie.metricPrefix === 'write',
+        );
+        const belowSeries = allSeries.filter(
+          (serie) => serie.metricPrefix === 'read',
+        );
+
+        return {
+          above: aboveSeries,
+          below: belowSeries,
+        };
+      },
       [volumeName],
     ),
   });
+
   return (
-    <LineTemporalChart
-      series={series}
-      height={160}
-      title="Disk Latency"
-      startingTimeStamp={startingTimeStamp}
-      yAxisType={'symmetrical'}
-      yAxisTitle={YAXIS_TITLE_READ_WRITE}
-      unitRange={[
-        {
-          threshold: 0,
-          label: 'µs',
-        },
-        {
-          threshold: 1000,
-          label: 'ms',
-        },
-        {
-          threshold: 1000 * 1000,
-          label: 's',
-        },
-        {
-          threshold: 60 * 1000 * 1000,
-          label: 'm',
-        },
-      ]}
-      // @ts-expect-error - FIXME when you are working on it
-      isLoading={isLoading}
-      isLegendHidden={false}
-    />
+    <ChartLegendWrapper
+      colorSet={createColorSet(series.above.map((s) => s.resource))}
+    >
+      <Stack direction="vertical" gap="r1">
+        <LineTimeSerieChart
+          series={series}
+          height={160}
+          interval={interval}
+          duration={duration}
+          title="Disk Latency"
+          startingTimeStamp={startingTimeStamp}
+          yAxisType={'symmetrical'}
+          yAxisTitle={YAXIS_TITLE_READ_WRITE}
+          unitRange={UNIT_RANGE_SECONDS}
+          isLoading={isLoading}
+          syncId={VOLUME_SYNC_ID}
+        />
+        <ChartLegend shape="line" legendSize="Smaller" />
+      </Stack>
+    </ChartLegendWrapper>
   );
 };
 export const VolumeIOPSChart = ({
@@ -135,6 +177,7 @@ export const VolumeIOPSChart = ({
   deviceName: string;
   volumeName: string;
 }) => {
+  const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
     // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
@@ -145,29 +188,52 @@ export const VolumeIOPSChart = ({
       getVolumeIOPSReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
     transformPrometheusDataToSeries: useCallback(
-      ([prometheusResultAbove], [prometheusResultBelow]) =>
-        getSeriesForSymmetricalChart(
+      ([prometheusResultAbove], [prometheusResultBelow]) => {
+        const allSeries = getSeriesForSymmetricalChart(
           prometheusResultAbove,
           prometheusResultBelow,
           volumeName,
           'write',
           'read',
-        ),
+        );
+
+        // Filter series for LineTimeSerieChart above/below structure
+        const aboveSeries = allSeries.filter(
+          (serie) => serie.metricPrefix === 'write',
+        );
+        const belowSeries = allSeries.filter(
+          (serie) => serie.metricPrefix === 'read',
+        );
+
+        return {
+          above: aboveSeries,
+          below: belowSeries,
+        };
+      },
       [volumeName],
     ),
   });
+
   return (
-    <LineTemporalChart
-      series={series}
-      height={160}
-      title="IOPS"
-      startingTimeStamp={startingTimeStamp}
-      yAxisType={'symmetrical'}
-      yAxisTitle={YAXIS_TITLE_READ_WRITE}
-      // @ts-expect-error - FIXME when you are working on it
-      isLoading={isLoading}
-      isLegendHidden={false}
-    />
+    <ChartLegendWrapper
+      colorSet={createColorSet(series.above.map((s) => s.resource))}
+    >
+      <Stack direction="vertical" gap="r1">
+        <LineTimeSerieChart
+          series={series}
+          height={160}
+          interval={interval}
+          duration={duration}
+          title="IOPS"
+          startingTimeStamp={startingTimeStamp}
+          yAxisType={'symmetrical'}
+          yAxisTitle={YAXIS_TITLE_READ_WRITE}
+          isLoading={isLoading}
+          syncId={VOLUME_SYNC_ID}
+        />
+        <ChartLegend shape="line" legendSize="Smaller" />
+      </Stack>
+    </ChartLegendWrapper>
   );
 };
 export const VolumeUsageChart = ({
@@ -179,6 +245,7 @@ export const VolumeUsageChart = ({
   namespace: string;
   volumeName: string;
 }) => {
+  const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSingleChartSerie({
     // @ts-expect-error - FIXME when you are working on it
     getQuery: (timeSpanProps: TimeSpanProps) =>
@@ -189,15 +256,25 @@ export const VolumeUsageChart = ({
       [volumeName],
     ),
   });
+
   return (
-    <LineTemporalChart
-      series={series}
-      height={160}
-      title="Usage"
-      startingTimeStamp={startingTimeStamp}
-      yAxisType={'percentage'}
-      isLoading={isLoading}
-      isLegendHidden={false}
-    />
+    <ChartLegendWrapper
+      colorSet={createColorSet(series.map((s) => s.resource))}
+    >
+      <Stack direction="vertical" gap="r1">
+        <LineTimeSerieChart
+          series={series}
+          height={160}
+          interval={interval}
+          duration={duration}
+          title="Usage"
+          startingTimeStamp={startingTimeStamp}
+          yAxisType={'percentage'}
+          isLoading={isLoading}
+          syncId={VOLUME_SYNC_ID}
+        />
+        <ChartLegend shape="line" legendSize="Smaller" />
+      </Stack>
+    </ChartLegendWrapper>
   );
 };
