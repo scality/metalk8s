@@ -89,32 +89,14 @@ const NonSymmetricalQuantileChart = ({
     ),
   });
 
-  // Calculate unit base and label
-  const valueBase = useMemo(() => {
-    if (!unitRange || !seriesQuantile.length) return 1;
-
-    const allValues = seriesQuantile.flatMap((serie: any) =>
-      serie.data
-        .map(([_, value]: [number, any]) =>
-          typeof value === 'string' ? parseFloat(value) : value,
-        )
-        .filter((v: any) => v !== null && !isNaN(v)),
-    );
-
-    const maxValue = Math.max(...allValues);
-    const unit = unitRange
-      .slice()
-      .reverse()
-      .find((range) => maxValue >= range.threshold);
-
-    return unit ? unit.threshold || 1 : 1;
-  }, [unitRange, seriesQuantile]);
-
-  const unitLabel = useMemo(() => {
+  const { valueBase, unitLabel } = useMemo(() => {
     if (yAxisType === 'percentage') {
-      return '%';
+      return { valueBase: 1, unitLabel: '%' };
     }
-    if (!unitRange || !seriesQuantile.length) return '';
+
+    if (!unitRange || !seriesQuantile.length) {
+      return { valueBase: 1, unitLabel: '' };
+    }
 
     const allValues = seriesQuantile.flatMap((serie: any) =>
       serie.data
@@ -130,7 +112,10 @@ const NonSymmetricalQuantileChart = ({
       .reverse()
       .find((range) => maxValue >= range.threshold);
 
-    return unit ? unit.label : '';
+    return {
+      valueBase: unit ? unit.threshold || 1 : 1,
+      unitLabel: unit ? unit.label : '',
+    };
   }, [unitRange, seriesQuantile, yAxisType]);
 
   const timeFormat = useMemo(() => {

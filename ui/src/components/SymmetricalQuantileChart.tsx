@@ -100,10 +100,10 @@ const SymmetricalQuantileChart = ({
     ),
   });
 
-  // Calculate unit base (using first series data)
-  const valueBase = useMemo(() => {
-    if (!seriesQuantile.above?.length && !seriesQuantile.below?.length)
-      return 1;
+  const { valueBase, unitLabel } = useMemo(() => {
+    if (!seriesQuantile.above?.length && !seriesQuantile.below?.length) {
+      return { valueBase: 1, unitLabel: '' };
+    }
 
     const allSeries = [
       ...(seriesQuantile.above || []),
@@ -122,31 +122,10 @@ const SymmetricalQuantileChart = ({
       .reverse()
       .find((range: any) => maxValue >= range.threshold);
 
-    return unit ? unit.threshold || 1 : 1;
-  }, [seriesQuantile]);
-
-  const unitLabel = useMemo(() => {
-    if (!seriesQuantile.above?.length && !seriesQuantile.below?.length)
-      return '';
-
-    const allSeries = [
-      ...(seriesQuantile.above || []),
-      ...(seriesQuantile.below || []),
-    ];
-    const allValues = allSeries.flatMap((serie: any) =>
-      serie.data
-        .map(([_, value]: [number, any]) =>
-          typeof value === 'string' ? parseFloat(value) : Math.abs(value),
-        )
-        .filter((v: any) => v !== null && !isNaN(v)),
-    );
-
-    const maxValue = Math.max(...allValues);
-    const unit = UNIT_RANGE_BS.slice()
-      .reverse()
-      .find((range: any) => maxValue >= range.threshold);
-
-    return unit ? unit.label : '';
+    return {
+      valueBase: unit ? unit.threshold || 1 : 1,
+      unitLabel: unit ? unit.label : '',
+    };
   }, [seriesQuantile]);
 
   const colorSet = useMemo(() => {
