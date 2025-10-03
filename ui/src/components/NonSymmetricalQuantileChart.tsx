@@ -7,7 +7,11 @@ import {
 import { useCallback, useMemo } from 'react';
 import { UseQueryOptions } from 'react-query';
 import { useSelector } from 'react-redux';
-import { HEIGHT_DEFAULT_CHART, PORT_NODE_EXPORTER } from '../constants';
+import {
+  DASHBOARD_QUANTILE_SYNC_ID,
+  HEIGHT_DEFAULT_CHART,
+  PORT_NODE_EXPORTER,
+} from '../constants';
 import { useChartSeries, useNodeAddressesSelector, useNodes } from '../hooks';
 import {
   convertPrometheusResultToSerie,
@@ -164,6 +168,7 @@ const NonSymmetricalQuantileChart = ({
         isLoading={isLoadingQuantile}
         unitRange={unitRange}
         renderTooltip={renderTooltip}
+        syncId={DASHBOARD_QUANTILE_SYNC_ID}
       />
       <ChartLegend shape="line" legendSize="Smaller" />
     </ChartLegendWrapper>

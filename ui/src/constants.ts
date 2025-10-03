@@ -106,6 +106,7 @@ export const HEIGHT_SYMMETRICAL_CHART = 160;
 export const NODES_LIMIT_QUANTILE = 8;
 export const NODE_SYNC_ID = 'nodeMetrics';
 export const DASHBOARD_SYNC_ID = 'dashboard';
+export const DASHBOARD_QUANTILE_SYNC_ID = 'dashboard-quantile';
 
 // Chart color values for consistent coloring across components
 export const CHART_COLOR_VALUES = Object.values(chartColors);
