@@ -3,9 +3,9 @@ import {
   useMetricsTimeSpan,
   useChartId,
 } from '@scality/core-ui/dist/next';
-import { useChartLegend } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import {
   useNodeAddressesSelector,
   useNodes,
@@ -22,7 +22,11 @@ import {
 } from '../services/platformlibrary/metrics';
 import { getMultipleSymmetricalSeries } from '../services/graphUtils';
 import SymmetricalQuantileChart from './SymmetricalQuantileChart';
-import { UNIT_RANGE_BS, YAXIS_TITLE_READ_WRITE } from '../constants';
+import {
+  HEIGHT_SYMMETRICAL_CHART,
+  UNIT_RANGE_BS,
+  YAXIS_TITLE_READ_WRITE,
+} from '../constants';
 
 const DashboardChartThroughput = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
@@ -52,18 +56,15 @@ const DashboardChartThroughput = () => {
 
 const DashboardChartThroughputWithoutQuantile = () => {
   const chartId = useChartId();
-  const { register } = useChartLegend();
   const nodes = useNodes();
   const nodeAddresses = useNodeAddressesSelector(nodes);
 
   const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: (timeSpanProps) => [
-      // @ts-expect-error - FIXME when you are working on it
       getNodesThroughputWriteQuery(timeSpanProps),
     ],
     getBelowQueries: (timeSpanProps) => [
-      // @ts-expect-error - FIXME when you are working on it
       getNodesThroughputReadQuery(timeSpanProps),
     ],
     transformPrometheusDataToSeries: useCallback(
@@ -83,17 +84,7 @@ const DashboardChartThroughputWithoutQuantile = () => {
           nodeAddresses,
         );
 
-        const aboveSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'write',
-        );
-
-        const belowSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'read',
-        );
-        return {
-          above: aboveSeries,
-          below: belowSeries,
-        };
+        return allSeries;
       },
       //Expect warning because of complex dependency
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -101,15 +92,7 @@ const DashboardChartThroughputWithoutQuantile = () => {
     ),
   });
 
-  // Register series names for symmetrical chart (above + below series)
-  useEffect(() => {
-    if (series && (series.above?.length > 0 || series.below?.length > 0)) {
-      const aboveNames = series.above?.map((s) => s.resource) || [];
-      const belowNames = series.below?.map((s) => s.resource) || [];
-      const allSeriesNames = [...aboveNames, ...belowNames];
-      register(chartId, allSeriesNames);
-    }
-  }, [chartId, register, series]);
+  useChartLegendRegistration({ chartId, series, isSymmetrical: true });
 
   return (
     <LineTimeSerieChart
@@ -117,7 +100,7 @@ const DashboardChartThroughputWithoutQuantile = () => {
         above: series.above,
         below: series.below,
       }}
-      height={150}
+      height={HEIGHT_SYMMETRICAL_CHART}
       unitRange={UNIT_RANGE_BS}
       interval={interval}
       duration={duration}

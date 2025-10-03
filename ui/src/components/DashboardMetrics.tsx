@@ -94,15 +94,17 @@ const DashboardMetrics = () => {
         )}
       </PanelActions>
       <DashboardScrollableArea>
-        <ChartLegendWrapper colorSet={createColorSet}>
-          <GraphsWrapper>
+        <GraphsWrapper>
+          <ChartLegendWrapper colorSet={createColorSet}>
             <DashboardChartCpuUsage />
             <DashboardChartMemory />
             <DashboardChartSystemLoad />
+          </ChartLegendWrapper>
+          <ChartLegendWrapper colorSet={createColorSet}>
             <DashboardChartThroughput />
-          </GraphsWrapper>
-          <ChartLegend shape="line" legendSize={'Smaller'} />
-        </ChartLegendWrapper>
+            <ChartLegend shape="line" legendSize={'Smaller'} />
+          </ChartLegendWrapper>
+        </GraphsWrapper>
       </DashboardScrollableArea>
     </MetricsContainer>
   );

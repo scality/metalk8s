@@ -12,10 +12,7 @@ import styled from 'styled-components';
 import { useIntl } from 'react-intl';
 import MetricChart from '../components/MetricChart';
 import MetricSymmetricalChart from '../components/MetricSymmetricalChart';
-import {
-  GraphWrapper,
-  MetricsActionContainer,
-} from '../components/style/CommonLayoutStyle';
+import { MetricsActionContainer } from '../components/style/CommonLayoutStyle';
 import {
   GRAFANA_DASHBOARDS,
   PORT_NODE_EXPORTER,
@@ -23,7 +20,7 @@ import {
 } from '../constants';
 import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import type { NodesState } from '../ducks/app/nodes';
-import { useTypedSelector, useChartColors } from '../hooks';
+import { useTypedSelector } from '../hooks';
 import {
   getCPUUsageAvgQuery,
   getCPUUsageQuery,
@@ -46,39 +43,19 @@ import {
 } from '../services/platformlibrary/metrics';
 import { useURLQuery } from '../services/utils';
 import TimespanSelector from './TimespanSelector';
-const GraphGrid = styled.div`
-  display: grid;
-  gap: 8px;
-  grid-template:
-    'cpuusage systemload' 1fr
-    'memory iops' 1fr
-    'cpbandwidth wpbandwidth' 1fr
-    / 1fr 1fr;
-  .sc-vegachart svg {
-    background-color: inherit !important;
-  }
-  .cpuusage {
-    grid-area: cpuusage;
-  }
-  .systemload {
-    grid-area: systemload;
-  }
-  .memory {
-    grid-area: memory;
-  }
-  .iops {
-    grid-area: iops;
-  }
-  .cpbandwidth {
-    grid-area: cpbandwidth;
-  }
-  .wpbandwidth {
-    grid-area: wpbandwidth;
-  }
-  padding-left: ${spacing.r12};
+import { createColorSet } from '../services/graphUtils';
+export const ChartContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.r8};
   /* 100% - padding - action container height */
   height: calc(100% - 3rem);
-  overflow: auto;
+  padding-left: ${spacing.r12};
+`;
+export const GraphGrid = styled.div`
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
 `;
 const MetricsToggleWrapper = styled.div`
   display: flex;
@@ -131,8 +108,6 @@ const NodePageMetricsTab = ({
     (state) => state.app.monitoring.nodeStats.showAvg,
   );
 
-  // Create color set for this single node
-  const colorSet = useChartColors([nodeName]);
   // To redirect to the right Node(Detailed) dashboard in Grafana
   const unameInfos = useTypedSelector(
     (state) => state.app.monitoring.unameInfo,
@@ -194,88 +169,65 @@ const NodePageMetricsTab = ({
         {instanceIP && <TimespanSelector />}
       </MetricsActionContainer>
       {instanceIP ? (
-        <ChartLegendWrapper colorSet={colorSet}>
-          <GraphGrid id="graph_container">
-            <GraphWrapper className="cpuusage">
+        <ChartLegendWrapper colorSet={createColorSet}>
+          <ChartContainer>
+            <GraphGrid id="graph_container">
               <MetricChart
                 title={'CPU Usage'}
                 yAxisType={'percentage'}
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricQuery={getCPUUsageQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getCPUUsageAvgQuery}
               ></MetricChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-            <GraphWrapper className="systemload">
+
               <MetricChart
                 title={'CPU System Load'}
                 yAxisType={'default'}
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricQuery={getSystemLoadQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getSystemLoadAvgQuery}
               ></MetricChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-            <GraphWrapper className="memory">
+
               <MetricChart
                 title={'Memory'}
                 yAxisType={'percentage'}
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricQuery={getMemoryQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAvgQuery={getMemoryAvgQuery}
               ></MetricChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-            <GraphWrapper className="iops">
+
               <MetricSymmetricalChart
                 title={'IOPS'}
                 yAxisTitle={'write(+) / read(-)'}
-                yAxisType={'symmetrical'}
+                nodesIPsInfo={nodesIPsInfo}
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveQuery={getIOPSWriteQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowQuery={getIOPSReadQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveAvgQuery={getIOPSWriteAvgQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowAvgQuery={getIOPSReadAvgQuery}
                 metricPrefixAbove={'write'}
                 metricPrefixBelow={'read'}
                 isPlaneInterfaceRequired={false}
               ></MetricSymmetricalChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-            <GraphWrapper className="cpbandwidth">
+
               <MetricSymmetricalChart
                 title={'Control Plane Bandwidth'}
                 yAxisTitle={'in(+) / out(-)'}
-                yAxisType={'symmetrical'}
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
                 nodesIPsInfo={nodesIPsInfo}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveQuery={getControlPlaneBandWidthInQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowQuery={getControlPlaneBandWidthOutQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveAvgQuery={getControlPlaneBandWidthAvgInQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowAvgQuery={getControlPlaneBandWidthAvgOutQuery}
                 metricPrefixAbove={'in'}
                 metricPrefixBelow={'out'}
@@ -283,24 +235,17 @@ const NodePageMetricsTab = ({
                 unitRange={UNIT_RANGE_BS}
                 isPlaneInterfaceRequired={true}
               ></MetricSymmetricalChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-            <GraphWrapper className="wpbandwidth">
+
               <MetricSymmetricalChart
                 title={'Workload Plane Bandwidth'}
                 yAxisTitle={'in(+) / out(-)'}
-                yAxisType={'symmetrical'}
                 nodeName={nodeName}
                 instanceIP={instanceIP}
                 showAvg={showAvg}
                 nodesIPsInfo={nodesIPsInfo}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveQuery={getWorkloadPlaneBandWidthInQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowQuery={getWorkloadPlaneBandWidthOutQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricAboveAvgQuery={getWorkloadPlaneBandWidthAvgInQuery}
-                // @ts-expect-error - FIXME when you are working on it
                 getMetricBelowAvgQuery={getWorkloadPlaneBandWidthAvgOutQuery}
                 metricPrefixAbove={'in'}
                 metricPrefixBelow={'out'}
@@ -308,9 +253,9 @@ const NodePageMetricsTab = ({
                 unitRange={UNIT_RANGE_BS}
                 isPlaneInterfaceRequired={true}
               ></MetricSymmetricalChart>
-              <ChartLegend shape="line" legendSize="Smaller" />
-            </GraphWrapper>
-          </GraphGrid>
+            </GraphGrid>
+            <ChartLegend shape="line" legendSize="Smaller" />
+          </ChartContainer>
         </ChartLegendWrapper>
       ) : (
         <RenderNoDataAvailable />

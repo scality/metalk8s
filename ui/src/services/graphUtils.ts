@@ -4,19 +4,21 @@ import type {
 } from './prometheus/api';
 import {
   CHART_COLOR_VALUES,
-  lineColor1,
-  PORT_NODE_EXPORTER,
-} from '../constants';
-import { Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-import {
-  spacing,
+  CLUSTER_AVERAGE,
+  lineColor2,
   lineColor3,
   lineColor4,
   lineColor5,
   lineColor6,
   lineColor7,
-  lineColor8,
-} from '@scality/core-ui/dist/style/theme';
+  PORT_NODE_EXPORTER,
+  SAMPLE_FREQUENCY_LAST_ONE_HOUR,
+  SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
+  SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
+} from '../constants';
+
+import type { Serie } from '@scality/core-ui/dist/components/linetimeseriechart/linetimeseriechart.component';
+
 export const getMultiResourceSeriesForChart = (
   results: PrometheusQueryResult,
   nodes: Array<{
@@ -24,25 +26,36 @@ export const getMultiResourceSeriesForChart = (
     name: string;
   }>,
 ): Serie[] => {
+  if (results.status !== 'success') {
+    throw new Error('Failed to fetch data from Prometheus');
+  }
   return nodes.map((node, index) => {
     const internalIP = node.internalIP;
-    const matrixResult: RangeMatrixResult =
-      // @ts-expect-error - FIXME when you are working on it
+    if (results.data.resultType !== 'matrix') {
+      throw new Error('Failed to fetch data from Prometheus');
+    }
+    const matrixResult: RangeMatrixResult['result'][number] =
       results?.data?.result?.find(
         (i) => i?.metric?.instance === `${internalIP}:${PORT_NODE_EXPORTER}`,
       ) || results[index];
     return convertMatrixResultToSerie(matrixResult, node.name);
   });
 };
+
 export const fiterMetricValues = (
   prometheusResult: PrometheusQueryResult,
   labels: {
     instance: string;
     device?: string;
   },
-): RangeMatrixResult => {
+): RangeMatrixResult['result'][number] => {
+  if (prometheusResult.status !== 'success') {
+    throw new Error('Failed to fetch data from Prometheus');
+  }
+  if (prometheusResult.data.resultType !== 'matrix') {
+    throw new Error('Failed to fetch data from Prometheus');
+  }
   if (Object.prototype.hasOwnProperty.call(labels, 'device')) {
-    // @ts-expect-error - FIXME when you are working on it
     return prometheusResult.data?.result.find(
       (item) =>
         item.metric.instance === labels.instance &&
@@ -50,87 +63,74 @@ export const fiterMetricValues = (
     );
   }
 
-  // @ts-expect-error - FIXME when you are working on it
   return prometheusResult.data.result.find(
     (item) => item.metric.instance === labels.instance,
   );
 };
 // to retrieve Q90, median and Q5 for symmetrical chart
+// Results are in ascending order: [Q05, Q50, Q90]
 export const getQuantileSymmetricalSeries = (
   resultAbove: PrometheusQueryResult[],
   resultBelow: PrometheusQueryResult[],
   metricPrefixAbove: string,
   metricPrefixBelow: string,
-) => {
-  return [
-    {
-      ...convertPrometheusResultToSerie(resultAbove[2], 'Q90'),
-      metricPrefix: metricPrefixAbove,
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
+): {
+  above: Serie[];
+  below: Serie[];
+} => {
+  return {
+    above: [
+      {
+        ...convertPrometheusResultToSerie(
+          resultAbove[2],
+          `Q90-${metricPrefixAbove}`,
+        ),
+        metricPrefix: metricPrefixAbove,
       },
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
+      {
+        ...convertPrometheusResultToSerie(
+          resultAbove[1],
+          `Median-${metricPrefixAbove}`,
+        ),
+        metricPrefix: metricPrefixAbove,
       },
-      color: lineColor3,
-    },
-    {
-      ...convertPrometheusResultToSerie(resultAbove[1], 'Median'),
-      metricPrefix: metricPrefixAbove,
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
+      {
+        ...convertPrometheusResultToSerie(
+          resultAbove[0],
+          `Q5-${metricPrefixAbove}`,
+        ),
+        metricPrefix: metricPrefixAbove,
       },
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
+    ],
+    below: [
+      {
+        ...convertPrometheusResultToSerie(
+          resultBelow[0],
+          `Q5-${metricPrefixBelow}`,
+        ),
+
+        metricPrefix: metricPrefixBelow,
       },
-      color: lineColor5,
-    },
-    {
-      ...convertPrometheusResultToSerie(resultAbove[0], 'Q5'),
-      metricPrefix: metricPrefixAbove,
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
+      {
+        ...convertPrometheusResultToSerie(
+          resultBelow[1],
+          `Median-${metricPrefixBelow}`,
+        ),
+
+        metricPrefix: metricPrefixBelow,
       },
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
+      {
+        ...convertPrometheusResultToSerie(
+          resultBelow[2],
+          `Q90-${metricPrefixBelow}`,
+        ),
+
+        metricPrefix: metricPrefixBelow,
       },
-      color: lineColor4,
-    },
-    {
-      ...convertPrometheusResultToSerie(resultBelow[0], 'Q5'),
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      metricPrefix: metricPrefixBelow,
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      color: lineColor6,
-    },
-    {
-      ...convertPrometheusResultToSerie(resultBelow[1], 'Median'),
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      metricPrefix: metricPrefixBelow,
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      color: lineColor8,
-    },
-    {
-      ...convertPrometheusResultToSerie(resultBelow[2], 'Q90'),
-      getLegendLabel: (metricPrefix: string, resource) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      metricPrefix: metricPrefixBelow,
-      getTooltipLabel: (metricPrefix: string, resource: string) => {
-        return `${resource}-${metricPrefix}`;
-      },
-      color: lineColor7,
-    },
-  ];
+    ],
+  };
 };
+
 export const getMultipleSymmetricalSeries = (
   resultAbove: PrometheusQueryResult,
   resultBelow: PrometheusQueryResult,
@@ -146,74 +146,62 @@ export const getMultipleSymmetricalSeries = (
       interface: string;
     }
   >,
-): Serie[] => {
-  // TODO: Throw the error if we got error status from Promethues API, and handle the error at React-query level
-  return nodes
-    .flatMap((node) => {
+): { above: Serie[]; below: Serie[] } => {
+  if (resultAbove.status !== 'success' || resultBelow.status !== 'success') {
+    throw new Error('Failed to fetch data from Prometheus');
+  }
+  return nodes.reduce(
+    (acc, node) => {
       const filterLabels = {
         instance: `${node.internalIP}:${PORT_NODE_EXPORTER}`,
+        device: undefined,
       };
 
       if (nodesPlaneInterface) {
-        // @ts-expect-error - FIXME when you are working on it
         filterLabels.device = nodesPlaneInterface?.[node.name]?.interface;
       }
 
       const aboveData = fiterMetricValues(resultAbove, filterLabels);
       const belowData = fiterMetricValues(resultBelow, filterLabels);
-      return [
-        {
-          ...convertMatrixResultToSerie(aboveData, node.name),
-          metricPrefix: metricPrefixAbove,
-          getTooltipLabel: (metricPrefix: string, resource: string) => {
-            return `${resource}-${metricPrefix}`;
+      return {
+        above: [
+          ...acc.above,
+          {
+            ...convertMatrixResultToSerie(aboveData, node.name),
+            metricPrefix: metricPrefixAbove,
+            getTooltipLabel: (metricPrefix: string, resource: string) => {
+              return `${resource}-${metricPrefix}`;
+            },
           },
-        },
-        {
-          ...convertMatrixResultToSerie(belowData, node.name),
-          metricPrefix: metricPrefixBelow,
-          getTooltipLabel: (metricPrefix: string, resource: string) => {
-            return `${resource}-${metricPrefix}`;
+        ],
+        below: [
+          ...acc.below,
+          {
+            ...convertMatrixResultToSerie(belowData, node.name),
+            metricPrefix: metricPrefixBelow,
+            getTooltipLabel: (metricPrefix: string, resource: string) => {
+              return `${resource}-${metricPrefix}`;
+            },
+            renderTooltipSerie: (serie) => {
+              return `${serie.resource}-${serie.metricPrefix}`;
+            },
           },
-          getLegendLabel: null, //disable legend to avoid duplicated entries
-          renderTooltipSerie: (serie) => {
-            return `${serie.resource}-${serie.metricPrefix}`;
-          },
-        },
-      ];
-    })
-    .sort((serieA, serieB) => {
-      if (
-        serieA.metricPrefix === metricPrefixAbove &&
-        serieB.metricPrefix === metricPrefixBelow
-      ) {
-        return -1;
-      }
-
-      if (
-        serieA.metricPrefix === metricPrefixBelow &&
-        serieB.metricPrefix === metricPrefixAbove
-      ) {
-        return 1;
-      }
-
-      return 0;
-    });
+        ],
+      };
+    },
+    { above: [], below: [] },
+  );
 };
 
 const convertMatrixResultToSerie = (
-  matrixResult: RangeMatrixResult,
+  matrixResult: RangeMatrixResult['result'][0],
   resource: string,
 ): Serie => {
-  // @ts-expect-error - FIXME when you are working on it
   const prometheusData = matrixResult?.values ?? [];
   return {
     data: prometheusData,
     resource,
     getTooltipLabel: (_, resource) => {
-      return resource;
-    },
-    getLegendLabel: (_, resource) => {
       return resource;
     },
     isLineDashed: false,
@@ -225,17 +213,22 @@ export const convertPrometheusResultToSerie = (
   result: PrometheusQueryResult,
   serieName: string,
 ): Serie => {
-  if (result && result.status === 'success') {
-    // @ts-expect-error - FIXME when you are working on it
-    const matrixResult: RangeMatrixResult = result?.data?.result[0];
+  if (
+    result &&
+    result.status === 'success' &&
+    result.data.resultType === 'matrix'
+  ) {
+    const matrixResult: RangeMatrixResult['result'][number] =
+      result?.data?.result[0];
     return convertMatrixResultToSerie(matrixResult, serieName);
   }
 
   return convertMatrixResultToSerie(
     {
-      result: [],
-      // @ts-expect-error - FIXME when you are working on it
-      resultType: 'Matrix',
+      metric: {
+        instance: '',
+      },
+      values: [],
     },
     serieName,
   );
@@ -249,21 +242,19 @@ export const convertPrometheusResultToSerieWithAverage = (
   const series = [
     {
       ...convertPrometheusResultToSerie(result, serieName),
-      color: resultAvg ? lineColor1 : undefined, // when we display the average, average serie color should match with the metric color
     },
   ];
 
   if (resultAvg) {
     series.push({
-      ...convertPrometheusResultToSerie(resultAvg, 'Cluster Avg.'),
-      color: lineColor1,
+      ...convertPrometheusResultToSerie(resultAvg, CLUSTER_AVERAGE),
       isLineDashed: true,
     });
   }
 
   return series;
 };
-// get the series for symmetrical charts
+
 export const getSeriesForSymmetricalChart = (
   resultAbove: PrometheusQueryResult,
   resultBelow: PrometheusQueryResult,
@@ -272,77 +263,87 @@ export const getSeriesForSymmetricalChart = (
   metricPrefixBelow: string,
   resultAvgAbove?: PrometheusQueryResult,
   resultAvgBelow?: PrometheusQueryResult,
-): Serie[] => {
-  const series = [];
+): { above: Serie[]; below: Serie[] } => {
+  const series = {
+    above: [],
+    below: [],
+  };
 
-  if (resultAbove && resultAbove.status === 'success') {
+  if (
+    resultAbove &&
+    resultAbove.status === 'success' &&
+    resultAbove.data.resultType === 'matrix'
+  ) {
     const serieAbove = {
       metricPrefix: metricPrefixAbove,
-      // @ts-expect-error - FIXME when you are working on it
       data: resultAbove?.data?.result[0]?.values || [],
       resource,
       getTooltipLabel: (metricPrefix, resource) => {
         return `${resource}-${metricPrefix}`;
       },
-      color: lineColor1,
     };
-    series.push(serieAbove);
+    series.above.push(serieAbove);
   }
 
-  if (resultBelow && resultBelow.status === 'success') {
+  if (
+    resultBelow &&
+    resultBelow.status === 'success' &&
+    resultBelow.data.resultType === 'matrix'
+  ) {
     const serieBelow = {
       metricPrefix: metricPrefixBelow,
-      // @ts-expect-error - FIXME when you are working on it
       data: resultBelow?.data?.result[0]?.values || [],
       resource,
       getTooltipLabel: (metricPrefix, resource) => {
         return `${resource}-${metricPrefix}`;
       },
-      // For the legend, we display only two labels for the symmetrical chart: One is the `${node_name}`, the other is `Cluster Avg.`
-      getLegendLabel: (_, resource) => {
-        return `${resource}`;
-      },
-      color: lineColor1,
     };
-    series.push(serieBelow);
+    series.below.push(serieBelow);
   }
 
   // show cluster average is activated
-  if (resultAvgAbove && resultAvgAbove.status === 'success') {
+  if (
+    resultAvgAbove &&
+    resultAvgAbove.status === 'success' &&
+    resultAvgAbove.data.resultType === 'matrix'
+  ) {
     const serieAvgAbove = {
       metricPrefix: metricPrefixAbove,
-      // @ts-expect-error - FIXME when you are working on it
       data: resultAvgAbove?.data?.result[0]?.values || [],
-      resource: 'Cluster Avg.',
+      resource: CLUSTER_AVERAGE,
       getTooltipLabel: (metricPrefix, resource) => {
         return `${resource}-${metricPrefix}`;
       },
-      getLegendLabel: (_, resource) => {
-        return `${resource}`;
-      },
-      color: lineColor1,
       isLineDashed: true,
     };
-    series.push(serieAvgAbove);
+    series.above.push(serieAvgAbove);
   }
 
-  if (resultAvgBelow && resultAvgBelow.status === 'success') {
+  if (
+    resultAvgBelow &&
+    resultAvgBelow.status === 'success' &&
+    resultAvgBelow.data.resultType === 'matrix'
+  ) {
     // the negative value
+    if (resultAvgBelow.data.resultType !== 'matrix') {
+      throw new Error('Failed to fetch data from Prometheus');
+    }
     const serieAvgBelow = {
       metricPrefix: metricPrefixBelow,
-      // @ts-expect-error - FIXME when you are working on it
       data: resultAvgBelow?.data?.result[0]?.values || [],
       resource: 'Cluster Avg.',
       getTooltipLabel: (metricPrefix, resource) => {
         return `${resource}-${metricPrefix}`;
       },
-      color: lineColor1,
       isLineDashed: true,
     };
-    series.push(serieAvgBelow);
+    series.below.push(serieAvgBelow);
   }
 
-  return series;
+  return {
+    above: series.above,
+    below: series.below,
+  };
 };
 export const getNodesInterfacesString = (nodeIPsInfo): [] => {
   const interfaces = Object.values(nodeIPsInfo).flatMap((plane) => [
@@ -354,100 +355,6 @@ export const getNodesInterfacesString = (nodeIPsInfo): [] => {
   const uniqueInterfaces = [...new Set(interfaces)];
   // @ts-expect-error - FIXME when you are working on it
   return uniqueInterfaces;
-};
-export function renderTooltipSerie({
-  color,
-  isLineDashed,
-  name,
-  value,
-  key,
-}: {
-  color?: string;
-  isLineDashed?: boolean;
-  name: string;
-  value: string;
-  key: string;
-}) {
-  return `<tr>
-    <td class="color" style="width: 1rem;">
-    ${
-      color !== undefined
-        ? `<span style='background: ${
-            isLineDashed
-              ? `repeating-linear-gradient(to right,${color} 0,${color} ${spacing.sp1},transparent ${spacing.sp1},transparent ${spacing.sp2})`
-              : color
-          };width: ${spacing.sp8};height:${
-            spacing.sp2
-          };display: inline-block;vertical-align: middle;'></span>`
-        : ''
-    }
-    </td>
-    <td style="text-align: left;">
-        ${name}
-    </td>
-    <td class="value" style="text-align: right;min-width: 5rem;display: table-cell;">
-      ${value}
-    </td>
-  </tr>`;
-}
-export const renderQuantileData = (
-  isIdle,
-  isLoading,
-  isSuccess,
-  isError,
-  data,
-  nodeMapPerIp,
-  theme,
-  valueBase,
-  unitLabel,
-  intl,
-) => {
-  const hoverQuantileValue = (data) => {
-    return unitLabel
-      ? // @ts-expect-error - FIXME when you are working on it
-        `${parseFloat(data.value[1] / (valueBase || 1)).toFixed(
-          2,
-        )} ${unitLabel}`
-      : // @ts-expect-error - FIXME when you are working on it
-        `${parseFloat(data.value[1] / (valueBase || 1)).toFixed(2)}`;
-  };
-
-  return `${
-    isLoading || isIdle
-      ? `<tr style="color: ${theme.textSecondary}"><td></td><td colspan='2' style="padding-left: 1rem;">Loading...</td></tr>`
-      : ''
-  }
-  ${
-    isSuccess
-      ? data?.data?.result
-          ?.map(
-            (data) =>
-              `<tr style="color: ${
-                theme.textSecondary
-              }"><td></td><td style="padding-left: 1rem;padding-right: 0.5rem;">${
-                nodeMapPerIp[data.metric.instance]
-              }</td><td class="value" style="text-align: right;display: table-cell;">${hoverQuantileValue(
-                data,
-              )}</td></tr>`,
-          )
-          .join('')
-      : ''
-  }
-  ${isError ? intl.formatMessage('error_occur_outpassing_threshold') : ''}
-  `;
-};
-export const renderOutpassingThresholdTitle = (
-  title,
-  isOutpassingDataDisplayed,
-  theme,
-) => {
-  // Hide the Outpassing threshold node list when isOnHoverFetchingNeeded is false
-  return isOutpassingDataDisplayed
-    ? `<tr style="color: ${theme.textSecondary}"><td></td><td colspan="2" style="padding-left: 1rem;">${title}</td></tr>`
-    : ``;
-};
-export const renderTooltipSeperationLine = (seperationLineColor) => {
-  return `</table><hr style="border-color: ${seperationLineColor};"/><table>`;
 };
 
 // Shared function to create color mapping for chart series
@@ -461,4 +368,57 @@ export const createColorSet = (
     colorMapping[name] = CHART_COLOR_VALUES[colorIndex];
   });
   return colorMapping;
+};
+
+// Custom color mapping for symmetrical quantile chart
+export const createSymmetricalQuantileColorSet = (
+  aboveSeries: any[],
+  belowSeries: any[],
+): Record<string, string> => {
+  const colorMapping: Record<string, string> = {};
+
+  // Above series colors: Q90 = cyan, Median = yellow, Q5 = blue
+  aboveSeries.forEach((serie) => {
+    const name = serie.resource || serie.name;
+    if (name.includes('Q90')) {
+      colorMapping[name] = lineColor3; // cyan
+    } else if (name.includes('Median')) {
+      colorMapping[name] = lineColor5;
+    } else if (name.includes('Q5')) {
+      colorMapping[name] = lineColor4; // blue
+    }
+  });
+
+  // Below series colors: Q5 = red, Median = gold, Q90 = orange
+  belowSeries.forEach((serie) => {
+    const name = serie.resource || serie.name;
+    if (name.includes('Q5')) {
+      colorMapping[name] = lineColor6; // red
+    } else if (name.includes('Median')) {
+      colorMapping[name] = lineColor2; // gold
+    } else if (name.includes('Q90')) {
+      colorMapping[name] = lineColor7; // orange
+    }
+  });
+
+  return colorMapping;
+};
+
+// Utility function to determine time format based on interval
+export const getTimeFormatForInterval = (
+  interval: number,
+):
+  | 'day-month-abbreviated-hour-minute'
+  | 'day-month-abbreviated-hour-minute-second'
+  | 'long-date-without-weekday' => {
+  if (
+    interval === SAMPLE_FREQUENCY_LAST_SEVEN_DAYS ||
+    interval === SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS
+  ) {
+    return 'day-month-abbreviated-hour-minute';
+  }
+  if (interval === SAMPLE_FREQUENCY_LAST_ONE_HOUR) {
+    return 'day-month-abbreviated-hour-minute-second';
+  }
+  return 'long-date-without-weekday';
 };

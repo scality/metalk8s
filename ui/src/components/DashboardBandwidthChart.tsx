@@ -29,7 +29,7 @@ import {
   getNodesPlanesBandwidthOutQuery,
 } from '../services/platformlibrary/metrics';
 import SymmetricalQuantileChart from './SymmetricalQuantileChart';
-import { UNIT_RANGE_BS } from '../constants';
+import { HEIGHT_SYMMETRICAL_CHART, UNIT_RANGE_BS } from '../constants';
 
 const DashboardBandwidthChartWithoutQuantile = ({
   title,
@@ -57,11 +57,9 @@ const DashboardBandwidthChartWithoutQuantile = ({
 
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: (timeSpanProps) => [
-      // @ts-expect-error - FIXME when you are working on it
       getNodesPlanesBandwidthInQuery(timeSpanProps, devices),
     ],
     getBelowQueries: (timeSpanProps) => [
-      // @ts-expect-error - FIXME when you are working on it
       getNodesPlanesBandwidthOutQuery(timeSpanProps, devices),
     ],
     // @ts-expect-error - FIXME when you are working on it
@@ -80,19 +78,9 @@ const DashboardBandwidthChartWithoutQuantile = ({
           nodesPlaneInterface,
         );
 
-        const aboveSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'in',
-        );
-
-        const belowSeries = allSeries.filter(
-          (serie) => serie.metricPrefix === 'out',
-        );
-        return {
-          above: aboveSeries,
-          below: belowSeries,
-        };
+        return allSeries;
       },
-
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [JSON.stringify(nodeAddresses), JSON.stringify(nodesPlaneInterface)],
     ),
   });
@@ -108,7 +96,7 @@ const DashboardBandwidthChartWithoutQuantile = ({
             below: series.below,
           }}
           unitRange={UNIT_RANGE_BS}
-          height={150}
+          height={HEIGHT_SYMMETRICAL_CHART}
           interval={interval}
           duration={duration}
           title={title}
@@ -137,6 +125,7 @@ const DashboardBandwidthChart = ({
     dispatch(fetchNodesAction());
   }, [dispatch]);
   const { isShowQuantileChart } = useShowQuantileChart();
+
   return (
     <>
       {isShowQuantileChart ? (

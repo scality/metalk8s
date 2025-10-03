@@ -1,6 +1,9 @@
-import { Button } from '@scality/core-ui/dist/next';
+import {
+  Button,
+  ChartLegend,
+  ChartLegendWrapper,
+} from '@scality/core-ui/dist/next';
 import { useSelector } from 'react-redux';
-import styled from 'styled-components';
 import { Icon, spacing } from '@scality/core-ui';
 import { useIntl } from 'react-intl';
 import { GRAFANA_DASHBOARDS, VOLUME_CONDITION_LINK } from '../constants';
@@ -16,19 +19,8 @@ import {
   VolumeThroughputChart,
   VolumeUsageChart,
 } from './VolumeCharts';
-
-const GraphGrid = styled.div`
-  display: grid;
-  gap: ${spacing.r16};
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-  align-content: start;
-
-  padding-left: ${spacing.r12};
-  padding-bottom: ${spacing.r16};
-  max-height: calc(100% - 3rem); //100% - padding - action container height
-  overflow: auto;
-`;
+import { GraphGrid, ChartContainer } from '../containers/NodePageMetricsTab';
+import { createColorSet } from '../services/graphUtils';
 
 const MetricsTab = (props) => {
   const {
@@ -46,53 +38,58 @@ const MetricsTab = (props) => {
   return (
     <>
       {volumeCondition === VOLUME_CONDITION_LINK ? (
-        <>
-          <MetricsActionContainer>
-            {config.api?.url_grafana && volumeNamespace && volumePVCName && (
-              <a
-                href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.volumes}?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-cy="advanced_metrics_volume_detailed"
-              >
-                <Button
-                  label={intl.formatMessage({
-                    id: 'advanced_metrics',
-                  })}
-                  variant={'secondary'}
-                  icon={<Icon name="External-link" />}
-                />
-              </a>
-            )}
-            {volumeCondition === VOLUME_CONDITION_LINK && <TimespanSelector />}
-          </MetricsActionContainer>
+        <ChartLegendWrapper colorSet={createColorSet}>
+          <ChartContainer>
+            <MetricsActionContainer>
+              {config.api?.url_grafana && volumeNamespace && volumePVCName && (
+                <a
+                  href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.volumes}?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-cy="advanced_metrics_volume_detailed"
+                >
+                  <Button
+                    label={intl.formatMessage({
+                      id: 'advanced_metrics',
+                    })}
+                    variant={'secondary'}
+                    icon={<Icon name="External-link" />}
+                  />
+                </a>
+              )}
+              {volumeCondition === VOLUME_CONDITION_LINK && (
+                <TimespanSelector />
+              )}
+            </MetricsActionContainer>
 
-          <GraphGrid id="graph_container">
-            <VolumeUsageChart
-              pvcName={volumePVCName}
-              namespace={volumeNamespace}
-              volumeName={volumeName}
-            />
+            <GraphGrid id="graph_container">
+              <VolumeUsageChart
+                pvcName={volumePVCName}
+                namespace={volumeNamespace}
+                volumeName={volumeName}
+              />
 
-            <VolumeLatencyChart
-              instanceIp={instanceIp}
-              deviceName={deviceName}
-              volumeName={volumeName}
-            />
+              <VolumeLatencyChart
+                instanceIp={instanceIp}
+                deviceName={deviceName}
+                volumeName={volumeName}
+              />
 
-            <VolumeThroughputChart
-              instanceIp={instanceIp}
-              deviceName={deviceName}
-              volumeName={volumeName}
-            />
+              <VolumeThroughputChart
+                instanceIp={instanceIp}
+                deviceName={deviceName}
+                volumeName={volumeName}
+              />
 
-            <VolumeIOPSChart
-              instanceIp={instanceIp}
-              deviceName={deviceName}
-              volumeName={volumeName}
-            />
-          </GraphGrid>
-        </>
+              <VolumeIOPSChart
+                instanceIp={instanceIp}
+                deviceName={deviceName}
+                volumeName={volumeName}
+              />
+            </GraphGrid>
+            <ChartLegend shape="line" legendSize="Smaller" />
+          </ChartContainer>
+        </ChartLegendWrapper>
       ) : (
         <NotBoundContainer pt={spacing.r16}>
           {intl.formatMessage({

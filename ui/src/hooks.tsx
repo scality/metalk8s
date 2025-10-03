@@ -1,5 +1,6 @@
 import type { V1Node } from '@kubernetes/client-node';
-import type { Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
+
+import type { Serie } from '@scality/core-ui/dist/components/linetimeseriechart/linetimeseriechart.component';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import React, {
   createContext,
@@ -9,7 +10,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import type { UseQueryOptions, UseQueryResult } from 'react-query';
+import type { UseQueryOptions } from 'react-query';
 import { useQueries, useQuery } from 'react-query';
 import { useSelector } from 'react-redux';
 import {
@@ -58,7 +59,7 @@ export const useNodes = (): V1Node[] => {
 
       return coreV1.listNode().then((res) => {
         if (res.response.statusCode === 200 && res.body?.items) {
-          return res.body?.items;
+          return res.body.items;
         }
 
         return [];
@@ -139,11 +140,12 @@ export const useVolumesWithAlerts = (nodeName?: string) => {
   );
   return volumeListWithStatus;
 };
+
 export const useSingleChartSerie = ({
   getQuery,
   transformPrometheusDataToSeries, //It should be memoised using useCallback
 }: {
-  getQuery: (timeSpanProps: TimeSpanProps) => UseQueryResult;
+  getQuery: (timeSpanProps: TimeSpanProps) => UseQueryOptions;
   transformPrometheusDataToSeries: (
     prometheusResult: PrometheusQueryResult,
   ) => Serie[];
@@ -153,9 +155,9 @@ export const useSingleChartSerie = ({
   const startTimeRef = useRef(startingTimeISO);
   const chartStartTimeRef = useRef(startingTimeISO);
   const [series, setSeries] = useState<Serie[]>([]);
+
   startTimeRef.current = startingTimeISO;
   const query = useQuery(
-    // @ts-expect-error - FIXME when you are working on it
     getQuery({
       startingTimeISO,
       currentTimeISO,
@@ -176,6 +178,7 @@ export const useSingleChartSerie = ({
     isLoading,
   };
 };
+
 export const useChartSeries = ({
   getQueries,
   transformPrometheusDataToSeries, //It should be memoised using useCallback
@@ -190,6 +193,7 @@ export const useChartSeries = ({
   const startTimeRef = useRef(startingTimeISO);
   const chartStartTimeRef = useRef(startingTimeISO);
   const [series, setSeries] = useState<Serie[]>([]);
+
   startTimeRef.current = startingTimeISO;
   const queries = useQueries(
     getQueries({
@@ -230,8 +234,8 @@ export const useSymetricalChartSeries = ({
   getBelowQueries,
   transformPrometheusDataToSeries, //It should be memoised using useCallback
 }: {
-  getAboveQueries: (timeSpanProps: TimeSpanProps) => UseQueryResult[];
-  getBelowQueries: (timeSpanProps: TimeSpanProps) => UseQueryResult[];
+  getAboveQueries: (timeSpanProps: TimeSpanProps) => UseQueryOptions[];
+  getBelowQueries: (timeSpanProps: TimeSpanProps) => UseQueryOptions[];
   transformPrometheusDataToSeries: (
     prometheusResultAbove: PrometheusQueryResult[],
     prometheusResultBelow: PrometheusQueryResult[],
@@ -248,9 +252,9 @@ export const useSymetricalChartSeries = ({
     above: Serie[];
     below: Serie[];
   }>({ above: [], below: [] });
+
   startTimeRef.current = startingTimeISO;
   const aboveQueries = useQueries(
-    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries({
       startingTimeISO,
       currentTimeISO,
@@ -259,7 +263,6 @@ export const useSymetricalChartSeries = ({
   );
 
   const belowQueries = useQueries(
-    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries({
       startingTimeISO,
       currentTimeISO,
