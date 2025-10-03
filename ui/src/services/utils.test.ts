@@ -101,7 +101,6 @@ describe('getNaNSegments', () => {
     //S
     const segments = [];
     //E
-    // @ts-expect-error - FIXME when you are working on it
     const nullSegments = getNaNSegments(segments);
     //V
     expect(nullSegments).toHaveLength(0);

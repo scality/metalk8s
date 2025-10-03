@@ -3,9 +3,9 @@ import {
   useMetricsTimeSpan,
   useChartId,
 } from '@scality/core-ui/dist/next';
-import { useChartLegend } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import {
   useNodeAddressesSelector,
   useNodes,
@@ -19,6 +19,7 @@ import {
   getNodesSystemLoadQuery,
 } from '../services/platformlibrary/metrics';
 import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
+import { HEIGHT_DEFAULT_CHART } from '../constants';
 
 const DashboardChartSystemLoad = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
@@ -26,11 +27,10 @@ const DashboardChartSystemLoad = () => {
     <>
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileQuery={getNodesSystemLoadQuantileQuery}
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileHoverQuery={getNodesSystemLoadOutpassingThresholdQuery}
           title={'System Load'}
+          yAxisType={'percentage'}
         />
       ) : (
         <DashboardChartSystemLoadWithoutQuantiles />
@@ -41,15 +41,12 @@ const DashboardChartSystemLoad = () => {
 
 const DashboardChartSystemLoadWithoutQuantiles = () => {
   const chartId = useChartId();
-  const { register } = useChartLegend();
   const nodes = useNodes();
   const nodeAddresses = useNodeAddressesSelector(nodes);
 
   const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
-    getQuery: (timeSpanProps) =>
-      // @ts-expect-error - FIXME when you are working on it
-      getNodesSystemLoadQuery(timeSpanProps),
+    getQuery: (timeSpanProps) => getNodesSystemLoadQuery(timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) =>
         getMultiResourceSeriesForChart(prometheusResult, nodeAddresses),
@@ -59,18 +56,12 @@ const DashboardChartSystemLoadWithoutQuantiles = () => {
     ),
   });
 
-  // Register series names with ChartLegendWrapper
-  useEffect(() => {
-    if (series && series.length > 0) {
-      const seriesNames = series.map((s) => s.resource);
-      register(chartId, seriesNames);
-    }
-  }, [chartId, register, series]);
+  useChartLegendRegistration({ chartId, series, isSymmetrical: false });
 
   return (
     <LineTimeSerieChart
       series={series}
-      height={110}
+      height={HEIGHT_DEFAULT_CHART}
       interval={interval}
       duration={duration}
       title="System Load"

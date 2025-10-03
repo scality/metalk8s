@@ -3,9 +3,9 @@ import {
   useMetricsTimeSpan,
   useChartId,
 } from '@scality/core-ui/dist/next';
-import { useChartLegend } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { getMultiResourceSeriesForChart } from '../services/graphUtils';
 import {
   useNodeAddressesSelector,
@@ -19,6 +19,7 @@ import {
   getNodesCPUUsageQuery,
 } from '../services/platformlibrary/metrics';
 import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
+import { HEIGHT_DEFAULT_CHART } from '../constants';
 
 const DashboardChartCpuUsage = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
@@ -26,9 +27,7 @@ const DashboardChartCpuUsage = () => {
     <>
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileQuery={getNodesCPUUsageQuantileQuery}
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileHoverQuery={getNodesCPUUsageOutpassingThresholdQuery}
           title={'CPU Usage'}
           yAxisType={'percentage'}
@@ -42,13 +41,11 @@ const DashboardChartCpuUsage = () => {
 
 const DashboardChartCpuUsageWithoutQuantils = () => {
   const chartId = useChartId();
-  const { register } = useChartLegend();
   const nodes = useNodes();
   const nodeAddresses = useNodeAddressesSelector(nodes);
 
   const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
-    // @ts-expect-error - FIXME when you are working on it
     getQuery: (timeSpanProps) => getNodesCPUUsageQuery(timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) =>
@@ -59,18 +56,12 @@ const DashboardChartCpuUsageWithoutQuantils = () => {
     ),
   });
 
-  // Register series names with ChartLegendWrapper
-  useEffect(() => {
-    if (series && series.length > 0) {
-      const seriesNames = series.map((s) => s.resource);
-      register(chartId, seriesNames);
-    }
-  }, [chartId, register, series]);
+  useChartLegendRegistration({ chartId, series, isSymmetrical: false });
 
   return (
     <LineTimeSerieChart
       series={series}
-      height={110}
+      height={HEIGHT_DEFAULT_CHART}
       interval={interval}
       duration={duration}
       title="CPU Usage"
