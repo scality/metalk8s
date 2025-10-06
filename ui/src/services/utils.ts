@@ -324,9 +324,10 @@ export function getNaNSegments(points: [number, number | string | null][]): {
 }
 export function getSegments({ pointsAtRisk, pointsDegraded, pointsWatchdog }) {
   return pointsDegraded.reduce((agg, [timestamp, degradedValue], index) => {
-    const atRiskValue = pointsAtRisk[index][1];
+    const atRiskValue = pointsAtRisk[index]?.[1] || 0;
+    const watchdogValue = pointsWatchdog[index]?.[1] || '0';
     const currentType =
-      pointsWatchdog[index][1] !== '1'
+      watchdogValue !== '1'
         ? NAN_STRING
         : atRiskValue > 0
         ? STATUS_CRITICAL
