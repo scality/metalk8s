@@ -111,8 +111,7 @@ const DashboardGlobalHealth = () => {
                 id={'platform_globalhealth'}
                 alerts={
                   historyAlertStatus === 'error'
-                    ? // @ts-expect-error - FIXME when you are working on it
-                      ([
+                    ? ([
                         {
                           startsAt: startingTimeISO,
                           endsAt: currentTimeISO,
