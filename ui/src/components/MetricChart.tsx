@@ -44,14 +44,6 @@ const MetricChart = ({
     label: string;
   }[];
 }) => {
-  console.log(
-    'DEBUG MetricChart',
-    title,
-    yAxisType,
-    nodeName,
-    instanceIP,
-    showAvg,
-  );
   const chartId = useChartId();
   const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useChartSeries({
