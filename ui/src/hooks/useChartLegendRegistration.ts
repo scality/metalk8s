@@ -2,11 +2,11 @@ import { useEffect } from 'react';
 import { useChartLegend } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
 import { Serie } from '@scality/core-ui/dist/components/linetimeseriechart/linetimeseriechart.component';
 
-interface SymmetricalSeries {
+type SymmetricalSeries = {
   above: Serie[];
   below: Serie[];
-}
-type ChartLegendRegistation = {
+};
+type ChartLegendRegistration = {
   chartId: string;
   additionalNames?: string[];
 } & (
@@ -25,7 +25,7 @@ export const useChartLegendRegistration = ({
   series,
   isSymmetrical,
   additionalNames,
-}: ChartLegendRegistation) => {
+}: ChartLegendRegistration) => {
   const { register } = useChartLegend();
 
   useEffect(() => {
