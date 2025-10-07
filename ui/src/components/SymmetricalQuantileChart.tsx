@@ -7,7 +7,11 @@ import {
 } from '@scality/core-ui/dist/next';
 import { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { HEIGHT_SYMMETRICAL_CHART, PORT_NODE_EXPORTER } from '../constants';
+import {
+  DASHBOARD_QUANTILE_SYNC_ID,
+  HEIGHT_SYMMETRICAL_CHART,
+  PORT_NODE_EXPORTER,
+} from '../constants';
 import {
   useNodeAddressesSelector,
   useNodes,
@@ -154,6 +158,7 @@ const SymmetricalQuantileChart = ({
         yAxisType={'symmetrical'}
         yAxisTitle={yAxisTitle}
         unitRange={UNIT_RANGE_BS}
+        syncId={DASHBOARD_QUANTILE_SYNC_ID}
         renderTooltip={(tooltipProps) => {
           return (
             <SymmetricalQuantileTooltip

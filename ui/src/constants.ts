@@ -101,11 +101,12 @@ export const GRAFANA_DASHBOARDS = {
   volumes: '919b92a8e8041bd567af9edab12c840c',
 };
 // Height of the charts
-export const HEIGHT_DEFAULT_CHART = 120;
+export const HEIGHT_DEFAULT_CHART = 160;
 export const HEIGHT_SYMMETRICAL_CHART = 160;
 export const NODES_LIMIT_QUANTILE = 8;
 export const NODE_SYNC_ID = 'nodeMetrics';
 export const DASHBOARD_SYNC_ID = 'dashboard';
+export const DASHBOARD_QUANTILE_SYNC_ID = 'dashboard-quantile';
 
 // Chart color values for consistent coloring across components
 export const CHART_COLOR_VALUES = Object.values(chartColors);

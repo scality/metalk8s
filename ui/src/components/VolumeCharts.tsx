@@ -6,6 +6,7 @@ import {
 import { useCallback } from 'react';
 import {
   HEIGHT_DEFAULT_CHART,
+  HEIGHT_SYMMETRICAL_CHART,
   UNIT_RANGE_BS,
   UNIT_RANGE_SECONDS,
   YAXIS_TITLE_READ_WRITE,
@@ -68,7 +69,7 @@ export const VolumeThroughputChart = ({
   return (
     <LineTimeSerieChart
       series={series}
-      height={160}
+      height={HEIGHT_SYMMETRICAL_CHART}
       interval={interval}
       duration={duration}
       title="Disk Throughput"
@@ -120,7 +121,7 @@ export const VolumeLatencyChart = ({
   return (
     <LineTimeSerieChart
       series={series}
-      height={160}
+      height={HEIGHT_SYMMETRICAL_CHART}
       interval={interval}
       duration={duration}
       title="Disk Latency"
@@ -172,7 +173,7 @@ export const VolumeIOPSChart = ({
   return (
     <LineTimeSerieChart
       series={series}
-      height={160}
+      height={HEIGHT_SYMMETRICAL_CHART}
       interval={interval}
       duration={duration}
       title="IOPS"
