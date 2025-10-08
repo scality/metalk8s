@@ -1,11 +1,21 @@
-import { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { UseQueryOptions } from 'react-query';
 import 'react-query';
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
+import {
+  LineTimeSerieChart,
+  useChartId,
+  useMetricsTimeSpan,
+} from '@scality/core-ui/dist/next';
 import { getSeriesForSymmetricalChart } from '../services/graphUtils';
-import { HEIGHT_SYMMETRICAL_CHART } from '../constants';
+import {
+  CLUSTER_AVERAGE,
+  HEIGHT_SYMMETRICAL_CHART,
+  NODE_SYNC_ID,
+} from '../constants';
 import { NodesState } from '../ducks/app/nodes';
 import { useSymetricalChartSeries } from '../hooks';
+import { TimeSpanProps } from '../services/platformlibrary/metrics';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 
 const MetricSymmetricalChart = ({
   title,
@@ -30,10 +40,28 @@ const MetricSymmetricalChart = ({
   instanceIP: string;
   showAvg: boolean;
   nodesIPsInfo: NodesState['IPsInfo'];
-  getMetricAboveQuery: UseQueryOptions;
-  getMetricBelowQuery: UseQueryOptions;
-  getMetricAboveAvgQuery: UseQueryOptions;
-  getMetricBelowAvgQuery: UseQueryOptions;
+  getMetricAboveQuery: (
+    instanceIP: string,
+    timeSpanProps: TimeSpanProps,
+    planeInterface: string,
+  ) => UseQueryOptions;
+  getMetricBelowQuery: (
+    instanceIP: string,
+    timeSpanProps: TimeSpanProps,
+    planeInterface: string,
+  ) => UseQueryOptions;
+  getMetricAboveAvgQuery: (
+    timeSpanProps: TimeSpanProps,
+    showAvg: boolean,
+    instanceIP: string,
+    nodesIPsInfo: NodesState['IPsInfo'],
+  ) => UseQueryOptions;
+  getMetricBelowAvgQuery: (
+    timeSpanProps: TimeSpanProps,
+    showAvg: boolean,
+    instanceIP: string,
+    nodesIPsInfo: NodesState['IPsInfo'],
+  ) => UseQueryOptions;
   metricPrefixAbove: string;
   metricPrefixBelow: string;
   unitRange?: {
@@ -43,14 +71,15 @@ const MetricSymmetricalChart = ({
   planeInterface?: string;
   isPlaneInterfaceRequired?: boolean;
 }) => {
+  const chartId = useChartId();
+  const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: useCallback(
       (timeSpanProps) => {
         if (showAvg) {
           return [
-            // @ts-expect-error - FIXME when you are working on it
             getMetricAboveQuery(instanceIP, timeSpanProps, planeInterface),
-            // @ts-expect-error - FIXME when you are working on it
+
             getMetricAboveAvgQuery(
               timeSpanProps,
               showAvg,
@@ -60,20 +89,25 @@ const MetricSymmetricalChart = ({
           ];
         } else {
           return [
-            // @ts-expect-error - FIXME when you are working on it
             getMetricAboveQuery(instanceIP, timeSpanProps, planeInterface),
           ];
         }
       },
-      [instanceIP, showAvg, planeInterface, JSON.stringify(nodesIPsInfo)],
+      [
+        instanceIP,
+        showAvg,
+        planeInterface,
+        nodesIPsInfo,
+        getMetricAboveQuery,
+        getMetricAboveAvgQuery,
+      ],
     ),
     getBelowQueries: useCallback(
       (timeSpanProps) => {
         if (showAvg) {
           return [
-            // @ts-expect-error - FIXME when you are working on it
             getMetricBelowQuery(instanceIP, timeSpanProps, planeInterface),
-            // @ts-expect-error - FIXME when you are working on it
+
             getMetricBelowAvgQuery(
               timeSpanProps,
               showAvg,
@@ -83,19 +117,26 @@ const MetricSymmetricalChart = ({
           ];
         } else {
           return [
-            // @ts-expect-error - FIXME when you are working on it
             getMetricBelowQuery(instanceIP, timeSpanProps, planeInterface),
           ];
         }
       },
-      [instanceIP, showAvg, planeInterface, JSON.stringify(nodesIPsInfo)],
+      [
+        instanceIP,
+        showAvg,
+        planeInterface,
+        nodesIPsInfo,
+        getMetricBelowQuery,
+        getMetricBelowAvgQuery,
+      ],
     ),
     transformPrometheusDataToSeries: useCallback(
       (resultsAbove, resultsBelow) => {
+        let allSeries;
         if (showAvg) {
           const [resultAbove, resultAboveAvg] = resultsAbove;
           const [resultBelow, resultBelowAvg] = resultsBelow;
-          return getSeriesForSymmetricalChart(
+          allSeries = getSeriesForSymmetricalChart(
             resultAbove,
             resultBelow,
             nodeName,
@@ -107,7 +148,7 @@ const MetricSymmetricalChart = ({
         } else {
           const [resultAbove] = resultsAbove;
           const [resultBelow] = resultsBelow;
-          return getSeriesForSymmetricalChart(
+          allSeries = getSeriesForSymmetricalChart(
             resultAbove,
             resultBelow,
             nodeName,
@@ -115,24 +156,39 @@ const MetricSymmetricalChart = ({
             metricPrefixBelow,
           );
         }
+        return allSeries;
       },
       [showAvg, nodeName, metricPrefixAbove, metricPrefixBelow],
     ),
   });
+  const additionalNames = useMemo(
+    () => (showAvg ? [CLUSTER_AVERAGE] : []),
+    [showAvg],
+  );
+  useChartLegendRegistration({
+    chartId,
+    series,
+    isSymmetrical: true,
+    additionalNames,
+  });
   return (
-    <LineTemporalChart
-      series={series}
+    <LineTimeSerieChart
+      series={{
+        above: series.above,
+        below: series.below,
+      }}
       height={HEIGHT_SYMMETRICAL_CHART}
+      interval={interval}
+      duration={duration}
       title={title}
       startingTimeStamp={startingTimeStamp}
       yAxisType={'symmetrical'}
       yAxisTitle={yAxisTitle}
-      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
-      isLegendHidden={false}
       unitRange={unitRange}
+      syncId={NODE_SYNC_ID}
     />
   );
 };
 
-export default MetricSymmetricalChart;
+export default React.memo(MetricSymmetricalChart);

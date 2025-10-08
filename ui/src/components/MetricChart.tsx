@@ -1,10 +1,20 @@
-import { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { UseQueryOptions } from 'react-query';
 import 'react-query';
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
+import {
+  LineTimeSerieChart,
+  useChartId,
+  useMetricsTimeSpan,
+} from '@scality/core-ui/dist/next';
 import { convertPrometheusResultToSerieWithAverage } from '../services/graphUtils';
-import { HEIGHT_DEFAULT_CHART } from '../constants';
+import {
+  CLUSTER_AVERAGE,
+  HEIGHT_DEFAULT_CHART,
+  NODE_SYNC_ID,
+} from '../constants';
 import { useChartSeries } from '../hooks';
+import { TimeSpanProps } from '../services/platformlibrary/metrics';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 
 const MetricChart = ({
   title,
@@ -21,31 +31,34 @@ const MetricChart = ({
   nodeName: string;
   instanceIP: string;
   showAvg: boolean;
-  getMetricQuery: UseQueryOptions;
-  getMetricAvgQuery: UseQueryOptions;
+  getMetricQuery: (
+    instanceIP: string,
+    timeSpanProps: TimeSpanProps,
+  ) => UseQueryOptions;
+  getMetricAvgQuery: (
+    timeSpanProps: TimeSpanProps,
+    showAvg: boolean,
+  ) => UseQueryOptions;
   unitRange?: {
     threshold: number;
     label: string;
   }[];
 }) => {
+  const chartId = useChartId();
+  const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useChartSeries({
     getQueries: useCallback(
       (timeSpanProps) => {
         if (showAvg) {
           return [
-            // @ts-expect-error - FIXME when you are working on it
             getMetricQuery(instanceIP, timeSpanProps),
-            // @ts-expect-error - FIXME when you are working on it
             getMetricAvgQuery(timeSpanProps, showAvg),
           ];
         } else {
-          return [
-            // @ts-expect-error - FIXME when you are working on it
-            getMetricQuery(instanceIP, timeSpanProps),
-          ];
+          return [getMetricQuery(instanceIP, timeSpanProps)];
         }
       },
-      [instanceIP, showAvg],
+      [instanceIP, showAvg, getMetricQuery, getMetricAvgQuery],
     ),
     transformPrometheusDataToSeries: useCallback(
       ([result, resultAvg]) => {
@@ -62,18 +75,30 @@ const MetricChart = ({
       [nodeName, showAvg],
     ),
   });
+  const additionalNames = useMemo(
+    () => (showAvg ? [CLUSTER_AVERAGE] : []),
+    [showAvg],
+  );
+  useChartLegendRegistration({
+    chartId,
+    series,
+    isSymmetrical: false,
+    additionalNames,
+  });
   return (
-    <LineTemporalChart
+    <LineTimeSerieChart
       series={series}
       height={HEIGHT_DEFAULT_CHART}
+      interval={interval}
+      duration={duration}
       title={title}
       startingTimeStamp={startingTimeStamp}
       yAxisType={yAxisType}
-      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
       unitRange={unitRange}
+      syncId={NODE_SYNC_ID}
     />
   );
 };
 
-export default MetricChart;
+export default React.memo(MetricChart);

@@ -1,9 +1,22 @@
-import React, { useCallback } from 'react';
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
 import {
-  getSeriesForSymmetricalChart,
+  LineTimeSerieChart,
+  useMetricsTimeSpan,
+  useChartId,
+} from '@scality/core-ui/dist/next';
+import { useCallback } from 'react';
+import {
+  HEIGHT_DEFAULT_CHART,
+  HEIGHT_SYMMETRICAL_CHART,
+  UNIT_RANGE_BS,
+  UNIT_RANGE_SECONDS,
+  YAXIS_TITLE_READ_WRITE,
+} from '../constants';
+import { useSingleChartSerie, useSymetricalChartSeries } from '../hooks';
+import {
   convertPrometheusResultToSerieWithAverage,
+  getSeriesForSymmetricalChart,
 } from '../services/graphUtils';
+import type { TimeSpanProps } from '../services/platformlibrary/metrics';
 import {
   getVolumeIOPSReadQuery,
   getVolumeIOPSWriteQuery,
@@ -13,12 +26,10 @@ import {
   getVolumeThroughputWriteQuery,
   getVolumeUsageQuery,
 } from '../services/platformlibrary/metrics';
-import type { TimeSpanProps } from '../services/platformlibrary/metrics';
-import {
-  UNIT_RANGE_BS,
-  YAXIS_TITLE_READ_WRITE,
-} from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-import { useSingleChartSerie, useSymetricalChartSeries } from '../hooks';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
+
+const VOLUME_SYNC_ID = 'volume';
+
 export const VolumeThroughputChart = ({
   instanceIp,
   deviceName,
@@ -28,39 +39,46 @@ export const VolumeThroughputChart = ({
   deviceName: string;
   volumeName: string;
 }) => {
+  const chartId = useChartId();
+  const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeThroughputWriteQuery(instanceIp, deviceName, timeSpanProps),
     ],
-    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeThroughputReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
     transformPrometheusDataToSeries: useCallback(
-      ([prometheusResultAbove], [prometheusResultBelow]) =>
-        getSeriesForSymmetricalChart(
+      ([prometheusResultAbove], [prometheusResultBelow]) => {
+        const allSeries = getSeriesForSymmetricalChart(
           prometheusResultAbove,
           prometheusResultBelow,
           volumeName,
           'write',
           'read',
-        ),
+        );
+
+        return allSeries;
+      },
       [volumeName],
     ),
   });
+
+  useChartLegendRegistration({ chartId, series, isSymmetrical: true });
+
   return (
-    <LineTemporalChart
+    <LineTimeSerieChart
       series={series}
-      height={160}
+      height={HEIGHT_SYMMETRICAL_CHART}
+      interval={interval}
+      duration={duration}
       title="Disk Throughput"
       startingTimeStamp={startingTimeStamp}
       yAxisType={'symmetrical'}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
       unitRange={UNIT_RANGE_BS}
-      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
-      isLegendHidden={false}
+      syncId={VOLUME_SYNC_ID}
     />
   );
 };
@@ -73,56 +91,46 @@ export const VolumeLatencyChart = ({
   deviceName: string;
   volumeName: string;
 }) => {
+  const chartId = useChartId();
+  const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeLatencyWriteQuery(instanceIp, deviceName, timeSpanProps),
     ],
-    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeLatencyReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
     transformPrometheusDataToSeries: useCallback(
-      ([prometheusResultAbove], [prometheusResultBelow]) =>
-        getSeriesForSymmetricalChart(
+      ([prometheusResultAbove], [prometheusResultBelow]) => {
+        const allSeries = getSeriesForSymmetricalChart(
           prometheusResultAbove,
           prometheusResultBelow,
           volumeName,
           'write',
           'read',
-        ),
+        );
+
+        return allSeries;
+      },
       [volumeName],
     ),
   });
+
+  useChartLegendRegistration({ chartId, series, isSymmetrical: true });
+
   return (
-    <LineTemporalChart
+    <LineTimeSerieChart
       series={series}
-      height={160}
+      height={HEIGHT_SYMMETRICAL_CHART}
+      interval={interval}
+      duration={duration}
       title="Disk Latency"
       startingTimeStamp={startingTimeStamp}
       yAxisType={'symmetrical'}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
-      unitRange={[
-        {
-          threshold: 0,
-          label: 'µs',
-        },
-        {
-          threshold: 1000,
-          label: 'ms',
-        },
-        {
-          threshold: 1000 * 1000,
-          label: 's',
-        },
-        {
-          threshold: 60 * 1000 * 1000,
-          label: 'm',
-        },
-      ]}
-      // @ts-expect-error - FIXME when you are working on it
+      unitRange={UNIT_RANGE_SECONDS}
       isLoading={isLoading}
-      isLegendHidden={false}
+      syncId={VOLUME_SYNC_ID}
     />
   );
 };
@@ -135,38 +143,45 @@ export const VolumeIOPSChart = ({
   deviceName: string;
   volumeName: string;
 }) => {
+  const chartId = useChartId();
+  const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    // @ts-expect-error - FIXME when you are working on it
     getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeIOPSWriteQuery(instanceIp, deviceName, timeSpanProps),
     ],
-    // @ts-expect-error - FIXME when you are working on it
     getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeIOPSReadQuery(instanceIp, deviceName, timeSpanProps),
     ],
     transformPrometheusDataToSeries: useCallback(
-      ([prometheusResultAbove], [prometheusResultBelow]) =>
-        getSeriesForSymmetricalChart(
+      ([prometheusResultAbove], [prometheusResultBelow]) => {
+        const allSeries = getSeriesForSymmetricalChart(
           prometheusResultAbove,
           prometheusResultBelow,
           volumeName,
           'write',
           'read',
-        ),
+        );
+
+        return allSeries;
+      },
       [volumeName],
     ),
   });
+
+  useChartLegendRegistration({ chartId, series, isSymmetrical: true });
+
   return (
-    <LineTemporalChart
+    <LineTimeSerieChart
       series={series}
-      height={160}
+      height={HEIGHT_SYMMETRICAL_CHART}
+      interval={interval}
+      duration={duration}
       title="IOPS"
       startingTimeStamp={startingTimeStamp}
       yAxisType={'symmetrical'}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
-      // @ts-expect-error - FIXME when you are working on it
       isLoading={isLoading}
-      isLegendHidden={false}
+      syncId={VOLUME_SYNC_ID}
     />
   );
 };
@@ -179,8 +194,9 @@ export const VolumeUsageChart = ({
   namespace: string;
   volumeName: string;
 }) => {
+  const chartId = useChartId();
+  const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSingleChartSerie({
-    // @ts-expect-error - FIXME when you are working on it
     getQuery: (timeSpanProps: TimeSpanProps) =>
       getVolumeUsageQuery(pvcName, namespace, timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
@@ -189,15 +205,20 @@ export const VolumeUsageChart = ({
       [volumeName],
     ),
   });
+
+  useChartLegendRegistration({ chartId, series, isSymmetrical: false });
+
   return (
-    <LineTemporalChart
+    <LineTimeSerieChart
       series={series}
-      height={160}
+      height={HEIGHT_DEFAULT_CHART}
+      interval={interval}
+      duration={duration}
       title="Usage"
       startingTimeStamp={startingTimeStamp}
       yAxisType={'percentage'}
       isLoading={isLoading}
-      isLegendHidden={false}
+      syncId={VOLUME_SYNC_ID}
     />
   );
 };

@@ -1,5 +1,11 @@
-import React, { useCallback } from 'react';
-import { LineTemporalChart } from '@scality/core-ui/dist/next';
+import {
+  LineTimeSerieChart,
+  useMetricsTimeSpan,
+  useChartId,
+} from '@scality/core-ui/dist/next';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
+
+import { useCallback } from 'react';
 import { getMultiResourceSeriesForChart } from '../services/graphUtils';
 import {
   useNodeAddressesSelector,
@@ -13,6 +19,7 @@ import {
   getNodesCPUUsageQuery,
 } from '../services/platformlibrary/metrics';
 import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
+import { HEIGHT_DEFAULT_CHART } from '../constants';
 
 const DashboardChartCpuUsage = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
@@ -20,9 +27,7 @@ const DashboardChartCpuUsage = () => {
     <>
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileQuery={getNodesCPUUsageQuantileQuery}
-          // @ts-expect-error - FIXME when you are working on it
           getQuantileHoverQuery={getNodesCPUUsageOutpassingThresholdQuery}
           title={'CPU Usage'}
           yAxisType={'percentage'}
@@ -35,25 +40,35 @@ const DashboardChartCpuUsage = () => {
 };
 
 const DashboardChartCpuUsageWithoutQuantils = () => {
-  const nodeAddresses = useNodeAddressesSelector(useNodes());
+  const chartId = useChartId();
+  const nodes = useNodes();
+  const nodeAddresses = useNodeAddressesSelector(nodes);
+
+  const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
-    // @ts-expect-error - FIXME when you are working on it
     getQuery: (timeSpanProps) => getNodesCPUUsageQuery(timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) =>
-        getMultiResourceSeriesForChart(prometheusResult, nodeAddresses), // eslint-disable-next-line react-hooks/exhaustive-deps
+        getMultiResourceSeriesForChart(prometheusResult, nodeAddresses),
+      //Expect warning because of complex dependency
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [JSON.stringify(nodeAddresses)],
     ),
   });
+
+  useChartLegendRegistration({ chartId, series, isSymmetrical: false });
+
   return (
-    <LineTemporalChart
+    <LineTimeSerieChart
       series={series}
-      height={80}
+      height={HEIGHT_DEFAULT_CHART}
+      interval={interval}
+      duration={duration}
       title="CPU Usage"
       startingTimeStamp={startingTimeStamp}
       yAxisType={'percentage'}
-      isLegendHidden={true}
       isLoading={isLoading}
+      syncId="dashboard"
     />
   );
 };

@@ -1,17 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useIntl } from 'react-intl';
-import {
-  PageSubtitle,
-  GraphsWrapper,
-} from '../components/style/CommonLayoutStyle';
+import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 import DashboardPlaneHealth from './DashboardPlaneHealth';
 import DashboardBandwidthChart from './DashboardBandwidthChart';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
 import { useShowQuantileChart } from '../hooks';
 import { QuantileHelpTooltip } from './DashboardMetrics';
 import { Box } from '@scality/core-ui/dist/next';
-import { spacing } from '@scality/core-ui';
+import { spacing, Stack } from '@scality/core-ui';
 export const NetworkContainer = styled.div`
   padding: ${spacing.r2} ${spacing.r4};
   display: flex;
@@ -48,7 +45,7 @@ const DashboardNetwork = () => {
 
       <DashboardPlaneHealth />
       <DashboardScrollableArea>
-        <GraphsWrapper>
+        <Stack direction="vertical" gap="r16">
           <DashboardBandwidthChart
             title="ControlPlane Bandwidth"
             plane="controlPlane"
@@ -57,7 +54,7 @@ const DashboardNetwork = () => {
             title="WorkloadPlane Bandwidth"
             plane="workloadPlane"
           />
-        </GraphsWrapper>
+        </Stack>
       </DashboardScrollableArea>
     </NetworkContainer>
   );

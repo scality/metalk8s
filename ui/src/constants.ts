@@ -1,3 +1,5 @@
+import { chartColors } from '@scality/core-ui/dist/style/theme';
+
 export const REFRESH_TIMEOUT = 15000;
 export const REFRESH_METRICS_GRAPH = 60000;
 export const FR_LANG = 'FR';
@@ -84,10 +86,14 @@ export const NODE_ALERTS_GROUP = [
 export const CIRCLE_BASE_SIZE = 'CIRCLE_BASE_SIZE';
 export const CIRCLE_DOUBLE_SIZE = 'CIRCLE_DOUBLE_SIZE';
 // LineChart colors
-export const lineColor1 = '#A14FBF';
-export const lineColor2 = '#BE9A40';
-export const lineColor3 = '#4BE4E2';
-export const lineColor4 = '#DC90F1';
+export const lineColor1 = chartColors.lineColor1;
+export const lineColor2 = chartColors.lineColor2;
+export const lineColor3 = chartColors.lineColor3;
+export const lineColor4 = chartColors.lineColor4;
+export const lineColor5 = chartColors.lineColor5;
+export const lineColor6 = chartColors.lineColor6;
+export const lineColor7 = chartColors.lineColor7;
+export const lineColor8 = chartColors.lineColor8;
 // Grafana dashboard UIDs (for stable links)
 export const GRAFANA_DASHBOARDS = {
   logs: 'a7e130cb82be229d6f3edbfd0a438001',
@@ -95,6 +101,56 @@ export const GRAFANA_DASHBOARDS = {
   volumes: '919b92a8e8041bd567af9edab12c840c',
 };
 // Height of the charts
-export const HEIGHT_DEFAULT_CHART = 120;
+export const HEIGHT_DEFAULT_CHART = 160;
 export const HEIGHT_SYMMETRICAL_CHART = 160;
 export const NODES_LIMIT_QUANTILE = 8;
+export const NODE_SYNC_ID = 'nodeMetrics';
+export const DASHBOARD_SYNC_ID = 'dashboard';
+export const DASHBOARD_QUANTILE_SYNC_ID = 'dashboard-quantile';
+
+// Chart color values for consistent coloring across components
+export const CHART_COLOR_VALUES = Object.values(chartColors);
+export const UNIT_RANGE_BS = [
+  {
+    threshold: 0,
+    label: 'B/s',
+  },
+  {
+    threshold: 1024,
+    label: 'KiB/s',
+  },
+  {
+    threshold: 1024 * 1024,
+    label: 'MiB/s',
+  },
+  {
+    threshold: 1024 * 1024 * 1024,
+    label: 'GiB/s',
+  },
+  {
+    threshold: 1024 * 1024 * 1024 * 1024,
+    label: 'TiB/s',
+  },
+];
+
+export const UNIT_RANGE_SECONDS = [
+  {
+    threshold: 0,
+    label: 'µs',
+  },
+  {
+    threshold: 1000,
+    label: 'ms',
+  },
+  {
+    threshold: 1000 * 1000,
+    label: 's',
+  },
+  {
+    threshold: 60 * 1000 * 1000,
+    label: 'm',
+  },
+];
+export const YAXIS_TITLE_READ_WRITE = 'write(+) / read(-)';
+export const YAXIS_TITLE_IN_OUT = 'in(+) / out(-)';
+export const CLUSTER_AVERAGE = 'Cluster Avg.';
