@@ -1,7 +1,6 @@
 import {
   PORT_NODE_EXPORTER,
   STATUS_CRITICAL,
-  STATUS_HEALTH,
   STATUS_WARNING,
 } from '../../constants';
 import { queryPromtheusMetrics } from '../prometheus/fetchMetrics';
@@ -1187,16 +1186,6 @@ function convertSegmentToAlert(segment) {
         description:
           'Alerting services were unavailable during this period of time',
       };
-
-    case STATUS_HEALTH:
-      return {
-        ...baseSegment,
-        severity: 'healthy',
-        labels: {
-          alertname: 'NoAlerts',
-        },
-        description: 'The cluster is healthy',
-      };
   }
 }
 
@@ -1212,86 +1201,62 @@ export const getClusterAlertSegmentQuery = (duration: number) => {
     startingTimeISO,
     currentTimeISO,
     frequency,
-  }: TimeSpanProps) => {
-    const prometheusPromise = queryPrometheusRange(
+  }: TimeSpanProps) =>
+    queryPrometheusRange(
       startingTimeISO,
       currentTimeISO,
       frequency,
       encodeURIComponent(query),
-    );
+    )?.then((resolve) => {
+      if (resolve.status === 'error') {
+        throw resolve.error;
+      }
 
-    if (!prometheusPromise) {
-      throw new Error(
-        'queryPrometheusRange returned null/undefined - Prometheus might not be available',
+      if (resolve.data.resultType !== 'matrix') {
+        throw new Error('Failed to fetch data from Prometheus');
+      }
+
+      const clusterAtRiskResult = resolve.data.result.find(
+        (result) => result.metric.alertname === 'ClusterAtRisk',
+      ) || {
+        values: [],
+      };
+
+      const clusterDegradedResult = resolve.data.result.find(
+        (result) => result.metric.alertname === 'ClusterDegraded',
+      ) || {
+        values: [],
+      };
+
+      const watchdogResult = resolve.data.result.find(
+        (result) => result.metric.alertname === 'Watchdog',
+      ) || {
+        values: [],
+      };
+      const pointsAtRisk = addMissingDataPoint(
+        clusterAtRiskResult.values,
+        Date.parse(startingTimeISO) / 1000,
+        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        frequency,
       );
-    }
-
-    return prometheusPromise
-      ?.then((resolve) => {
-        if (resolve.status === 'error') {
-          throw new Error(resolve.error);
-        }
-
-        const clusterAtRiskResult = resolve.data.result.find(
-          // @ts-expect-error - FIXME when you are working on it
-          (result) => result.metric.alertname === 'ClusterAtRisk',
-        ) || {
-          values: [],
-        };
-
-        const clusterDegradedResult = resolve.data.result.find(
-          // @ts-expect-error - FIXME when you are working on it
-          (result) => result.metric.alertname === 'ClusterDegraded',
-        ) || {
-          values: [],
-        };
-
-        const watchdogResult = resolve.data.result.find(
-          // @ts-expect-error - FIXME when you are working on it
-          (result) => result.metric.alertname === 'Watchdog',
-        ) || {
-          values: [],
-        };
-        const pointsAtRisk = addMissingDataPoint(
-          // @ts-expect-error - FIXME when you are working on it
-          clusterAtRiskResult.values,
-          Date.parse(startingTimeISO) / 1000,
-          Date.parse(currentTimeISO) / 1000 -
-            Date.parse(startingTimeISO) / 1000,
-          frequency,
-        );
-
-        const pointsDegraded = addMissingDataPoint(
-          // @ts-expect-error - FIXME when you are working on it
-          clusterDegradedResult.values,
-          Date.parse(startingTimeISO) / 1000,
-          Date.parse(currentTimeISO) / 1000 -
-            Date.parse(startingTimeISO) / 1000,
-          frequency,
-        );
-
-        const pointsWatchdog = addMissingDataPoint(
-          // @ts-expect-error - FIXME when you are working on it
-          watchdogResult.values,
-          Date.parse(startingTimeISO) / 1000,
-          Date.parse(currentTimeISO) / 1000 -
-            Date.parse(startingTimeISO) / 1000,
-          frequency,
-        );
-
-        const segments = getSegments({
-          pointsDegraded,
-          pointsAtRisk,
-          pointsWatchdog,
-        });
-        console.log('DEBUG: segments', segments);
-        return segments.map(convertSegmentToAlert);
-      })
-      .catch((error) => {
-        // Re-throw the error to see the original error in React Query
-        throw error;
-      });
-  };
+      const pointsDegraded = addMissingDataPoint(
+        clusterDegradedResult.values,
+        Date.parse(startingTimeISO) / 1000,
+        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        frequency,
+      );
+      const pointsWatchdog = addMissingDataPoint(
+        watchdogResult.values,
+        Date.parse(startingTimeISO) / 1000,
+        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        frequency,
+      );
+      return getSegments({
+        pointsDegraded,
+        pointsAtRisk,
+        pointsWatchdog,
+      }).map(convertSegmentToAlert);
+    });
 
   return {
     queryKey: ['clusterAlertsNumber', duration],
@@ -1314,7 +1279,6 @@ export const getClusterAlertSegmentQuery = (duration: number) => {
     refetchOnWindowFocus: false,
   };
 };
-
 export const prometheusKey = {
   query: (query) => ['query', query],
   queryRange: ['queryRange'],
