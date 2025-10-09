@@ -322,10 +322,32 @@ export function getNaNSegments(points: [number, number | string | null][]): {
     ];
   }, []);
 }
-export function getSegments({ pointsAtRisk, pointsDegraded, pointsWatchdog }) {
-  return pointsDegraded.reduce((agg, [timestamp, degradedValue], index) => {
+
+export function getSegments({
+  pointsAtRisk,
+  pointsDegraded,
+  pointsWatchdog,
+  startTimeStampSeconds,
+  endTimeStampSeconds,
+}) {
+  // If pointsWatchdog is empty, it means alerting service was completely unavailable
+  if (!pointsWatchdog || pointsWatchdog.length === 0) {
+    if (startTimeStampSeconds && endTimeStampSeconds) {
+      return [
+        {
+          startsAt: startTimeStampSeconds,
+          endsAt: endTimeStampSeconds,
+          type: NAN_STRING,
+        },
+      ];
+    }
+    return [];
+  }
+
+  // Use pointsWatchdog as the primary driver since it indicates if alerting service is available
+  return pointsWatchdog.reduce((agg, [timestamp, watchdogValue], index) => {
     const atRiskValue = pointsAtRisk[index]?.[1] || 0;
-    const watchdogValue = pointsWatchdog[index]?.[1] || '0';
+    const degradedValue = pointsDegraded[index]?.[1] || 0;
     const currentType =
       watchdogValue !== '1'
         ? NAN_STRING
@@ -338,79 +360,28 @@ export function getSegments({ pointsAtRisk, pointsDegraded, pointsWatchdog }) {
     if (agg.length > 0) {
       const lastValue = agg[agg.length - 1];
 
-      /*eslint default-case: 0*/
-      switch (lastValue.type) {
-        case STATUS_WARNING:
-          switch (currentType) {
-            case STATUS_WARNING:
-              return agg;
-
-            default:
-              agg[agg.length - 1].endsAt = timestamp;
-              agg.push({
-                startsAt: timestamp,
-                endsAt: null,
-                type: currentType,
-              });
-              return agg;
-          }
-
-        case STATUS_CRITICAL:
-          switch (currentType) {
-            case STATUS_CRITICAL:
-              return agg;
-
-            default:
-              agg[agg.length - 1].endsAt = timestamp;
-              agg.push({
-                startsAt: timestamp,
-                endsAt: null,
-                type: currentType,
-              });
-              return agg;
-          }
-
-        case NAN_STRING:
-          switch (currentType) {
-            case NAN_STRING:
-              return agg;
-
-            default:
-              agg[agg.length - 1].endsAt = timestamp;
-              agg.push({
-                startsAt: timestamp,
-                endsAt: null,
-                type: currentType,
-              });
-              return agg;
-          }
-
-        case STATUS_HEALTH:
-          switch (currentType) {
-            case STATUS_HEALTH:
-              return agg;
-
-            default:
-              agg[agg.length - 1].endsAt = timestamp;
-              agg.push({
-                startsAt: timestamp,
-                endsAt: null,
-                type: currentType,
-              });
-              return agg;
-          }
+      // Only create new segment if status changes
+      if (lastValue.type !== currentType) {
+        lastValue.endsAt = timestamp;
+        agg.push({
+          startsAt: timestamp,
+          endsAt: null,
+          type: currentType,
+        });
       }
-    }
-
-    return [
-      {
+    } else {
+      // First segment
+      agg.push({
         startsAt: timestamp,
         endsAt: null,
         type: currentType,
-      },
-    ];
+      });
+    }
+
+    return agg;
   }, []);
 }
+
 // A custom hook that builds on useLocation to parse the query string.
 export const useURLQuery = () => {
   return new URLSearchParams(useLocation().search);
