@@ -45,6 +45,7 @@
     "ts-node": "^10.9.2"
   },
   "dependencies": {
+    "@rspack/binding-linux-x64-musl": "^1.5.8",
     "@scality/core-ui": "0.173.0",
     "@scality/module-federation": "^1.4.1",
     "downshift": "^8.0.0",
