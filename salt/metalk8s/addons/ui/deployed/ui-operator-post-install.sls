@@ -15,21 +15,20 @@ Remove legacy volumes and volumeMounts from metalk8s-ui deployment:
         - name: metalk8s-ui
         - namespace: metalk8s-ui
         - patch:
-            spec:
-              template:
-                spec:
-                  containers:
-                  - name: metalk8s-ui
-                    volumeMounts:
-                    - name: config-volume-metalk8s-ui
-                      mountPath: /usr/share/nginx/html/.well-known/configs
-                      readOnly: true
-                  volumes:
-                  - name: config-volume-metalk8s-ui
-                    configMap:
-                      name: metalk8s-ui-runtime-app-configuration
-                      defaultMode: 420
-        - content_type: application/merge-patch+json
+          - op: replace
+            path: /spec/template/spec/containers/0/volumeMounts
+            value:
+            - name: config-volume-metalk8s-ui
+              mountPath: /usr/share/nginx/html/.well-known/configs
+              readOnly: true
+          - op: replace
+            path: /spec/template/spec/volumes
+            value:
+            - name: config-volume-metalk8s-ui
+              configMap:
+                name: metalk8s-ui-runtime-app-configuration
+                defaultMode: 420
+        - content_type: application/json-patch+json
 
 {%- endif %}
 
