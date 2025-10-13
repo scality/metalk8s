@@ -1,6 +1,6 @@
 # This can file can be removed in v132.0.0
 Remove legacy volumes and volumeMounts from metalk8s-ui deployment:
-    metalk8s_kubernetes.object_patched:
+    metalk8s_kubernetes.object_updated:
         - apiVersion: apps/v1
         - kind: Deployment
         - name: metalk8s-ui
