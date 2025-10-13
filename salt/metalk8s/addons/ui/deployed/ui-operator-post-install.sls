@@ -1,4 +1,13 @@
-# This can file can be removed in v132.0.0
+{%- set metalk8s_ui_deployment = salt.metalk8s_kubernetes.get_object(
+        kind='Deployment',
+        apiVersion='apps/v1',
+        namespace='metalk8s-ui',
+        name='metalk8s-ui',
+  )
+%}
+
+{%- if metalk8s_ui_deployment %}
+
 Remove legacy volumes and volumeMounts from metalk8s-ui deployment:
     metalk8s_kubernetes.object_updated:
         - apiVersion: apps/v1
@@ -21,6 +30,8 @@ Remove legacy volumes and volumeMounts from metalk8s-ui deployment:
                       name: metalk8s-ui-runtime-app-configuration
                       defaultMode: 420
         - content_type: application/merge-patch+json
+
+{%- endif %}
 
 Delete old metalk8s-ui ingress:
     metalk8s_kubernetes.object_absent:
