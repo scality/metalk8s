@@ -1,5 +1,5 @@
 include:
 - .dependencies
-- .ui-operator-prepare
 - .ui-operator-cr
+- .ui-operator-post-install
 - .ingress
