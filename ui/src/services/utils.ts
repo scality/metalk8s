@@ -345,41 +345,45 @@ export function getSegments({
   }
 
   // Use pointsWatchdog as the primary driver since it indicates if alerting service is available
-  return pointsWatchdog.reduce((agg, [timestamp, watchdogValue], index) => {
-    const atRiskValue = pointsAtRisk[index]?.[1] || 0;
-    const degradedValue = pointsDegraded[index]?.[1] || 0;
-    const currentType =
-      watchdogValue !== '1'
-        ? NAN_STRING
-        : atRiskValue > 0
-        ? STATUS_CRITICAL
-        : degradedValue > 0
-        ? STATUS_WARNING
-        : STATUS_HEALTH;
+  const segments = pointsWatchdog.reduce(
+    (agg, [timestamp, watchdogValue], index) => {
+      const atRiskValue = pointsAtRisk[index]?.[1] || 0;
+      const degradedValue = pointsDegraded[index]?.[1] || 0;
+      const currentType =
+        watchdogValue !== '1'
+          ? NAN_STRING
+          : atRiskValue > 0
+          ? STATUS_CRITICAL
+          : degradedValue > 0
+          ? STATUS_WARNING
+          : STATUS_HEALTH;
 
-    if (agg.length > 0) {
-      const lastValue = agg[agg.length - 1];
+      if (agg.length > 0) {
+        const lastValue = agg[agg.length - 1];
 
-      // Only create new segment if status changes
-      if (lastValue.type !== currentType) {
-        lastValue.endsAt = timestamp;
+        // Only create new segment if status changes
+        if (lastValue.type !== currentType) {
+          lastValue.endsAt = timestamp;
+          agg.push({
+            startsAt: timestamp,
+            endsAt: null,
+            type: currentType,
+          });
+        }
+      } else {
+        // First segment
         agg.push({
           startsAt: timestamp,
           endsAt: null,
           type: currentType,
         });
       }
-    } else {
-      // First segment
-      agg.push({
-        startsAt: timestamp,
-        endsAt: null,
-        type: currentType,
-      });
-    }
 
-    return agg;
-  }, []);
+      return agg;
+    },
+    [],
+  );
+  return segments.filter((segment) => segment.type !== STATUS_HEALTH);
 }
 
 // A custom hook that builds on useLocation to parse the query string.
