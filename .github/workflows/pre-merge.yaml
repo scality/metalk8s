@@ -153,7 +153,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Install node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
       - name: Cache node modules
@@ -196,7 +196,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Install node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
       - name: Cache node modules
@@ -232,7 +232,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Install node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
       - name: Cache node modules
@@ -372,7 +372,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Install node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
       - name: Cache node modules
@@ -451,7 +451,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Install node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
       - name: Cache node modules
