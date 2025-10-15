@@ -1215,6 +1215,9 @@ export const getClusterAlertSegmentQuery = (duration: number) => {
       if (resolve.data.resultType !== 'matrix') {
         throw new Error('Failed to fetch data from Prometheus');
       }
+      const startTimeStampSeconds = Date.parse(startingTimeISO) / 1000;
+      const endTimeStampSeconds = Date.parse(currentTimeISO) / 1000;
+      const timeSpanSeconds = endTimeStampSeconds - startTimeStampSeconds;
 
       const clusterAtRiskResult = resolve.data.result.find(
         (result) => result.metric.alertname === 'ClusterAtRisk',
@@ -1235,26 +1238,28 @@ export const getClusterAlertSegmentQuery = (duration: number) => {
       };
       const pointsAtRisk = addMissingDataPoint(
         clusterAtRiskResult.values,
-        Date.parse(startingTimeISO) / 1000,
-        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        startTimeStampSeconds,
+        timeSpanSeconds,
         frequency,
       );
       const pointsDegraded = addMissingDataPoint(
         clusterDegradedResult.values,
-        Date.parse(startingTimeISO) / 1000,
-        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        startTimeStampSeconds,
+        timeSpanSeconds,
         frequency,
       );
       const pointsWatchdog = addMissingDataPoint(
         watchdogResult.values,
-        Date.parse(startingTimeISO) / 1000,
-        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        startTimeStampSeconds,
+        timeSpanSeconds,
         frequency,
       );
       return getSegments({
         pointsDegraded,
         pointsAtRisk,
         pointsWatchdog,
+        startTimeStampSeconds,
+        endTimeStampSeconds,
       }).map(convertSegmentToAlert);
     });
 

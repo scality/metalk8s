@@ -322,94 +322,70 @@ export function getNaNSegments(points: [number, number | string | null][]): {
     ];
   }, []);
 }
-export function getSegments({ pointsAtRisk, pointsDegraded, pointsWatchdog }) {
-  return pointsDegraded.reduce((agg, [timestamp, degradedValue], index) => {
-    const atRiskValue = pointsAtRisk[index][1];
-    const currentType =
-      pointsWatchdog[index][1] !== '1'
-        ? NAN_STRING
-        : atRiskValue > 0
-        ? STATUS_CRITICAL
-        : degradedValue > 0
-        ? STATUS_WARNING
-        : STATUS_HEALTH;
 
-    if (agg.length > 0) {
-      const lastValue = agg[agg.length - 1];
-
-      /*eslint default-case: 0*/
-      switch (lastValue.type) {
-        case STATUS_WARNING:
-          switch (currentType) {
-            case STATUS_WARNING:
-              return agg;
-
-            default:
-              agg[agg.length - 1].endsAt = timestamp;
-              agg.push({
-                startsAt: timestamp,
-                endsAt: null,
-                type: currentType,
-              });
-              return agg;
-          }
-
-        case STATUS_CRITICAL:
-          switch (currentType) {
-            case STATUS_CRITICAL:
-              return agg;
-
-            default:
-              agg[agg.length - 1].endsAt = timestamp;
-              agg.push({
-                startsAt: timestamp,
-                endsAt: null,
-                type: currentType,
-              });
-              return agg;
-          }
-
-        case NAN_STRING:
-          switch (currentType) {
-            case NAN_STRING:
-              return agg;
-
-            default:
-              agg[agg.length - 1].endsAt = timestamp;
-              agg.push({
-                startsAt: timestamp,
-                endsAt: null,
-                type: currentType,
-              });
-              return agg;
-          }
-
-        case STATUS_HEALTH:
-          switch (currentType) {
-            case STATUS_HEALTH:
-              return agg;
-
-            default:
-              agg[agg.length - 1].endsAt = timestamp;
-              agg.push({
-                startsAt: timestamp,
-                endsAt: null,
-                type: currentType,
-              });
-              return agg;
-          }
-      }
+export function getSegments({
+  pointsAtRisk,
+  pointsDegraded,
+  pointsWatchdog,
+  startTimeStampSeconds,
+  endTimeStampSeconds,
+}) {
+  // If pointsWatchdog is empty, it means alerting service was completely unavailable
+  if (!pointsWatchdog || pointsWatchdog.length === 0) {
+    if (startTimeStampSeconds && endTimeStampSeconds) {
+      return [
+        {
+          startsAt: startTimeStampSeconds,
+          endsAt: endTimeStampSeconds,
+          type: NAN_STRING,
+        },
+      ];
     }
+    return [];
+  }
 
-    return [
-      {
-        startsAt: timestamp,
-        endsAt: null,
-        type: currentType,
-      },
-    ];
-  }, []);
+  // Use pointsWatchdog as the primary driver since it indicates if alerting service is available
+  const segments = pointsWatchdog.reduce(
+    (agg, [timestamp, watchdogValue], index) => {
+      const atRiskValue = pointsAtRisk[index]?.[1] || 0;
+      const degradedValue = pointsDegraded[index]?.[1] || 0;
+      const currentType =
+        watchdogValue !== '1'
+          ? NAN_STRING
+          : atRiskValue > 0
+          ? STATUS_CRITICAL
+          : degradedValue > 0
+          ? STATUS_WARNING
+          : STATUS_HEALTH;
+
+      if (agg.length > 0) {
+        const lastValue = agg[agg.length - 1];
+
+        // Only create new segment if status changes
+        if (lastValue.type !== currentType) {
+          lastValue.endsAt = timestamp;
+          agg.push({
+            startsAt: timestamp,
+            endsAt: null,
+            type: currentType,
+          });
+        }
+      } else {
+        // First segment
+        agg.push({
+          startsAt: timestamp,
+          endsAt: null,
+          type: currentType,
+        });
+      }
+
+      return agg;
+    },
+    [],
+  );
+  return segments.filter((segment) => segment.type !== STATUS_HEALTH);
 }
+
 // A custom hook that builds on useLocation to parse the query string.
 export const useURLQuery = () => {
   return new URLSearchParams(useLocation().search);

@@ -477,6 +477,8 @@ describe('getSegments', () => {
           pointsDegraded,
           pointsAtRisk,
           pointsWatchdog,
+          startTimeStampSeconds: 1,
+          endTimeStampSeconds: 6,
         });
         expect(result).toStrictEqual(expected);
       });
