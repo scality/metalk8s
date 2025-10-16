@@ -882,6 +882,7 @@ metalk8s:
             extra_context:
               listening_address: "10.0.0.1"
               listening_port: 8080
+              archives: *example_archives
 
       repositories-manifest.yaml.j2:
         _cases:
