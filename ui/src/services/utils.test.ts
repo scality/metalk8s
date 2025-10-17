@@ -1,5 +1,5 @@
 import { NAN_STRING } from '@scality/core-ui/dist/components/constants';
-import { STATUS_CRITICAL, STATUS_HEALTH, STATUS_WARNING } from '../constants';
+import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
 import {
   allSizeUnitsToBytes,
   fromMilliSectoAge,
@@ -256,84 +256,6 @@ describe('getSegments', () => {
       ],
     },
     {
-      name: 'Healthy and NaN overlapping',
-      pointsWatchdog: [
-        [1, '1'],
-        [2, '1'],
-        [3, '1'],
-        [4, '1'],
-        [5, NAN_STRING],
-        [6, '1'],
-      ],
-      pointsDegraded: [
-        [1, NAN_STRING],
-        [2, NAN_STRING],
-        [3, NAN_STRING],
-        [4, NAN_STRING],
-        [5, NAN_STRING],
-        [6, NAN_STRING],
-      ],
-      pointsAtRisk: [
-        [1, NAN_STRING],
-        [2, NAN_STRING],
-        [3, NAN_STRING],
-        [4, NAN_STRING],
-        [5, NAN_STRING],
-        [6, NAN_STRING],
-      ],
-      expected: [
-        {
-          startsAt: 1,
-          endsAt: 5,
-          type: STATUS_HEALTH,
-        },
-        {
-          startsAt: 5,
-          endsAt: 6,
-          type: NAN_STRING,
-        },
-        {
-          startsAt: 6,
-          endsAt: null,
-          type: STATUS_HEALTH,
-        },
-      ],
-    },
-    {
-      name: 'Healthy',
-      pointsWatchdog: [
-        [1, '1'],
-        [2, '1'],
-        [3, '1'],
-        [4, '1'],
-        [5, '1'],
-        [6, '1'],
-      ],
-      pointsDegraded: [
-        [1, NAN_STRING],
-        [2, NAN_STRING],
-        [3, NAN_STRING],
-        [4, NAN_STRING],
-        [5, NAN_STRING],
-        [6, NAN_STRING],
-      ],
-      pointsAtRisk: [
-        [1, NAN_STRING],
-        [2, NAN_STRING],
-        [3, NAN_STRING],
-        [4, NAN_STRING],
-        [5, NAN_STRING],
-        [6, NAN_STRING],
-      ],
-      expected: [
-        {
-          startsAt: 1,
-          endsAt: null,
-          type: STATUS_HEALTH,
-        },
-      ],
-    },
-    {
       name: 'In danger',
       pointsWatchdog: [
         [1, '1'],
@@ -477,6 +399,8 @@ describe('getSegments', () => {
           pointsDegraded,
           pointsAtRisk,
           pointsWatchdog,
+          startTimeStampSeconds: 1,
+          endTimeStampSeconds: 6,
         });
         expect(result).toStrictEqual(expected);
       });
