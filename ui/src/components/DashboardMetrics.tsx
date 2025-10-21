@@ -1,5 +1,4 @@
 import React from 'react';
-import styled from 'styled-components';
 import {
   Box,
   Button,
@@ -21,19 +20,7 @@ import DashboardChartMemory from './DashboardChartMemory';
 import { useShowQuantileChart, useTypedSelector } from '../hooks';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
 import { Icon, SmallerText, Stack, IconHelp, spacing } from '@scality/core-ui';
-const MetricsContainer = styled.div`
-  padding: 2px ${spacing.f4};
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  max-height: 100%;
-`;
-const PanelActions = styled.div`
-  display: flex;
-  padding: ${spacing.f8};
-  align-items: center;
-  justify-content: space-between;
-`;
+import { DashboardSectionContainer, PanelActions } from './DashboardNetwork';
 
 export const QuantileHelpTooltip = () => {
   const intl = useIntl();
@@ -65,7 +52,7 @@ const DashboardMetrics = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
 
   return (
-    <MetricsContainer id="dashboard-metrics-container">
+    <DashboardSectionContainer id="dashboard-metrics-container">
       <PanelActions>
         <PageSubtitle>
           <Box mr={spacing.r8}>
@@ -99,14 +86,12 @@ const DashboardMetrics = () => {
             <DashboardChartCpuUsage />
             <DashboardChartMemory />
             <DashboardChartSystemLoad />
-          </ChartLegendWrapper>
-          <ChartLegendWrapper colorSet={createColorSet}>
             <DashboardChartThroughput />
             <ChartLegend shape="line" legendSize={'Smaller'} />
           </ChartLegendWrapper>
         </GraphsWrapper>
       </DashboardScrollableArea>
-    </MetricsContainer>
+    </DashboardSectionContainer>
   );
 };
 

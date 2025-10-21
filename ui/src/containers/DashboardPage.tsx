@@ -1,6 +1,5 @@
 import React from 'react';
 import { AppContainer, Wrap, spacing } from '@scality/core-ui';
-import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
 
 import styled from 'styled-components';
 import DashboardMetrics from '../components/DashboardMetrics';
@@ -24,9 +23,6 @@ const DashboardGrid = styled.div`
     }};
     color: ${(props) => props.theme.textPrimary};
     padding: 2px ${spacing.r4};
-    .sc-vegachart svg {
-      background-color: inherit !important;
-    }
   }
   .inventory {
     grid-area: inventory;
@@ -76,29 +72,26 @@ const DashboardPage = () => {
           </SelectorPositioning>
         </Wrap>
       </AppContainer.ContextContainer>
-      <SyncedCursorCharts>
-        <>
-          <AppContainer.OverallSummary>
-            <DashboardGlobalHealth />
-          </AppContainer.OverallSummary>
-          <AppContainer.MainContent background="backgroundLevel1">
-            <DashboardGrid>
-              <DashboardScrollableArea className="inventory">
-                <DashboardInventory />
-                <DashboardServices />
-              </DashboardScrollableArea>
 
-              <DashboardScrollableArea className="network">
-                <DashboardNetwork />
-              </DashboardScrollableArea>
+      <AppContainer.OverallSummary>
+        <DashboardGlobalHealth />
+      </AppContainer.OverallSummary>
+      <AppContainer.MainContent background="backgroundLevel1">
+        <DashboardGrid>
+          <DashboardScrollableArea className="inventory">
+            <DashboardInventory />
+            <DashboardServices />
+          </DashboardScrollableArea>
 
-              <div className="metrics">
-                <DashboardMetrics />
-              </div>
-            </DashboardGrid>
-          </AppContainer.MainContent>
-        </>
-      </SyncedCursorCharts>
+          <DashboardScrollableArea className="network">
+            <DashboardNetwork />
+          </DashboardScrollableArea>
+
+          <div className="metrics">
+            <DashboardMetrics />
+          </div>
+        </DashboardGrid>
+      </AppContainer.MainContent>
     </>
   );
 };
