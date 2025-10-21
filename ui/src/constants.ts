@@ -112,7 +112,7 @@ export const DASHBOARD_QUANTILE_SYNC_ID = 'dashboard-quantile';
 export const CHART_COLOR_VALUES = Object.values(chartColors);
 export const UNIT_RANGE_BS = [
   {
-    threshold: 0,
+    threshold: 1,
     label: 'B/s',
   },
   {
@@ -135,7 +135,7 @@ export const UNIT_RANGE_BS = [
 
 export const UNIT_RANGE_SECONDS = [
   {
-    threshold: 0,
+    threshold: 1,
     label: 'µs',
   },
   {
