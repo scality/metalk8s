@@ -107,10 +107,7 @@ export const GraphsWrapper = styled.div`
   flex-direction: column;
   justify-content: space-around;
   flex-grow: 1;
-  // make sure the charts resize when the width of parent has changed.
-  .vega-embed > svg {
-    width: 100%;
-  }
+  padding: 0 ${spacing.r8} ${spacing.r8} ${spacing.r8};
 `;
 export const TitlePage = styled.div`
   color: ${(props) => props.theme.textPrimary};
