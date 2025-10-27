@@ -30,9 +30,7 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     # Add strict SameSite policy for Salt API
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      if ($proxy_host = "salt-api") {
-        proxy_cookie_flags ~ SameSite=Strict Secure HttpOnly;
-      }
+      add_header Set-Cookie "session_id=$cookie_session_id; SameSite=Strict; Secure; HttpOnly; Path=/";
 spec:
   ingressClassName: "nginx-control-plane"
   rules:
