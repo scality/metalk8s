@@ -31,7 +31,7 @@ metadata:
     # Add strict SameSite policy for Salt API
     nginx.ingress.kubernetes.io/configuration-snippet: |
       if ($proxy_host = "salt-api") {
-        proxy_cookie_path / "/; SameSite=Strict; HttpOnly; Secure";
+        proxy_cookie_flags ~ SameSite=Strict Secure HttpOnly;
       }
 spec:
   ingressClassName: "nginx-control-plane"
