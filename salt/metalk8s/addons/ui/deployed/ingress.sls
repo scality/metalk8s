@@ -28,6 +28,11 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: '/$2'
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    # Add strict SameSite policy for Salt API
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($proxy_host = "salt-api") {
+        proxy_cookie_path / "/; SameSite=Strict; HttpOnly; Secure";
+      }
 spec:
   ingressClassName: "nginx-control-plane"
   rules:
