@@ -4,6 +4,7 @@ import {
   Metalk8sV1alpha1VolumeClient,
   Result,
 } from './Metalk8sVolumeClient.generated';
+import { computeVolumeGlobalStatus, VolumeStatus } from '../NodeVolumesUtils';
 
 function isError<T>(result: Result<T>): result is { error: any } {
   return (result as { error: any }).error !== undefined;
@@ -30,6 +31,7 @@ type LocalVolumeInfo = {
   devicePath: string;
   nodeName: string;
   volumeType: VolumeType;
+  volumeStatus?: VolumeStatus;
 };
 
 export type LocalPersistentVolume = V1PersistentVolume & LocalVolumeInfo;
@@ -76,6 +78,13 @@ export default class Metalk8sLocalVolumeProvider {
             (p) => p.metadata.name === item.metadata['name'],
           );
 
+          const volumeStatus = computeVolumeGlobalStatus(
+            item.metadata['name'],
+            item.status,
+          );
+
+          console.log('volumeStatus', volumeStatus);
+
           return [
             ...acc,
             {
@@ -88,6 +97,7 @@ export default class Metalk8sLocalVolumeProvider {
               volumeType: item.spec.rawBlockDevice
                 ? VolumeType.Hardware
                 : VolumeType.Virtual,
+              volumeStatus,
             },
           ];
         }, [] as LocalPersistentVolume[]);
@@ -180,6 +190,7 @@ export default class Metalk8sLocalVolumeProvider {
         devicePath: localVolume.devicePath,
         nodeName: localVolume.nodeName,
         volumeType: localVolume.volumeType,
+        volumeStatus: localVolume.volumeStatus,
       };
     }
 
