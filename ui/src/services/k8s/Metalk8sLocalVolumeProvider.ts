@@ -83,8 +83,6 @@ export default class Metalk8sLocalVolumeProvider {
             item.status,
           );
 
-          console.log('volumeStatus', volumeStatus);
-
           return [
             ...acc,
             {
