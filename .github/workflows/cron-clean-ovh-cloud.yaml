@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clean up old VMs in OpenStack
-        uses: scality/actions/actions-cleanup-openstack-vms@1.13.0
+        uses: scality/actions/actions-cleanup-openstack-vms@1.14.0
         with:
           AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
           AGE_HOURS: 6
