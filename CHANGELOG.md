@@ -50,8 +50,8 @@
 
 ### Enhancements
 
-- Add a `saltutil.refresh_grains` after each `saltutil.sync_all` 
-  to ensure the grains are up to date 
+- Add a `saltutil.refresh_grains` after each `saltutil.sync_all`
+  to ensure the grains are up to date
   (PR[#4598](https://github.com/scality/metalk8s/pull/4598))
 
 ## Release 130.0.0
@@ -112,13 +112,12 @@
   [4.14.1](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-4.14.1)
   (PR[#4563](https://github.com/scality/metalk8s/pull/4563))
 
-- Add a hash annotation to force restart backup server on 
+- Add a hash annotation to force restart backup server on
   certificate renewal (PR[#4590](https://github.com/scality/metalk8s/pull/4590))
 
 - Add alerts for a CronJob owned Job failure and another one for
   non-CronJob owned Job failure
   (PR[#4584](https://github.com/scality/metalk8s/pull/4584))
-
 
 ## Release 129.0.3 (in development)
 
