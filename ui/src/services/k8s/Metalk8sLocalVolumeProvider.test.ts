@@ -4,9 +4,14 @@ import Metalk8sLocalVolumeProvider, {
   HardwareDiskType,
   VolumeType,
 } from './Metalk8sLocalVolumeProvider';
+import * as NodeVolumesUtils from '../NodeVolumesUtils';
 
 jest.mock('../k8s/api', () => ({
   updateApiServerConfig: jest.fn(),
+}));
+
+jest.mock('../NodeVolumesUtils', () => ({
+  computeVolumeGlobalStatus: jest.fn(),
 }));
 
 const MOCK_GROUP = 'storage.metalk8s.scality.com';
@@ -33,6 +38,8 @@ describe('Metalk8sLocalVolumeProvider', () => {
   } as unknown as CoreV1Api;
 
   beforeEach(() => {
+    jest.clearAllMocks();
+
     (updateApiServerConfig as jest.Mock).mockReturnValue({
       coreV1: mockCoreV1Api,
       customObjects: mockCustomObjectsApi,
@@ -111,6 +118,11 @@ describe('Metalk8sLocalVolumeProvider', () => {
         },
       });
 
+      (NodeVolumesUtils.computeVolumeGlobalStatus as jest.Mock)
+        .mockReturnValueOnce('Ready')
+        .mockReturnValueOnce('Ready')
+        .mockReturnValueOnce('Ready');
+
       const volumes = await provider.listLocalPersistentVolumes('test-node');
 
       expect(volumes).toHaveLength(3);
@@ -131,6 +143,119 @@ describe('Metalk8sLocalVolumeProvider', () => {
         devicePath: '/dev/loop1',
         nodeName: 'test-node',
         volumeType: VolumeType.Virtual,
+      });
+    });
+
+    it('should compute and include volume status for each volume', async () => {
+      (mockCoreV1Api.listNode as jest.Mock).mockResolvedValue({
+        body: {
+          items: [
+            {
+              metadata: { name: 'test-node' },
+              status: {
+                addresses: [
+                  { type: 'Hostname', address: 'test-node' },
+                  { type: 'InternalIP', address: '192.168.1.100' },
+                ],
+              },
+            },
+          ],
+        },
+      });
+
+      (mockCoreV1Api.listPersistentVolume as jest.Mock).mockResolvedValue({
+        body: {
+          items: [
+            {
+              metadata: { name: 'test-volume-1' },
+              spec: {},
+            },
+            {
+              metadata: { name: 'test-volume-2' },
+              spec: {},
+            },
+          ],
+        },
+      });
+
+      const mockVolumeStatus1 = {
+        deviceName: 'sda',
+        conditions: [
+          {
+            type: 'Ready',
+            status: 'True',
+          },
+        ],
+      };
+
+      const mockVolumeStatus2 = {
+        deviceName: 'sdb',
+        conditions: [
+          {
+            type: 'Ready',
+            status: 'False',
+            reason: 'Failed',
+          },
+        ],
+      };
+
+      (
+        mockCustomObjectsApi.listClusterCustomObject as jest.Mock
+      ).mockResolvedValue({
+        body: {
+          items: [
+            {
+              metadata: { name: 'test-volume-1' },
+              spec: {
+                nodeName: 'test-node',
+                rawBlockDevice: { devicePath: '/dev/sda' },
+              },
+              status: mockVolumeStatus1,
+            },
+            {
+              metadata: { name: 'test-volume-2' },
+              spec: {
+                nodeName: 'test-node',
+                rawBlockDevice: { devicePath: '/dev/sdb' },
+              },
+              status: mockVolumeStatus2,
+            },
+          ],
+        },
+      });
+
+      (NodeVolumesUtils.computeVolumeGlobalStatus as jest.Mock)
+        .mockReturnValueOnce('Ready')
+        .mockReturnValueOnce('Failed');
+
+      const volumes = await provider.listLocalPersistentVolumes('test-node');
+
+      expect(NodeVolumesUtils.computeVolumeGlobalStatus).toHaveBeenCalledTimes(
+        2,
+      );
+      expect(NodeVolumesUtils.computeVolumeGlobalStatus).toHaveBeenCalledWith(
+        'test-volume-1',
+        mockVolumeStatus1,
+      );
+      expect(NodeVolumesUtils.computeVolumeGlobalStatus).toHaveBeenCalledWith(
+        'test-volume-2',
+        mockVolumeStatus2,
+      );
+
+      expect(volumes).toHaveLength(2);
+      expect(volumes[0]).toMatchObject({
+        IP: '192.168.1.100',
+        devicePath: '/dev/sda',
+        nodeName: 'test-node',
+        volumeType: VolumeType.Hardware,
+        volumeStatus: 'Ready',
+      });
+      expect(volumes[1]).toMatchObject({
+        IP: '192.168.1.100',
+        devicePath: '/dev/sdb',
+        nodeName: 'test-node',
+        volumeType: VolumeType.Hardware,
+        volumeStatus: 'Failed',
       });
     });
 
@@ -250,7 +375,10 @@ describe('Metalk8sLocalVolumeProvider', () => {
         body: { status: { conditions: [{ type: 'Ready', status: 'True' }] } },
       });
       (mockCoreV1Api.readPersistentVolume as jest.Mock).mockResolvedValue({
-        status: { phase: 'Bound' },
+        body: {
+          metadata: { name: 'test-volume' },
+          status: { phase: 'Bound' },
+        },
       });
       //E
       const result = await provider.isVolumeProvisioned({
@@ -266,6 +394,38 @@ describe('Metalk8sLocalVolumeProvider', () => {
         devicePath: '/dev/sda',
         volumeType: VolumeType.Hardware,
         nodeName: 'test-node',
+      });
+    });
+
+    it('should return volume with status if the volume is provisioned and has volumeStatus', async () => {
+      //S
+      (
+        mockCustomObjectsApi.getClusterCustomObject as jest.Mock
+      ).mockResolvedValue({
+        body: { status: { conditions: [{ type: 'Ready', status: 'True' }] } },
+      });
+      (mockCoreV1Api.readPersistentVolume as jest.Mock).mockResolvedValue({
+        body: {
+          metadata: { name: 'test-volume' },
+          status: { phase: 'Bound' },
+        },
+      });
+      //E
+      const result = await provider.isVolumeProvisioned({
+        IP: '192.168.1.100',
+        devicePath: '/dev/sda',
+        volumeType: VolumeType.Hardware,
+        nodeName: 'test-node',
+        volumeName: 'test-volume',
+        volumeStatus: 'Ready',
+      });
+      //V
+      expect(result).toMatchObject({
+        IP: '192.168.1.100',
+        devicePath: '/dev/sda',
+        volumeType: VolumeType.Hardware,
+        nodeName: 'test-node',
+        volumeStatus: 'Ready',
       });
     });
 
