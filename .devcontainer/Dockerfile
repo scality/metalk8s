@@ -111,3 +111,10 @@ RUN curl --fail -L -o /tmp/skopeo.tar.gz https://github.com/containers/skopeo/ar
     sudo mv bin/skopeo /usr/local/bin/ && \
     cd && \
     rm -rf /tmp/skopeo.tar.gz /tmp/skopeo-${SKOPEO_VERSION}
+
+# Install kustomize
+ARG KUSTOMIZE_VERSION=5.7.1
+
+RUN curl --fail -L -o /tmp/kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz && \
+    sudo tar -xzf /tmp/kustomize.tar.gz -C /usr/local/bin/ kustomize && \
+    rm -rf /tmp/kustomize.tar.gz
