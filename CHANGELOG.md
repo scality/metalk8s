@@ -12,6 +12,12 @@
 
 ## Release 131.0.2 (in development)
 
+### Enhancements
+
+- Install [crl-operator](https://github.com/scality/crl-operator) version
+  [v1.0.0](https://github.com/scality/crl-operator/releases/tag/v1.0.0) by default
+  (PR[#4692](https://github.com/scality/metalk8s/pull/4692))
+
 ## Release 131.0.1
 
 ## Release 131.0.0

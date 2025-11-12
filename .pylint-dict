@@ -19,6 +19,8 @@ cp
 checksum
 checksums
 containerd
+CRL
+crl
 dataset
 de
 debuild
@@ -37,6 +39,7 @@ getitem
 globals
 gofmt
 Kube
+kustomize
 html
 init
 io
@@ -52,6 +55,7 @@ metadata
 mkdir
 mkisofs
 mypy
+namespace
 nginx
 observability
 pdf
