@@ -1,0 +1,21 @@
+namespace: metalk8s-certs
+
+resources:
+  - github.com/scality/crl-operator.git/config/default?ref=v1.0.0
+
+images:
+  - name: controller 
+    newName: '{% endraw -%}{{ build_image_name("crl-operator", False) }}{%- raw %}'
+    newTag: v1.0.0
+
+patches:
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: "--cert-manager-namespace=metalk8s-certs"
+    target:
+      kind: Deployment
+  - path: deploy_patch.yaml
+    target:
+      kind: Deployment
+  - path: delete_ns.yaml
