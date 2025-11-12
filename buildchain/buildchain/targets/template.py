@@ -6,7 +6,7 @@
 
 import shutil
 import string
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from pathlib import Path
 
 from buildchain import types
@@ -28,7 +28,11 @@ class TemplateFile(base.AtomicTarget):
     """Create a new file from a template file."""
 
     def __init__(
-        self, source: Path, destination: Path, context: Dict[str, Any], **kwargs: Any
+        self,
+        source: Path,
+        destination: Path,
+        context: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ):
         """Configure a template rendering task.
 
@@ -46,7 +50,7 @@ class TemplateFile(base.AtomicTarget):
         super().__init__(**kwargs)
         self._src = source
         self._dst = destination
-        self._ctx = context
+        self._ctx = context or {}
 
     @property
     def task(self) -> types.TaskDict:
@@ -60,10 +64,10 @@ class TemplateFile(base.AtomicTarget):
         )
         return task
 
-    def _run(self) -> None:
+    def _run(self, **extra_ctx: Any) -> None:
         """Render the template."""
         template = self._src.read_text(encoding="utf-8")
-        rendered = CustomTemplate(template).substitute(**self._ctx)
+        rendered = CustomTemplate(template).substitute(**self._ctx, **extra_ctx)
         self._dst.write_text(rendered, encoding="utf-8")
         # Preserve the permission bits.
         shutil.copymode(self._src, self._dst)

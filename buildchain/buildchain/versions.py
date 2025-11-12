@@ -302,6 +302,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         version=_version_prefix(CERT_MANAGER_VERSION),
         digest="sha256:a076f72f33a22dfd3a23727f1e1a069817819406b39e5b0fd9cb97d3338cb8d8",
     ),
+    Image(
+        name="crl-operator",
+        version="v1.0.0",
+        digest="sha256:86b4198036c1f83f1d9363a1e2ae78015482ca4fe60cd706939b8730c179ac8a",
+    ),
 )
 
 CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}

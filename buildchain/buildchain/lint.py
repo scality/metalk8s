@@ -41,7 +41,6 @@ from buildchain import config
 from buildchain import constants
 from buildchain import types
 from buildchain import utils
-from buildchain import codegen
 
 
 def task_lint() -> Iterator[types.TaskDict]:
@@ -195,16 +194,13 @@ def lint_codegen() -> types.TaskDict:
     git_diff = [config.ExtCommand.GIT.value, "diff"]
     base = subprocess.check_output(git_diff)
 
-    task = codegen.get_task_information()
-    task["actions"].append(lambda: check_diff_codegen(base))
-    task.update(
-        {
-            "name": "codegen",
-            "title": utils.title_with_subtask_name("LINT"),
-            "doc": lint_codegen.__doc__,
-        }
-    )
-    return task
+    return {
+        "name": "codegen",
+        "title": utils.title_with_subtask_name("LINT"),
+        "doc": lint_codegen.__doc__,
+        "actions": [lambda: check_diff_codegen(base)],
+        "task_dep": ["codegen"],
+    }
 
 
 # }}}
