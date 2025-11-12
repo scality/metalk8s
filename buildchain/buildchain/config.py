@@ -65,6 +65,7 @@ class ExtCommand(enum.Enum):
     SKOPEO = os.getenv("SKOPEO_BIN", "skopeo")
     TOX = os.getenv("TOX_BIN", "tox")
     VAGRANT = os.getenv("VAGRANT_BIN", "vagrant")
+    KUSTOMIZE = os.getenv("KUSTOMIZE_BIN", "kustomize")
 
     @property
     def command_name(self) -> str:
