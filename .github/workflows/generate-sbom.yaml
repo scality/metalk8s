@@ -83,7 +83,7 @@ jobs:
           echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Generate sbom for extracted ISO
-        uses: scality/sbom@v2.1.0
+        uses: scality/sbom@v2
         with:
           target: ${{ env.BASE_PATH }}/iso/metalk8s.iso
           target_type: iso
@@ -93,6 +93,15 @@ jobs:
           vuln_output_format: cyclonedx-json, html
           merge: true
           merge_hierarchical: true
+
+      - name: Upload sbom to Dependency-Track
+        uses: scality/sbom-upload@v1
+        with:
+          url: ${{ vars.DEPENDENCY_TRACK_HOSTNAME }}
+          api-key: ${{ secrets.DEPENDENCYTRACK_APIKEY }}
+          hierarchy-input-dir: ${{ env.SBOM_PATH }}
+          generate-hierarchy: true
+          hierarchy-upload: true
 
       - name: Generate archive
         shell: bash
