@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 131.0.2 (in development)
+## Release 131.0.2
 
 ### Enhancements
 
