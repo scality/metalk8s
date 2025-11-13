@@ -10,7 +10,9 @@
 - Bump coredns version to [1.12.2](https://github.com/coredns/coredns/releases/tag/v1.12.2)
   (PR[#4637](https://github.com/scality/metalk8s/pull/4637))
 
-## Release 131.0.2 (in development)
+## Release 131.0.3 (in development)
+
+## Release 131.0.2
 
 ### Enhancements
 
