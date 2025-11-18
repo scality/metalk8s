@@ -39,7 +39,9 @@ jobs:
       skip: ${{ inputs.skip-devcontainer == true }}
 
   build:
-    runs-on: ubuntu-latest
+    # Use our self hosted runner since the github ones have not enough disk space
+    # (the disk is almost full even before building anything)
+    runs-on: ubuntu-24.04-4core
     needs:
       - build-devcontainer
     container:
