@@ -47,14 +47,6 @@ inputs:
     required: false
     default: ""
 
-  rhsm-username:
-    description: "The RHSM username to use (only needed on RedHat)"
-    required: false
-    default: ""
-  rhsm-password:
-    description: "The RHSM password to use (only needed on RedHat)"
-    required: false
-    default: ""
   AUTHORIZED_CIDRS:
     description: "List of CIDRs to allow SSH and ICMP ingress from"
     required: false
@@ -131,8 +123,6 @@ runs:
         TF_VAR_os: "${{ inputs.OS }}"
         TF_VAR_nodes_count: "${{ inputs.NODES_COUNT }}"
         TF_VAR_restore_env: "${{ inputs.RESTORE_ENV }}"
-        TF_VAR_rhsm_username: "${{ inputs.rhsm-username }}"
-        TF_VAR_rhsm_password: "${{ inputs.rhsm-password }}"
         TF_VAR_ingress_remote_ip_prefix: "${{ inputs.AUTHORIZED_CIDRS }}"
         TF_VAR_flavors_map: '{ ovh = { default = "d2-8", bastion = "b3-16" } }'
         MAX_RETRIES: "3"
