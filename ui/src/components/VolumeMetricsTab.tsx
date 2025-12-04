@@ -39,29 +39,26 @@ const MetricsTab = (props) => {
     <>
       {volumeCondition === VOLUME_CONDITION_LINK ? (
         <ChartLegendWrapper colorSet={createColorSet}>
+          <MetricsActionContainer>
+            {config.api?.url_grafana && volumeNamespace && volumePVCName && (
+              <a
+                href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.volumes}?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cy="advanced_metrics_volume_detailed"
+              >
+                <Button
+                  label={intl.formatMessage({
+                    id: 'advanced_metrics',
+                  })}
+                  variant={'secondary'}
+                  icon={<Icon name="External-link" />}
+                />
+              </a>
+            )}
+            {volumeCondition === VOLUME_CONDITION_LINK && <TimespanSelector />}
+          </MetricsActionContainer>
           <ChartContainer>
-            <MetricsActionContainer>
-              {config.api?.url_grafana && volumeNamespace && volumePVCName && (
-                <a
-                  href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.volumes}?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-cy="advanced_metrics_volume_detailed"
-                >
-                  <Button
-                    label={intl.formatMessage({
-                      id: 'advanced_metrics',
-                    })}
-                    variant={'secondary'}
-                    icon={<Icon name="External-link" />}
-                  />
-                </a>
-              )}
-              {volumeCondition === VOLUME_CONDITION_LINK && (
-                <TimespanSelector />
-              )}
-            </MetricsActionContainer>
-
             <GraphGrid id="graph_container">
               <VolumeUsageChart
                 pvcName={volumePVCName}
