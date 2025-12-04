@@ -102,6 +102,8 @@ jobs:
           hierarchy-input-dir: ${{ env.SBOM_PATH }}
           generate-hierarchy: true
           hierarchy-upload: true
+          delete-on-version-suffix-match: true
+          delete-version-suffix-pattern: 'dev'
 
       - name: Generate archive
         shell: bash
