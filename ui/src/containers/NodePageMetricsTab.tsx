@@ -51,6 +51,7 @@ export const ChartContainer = styled.div`
   /* 100% - padding - action container height */
   height: calc(100% - 3rem);
   padding-left: ${spacing.r12};
+  overflow: hidden auto;
 `;
 export const GraphGrid = styled.div`
   display: grid;
