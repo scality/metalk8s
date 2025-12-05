@@ -34,7 +34,9 @@
 - Fix a Bug where NodeSystemSaturation alert triggers too early after only 15 minutes of high load
   (PR[#4641](https://github.com/scality/metalk8s/pull/4641))
 
-## Release 130.0.4 (in development)
+## Release 130.0.5 (in development)
+
+## Release 130.0.4
 
 ## Release 130.0.3
 
