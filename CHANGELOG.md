@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 130.0.4 (in development)
+## Release 130.0.4
 
 ## Release 130.0.3
 
