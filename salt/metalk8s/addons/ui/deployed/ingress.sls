@@ -87,6 +87,7 @@ spec:
             name: alertmanager-api
             port:
               number: 9093
+      {%- if pillar.addons.loki.enabled %}
       - path: /api/loki(/|$)(.*)
         pathType: Prefix
         backend:
@@ -94,6 +95,7 @@ spec:
             name: loki-api
             port:
               number: 3100
+      {%- endif %}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
