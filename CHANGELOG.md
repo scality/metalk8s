@@ -10,6 +10,10 @@
 - Bump coredns version to [1.12.2](https://github.com/coredns/coredns/releases/tag/v1.12.2)
   (PR[#4637](https://github.com/scality/metalk8s/pull/4637))
 
+- Do no longer enforce net.bridge.bridge-nf-call-ip6tables and
+  net.bridge.bridge-nf-call-iptables sysctls
+  (PR[#4724](https://github.com/scality/metalk8s/pull/4724))
+
 ## Release 131.0.5 (in development)
 
 ## Release 131.0.4

@@ -22,11 +22,6 @@ Enable {{ kubelet.container_engine }} service:
       - test: Check that the crictl socket answer
 {%- endif %}
 
-# required to set sysctl net.bridge.bridge-nf-call-iptables
-Add the module br_netfilter to kernel:
-  kmod.present:
-    - name: br_netfilter
-    - persist: True
 
 {%- for item, value in kubeadm_preflight.mandatory.sysctl_values.items() %}
 Set sysctl {{ item }} value to {{ value }}:
@@ -35,10 +30,6 @@ Set sysctl {{ item }} value to {{ value }}:
     - value: {{ value }}
     - config: /etc/sysctl.d/60-metalk8s.conf
     - check_priority: True
-    {%- if item in ("net.bridge.bridge-nf-call-ip6tables", "net.bridge.bridge-nf-call-iptables") %}
-    - require:
-      - kmod: Add the module br_netfilter to kernel
-    {%- endif %}
 {%- endfor %}
 
 {%- for swap_device in salt.mount.swaps().keys() %}
