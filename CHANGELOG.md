@@ -1,11 +1,13 @@
 # CHANGELOG
 
-## Release 131.0.5 (in development)
+## Release 131.0.6 (in development)
 
 ### Bug Fixes
 
 - Do not deploy Loki ingress when Loki addon is not enabled
   (PR[#4725](https://github.com/scality/metalk8s/pull/4725))
+
+## Release 131.0.5
 
 ## Release 131.0.4
 
