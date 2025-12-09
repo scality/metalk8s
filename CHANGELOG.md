@@ -21,6 +21,14 @@
 - Do not deploy Loki ingress when Loki addon is not enabled
   (PR[#4725](https://github.com/scality/metalk8s/pull/4725))
 
+### Enhancements
+
+- Add a patch to the `kube-prometheus-stack` chart to add
+  the `--metric-labels-allowlist=persistentvolumeclaims=[excluded-from-alerts]`
+  argument to the `kube-state-metrics` container to exclude PVCs
+  from the `kube-state-metrics` metrics.
+  (PR[#4723](https://github.com/scality/metalk8s/pull/4723))
+
 ## Release 131.0.5
 
 ## Release 131.0.4

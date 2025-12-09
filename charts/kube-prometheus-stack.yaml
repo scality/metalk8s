@@ -246,6 +246,9 @@ kube-state-metrics:
     registry: '__var__(repo.registry_endpoint)'
     repository: '__image_no_reg__(kube-state-metrics)'
 
+  metricLabelsAllowlist:
+    - persistentvolumeclaims=[excluded-from-alerts]
+
   nodeSelector:
     node-role.kubernetes.io/infra: ''
 
