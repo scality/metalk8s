@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 131.0.5 (in development)
+## Release 131.0.5
 
 ## Release 131.0.4
 
