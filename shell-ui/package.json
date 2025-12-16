@@ -61,5 +61,9 @@
     "react-router-dom": "^7.0.1",
     "styled-components": "^5.3.11",
     "typescript": "^5.6.3"
+  },
+  "optionalDependencies": {
+    "@rspack/binding-linux-x64-gnu": "^1.6.7",
+    "@rspack/binding-linux-x64-musl": "^1.6.7"
   }
 }

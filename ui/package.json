@@ -121,6 +121,7 @@
     "typescript": "^5.3.3"
   },
   "optionalDependencies": {
+    "@rspack/binding-linux-x64-gnu": "^1.6.7",
     "@testing-library/cypress": "^10.0.0",
     "cypress": "^13.17.0",
     "cypress-cucumber-preprocessor": "^21.0.0",
