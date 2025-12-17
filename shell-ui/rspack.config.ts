@@ -1,7 +1,7 @@
 import path from 'path';
 import packageJson from './package.json';
 import { Configuration } from '@rspack/cli';
-import rspack from '@rspack/core';
+import * as rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
 import { RsdoctorRspackPlugin } from '@rsdoctor/rspack-plugin';
 
@@ -13,6 +13,9 @@ const controlPlaneBaseUrl = `https://${controlPlaneIP}:8443`;
 const isProduction = process.env.NODE_ENV === 'production';
 
 const config: Configuration = {
+  experiments: {
+    css: true,
+  },
   entry: './src/index.tsx',
   mode: isProduction ? 'production' : 'development',
   devtool: isProduction ? false : 'source-map',
