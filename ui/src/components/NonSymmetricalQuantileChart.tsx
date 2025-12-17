@@ -1,4 +1,4 @@
-import { ChartLegendWrapper } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
+import { ChartLegendWrapper } from '@scality/core-ui/dist/next';
 import {
   ChartLegend,
   LineTimeSerieChart,

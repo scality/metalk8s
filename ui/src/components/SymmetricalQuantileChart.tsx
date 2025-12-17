@@ -1,5 +1,4 @@
-import { ChartLegendWrapper } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
-import { UNIT_RANGE_BS } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
+import { ChartLegendWrapper } from '@scality/core-ui/dist/next';
 import {
   ChartLegend,
   LineTimeSerieChart,
@@ -24,6 +23,29 @@ import {
   getTimeFormatForInterval,
 } from '../services/graphUtils';
 import { SymmetricalQuantileTooltip } from './SymmetricalQuantileTooltip';
+
+const UNIT_RANGE_BS = [
+  {
+    threshold: 1,
+    label: 'B/s',
+  },
+  {
+    threshold: 1024,
+    label: 'KiB/s',
+  },
+  {
+    threshold: 1024 * 1024,
+    label: 'MiB/s',
+  },
+  {
+    threshold: 1024 * 1024 * 1024,
+    label: 'GiB/s',
+  },
+  {
+    threshold: 1024 * 1024 * 1024 * 1024,
+    label: 'TiB/s',
+  },
+];
 
 const SymmetricalQuantileChart = ({
   getAboveQuantileQuery,

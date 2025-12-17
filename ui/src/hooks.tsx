@@ -1,6 +1,6 @@
 import type { V1Node } from '@kubernetes/client-node';
 
-import type { Serie } from '@scality/core-ui/dist/components/linetimeseriechart/linetimeseriechart.component';
+import type { Serie } from '@scality/core-ui/dist/next';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import React, {
   createContext,
