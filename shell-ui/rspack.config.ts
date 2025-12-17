@@ -102,6 +102,7 @@ const config: Configuration = {
   plugins: [
     new ModuleFederationPlugin({
       name: 'shell',
+      shareStrategy: 'loaded-first',
       filename: `remoteEntry.js`,
       exposes: {
         './App': './src/FederatedApp.tsx',
@@ -122,9 +123,6 @@ const config: Configuration = {
         ...Object.fromEntries(
           Object.entries(deps).map(([key, version]) => [key, {}]),
         ),
-        '@scality/core-ui': {
-          singleton: true,
-        },
         'react-intl': {
           eager: true,
           singleton: true,
@@ -153,11 +151,9 @@ const config: Configuration = {
           eager: true,
         },
         'react-router': {
-          singleton: true,
           eager: true,
         },
         'react-router-dom': {
-          singleton: true,
           eager: true,
         },
         'oidc-client-ts': {
