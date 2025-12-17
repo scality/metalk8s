@@ -1,7 +1,7 @@
 import path from 'path';
 import packageJson from './package.json';
 import { Configuration } from '@rspack/cli';
-import rspack from '@rspack/core';
+import * as rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
 import fs from 'fs';
 
@@ -23,6 +23,9 @@ if (!version) {
 }
 
 const config: Configuration = {
+  experiments: {
+    css: true,
+  },
   entry: {
     metalk8s_ui: './src/index.ts',
   },
