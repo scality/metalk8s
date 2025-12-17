@@ -1,4 +1,4 @@
-import { MetricsTimeSpanProvider } from '@scality/core-ui/dist/components/linetemporalchart/MetricTimespanProvider';
+import { MetricsTimeSpanProvider } from '@scality/core-ui/dist/next';
 import {
   render,
   screen,

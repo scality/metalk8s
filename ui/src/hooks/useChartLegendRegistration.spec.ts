@@ -1,17 +1,14 @@
 import { useChartLegendRegistration } from './useChartLegendRegistration';
 import { renderHook } from '@testing-library/react-hooks';
-import { Serie } from '@scality/core-ui/dist/components/linetimeseriechart/linetimeseriechart.component';
+import { Serie } from '@scality/core-ui/dist/next';
 
 // Mock the useChartLegend hook
 const mockRegister = jest.fn();
-jest.mock(
-  '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper',
-  () => ({
-    useChartLegend: () => ({
-      register: mockRegister,
-    }),
+jest.mock('@scality/core-ui/dist/next', () => ({
+  useChartLegend: () => ({
+    register: mockRegister,
   }),
-);
+}));
 
 describe('useChartLegendRegistration', () => {
   beforeEach(() => {
