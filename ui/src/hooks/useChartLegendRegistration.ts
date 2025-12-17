@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { useChartLegend } from '@scality/core-ui/dist/components/chartlegend/ChartLegendWrapper';
-import { Serie } from '@scality/core-ui/dist/components/linetimeseriechart/linetimeseriechart.component';
+import { useChartLegend, Serie } from '@scality/core-ui/dist/next';
 
 type SymmetricalSeries = {
   above: Serie[];

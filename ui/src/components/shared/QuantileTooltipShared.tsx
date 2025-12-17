@@ -1,8 +1,4 @@
-import {
-  chartColors,
-  fontSize,
-  fontWeight,
-} from '@scality/core-ui/dist/style/theme';
+import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
 import React from 'react';
 import {
   Stack,
@@ -12,7 +8,7 @@ import {
   FormattedDateTime,
 } from '@scality/core-ui/dist/index';
 import styled from 'styled-components';
-import { LegendShape } from '@scality/core-ui/dist/components/chartlegend/ChartLegend';
+import { ChartLegend } from '@scality/core-ui/dist/next';
 import {
   SmallerSecondaryText,
   Text,
@@ -366,11 +362,7 @@ export const TooltipEntry = ({
       <Stack direction="vertical" gap={'r4'} key={index}>
         <Wrap>
           <Stack direction="horizontal" gap={'r10'}>
-            <LegendShape
-              color={serieData.color}
-              shape="line"
-              chartColors={chartColors}
-            />
+            <ChartLegend shape="line" />
             <SmallerText>{serieData.name}</SmallerText>
           </Stack>
 

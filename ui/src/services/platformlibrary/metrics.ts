@@ -6,7 +6,7 @@ import {
 import { queryPromtheusMetrics } from '../prometheus/fetchMetrics';
 import type { NodesState } from '../../ducks/app/nodes';
 import { queryPrometheus, queryPrometheusRange } from '../prometheus/api';
-import { addMissingDataPoint } from '@scality/core-ui/dist/components/linetemporalchart/ChartUtil';
+import { addMissingDataPoint } from '@scality/core-ui/dist/components/charts/index';
 import { generateSelectWithKey, getNaNSegments, getSegments } from '../utils';
 import { getFormattedLokiAlert } from '../loki/api';
 import { NAN_STRING } from '@scality/core-ui/dist/components/constants';
