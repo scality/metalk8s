@@ -17,7 +17,7 @@ import {
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
 } from '../constants';
 
-import type { Serie } from '@scality/core-ui/dist/components/linetimeseriechart/linetimeseriechart.component';
+import type { Serie } from '@scality/core-ui/dist/next';
 
 export const getMultiResourceSeriesForChart = (
   results: PrometheusQueryResult,

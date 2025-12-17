@@ -15,7 +15,7 @@ import {
 import {
   Alert,
   GlobalHealthBar as GlobalHealthBarRecharts,
-} from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBarRecharts.component';
+} from '@scality/core-ui/dist/next';
 import {
   highestAlertToStatus,
   useAlertLibrary,

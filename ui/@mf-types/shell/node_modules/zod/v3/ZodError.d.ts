@@ -12,10 +12,10 @@ export type typeToFlattenedError<T, U = string> = {
 export declare const ZodIssueCode: {
     custom: "custom";
     invalid_type: "invalid_type";
-    unrecognized_keys: "unrecognized_keys";
     too_big: "too_big";
     too_small: "too_small";
     not_multiple_of: "not_multiple_of";
+    unrecognized_keys: "unrecognized_keys";
     invalid_union: "invalid_union";
     invalid_literal: "invalid_literal";
     invalid_union_discriminator: "invalid_union_discriminator";
