@@ -33,8 +33,10 @@ jobs:
       - name: Checkout
         if: github.event.schedule == matrix.cron
         uses: actions/checkout@v6
-      - name: Run ${{ matrix.name }}
+      - name: "Smart trigger for ${{ matrix.name }}"
         if: github.event.schedule == matrix.cron
-        env:
-          GITHUB_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
-        run: gh workflow run ${{ matrix.workflow }} --ref=${{ matrix.branch }}
+        uses: scality/actions/actions-nightly-trigger@1.17.0
+        with:
+          branch: ${{ matrix.branch }}
+          workflow: ${{ matrix.workflow }}
+          access_token: ${{ secrets.GIT_ACCESS_TOKEN }}
