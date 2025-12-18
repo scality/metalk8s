@@ -132,6 +132,9 @@ const config: Configuration = {
         ...Object.fromEntries(
           Object.entries(deps).map(([key, version]) => [key, {}]),
         ),
+        '@scality/core-ui': {
+          singleton: true,
+        },
         '@scality/module-federation': {
           singleton: true,
         },
