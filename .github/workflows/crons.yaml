@@ -13,9 +13,14 @@ on:
     # Run V -1 nightly every weekday at 02:00
     - cron: "0 2 * * 1-5"
 
+    # Retry failed nightlies every weekday at 06:00 (4 hours after last nightly)
+    - cron: "0 6 * * 1-5"
+
 jobs:
   crons:
     runs-on: ubuntu-24.04
+    env:
+      MAX_RETRIES: '2'
     strategy:
       fail-fast: false
       matrix:
@@ -47,14 +52,68 @@ jobs:
             cron: "0 2 * * 1-5"
             branch: "development/131.0"
             workflow: "nightly.yaml"
+
+          # Nightly retry jobs
+          # current=132.0
+          - name: "Retry Nightly for MetalK8s 132.0"
+            cron: "0 6 * * 1-5"
+            branch: "development/132.0"
+            workflow: "nightly.yaml"
+            type: "retry"
+          # old=131.0
+          - name: "Retry Nightly for MetalK8s 131.0"
+            cron: "0 6 * * 1-5"
+            branch: "development/131.0"
+            workflow: "nightly.yaml"
+            type: "retry"
     steps:
       - name: Checkout
         if: github.event.schedule == matrix.cron
         uses: actions/checkout@v6
       - name: "Smart trigger for ${{ matrix.name }}"
-        if: github.event.schedule == matrix.cron
+        if: github.event.schedule == matrix.cron && matrix.type != 'retry'
         uses: scality/actions/actions-nightly-trigger@1.17.0
         with:
           branch: ${{ matrix.branch }}
           workflow: ${{ matrix.workflow }}
           access_token: ${{ secrets.GIT_ACCESS_TOKEN }}
+      - name: "Retry workflow for ${{ matrix.name }}"
+        id: retry
+        if: github.event.schedule == matrix.cron && matrix.type == 'retry'
+        uses: scality/actions/action-retry-workflow@1.17.0
+        with:
+          branch: ${{ matrix.branch }}
+          workflow: ${{ matrix.workflow }}
+          step-name: 'Spawn cluster with Terraform'
+          max-retries: ${{ env.MAX_RETRIES }}
+          retry-mode: 'failed-only'
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Notify Slack on retry triggered
+        if: matrix.type == 'retry' && steps.retry.outputs.was-retried == 'true'
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: '#squad-supsetup-alerts'
+          slack-message: |
+            Nightly retry triggered for ${{ matrix.branch }}
+            Job: ${{ matrix.name }}
+            Status: ${{ steps.retry.outputs.status }}
+            Retries performed: ${{ steps.retry.outputs.retry-count }}
+            Retried run: https://github.com/${{ github.repository }}/actions/runs/${{ steps.retry.outputs.run-id }}
+            Cron run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: Notify Slack on manual action needed
+        if: matrix.type == 'retry' && steps.retry.outputs.retry-count != '' && fromJSON(steps.retry.outputs.retry-count) >= fromJSON(env.MAX_RETRIES)
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: '#squad-supsetup-alerts'
+          slack-message: |
+            ⚠️ MANUAL ACTION REQUIRED ⚠️
+            Nightly for ${{ matrix.branch }} failed after ${{ steps.retry.outputs.retry-count }} retry attempts
+            Job: ${{ matrix.name }}
+            Max retries (${{ env.MAX_RETRIES }}) exhausted - manual intervention needed
+            Workflow: ${{ matrix.workflow }}
+            Failed run: https://github.com/${{ github.repository }}/actions/runs/${{ steps.retry.outputs.run-id }}
+            Cron run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
