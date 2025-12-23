@@ -1,4 +1,4 @@
-import { createBridgeComponent } from '@module-federation/bridge-react/';
+import { createBridgeComponent } from '@module-federation/bridge-react';
 
 const ExportApp = () => {
   return <div>ExportApp</div>;
