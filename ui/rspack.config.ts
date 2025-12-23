@@ -117,6 +117,7 @@ const config: Configuration = {
       filename: `static/js/remoteEntry.${version}.js`,
       exposes: {
         './FederableApp': './src/FederableApp.tsx',
+        './ExportApp': './src/ExportApp.tsx',
         './platformLibrary': './src/services/platformlibrary/k8s.ts',
         './AlertsNavbarUpdater':
           './src/components/AlertNavbarUpdaterComponent.tsx',
