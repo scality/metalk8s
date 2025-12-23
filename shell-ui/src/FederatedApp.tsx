@@ -203,39 +203,40 @@ function InternalRouter() {
 }
 
 function InternalApp() {
-  const { status } = useQuery({
-    queryKey: ['load-share-deps'],
-    queryFn: async () => {
-      return Promise.all([
-        loadShareModule('react'),
-        loadShareModule('react-dom'),
-        loadShareModule('react-router'),
-        loadShareModule('react-router-dom'),
-        loadShareModule('react-query'),
-        loadShareModule('styled-components'),
-        loadShareModule('@scality/module-federation'),
-      ]);
-    },
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-  });
-
+  // const { status } = useQuery({
+  //   queryKey: ['load-share-deps'],
+  //   queryFn: async () => {
+  //     return Promise.all([
+  //       loadShareModule('react'),
+  //       loadShareModule('react-dom'),
+  //       loadShareModule('react-router'),
+  //       loadShareModule('react-router-dom'),
+  //       loadShareModule('react-query'),
+  //       loadShareModule('styled-components'),
+  //       loadShareModule('@scality/module-federation'),
+  //       // loadShareModule('@module-federation/bridge-react'),
+  //     ]);
+  //   },
+  //   refetchOnWindowFocus: false,
+  //   refetchOnMount: false,
+  //   refetchOnReconnect: false,
+  // });
+  // console.log('DEBUG status', status);
   return (
     <BrowserRouter>
       <ShellHistoryProvider>
         <FirstTimeLoginProvider>
           <NotificationCenterProvider>
-            {(status === 'idle' || status === 'loading') && (
+            {/* {(status === 'idle' || status === 'loading') && (
               <Loader size="massive" centered={true} aria-label="loading" />
             )}
-            {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
-            {status === 'success' && (
-              <SolutionsNavbar>
-                {/* <InternalRouter /> */}
-                <InternalRouter2 />
-              </SolutionsNavbar>
-            )}
+            {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />} */}
+            {/* {status === 'success' && ( */}
+            <SolutionsNavbar>
+              {/* <InternalRouter /> */}
+              <InternalRouter2 />
+            </SolutionsNavbar>
+            {/* )} */}
           </NotificationCenterProvider>
         </FirstTimeLoginProvider>
       </ShellHistoryProvider>
