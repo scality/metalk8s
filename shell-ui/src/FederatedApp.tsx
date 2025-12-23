@@ -144,7 +144,13 @@ const InternalRouter2 = () => {
     mf,
     'metalk8s',
     'ExportApp',
-    'http://localhost:8080/metalk8s/mf-manifest.json',
+    'http://abcd/metalk8s/mf-manifest.json',
+  );
+  const Component2 = CreateRemoteAppComponent(
+    mf,
+    'zenko',
+    'ExportApp',
+    'http://localhost:8080/zenko/mf-manifest.json',
   );
   return (
     <Routes>
