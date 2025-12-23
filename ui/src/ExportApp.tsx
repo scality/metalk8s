@@ -12,6 +12,9 @@ const Dashboard = () => {
 const Volumes = () => {
   return <div>Volumes</div>;
 };
+const Alerts = () => {
+  return <div>Alerts</div>;
+};
 
 const ExportApp = (props: any) => {
   const { basename } = props;
@@ -21,6 +24,7 @@ const ExportApp = (props: any) => {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/volumes" element={<Volumes />} />
+        <Route path="/alerts" element={<Alerts />} />
       </Routes>
     </BrowserRouter>
   );
