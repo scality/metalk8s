@@ -160,14 +160,6 @@ const config: Configuration = {
           singleton: true,
           eager: true,
         },
-        'react-router': {
-          singleton: true,
-          eager: true,
-        },
-        'react-router-dom': {
-          singleton: true,
-          eager: true,
-        },
         'oidc-client-ts': {
           singleton: true,
           eager: true,
