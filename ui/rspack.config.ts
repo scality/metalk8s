@@ -113,6 +113,9 @@ const config: Configuration = {
   },
   plugins: [
     new ModuleFederationPlugin({
+      bridge: {
+        enableBridgeRouter: true,
+      },
       name: 'metalk8s',
       filename: `static/js/remoteEntry.${version}.js`,
       exposes: {
@@ -131,7 +134,11 @@ const config: Configuration = {
         : undefined,
       shared: {
         ...Object.fromEntries(
-          Object.entries(deps).map(([key, version]) => [key, {}]),
+          Object.entries(deps)
+            .filter(
+              ([key]) => key !== 'react-router-dom' && key !== 'react-router',
+            )
+            .map(([key, version]) => [key, {}]),
         ),
         '@scality/core-ui': {
           singleton: true,

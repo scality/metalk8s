@@ -99,8 +99,12 @@ const config: Configuration = {
     modules: ['node_modules'],
     extensions: ['.js', '.jsx', '.css', '.json', '.ts', '.tsx'],
   },
+
   plugins: [
     new ModuleFederationPlugin({
+      bridge: {
+        enableBridgeRouter: true,
+      },
       name: 'shell',
       filename: `remoteEntry.js`,
       exposes: {
@@ -120,7 +124,11 @@ const config: Configuration = {
       },
       shared: {
         ...Object.fromEntries(
-          Object.entries(deps).map(([key, version]) => [key, {}]),
+          Object.entries(deps)
+            .filter(
+              ([key]) => key !== 'react-router-dom' && key !== 'react-router',
+            )
+            .map(([key, version]) => [key, {}]),
         ),
         '@scality/core-ui': {
           singleton: true,
