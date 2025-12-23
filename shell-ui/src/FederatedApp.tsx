@@ -13,7 +13,11 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { QueryClient } from 'react-query';
 import { BrowserRouter, Route, Routes } from 'react-router';
 
-import { loadShare } from '@module-federation/enhanced/runtime';
+import {
+  loadRemote,
+  loadShare,
+  createInstance,
+} from '@module-federation/enhanced/runtime';
 import { useQuery } from 'react-query';
 import { AuthConfigProvider, useAuthConfig } from './auth/AuthConfigProvider';
 import { AuthProvider } from './auth/AuthProvider';
@@ -41,6 +45,8 @@ import { SolutionsNavbar } from './navbar';
 import { LanguageProvider, useLanguage } from './navbar/lang';
 import NotificationCenterProvider from './NotificationCenterProvider';
 import { QueryClientProvider } from './QueryClientProvider';
+import { createRemoteAppComponent } from '@module-federation/bridge-react';
+import BridgeReactPlugin from '@module-federation/bridge-react/plugin';
 
 /**
  * This is a mock function to replace the real loadShare function when running tests.
@@ -110,6 +116,42 @@ function FederatedRoute({ scope, module, app }: FederatedRouteProps) {
     </ErrorBoundary>
   );
 }
+const CreateRemoteAppComponent = (
+  mf: any,
+  scope: string,
+  module: string,
+  url: string,
+  fallback = () => <div>Error loading</div>,
+  loading = <div>Loading...</div>,
+) => {
+  mf.registerRemotes([{ name: scope, entry: url }]);
+  const Component = createRemoteAppComponent({
+    loader: () => loadRemote(`${scope}/${module}`),
+    fallback,
+    loading,
+  });
+  return Component;
+};
+
+const mf = createInstance({
+  name: 'federation_consumer',
+  remotes: [],
+  plugins: [BridgeReactPlugin()],
+});
+
+const InternalRouter2 = () => {
+  const Component = CreateRemoteAppComponent(
+    mf,
+    'metalk8s',
+    'ExportApp',
+    'http://localhost:8080/metalk8s/mf-manifest.json',
+  );
+  return (
+    <Routes>
+      <Route path="/export" element={<Component />} />
+    </Routes>
+  );
+};
 
 function InternalRouter() {
   const federatedRoutes = useFederatedRoutes();
@@ -190,7 +232,8 @@ function InternalApp() {
             {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
             {status === 'success' && (
               <SolutionsNavbar>
-                <InternalRouter />
+                {/* <InternalRouter /> */}
+                <InternalRouter2 />
               </SolutionsNavbar>
             )}
           </NotificationCenterProvider>
