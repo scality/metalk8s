@@ -149,11 +149,12 @@ const InternalRouter2 = () => {
     mf,
     'zenko',
     'ExportApp',
-    'http://localhost:8080/zenko/mf-manifest.json',
+    'http://localhost:8383/zenko/mf-manifest.json',
   );
   return (
     <Routes>
       <Route path="/platform/*" element={<Component basename="/platform" />} />
+      <Route path="/data/*" element={<Component2 basename="/data" />} />
     </Routes>
   );
 };
