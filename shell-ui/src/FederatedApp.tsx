@@ -148,7 +148,7 @@ const InternalRouter2 = () => {
   );
   return (
     <Routes>
-      <Route path="/export" element={<Component />} />
+      <Route path="/platform/*" element={<Component basename="/platform" />} />
     </Routes>
   );
 };
