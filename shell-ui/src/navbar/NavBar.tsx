@@ -102,17 +102,17 @@ const Link = ({
 }: {
   children: React.ReactNode;
   to:
-    | {
-        isExternal?: boolean;
-        app: SolutionUI;
-        view: View;
-        isFederated: true;
-      }
-    | {
-        isFederated: false;
-        isExternal?: boolean;
-        url: string;
-      };
+  | {
+    isExternal?: boolean;
+    app: SolutionUI;
+    view: View;
+    isFederated: true;
+  }
+  | {
+    isFederated: false;
+    isExternal?: boolean;
+    url: string;
+  };
 }) => {
   const { openLink } = useLinkOpener();
   return (
@@ -157,17 +157,17 @@ export const useNavbarLinksToActions = (
     .find((link) =>
       link.view.isFederated
         ? doesRouteMatch({
-            exact: link.view.view.exact,
-            path: link.view.view.activeIfMatches
-              ? new RegExp(
-                  link.view.app.appHistoryBasePath +
-                    link.view.view.activeIfMatches,
-                  'i',
-                ).toString()
-              : link.view.app.appHistoryBasePath + link.view.view.path,
-          })
+          exact: link.view.view.exact,
+          path: link.view.view.activeIfMatches
+            ? new RegExp(
+              link.view.app.appHistoryBasePath +
+              link.view.view.activeIfMatches,
+              'i',
+            ).toString()
+            : link.view.app.appHistoryBasePath + link.view.view.path,
+        })
         : normalizePath((link.view as NonFederatedView).url) ===
-          window.location.origin + window.location.pathname,
+        window.location.origin + window.location.pathname,
     );
 
   return links.map((link) => {
@@ -176,13 +176,13 @@ export const useNavbarLinksToActions = (
       selected:
         selectedTab && selectedTab.view.isFederated && link.view.isFederated
           ? selectedTab.view.app.name === link.view.app.name &&
-            selectedTab.view.view.path === link.view.view.path
+          selectedTab.view.view.path === link.view.view.path
           : selectedTab &&
             !selectedTab.view.isFederated &&
             !link.view.isFederated
-          ? normalizePath((selectedTab.view as NonFederatedView).url) ===
+            ? normalizePath((selectedTab.view as NonFederatedView).url) ===
             normalizePath((link.view as NonFederatedView).url)
-          : false,
+            : false,
     };
   });
 };
@@ -191,6 +191,9 @@ export const useFederatedNavbarEntries = (): {
 } => {
   const { userData } = useAuth();
   const discoveredViews = useDiscoveredViews();
+
+  console.log('userData', userData)
+  console.log('discoveredViews', discoveredViews);
   const accessibleViews = discoveredViews.filter(
     (discoveredView) =>
       userData &&
@@ -237,6 +240,7 @@ export const Navbar = ({
   const { getLinks } = useNavbar();
   const navigate = useNavigate();
   const navbarLinks = useMemo(() => getLinks(), [getLinks]);
+  console.log('DEBUG navbarLinks', navbarLinks);
   const navbarMainActions = useNavbarLinksToActions(navbarLinks.main);
   const navbarSecondaryActions = useNavbarLinksToActions(navbarLinks.secondary);
   const navbarSubloginActions = useNavbarLinksToActions(
@@ -258,6 +262,8 @@ export const Navbar = ({
       document.title = title;
     }
   }, [title]);
+
+  console.log('DEBUG navbarMainActions', navbarLinks.main);
 
   useEffect(() => {
     const navbarMainSelected = navbarMainActions.find((act) => act.selected);
@@ -325,19 +331,19 @@ export const Navbar = ({
 
   type RightTabItem =
     | {
-        type: 'dropdown';
-        text: string;
-        icon?: React.ReactNode;
-        items: {
-          label: React.ReactNode;
-          selected?: boolean;
-          onClick: () => void;
-        }[];
-      }
+      type: 'dropdown';
+      text: string;
+      icon?: React.ReactNode;
+      items: {
+        label: React.ReactNode;
+        selected?: boolean;
+        onClick: () => void;
+      }[];
+    }
     | {
-        type: 'custom';
-        render: () => React.ReactNode;
-      };
+      type: 'custom';
+      render: () => React.ReactNode;
+    };
 
   const rightTabs: RightTabItem[] = [
     ...secondaryTabs,
@@ -455,6 +461,52 @@ export const Navbar = ({
                   render: <InstanceName />,
                 },
                 ...mainTabs,
+                {
+                  render: <Link to={{
+                    isFederated: true,
+                    app: {
+                      kind: 'metalk8s-ui',
+                      url: 'http://localhost:3000/metalk8s',
+                      name: 'metalk8s',
+                      version: 'local-dev',
+                      appHistoryBasePath: '/platform',
+                    },
+                    view: {
+                      label: {
+                        en: 'Platform',
+                        fr: 'Plateforme',
+                      },
+                      path: '/',
+                      module: './ExportApp',
+                      scope: 'metalk8s',
+                    },
+                  }}>
+                    Platform
+                  </Link>,
+                },
+                {
+                  render: <Link to={{
+                    isFederated: true,
+                    app: {
+                      kind: 'zenko-ui',
+                      url: 'http://localhost:8383/zenko',
+                      name: 'zenko',
+                      version: 'local-dev',
+                      appHistoryBasePath: '/data',
+                    },
+                    view: {
+                      label: {
+                        en: 'Data',
+                        fr: 'Données',
+                      },
+                      path: '/',
+                      module: './ExportApp',
+                      scope: 'zenko',
+                    },
+                  }}>
+                    Data
+                  </Link>,
+                }
               ]}
               role="navigation"
             />
