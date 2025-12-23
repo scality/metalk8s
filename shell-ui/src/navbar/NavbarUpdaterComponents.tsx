@@ -33,15 +33,16 @@ export const NavbarUpdaterComponents = () => {
       const remoteEntryPath = appBuildConfig?.spec?.remoteEntryPath;
       return appBuildConfig?.spec?.navbarUpdaterComponents
         ? appBuildConfig?.spec?.navbarUpdaterComponents.map((component) => ({
-            ...component,
-            remoteEntryPath,
-            app,
-          }))
+          ...component,
+          remoteEntryPath,
+          app,
+        }))
         : [];
     })
     .filter((appBuildConfig) => !!appBuildConfig);
   const { firstTimeLogin } = useFirstTimeLogin();
   const { userData } = useAuth();
+  console.log('DEBUG componentsToFederate');
   return (
     <>
       {componentsToFederate.map((component, index) => {
@@ -57,9 +58,9 @@ export const NavbarUpdaterComponents = () => {
                 return <></>;
               }}
             >
-              <FederatedComponent
+              {/* <FederatedComponent
                 key={component.module}
-                url={`${component.app.url}${component.remoteEntryPath}?version=${component.app.version}`}
+                url={`${component.app.url}${component.remoteEntryPath}?tutu=${component.app.version}`}
                 module={component.module}
                 scope={component.scope}
                 app={component.app}
@@ -72,7 +73,8 @@ export const NavbarUpdaterComponents = () => {
                   shellHooks,
                   shellAlerts,
                 }}
-              />
+              /> */}
+              <div>placeholder</div>
             </ErrorBoundary>
           </Fragment>
         );

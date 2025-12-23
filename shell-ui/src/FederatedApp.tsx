@@ -14,7 +14,6 @@ import { QueryClient } from 'react-query';
 import { BrowserRouter, Route, Routes } from 'react-router';
 
 import {
-  loadRemote,
   loadShare,
   createInstance,
 } from '@module-federation/enhanced/runtime';
@@ -126,7 +125,7 @@ const CreateRemoteAppComponent = (
 ) => {
   mf.registerRemotes([{ name: scope, entry: url }]);
   const Component = createRemoteAppComponent({
-    loader: () => loadRemote(`${scope}/${module}`),
+    loader: () => mf.loadRemote(`${scope}/${module}`),
     fallback,
     loading,
   });
@@ -144,7 +143,7 @@ const InternalRouter2 = () => {
     mf,
     'metalk8s',
     'ExportApp',
-    'http://abcd/metalk8s/mf-manifest.json',
+    'http://localhost:3000/metalk8s/mf-manifest.json?hehe',
   );
   const Component2 = CreateRemoteAppComponent(
     mf,
