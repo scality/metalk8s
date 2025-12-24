@@ -240,7 +240,6 @@ export const Navbar = ({
   const { getLinks } = useNavbar();
   const navigate = useNavigate();
   const navbarLinks = useMemo(() => getLinks(), [getLinks]);
-  console.log('DEBUG navbarLinks', navbarLinks);
   const navbarMainActions = useNavbarLinksToActions(navbarLinks.main);
   const navbarSecondaryActions = useNavbarLinksToActions(navbarLinks.secondary);
   const navbarSubloginActions = useNavbarLinksToActions(
@@ -262,8 +261,6 @@ export const Navbar = ({
       document.title = title;
     }
   }, [title]);
-
-  console.log('DEBUG navbarMainActions', navbarLinks.main);
 
   useEffect(() => {
     const navbarMainSelected = navbarMainActions.find((act) => act.selected);
