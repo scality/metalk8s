@@ -32,7 +32,8 @@
     "reselect": "^2.5.4",
     "styled-components": "^5.3.11",
     "uuid": "3.3.2",
-    "yup": "^0.32.9"
+    "yup": "^0.32.9",
+    "zustand": "^5.0.9"
   },
   "scripts": {
     "check-types": "tsc --noEmit",

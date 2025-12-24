@@ -121,6 +121,8 @@ const config: Configuration = {
         './moduleFederation/UIListProvider':
           './src/initFederation/UIListProvider.tsx',
         './useNotificationCenter': './src/useNotificationCenter.ts',
+        './ConfigurationService':
+          './src/services/ConfigurationService/store.ts',
       },
       shared: {
         // ...Object.fromEntries(
@@ -179,6 +181,11 @@ const config: Configuration = {
         zod: {
           singleton: true,
           eager: true,
+        },
+        zustand: {
+          singleton: true,
+          eager: true,
+          requiredVersion: deps.zustand,
         },
       },
     }),

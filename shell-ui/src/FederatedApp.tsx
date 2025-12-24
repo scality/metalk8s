@@ -46,7 +46,7 @@ import NotificationCenterProvider from './NotificationCenterProvider';
 import { QueryClientProvider } from './QueryClientProvider';
 import { createRemoteAppComponent } from '@module-federation/bridge-react';
 import BridgeReactPlugin from '@module-federation/bridge-react/plugin';
-import { useConfigurationStore, useConfigurationStoreState } from './services/ConfigurationService/store';
+import { configurationStore as store, useConfigurationStoreState } from './services/ConfigurationService/store';
 
 /**
  * This is a mock function to replace the real loadShare function when running tests.
@@ -168,8 +168,8 @@ const InternalRouter2 = () => {
   console.log('DEBUG config', dataConfig);
   return (
     <Routes>
-      <Route path="/platform/*" element={<Component basename="/platform" config={metalk8sConfig} />} />
-      <Route path="/data/*" element={<Component2 basename="/data" config={dataConfig} />} />
+      <Route path="/platform/*" element={<Component basename="/platform" config={metalk8sConfig} store={store} />} />
+      <Route path="/data/*" element={<Component2 basename="/data" config={dataConfig} store={store} />} />
     </Routes>
   );
 };

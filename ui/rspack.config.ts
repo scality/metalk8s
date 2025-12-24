@@ -158,6 +158,11 @@ const config: Configuration = {
           singleton: true,
           requiredVersion: deps['react-dom'],
         },
+        zustand: {
+          singleton: true,
+          // eager: true,
+          // requiredVersion: deps.zustand,
+        },
       },
     }),
     new rspack.CopyRspackPlugin({
