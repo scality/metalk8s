@@ -210,7 +210,7 @@ const config: Configuration = {
     static: path.join(__dirname, 'public'),
     proxy: [
       {
-        context: ['/static/js', '/.well-known'],
+        context: ['/metalk8s', '/static/js', '/.well-known'],
         target: 'http://localhost:3000',
         secure: false,
       },
