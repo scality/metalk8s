@@ -151,10 +151,20 @@ const InternalRouter2 = () => {
     'ExportApp',
     'http://localhost:8383/zenko/mf-manifest.json',
   );
+  const metalk8sConfig = shellHooks.useConfig({
+    configType: 'run',
+    name: 'metalk8s.eu-west-1',
+  });
+  console.log('DEBUG config', metalk8sConfig);
+  const dataConfig = shellHooks.useConfig({
+    configType: 'run',
+    name: 'zenko.eu-west-1',
+  });
+  console.log('DEBUG config', dataConfig);
   return (
     <Routes>
-      <Route path="/platform/*" element={<Component basename="/platform" />} />
-      <Route path="/data/*" element={<Component2 basename="/data" />} />
+      <Route path="/platform/*" element={<Component basename="/platform" config={metalk8sConfig} />} />
+      <Route path="/data/*" element={<Component2 basename="/data" config={dataConfig} />} />
     </Routes>
   );
 };
