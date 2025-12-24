@@ -7,6 +7,7 @@ import { useQueries, UseQueryResult } from 'react-query';
 import { useShellConfig } from './ShellConfigProvider';
 import { useShellHistory } from './ShellHistoryProvider';
 import { useDeployedApps, useDeployedAppsRetriever } from './UIListProvider';
+import { configurationStore } from '../services/ConfigurationService';
 
 export type OAuth2ProxyConfig = {
   kind: 'OAuth2Proxy'; //todo : add other entries
@@ -489,7 +490,10 @@ export const ConfigurationProvider = ({
 
   useMemo(() => {
     updateWebFingersState(results);
-  }, [results]);
+    // Also populate the Zustand ConfigurationStore
+    configurationStore.getState().setWebFingers(results);
+    configurationStore.getState().setDeployedApps(deployedUIs);
+  }, [results, deployedUIs, updateWebFingersState]);
 
   const statuses = Array.from(new Set(results.map((result) => result.status)));
 

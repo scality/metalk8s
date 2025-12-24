@@ -46,6 +46,7 @@ import NotificationCenterProvider from './NotificationCenterProvider';
 import { QueryClientProvider } from './QueryClientProvider';
 import { createRemoteAppComponent } from '@module-federation/bridge-react';
 import BridgeReactPlugin from '@module-federation/bridge-react/plugin';
+import { useConfigurationStore, useConfigurationStoreState } from './services/ConfigurationService/store';
 
 /**
  * This is a mock function to replace the real loadShare function when running tests.
@@ -139,6 +140,10 @@ const mf = createInstance({
 });
 
 const InternalRouter2 = () => {
+  const configurationStore = useConfigurationStoreState();
+
+  console.log('DEBUG configurationStore', configurationStore);
+
   const Component = CreateRemoteAppComponent(
     mf,
     'metalk8s',
