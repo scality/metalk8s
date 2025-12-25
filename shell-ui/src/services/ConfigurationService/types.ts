@@ -75,6 +75,10 @@ export type WebFingerResult = UseQueryResult<
 >;
 
 export interface ConfigurationState {
+  counter: number;
+  incrementCounter: () => void;
+  decrementCounter: () => void;
+  resetCounter: () => void;
   // State
   webFingers: WebFingerResult[];
   deployedApps: SolutionUI[];

@@ -18,7 +18,16 @@ export const configurationStore = createStore<ConfigurationState>(
     // Initial state
     webFingers: [],
     deployedApps: [],
-
+    counter: 0,
+    incrementCounter: () => {
+      set((state) => ({ counter: state.counter + 1 }));
+    },
+    decrementCounter: () => {
+      set((state) => ({ counter: state.counter - 1 }));
+    },
+    resetCounter: () => {
+      set({ counter: 0 });
+    },
     // Actions
     setWebFingers: (webFingers: WebFingerResult[]) => {
       const currentWebFingers = get().webFingers;

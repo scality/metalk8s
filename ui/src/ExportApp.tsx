@@ -41,7 +41,14 @@ const DebugConfigurationStore = ({ propsStore, fedStore }: { configurationStore:
   useStore(fedStore, (state) => {
     console.log('DEBUG state fedStore', state);
   });
-  return <div>ConfigurationStore: </div>;
+  return <div>ConfigurationStore:
+    {/* <button type="button" onClick={() => {
+      propsStore.getState().incrementCounter();
+    }}>Click me {propsStore.getState().counter}</button> */}
+    <button type="button" onClick={() => {
+      propsStore.getState().decrementCounter();
+    }}>Click me {propsStore.getState().counter}</button>
+  </div>;
 };
 
 

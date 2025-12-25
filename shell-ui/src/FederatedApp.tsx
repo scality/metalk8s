@@ -243,6 +243,7 @@ function InternalApp() {
   //   refetchOnReconnect: false,
   // });
   // console.log('DEBUG status', status);
+  const { counter, incrementCounter, decrementCounter, resetCounter } = useConfigurationStoreState();
   return (
     <BrowserRouter>
       <ShellHistoryProvider>
@@ -256,6 +257,9 @@ function InternalApp() {
             <SolutionsNavbar>
               {/* <InternalRouter /> */}
               <InternalRouter2 />
+              <button type="button" onClick={() => {
+                incrementCounter();
+              }}>Click me {counter}</button>
             </SolutionsNavbar>
             {/* )} */}
           </NotificationCenterProvider>
