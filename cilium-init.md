@@ -1,71 +1,6 @@
-#!jinja | metalk8s_kubernetes
+Initial manifests without encryption
 
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-{%- from "metalk8s/map.jinja" import networks with context %}
-
-# What's below is based on the helm deployment provided by Cilium repository.
-# export API_SERVER_IP=127.0.0.1
-# export API_SERVER_PORT=7443
-# helm template cilium/cilium --version 1.17.7 \
-#   --api-versions "gateway.networking.k8s.io/v1/GatewayClass" \
-#   --namespace kube-system \
-#   --set ipam.mode=kubernetes \
-#   --set kubeProxyReplacement=true \
-#   --set k8sServiceHost=${API_SERVER_IP} \
-#   --set k8sServicePort=${API_SERVER_PORT} \
-#   --set rollOutCiliumPods=true \
-#   --set envoy.rollOutPods=true \
-#   --set envoy.securityContext.capabilities.keepCapNetBindService=true \
-#   --set operator.rollOutPods=true \
-#   --set operator.replicas=1 \
-#   --set ingressController.enabled=true \
-#   --set ingressController.loadbalancerMode=shared \
-#   --set l7Proxy=true \
-#   --set routingMode="tunnel" \
-#   --set tunnelProtocol="geneve" \
-#   --set l2announcements.enabled=true \
-#   --set l2announcements.leaseDuration=3s \
-#   --set l2announcements.leaseRenewDeadline=1s \
-#   --set l2announcements.leaseRetryPeriod=500ms \
-#   --set loadBalancer.l7.backend=envoy \
-#   --set enableIPv4Masquerade=true \
-#   --set bpf.masquerade=true \
-#   --set ipMasqAgent.enabled=true \
-#   --set encryption.enabled=true \
-#   --set encryption.type=wireguard \
-#   --set "ipMasqAgent.config.nonMasqueradeCIDRs=[]" \
-#   --set gatewayAPI.enabled=true
-
-# Manual modifications
-#
-# A- Delete securityContext section from cilium daemonset
-#---
-#securityContext:
-#  appArmorProfile:
-#    type: Unconfined
-#
-# B- Replace appArmorProfile by seccompProfile in securityContext section
-# from cilium-envoy daemonset
-#---
-#securityContext:
-#  appArmorProfile:
-#    type: Unconfined
-#
-# C- Delete Endpoint deployment empty labels section
-#---
-## Source: cilium/templates/cilium-ingress-service.yaml
-#apiVersion: v1
-#kind: Endpoints
-#metadata:
-#  name: cilium-ingress
-#  namespace: kube-system
-# LINE TO DELETE  labels:
-#subsets:
-#- addresses:
-#  - ip: "192.192.192.192"
-#  ports:
-#  - port: 9999
-#
+```yaml
 ---
 # Source: cilium/templates/cilium-secrets-namespace.yaml
 apiVersion: v1
@@ -925,7 +860,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: cilium-tlsinterception-secrets
-  namespace: "cilium-secrets"
+  namespace: "cilium-secrets"  
   labels:
     app.kubernetes.io/part-of: cilium
 rules:
@@ -1153,9 +1088,11 @@ spec:
   - name: http
     port: 80
     protocol: TCP
+    nodePort: 
   - name: https
     port: 443
     protocol: TCP
+    nodePort: 
   type: LoadBalancer
   externalTrafficPolicy: Cluster
 ---
@@ -1202,7 +1139,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "ac49d5e7dcae002a7e6db9dd16bb16df3d7df9f10c27c43d9c9f0b03fdc056eb"
+        cilium.io/cilium-configmap-checksum: "e1d9ccb2c993a590b2e4d06e00eeaf52eb42e18fa607947bb74a617f1b539f89"
       labels:
         k8s-app: cilium
         app.kubernetes.io/name: cilium-agent
@@ -1292,7 +1229,7 @@ spec:
                     set -o errexit
                     set -o pipefail
                     set -o nounset
-
+                    
                     # When running in AWS ENI mode, it's likely that 'aws-node' has
                     # had a chance to install SNAT iptables rules. These can result
                     # in dropped traffic, so we should attempt to remove them.
@@ -1308,7 +1245,7 @@ spec:
                         iptables-save | grep -E -v 'AWS-SNAT-CHAIN|AWS-CONNMARK-CHAIN' | iptables-restore
                     fi
                     echo 'Done!'
-
+                    
           preStop:
             exec:
               command:
@@ -1377,7 +1314,7 @@ spec:
           readOnly: true
         - name: tmp
           mountPath: /tmp
-
+        
       initContainers:
       - name: config
         image: "quay.io/cilium/cilium:v1.17.7@sha256:b22440f49c61195171aca585c7a57c6a8867271e43a5abc38f2a2f561436ff86"
@@ -1642,7 +1579,6 @@ spec:
       - name: clustermesh-secrets
         projected:
           # note: the leading zero means this number is in octal representation: do not remove it
-          # yamllint disable-line
           defaultMode: 0400
           sources:
           - secret:
@@ -1913,7 +1849,7 @@ spec:
     metadata:
       annotations:
         # ensure pods roll when configmap updates
-        cilium.io/cilium-configmap-checksum: "ac49d5e7dcae002a7e6db9dd16bb16df3d7df9f10c27c43d9c9f0b03fdc056eb"
+        cilium.io/cilium-configmap-checksum: "e1d9ccb2c993a590b2e4d06e00eeaf52eb42e18fa607947bb74a617f1b539f89"
         prometheus.io/port: "9963"
         prometheus.io/scrape: "true"
       labels:
@@ -2033,3 +1969,4 @@ metadata:
 spec:
   controllerName: io.cilium/gateway-controller
   description: The default Cilium GatewayClass
+```
