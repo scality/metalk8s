@@ -18,7 +18,7 @@ import { useAuthConfig } from './AuthConfigProvider';
 import { authStore } from '../services/AuthService';
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { authConfig } = useAuthConfig();
-
+  console.log('DEBUG authConfig', authConfig);
   if (!authConfig) {
     return <>{children}</>;
   }
@@ -26,6 +26,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   if (authConfig.kind === 'OAuth2Proxy') {
     throw new Error('OAuth2Proxy authentication kind is not yet supported');
   }
+
+
 
   return (
     <>

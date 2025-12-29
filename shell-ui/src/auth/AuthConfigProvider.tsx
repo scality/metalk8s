@@ -23,6 +23,8 @@ export function AuthConfigProvider({
   children: React.ReactNode;
 }) {
   const [authConfig, setAuthConfig] = useState(undefined);
+
+  console.log('DEBUG AuthConfigProvider authConfig', authConfig);
   return (
     <AuthConfigContext.Provider
       value={{

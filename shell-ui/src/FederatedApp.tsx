@@ -161,6 +161,25 @@ const InternalRouter2 = () => {
     name: 'zenko.eu-west-1',
   });
 
+  console.log("SHELL DEBUG: metalk8sConfig NEW", metalk8sConfig)
+
+
+  const { retrieveConfiguration } = useConfigRetriever();
+  const { setAuthConfig } = useAuthConfig();
+
+  useEffect(() => {
+    const runtimeAppConfig = retrieveConfiguration<Record<string, unknown>>({
+      configType: 'run',
+      name: "metalk8s.eu-west-1",
+    });
+
+    console.log("SHELL DEBUG: runtimeAppConfig OLD", runtimeAppConfig)
+
+    if (runtimeAppConfig) {
+      setAuthConfig(runtimeAppConfig.spec.auth);
+    }
+  }, [retrieveConfiguration]);
+
   const navigate = useNavigate();
   return (
     <Routes>
@@ -314,6 +333,7 @@ export function WithInitFederationProviders({
 }
 
 const AppProviderWrapper = () => {
+  console.log('DEBUG AppProviderWrapper');
   const { language } = useLanguage();
   return (
     <ErrorBoundary
