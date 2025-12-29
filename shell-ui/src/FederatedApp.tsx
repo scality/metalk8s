@@ -8,10 +8,10 @@ import {
   FederatedComponentProps,
   SolutionUI,
 } from '@scality/module-federation';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { QueryClient } from 'react-query';
-import { BrowserRouter, Route, Routes } from 'react-router';
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router';
 
 import {
   loadShare,
@@ -166,13 +166,46 @@ const InternalRouter2 = () => {
     name: 'zenko.eu-west-1',
   });
   console.log('DEBUG config', dataConfig);
+
+  const navigate = useNavigate();
   return (
     <Routes>
-      <Route path="/platform/*" element={<Component basename="/platform" config={metalk8sConfig} store={store} />} />
-      <Route path="/data/*" element={<Component2 basename="/data" config={dataConfig} store={store} />} />
+      <Route path="/platform/*" element={<Component basename="/platform" config={metalk8sConfig} store={store} queryClient={queryClient} />} />
+      <Route path="/data/*" element={<Component2 basename="/data" config={dataConfig} store={store} queryClient={queryClient} shellNavigate={navigate} />} />
     </Routes>
   );
 };
+
+const ShellTestApp = () => {
+  const { counter, incrementCounter, decrementCounter, resetCounter } = useConfigurationStoreState();
+  const [enabled, setEnabled] = useState(false);
+  const { data } = useQuery({
+    queryKey: ['shell-test-app'],
+    queryFn: () => {
+      return Promise.resolve("shell-test-app");
+    },
+    enabled: enabled,
+    cacheTime: Infinity,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
+
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', border: '1px solid red', padding: '10px' }}>
+      ShellTestApp
+      <button type="button" onClick={() => {
+        setEnabled(true);
+      }}>Enable Query</button>
+      <div>Query Data: {data ?? "No data"}</div>
+      <button type="button" onClick={() => {
+        incrementCounter();
+      }}>Shell Click me {counter}</button>
+    </div>
+  );
+}
 
 function InternalRouter() {
   const federatedRoutes = useFederatedRoutes();
@@ -243,7 +276,7 @@ function InternalApp() {
   //   refetchOnReconnect: false,
   // });
   // console.log('DEBUG status', status);
-  const { counter, incrementCounter, decrementCounter, resetCounter } = useConfigurationStoreState();
+
   return (
     <BrowserRouter>
       <ShellHistoryProvider>
@@ -255,11 +288,8 @@ function InternalApp() {
             {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />} */}
             {/* {status === 'success' && ( */}
             <SolutionsNavbar>
-              {/* <InternalRouter /> */}
+              <ShellTestApp />
               <InternalRouter2 />
-              <button type="button" onClick={() => {
-                incrementCounter();
-              }}>Shell Click me {counter}</button>
             </SolutionsNavbar>
             {/* )} */}
           </NotificationCenterProvider>
