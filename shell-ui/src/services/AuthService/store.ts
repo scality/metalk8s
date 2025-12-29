@@ -1,6 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
-import type { AuthState, UserData, AuthStatus } from './types';
+import type { AuthState, UserData, AuthStatus, IUserManager } from './types';
 
 /**
  * Vanilla Zustand store for authentication state management.
@@ -11,6 +11,7 @@ export const authStore = createStore<AuthState>((set, get) => ({
   // Initial state
   userData: null,
   status: 'idle',
+  userManager: null,
 
   // Actions
   setUserData: (userData: UserData | null) => {
@@ -25,6 +26,10 @@ export const authStore = createStore<AuthState>((set, get) => ({
     set({ userData, status });
   },
 
+  setUserManager: (userManager: IUserManager) => {
+    set({ userManager });
+  },
+
   clearAuth: () => {
     set({ userData: null, status: 'unauthenticated' });
   },
@@ -35,9 +40,14 @@ export const authStore = createStore<AuthState>((set, get) => ({
     return status === 'authenticated' && userData !== null;
   },
 
-  getToken: () => {
-    const { userData } = get();
-    return userData?.token ?? null;
+  getToken: async () => {
+    const { userManager } = get();
+    if (!userManager) {
+      return null;
+    }
+    return userManager.getUser().then((user) => {
+      return user?.access_token ?? null;
+    });
   },
 
   getUsername: () => {

@@ -73,7 +73,7 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   if (authConfig.kind === 'OAuth2Proxy') {
     throw new Error('OAuth2Proxy authentication kind is not yet supported');
   }
-  const userManager = new UserManager({
+  const userManager = React.useMemo(() => new UserManager({
     authority: authConfig.providerUrl,
     client_id: authConfig.clientId,
     redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
@@ -91,10 +91,34 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
     userStore: new WebStorageStateStore({
       store: localStorage,
     }),
-  });
+  }), [authConfig]);
+
+  // Populate authStore with userManager and existing user data on first render
+  useEffect(() => {
+    // Store userManager for token retrieval
+    authStore.getState().setUserManager(userManager);
+
+    // Load existing user data if available
+    userManager.getUser().then((user) => {
+      if (user && !user.expired) {
+        const userData: UserData = {
+          token: user.access_token,
+          username: user.profile?.name,
+          email: user.profile?.email,
+          groups: getUserGroups(user, {}),
+          id: user.profile?.sub,
+          original: user,
+        };
+        console.log("SHELL DEBUG: Populating authStore on first render", userData);
+        authStore.getState().setAuth(userData, 'authenticated');
+      }
+    });
+  }, [userManager]);
+
   const originalSigninCallBack = userManager.signinCallback.bind(userManager);
   const { showBoundary } = useErrorBoundary();
   userManager.signinCallback = function (url) {
+    console.log("SHELL DEBUG: signinCallback", url)
     return originalSigninCallBack(url).catch((e) => {
       showBoundary({
         en: 'We failed to log you in, this might be due to a time synchronization issue between the browser and the server.',
@@ -112,6 +136,7 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const reloadWhenUserStorageIsEmpty = () => {
+      console.log("SHELL DEBUG: reloadWhenUserStorageIsEmpty")
       userManager.getUser().then((user) => {
         if (!user) {
           location.reload();
@@ -128,6 +153,7 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   }, [logOut]);
   const oidcConfig: AuthProviderProps = {
     onBeforeSignIn: () => {
+      console.log("SHELL DEBUG: onBeforeSignIn")
       localStorage.setItem('redirectUrl', window.location.href);
       return window.location.href;
     },
@@ -144,6 +170,8 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
         id: userData.profile?.sub,
         original: userData,
       };
+
+      console.log("SHELL DEBUG: store myUserData into authStore", myUserData)
       // Update AuthService store - authenticated
       authStore.getState().setAuth(myUserData, 'authenticated');
 
