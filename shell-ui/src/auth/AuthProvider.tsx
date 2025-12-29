@@ -15,6 +15,7 @@ import type {
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { getUserGroups } from '../navbar/auth/permissionUtils';
 import { useAuthConfig } from './AuthConfigProvider';
+import { authStore } from '../services/AuthService';
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { authConfig } = useAuthConfig();
 
@@ -128,9 +129,21 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('redirectUrl', window.location.href);
       return window.location.href;
     },
-    onSignIn: () => {
+    onSignIn: (userData: User | null) => {
       const savedRedirectUri = localStorage.getItem('redirectUrl');
       localStorage.removeItem('redirectUrl');
+
+      const myUserData: UserData = {
+        token: userData.access_token,
+        username: userData.profile?.name,
+        email: userData.profile?.email,
+        // groups: getUserGroups(userData, config.userGroupsMapping),
+        groups: getUserGroups(userData, {}),
+        id: userData.profile?.sub,
+        original: userData,
+      };
+      // Update AuthService store - authenticated
+      authStore.getState().setAuth(myUserData, 'authenticated');
 
       if (savedRedirectUri) {
         location.href = savedRedirectUri;
@@ -189,21 +202,28 @@ export function useAuth(): {
     });
 
     if (!auth || !auth.userData) {
+      // Update AuthService store - unauthenticated
+      authStore.getState().setAuth(null, 'unauthenticated');
       return {
         userData: undefined,
         getToken: () => Promise.resolve(null),
       };
     }
 
+    const userData: UserData = {
+      token: auth.userData.access_token,
+      username: auth.userData.profile?.name,
+      email: auth.userData.profile?.email,
+      groups: getUserGroups(auth.userData, config.userGroupsMapping),
+      id: auth.userData.profile?.sub,
+      original: auth.userData,
+    };
+
+    // Update AuthService store - authenticated
+    authStore.getState().setAuth(userData, 'authenticated');
+
     return {
-      userData: {
-        token: auth.userData.access_token,
-        username: auth.userData.profile?.name,
-        email: auth.userData.profile?.email,
-        groups: getUserGroups(auth.userData, config.userGroupsMapping),
-        id: auth.userData.profile?.sub,
-        original: auth.userData,
-      },
+      userData,
       getToken: async () => {
         return auth.userManager.getUser().then((user) => {
           return user?.access_token;
@@ -211,6 +231,8 @@ export function useAuth(): {
       },
     };
   } catch (e) {
+    // Update AuthService store - unauthenticated on error
+    authStore.getState().setAuth(null, 'unauthenticated');
     return {
       userData: undefined,
       getToken: () => Promise.resolve('null'),
