@@ -33,13 +33,10 @@ const Alerts = () => {
   return <div>Alerts</div>;
 };
 
-const DebugConfigurationStore = ({ propsStore, fedStore }: { configurationStore: any }) => {
+const DebugConfigurationStore = ({ propsStore }: { configurationStore: any }) => {
   // console.log('DEBUG configurationStore', configurationStore.getState());
   useStore(propsStore, (state) => {
     console.log('DEBUG state propsStore', state);
-  });
-  useStore(fedStore, (state) => {
-    console.log('DEBUG state fedStore', state);
   });
   return <div>ConfigurationStore:
     {/* <button type="button" onClick={() => {
@@ -47,7 +44,7 @@ const DebugConfigurationStore = ({ propsStore, fedStore }: { configurationStore:
     }}>Click me {propsStore.getState().counter}</button> */}
     <button type="button" onClick={() => {
       propsStore.getState().decrementCounter();
-    }}>Click me {propsStore.getState().counter}</button>
+    }}>Metalk8s Click me {propsStore.getState().counter}</button>
   </div>;
 };
 
@@ -56,22 +53,22 @@ const DebugConfigurationStore = ({ propsStore, fedStore }: { configurationStore:
 const ExportApp = (props: any) => {
   const { basename, store } = props;
   const [configurationStore, setConfigurationStore] = useState<any>(null);
-  mf.loadRemote('shell/ConfigurationService').then((module) => {
+  // mf.loadRemote('shell/ConfigurationService').then((module) => {
 
-    setConfigurationStore(module.configurationStore);
-    console.log('DEBUG module hhhhhhhhhh', module.configurationStore);
-  });
+  //   setConfigurationStore(module.configurationStore);
+  //   console.log('DEBUG module hhhhhhhhhh', module.configurationStore);
+  // });
 
   console.log('DEBUG =============1', store);
   console.log('DEBUG =============2', configurationStore);
-  // useStore(store, (state) => {
-  //   console.log('DEBUG state hehehehe', state);
-  // });
+  useStore(store, (state) => {
+    console.log('DEBUG state hehehehe', state.getDeployedApps());
+  });
 
 
   return (
     <BrowserRouter basename={basename}>
-      {store && configurationStore && <DebugConfigurationStore propsStore={store} fedStore={configurationStore} />}
+      {store && <DebugConfigurationStore propsStore={store} />}
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />

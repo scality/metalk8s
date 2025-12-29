@@ -259,7 +259,7 @@ function InternalApp() {
               <InternalRouter2 />
               <button type="button" onClick={() => {
                 incrementCounter();
-              }}>Click me {counter}</button>
+              }}>Shell Click me {counter}</button>
             </SolutionsNavbar>
             {/* )} */}
           </NotificationCenterProvider>
