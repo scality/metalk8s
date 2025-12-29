@@ -161,8 +161,6 @@ const InternalRouter2 = () => {
     name: 'zenko.eu-west-1',
   });
 
-  console.log("SHELL DEBUG: metalk8sConfig NEW", metalk8sConfig)
-
 
   const { retrieveConfiguration } = useConfigRetriever();
   const { setAuthConfig } = useAuthConfig();
@@ -172,8 +170,7 @@ const InternalRouter2 = () => {
       configType: 'run',
       name: "metalk8s.eu-west-1",
     });
-
-    console.log("SHELL DEBUG: runtimeAppConfig OLD", runtimeAppConfig)
+    // metalk8sConfig and runtimeAppConfig are the same but retrieveConfiguration type it correctly
 
     if (runtimeAppConfig) {
       setAuthConfig(runtimeAppConfig.spec.auth);
