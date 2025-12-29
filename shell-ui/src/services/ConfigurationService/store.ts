@@ -160,8 +160,6 @@ export const configurationStore = createStore<ConfigurationState>(
   }),
 );
 
-console.log('DEBUG init', configurationStore);
-
 /**
  * React hook to access the configuration store.
  * Use this in React components to subscribe to store updates.

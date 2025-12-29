@@ -192,8 +192,6 @@ export const useFederatedNavbarEntries = (): {
   const { userData } = useAuth();
   const discoveredViews = useDiscoveredViews();
 
-  console.log('userData', userData)
-  console.log('discoveredViews', discoveredViews);
   const accessibleViews = discoveredViews.filter(
     (discoveredView) =>
       userData &&

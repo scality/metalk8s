@@ -42,7 +42,6 @@ export const NavbarUpdaterComponents = () => {
     .filter((appBuildConfig) => !!appBuildConfig);
   const { firstTimeLogin } = useFirstTimeLogin();
   const { userData } = useAuth();
-  console.log('DEBUG componentsToFederate');
   return (
     <>
       {componentsToFederate.map((component, index) => {

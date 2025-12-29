@@ -46,7 +46,7 @@ import NotificationCenterProvider from './NotificationCenterProvider';
 import { QueryClientProvider } from './QueryClientProvider';
 import { createRemoteAppComponent } from '@module-federation/bridge-react';
 import BridgeReactPlugin from '@module-federation/bridge-react/plugin';
-import { configurationStore as store, useConfigurationStoreState } from './services/ConfigurationService/store';
+import { configurationStore, useConfigurationStoreState } from './services/ConfigurationService/store';
 
 /**
  * This is a mock function to replace the real loadShare function when running tests.
@@ -140,10 +140,6 @@ const mf = createInstance({
 });
 
 const InternalRouter2 = () => {
-  const configurationStore = useConfigurationStoreState();
-
-  console.log('DEBUG configurationStore', configurationStore);
-
   const Component = CreateRemoteAppComponent(
     mf,
     'metalk8s',
@@ -160,18 +156,20 @@ const InternalRouter2 = () => {
     configType: 'run',
     name: 'metalk8s.eu-west-1',
   });
-  console.log('DEBUG config', metalk8sConfig);
   const dataConfig = shellHooks.useConfig({
     configType: 'run',
     name: 'zenko.eu-west-1',
   });
-  console.log('DEBUG config', dataConfig);
 
   const navigate = useNavigate();
   return (
     <Routes>
-      <Route path="/platform/*" element={<Component basename="/platform" config={metalk8sConfig} store={store} queryClient={queryClient} />} />
-      <Route path="/data/*" element={<Component2 basename="/data" config={dataConfig} store={store} queryClient={queryClient} shellNavigate={navigate} />} />
+      <Route path="/platform/*" element={
+        <Component basename="/platform" config={metalk8sConfig} store={configurationStore} queryClient={queryClient} />}
+      />
+      <Route path="/data/*" element={
+        <Component2 basename="/data" config={dataConfig} store={configurationStore} queryClient={queryClient} shellNavigate={navigate} />}
+      />
     </Routes>
   );
 };
@@ -275,7 +273,6 @@ function InternalApp() {
   //   refetchOnMount: false,
   //   refetchOnReconnect: false,
   // });
-  // console.log('DEBUG status', status);
 
   return (
     <BrowserRouter>

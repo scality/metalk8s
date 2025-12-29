@@ -1,10 +1,18 @@
 import { createBridgeComponent } from '@module-federation/bridge-react/v18';
 import { useState } from 'react';
-import { QueryClientProvider, useQuery } from 'react-query';
+import {
+  QueryClientProvider as BaseQueryClientProvider,
+  QueryClient,
+  useQuery
+} from 'react-query';
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
-import { useStore } from 'zustand';
 
-
+export const QueryClientProvider =
+  BaseQueryClientProvider as React.ComponentType<{
+    client: QueryClient;
+    contextSharing?: boolean;
+    children?: React.ReactNode;
+  }>;
 
 
 const Dashboard = () => {
@@ -42,11 +50,7 @@ const Alerts = () => {
 
 const DebugConfigurationStore = ({ propsStore }: { configurationStore: any }) => {
 
-  console.log("METALK8S DEBUG propsStore", propsStore.getState());
   return <div>ConfigurationStore:
-    {/* <button type="button" onClick={() => {
-      propsStore.getState().incrementCounter();
-    }}>Click me {propsStore.getState().counter}</button> */}
     <button type="button" onClick={() => {
       propsStore.getState().decrementCounter();
     }}>Metalk8s Click me {propsStore.getState().counter}</button>
@@ -57,18 +61,6 @@ const DebugConfigurationStore = ({ propsStore }: { configurationStore: any }) =>
 
 const ExportApp = (props: any) => {
   const { basename, store, queryClient } = props;
-  const [configurationStore, setConfigurationStore] = useState<any>(null);
-  // mf.loadRemote('shell/ConfigurationService').then((module) => {
-
-  //   setConfigurationStore(module.configurationStore);
-  //   console.log('DEBUG module hhhhhhhhhh', module.configurationStore);
-  // });
-
-  console.log('DEBUG =============1', store);
-  console.log('DEBUG =============2', configurationStore);
-  useStore(store, (state) => {
-    console.log('DEBUG state hehehehe', state.getDeployedApps());
-  });
 
   // QueryClientProvider contextSharing will be removed in the future
   return (
