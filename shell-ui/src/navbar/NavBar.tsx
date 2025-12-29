@@ -456,52 +456,6 @@ export const Navbar = ({
                   render: <InstanceName />,
                 },
                 ...mainTabs,
-                // {
-                //   render: <Link to={{
-                //     isFederated: true,
-                //     app: {
-                //       kind: 'metalk8s-ui',
-                //       url: 'http://localhost:3000/metalk8s',
-                //       name: 'metalk8s',
-                //       version: 'local-dev',
-                //       appHistoryBasePath: '/platform',
-                //     },
-                //     view: {
-                //       label: {
-                //         en: 'Platform',
-                //         fr: 'Plateforme',
-                //       },
-                //       path: '/',
-                //       module: './ExportApp',
-                //       scope: 'metalk8s',
-                //     },
-                //   }}>
-                //     Platform
-                //   </Link>,
-                // },
-                // {
-                //   render: <Link to={{
-                //     isFederated: true,
-                //     app: {
-                //       kind: 'zenko-ui',
-                //       url: 'http://localhost:8383/zenko',
-                //       name: 'zenko',
-                //       version: 'local-dev',
-                //       appHistoryBasePath: '/data',
-                //     },
-                //     view: {
-                //       label: {
-                //         en: 'Data',
-                //         fr: 'Données',
-                //       },
-                //       path: '/',
-                //       module: './ExportApp',
-                //       scope: 'zenko',
-                //     },
-                //   }}>
-                //     Data
-                //   </Link>,
-                // }
               ]}
               role="navigation"
             />
