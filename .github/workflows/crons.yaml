@@ -92,7 +92,7 @@ jobs:
         if: matrix.type == 'retry' && steps.retry.outputs.was-retried == 'true'
         uses: slackapi/slack-github-action@v1
         with:
-          channel-id: '#squad-supsetup-alerts'
+          channel-id: '#squad-metalk8s'
           slack-message: |
             Nightly retry triggered for ${{ matrix.branch }}
             Job: ${{ matrix.name }}
@@ -106,7 +106,7 @@ jobs:
         if: matrix.type == 'retry' && steps.retry.outputs.retry-count != '' && fromJSON(steps.retry.outputs.retry-count) >= fromJSON(env.MAX_RETRIES)
         uses: slackapi/slack-github-action@v1
         with:
-          channel-id: '#squad-supsetup-alerts'
+          channel-id: '#squad-metalk8s'
           slack-message: |
             ⚠️ MANUAL ACTION REQUIRED ⚠️
             Nightly for ${{ matrix.branch }} failed after ${{ steps.retry.outputs.retry-count }} retry attempts
