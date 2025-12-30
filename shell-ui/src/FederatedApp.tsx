@@ -47,6 +47,7 @@ import { QueryClientProvider } from './QueryClientProvider';
 import { createRemoteAppComponent } from '@module-federation/bridge-react';
 import BridgeReactPlugin from '@module-federation/bridge-react/plugin';
 import { configurationStore, useConfigurationStoreState } from './services/ConfigurationService/store';
+import { authStore } from './services/AuthService';
 
 /**
  * This is a mock function to replace the real loadShare function when running tests.
@@ -181,8 +182,13 @@ const InternalRouter2 = () => {
   return (
     <Routes>
       <Route path="/platform/*" element={
-        <Component basename="/platform" config={metalk8sConfig} store={configurationStore} queryClient={queryClient} />}
-      />
+        <Component
+          basename="/platform"
+          config={metalk8sConfig}
+          store={configurationStore}
+          queryClient={queryClient}
+          authStore={authStore} />
+      } />
       <Route path="/data/*" element={
         <Component2 basename="/data" config={dataConfig} store={configurationStore} queryClient={queryClient} shellNavigate={navigate} />}
       />

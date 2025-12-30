@@ -4,9 +4,10 @@ import { CustomObjectsApi } from '@kubernetes/client-node/dist/gen/api/customObj
 import { StorageV1Api } from '@kubernetes/client-node/dist/gen/api/storageV1Api';
 import { AppsV1Api } from '@kubernetes/client-node/dist/gen/api/appsV1Api';
 import { RootState } from '../../ducks/reducer';
-import { useAuth } from '../../containers/PrivateRoute';
+
 import { useSelector } from 'react-redux';
 import { Metalk8sV1alpha1VolumeClient } from './Metalk8sVolumeClient.generated';
+import { useShellHooks } from '@scality/module-federation';
 let config: typeof Config;
 export let coreV1: CoreV1Api;
 export let customObjects: CustomObjectsApi;
@@ -22,10 +23,30 @@ type K8sApiConfig = {
 
 export const useK8sApiConfig = (): K8sApiConfig => {
   const api = useSelector((state: RootState) => state.config.api);
+  const { useAuth } = useShellHooks();
   const { userData } = useAuth();
   const token = userData?.token || '';
 
   const config = new Config(api?.url, token);
+
+  const coreV1 = config.makeApiClient(CoreV1Api);
+  const customObjects = config.makeApiClient(CustomObjectsApi);
+  const customObjectsApi = new Metalk8sV1alpha1VolumeClient(customObjects);
+  const storage = config.makeApiClient(StorageV1Api);
+  const appsV1 = config.makeApiClient(AppsV1Api);
+  return { coreV1, customObjectsApi, storage, appsV1 };
+};
+
+export const useK8sApiConfigV2 = (
+  apiUrl: string,
+  token: string,
+): K8sApiConfig => {
+  // const api = useSelector((state: RootState) => state.config.api);
+  // const { useAuth } = useShellHooks();
+  // const { userData } = useAuth();
+  // const token = userData?.token || '';
+
+  const config = new Config(apiUrl, token);
 
   const coreV1 = config.makeApiClient(CoreV1Api);
   const customObjects = config.makeApiClient(CustomObjectsApi);

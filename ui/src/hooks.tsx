@@ -28,7 +28,7 @@ import type { RootState } from './ducks/reducer';
 import { getVolumeListData } from './services/NodeVolumesUtils';
 import { filterAlerts, getHealthStatus } from './services/alertUtils';
 import { getNodesInterfacesString } from './services/graphUtils';
-import { useK8sApiConfig } from './services/k8s/api';
+import { useK8sApiConfig, useK8sApiConfigV2 } from './services/k8s/api';
 import type { TimeSpanProps } from './services/platformlibrary/metrics';
 import type { PrometheusQueryResult } from './services/prometheus/api';
 import { compareHealth } from './services/utils';
@@ -50,6 +50,38 @@ export const useNodes = (): V1Node[] => {
   const { getToken } = useAuth();
   const nodesQuery = useQuery(
     'nodesNames',
+    async () => {
+      coreV1.setDefaultAuthentication({
+        applyToRequest: async (req) => {
+          req.headers.authorization = `Bearer ${await getToken()}`;
+        },
+      });
+
+      return coreV1.listNode().then((res) => {
+        if (res.response.statusCode === 200 && res.body?.items) {
+          return res.body.items;
+        }
+
+        return [];
+      });
+    },
+    {
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchInterval: REFRESH_METRICS_GRAPH,
+    },
+  );
+  return nodesQuery.data || [];
+};
+
+
+/**
+ * It retrieves the nodes data through react-queries
+ */
+export const useNodesV2 = (apiUrl: string, token: string, getToken: () => Promise<string>): V1Node[] => {
+  const { coreV1 } = useK8sApiConfigV2(apiUrl, token);
+  const nodesQuery = useQuery(
+    'nodesNames2',
     async () => {
       coreV1.setDefaultAuthentication({
         applyToRequest: async (req) => {

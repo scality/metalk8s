@@ -5,7 +5,14 @@ import {
   QueryClient,
   useQuery
 } from 'react-query';
+import { Provider } from 'react-redux';
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
+import { createStore } from 'redux';
+import { useStore } from 'zustand';
+import reducer from './ducks/reducer';
+import { useNodesV2 } from './hooks';
+
+const reduxStore = createStore(reducer);
 
 export const QueryClientProvider =
   BaseQueryClientProvider as React.ComponentType<{
@@ -15,7 +22,7 @@ export const QueryClientProvider =
   }>;
 
 
-const Dashboard = () => {
+const Dashboard = ({ store, authStore }: { store: any, authStore: any }) => {
   const [enabled, setEnabled] = useState(false);
   const { data } = useQuery({
     queryKey: ['shell-test-app'],
@@ -30,6 +37,30 @@ const Dashboard = () => {
     refetchOnReconnect: false,
   });
 
+  const mystate = useStore(store, (state) => {
+    return state
+  });
+
+  const authState = useStore(authStore, (state) => {
+    return state
+  });
+
+  console.log('METALK8S DEBUG mystate', mystate)
+  console.log('METALK8S DEBUG authState', authState)
+
+  const config = mystate?.getConfiguration
+    ({
+      configType: 'run',
+      name: 'metalk8s.eu-west-1',
+    })
+  console.log('METALK8S DEBUG config', config)
+
+  const mock = () => { return Promise.resolve('') };
+  const token = authState?.userData?.token ?? '';
+  const getToken = authState?.getToken ?? mock;
+
+  const nodes = useNodesV2(config.spec.selfConfiguration.url, token, getToken);
+  console.log('METALK8S DEBUG nodes', nodes)
   return (
     <div>
       Metalk8s Dashboard
@@ -40,7 +71,9 @@ const Dashboard = () => {
       <Link to="/volumes">Volumes</Link>
     </div>
   );
-};
+}
+
+
 const Volumes = () => {
   return <div>Volumes</div>;
 };
@@ -57,23 +90,23 @@ const DebugConfigurationStore = ({ propsStore }: { configurationStore: any }) =>
   </div>;
 };
 
-
-
 const ExportApp = (props: any) => {
-  const { basename, store, queryClient } = props;
+  const { basename, store, authStore, queryClient } = props;
 
   // QueryClientProvider contextSharing will be removed in the future
   return (
     <QueryClientProvider client={queryClient} contextSharing={true}>
-      <BrowserRouter basename={basename}>
-        <DebugConfigurationStore propsStore={store} />
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/volumes" element={<Volumes />} />
-          <Route path="/alerts" element={<Alerts />} />
-        </Routes>
-      </BrowserRouter>
+      <Provider store={reduxStore}>
+        <BrowserRouter basename={basename}>
+          <DebugConfigurationStore propsStore={store} />
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard store={store} authStore={authStore} />} />
+            <Route path="/volumes" element={<Volumes />} />
+            <Route path="/alerts" element={<Alerts />} />
+          </Routes>
+        </BrowserRouter>
+      </Provider>
     </QueryClientProvider>
   );
 };
