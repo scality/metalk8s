@@ -49,7 +49,7 @@ This plan details the migration from the current `@scality/module-federation` cu
 │                                ▼                                      │
 │  ┌────────────────────────────────────────────────────────────────┐  │
 │  │  createRemoteAppComponent (Bridge)                              │  │
-│  │  └── MicroApp (ExportApp.tsx)                                   │  │
+│  │  └── MicroApp (FederableApp.tsx - bridge pattern)               │  │
 │  │       └── useStore(shellStore, selector) → Direct slice access  │  │
 │  └────────────────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────────────────┘
@@ -90,7 +90,7 @@ Add `bridge` field to the micro-app-configuration schema:
     "views": {
       "platform": {
         "path": "/",
-        "module": "./ExportApp",
+        "module": "./FederableApp",
         "scope": "metalk8s"
       }
     }
@@ -759,7 +759,7 @@ new ModuleFederationPlugin({
 
 ### 2.1 New Entry Point Structure
 
-**File**: `ui/src/ExportApp.tsx`
+**File**: `ui/src/FederableApp.tsx` (Bridge Pattern)
 
 ```typescript
 import { createBridgeComponent } from '@module-federation/bridge-react/v18';
@@ -788,7 +788,7 @@ const ShellStoreProvider = ({
   );
 };
 
-const ExportApp = (props: MicroAppProps) => {
+const FederableApp = (props: MicroAppProps) => {
   const { basename, shellStore, queryClient } = props;
   
   return (
@@ -805,7 +805,7 @@ const ExportApp = (props: MicroAppProps) => {
 };
 
 export default createBridgeComponent({
-  rootComponent: ExportApp,
+  rootComponent: FederableApp,
 });
 ```
 
@@ -886,9 +886,6 @@ new ModuleFederationPlugin({
   filename: `static/js/remoteEntry.${version}.js`,
   exposes: {
     // New bridge entry point
-    './ExportApp': './src/ExportApp.tsx',
-    
-    // Keep legacy for retrocompatibility during migration
     './FederableApp': './src/FederableApp.tsx',
     
     // Other exports
@@ -927,7 +924,7 @@ new ModuleFederationPlugin({
           "en": "Platform",
           "fr": "Plateforme"
         },
-        "module": "./ExportApp",
+        "module": "./FederableApp",
         "scope": "metalk8s"
       },
       "alerts": {
@@ -937,7 +934,7 @@ new ModuleFederationPlugin({
           "en": "Alerts",
           "fr": "Alertes"
         },
-        "module": "./ExportApp",
+        "module": "./FederableApp",
         "scope": "metalk8s"
       }
     },
@@ -962,7 +959,11 @@ new ModuleFederationPlugin({
 
 ## Phase 3: Retrocompatibility Strategy
 
-### 3.1 Detection Logic in Shell
+> **Key Point**: Only the **shell** needs to be retrocompatible. Micro apps migrate atomically from legacy to bridge—they do NOT need to support both modes.
+
+### 3.1 Shell Retrocompatibility
+
+The shell must support loading both legacy and bridge micro apps simultaneously:
 
 ```typescript
 // shell-ui/src/initFederation/ConfigurationProviders.tsx
@@ -982,45 +983,123 @@ function shouldUseBridge(appConfig: EnrichedBuildtimeWebFinger): boolean {
 }
 ```
 
-### 3.2 Dual Export Pattern
+#### Shell Responsibilities
 
-Each micro app maintains **both** entry points during migration:
+| Mode | Shell Action |
+|------|--------------|
+| `spec.bridge: false` (or undefined) | Load via `FederatedComponent`, pass `shellHooks` and `shellAlerts` props |
+| `spec.bridge: true` | Load via `createRemoteAppComponent`, pass `shellStore` and `queryClient` props |
+
+### 3.2 Micro App Migration (No Dual Support Needed)
+
+Micro apps do **NOT** maintain both patterns. When migrating, `FederableApp.tsx` is **rewritten** to use the bridge pattern:
 
 ```
-ui/src/
-├── ExportApp.tsx       # New (Bridge + Zustand pattern)
-├── FederableApp.tsx    # Legacy (ShellHooksProvider pattern)
-├── containers/
-│   └── App.tsx         # Shared business logic
-└── hooks/
-    ├── useShellStore.ts    # New store consumption
-    └── index.ts            # Re-exports for both patterns
+BEFORE (Legacy Pattern)          AFTER (Bridge Pattern)
+─────────────────────            ─────────────────────
+ui/src/                          ui/src/
+├── FederableApp.tsx             ├── FederableApp.tsx  (rewritten with bridge)
+│   └── uses ShellHooksProvider  │   └── uses createBridgeComponent
+├── containers/                  ├── containers/
+│   └── App.tsx                  │   └── App.tsx
+└── hooks/                       └── hooks/
+    └── (legacy hooks)               └── useShellStore.ts
 ```
 
-### 3.3 Conditional Hook Implementation
+> **Note**: The entry point file name remains `FederableApp.tsx`—only its implementation changes from the legacy `ShellHooksProvider` pattern to the new `createBridgeComponent` pattern.
 
-For files that need to work in both modes:
+### 3.3 Atomic Migration Strategy (Per Micro App)
+
+> **Key Principle**: Each micro app migrates **independently** but **atomically**.
+
+#### What This Means
+
+1. **Independent**: Different micro apps can migrate at their own pace
+   - MetalK8s UI can migrate to bridge while another app remains legacy
+   - No coordination required between apps
+
+2. **Atomic (All-in-One)**: Within a single micro app, migration is NOT partial
+   - ❌ Cannot have some components using legacy hooks while others use store
+   - ✅ When migrating, ALL components switch to the new pattern
+   - The `spec.bridge` flag is a binary toggle—either the entire app uses bridge or it doesn't
+
+#### Why Atomic Migration?
+
+| Approach | Problem |
+|----------|---------|
+| Partial/Conditional | Complex runtime detection, harder to debug, dual dependency paths |
+| Atomic | Clean cut-over, simpler testing, easier rollback |
+
+#### Migration Flow Per App
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Shell (supports both modes)               │
+│  ┌──────────────────┐              ┌──────────────────────┐ │
+│  │ App A: Legacy    │              │ App B: Bridge        │ │
+│  │ spec.bridge:false│              │ spec.bridge: true    │ │
+│  │ FederableApp.tsx │              │ FederableApp.tsx     │ │
+│  │ useShellHooks()  │              │ useShellStore()      │ │
+│  │ Context-based    │              │ Zustand-based        │ │
+│  └──────────────────┘              └──────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Implementation Per Micro App
+
+When migrating an app, update **all files at once**:
 
 ```typescript
-// ui/src/containers/PrivateRoute.tsx
-
-import { useAuth as useAuthFromStore } from '../hooks/useShellStore';
+// BEFORE (Legacy) - ALL components use this pattern
 import { useShellHooks } from '@scality/module-federation';
+const { useAuth } = useShellHooks();
+const auth = useAuth();
 
-// Detect which mode we're in
+// AFTER (Bridge) - ALL components switch to this pattern
+import { useAuth } from '../hooks/useShellStore';
+const auth = useAuth();
+```
+
+#### No Conditional Detection Needed
+
+Since migration is atomic, components do NOT need runtime mode detection:
+
+```typescript
+// ❌ NOT RECOMMENDED - Conditional/hybrid approach
 const useAuthMode = () => {
   try {
-    // Try new store-based approach first
-    return useAuthFromStore();
+    return useAuthFromStore();  // new
   } catch {
-    // Fall back to legacy context approach
-    const { useAuth } = useShellHooks();
-    return useAuth();
+    return useShellHooks().useAuth();  // legacy fallback
   }
 };
 
-export const useAuth = useAuthMode;
+// ✅ RECOMMENDED - Clean migration, one pattern per app
+// Legacy app:
+export const useAuth = () => {
+  const { useAuth } = useShellHooks();
+  return useAuth();
+};
+
+// Bridge app (after migration):
+export const useAuth = () => {
+  const store = useShellStoreContext();
+  return useStore(store, (state) => ({
+    userData: state.userData,
+    getToken: state.getToken,
+    logout: state.logout,
+  }));
+};
 ```
+
+#### Rollback Strategy
+
+If issues are found after migration, rollback options:
+
+1. **Git revert**: Revert the migration commit to restore the legacy version of `FederableApp.tsx`
+2. **Config toggle**: Set `spec.bridge: false` and revert `FederableApp.tsx` to legacy pattern
+
+> **Recommendation**: The legacy version of `FederableApp.tsx` remains in git history. Rollback is a simple git revert of the migration commit.
 
 ### 3.4 Store Population Synchronization
 
@@ -1033,7 +1112,7 @@ useMemo(() => {
   // Legacy context update (for apps using FederableApp)
   updateWebFingersState(results);
   
-  // New store update (for apps using ExportApp with bridge)
+  // New store update (for apps using bridge pattern)
   shellStore.getState().setWebFingers(results);
   shellStore.getState().setDeployedApps(deployedUIs);
 }, [results, deployedUIs]);
@@ -1120,8 +1199,8 @@ navigate('/alerts');  // basename handled by BrowserRouter
 Both shell and micro apps must use the **exact same** `QueryClient` instance.
 
 ```typescript
-// ExportApp.tsx
-const ExportApp = ({ queryClient, ...props }) => {
+// FederableApp.tsx (Bridge Pattern)
+const FederableApp = ({ queryClient, ...props }) => {
   return (
     <QueryClientProvider client={queryClient}>
       {/* App content */}
@@ -1198,20 +1277,24 @@ interface ShellState {
 
 ### MetalK8s UI Files
 
-| File | Action | Priority |
-|------|--------|----------|
-| `src/ExportApp.tsx` | Create/Finalize | P0 |
-| `src/hooks/useShellStore.ts` | Create | P0 |
-| `src/types/shell.ts` | Create | P0 |
-| `public/.well-known/micro-app-configuration` | Modify (add bridge flag) | P0 |
-| `rspack.config.ts` | Modify (dual exports) | P1 |
-| `src/containers/PrivateRoute.tsx` | Modify | P1 |
-| `src/containers/IntlProvider.tsx` | Modify | P2 |
-| `src/containers/AlertProvider.tsx` | Modify | P2 |
-| `src/containers/Layout.tsx` | Modify | P2 |
-| `src/components/DashboardAlerts.tsx` | Modify | P2 |
-| `src/components/HealthItem.tsx` | Modify | P2 |
-| (all files using `@scality/module-federation`) | Modify | P2-P3 |
+> **Note**: Per the atomic migration strategy (see 3.3), all files below are migrated **together**. The micro app does NOT need to maintain both legacy and bridge patterns—only the shell does.
+
+| File | Action | Order |
+|------|--------|-------|
+| `src/types/shell.ts` | Create (copy types from shell) | 1 |
+| `src/hooks/useShellStore.ts` | Create (wrapper hooks) | 2 |
+| `src/FederableApp.tsx` | Rewrite (from legacy to bridge pattern) | 3 |
+| `rspack.config.ts` | Verify (FederableApp already exposed) | 4 |
+| `src/containers/PrivateRoute.tsx` | Modify (use store hooks) | 5 |
+| `src/containers/IntlProvider.tsx` | Modify (use store hooks) | 5 |
+| `src/containers/AlertProvider.tsx` | Modify (use store hooks) | 5 |
+| `src/containers/Layout.tsx` | Modify (use store hooks) | 5 |
+| `src/components/DashboardAlerts.tsx` | Modify (use store hooks) | 5 |
+| `src/components/HealthItem.tsx` | Modify (use store hooks) | 5 |
+| (all other files using `@scality/module-federation`) | Modify (use store hooks) | 5 |
+| `public/.well-known/micro-app-configuration` | Modify (set `bridge: true`) | 6 (final) |
+
+> **⚠️ Important**: The `micro-app-configuration` change (setting `bridge: true`) should be the **last step**. All other changes should be complete and tested before this flag is set.
 
 ---
 
@@ -1264,12 +1347,12 @@ Week 3-4: Shell Bridge Routing
 ├── Test with existing POC
 └── Verify shellStore is fully populated before app mount
 
-Week 5-6: MetalK8s UI Migration
-├── Finalize ExportApp.tsx
-├── Create useShellStore wrapper hooks
-├── Create ShellStoreContext for consumption
-├── Update micro-app-configuration with bridge: true
-└── Migrate routes incrementally
+Week 5-6: MetalK8s UI Migration (Atomic)
+├── Create shell types and wrapper hooks (useShellStore.ts)
+├── Rewrite FederableApp.tsx with bridge pattern
+├── Update ALL components to use store hooks (single migration)
+├── Test with bridge: false (ensure no regressions)
+└── Flip micro-app-configuration to bridge: true (final activation)
 
 Week 7: Integration Testing
 ├── Test bridge mode (spec.bridge: true)
@@ -1280,8 +1363,7 @@ Week 7: Integration Testing
 Week 8+: Rollout & Stabilization
 ├── Deploy to staging
 ├── Monitor for issues
-├── Document learnings
-└── Plan legacy code removal (future phase)
+└── Document learnings
 ```
 
 ---
@@ -1296,6 +1378,8 @@ Week 8+: Rollout & Stabilization
 | Bridge detection | 🟡 Medium | Check `spec.bridge === true` in micro-app-configuration |
 | Navigation basename | 🟡 Medium | Verify all routes work with `basename` prop |
 | Alerts propagation | 🟡 Medium | Keep context-based initially, migrate later |
+| Shell retrocompatibility | 🟡 Medium | Shell must support both legacy and bridge apps simultaneously |
+| Micro app retrocompatibility | 🟢 N/A | NOT needed—micro apps migrate atomically, no dual support |
 | Redux coexistence | 🟢 Low | Redux works alongside Zustand |
 | Styled-components | 🟢 Low | Already shared singleton |
 
@@ -1305,9 +1389,11 @@ Week 8+: Rollout & Stabilization
 
 If issues are discovered post-deployment:
 
-1. **Per-App Rollback**: Change `spec.bridge` to `false` in micro-app-configuration
-2. **Full Rollback**: Revert shell to use only `FederatedComponent`
-3. **Partial Rollback**: Keep shellStore but disable bridge routing
+1. **Per-App Rollback (Micro App)**: Git revert the migration commit to restore legacy `FederableApp.tsx` and hooks, then set `spec.bridge: false`
+2. **Shell Rollback**: Revert shell changes to use only `FederatedComponent` (affects all apps)
+3. **Partial Shell Rollback**: Keep shellStore but disable bridge routing (legacy apps continue to work)
+
+> **Note**: Per-app rollback is a git revert + config change. The shell's retrocompatibility ensures legacy apps continue to work regardless of shell version.
 
 ---
 
