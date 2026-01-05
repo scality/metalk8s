@@ -56,10 +56,10 @@ const Dashboard = ({ store, authStore }: { store: any, authStore: any }) => {
   console.log('METALK8S DEBUG config', config)
 
   const mock = () => { return Promise.resolve('') };
-  const token = authState?.userData?.token ?? '';
+  // const token = authState?.userData?.token ?? '';
   const getToken = authState?.getToken ?? mock;
 
-  const nodes = useNodesV2(config.spec.selfConfiguration.url, token, getToken);
+  const nodes = useNodesV2(config.spec.selfConfiguration.url, "toto", getToken);
   console.log('METALK8S DEBUG nodes', nodes)
   return (
     <div>
