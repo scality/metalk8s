@@ -81,12 +81,17 @@ const Alerts = () => {
   return <div>Alerts</div>;
 };
 
-const DebugConfigurationStore = ({ propsStore }: { configurationStore: any }) => {
+const DebugConfigurationStore = ({ propsStore }: { propsStore: any }) => {
+  console.log("rerender");
+
+  const mystate = useStore(propsStore, (state) => {
+    return state
+  });
 
   return <div>ConfigurationStore:
     <button type="button" onClick={() => {
-      propsStore.getState().decrementCounter();
-    }}>Metalk8s Click me {propsStore.getState().counter}</button>
+      mystate?.decrementCounter();
+    }}>Metalk8s decrement counter Click me {mystate?.counter}</button>
   </div>;
 };
 
