@@ -16,7 +16,9 @@ import type { SolutionUI } from '@scality/module-federation';
 export const configurationStore = createStore<ConfigurationState>(
   (set, get) => ({
     // Initial state
+    // list of micro app and runtime app configurations
     webFingers: [],
+    // from deployed-ui-apps.json
     deployedApps: [],
     counter: 0,
     incrementCounter: () => {
@@ -69,6 +71,7 @@ export const configurationStore = createStore<ConfigurationState>(
       });
     },
 
+    // replacement of retrieveConfiguration
     getConfiguration: <T extends 'build' | Record<string, unknown>>({
       configType,
       name,
