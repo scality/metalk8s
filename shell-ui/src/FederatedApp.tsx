@@ -306,7 +306,7 @@ function InternalApp() {
             )}
             {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />} */}
             {/* {status === 'success' && ( */}
-            <SolutionsNavbar>
+            <SolutionsNavbar mf={mf}>
               <ShellTestApp />
               <InternalRouter2 />
             </SolutionsNavbar>

@@ -221,12 +221,14 @@ export const Navbar = ({
   canChangeLanguage,
   canChangeTheme,
   children,
+  mf,
 }: {
   logo: string;
   canChangeLanguage?: boolean;
   canChangeTheme?: boolean;
   providerLogout?: boolean;
   children?: React.ReactNode;
+  mf: ModuleFederation;
 }) => {
   const theme = useTheme();
   const { userData } = useAuth();
@@ -453,7 +455,7 @@ export const Navbar = ({
               rightActions={rightTabs}
               tabs={[
                 {
-                  render: <InstanceName />,
+                  render: <InstanceName mf={mf} />,
                 },
                 ...mainTabs,
               ]}

@@ -13,6 +13,8 @@ import { ComponentWithFederatedImports } from '@scality/module-federation';
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { Text } from '@scality/core-ui/dist/components/text/Text.component';
 import { UserData, useAuth } from '../auth/AuthProvider';
+import { ModuleFederation } from '@module-federation/enhanced/runtime';
+import { NewComponentWithFederatedImports } from '../NewModuleFederation';
 
 const InstanceNameContext = createContext<{
   instanceName: string;
@@ -50,7 +52,7 @@ const useSetInstanceName = () => {
 export const useInstanceNameAdapter = () => {
   const deployedUIApps = useDeployedApps();
   const { retrieveConfiguration } = useConfigRetriever();
-  const mainApp = deployedUIApps.find((app) => app.appHistoryBasePath === '');
+  const mainApp = deployedUIApps.find((app) => app.appHistoryBasePath === '/platform');
   if (!mainApp) {
     return null;
   }
@@ -84,12 +86,14 @@ export const _InternalInstanceName = ({
   };
 }) => {
   const instanceNameAdapter = useInstanceNameAdapter();
-
   const setInstanceName = useSetInstanceName();
+
+
   const { userData } = useAuth();
   const { data, status } = useQuery({
     queryKey: ['instanceName'],
     queryFn: () =>
+      // ./InstanceNameAdapter
       moduleExports[instanceNameAdapter?.module ?? ''].getInstanceName(
         userData,
       ),
@@ -122,7 +126,7 @@ export const _InternalInstanceName = ({
   );
 };
 
-export const InstanceName = () => {
+export const InstanceName = ({ mf }: { mf: ModuleFederation }) => {
   const { config } = useShellConfig();
   const instanceNameAdapter = useInstanceNameAdapter();
 
@@ -130,7 +134,8 @@ export const InstanceName = () => {
     return <></>;
   }
   return (
-    <ComponentWithFederatedImports
+    <NewComponentWithFederatedImports
+      mf={mf}
       componentWithInjectedImports={_InternalInstanceName}
       componentProps={{}}
       renderOnError={<ErrorPage500 />}

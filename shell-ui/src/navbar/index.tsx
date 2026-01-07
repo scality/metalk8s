@@ -7,11 +7,13 @@ import { NavbarUpdaterComponents } from './NavbarUpdaterComponents';
 import { useFavicon } from './favicon';
 import './library';
 import { InstanceNameProvider } from './InstanceName';
+import { ModuleFederation } from '@module-federation/enhanced/runtime';
 export type SolutionsNavbarProps = {
   children?: React.ReactNode;
+  mf: ModuleFederation;
 };
 
-export const SolutionsNavbar = ({ children }: SolutionsNavbarProps) => {
+export const SolutionsNavbar = ({ children, mf }: SolutionsNavbarProps) => {
   const { assets } = useShellThemeSelector();
   const { config } = useShellConfig();
   useFavicon(config?.favicon || '/brand/favicon-metalk8s.svg');
@@ -19,7 +21,7 @@ export const SolutionsNavbar = ({ children }: SolutionsNavbarProps) => {
     <NavbarConfigProvider>
       <InstanceNameProvider>
         <>
-          <Navbar logo={assets.logoPath} canChangeTheme={config.canChangeTheme}>
+          <Navbar logo={assets.logoPath} canChangeTheme={config.canChangeTheme} mf={mf}>
             {children}
           </Navbar>
           <NavbarUpdaterComponents />
