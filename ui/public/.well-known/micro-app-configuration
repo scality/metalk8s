@@ -45,6 +45,10 @@
         "scope": "metalk8s"
       }
     ],
+    "instanceNameAdapter": {
+      "module": "./InstanceNameAdapter",
+      "scope": "metalk8s"
+    },
     "publicPath": "/metalk8s"
   }
 }

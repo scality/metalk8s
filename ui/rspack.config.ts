@@ -126,6 +126,7 @@ const config: Configuration = {
           './src/components/AlertNavbarUpdaterComponent.tsx',
         './Metalk8sLocalVolumeProvider':
           './src/services/k8s/Metalk8sLocalVolumeProvider.ts',
+        './InstanceNameAdapter': './src/InstanceNameAdapter.ts',
       },
       remotes: !isProduction
         ? {
