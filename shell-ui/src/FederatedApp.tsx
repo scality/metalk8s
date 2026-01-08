@@ -13,10 +13,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { QueryClient } from 'react-query';
 import { BrowserRouter, Route, Routes, useNavigate } from 'react-router';
 
-import {
-  loadShare,
-  createInstance,
-} from '@module-federation/enhanced/runtime';
+import { loadShare, createInstance } from '@module-federation/enhanced/runtime';
 import { useQuery } from 'react-query';
 import { AuthConfigProvider, useAuthConfig } from './auth/AuthConfigProvider';
 import { AuthProvider } from './auth/AuthProvider';
@@ -46,7 +43,10 @@ import NotificationCenterProvider from './NotificationCenterProvider';
 import { QueryClientProvider } from './QueryClientProvider';
 import { createRemoteAppComponent } from '@module-federation/bridge-react';
 import BridgeReactPlugin from '@module-federation/bridge-react/plugin';
-import { configurationStore, useConfigurationStoreState } from './services/ConfigurationService/store';
+import {
+  configurationStore,
+  useConfigurationStoreState,
+} from './services/ConfigurationService/store';
 import { authStore } from './services/AuthService';
 
 /**
@@ -162,14 +162,13 @@ const InternalRouter2 = () => {
     name: 'zenko.eu-west-1',
   });
 
-
   const { retrieveConfiguration } = useConfigRetriever();
   const { setAuthConfig } = useAuthConfig();
 
   useEffect(() => {
     const runtimeAppConfig = retrieveConfiguration<Record<string, unknown>>({
       configType: 'run',
-      name: "metalk8s.eu-west-1",
+      name: 'metalk8s.eu-west-1',
     });
     // metalk8sConfig and runtimeAppConfig are the same but retrieveConfiguration type it correctly
 
@@ -181,28 +180,43 @@ const InternalRouter2 = () => {
   const navigate = useNavigate();
   return (
     <Routes>
-      <Route path="/platform/*" element={
-        <Component
-          basename="/platform"
-          config={metalk8sConfig}
-          store={configurationStore}
-          queryClient={queryClient}
-          authStore={authStore} />
-      } />
-      <Route path="/data/*" element={
-        <Component2 basename="/data" config={dataConfig} store={configurationStore} queryClient={queryClient} shellNavigate={navigate} />}
+      <Route
+        path="/platform/*"
+        element={
+          <Component
+            basename="/platform"
+            config={metalk8sConfig}
+            store={configurationStore}
+            queryClient={queryClient}
+            authStore={authStore}
+          />
+        }
+      />
+      <Route
+        path="/data/*"
+        element={
+          <Component2
+            basename="/data"
+            config={dataConfig}
+            store={configurationStore}
+            queryClient={queryClient}
+            shellNavigate={navigate}
+            mf={mf}
+          />
+        }
       />
     </Routes>
   );
 };
 
 const ShellTestApp = () => {
-  const { counter, incrementCounter, decrementCounter, resetCounter } = useConfigurationStoreState();
+  const { counter, incrementCounter, decrementCounter, resetCounter } =
+    useConfigurationStoreState();
   const [enabled, setEnabled] = useState(false);
   const { data } = useQuery({
     queryKey: ['shell-test-app'],
     queryFn: () => {
-      return Promise.resolve("shell-test-app");
+      return Promise.resolve('shell-test-app');
     },
     enabled: enabled,
     cacheTime: Infinity,
@@ -212,20 +226,37 @@ const ShellTestApp = () => {
     refetchOnReconnect: false,
   });
 
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', border: '1px solid red', padding: '10px' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        border: '1px solid red',
+        padding: '10px',
+      }}
+    >
       ShellTestApp
-      <button type="button" onClick={() => {
-        setEnabled(true);
-      }}>Enable Query</button>
-      <div>Query Data: {data ?? "No data"}</div>
-      <button type="button" onClick={() => {
-        incrementCounter();
-      }}>Shell Click me {counter}</button>
+      <button
+        type="button"
+        onClick={() => {
+          setEnabled(true);
+        }}
+      >
+        Enable Query
+      </button>
+      <div>Query Data: {data ?? 'No data'}</div>
+      <button
+        type="button"
+        onClick={() => {
+          incrementCounter();
+        }}
+      >
+        Shell Click me {counter}
+      </button>
     </div>
   );
-}
+};
 
 function InternalRouter() {
   const federatedRoutes = useFederatedRoutes();
