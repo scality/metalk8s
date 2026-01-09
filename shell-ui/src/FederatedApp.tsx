@@ -153,6 +153,14 @@ const InternalRouter2 = () => {
     'ExportApp',
     'http://localhost:8383/zenko/mf-manifest.json',
   );
+
+  const Component3 = CreateRemoteAppComponent(
+    mf,
+    'identity',
+    'ExportApp',
+    'http://localhost:3004/identity-ui/mf-manifest.json',
+  );
+
   const metalk8sConfig = shellHooks.useConfig({
     configType: 'run',
     name: 'metalk8s.eu-west-1',
@@ -181,6 +189,9 @@ const InternalRouter2 = () => {
   const navigate = useNavigate();
   return (
     <Routes>
+      <Route path="/*" element={
+        <Component3 basename="/" store={configurationStore} queryClient={queryClient} shellNavigate={navigate} />
+      } />
       <Route path="/platform/*" element={
         <Component
           basename="/platform"
@@ -307,7 +318,7 @@ function InternalApp() {
             {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />} */}
             {/* {status === 'success' && ( */}
             <SolutionsNavbar mf={mf}>
-              <ShellTestApp />
+              {/* <ShellTestApp /> */}
               <InternalRouter2 />
             </SolutionsNavbar>
             {/* )} */}

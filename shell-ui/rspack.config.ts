@@ -135,9 +135,6 @@ const config: Configuration = {
         '@scality/core-ui': {
           singleton: true,
         },
-        zustand: {
-          singleton: true,
-        },
         'react-intl': {
           eager: true,
           singleton: true,
