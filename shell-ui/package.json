@@ -45,8 +45,8 @@
     "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "@scality/core-ui": "0.187.0",
     "@scality/module-federation": "^1.5.0",
+    "@scality/core-ui": "0.193.0",
     "downshift": "^8.0.0",
     "history": "^5.3.0",
     "jest-environment-jsdom": "^29.7.0",
