@@ -122,9 +122,6 @@ const config: Configuration = {
         ...Object.fromEntries(
           Object.entries(deps).map(([key, version]) => [key, {}]),
         ),
-        '@scality/core-ui': {
-          singleton: true,
-        },
         'react-intl': {
           eager: true,
           singleton: true,
