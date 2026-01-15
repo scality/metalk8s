@@ -25,3 +25,6 @@ cypress/videos/
 
 # federated types
 build_ts/
+
+# dev
+public/.well-known/dev.runtime-app-configuration
