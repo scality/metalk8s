@@ -238,6 +238,31 @@ const config: Configuration = {
     },
     static: path.join(__dirname, 'public'),
     proxy: proxy,
+    setupMiddlewares: (middlewares, devServer) => {
+      devServer.app.get('/shell/config.json', (req, res) => {
+        const devConfigPath = path.join(__dirname, 'public/dev.config.json');
+        const defaultConfigPath = path.join(__dirname, 'public/config.json');
+        const configPath = fs.existsSync(devConfigPath)
+          ? devConfigPath
+          : defaultConfigPath;
+        res.sendFile(configPath);
+      });
+      devServer.app.get('/shell/deployed-ui-apps.json', (req, res) => {
+        const devConfigPath = path.join(
+          __dirname,
+          'public/dev.deployed-ui-apps.json',
+        );
+        const defaultConfigPath = path.join(
+          __dirname,
+          'public/deployed-ui-apps.json',
+        );
+        const configPath = fs.existsSync(devConfigPath)
+          ? devConfigPath
+          : defaultConfigPath;
+        res.sendFile(configPath);
+      });
+      return middlewares;
+    },
   },
 };
 
