@@ -188,6 +188,28 @@ const config: Configuration = {
         errors: true,
       },
     },
+    setupMiddlewares: (middlewares, devServer) => {
+      devServer.app.get(
+        '/metalk8s/.well-known/runtime-app-configuration',
+        (req, res) => {
+          const devConfigPath = path.join(
+            __dirname,
+            'public/.well-known/dev.runtime-app-configuration',
+          );
+          const defaultConfigPath = path.join(
+            __dirname,
+            'public/.well-known/runtime-app-configuration',
+          );
+
+          const configPath = fs.existsSync(devConfigPath)
+            ? devConfigPath
+            : defaultConfigPath;
+
+          res.sendFile(configPath);
+        },
+      );
+      return middlewares;
+    },
   },
 };
 
