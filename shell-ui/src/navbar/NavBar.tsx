@@ -403,6 +403,7 @@ export const Navbar = ({
     rightTabs.unshift({
       render: () => (
         <Button
+        style={{ backgroundColor: 'transparent' }}
           onClick={() => {
             setThemeMode(switchThemeTo);
           }}
