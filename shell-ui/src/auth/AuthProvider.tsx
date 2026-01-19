@@ -165,27 +165,51 @@ export function useAuth(): {
     const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
 
     const { config } = useShellConfig();
-    //Force logout when token is expired or we are missing expires_at claims
+
+    const hasExpiredDate = auth.userData?.expires_at;
+    const userIsExpired = auth.userData?.expired || !hasExpiredDate;
+    const shouldEnableQuery = !!(
+      auth.userData &&
+      userIsExpired &&
+      // @ts-expect-error - window.isLoggingOut is a temp flag to prevent multiple logout attempts
+      !window.isLoggingOut
+    );
+
+    // Handle token expiration with a double-check mechanism.
+    //
+    // Problem: React state (auth.userData) and localStorage can get out of sync.
+    // When silent renew refreshes the token in localStorage, React state still shows
+    // the old expired token until the next re-render. This would incorrectly trigger
+    // a logout even though a valid token exists in localStorage.
+    //
+    // Solution: Before removing the user, read directly from localStorage via
+    // userManager.getUser() to verify the token is actually expired.
     useQuery({
       queryKey: ['removeUser'],
       queryFn: () => {
-        // This query might be executed when useAuth is rendered simultaneously by 2 different components
-        // react-query is supposed to prevent this but in practice under certain conditions a race condition might trigger it twice
-        // We need to make sure we don't call removeUser twice in this case (which would cause a redirect loop)
-        // @ts-expect-error - FIXME when you are working on it
-        window.loggingOut = true;
-        return auth.userManager.removeUser().then(() => {
-          location.reload();
+        // Prevent concurrent logout attempts from multiple components
+        // @ts-expect-error - window.isLoggingOut is a temp flag
+        window.isLoggingOut = true;
+
+        // Double-check expiration against localStorage (source of truth)
+        return auth.userManager.getUser().then((user) => {
+          const isActuallyExpired = user?.expired || !user?.expires_at;
+
+          if (isActuallyExpired) {
+            // Token is genuinely expired in localStorage - log out
+            return auth.userManager.removeUser().then(() => {
+              location.reload();
+            });
+          }
+
+          // Token in localStorage is valid (silent renew succeeded).
+          // React state will catch up on next render - no action needed.
+          // @ts-expect-error - reset the flag since we're not actually logging out
+          window.isLoggingOut = false;
+          return Promise.resolve();
         });
       },
-      enabled: !!(
-        auth &&
-        auth.userManager &&
-        auth.userData &&
-        (auth.userData.expired || !auth.userData.expires_at) &&
-        // @ts-expect-error - FIXME when you are working on it
-        !window.loggingOut
-      ),
+      enabled: shouldEnableQuery,
     });
 
     if (!auth || !auth.userData) {
