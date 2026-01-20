@@ -1,6 +1,6 @@
 import path from 'path';
 import packageJson from './package.json';
-import { Configuration } from '@rspack/cli';
+import type { Configuration } from '@rspack/cli';
 import * as rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
 import fs from 'fs';
@@ -11,16 +11,18 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 let version = process.env.VERSION;
 if (!version) {
-  const versionFileContents = fs.readFileSync(
-    path.join(__dirname, '../VERSION'),
-    { encoding: 'utf-8' },
-  );
+  const versionFileContents = fs.readFileSync(path.join(__dirname, '../VERSION'), { encoding: 'utf-8' });
   const versionRegex =
     /.*VERSION_MAJOR=(?<versionMajor>\d+)(\n){0,1}.*VERSION_MINOR=(?<versionMinor>\d+)(\n){0,1}.*VERSION_PATCH=(?<versionPatch>\d+)(\n){0,1}.*VERSION_SUFFIX=(?<versionSuffix>.*)/m;
-  const { versionMajor, versionMinor, versionPatch, versionSuffix } =
-    versionRegex.exec(versionFileContents).groups;
+  const { versionMajor, versionMinor, versionPatch, versionSuffix } = versionRegex.exec(versionFileContents).groups;
   version = `${versionMajor}.${versionMinor}.${versionPatch}${versionSuffix}`;
 }
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+  'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
+};
 
 const config: Configuration = {
   experiments: {
@@ -118,10 +120,8 @@ const config: Configuration = {
       exposes: {
         './FederableApp': './src/FederableApp.tsx',
         './platformLibrary': './src/services/platformlibrary/k8s.ts',
-        './AlertsNavbarUpdater':
-          './src/components/AlertNavbarUpdaterComponent.tsx',
-        './Metalk8sLocalVolumeProvider':
-          './src/services/k8s/Metalk8sLocalVolumeProvider.ts',
+        './AlertsNavbarUpdater': './src/components/AlertNavbarUpdaterComponent.tsx',
+        './Metalk8sLocalVolumeProvider': './src/services/k8s/Metalk8sLocalVolumeProvider.ts',
       },
       remotes: !isProduction
         ? {
@@ -129,9 +129,7 @@ const config: Configuration = {
           }
         : undefined,
       shared: {
-        ...Object.fromEntries(
-          Object.entries(deps).map(([key, version]) => [key, {}]),
-        ),
+        ...Object.fromEntries(Object.entries(deps).map(([key, version]) => [key, {}])),
         '@scality/core-ui': {
           singleton: true,
         },
@@ -175,12 +173,7 @@ const config: Configuration = {
   devServer: {
     port: 3000,
     hot: !isProduction,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-      'Access-Control-Allow-Headers':
-        'X-Requested-With, content-type, Authorization',
-    },
+    headers: corsHeaders,
     static: path.join(__dirname, 'public'),
     client: {
       overlay: {
@@ -189,25 +182,15 @@ const config: Configuration = {
       },
     },
     setupMiddlewares: (middlewares, devServer) => {
-      devServer.app.get(
-        '/metalk8s/.well-known/runtime-app-configuration',
-        (req, res) => {
-          const devConfigPath = path.join(
-            __dirname,
-            'public/.well-known/dev.runtime-app-configuration',
-          );
-          const defaultConfigPath = path.join(
-            __dirname,
-            'public/.well-known/runtime-app-configuration',
-          );
+      devServer.app.get('/metalk8s/.well-known/runtime-app-configuration', (req, res) => {
+        res.set(corsHeaders);
+        const devConfigPath = path.join(__dirname, 'public/.well-known/dev.runtime-app-configuration');
+        const defaultConfigPath = path.join(__dirname, 'public/.well-known/runtime-app-configuration');
 
-          const configPath = fs.existsSync(devConfigPath)
-            ? devConfigPath
-            : defaultConfigPath;
+        const configPath = fs.existsSync(devConfigPath) ? devConfigPath : defaultConfigPath;
 
-          res.sendFile(configPath);
-        },
-      );
+        res.sendFile(configPath);
+      });
       return middlewares;
     },
   },
