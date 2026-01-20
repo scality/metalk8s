@@ -36,9 +36,7 @@ let proxy = [
 ];
 
 if (!isProduction && fs.existsSync(path.join(__dirname, 'dev.proxy.json'))) {
-  proxy = JSON.parse(
-    fs.readFileSync(path.join(__dirname, 'dev.proxy.json'), 'utf8'),
-  );
+  proxy = JSON.parse(fs.readFileSync(path.join(__dirname, 'dev.proxy.json'), 'utf8'));
 }
 
 const config: Configuration = {
@@ -139,18 +137,13 @@ const config: Configuration = {
         './alerts/AlertProvider': './src/alerts/AlertProvider.tsx',
         './alerts/alertHooks': './src/alerts/alertHooks.ts',
         './navbar/navbarHooks': './src/navbar/navbarHooks.ts',
-        './moduleFederation/ConfigurationProvider':
-          './src/initFederation/ConfigurationProviders.tsx',
-        './moduleFederation/ShellConfigurationProvider':
-          './src/initFederation/ShellConfigProvider.tsx',
-        './moduleFederation/UIListProvider':
-          './src/initFederation/UIListProvider.tsx',
+        './moduleFederation/ConfigurationProvider': './src/initFederation/ConfigurationProviders.tsx',
+        './moduleFederation/ShellConfigurationProvider': './src/initFederation/ShellConfigProvider.tsx',
+        './moduleFederation/UIListProvider': './src/initFederation/UIListProvider.tsx',
         './useNotificationCenter': './src/useNotificationCenter.ts',
       },
       shared: {
-        ...Object.fromEntries(
-          Object.entries(deps).map(([key, version]) => [key, {}]),
-        ),
+        ...Object.fromEntries(Object.entries(deps).map(([key, version]) => [key, {}])),
         '@scality/core-ui': {
           singleton: true,
         },
@@ -242,23 +235,14 @@ const config: Configuration = {
       devServer.app.get('/shell/config.json', (req, res) => {
         const devConfigPath = path.join(__dirname, 'public/dev.config.json');
         const defaultConfigPath = path.join(__dirname, 'public/config.json');
-        const configPath = fs.existsSync(devConfigPath)
-          ? devConfigPath
-          : defaultConfigPath;
+        const configPath = fs.existsSync(devConfigPath) ? devConfigPath : defaultConfigPath;
         res.sendFile(configPath);
       });
+
       devServer.app.get('/shell/deployed-ui-apps.json', (req, res) => {
-        const devConfigPath = path.join(
-          __dirname,
-          'public/dev.deployed-ui-apps.json',
-        );
-        const defaultConfigPath = path.join(
-          __dirname,
-          'public/deployed-ui-apps.json',
-        );
-        const configPath = fs.existsSync(devConfigPath)
-          ? devConfigPath
-          : defaultConfigPath;
+        const devConfigPath = path.join(__dirname, 'public/dev.deployed-ui-apps.json');
+        const defaultConfigPath = path.join(__dirname, 'public/deployed-ui-apps.json');
+        const configPath = fs.existsSync(devConfigPath) ? devConfigPath : defaultConfigPath;
         res.sendFile(configPath);
       });
       return middlewares;
