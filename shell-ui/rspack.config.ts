@@ -35,7 +35,7 @@ let proxy = [
   },
 ];
 
-if (!isProduction && fs.existsSync(path.join(__dirname, 'dev.proxy.json'))) {
+if (fs.existsSync(path.join(__dirname, 'dev.proxy.json'))) {
   proxy = JSON.parse(fs.readFileSync(path.join(__dirname, 'dev.proxy.json'), 'utf8'));
 }
 
