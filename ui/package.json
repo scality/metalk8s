@@ -37,6 +37,7 @@
     "check-types": "tsc --noEmit",
     "start": "rspack serve -c rspack.config.ts",
     "build": "npm run check-types && rspack build -c rspack.config.ts",
+    "gen:runtime-config": "npx ts-node generateRuntimeConfiguration.ts",
     "test": "jest",
     "test:preview": "concurrently -n \"jest,preview\" -c \"green,yellow\" \"JEST_PREVIEW=on npm run test:watch\" \"npm run jest-preview\"",
     "test:watch": "jest --watch",
