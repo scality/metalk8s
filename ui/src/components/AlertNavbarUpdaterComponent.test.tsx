@@ -1,5 +1,5 @@
-import { render } from './__TEST__/util';
 import { useAlerts } from '../containers/AlertProvider';
+import { render } from './__TEST__/util';
 import { AlertNavbarUpdaterComponentInternal } from './AlertNavbarUpdaterComponent';
 
 describe('AlertNavbarUpdaterComponent', () => {
@@ -22,8 +22,7 @@ describe('AlertNavbarUpdaterComponent', () => {
   };
   const WATCHDOG_ALERT = {
     id: 'fc30b79dbdb0a043',
-    summary:
-      'An alert that should always be firing to certify that Alertmanager is working properly.',
+    summary: 'An alert that should always be firing to certify that Alertmanager is working properly.',
     description:
       'This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n"DeadMansSnitch" integration in PagerDuty.',
     startsAt: '2023-08-11T06:02:15.628Z',
@@ -78,7 +77,7 @@ describe('AlertNavbarUpdaterComponent', () => {
   };
   it('should publish a critical notification if there is a minimum of one critical alert', async () => {
     //S
-    // @ts-ignore mock implementation
+    // @ts-expect-error mock implementation
     useAlerts.mockImplementation(() => ({
       alerts: [WATCHDOG_ALERT, CRITICAL_ALERT],
     }));
@@ -91,8 +90,7 @@ describe('AlertNavbarUpdaterComponent', () => {
     expect(publishNotification).toBeCalledWith({
       id: 'CriticalNotification',
       title: 'Alerts',
-      description:
-        'There is 1 critical alert currently firing on the platform.',
+      description: 'There is 1 critical alert currently firing on the platform.',
       severity: 'critical',
       createdOn: new Date('2023-08-11T06:03:19.730Z'),
       redirectUrl: '/platform/alerts',
@@ -101,7 +99,7 @@ describe('AlertNavbarUpdaterComponent', () => {
   });
   it('should publish a warning notification if there is a minimum of one warning alert', async () => {
     //S
-    // @ts-ignore mock implementation
+    // @ts-expect-error mock implementation
     useAlerts.mockImplementation(() => ({
       alerts: [WATCHDOG_ALERT, WARNING_ALERT],
     }));
@@ -123,7 +121,7 @@ describe('AlertNavbarUpdaterComponent', () => {
   });
   it('should publish a critical Alert System Notification and clear all the existing Alerts Notification if watchdog does not present', async () => {
     //S
-    // @ts-ignore mock implementation
+    // @ts-expect-error mock implementation
     useAlerts.mockImplementation(() => ({
       alerts: [],
     }));
@@ -147,7 +145,7 @@ describe('AlertNavbarUpdaterComponent', () => {
   });
   it('should unpublish all the existing notification if there are no alerts except for the watchdog', async () => {
     //S
-    // @ts-ignore mock implementation
+    // @ts-expect-error mock implementation
     useAlerts.mockImplementation(() => ({
       alerts: [WATCHDOG_ALERT],
     }));
@@ -161,7 +159,7 @@ describe('AlertNavbarUpdaterComponent', () => {
   });
   it('should publish a new critical notifcation when there is a new critical alert and a new warning alert raised', async () => {
     //S
-    // @ts-ignore mock implementation
+    // @ts-expect-error mock implementation
     useAlerts.mockImplementation(() => ({
       alerts: [WATCHDOG_ALERT, CRITICAL_ALERT, WARNING_ALERT],
     }));
@@ -177,8 +175,7 @@ describe('AlertNavbarUpdaterComponent', () => {
     expect(publishNotification).toBeCalledWith({
       id: 'CriticalNotification',
       title: 'Alerts',
-      description:
-        'There are 1 critical alert and 1 warning alert currently firing on the platform.',
+      description: 'There are 1 critical alert and 1 warning alert currently firing on the platform.',
       severity: 'critical',
       createdOn: new Date('2023-08-11T06:03:19.730Z'),
       redirectUrl: '/platform/alerts',

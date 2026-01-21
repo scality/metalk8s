@@ -1,10 +1,12 @@
 import { ErrorPage500, Loader, ToastProvider } from '@scality/core-ui';
 import { useCurrentApp } from '@scality/module-federation';
-import { PropsWithChildren, ReactNode, useEffect, useMemo } from 'react';
+import { type PropsWithChildren, type ReactNode, useEffect, useMemo } from 'react';
 import { Provider, useDispatch } from 'react-redux';
-import { applyMiddleware, compose, createStore, Store } from 'redux';
+import { applyMiddleware, compose, createStore, type Store } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import 'regenerator-runtime/runtime';
+import { ShellHooksProvider, useBasenameRelativeNavigate, useShellHooks } from '@scality/module-federation';
+import type { FederatedAppProps } from '../@mf-types/shell/App';
 import App from './containers/App';
 import { authErrorAction } from './ducks/app/authError';
 import { setApiConfigAction } from './ducks/config';
@@ -13,12 +15,6 @@ import reducer from './ducks/reducer';
 import sagas from './ducks/sagas';
 import { useTypedSelector } from './hooks';
 import { AuthError } from './services/errorhandler';
-import {
-  ShellHooksProvider,
-  useBasenameRelativeNavigate,
-  useShellHooks,
-} from '@scality/module-federation';
-import { FederatedAppProps } from '../@mf-types/shell/App';
 
 const composeEnhancers =
   // @ts-expect-error - FIXME when you are working on it
@@ -119,10 +115,7 @@ export const AppConfigProvider = ({
 
 export default function FederableApp(props: FederatedAppProps) {
   return (
-    <ShellHooksProvider
-      shellHooks={props.shellHooks}
-      shellAlerts={props.shellAlerts}
-    >
+    <ShellHooksProvider shellHooks={props.shellHooks} shellAlerts={props.shellAlerts}>
       <Provider store={store}>
         <AppConfigProvider>
           <ToastProvider>

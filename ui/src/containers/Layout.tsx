@@ -1,10 +1,5 @@
-import {
-  AppContainer,
-  ErrorPage404,
-  Icon,
-  Notifications,
-  Sidebar,
-} from '@scality/core-ui';
+import { AppContainer, ErrorPage404, Icon, Notifications, Sidebar } from '@scality/core-ui';
+import { useBasenameRelativeNavigate } from '@scality/module-federation';
 import { lazy, useCallback, useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch } from 'react-redux';
@@ -13,13 +8,9 @@ import { Routes, useLocation } from 'react-router-dom';
 import { removeNotificationAction } from '../ducks/app/notifications';
 import { setIntlAction } from '../ducks/config';
 import { useTypedSelector } from '../hooks';
-
 import CreateVolume from './CreateVolume';
-import { useBasenameRelativeNavigate } from '@scality/module-federation';
 
-const ConfigureAlerting = lazy(
-  () => import('../alert-configuration/ConfigureAlerting'),
-);
+const ConfigureAlerting = lazy(() => import('../alert-configuration/ConfigureAlerting'));
 const NodeCreateForm = lazy(() => import('./NodeCreateForm'));
 const NodePage = lazy(() => import('./NodePage'));
 const About = lazy(() => import('./About'));
@@ -29,12 +20,9 @@ const DashboardPage = lazy(() => import('./DashboardPage'));
 const AlertPage = lazy(() => import('./AlertPage'));
 
 export const NotificationDisplayer = () => {
-  const notifications = useTypedSelector(
-    (state) => state.app.notifications.list,
-  );
+  const notifications = useTypedSelector((state) => state.app.notifications.list);
   const dispatch = useDispatch();
-  const removeNotification = (uid: string) =>
-    dispatch(removeNotificationAction(uid));
+  const removeNotification = (uid: string) => dispatch(removeNotificationAction(uid));
   return (
     <Notifications
       // @ts-expect-error - FIXME when you are working on it
@@ -55,9 +43,7 @@ const Layout = () => {
     dispatch(setIntlAction(intl)); // eslint-disable-next-line
   }, [language]);
   const [isSideMenuExpanded, setIsSideMenuExpanded] = useState(
-    () =>
-      localStorage.getItem('sidebar_expanded') === 'true' ||
-      localStorage.getItem('sidebar_expanded') === null,
+    () => localStorage.getItem('sidebar_expanded') === 'true' || localStorage.getItem('sidebar_expanded') === null,
   );
 
   const toggleSideMenu = () => {
@@ -73,9 +59,7 @@ const Layout = () => {
   const doesRouteMatch = useCallback(
     (paths: string | string[]) => {
       if (Array.isArray(paths)) {
-        const foundMatchingRoute = paths.find(
-          (path) => !!matchPath(basename + path + '*', location.pathname),
-        );
+        const foundMatchingRoute = paths.find((path) => !!matchPath(basename + path + '*', location.pathname));
         return !!foundMatchingRoute;
       } else {
         return !!matchPath(basename + paths + '*', location.pathname);
@@ -84,12 +68,7 @@ const Layout = () => {
     [location.pathname],
   );
 
-  const routeWithoutSideBars = [
-    '/alerts',
-    '/nodes/create',
-    '/volumes/createVolume',
-    '/configure-alerts',
-  ];
+  const routeWithoutSideBars = ['/alerts', '/nodes/create', '/volumes/createVolume', '/configure-alerts'];
 
   const hideSideBar = doesRouteMatch(routeWithoutSideBars);
 
@@ -137,11 +116,7 @@ const Layout = () => {
   return (
     <AppContainer
       hasPadding
-      sidebarNavigation={
-        isUserLoaded && !hideSideBar ? (
-          <Sidebar {...sidebarConfig} />
-        ) : undefined
-      }
+      sidebarNavigation={isUserLoaded && !hideSideBar ? <Sidebar {...sidebarConfig} /> : undefined}
     >
       <NotificationDisplayer />
       <Routes>
@@ -223,12 +198,7 @@ const Layout = () => {
           }
         />
         <Route path="/" element={<Navigate to="dashboard" replace />} />
-        <Route
-          path="*"
-          element={
-            <ErrorPage404 data-cy="sc-error-page404" locale={language} />
-          }
-        />
+        <Route path="*" element={<ErrorPage404 data-cy="sc-error-page404" locale={language} />} />
       </Routes>
     </AppContainer>
   );

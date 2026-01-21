@@ -1,4 +1,5 @@
 import { Icon } from '@scality/core-ui';
+import type { IconName } from '@scality/core-ui/dist/components/icon/Icon.component';
 import {
   CIRCLE_DOUBLE_SIZE,
   STATUS_CRITICAL,
@@ -7,7 +8,6 @@ import {
   STATUS_SUCCESS,
   STATUS_WARNING,
 } from '../constants';
-import { IconName } from '@scality/core-ui/dist/components/icon/Icon.component';
 
 export const getStyle = (status) => {
   switch (status) {

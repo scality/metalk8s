@@ -26,11 +26,7 @@
 import 'cypress-wait-until';
 import '@testing-library/cypress/add-commands';
 
-import {
-  EMPTY_QUERY_RANGE_RESULT,
-  makeQueryRangeResult,
-  genValues,
-} from './mockUtils';
+import { EMPTY_QUERY_RANGE_RESULT, genValues, makeQueryRangeResult } from './mockUtils';
 
 Cypress.config({
   retries: {
@@ -41,20 +37,13 @@ Cypress.config({
 
 Cypress.Commands.add(
   'setupMocks',
-  (
-    config = 'config.json',
-    shellConfig = 'shell-config.json',
-    uiDiscovery = 'deployed-ui-apps.json',
-  ) => {
+  (config = 'config.json', shellConfig = 'shell-config.json', uiDiscovery = 'deployed-ui-apps.json') => {
     // Static files
 
-    const stubConfig =
-      typeof config === 'string' ? { fixture: config } : config;
-    const stubShellConfig =
-      typeof shellConfig === 'string' ? { fixture: shellConfig } : shellConfig;
+    const stubConfig = typeof config === 'string' ? { fixture: config } : config;
+    const stubShellConfig = typeof shellConfig === 'string' ? { fixture: shellConfig } : shellConfig;
 
-    const stubUIDiscovery =
-      typeof uiDiscovery === 'string' ? { fixture: uiDiscovery } : uiDiscovery;
+    const stubUIDiscovery = typeof uiDiscovery === 'string' ? { fixture: uiDiscovery } : uiDiscovery;
 
     if (stubShellConfig) {
       cy.intercept('GET', '/shell/config.json', stubShellConfig);
@@ -79,10 +68,7 @@ Cypress.Commands.add(
     // SaltAPI
     cy.intercept({ method: 'POST', pathname: /^\/api\/salt\/$/ }, (req) => {
       const saltArgs = req.body;
-      if (
-        saltArgs.fun === 'grains.item' &&
-        saltArgs.arg.includes('ip_interfaces')
-      )
+      if (saltArgs.fun === 'grains.item' && saltArgs.arg.includes('ip_interfaces'))
         req.reply({ fixture: 'salt-api/ip-grains.json' });
       else
         req.reply({
@@ -109,18 +95,12 @@ Cypress.Commands.add(
       { fixture: 'kubernetes/namespace-kube-system.json' },
     );
     cy.fixture('kubernetes/nodes.json').then((nodes) => {
-      cy.intercept('GET', '**/api/kubernetes/api/v1/nodes', { body: nodes }).as(
-        'getNodes',
-      );
+      cy.intercept('GET', '**/api/kubernetes/api/v1/nodes', { body: nodes }).as('getNodes');
 
-      cy.intercept(
-        'GET',
-        /^\/api\/kubernetes\/api\/v1\/nodes\/[a-z0-9_\-]+$/,
-        (req) => {
-          console.log(req);
-          req.reply({ body: nodes.items[0] });
-        },
-      );
+      cy.intercept('GET', /^\/api\/kubernetes\/api\/v1\/nodes\/[a-z0-9_-]+$/, (req) => {
+        console.log(req);
+        req.reply({ body: nodes.items[0] });
+      });
     });
 
     cy.intercept('GET', '**/api/kubernetes/api/v1/pods', {
@@ -130,23 +110,17 @@ Cypress.Commands.add(
       fixture: 'kubernetes/persistentvolumes.json',
     });
 
-    cy.intercept(
-      'GET',
-      '**/api/kubernetes/apis/storage.metalk8s.scality.com/v1alpha1/volumes',
-      { fixture: 'kubernetes/volumes.json' },
-    );
+    cy.intercept('GET', '**/api/kubernetes/apis/storage.metalk8s.scality.com/v1alpha1/volumes', {
+      fixture: 'kubernetes/volumes.json',
+    });
 
     cy.intercept('GET', '**/api/kubernetes/api/v1/persistentvolumeclaims', {
       fixture: 'kubernetes/persistentvolumeclaims.json',
     });
 
-    cy.intercept(
-      'GET',
-      '**/api/kubernetes/apis/storage.k8s.io/v1/storageclasses',
-      {
-        fixture: 'kubernetes/storageclasses.json',
-      },
-    );
+    cy.intercept('GET', '**/api/kubernetes/apis/storage.k8s.io/v1/storageclasses', {
+      fixture: 'kubernetes/storageclasses.json',
+    });
 
     // Prometheus
     cy.intercept(
@@ -159,18 +133,14 @@ Cypress.Commands.add(
         const searchParams = new URLSearchParams(url.search);
         const query = searchParams.get('query');
 
-        if (query === 'node_uname_info')
-          req.reply({ fixture: 'prometheus/node-uname-info.json' });
+        if (query === 'node_uname_info') req.reply({ fixture: 'prometheus/node-uname-info.json' });
         else if (query === 'kubelet_volume_stats_used_bytes')
           req.reply({ fixture: 'prometheus/query-volumes-used.json' });
         else if (query === 'kubelet_volume_stats_capacity_bytes')
           req.reply({ fixture: 'prometheus/query-volumes-capacity.json' });
-        else if (
-          query === 'irate(node_disk_io_time_seconds_total[1h]) * 1000000'
-        )
+        else if (query === 'irate(node_disk_io_time_seconds_total[1h]) * 1000000')
           req.reply({ fixture: 'prometheus/query-volumes-latency.json' });
-        else if (/^sum\(up\{job="[a-z0-9_\-]+"\}\)$/.exec(query))
-          req.reply({ fixture: 'prometheus/query-up-ok.json' });
+        else if (/^sum\(up\{job="[a-z0-9_-]+"\}\)$/.exec(query)) req.reply({ fixture: 'prometheus/query-up-ok.json' });
         else req.reply({ body: { error: 'Not yet mocked!' } });
       },
     );
@@ -216,8 +186,7 @@ const ADMIN_JWT = {
   access_token:
     'eyJhbGciOiJSUzI1NiIsImtpZCI6IjY4MGZmMWVhZTBlZGYyMDI0MDQyOGVjMzRlMjBlODNjNzBlODAwODIifQ.eyJpc3MiOiJodHRwczovLzEwLjIwMC4yLjE1MDo4NDQzL29pZGMiLCJzdWIiOiJDaVF3T0dFNE5qZzBZaTFrWWpnNExUUmlOek10T1RCaE9TMHpZMlF4TmpZeFpqVTBOallTQld4dlkyRnMiLCJhdWQiOlsib2lkYy1hdXRoLWNsaWVudCIsIm1ldGFsazhzLXVpIl0sImV4cCI6MTYwMzQwMDg1MCwiaWF0IjoxNjAzMzE0NDUwLCJhenAiOiJtZXRhbGs4cy11aSIsIm5vbmNlIjoiZTM2MzRkMGQyYmRkNGMwMzgyNzllNmIzOWMxYjI0YzYiLCJhdF9oYXNoIjoicnJXSVpJa2xkakNNa1VtM2NZZUdaZyIsImVtYWlsIjoiYWRtaW5AbWV0YWxrOHMuaW52YWxpZCIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiYWRtaW4ifQ.kMz8jY0ergVv0cgWWIvFluxm_1Kn-2SG8zvzkaucO_GYV7upLoJi12LAh9bql1cGQgNiD0O8xwIsDEzCJA82hoJpa14ribkEHAHNkWN5w2sVTJ7eDCUut0dXHjX8KMpXVSu47nD8BOrRwxAfmBC5JFDM-fpvv5Zqg1gwJKJOY8M_XMDrDJk7hBWOUBKDJJhaNScxYO5wzTKQzOc-nEqGKUF51csixxFFJ19Sc7DszBj8RFTuKkuDkHYFotuwIBBSbgtTMX4o479sq-chj8j_B2s74q2yW6I8eLRT4TdYsYQP9eAIcxGObqPMc0TTr6vsaANs_jxMRoTLR1EBWrOy9A',
   token_type: 'bearer',
-  scope:
-    'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
+  scope: 'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
   profile: {
     sub: 'CiQwOGE4Njg0Yi1kYjg4LTRiNzMtOTBhOS0zY2QxNjYxZjU0NjYSBWxvY2Fs',
     azp: 'metalk8s-ui',
@@ -245,8 +214,7 @@ const BAD_ADMIN_JWT = {
   id_token: 'bad_token_id',
   access_token: 'bad_token_access',
   token_type: 'bearer',
-  scope:
-    'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
+  scope: 'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
   profile: null,
 };
 

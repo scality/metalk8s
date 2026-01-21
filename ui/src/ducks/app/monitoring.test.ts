@@ -1,16 +1,17 @@
-import { call, all, put, delay, select } from 'redux-saga/effects';
-import {
-  UPDATE_CLUSTER_STATUS,
-  SET_PROMETHEUS_API_AVAILABLE,
-  UPDATE_ALERTS,
-  handlePrometheusError,
-  fetchAlerts,
-  fetchClusterStatus,
-  refreshAlerts,
-  refreshClusterStatus,
-} from './monitoring';
+import { all, call, delay, put, select } from 'redux-saga/effects';
 import { REFRESH_TIMEOUT } from '../../constants';
 import { queryPrometheus } from '../../services/prometheus/api';
+import {
+  fetchAlerts,
+  fetchClusterStatus,
+  handlePrometheusError,
+  refreshAlerts,
+  refreshClusterStatus,
+  SET_PROMETHEUS_API_AVAILABLE,
+  UPDATE_ALERTS,
+  UPDATE_CLUSTER_STATUS,
+} from './monitoring';
+
 it('should set cluster status as UP', () => {
   const gen = fetchClusterStatus();
   expect(gen.next().value).toEqual(

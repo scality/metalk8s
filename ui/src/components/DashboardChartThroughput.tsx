@@ -1,17 +1,9 @@
-import {
-  LineTimeSerieChart,
-  useMetricsTimeSpan,
-  useChartId,
-} from '@scality/core-ui/dist/next';
-import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
-
+import { LineTimeSerieChart, useChartId, useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { useCallback } from 'react';
-import {
-  useNodeAddressesSelector,
-  useNodes,
-  useShowQuantileChart,
-  useSymetricalChartSeries,
-} from '../hooks';
+import { HEIGHT_SYMMETRICAL_CHART, UNIT_RANGE_BS, YAXIS_TITLE_READ_WRITE } from '../constants';
+import { useNodeAddressesSelector, useNodes, useShowQuantileChart, useSymetricalChartSeries } from '../hooks';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
+import { getMultipleSymmetricalSeries } from '../services/graphUtils';
 import {
   getNodesThroughputOutpassingThresholdQuery,
   getNodesThroughputReadQuantileQuery,
@@ -20,13 +12,7 @@ import {
   getNodesThroughputWriteQuantileQuery,
   getNodesThroughputWriteQuery,
 } from '../services/platformlibrary/metrics';
-import { getMultipleSymmetricalSeries } from '../services/graphUtils';
 import SymmetricalQuantileChart from './SymmetricalQuantileChart';
-import {
-  HEIGHT_SYMMETRICAL_CHART,
-  UNIT_RANGE_BS,
-  YAXIS_TITLE_READ_WRITE,
-} from '../constants';
 
 const DashboardChartThroughput = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
@@ -36,12 +22,8 @@ const DashboardChartThroughput = () => {
         <SymmetricalQuantileChart
           getAboveQuantileQuery={getNodesThroughputWriteQuantileQuery}
           getBelowQuantileQuery={getNodesThroughputReadQuantileQuery}
-          getAboveQuantileHoverQuery={
-            getNodesThroughputWriteOutpassingThresholdQuery
-          }
-          getBelowQuantileHoverQuery={
-            getNodesThroughputOutpassingThresholdQuery
-          }
+          getAboveQuantileHoverQuery={getNodesThroughputWriteOutpassingThresholdQuery}
+          getBelowQuantileHoverQuery={getNodesThroughputOutpassingThresholdQuery}
           metricPrefixAbove={'write'}
           metricPrefixBelow={'read'}
           title={'Disk Throughput'}
@@ -61,12 +43,8 @@ const DashboardChartThroughputWithoutQuantile = () => {
 
   const { interval, duration } = useMetricsTimeSpan();
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
-    getAboveQueries: (timeSpanProps) => [
-      getNodesThroughputWriteQuery(timeSpanProps),
-    ],
-    getBelowQueries: (timeSpanProps) => [
-      getNodesThroughputReadQuery(timeSpanProps),
-    ],
+    getAboveQueries: (timeSpanProps) => [getNodesThroughputWriteQuery(timeSpanProps)],
+    getBelowQueries: (timeSpanProps) => [getNodesThroughputReadQuery(timeSpanProps)],
     transformPrometheusDataToSeries: useCallback(
       ([prometheusResultAbove], [prometheusResultBelow]) => {
         if (!prometheusResultAbove || !prometheusResultBelow) {

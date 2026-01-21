@@ -1,10 +1,7 @@
-import { V1PersistentVolume } from '@kubernetes/client-node';
+import type { V1PersistentVolume } from '@kubernetes/client-node';
+import { computeVolumeGlobalStatus, type VolumeStatus } from '../NodeVolumesUtils';
 import * as ApiK8s from './api';
-import {
-  Metalk8sV1alpha1VolumeClient,
-  Result,
-} from './Metalk8sVolumeClient.generated';
-import { computeVolumeGlobalStatus, VolumeStatus } from '../NodeVolumesUtils';
+import { Metalk8sV1alpha1VolumeClient, type Result } from './Metalk8sVolumeClient.generated';
 
 function isError<T>(result: Result<T>): result is { error: any } {
   return (result as { error: any }).error !== undefined;
@@ -40,19 +37,17 @@ type LocalVolume = LocalVolumeInfo & { volumeName: string };
 
 export default class Metalk8sLocalVolumeProvider {
   apiUrl: string;
-  constructor(apiUrl: string, private getToken: () => Promise<string>) {
+  constructor(
+    apiUrl: string,
+    private getToken: () => Promise<string>,
+  ) {
     this.apiUrl = apiUrl;
   }
 
-  public listLocalPersistentVolumes = async (
-    serverName: string,
-  ): Promise<LocalPersistentVolume[]> => {
+  public listLocalPersistentVolumes = async (serverName: string): Promise<LocalPersistentVolume[]> => {
     try {
       const token = await this.getToken();
-      const { coreV1, customObjects } = ApiK8s.updateApiServerConfig(
-        this.apiUrl,
-        token,
-      );
+      const { coreV1, customObjects } = ApiK8s.updateApiServerConfig(this.apiUrl, token);
       const volumeClient = new Metalk8sV1alpha1VolumeClient(customObjects);
       const k8sClient = coreV1;
 
@@ -68,33 +63,22 @@ export default class Metalk8sLocalVolumeProvider {
       const volumes = await volumeClient.getMetalk8sV1alpha1VolumeList();
 
       if (!isError(volumes)) {
-        const nodeVolumes = volumes.body.items.filter(
-          (volume) => volume.spec.nodeName === serverName,
-        );
+        const nodeVolumes = volumes.body.items.filter((volume) => volume.spec.nodeName === serverName);
         const pv = await k8sClient.listPersistentVolume();
 
         const localPv = nodeVolumes.reduce((acc, item) => {
-          const isLocalPv = pv.body.items.find(
-            (p) => p.metadata.name === item.metadata['name'],
-          );
+          const isLocalPv = pv.body.items.find((p) => p.metadata.name === item.metadata['name']);
 
-          const volumeStatus = computeVolumeGlobalStatus(
-            item.metadata['name'],
-            item.status,
-          );
+          const volumeStatus = computeVolumeGlobalStatus(item.metadata['name'], item.status);
 
           return [
             ...acc,
             {
               ...isLocalPv,
               IP: nodeIP.address,
-              devicePath: item.status.deviceName
-                ? `/dev/${item.status.deviceName}`
-                : item.metadata['name'],
+              devicePath: item.status.deviceName ? `/dev/${item.status.deviceName}` : item.metadata['name'],
               nodeName: item.spec.nodeName,
-              volumeType: item.spec.rawBlockDevice
-                ? VolumeType.Hardware
-                : VolumeType.Virtual,
+              volumeType: item.spec.rawBlockDevice ? VolumeType.Hardware : VolumeType.Virtual,
               volumeStatus,
             },
           ];
@@ -105,16 +89,12 @@ export default class Metalk8sLocalVolumeProvider {
         throw new Error(`${volumes.error.message}`);
       }
     } catch (error) {
-      throw new Error(
-        `Failed to fetch local persistent volumes: ${error.message}`,
-      );
+      throw new Error(`Failed to fetch local persistent volumes: ${error.message}`);
     }
   };
 
   // Since we don't have unique Serial Number for the disks, we need to retrieve the Volume Name from the PV.
-  public detachVolume = async (
-    localPV: LocalPersistentVolume,
-  ): Promise<void> => {
+  public detachVolume = async (localPV: LocalPersistentVolume): Promise<void> => {
     // The volume name is the same as the PV name
     const volumeName = localPV.metadata.name;
     const token = await this.getToken();
@@ -122,14 +102,10 @@ export default class Metalk8sLocalVolumeProvider {
     const volumeClient = new Metalk8sV1alpha1VolumeClient(customObjects);
 
     try {
-      const deleteVolume = await volumeClient.deleteMetalk8sV1alpha1Volume(
-        volumeName,
-      );
+      const deleteVolume = await volumeClient.deleteMetalk8sV1alpha1Volume(volumeName);
 
       if (isError(deleteVolume)) {
-        throw new Error(
-          `Failed to delete MetalK8s volume ${volumeName}: ${deleteVolume.error.message}`,
-        );
+        throw new Error(`Failed to delete MetalK8s volume ${volumeName}: ${deleteVolume.error.message}`);
       }
     } catch (error) {
       throw new Error(
@@ -140,9 +116,7 @@ export default class Metalk8sLocalVolumeProvider {
     }
   };
 
-  public isVolumeProvisioned = async (
-    localVolume: LocalVolume,
-  ): Promise<false | LocalPersistentVolume> => {
+  public isVolumeProvisioned = async (localVolume: LocalVolume): Promise<false | LocalPersistentVolume> => {
     const volumeName = localVolume.volumeName;
 
     const token = await this.getToken();
@@ -159,9 +133,7 @@ export default class Metalk8sLocalVolumeProvider {
       throw new Error(`Failed to get volume ${volumeName}: ${volume.error}`);
     }
 
-    const volumeStatus = volume.body?.status?.conditions?.find(
-      (condition) => condition.type === 'Ready',
-    );
+    const volumeStatus = volume.body?.status?.conditions?.find((condition) => condition.type === 'Ready');
 
     if (!volumeStatus) {
       return false;
@@ -172,9 +144,7 @@ export default class Metalk8sLocalVolumeProvider {
     }
 
     if (volumeStatus?.status === 'False') {
-      throw new Error(
-        `Volume ${volumeName} failed to provisioned: ${volumeStatus.reason} `,
-      );
+      throw new Error(`Volume ${volumeName} failed to provisioned: ${volumeStatus.reason} `);
     }
 
     if (volumeStatus?.status === 'True') {
@@ -195,45 +165,30 @@ export default class Metalk8sLocalVolumeProvider {
     return false;
   };
 
-  public attachHardwareVolume = async (
-    hardwareDisk: HardwareDisk,
-  ): Promise<LocalVolume> => {
+  public attachHardwareVolume = async (hardwareDisk: HardwareDisk): Promise<LocalVolume> => {
     const { IP, devicePath, type } = hardwareDisk;
 
     const token = await this.getToken();
-    const { coreV1, customObjects } = ApiK8s.updateApiServerConfig(
-      this.apiUrl,
-      token,
-    );
+    const { coreV1, customObjects } = ApiK8s.updateApiServerConfig(this.apiUrl, token);
     const volumeClient = new Metalk8sV1alpha1VolumeClient(customObjects);
     const k8sClient = coreV1;
 
     if (isError(volumeClient)) {
-      throw new Error(
-        `Failed to create volume client: ${volumeClient.error.message}`,
-      );
+      throw new Error(`Failed to create volume client: ${volumeClient.error.message}`);
     }
     if (isError(k8sClient)) {
-      throw new Error(
-        `Failed to create k8s client: ${k8sClient.error.message}`,
-      );
+      throw new Error(`Failed to create k8s client: ${k8sClient.error.message}`);
     }
 
     const nodes = await k8sClient.listNode().catch((error) => {
-      throw new Error(
-        `Failed to fetch nodes: ${
-          error instanceof Error ? error.message : JSON.stringify(error)
-        }`,
-      );
+      throw new Error(`Failed to fetch nodes: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
     });
 
     if (isError(nodes)) {
       throw new Error(`Failed to fetch nodes: ${nodes.error.message}`);
     }
     const nodeName = nodes.body.items.find((node) =>
-      node.status.addresses.find(
-        (address) => address.type === 'InternalIP' && address.address === IP,
-      ),
+      node.status.addresses.find((address) => address.type === 'InternalIP' && address.address === IP),
     )?.metadata.name;
     if (!nodeName) {
       throw new Error(`Failed to find node for IP ${IP}`);
@@ -241,8 +196,7 @@ export default class Metalk8sLocalVolumeProvider {
     // The map between hardwareDisk Type and StorageClassName
     // NVMe => SSD
     // the rest=> HDD
-    const storageClassName =
-      type === HardwareDiskType.NVMe ? 'ssd-ext4' : 'hdd-ext4';
+    const storageClassName = type === HardwareDiskType.NVMe ? 'ssd-ext4' : 'hdd-ext4';
 
     // It will be changed to Disk Serial Number in the future.
     // K8s API accepts only lowercase letters, numbers and hyphens in names.
@@ -279,9 +233,7 @@ export default class Metalk8sLocalVolumeProvider {
     }
 
     if (isError(volume)) {
-      throw new Error(
-        `Failed to attach hardware volume: ${volume.error.message}`,
-      );
+      throw new Error(`Failed to attach hardware volume: ${volume.error.message}`);
     }
 
     return {

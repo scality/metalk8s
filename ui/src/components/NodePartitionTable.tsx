@@ -1,10 +1,8 @@
+import { ProgressBar, spacing } from '@scality/core-ui';
+import { Table } from '@scality/core-ui/dist/next';
 import { useCallback } from 'react';
 import { useQuery } from 'react-query';
 import { useTheme } from 'styled-components';
-
-import { ProgressBar, spacing } from '@scality/core-ui';
-
-import { Table } from '@scality/core-ui/dist/next';
 import {
   NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
   NODE_FILESYSTEM_ALMOST_OUTOF_SPACE,
@@ -14,10 +12,7 @@ import {
 } from '../constants';
 import { useAlerts } from '../containers/AlertProvider';
 import { getNodePartitionsTableData } from '../services/NodeVolumesUtils';
-import {
-  queryNodeFSSize,
-  queryNodeFSUsage,
-} from '../services/prometheus/fetchMetrics';
+import { queryNodeFSSize, queryNodeFSUsage } from '../services/prometheus/fetchMetrics';
 import CircleStatus from './CircleStatus';
 
 const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
@@ -93,32 +88,27 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
     ['nodeDevices', instanceIP],
     useCallback(
       () =>
-        Promise.all([
-          queryNodeFSUsage(instanceIP),
-          queryNodeFSSize(instanceIP),
-        ]).then(([nodeFSUsageResult, nodeFSSizeResult]) => {
-          if (
-            nodeFSUsageResult.status === 'success' &&
-            nodeFSSizeResult.status === 'success' &&
-            nodeFSUsageResult.data.resultType === 'vector' &&
-            nodeFSSizeResult.data.resultType === 'vector'
-          ) {
-            return {
-              nodeFSUsage: nodeFSUsageResult.data.result,
-              nodeFSSize: nodeFSSizeResult.data.result,
-            };
-          }
-        }),
+        Promise.all([queryNodeFSUsage(instanceIP), queryNodeFSSize(instanceIP)]).then(
+          ([nodeFSUsageResult, nodeFSSizeResult]) => {
+            if (
+              nodeFSUsageResult.status === 'success' &&
+              nodeFSSizeResult.status === 'success' &&
+              nodeFSUsageResult.data.resultType === 'vector' &&
+              nodeFSSizeResult.data.resultType === 'vector'
+            ) {
+              return {
+                nodeFSUsage: nodeFSUsageResult.data.result,
+                nodeFSSize: nodeFSSizeResult.data.result,
+              };
+            }
+          },
+        ),
       [instanceIP],
     ),
   );
   let partitions = [];
   if (status === 'success')
-    partitions = getNodePartitionsTableData(
-      nodeFSResult.nodeFSUsage,
-      nodeFSResult.nodeFSSize,
-      alertNF,
-    );
+    partitions = getNodePartitionsTableData(nodeFSResult.nodeFSUsage, nodeFSResult.nodeFSSize, alertNF);
   return (
     <Table
       status={status}
@@ -132,10 +122,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
         },
       }}
     >
-      <Table.SingleSelectableContent
-        rowHeight="h40"
-        separationLineVariant="backgroundLevel2"
-      />
+      <Table.SingleSelectableContent rowHeight="h40" separationLineVariant="backgroundLevel2" />
     </Table>
   );
 };

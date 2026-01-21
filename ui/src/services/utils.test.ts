@@ -7,6 +7,7 @@ import {
   getSegments,
   linuxDrivesNamingIncrement,
 } from './utils';
+
 describe('allSizeUnitsToBytes', () => {
   it('should convert B to B', () => {
     expect(allSizeUnitsToBytes('988 B')).toBe(988);
@@ -42,7 +43,7 @@ it('should return 1d1m instead of 1d1m1s or 1d1s', () => {
 });
 // Mocking history from react-router to test the URL sync hook
 const mockNavigate = jest.fn();
-let mockLocation = new URL('http://test.test');
+const mockLocation = new URL('http://test.test');
 
 jest.mock('react-router-dom', () => {
   return {
@@ -392,18 +393,16 @@ describe('getSegments', () => {
       ],
     },
   ];
-  cases.forEach(
-    ({ name, pointsAtRisk, pointsDegraded, pointsWatchdog, expected }) => {
-      test(`Given ${name} points should be converted to the expected alert segments`, () => {
-        const result = getSegments({
-          pointsDegraded,
-          pointsAtRisk,
-          pointsWatchdog,
-          startTimeStampSeconds: 1,
-          endTimeStampSeconds: 6,
-        });
-        expect(result).toStrictEqual(expected);
+  cases.forEach(({ name, pointsAtRisk, pointsDegraded, pointsWatchdog, expected }) => {
+    test(`Given ${name} points should be converted to the expected alert segments`, () => {
+      const result = getSegments({
+        pointsDegraded,
+        pointsAtRisk,
+        pointsWatchdog,
+        startTimeStampSeconds: 1,
+        endTimeStampSeconds: 6,
       });
-    },
-  );
+      expect(result).toStrictEqual(expected);
+    });
+  });
 });

@@ -9,27 +9,18 @@ const units = [
   { units: 'd', threshold: 24 * 60 * 60 * 1000 * 1000 },
 ];
 
-export const Latency = ({
-  latencyInMicroSeconds,
-}: {
-  latencyInMicroSeconds: number;
-}) => {
+export const Latency = ({ latencyInMicroSeconds }: { latencyInMicroSeconds: number }) => {
   const readableLatency = useMemo(() => {
     for (let i = 1; i < units.length; i++) {
       const unit = units[i];
-      const readableLatency = `${(
-        latencyInMicroSeconds / unit.threshold
-      ).toFixed(2)} ${unit.units}`;
+      const readableLatency = `${(latencyInMicroSeconds / unit.threshold).toFixed(2)} ${unit.units}`;
       if (
         i !== units.length - 1 &&
         latencyInMicroSeconds > unit.threshold &&
         latencyInMicroSeconds < units[i + 1].threshold
       ) {
         return readableLatency;
-      } else if (
-        i === units.length - 1 &&
-        latencyInMicroSeconds > unit.threshold
-      ) {
+      } else if (i === units.length - 1 && latencyInMicroSeconds > unit.threshold) {
         return readableLatency;
       }
     }

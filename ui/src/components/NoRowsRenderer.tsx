@@ -1,6 +1,7 @@
+import { fontSize } from '@scality/core-ui/dist/style/theme';
 import React from 'react';
 import styled from 'styled-components';
-import { fontSize } from '@scality/core-ui/dist/style/theme';
+
 const NoRowsSection = styled.div`
   display: flex;
   justify-content: center;

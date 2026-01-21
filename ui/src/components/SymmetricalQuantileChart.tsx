@@ -1,21 +1,8 @@
-import { ChartLegendWrapper } from '@scality/core-ui/dist/next';
-import {
-  ChartLegend,
-  LineTimeSerieChart,
-  useMetricsTimeSpan,
-} from '@scality/core-ui/dist/next';
+import { ChartLegend, ChartLegendWrapper, LineTimeSerieChart, useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import {
-  DASHBOARD_QUANTILE_SYNC_ID,
-  HEIGHT_SYMMETRICAL_CHART,
-  PORT_NODE_EXPORTER,
-} from '../constants';
-import {
-  useNodeAddressesSelector,
-  useNodes,
-  useSymetricalChartSeries,
-} from '../hooks';
+import { DASHBOARD_QUANTILE_SYNC_ID, HEIGHT_SYMMETRICAL_CHART, PORT_NODE_EXPORTER } from '../constants';
+import { useNodeAddressesSelector, useNodes, useSymetricalChartSeries } from '../hooks';
 import {
   createSymmetricalQuantileColorSet,
   getNodesInterfacesString,
@@ -131,15 +118,10 @@ const SymmetricalQuantileChart = ({
       return { valueBase: 1, unitLabel: '' };
     }
 
-    const allSeries = [
-      ...(seriesQuantile.above || []),
-      ...(seriesQuantile.below || []),
-    ];
+    const allSeries = [...(seriesQuantile.above || []), ...(seriesQuantile.below || [])];
     const allValues = allSeries.flatMap((serie: any) =>
       serie.data
-        .map(([_, value]: [number, any]) =>
-          typeof value === 'string' ? parseFloat(value) : Math.abs(value),
-        )
+        .map(([_, value]: [number, any]) => (typeof value === 'string' ? parseFloat(value) : Math.abs(value)))
         .filter((v: any) => v !== null && !isNaN(v)),
     );
 
@@ -155,10 +137,7 @@ const SymmetricalQuantileChart = ({
   }, [seriesQuantile]);
 
   const colorSet = useMemo(() => {
-    return createSymmetricalQuantileColorSet(
-      seriesQuantile.above || [],
-      seriesQuantile.below || [],
-    );
+    return createSymmetricalQuantileColorSet(seriesQuantile.above || [], seriesQuantile.below || []);
   }, [seriesQuantile]);
 
   const timeFormat = useMemo(() => {

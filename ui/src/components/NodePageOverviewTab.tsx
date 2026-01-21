@@ -1,28 +1,15 @@
-import {
-  InlineInput,
-  Loader,
-  Stack,
-  Steppers,
-  spacing,
-  FormattedDateTime,
-} from '@scality/core-ui';
-import React from 'react';
+import { FormattedDateTime, InlineInput, Loader, Stack, Steppers, spacing } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
 import isEmpty from 'lodash.isempty';
+import type React from 'react';
 import { useEffect } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { API_STATUS_UNKNOWN } from '../constants';
-import {
-  deployNodeAction,
-  fetchClusterVersionAction,
-} from '../ducks/app/nodes';
-import {
-  useUpdateNodeDisplayName,
-  useShowNodeDisplayName,
-} from '../hooks/nodes';
+import { deployNodeAction, fetchClusterVersionAction } from '../ducks/app/nodes';
+import { useShowNodeDisplayName, useUpdateNodeDisplayName } from '../hooks/nodes';
 import ActiveAlertsCounter from './ActiveAlertsCounter';
 import {
   ActiveAlertTitle,
@@ -88,9 +75,7 @@ const NodePageOverviewTab = (props) => {
   }, [dispatch]);
   const jobs = useSelector((state) =>
     // @ts-expect-error - FIXME when you are working on it
-    state.app.salt.jobs.filter(
-      (job) => job.type === 'deploy-node' && job.node === nodeName,
-    ),
+    state.app.salt.jobs.filter((job) => job.type === 'deploy-node' && job.node === nodeName),
   );
 
   let activeJob = jobs.find((job) => !job.completed);
@@ -108,7 +93,7 @@ const NodePageOverviewTab = (props) => {
     content?: React.ReactNode;
   };
 
-  let steps: Step[] = [
+  const steps: Step[] = [
     {
       title: intl.formatMessage({
         id: 'node_registered',
@@ -159,19 +144,11 @@ const NodePageOverviewTab = (props) => {
   //       in the Steppers component
   const activeStep = success ? steps.length : steps.length - 1;
   // The node object used by Node List Table
-  const currentNode = nodeTableData?.find(
-    (node) => node.name.name === nodeName,
-  );
+  const currentNode = nodeTableData?.find((node) => node.name.name === nodeName);
   const currentNodeReturnByK8S = nodes?.find((node) => node.name === nodeName);
-  const creationTimestamp = currentNodeReturnByK8S
-    ? new Date(currentNodeReturnByK8S.creationTimestamp)
-    : '';
-  const volumesAttachedCurrentNode = volumes?.filter(
-    (volume) => volume.spec.nodeName === nodeName,
-  );
-  const podsScheduledOnCurrentNode = pods?.filter(
-    (pod) => pod.nodeName === nodeName,
-  );
+  const creationTimestamp = currentNodeReturnByK8S ? new Date(currentNodeReturnByK8S.creationTimestamp) : '';
+  const volumesAttachedCurrentNode = volumes?.filter((volume) => volume.spec.nodeName === nodeName);
+  const podsScheduledOnCurrentNode = pods?.filter((pod) => pod.nodeName === nodeName);
 
   const mutation = useUpdateNodeDisplayName(nodeName);
 
@@ -181,8 +158,7 @@ const NodePageOverviewTab = (props) => {
     <NodeTab>
       <NodeNameContainer>
         <p></p>
-        {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN &&
-        !currentNodeReturnByK8S.internalIP ? (
+        {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN && !currentNodeReturnByK8S.internalIP ? (
           !currentNodeReturnByK8S?.deploying ? (
             <DeployButton
               label={intl.formatMessage({
@@ -215,62 +191,43 @@ const NodePageOverviewTab = (props) => {
           <OverviewInformationSpan>
             <OverviewInformationLabel>Node ID</OverviewInformationLabel>
             <OverviewInformationWrapper>
-              <OverviewInformationValue>
-                {currentNode?.id}
-              </OverviewInformationValue>
+              <OverviewInformationValue>{currentNode?.id}</OverviewInformationValue>
             </OverviewInformationWrapper>
           </OverviewInformationSpan>
           {isDisplayNodeNameShown && (
-            <Stack
-              direction="horizontal"
-              style={{ paddingLeft: 20, paddingBottom: 20 }}
-            >
+            <Stack direction="horizontal" style={{ paddingLeft: 20, paddingBottom: 20 }}>
               <OverviewInformationLabel>Display Name</OverviewInformationLabel>
               <InlineInput
                 key={currentNode?.name?.displayName}
                 id="node-name-input"
                 autoFocus
                 changeMutation={mutation}
-                defaultValue={
-                  currentNode?.name?.displayName || currentNode?.name?.name
-                }
+                defaultValue={currentNode?.name?.displayName || currentNode?.name?.name}
               />
             </Stack>
           )}
           <OverviewInformationSpan>
             <OverviewInformationLabel>Name</OverviewInformationLabel>
             <OverviewInformationWrapper>
-              <OverviewInformationValue>
-                {currentNode?.name?.name}
-              </OverviewInformationValue>
+              <OverviewInformationValue>{currentNode?.name?.name}</OverviewInformationValue>
             </OverviewInformationWrapper>
           </OverviewInformationSpan>
           <OverviewInformationSpan>
-            <OverviewInformationLabel>
-              Control Plane IP
-            </OverviewInformationLabel>
+            <OverviewInformationLabel>Control Plane IP</OverviewInformationLabel>
             <OverviewInformationWrapper>
-              <OverviewInformationValue>
-                {currentNode?.name?.controlPlaneIP}
-              </OverviewInformationValue>
+              <OverviewInformationValue>{currentNode?.name?.controlPlaneIP}</OverviewInformationValue>
             </OverviewInformationWrapper>
           </OverviewInformationSpan>
           <OverviewInformationSpan>
-            <OverviewInformationLabel>
-              Workload Plane IP
-            </OverviewInformationLabel>
+            <OverviewInformationLabel>Workload Plane IP</OverviewInformationLabel>
             <OverviewInformationWrapper>
-              <OverviewInformationValue>
-                {currentNode?.name?.workloadPlaneIP}
-              </OverviewInformationValue>
+              <OverviewInformationValue>{currentNode?.name?.workloadPlaneIP}</OverviewInformationValue>
             </OverviewInformationWrapper>
           </OverviewInformationSpan>
           <OverviewInformationSpan>
             <OverviewInformationLabel>Roles</OverviewInformationLabel>
             <OverviewInformationWrapper>
-              <OverviewInformationValue>
-                {currentNode?.roles}
-              </OverviewInformationValue>
+              <OverviewInformationValue>{currentNode?.roles}</OverviewInformationValue>
             </OverviewInformationWrapper>
           </OverviewInformationSpan>
           <OverviewInformationSpan>
@@ -279,10 +236,7 @@ const NodePageOverviewTab = (props) => {
               <OverviewInformationValue>
                 {currentNode?.status?.computedStatus?.map((cond) => {
                   return (
-                    <StatusText
-                      key={cond}
-                      textColor={currentNode?.status?.statusColor}
-                    >
+                    <StatusText key={cond} textColor={currentNode?.status?.statusColor}>
                       {intl.formatMessage({
                         id: `${cond}`,
                       })}
@@ -301,10 +255,7 @@ const NodePageOverviewTab = (props) => {
             {creationTimestamp ? (
               <OverviewInformationWrapper>
                 <OverviewInformationValue>
-                  <FormattedDateTime
-                    format="date-time-second"
-                    value={creationTimestamp}
-                  />
+                  <FormattedDateTime format="date-time-second" value={creationTimestamp} />
                 </OverviewInformationValue>
               </OverviewInformationWrapper>
             ) : (
@@ -314,9 +265,7 @@ const NodePageOverviewTab = (props) => {
           <OverviewInformationSpan>
             <OverviewInformationLabel>K8s Version</OverviewInformationLabel>
             <OverviewInformationWrapper>
-              <OverviewInformationValue>
-                {currentNodeReturnByK8S?.kubeletVersion}
-              </OverviewInformationValue>
+              <OverviewInformationValue>{currentNodeReturnByK8S?.kubeletVersion}</OverviewInformationValue>
             </OverviewInformationWrapper>
           </OverviewInformationSpan>
           <OverviewInformationSpan>

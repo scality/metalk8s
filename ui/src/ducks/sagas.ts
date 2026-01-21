@@ -4,8 +4,8 @@ import { nodesSaga } from './app/nodes';
 import { podsSaga } from './app/pods';
 import { saltSaga } from './app/salt';
 import { volumesSaga } from './app/volumes';
-import { authenticateSaga } from './login';
 import { configSaga } from './config';
+import { authenticateSaga } from './login';
 export default function* rootSaga() {
   yield all([
     fork(authenticateSaga),

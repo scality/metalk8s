@@ -1,7 +1,7 @@
-import styled from 'styled-components';
-import { fontWeight, fontSize } from '@scality/core-ui/dist/style/theme';
 import { spacing } from '@scality/core-ui';
 import { Box } from '@scality/core-ui/dist/next';
+import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
+import styled from 'styled-components';
 export const CenteredPageContainer = styled.div`
   display: flex;
   justify-content: space-around;

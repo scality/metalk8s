@@ -5,9 +5,9 @@ import {
   Banner,
   Checkbox,
   Form,
+  FormattedDateTime,
   FormGroup,
   FormSection,
-  FormattedDateTime,
   Icon,
   Loader,
   Stack,
@@ -15,28 +15,26 @@ import {
   TextArea,
 } from '@scality/core-ui';
 import { Box, Button, Input, Select } from '@scality/core-ui/dist/next';
+import { useBasenameRelativeNavigate } from '@scality/module-federation';
 import { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import { useTheme } from 'styled-components';
-
 import { useAuth } from '../containers/PrivateRoute';
 import { addNotificationSuccessAction } from '../ducks/app/notifications';
 import { useConfig } from '../FederableApp';
 import {
-  AlertConfiguration,
-  AlertStoreLogLine,
-  PromiseResult,
+  type AlertConfiguration,
+  type AlertStoreLogLine,
+  type PromiseResult,
   useAlertConfiguration,
   useEditAlertConfiguration,
   useTestAlertConfiguration,
 } from './domain/AlertConfigurationDomain';
 import { Metalk8sCSCAlertConfigurationStore } from './infrastructure/Metalk8sCSCAlertConfigurationStore';
-import { useBasenameRelativeNavigate } from '@scality/module-federation';
 
 const LogsBanner = ({ logs }: { logs: PromiseResult<AlertStoreLogLine[]> }) => {
-  const firstLog =
-    logs.status === 'success' && logs.value.length > 0 ? logs.value[0] : null;
+  const firstLog = logs.status === 'success' && logs.value.length > 0 ? logs.value[0] : null;
 
   const bannerRef = useRef<HTMLDivElement | null>(null);
 
@@ -52,10 +50,7 @@ const LogsBanner = ({ logs }: { logs: PromiseResult<AlertStoreLogLine[]> }) => {
 
   return (
     <div ref={bannerRef} tabIndex={0}>
-      <Banner
-        variant="warning"
-        icon={<Icon name="Exclamation-circle" color="statusWarning" />}
-      >
+      <Banner variant="warning" icon={<Icon name="Exclamation-circle" color="statusWarning" />}>
         {`Error: ${firstLog.message} `}
         <FormattedDateTime format="relative" value={firstLog.occuredOn} />
       </Banner>
@@ -65,15 +60,13 @@ const LogsBanner = ({ logs }: { logs: PromiseResult<AlertStoreLogLine[]> }) => {
 
 const emailRegex =
   // eslint-disable-next-line no-useless-escape
-  /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i;
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i;
 const rfc5322EmailAddressRegex =
   // eslint-disable-next-line no-useless-escape
-  /^((([^ ]+ )+<[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*>|[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*|<[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*>)(, ?)?)+$/i;
+  /^((([^ ]+ )+<[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*>|[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*|<[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*>)(, ?)?)+$/i;
 
 const schema = Joi.object({
-  enabled: Joi.boolean()
-    .required()
-    .label('Enable Email Notification Configuration'),
+  enabled: Joi.boolean().required().label('Enable Email Notification Configuration'),
   host: Joi.string().required().label('SMTP Host'),
   port: Joi.number().required().min(1).label('SMTP Port'),
   isTLSEnabled: Joi.boolean().required().label('Enable SMTP Over TLS'),
@@ -99,44 +92,26 @@ const schema = Joi.object({
     then: Joi.string().required().label('Password'),
     otherwise: Joi.valid(),
   }),
-  from: Joi.string()
-    .required()
-    .label('Sender Email Address')
-    .regex(emailRegex)
-    .message('The email address is invalid'),
+  from: Joi.string().required().label('Sender Email Address').regex(emailRegex).message('The email address is invalid'),
   to: Joi.string()
     .required()
     .label('Recipient Email Addresses')
     .regex(rfc5322EmailAddressRegex)
     .message('The email addresses are invalid'),
-  sendResolved: Joi.boolean()
-    .required()
-    .label('Enable Receive Resolved Alerts'),
+  sendResolved: Joi.boolean().required().label('Enable Receive Resolved Alerts'),
 });
 
 export default function ConfigureAlerting() {
   const theme = useTheme();
   const navigate = useBasenameRelativeNavigate();
   const dispatch = useDispatch();
-  const {
-    register,
-    reset,
-    handleSubmit,
-    control,
-    watch,
-    getValues,
-    formState,
-  } = useForm<AlertConfiguration>({
+  const { register, reset, handleSubmit, control, watch, getValues, formState } = useForm<AlertConfiguration>({
     mode: 'onChange',
     resolver: joiResolver(schema),
   });
   const credsType = watch('type');
 
-  const {
-    url: kubernetesApiUrl,
-    url_salt: saltApiUrl,
-    url_alertmanager: alertManagerUrl,
-  } = useConfig();
+  const { url: kubernetesApiUrl, url_salt: saltApiUrl, url_alertmanager: alertManagerUrl } = useConfig();
 
   const { userData, getToken } = useAuth();
   const email = userData?.email || '';
@@ -175,10 +150,9 @@ export default function ConfigureAlerting() {
     }
   }, [alertConfiguration.status]);
 
-  const { sendTestAlertMutation, logs: testAlertlogs } =
-    useTestAlertConfiguration({
-      alertConfigurationStore,
-    });
+  const { sendTestAlertMutation, logs: testAlertlogs } = useTestAlertConfiguration({
+    alertConfigurationStore,
+  });
 
   useEffect(() => {
     if (sendTestAlertMutation.status === 'success') {
@@ -193,10 +167,7 @@ export default function ConfigureAlerting() {
 
   const labelWidth = 270;
 
-  const disableFormButton =
-    editAlertMutation.isLoading ||
-    sendTestAlertMutation.isLoading ||
-    !formState.isDirty;
+  const disableFormButton = editAlertMutation.isLoading || sendTestAlertMutation.isLoading || !formState.isDirty;
 
   if (alertConfiguration.status === 'loading') {
     return <div>Loading...</div>;
@@ -225,19 +196,14 @@ export default function ConfigureAlerting() {
                   type="button"
                   variant="secondary"
                   tooltip={
-                    Object.entries(formState.dirtyFields).filter(
-                      ([key]) => key !== 'enabled',
-                    ).length > 0
+                    Object.entries(formState.dirtyFields).filter(([key]) => key !== 'enabled').length > 0
                       ? {
                           overlay:
                             'Triggering a test mail will restart alerting service, alerts will be retriggered few minutes after.',
                         }
                       : undefined
                   }
-                  disabled={
-                    sendTestAlertMutation.isLoading ||
-                    editAlertMutation.isLoading
-                  }
+                  disabled={sendTestAlertMutation.isLoading || editAlertMutation.isLoading}
                   label={
                     sendTestAlertMutation.isLoading ? (
                       <Text
@@ -290,9 +256,7 @@ export default function ConfigureAlerting() {
             banner={
               <>
                 <LogsBanner logs={alertLogs} />
-                {sendTestAlertMutation.status === 'success' && (
-                  <LogsBanner logs={testAlertlogs} />
-                )}
+                {sendTestAlertMutation.status === 'success' && <LogsBanner logs={testAlertlogs} />}
               </>
             }
           >
@@ -306,23 +270,14 @@ export default function ConfigureAlerting() {
                 content={<Checkbox id="enabled" {...register('enabled')} />}
               />
             </FormSection>
-            <FormSection
-              forceLabelWidth={labelWidth}
-              title={{ name: 'SMTP connection' }}
-            >
+            <FormSection forceLabelWidth={labelWidth} title={{ name: 'SMTP connection' }}>
               <FormGroup
                 required
                 id="host"
                 label="SMTP Host"
                 helpErrorPosition="bottom"
                 error={formState.errors?.host?.message ?? ''}
-                content={
-                  <Input
-                    id="host"
-                    placeholder="my-smtp.domain.local"
-                    {...register('host')}
-                  />
-                }
+                content={<Input id="host" placeholder="my-smtp.domain.local" {...register('host')} />}
               />
               <FormGroup
                 required
@@ -330,14 +285,7 @@ export default function ConfigureAlerting() {
                 label="SMTP Port"
                 helpErrorPosition="bottom"
                 error={formState.errors?.port?.message ?? ''}
-                content={
-                  <Input
-                    type="number"
-                    id="port"
-                    placeholder="25"
-                    {...register('port')}
-                  />
-                }
+                content={<Input type="number" id="port" placeholder="25" {...register('port')} />}
               />
               <FormGroup
                 id="isTLSEnabled"
@@ -345,15 +293,10 @@ export default function ConfigureAlerting() {
                 helpErrorPosition="bottom"
                 error={formState.errors?.isTLSEnabled?.message ?? ''}
                 help="If enabled, SMTP will be used over TLS (STARTTLS)"
-                content={
-                  <Checkbox id="isTLSEnabled" {...register('isTLSEnabled')} />
-                }
+                content={<Checkbox id="isTLSEnabled" {...register('isTLSEnabled')} />}
               />
             </FormSection>
-            <FormSection
-              forceLabelWidth={labelWidth}
-              title={{ name: 'Authentication' }}
-            >
+            <FormSection forceLabelWidth={labelWidth} title={{ name: 'Authentication' }}>
               <FormGroup
                 required
                 id="type"
@@ -372,13 +315,9 @@ export default function ConfigureAlerting() {
                           onChange={(value) => field.onChange(value)}
                           onBlur={field.onBlur}
                         >
-                          <Select.Option value="NO_AUTHENTICATION">
-                            NO AUTHENTICATION
-                          </Select.Option>
+                          <Select.Option value="NO_AUTHENTICATION">NO AUTHENTICATION</Select.Option>
                           <Select.Option value="LOGIN">LOGIN</Select.Option>
-                          <Select.Option value="CRAM-MD5">
-                            CRAM-MD5
-                          </Select.Option>
+                          <Select.Option value="CRAM-MD5">CRAM-MD5</Select.Option>
                           <Select.Option value="PLAIN">PLAIN</Select.Option>
                         </Select>
                       );
@@ -395,13 +334,7 @@ export default function ConfigureAlerting() {
                     // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.username?.message ?? ''}
                     helpErrorPosition="bottom"
-                    content={
-                      <Input
-                        id="username"
-                        placeholder="username"
-                        {...register('username')}
-                      />
-                    }
+                    content={<Input id="username" placeholder="username" {...register('username')} />}
                   />
                   <FormGroup
                     required
@@ -410,14 +343,7 @@ export default function ConfigureAlerting() {
                     // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.secret?.message ?? ''}
                     helpErrorPosition="bottom"
-                    content={
-                      <Input
-                        id="secret"
-                        type="password"
-                        placeholder="secret"
-                        {...register('secret')}
-                      />
-                    }
+                    content={<Input id="secret" type="password" placeholder="secret" {...register('secret')} />}
                   />
                 </>
               ) : (
@@ -433,13 +359,7 @@ export default function ConfigureAlerting() {
                     // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.identity?.message ?? ''}
                     helpErrorPosition="bottom"
-                    content={
-                      <Input
-                        id="identity"
-                        placeholder="identity"
-                        {...register('identity')}
-                      />
-                    }
+                    content={<Input id="identity" placeholder="identity" {...register('identity')} />}
                   />
                   <FormGroup
                     required
@@ -448,13 +368,7 @@ export default function ConfigureAlerting() {
                     // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.username?.message ?? ''}
                     helpErrorPosition="bottom"
-                    content={
-                      <Input
-                        id="username"
-                        placeholder="username"
-                        {...register('username')}
-                      />
-                    }
+                    content={<Input id="username" placeholder="username" {...register('username')} />}
                   />
                   <FormGroup
                     required
@@ -463,14 +377,7 @@ export default function ConfigureAlerting() {
                     // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.password?.message ?? ''}
                     helpErrorPosition="bottom"
-                    content={
-                      <Input
-                        type="password"
-                        id="password"
-                        placeholder="password"
-                        {...register('password')}
-                      />
-                    }
+                    content={<Input type="password" id="password" placeholder="password" {...register('password')} />}
                   />
                 </>
               ) : (
@@ -486,13 +393,7 @@ export default function ConfigureAlerting() {
                     // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.username?.message ?? ''}
                     helpErrorPosition="bottom"
-                    content={
-                      <Input
-                        id="username"
-                        placeholder="username"
-                        {...register('username')}
-                      />
-                    }
+                    content={<Input id="username" placeholder="username" {...register('username')} />}
                   />
                   <FormGroup
                     required
@@ -501,37 +402,21 @@ export default function ConfigureAlerting() {
                     // @ts-expect-error - FIXME when you are working on it
                     error={formState.errors?.password?.message ?? ''}
                     helpErrorPosition="bottom"
-                    content={
-                      <Input
-                        type="password"
-                        id="password"
-                        placeholder="password"
-                        {...register('password')}
-                      />
-                    }
+                    content={<Input type="password" id="password" placeholder="password" {...register('password')} />}
                   />
                 </>
               ) : (
                 <></>
               )}
             </FormSection>
-            <FormSection
-              forceLabelWidth={labelWidth}
-              title={{ name: 'Email configuration' }}
-            >
+            <FormSection forceLabelWidth={labelWidth} title={{ name: 'Email configuration' }}>
               <FormGroup
                 required
                 id="from"
                 label="Sender Email Address"
                 error={formState.errors?.from?.message ?? ''}
                 helpErrorPosition="bottom"
-                content={
-                  <Input
-                    id="from"
-                    placeholder="no-reply@domain.local"
-                    {...register('from')}
-                  />
-                }
+                content={<Input id="from" placeholder="no-reply@domain.local" {...register('from')} />}
               />
               <FormGroup
                 id="to"
@@ -557,9 +442,7 @@ export default function ConfigureAlerting() {
                 helpErrorPosition="bottom"
                 error={formState.errors?.sendResolved?.message ?? ''}
                 help="If enabled, resolved alerts will be sent to the recipients"
-                content={
-                  <Checkbox id="sendResolved" {...register('sendResolved')} />
-                }
+                content={<Checkbox id="sendResolved" {...register('sendResolved')} />}
               />
             </FormSection>
           </Form>

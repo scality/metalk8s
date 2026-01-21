@@ -1,6 +1,7 @@
 import ApiClient from '../ApiClient';
-import { formatHistoryAlerts } from '../alertUtils';
 import type { Alert } from '../alertUtils';
+import { formatHistoryAlerts } from '../alertUtils';
+
 const METALK8S_HISTORY_ALERTS_QUERY = `{namespace="metalk8s-monitoring",container="metalk8s-alert-logger"}`;
 export const LOKI_RE_NOTIFICATION_INTERVAL = 12 * 60 * 60 * 1000;
 const MAX_ENTRIES_LIMIT = 4999;
@@ -26,9 +27,7 @@ type LokiQueryResult = {
 };
 // by default to get the last 7day alerts from Loki
 export function getLast7DaysAlerts(): Promise<Alert[]> {
-  const start = new Date(
-    new Date().getTime() - 7 * 24 * 60 * 60 * 1000,
-  ).toISOString();
+  const start = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const end = new Date().toISOString();
   // @ts-expect-error - FIXME when you are working on it
   return getAlertsLoki(start, end);
@@ -36,21 +35,13 @@ export function getLast7DaysAlerts(): Promise<Alert[]> {
 // WARNING:
 // By using this function may cause performance issue
 // We may need to perform the query many times, in order to retrieve all the metrics for the expected time period.
-export function getAlertsLoki(
-  start: string,
-  end: string,
-): Promise<LokiQueryResult> {
+export function getAlertsLoki(start: string, end: string): Promise<LokiQueryResult> {
   if (!lokiApiClient) {
     throw new Error('lokiApiClient should be defined');
   }
 
-  if (
-    new Date(end).getTime() - new Date(start).getTime() <
-    LOKI_RE_NOTIFICATION_INTERVAL
-  ) {
-    start = new Date(
-      new Date(end).getTime() - LOKI_RE_NOTIFICATION_INTERVAL,
-    ).toISOString();
+  if (new Date(end).getTime() - new Date(start).getTime() < LOKI_RE_NOTIFICATION_INTERVAL) {
+    start = new Date(new Date(end).getTime() - LOKI_RE_NOTIFICATION_INTERVAL).toISOString();
   }
 
   // @ts-expect-error - FIXME when you are working on it
@@ -68,9 +59,7 @@ export function getAlertsLoki(
       return resolve;
     })
     .then(async (result: LokiQueryResult) => {
-      let resultCount = result.data.result
-        .map((stream) => stream.values.length)
-        .reduce((sum, count) => sum + count, 0);
+      let resultCount = result.data.result.map((stream) => stream.values.length).reduce((sum, count) => sum + count, 0);
       const aggregatedResult = [result];
 
       if (resultCount < MAX_ENTRIES_LIMIT) {
@@ -82,10 +71,7 @@ export function getAlertsLoki(
             parseInt(stream.values[stream.values.length - 1][0], 10),
           );
           const oldestTimestamp = Math.min(...lastestTimestamp);
-          const nextResult = await getAlertsLoki(
-            new Date(oldestTimestamp / 1000000).toISOString(),
-            end,
-          );
+          const nextResult = await getAlertsLoki(new Date(oldestTimestamp / 1000000).toISOString(), end);
           resultCount = nextResult.data.result
             .map((stream) => stream.values.length)
             .reduce((sum, count) => sum + count, 0);
@@ -103,10 +89,7 @@ export function getAlertsLoki(
       }
     });
 }
-export async function getFormattedLokiAlert(
-  start: string,
-  end: string,
-): Promise<Alert[]> {
+export async function getFormattedLokiAlert(start: string, end: string): Promise<Alert[]> {
   const lokiQueryResult = await getAlertsLoki(start, end);
   return formatHistoryAlerts(lokiQueryResult.data.result).filter((alert) =>
     ['critical', 'warning', 'unavailable'].includes(alert.severity),

@@ -1,22 +1,15 @@
-import { Card, Icon, Loader, spacing, StatusWrapper } from '@scality/core-ui';
+import { Card, Icon, Loader, StatusWrapper, spacing } from '@scality/core-ui';
 import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
+import { useBasenameRelativeNavigate } from '@scality/module-federation';
 import { useIntl } from 'react-intl';
 import { useQuery } from 'react-query';
 import styled from 'styled-components';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
-import {
-  highestAlertToStatus,
-  useAlertLibrary,
-  useHighestSeverityAlerts,
-} from '../containers/AlertProvider';
+import { highestAlertToStatus, useAlertLibrary, useHighestSeverityAlerts } from '../containers/AlertProvider';
 import { useAuth } from '../containers/PrivateRoute';
 import { useTypedSelector } from '../hooks';
-import {
-  getNodesCountQuery,
-  getVolumesCountQuery,
-} from '../services/platformlibrary/k8s';
-import { useBasenameRelativeNavigate } from '@scality/module-federation';
+import { getNodesCountQuery, getVolumesCountQuery } from '../services/platformlibrary/k8s';
 
 const InventoryContainer = styled.div`
   padding: 0px ${spacing.r2};
@@ -54,13 +47,9 @@ const getStatusColor = (status) => {
 const DashboardInventory = () => {
   const intl = useIntl();
   const alertsLibrary = useAlertLibrary();
-  const nodesAlerts = useHighestSeverityAlerts(
-    alertsLibrary.getNodesAlertSelectors(),
-  );
+  const nodesAlerts = useHighestSeverityAlerts(alertsLibrary.getNodesAlertSelectors());
   const nodesStatus = highestAlertToStatus(nodesAlerts);
-  const volumesAlerts = useHighestSeverityAlerts(
-    alertsLibrary.getVolumesAlertSelectors(),
-  );
+  const volumesAlerts = useHighestSeverityAlerts(alertsLibrary.getVolumesAlertSelectors());
   const volumesStatus = highestAlertToStatus(volumesAlerts);
   const { getToken } = useAuth();
   const config = useTypedSelector((state) => state.config.api?.url);
@@ -101,16 +90,10 @@ const DashboardInventory = () => {
               <Card.Body>
                 <InventoryIcon>
                   <StatusWrapper status={nodesStatus}>
-                    <Icon
-                      name="Node-backend"
-                      color={getStatusColor(nodesStatus)}
-                      ariaLabel={nodesStatus}
-                    />
+                    <Icon name="Node-backend" color={getStatusColor(nodesStatus)} ariaLabel={nodesStatus} />
                   </StatusWrapper>
                 </InventoryIcon>
-                <InventoryValue aria-label={`${nodesCount} nodes`}>
-                  {nodesCount as number}
-                </InventoryValue>
+                <InventoryValue aria-label={`${nodesCount} nodes`}>{nodesCount as number}</InventoryValue>
               </Card.Body>
             </Card.BodyContainer>
           </Card>
@@ -136,16 +119,10 @@ const DashboardInventory = () => {
               <Card.Body>
                 <InventoryIcon>
                   <StatusWrapper status={volumesStatus}>
-                    <Icon
-                      name="Volume-backend"
-                      color={getStatusColor(volumesStatus)}
-                      ariaLabel={volumesStatus}
-                    />
+                    <Icon name="Volume-backend" color={getStatusColor(volumesStatus)} ariaLabel={volumesStatus} />
                   </StatusWrapper>
                 </InventoryIcon>
-                <InventoryValue aria-label={`${volumesCount} volumes`}>
-                  {volumesCount as number}
-                </InventoryValue>
+                <InventoryValue aria-label={`${volumesCount} volumes`}>{volumesCount as number}</InventoryValue>
               </Card.Body>
             </Card.BodyContainer>
           </Card>

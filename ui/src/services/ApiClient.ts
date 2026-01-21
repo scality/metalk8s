@@ -61,13 +61,7 @@ class ApiClient {
   }
 
   async send(request) {
-    const {
-      method = 'get',
-      endpoint,
-      payload = {},
-      headers = {},
-      params,
-    } = request;
+    const { method = 'get', endpoint, payload = {}, headers = {}, params } = request;
 
     try {
       const response = await axios({

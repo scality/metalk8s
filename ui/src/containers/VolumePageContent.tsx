@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { AppContainer, EmptyState, TwoPanelLayout } from '@scality/core-ui';
+import { useBasenameRelativeNavigate } from '@scality/module-federation';
 import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router';
-import VolumeListTable from '../components/VolumeListTable';
 import { LeftSideInstanceList } from '../components/style/CommonLayoutStyle';
+import VolumeListTable from '../components/VolumeListTable';
 import { usePrevious } from '../services/utils';
 import { VolumePageRSP } from './VolumePageRSP';
-import { useBasenameRelativeNavigate } from '@scality/module-federation';
 
 // <VolumePageContent> component extracts volume name from URL and holds the volume-specific data.
 // The three components in RightSidePanel (<VolumeOverviewTab> / <AlertsTab> / <MetricGraphCard>) are dumb components,
@@ -23,19 +23,14 @@ const VolumePageContent = (props) => {
   useEffect(() => {
     if (volumeListData.length > 0) {
       const firstVolumeName = volumeListData[0]?.name;
-      if (
-        firstVolumeName &&
-        !location.pathname.includes(firstVolumeName) &&
-        location.pathname.endsWith('/volumes')
-      ) {
+      if (firstVolumeName && !location.pathname.includes(firstVolumeName) && location.pathname.endsWith('/volumes')) {
         navigate(`/volumes/${firstVolumeName}/overview`, { replace: true });
       }
     }
   }, [JSON.stringify(volumeListData)]);
 
   useEffect(() => {
-    if (previousLoading && !loading && !isFirstLoadingDone)
-      setIsFirstLoadingDone(true);
+    if (previousLoading && !loading && !isFirstLoadingDone) setIsFirstLoadingDone(true);
   }, [previousLoading, loading, isFirstLoadingDone]);
 
   if (!volumeListData.length && isFirstLoadingDone) {
@@ -58,10 +53,7 @@ const VolumePageContent = (props) => {
         leftPanel={{
           children: (
             <LeftSideInstanceList>
-              <VolumeListTable
-                volumeListData={volumeListData}
-                volumeName={currentVolumeName}
-              ></VolumeListTable>
+              <VolumeListTable volumeListData={volumeListData} volumeName={currentVolumeName}></VolumeListTable>
             </LeftSideInstanceList>
           ),
         }}

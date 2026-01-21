@@ -1,8 +1,10 @@
 // TO BE FIXED: Mock import { store } from '../index' in 'config.js'
 // Otherwise we have some issues to initialize reducers for testing
-import * as Api from '../services/api';
-import { SET_API_CONFIG, fetchConfig, setConfigStatusAction } from './config';
+
 import { call, put } from 'redux-saga/effects';
+import * as Api from '../services/api';
+import { fetchConfig, SET_API_CONFIG, setConfigStatusAction } from './config';
+
 jest.mock('../index.ts', () => {
   return {
     store: 'store',

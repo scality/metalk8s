@@ -1,13 +1,13 @@
-import { Icon, ProgressBar, Tooltip, Wrap, spacing } from '@scality/core-ui';
+import { Icon, ProgressBar, spacing, Tooltip, Wrap } from '@scality/core-ui';
 import { Button, Table } from '@scality/core-ui/dist/next';
+import { useCurrentApp } from '@scality/module-federation';
 import React from 'react';
 import { useIntl } from 'react-intl';
-import { useNavigate, useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { useTheme } from 'styled-components';
 import CircleStatus from './CircleStatus';
 import { Latency } from './Latency';
 import { TooltipContent, UnknownIcon } from './TableRow';
-import { useCurrentApp } from '@scality/module-federation';
 
 const VolumeListTable = (props) => {
   const { volumeListData, volumeName } = props;
@@ -85,18 +85,14 @@ const VolumeListTable = (props) => {
           width: '3rem',
         },
         Cell: (cellProps) => {
-          const volume = volumeListData?.find(
-            (vol) => vol.name === cellProps.cell.row.values.name,
-          );
+          const volume = volumeListData?.find((vol) => vol.name === cellProps.cell.row.values.name);
 
           switch (cellProps.value) {
             case 'exclamation':
               return (
                 <Tooltip
                   placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
-                  overlay={
-                    <TooltipContent>{volume?.errorReason}</TooltipContent>
-                  }
+                  overlay={<TooltipContent>{volume?.errorReason}</TooltipContent>}
                 >
                   <Icon name="Exclamation" />
                 </Tooltip>
@@ -148,9 +144,7 @@ const VolumeListTable = (props) => {
           width: '3.5rem',
         },
         Cell: (cellProps) => {
-          return cellProps.value !== undefined ? (
-            <Latency latencyInMicroSeconds={cellProps.value} />
-          ) : null;
+          return cellProps.value !== undefined ? <Latency latencyInMicroSeconds={cellProps.value} /> : null;
         },
       },
     ]; // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -165,17 +159,10 @@ const VolumeListTable = (props) => {
       location.pathname.endsWith('/details');
 
     if (isTabSelected) {
-      const newPath = location.pathname.replace(
-        /\/volumes\/[^/]*\//,
-        `/volumes/${row.values.name}/`,
-      );
+      const newPath = location.pathname.replace(/\/volumes\/[^/]*\//, `/volumes/${row.values.name}/`);
       navigate(`${newPath}?${query.toString()}`);
     } else {
-      navigate(
-        `${appHistoryBasePath}/volumes/${
-          row.values.name
-        }/overview?${query.toString()}`,
-      );
+      navigate(`${appHistoryBasePath}/volumes/${row.values.name}/overview?${query.toString()}`);
     }
   };
 

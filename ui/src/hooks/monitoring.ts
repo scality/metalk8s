@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { useQuery } from 'react-query';
+import { useDispatch } from 'react-redux';
+import { REFRESH_METRICS_GRAPH } from '../constants';
+import { updateCurrentVolumeStatsAction } from '../ducks/app/monitoring';
 import {
-  getVolumeUsedQueryOption,
   getVolumeCapacityQuery,
   getVolumeLatencyCurrentQueryOption,
+  getVolumeUsedQueryOption,
 } from '../services/platformlibrary/metrics';
-import { REFRESH_METRICS_GRAPH } from '../constants';
-import { useDispatch } from 'react-redux';
-import { updateCurrentVolumeStatsAction } from '../ducks/app/monitoring';
 export function useFetchCurrentVolumeStats() {
   const dispatch = useDispatch();
   const { data: volumeUsedCurrent } = useQuery({
@@ -33,12 +33,7 @@ export function useFetchCurrentVolumeStats() {
         metrics: metrics,
       }),
     );
-  }, [
-    volumeUsedCurrent,
-    volumeCapacityCurrent,
-    volumeLatencyCurrent,
-    dispatch,
-  ]);
+  }, [volumeUsedCurrent, volumeCapacityCurrent, volumeLatencyCurrent, dispatch]);
   return {
     metrics,
   };
