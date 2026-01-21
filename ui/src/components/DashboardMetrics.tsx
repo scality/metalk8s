@@ -1,25 +1,16 @@
+import { Icon, IconHelp, SmallerText, Stack, spacing } from '@scality/core-ui';
+import { Box, Button, ChartLegend, ChartLegendWrapper } from '@scality/core-ui/dist/next';
 import React from 'react';
-import {
-  Box,
-  Button,
-  ChartLegend,
-  ChartLegendWrapper,
-} from '@scality/core-ui/dist/next';
-
 import { useIntl } from 'react-intl';
+import { GraphsWrapper, PageSubtitle } from '../components/style/CommonLayoutStyle';
 import { GRAFANA_DASHBOARDS } from '../constants';
-import { createColorSet } from '../services/graphUtils';
-import {
-  PageSubtitle,
-  GraphsWrapper,
-} from '../components/style/CommonLayoutStyle';
-import DashboardChartCpuUsage from './DashboardChartCpuUsage';
-import DashboardChartThroughput from './DashboardChartThroughput';
-import DashboardChartSystemLoad from './DashboardChartSystemLoad';
-import DashboardChartMemory from './DashboardChartMemory';
-import { useShowQuantileChart, useTypedSelector } from '../hooks';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
-import { Icon, SmallerText, Stack, IconHelp, spacing } from '@scality/core-ui';
+import { useShowQuantileChart, useTypedSelector } from '../hooks';
+import { createColorSet } from '../services/graphUtils';
+import DashboardChartCpuUsage from './DashboardChartCpuUsage';
+import DashboardChartMemory from './DashboardChartMemory';
+import DashboardChartSystemLoad from './DashboardChartSystemLoad';
+import DashboardChartThroughput from './DashboardChartThroughput';
 import { DashboardSectionContainer, PanelActions } from './DashboardNetwork';
 
 export const QuantileHelpTooltip = () => {
@@ -35,9 +26,7 @@ export const QuantileHelpTooltip = () => {
             })
             .split('\n')
             .map((line, key) => (
-              <SmallerText key={`globalheathexplanation-${key}`}>
-                {line}
-              </SmallerText>
+              <SmallerText key={`globalheathexplanation-${key}`}>{line}</SmallerText>
             ))}
         </Stack>
       }

@@ -23,10 +23,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -81,10 +78,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -147,10 +141,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -215,10 +206,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -284,10 +272,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -353,10 +338,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -422,10 +404,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -491,10 +470,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -557,10 +533,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -618,10 +591,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -687,10 +657,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -756,10 +723,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -825,10 +789,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -894,10 +855,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -963,10 +921,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -1032,10 +987,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -1101,10 +1053,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -1170,10 +1119,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -1239,10 +1185,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -1308,10 +1251,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -1377,10 +1317,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -1446,10 +1383,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -1515,10 +1449,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -1584,10 +1515,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {
@@ -1653,10 +1581,7 @@
             "blockOwnerDeletion": true
           }
         ],
-        "finalizers": [
-          "storage.metalk8s.scality.com/volume-protection",
-          "kubernetes.io/pv-protection"
-        ]
+        "finalizers": ["storage.metalk8s.scality.com/volume-protection", "kubernetes.io/pv-protection"]
       },
       "spec": {
         "capacity": {

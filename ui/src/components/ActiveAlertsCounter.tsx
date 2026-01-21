@@ -1,10 +1,10 @@
-import React from 'react';
-import styled from 'styled-components';
-import { useLocation, useResolvedPath } from 'react-router';
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
-import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
+import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import { useBasenameRelativeNavigate } from '@scality/module-federation';
+import React from 'react';
+import { useLocation, useResolvedPath } from 'react-router';
+import styled from 'styled-components';
+import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
 export const CountersWrapper = styled.div`
   color: ${(props) => props.theme.textPrimary};
   display: flex;
@@ -66,20 +66,14 @@ const ActiveAlertsCounter = (props) => {
 
   return (
     <CountersWrapper>
-      <CounterWrapper
-        onClick={() => navigate(getLink(STATUS_CRITICAL))}
-        data-cy="critical_counter_node"
-      >
+      <CounterWrapper onClick={() => navigate(getLink(STATUS_CRITICAL))} data-cy="critical_counter_node">
         <CounterTitle>Critical</CounterTitle>
         <CounterValueWrapper>
           <CounterIcon name="Times-circle" status={STATUS_CRITICAL} />
           <CounterValue>{criticalCounter}</CounterValue>
         </CounterValueWrapper>
       </CounterWrapper>
-      <CounterWrapper
-        onClick={() => navigate(getLink(STATUS_WARNING))}
-        data-cy="warning_counter_node"
-      >
+      <CounterWrapper onClick={() => navigate(getLink(STATUS_WARNING))} data-cy="warning_counter_node">
         <CounterTitle>Warning</CounterTitle>
         <CounterValueWrapper>
           <CounterIcon name="Exclamation-triangle" status={STATUS_WARNING} />

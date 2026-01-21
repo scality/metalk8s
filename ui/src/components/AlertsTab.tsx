@@ -1,25 +1,19 @@
 import { ConstrainedText, FormattedDateTime, spacing } from '@scality/core-ui';
 import { Box, Table } from '@scality/core-ui/dist/next';
+import { useIntl } from 'react-intl';
 import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
-import { Alert } from '../services/alertUtils';
+import type { Alert } from '../services/alertUtils';
 import { useURLQuery } from '../services/utils';
 import ActiveAlertsFilter from './ActiveAlertsFilters';
 import CircleStatus from './CircleStatus';
-import { useIntl } from 'react-intl';
 import { NotBoundContainer } from './style/CommonLayoutStyle';
 
-const AlertsTab = ({
-  alerts,
-  status,
-}: {
-  alerts: Alert[];
-  status: 'idle' | 'loading' | 'error' | 'success';
-}) => {
+const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'loading' | 'error' | 'success' }) => {
   const query = useURLQuery();
   // Retrieve the severity filter from URL.
   // Filter more than one severity, the URL should be:
   // `/nodes/<node-name>/alerts?severity=warning&severity=critical`
-  let alertSeverity = query.getAll('severity');
+  const alertSeverity = query.getAll('severity');
   // Display all the alerts when there is no severity filter or when severity filter is 'all'.
   if (alertSeverity?.length === 0 || alertSeverity?.includes('all')) {
     alertSeverity.push(STATUS_WARNING, STATUS_CRITICAL);
@@ -78,12 +72,7 @@ const AlertsTab = ({
         width: 'unset',
       },
       Cell: ({ value }) => {
-        return (
-          <FormattedDateTime
-            value={new Date(value)}
-            format="date-time-second"
-          />
-        );
+        return <FormattedDateTime value={new Date(value)} format="date-time-second" />;
       },
     },
   ];
@@ -103,10 +92,7 @@ const AlertsTab = ({
           },
         }}
       >
-        <Table.SingleSelectableContent
-          rowHeight="h48"
-          separationLineVariant="backgroundLevel2"
-        />
+        <Table.SingleSelectableContent rowHeight="h48" separationLineVariant="backgroundLevel2" />
       </Table>
     </Box>
   );

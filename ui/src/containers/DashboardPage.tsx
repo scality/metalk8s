@@ -1,13 +1,13 @@
+import { AppContainer, spacing, Wrap } from '@scality/core-ui';
 import React from 'react';
-import { AppContainer, Wrap, spacing } from '@scality/core-ui';
 
 import styled from 'styled-components';
-import DashboardMetrics from '../components/DashboardMetrics';
-import DashboardInventory from '../components/DashboardInventory';
-import DashboardServices from '../components/DashboardServices';
 import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
-import TimespanSelector from './TimespanSelector';
+import DashboardInventory from '../components/DashboardInventory';
+import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardNetwork from '../components/DashboardNetwork';
+import DashboardServices from '../components/DashboardServices';
+import TimespanSelector from './TimespanSelector';
 
 const DashboardGrid = styled.div`
   display: grid;

@@ -1,17 +1,8 @@
-import { ChartLegendWrapper } from '@scality/core-ui/dist/next';
-import {
-  ChartLegend,
-  LineTimeSerieChart,
-  useMetricsTimeSpan,
-} from '@scality/core-ui/dist/next';
+import { ChartLegend, ChartLegendWrapper, LineTimeSerieChart, useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { useCallback, useMemo } from 'react';
-import { UseQueryOptions } from 'react-query';
+import type { UseQueryOptions } from 'react-query';
 import { useSelector } from 'react-redux';
-import {
-  DASHBOARD_QUANTILE_SYNC_ID,
-  HEIGHT_DEFAULT_CHART,
-  PORT_NODE_EXPORTER,
-} from '../constants';
+import { DASHBOARD_QUANTILE_SYNC_ID, HEIGHT_DEFAULT_CHART, PORT_NODE_EXPORTER } from '../constants';
 import { useChartSeries, useNodeAddressesSelector, useNodes } from '../hooks';
 import {
   convertPrometheusResultToSerie,
@@ -78,11 +69,7 @@ const NonSymmetricalQuantileChart = ({
       getQuantileQuery(timeSpanProps, 0.05),
     ],
     transformPrometheusDataToSeries: useCallback(
-      ([
-        prometheusResultQuantile5,
-        prometheusResultMedian,
-        prometheusResultQuantile90,
-      ]) => {
+      ([prometheusResultQuantile5, prometheusResultMedian, prometheusResultQuantile90]) => {
         return [
           convertPrometheusResultToSerie(prometheusResultQuantile90, 'Q90'),
           convertPrometheusResultToSerie(prometheusResultMedian, 'Median'),
@@ -104,9 +91,7 @@ const NonSymmetricalQuantileChart = ({
 
     const allValues = seriesQuantile.flatMap((serie: any) =>
       serie.data
-        .map(([_, value]: [number, any]) =>
-          typeof value === 'string' ? parseFloat(value) : value,
-        )
+        .map(([_, value]: [number, any]) => (typeof value === 'string' ? parseFloat(value) : value))
         .filter((v: any) => v !== null && !isNaN(v)),
     );
 
@@ -140,14 +125,7 @@ const NonSymmetricalQuantileChart = ({
         />
       );
     },
-    [
-      getQuantileHoverQuery,
-      nodeMapPerIp,
-      devices,
-      valueBase,
-      unitLabel,
-      timeFormat,
-    ],
+    [getQuantileHoverQuery, nodeMapPerIp, devices, valueBase, unitLabel, timeFormat],
   );
 
   const colorSet = useMemo(() => {

@@ -1,23 +1,21 @@
-import { call, put, delay, select } from 'redux-saga/effects';
 // TOBE REMOVE WHEN migrate to react-query
 import { cloneableGenerator } from '@redux-saga/testing-utils';
+import { call, delay, put, select } from 'redux-saga/effects';
 import { REFRESH_TIMEOUT } from '../../constants';
 import {
-  fetchNodes,
-  createNode,
-  refreshNodes,
-  UPDATE_NODES,
   CREATE_NODE_FAILED,
   clusterVersionSelector,
-  nodesRefreshingSelector,
+  createNode,
+  fetchNodes,
   fetchNodesIPsInterface,
   historySelector,
+  nodesRefreshingSelector,
+  refreshNodes,
+  UPDATE_NODES,
 } from './nodes';
+import { ADD_NOTIFICATION_ERROR, ADD_NOTIFICATION_SUCCESS } from './notifications';
 import { allJobsSelector } from './salt';
-import {
-  ADD_NOTIFICATION_SUCCESS,
-  ADD_NOTIFICATION_ERROR,
-} from './notifications';
+
 // Helpers {{{
 const DEFAULT_NAME = 'node1';
 const DEFAULT_CLUSTER_VERSION = '2.4.2';

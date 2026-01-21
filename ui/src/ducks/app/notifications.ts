@@ -46,10 +46,7 @@ export default function reducer(
   }
 } // Action Creators
 
-export const addNotificationSuccessAction = (payload: {
-  title: string;
-  message: string;
-}) => {
+export const addNotificationSuccessAction = (payload: { title: string; message: string }) => {
   return {
     type: ADD_NOTIFICATION_SUCCESS,
     payload: {
@@ -61,10 +58,7 @@ export const addNotificationSuccessAction = (payload: {
     },
   };
 };
-export const addNotificationErrorAction = (payload: {
-  title: string;
-  message?: string;
-}) => {
+export const addNotificationErrorAction = (payload: { title: string; message?: string }) => {
   return {
     type: ADD_NOTIFICATION_ERROR,
     payload: {

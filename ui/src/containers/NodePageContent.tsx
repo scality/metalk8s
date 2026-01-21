@@ -1,12 +1,12 @@
 /* eslint no-unused-vars: 0 */
 import { AppContainer, EmptyState, TwoPanelLayout } from '@scality/core-ui';
+import { useBasenameRelativeNavigate } from '@scality/module-federation';
 import { useEffect, useState } from 'react';
 import { Route, Routes, useResolvedPath } from 'react-router';
 import NodeListTable from '../components/NodeListTable';
 import { LeftSideInstanceList } from '../components/style/CommonLayoutStyle';
 import { usePrevious } from '../services/utils';
 import NodePageRSP from './NodePageRSP';
-import { useBasenameRelativeNavigate } from '@scality/module-federation';
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
 const NodePageContent = (props) => {
@@ -21,17 +21,12 @@ const NodePageContent = (props) => {
    ** This allow us to check if we need to display EmptyState or not
    */
   useEffect(() => {
-    if (previousLoading && !loading && !isFirstLoadingDone)
-      setIsFirstLoadingDone(true);
+    if (previousLoading && !loading && !isFirstLoadingDone) setIsFirstLoadingDone(true);
   }, [previousLoading, loading, isFirstLoadingDone]);
   useEffect(() => {
     if (nodeTableData.length > 0) {
       const firstNodeName = nodeTableData[0]?.name?.name;
-      if (
-        firstNodeName &&
-        !path.includes(firstNodeName) &&
-        path.endsWith('/nodes')
-      ) {
+      if (firstNodeName && !path.includes(firstNodeName) && path.endsWith('/nodes')) {
         navigate(`/nodes/${firstNodeName}/overview`, { replace: true });
       }
     } // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,10 +59,7 @@ const NodePageContent = (props) => {
         rightPanel={{
           children: (
             <Routes>
-              <Route
-                path=":name/*"
-                element={<NodePageRSP nodeTableData={nodeTableData} />}
-              />
+              <Route path=":name/*" element={<NodePageRSP nodeTableData={nodeTableData} />} />
             </Routes>
           ),
         }}

@@ -1,4 +1,4 @@
-import { JOB_ID, NODE_NAME, METAL_VERSION } from './constants';
+import { JOB_ID, METAL_VERSION, NODE_NAME } from './constants';
 export const data = {
   fun_args: [
     'metalk8s.orchestrate.deploy_node',

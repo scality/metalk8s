@@ -1,20 +1,20 @@
-import { IntlShape } from 'react-intl';
-import type { RootState } from './reducer';
+import type { IntlShape } from 'react-intl';
+import { call, type Effect, put, select, takeEvery } from 'redux-saga/effects';
+import { EN_LANG } from '../constants';
+import * as ApiAlertmanager from '../services/alertmanager/api';
 import type { Config } from '../services/api';
-import { Effect, call, put, takeEvery, select } from 'redux-saga/effects';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
-import * as ApiSalt from '../services/salt/api';
-import * as ApiPrometheus from '../services/prometheus/api';
-import * as ApiAlertmanager from '../services/alertmanager/api';
-import * as ApiLoki from '../services/loki/api';
-import { EN_LANG } from '../constants';
-import { authenticateSaltApi } from './login';
-import type { Result } from '../types';
-import { logOut, setUser } from './oidc';
 import { CoreApi } from '../services/k8s/core';
 import { Metalk8sV1alpha1VolumeClient } from '../services/k8s/Metalk8sVolumeClient.generated';
 import { StorageApi } from '../services/k8s/volumes';
+import * as ApiLoki from '../services/loki/api';
+import * as ApiPrometheus from '../services/prometheus/api';
+import * as ApiSalt from '../services/salt/api';
+import type { Result } from '../types';
+import { authenticateSaltApi } from './login';
+import { logOut, setUser } from './oidc';
+import type { RootState } from './reducer';
 
 // Actions
 export const SET_LANG = 'SET_LANG';
@@ -49,10 +49,7 @@ const defaultState: ConfigState = {
   customObjectsApi: null,
   storageApi: null,
 };
-export default function reducer(
-  state: ConfigState = defaultState,
-  action: any = {},
-) {
+export default function reducer(state: ConfigState = defaultState, action: any = {}) {
   switch (action.type) {
     case SET_LANG:
       return { ...state, language: action.payload };
@@ -158,11 +155,7 @@ export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
   }
 }
 
-function* setApiConfig({
-  payload: config,
-}: {
-  payload: Config;
-}): Generator<Effect, void, Result<Config>> {
+function* setApiConfig({ payload: config }: { payload: Config }): Generator<Effect, void, Result<Config>> {
   yield call(ApiSalt.initialize, config.url_salt);
   yield call(ApiPrometheus.initialize, config.url_prometheus);
   yield call(ApiAlertmanager.initialize, config.url_alertmanager);
@@ -183,11 +176,8 @@ export function* updateApiServerConfig({
     // @ts-expect-error - FIXME when you are working on it
     yield put(setUser(payload));
 
-    const { appsV1, coreV1, customObjects, storage } =
-      ApiK8s.updateApiServerConfig(api.url, payload.token);
-    yield put(
-      setCustomObjectApiClient(new Metalk8sV1alpha1VolumeClient(customObjects)),
-    );
+    const { appsV1, coreV1, customObjects, storage } = ApiK8s.updateApiServerConfig(api.url, payload.token);
+    yield put(setCustomObjectApiClient(new Metalk8sV1alpha1VolumeClient(customObjects)));
     yield put(setCoreApiClient(new CoreApi(coreV1, appsV1)));
     yield put(setStoreApiClient(new StorageApi(coreV1, storage)));
 

@@ -20,7 +20,7 @@ export function prettifyBytes(bytes, decimals) {
   var units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
   var unit = 'B';
   var num = bytes;
-  var dec = decimals !== undefined ? Math.pow(10, decimals) : 1;
+  var dec = decimals !== undefined ? 10 ** decimals : 1;
   var i = 0;
 
   while (num >= 1024) {
@@ -49,9 +49,7 @@ export const sortSelector = createSelector(
   (list, sortBy, sortDirection) => {
     const sortedList = sortByArray(list, [
       (item) => {
-        return typeof item[sortBy] === 'string'
-          ? item[sortBy].toLowerCase()
-          : item[sortBy];
+        return typeof item[sortBy] === 'string' ? item[sortBy].toLowerCase() : item[sortBy];
       },
     ]);
 
@@ -82,12 +80,9 @@ export const getNodeNameFromUrl = (state, props, name) => {
     }
   }
 };
-export const getNodes = (state) =>
-  (state && state.app && state.app.nodes && state.app.nodes.list) || [];
-export const getPods = (state) =>
-  (state && state.app && state.app.pods && state.app.pods.list) || [];
-export const getVolumes = (state) =>
-  (state && state.app && state.app.volumes && state.app.volumes.list) || [];
+export const getNodes = (state) => (state && state.app && state.app.nodes && state.app.nodes.list) || [];
+export const getPods = (state) => (state && state.app && state.app.pods && state.app.pods.list) || [];
+export const getVolumes = (state) => (state && state.app && state.app.volumes && state.app.volumes.list) || [];
 export const makeGetPodsFromUrl = createSelector(
   // @ts-expect-error - FIXME when you are working on it
   getNodeNameFromUrl,
@@ -98,10 +93,7 @@ export const makeGetVolumesFromUrl = createSelector(
   // @ts-expect-error - FIXME when you are working on it
   getNodeNameFromUrl,
   getVolumes,
-  (nodeName, volumes) =>
-    volumes.filter(
-      (volume) => volume && volume.spec && volume.spec.nodeName === nodeName,
-    ),
+  (nodeName, volumes) => volumes.filter((volume) => volume && volume.spec && volume.spec.nodeName === nodeName),
 );
 export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
   const dispatch = useDispatch();
@@ -170,8 +162,7 @@ export const sizeUnits = [
   },
 ];
 export function allSizeUnitsToBytes(size) {
-  const sizeRegex =
-    /^(?<size>[1-9]([0-9]+)?\.?([0-9]+)?)\s?(?<unit>[kKMGTPB]i?)B?$/;
+  const sizeRegex = /^(?<size>[1-9]([0-9]+)?\.?([0-9]+)?)\s?(?<unit>[kKMGTPB]i?)B?$/;
 
   if (size && typeof size === 'string') {
     const match = size?.match(sizeRegex);
@@ -188,8 +179,7 @@ export function allSizeUnitsToBytes(size) {
         }
 
         const tmpInternalUnitBase =
-          sizeUnits.find((sizeUnit) => sizeUnit.value === tmpInternalUnit)
-            ?.base ?? sizeUnits[0].value;
+          sizeUnits.find((sizeUnit) => sizeUnit.value === tmpInternalUnit)?.base ?? sizeUnits[0].value;
         // @ts-expect-error - FIXME when you are working on it
         return parseFloat(tmpInternalSize) * tmpInternalUnitBase;
       }
@@ -201,11 +191,11 @@ export function allSizeUnitsToBytes(size) {
   return size;
 }
 export function bytesToSize(bytes) {
-  let sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
+  const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
   if (bytes === 0) return '0 Byte';
   // @ts-expect-error - FIXME when you are working on it
-  let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+  const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  return (bytes / 1024 ** i).toFixed(1) + ' ' + sizes[i];
 }
 // The rules to compute the volume condition
 //  Exclamation: Failed + Unbound
@@ -232,12 +222,7 @@ export function computeVolumeCondition(status, isBound) {
  * @param {number} sampleFrequency - The time difference between two data points in seconds
  *
  */
-export function addMissingDataPoint(
-  orginalValues,
-  startingTimeStamp,
-  sampleDuration,
-  sampleFrequency,
-) {
+export function addMissingDataPoint(orginalValues, startingTimeStamp, sampleDuration, sampleFrequency) {
   if (
     !orginalValues ||
     orginalValues.length === 0 ||
@@ -266,10 +251,7 @@ export function addMissingDataPoint(
   let nextIndex = 0;
 
   for (let i = 0; i < newValues.length; i++) {
-    if (
-      orginalValues[nextIndex] &&
-      newValues[i][0] === orginalValues[nextIndex][0]
-    ) {
+    if (orginalValues[nextIndex] && newValues[i][0] === orginalValues[nextIndex][0]) {
       newValues[i][1] = orginalValues[nextIndex][1];
       nextIndex++;
     }
@@ -297,9 +279,7 @@ export function getNaNSegments(points: [number, number | string | null][]): {
       value: point[1],
     };
   });
-  const nullSegments = segments.filter(
-    (segment) => segment.value === NAN_STRING,
-  );
+  const nullSegments = segments.filter((segment) => segment.value === NAN_STRING);
   return nullSegments.reduce((mergedNullSegments, segment) => {
     if (mergedNullSegments.length > 0) {
       const lastNullSegment = mergedNullSegments[mergedNullSegments.length - 1];
@@ -345,44 +325,41 @@ export function getSegments({
   }
 
   // Use pointsWatchdog as the primary driver since it indicates if alerting service is available
-  const segments = pointsWatchdog.reduce(
-    (agg, [timestamp, watchdogValue], index) => {
-      const atRiskValue = pointsAtRisk[index]?.[1] || 0;
-      const degradedValue = pointsDegraded[index]?.[1] || 0;
-      const currentType =
-        watchdogValue !== '1'
-          ? NAN_STRING
-          : atRiskValue > 0
+  const segments = pointsWatchdog.reduce((agg, [timestamp, watchdogValue], index) => {
+    const atRiskValue = pointsAtRisk[index]?.[1] || 0;
+    const degradedValue = pointsDegraded[index]?.[1] || 0;
+    const currentType =
+      watchdogValue !== '1'
+        ? NAN_STRING
+        : atRiskValue > 0
           ? STATUS_CRITICAL
           : degradedValue > 0
-          ? STATUS_WARNING
-          : STATUS_HEALTH;
+            ? STATUS_WARNING
+            : STATUS_HEALTH;
 
-      if (agg.length > 0) {
-        const lastValue = agg[agg.length - 1];
+    if (agg.length > 0) {
+      const lastValue = agg[agg.length - 1];
 
-        // Only create new segment if status changes
-        if (lastValue.type !== currentType) {
-          lastValue.endsAt = timestamp;
-          agg.push({
-            startsAt: timestamp,
-            endsAt: null,
-            type: currentType,
-          });
-        }
-      } else {
-        // First segment
+      // Only create new segment if status changes
+      if (lastValue.type !== currentType) {
+        lastValue.endsAt = timestamp;
         agg.push({
           startsAt: timestamp,
           endsAt: null,
           type: currentType,
         });
       }
+    } else {
+      // First segment
+      agg.push({
+        startsAt: timestamp,
+        endsAt: null,
+        type: currentType,
+      });
+    }
 
-      return agg;
-    },
-    [],
-  );
+    return agg;
+  }, []);
   return segments.filter((segment) => segment.type !== STATUS_HEALTH);
 }
 
@@ -441,8 +418,7 @@ export const compareHealth = (status1, status2) => {
 // Add a space between size value and its unit since the API returns this as a string
 // Add the unit B
 export const formatSizeForDisplay = (value) => {
-  if (value && value.match(/^(\d+)(\D+)$/))
-    return value.replace(/^(\d+)(\D+)$/, '$1 $2') + 'B';
+  if (value && value.match(/^(\d+)(\D+)$/)) return value.replace(/^(\d+)(\D+)$/, '$1 $2') + 'B';
   else return value || null;
 };
 
@@ -451,13 +427,8 @@ export const formatSizeForDisplay = (value) => {
  ** By default this calculates the width for 3 rows of 2 charts
  ** Takes container id as a param and optionnally desired number of columns and row and returns [ width, heigth ]
  */
-export const useDynamicChartSize = (
-  container_id: string,
-  columns: number = 2,
-  rows: number = 3,
-): [number, number] => {
-  const graphsContainerWidth =
-    document.getElementById(container_id)?.offsetWidth;
+export const useDynamicChartSize = (container_id: string, columns: number = 2, rows: number = 3): [number, number] => {
+  const graphsContainerWidth = document.getElementById(container_id)?.offsetWidth;
   const [graphWidth, setGraphWidth] = useState(0);
   useEffect(() => {
     if (graphsContainerWidth) {
@@ -521,8 +492,7 @@ export const linuxDrivesNamingIncrement = (devicePath, increment) => {
         // when the path is `/dev/vdaz`, `/dev/vdbz`,
         const last2ndChar = devicePath.slice(-2);
         const subBefore = devicePath.slice(0, -2);
-        devicePath =
-          subBefore + String.fromCharCode(last2ndChar.charCodeAt() + 1) + 'a';
+        devicePath = subBefore + String.fromCharCode(last2ndChar.charCodeAt() + 1) + 'a';
       } else {
         devicePath = sub + String.fromCharCode(lastChar.charCodeAt() + 1);
       }

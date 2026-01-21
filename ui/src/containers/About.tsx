@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import styled from 'styled-components';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchClusterVersionAction } from '../ducks/app/nodes';
 import { useIntl } from 'react-intl';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+import { fetchClusterVersionAction } from '../ducks/app/nodes';
+
 const Title = styled.h3`
   margin-top: 25px;
 `;

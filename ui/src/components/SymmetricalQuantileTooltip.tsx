@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import type React from 'react';
+import { useMemo } from 'react';
 import { useQuery } from 'react-query';
 import type { TooltipContentProps } from 'recharts';
 import {
   QuantileTooltipRenderer,
-  transformSymmetricalPayload,
   sortPayloadEntries,
+  transformSymmetricalPayload,
 } from './shared/QuantileTooltipShared';
 
 type SymmetricalQuantileTooltipProps = {
@@ -35,9 +36,7 @@ type SymmetricalQuantileTooltipProps = {
   devices?: string | string[];
 };
 
-export const SymmetricalQuantileTooltip: React.FC<
-  SymmetricalQuantileTooltipProps
-> = ({
+export const SymmetricalQuantileTooltip: React.FC<SymmetricalQuantileTooltipProps> = ({
   tooltipProps,
   nodeMapPerIp,
   devices,
@@ -54,12 +53,7 @@ export const SymmetricalQuantileTooltip: React.FC<
   // Extract quantile data for symmetrical chart
   const quantileData = useMemo(() => {
     if (!payload || !payload.length) return null;
-    return transformSymmetricalPayload(
-      payload,
-      label,
-      metricPrefixAbove,
-      metricPrefixBelow,
-    );
+    return transformSymmetricalPayload(payload, label, metricPrefixAbove, metricPrefixBelow);
   }, [payload, label, metricPrefixAbove, metricPrefixBelow]);
 
   // Determine if additional fetching is needed
@@ -83,11 +77,7 @@ export const SymmetricalQuantileTooltip: React.FC<
       devices,
     ),
     {
-      enabled:
-        !!quantileData &&
-        isOnHoverFetchingNeeded &&
-        !!getAboveQuantileHoverQuery &&
-        !!quantileData.q90.above,
+      enabled: !!quantileData && isOnHoverFetchingNeeded && !!getAboveQuantileHoverQuery && !!quantileData.q90.above,
     },
   );
 
@@ -100,11 +90,7 @@ export const SymmetricalQuantileTooltip: React.FC<
       devices,
     ),
     {
-      enabled:
-        !!quantileData &&
-        isOnHoverFetchingNeeded &&
-        !!getAboveQuantileHoverQuery &&
-        !!quantileData.q5.above,
+      enabled: !!quantileData && isOnHoverFetchingNeeded && !!getAboveQuantileHoverQuery && !!quantileData.q5.above,
     },
   );
 
@@ -118,11 +104,7 @@ export const SymmetricalQuantileTooltip: React.FC<
       devices,
     ),
     {
-      enabled:
-        !!quantileData &&
-        isOnHoverFetchingNeeded &&
-        !!getBelowQuantileHoverQuery &&
-        !!quantileData.q90.below,
+      enabled: !!quantileData && isOnHoverFetchingNeeded && !!getBelowQuantileHoverQuery && !!quantileData.q90.below,
     },
   );
 
@@ -135,11 +117,7 @@ export const SymmetricalQuantileTooltip: React.FC<
       devices,
     ),
     {
-      enabled:
-        !!quantileData &&
-        isOnHoverFetchingNeeded &&
-        !!getBelowQuantileHoverQuery &&
-        !!quantileData.q5.below,
+      enabled: !!quantileData && isOnHoverFetchingNeeded && !!getBelowQuantileHoverQuery && !!quantileData.q5.below,
     },
   );
 

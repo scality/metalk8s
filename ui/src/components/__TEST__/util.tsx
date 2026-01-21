@@ -1,29 +1,20 @@
+import { ToastProvider } from '@scality/core-ui';
 import { MetricsTimeSpanProvider } from '@scality/core-ui/dist/next';
-import {
-  render,
-  screen,
-  waitForElementToBeRemoved,
-} from '@testing-library/react';
-import React from 'react';
+import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
+import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
+import type React from 'react';
 import { IntlProvider } from 'react-intl';
 import { QueryClient } from 'react-query';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
 import { applyMiddleware, compose, createStore } from 'redux';
 import createSagaMiddleware from 'redux-saga';
-import {
-  StyleSheetManager,
-  StylisPlugin,
-  ThemeProvider,
-} from 'styled-components';
+import { StyleSheetManager, type StylisPlugin, ThemeProvider } from 'styled-components';
 import AlertProvider from '../../containers/AlertProvider';
-
-import { ToastProvider } from '@scality/core-ui';
-import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
 import StartTimeProvider from '../../containers/StartTimeProvider';
 import reducer from '../../ducks/reducer';
-import translations_en from '../../translations/en.json';
 import { QueryClientProvider } from '../../QueryClientProvider';
+import translations_en from '../../translations/en.json';
 
 const composeEnhancers =
   // @ts-expect-error - FIXME when you are working on it
@@ -35,15 +26,9 @@ const sagaMiddleware = createSagaMiddleware();
 const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware));
 export const buildStore = () => createStore(reducer, enhancer);
 export const waitForLoadingToFinish = () =>
-  waitForElementToBeRemoved(
-    () => [
-      ...screen.queryAllByLabelText(/loading/i),
-      ...screen.queryAllByText(/loading/i),
-    ],
-    {
-      timeout: 4000,
-    },
-  );
+  waitForElementToBeRemoved(() => [...screen.queryAllByLabelText(/loading/i), ...screen.queryAllByText(/loading/i)], {
+    timeout: 4000,
+  });
 
 /**
  * StyleSheetManager + simplifiedStylesPlugin will remove <style> at the top
@@ -53,9 +38,7 @@ export const waitForLoadingToFinish = () =>
 const ALLOWED_RULES = ['display', 'visibility', 'pointer-events'];
 const simplifiedStylesPlugin: StylisPlugin = (context, content) => {
   if (context === 1) {
-    if (
-      !ALLOWED_RULES.some((rule) => content.toString().startsWith(`${rule}:`))
-    ) {
+    if (!ALLOWED_RULES.some((rule) => content.toString().startsWith(`${rule}:`))) {
       return '';
     }
   }
@@ -112,10 +95,7 @@ export const AllTheProviders = (initialPath: string = '/') => {
     }
 
     return (
-      <StyleSheetManager
-        stylisPlugins={[simplifiedStylesPlugin]}
-        disableVendorPrefixes
-      >
+      <StyleSheetManager stylisPlugins={[simplifiedStylesPlugin]} disableVendorPrefixes>
         <MemoryRouter>
           <IntlProvider locale="en" messages={translations_en}>
             <ToastProvider>
@@ -138,11 +118,7 @@ export const AllTheProviders = (initialPath: string = '/') => {
   };
 };
 
-const customRender = (
-  ui: React.ReactNode,
-  options = {},
-  providersArgs: [string] = ['/'],
-) =>
+const customRender = (ui: React.ReactNode, options = {}, providersArgs: [string] = ['/']) =>
   render(ui, {
     wrapper: AllTheProviders(...providersArgs),
     ...options,

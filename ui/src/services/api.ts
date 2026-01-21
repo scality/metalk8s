@@ -1,5 +1,6 @@
 import { notFalsyTypeGuard } from '../typeGuard';
 import ApiClient from './ApiClient';
+
 let apiClient: ApiClient | null = null;
 export function initialize(apiUrl: string) {
   apiClient = new ApiClient({
@@ -21,7 +22,5 @@ export type Config = {
 };
 
 export function fetchConfig(): Promise<Config> {
-  return notFalsyTypeGuard(apiClient, 'ApiClient is not defined').get(
-    '/config.json',
-  );
+  return notFalsyTypeGuard(apiClient, 'ApiClient is not defined').get('/config.json');
 }

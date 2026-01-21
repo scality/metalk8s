@@ -1,14 +1,14 @@
+import { Stack, spacing } from '@scality/core-ui';
+import { Box } from '@scality/core-ui/dist/next';
 import React from 'react';
-import styled from 'styled-components';
 import { useIntl } from 'react-intl';
+import styled from 'styled-components';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
-import DashboardPlaneHealth from './DashboardPlaneHealth';
-import DashboardBandwidthChart from './DashboardBandwidthChart';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
 import { useShowQuantileChart } from '../hooks';
+import DashboardBandwidthChart from './DashboardBandwidthChart';
 import { QuantileHelpTooltip } from './DashboardMetrics';
-import { Box } from '@scality/core-ui/dist/next';
-import { spacing, Stack } from '@scality/core-ui';
+import DashboardPlaneHealth from './DashboardPlaneHealth';
 export const DashboardSectionContainer = styled.div`
   padding: ${spacing.r2} ${spacing.r4};
   display: flex;
@@ -45,19 +45,9 @@ const DashboardNetwork = () => {
 
       <DashboardPlaneHealth />
       <DashboardScrollableArea>
-        <Stack
-          direction="vertical"
-          gap="r16"
-          style={{ paddingInline: spacing.r8 }}
-        >
-          <DashboardBandwidthChart
-            title="ControlPlane Bandwidth"
-            plane="controlPlane"
-          />
-          <DashboardBandwidthChart
-            title="WorkloadPlane Bandwidth"
-            plane="workloadPlane"
-          />
+        <Stack direction="vertical" gap="r16" style={{ paddingInline: spacing.r8 }}>
+          <DashboardBandwidthChart title="ControlPlane Bandwidth" plane="controlPlane" />
+          <DashboardBandwidthChart title="WorkloadPlane Bandwidth" plane="workloadPlane" />
         </Stack>
       </DashboardScrollableArea>
     </DashboardSectionContainer>

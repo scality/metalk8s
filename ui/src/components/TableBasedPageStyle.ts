@@ -1,5 +1,6 @@
 import { padding } from '@scality/core-ui/dist/style/theme';
 import styled from 'styled-components';
+
 const TableBasedPageStyle = styled.div`
   box-sizing: border-box;
   display: flex;

@@ -1,6 +1,6 @@
-import styled from 'styled-components';
-import { Link } from 'react-router-dom';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
 export const BreadcrumbContainer = styled.div`
   padding: 0 0 ${padding.smaller} ${padding.base};
 `;

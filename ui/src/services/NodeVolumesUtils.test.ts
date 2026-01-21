@@ -1,19 +1,14 @@
-import {
-  STATUS_UNKNOWN,
-  STATUS_TERMINATING,
-  STATUS_PENDING,
-  STATUS_FAILED,
-  STATUS_READY,
-} from '../constants';
+import { STATUS_FAILED, STATUS_PENDING, STATUS_READY, STATUS_TERMINATING, STATUS_UNKNOWN } from '../constants';
 import {
   computeVolumeGlobalStatus,
+  formatBatchName,
+  formatVolumeCreationData,
+  getVolumeListData,
   isVolumeDeletable,
   volumeGetError,
-  getVolumeListData,
-  formatVolumeCreationData,
-  formatBatchName,
 } from './NodeVolumesUtils';
 import { stateApp } from './NodeVolumesUtilsData';
+
 // isVolumeDeletable {{{
 // Test data {{{
 const testcaseVolumeUnknown = {
@@ -611,8 +606,7 @@ it('should return the volume list filtered by a specific node', () => {
       storageClass: 'metalk8s',
       usageRawData: '4.5 GiB',
       latency: 900,
-      persistentvolumeclaim:
-        'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1',
+      persistentvolumeclaim: 'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1',
       errorReason: undefined,
     },
   ];

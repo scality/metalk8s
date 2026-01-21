@@ -1,10 +1,7 @@
-import ApiClient from '../ApiClient';
 import { STATUS_CRITICAL, STATUS_HEALTH } from '../../constants';
-import {
-  removeWarningAlerts,
-  formatActiveAlerts,
-  sortAlerts,
-} from '../alertUtils';
+import ApiClient from '../ApiClient';
+import { formatActiveAlerts, removeWarningAlerts, sortAlerts } from '../alertUtils';
+
 let alertmanagerApiClient: ApiClient | null | undefined = null;
 export function initialize(apiUrl: string) {
   alertmanagerApiClient = new ApiClient({
@@ -58,9 +55,7 @@ export const checkActiveAlertProvider = (): Promise<{
   // depends on Watchdog to see the if Alertmanager is up
   // @ts-expect-error - FIXME when you are working on it
   return getAlerts().then((result) => {
-    const watchdog = result.find(
-      (alert) => alert.labels.alertname === 'Watchdog',
-    );
+    const watchdog = result.find((alert) => alert.labels.alertname === 'Watchdog');
     if (watchdog) return STATUS_HEALTH;
     else return STATUS_CRITICAL;
   });

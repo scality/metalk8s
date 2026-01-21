@@ -1,10 +1,4 @@
-import {
-  act,
-  configure,
-  screen,
-  waitFor,
-  waitForElementToBeRemoved,
-} from '@testing-library/react';
+import { act, configure, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import fs from 'fs';
 import { rest } from 'msw';
@@ -104,38 +98,29 @@ const server = setupServer(
     return res(ctx.json(result));
   }),
 
-  rest.get(
-    'http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/pods',
-    (req, res, ctx) => {
-      const result = {
-        items: [
-          {
-            metadata: {
-              name: 'pods',
-            },
+  rest.get('http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/pods', (req, res, ctx) => {
+    const result = {
+      items: [
+        {
+          metadata: {
+            name: 'pods',
           },
-        ],
-      };
-      return res(ctx.json(result));
-    },
-  ),
+        },
+      ],
+    };
+    return res(ctx.json(result));
+  }),
 
-  rest.post(
-    'http://localhost/api/alertmanager/api/v2/alerts',
-    (req, res, ctx) => {
-      const result = {
-        status: 'success',
-      };
-      return res(ctx.json(result));
-    },
-  ),
+  rest.post('http://localhost/api/alertmanager/api/v2/alerts', (req, res, ctx) => {
+    const result = {
+      status: 'success',
+    };
+    return res(ctx.json(result));
+  }),
 );
 
 const overrideMSWAlertmanagerConfig = (testYAMLPath: string) => {
-  const configYaml = fs.readFileSync(
-    path.join(__dirname, testYAMLPath),
-    'utf8',
-  );
+  const configYaml = fs.readFileSync(path.join(__dirname, testYAMLPath), 'utf8');
   server.use(
     rest.get(
       `http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/configmaps/metalk8s-alertmanager-config`,
@@ -189,16 +174,14 @@ describe('<ConfigureAlerting />', () => {
   afterAll(() => server.close());
 
   const selectors = {
-    enableConfiguration: () =>
-      screen.getByLabelText(/Enable Email Notification Configuration \*/i),
+    enableConfiguration: () => screen.getByLabelText(/Enable Email Notification Configuration \*/i),
     host: () => screen.getByLabelText(/SMTP Host \*/i),
     port: () => screen.getByLabelText(/SMTP Port \*/i),
     enableTls: () => screen.getByLabelText(/Enable SMTP Over TLS/i),
     authSelect: {
       label: () => screen.getByLabelText(/SMTP Auth \*/i).parentElement,
       authClick: () => screen.getByLabelText(/SMTP Auth \*/i),
-      optionNoAuth: () =>
-        screen.getByRole('option', { name: /NO AUTHENTICATION/i }),
+      optionNoAuth: () => screen.getByRole('option', { name: /NO AUTHENTICATION/i }),
       optionLogin: () => screen.getByRole('option', { name: /LOGIN/i }),
       optionCramMd5: () => screen.getByRole('option', { name: /CRAM-MD5/i }),
       optionPlain: () => screen.getByRole('option', { name: /PLAIN/i }),
@@ -209,13 +192,10 @@ describe('<ConfigureAlerting />', () => {
     secret: () => screen.getByLabelText(/Secret \*/),
     sender: () => screen.getByLabelText(/Sender Email Address \*/i),
     recipient: () => screen.getByLabelText(/Recipient Email Addresses \*/i),
-    receiveResolved: () =>
-      screen.getByLabelText(/Enable Receive Resolved Alerts/i),
-    sendTestingEmailButton: () =>
-      screen.getByRole('button', { name: /send a test email|sending\.\.\./i }),
+    receiveResolved: () => screen.getByLabelText(/Enable Receive Resolved Alerts/i),
+    sendTestingEmailButton: () => screen.getByRole('button', { name: /send a test email|sending\.\.\./i }),
     cancelButton: () => screen.getByRole('button', { name: /cancel/i }),
-    saveButton: () =>
-      screen.getByRole('button', { name: /save|saving\.\.\./i }),
+    saveButton: () => screen.getByRole('button', { name: /save|saving\.\.\./i }),
   };
 
   it('render default value when the form is not defined', async () => {
@@ -399,9 +379,7 @@ describe('<ConfigureAlerting />', () => {
     });
 
     await waitFor(() => {
-      return expect(
-        screen.getByText(/Redirected Alert Page/i),
-      ).toBeInTheDocument();
+      return expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
     });
 
     expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
@@ -411,18 +389,12 @@ describe('<ConfigureAlerting />', () => {
     await commonSetup();
 
     await act(async () => {
-      await userEvent.type(
-        selectors.host(),
-        'smtp4dev.default.svc.cluster.local',
-      );
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
       await userEvent.type(selectors.port(), '42');
 
       await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
 
-      await userEvent.type(
-        selectors.recipient(),
-        'user1@test.com, user2@test.com',
-      );
+      await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
     });
 
     await waitFor(() => {
@@ -467,9 +439,7 @@ spec:
       },
     });
     await waitFor(() => {
-      return expect(
-        screen.getByText(/Redirected Alert Page/i),
-      ).toBeInTheDocument();
+      return expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
     });
     expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
   });
@@ -480,10 +450,7 @@ spec:
 
     await act(async () => {
       await userEvent.clear(selectors.host());
-      await userEvent.type(
-        selectors.host(),
-        'smtp4dev.default.svc.cluster.local',
-      );
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
       await userEvent.clear(selectors.port());
       await userEvent.type(selectors.port(), '22');
     });
@@ -508,10 +475,7 @@ spec:
     await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
 
     await userEvent.clear(selectors.recipient());
-    await userEvent.type(
-      selectors.recipient(),
-      'user1@test.com, user2@test.com',
-    );
+    await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
 
     await waitFor(() => {
       expect(selectors.saveButton()).toBeInTheDocument();
@@ -541,7 +505,7 @@ spec:
           - group_by:
               - ...
             matchers:
-              - severity !~ \"info|none"
+              - severity !~ "info|none"
             receiver: default
             continue: true
       receivers:
@@ -563,9 +527,7 @@ spec:
       },
     });
     await waitFor(() => {
-      return expect(
-        screen.getByText(/Redirected Alert Page/i),
-      ).toBeInTheDocument();
+      return expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
     });
     expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
   });
@@ -575,18 +537,12 @@ spec:
 
     await act(async () => {
       await userEvent.click(selectors.enableConfiguration());
-      await userEvent.type(
-        selectors.host(),
-        'smtp4dev.default.svc.cluster.local',
-      );
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
       await userEvent.type(selectors.port(), '42');
 
       await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
 
-      await userEvent.type(
-        selectors.recipient(),
-        'user1@test.com, user2@test.com',
-      );
+      await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
     });
 
     await waitFor(() => {
@@ -617,7 +573,7 @@ spec:
           - group_by:
               - ...
             matchers:
-              - severity !~ \"info|none\"
+              - severity !~ "info|none"
             receiver: default
             continue: true
       receivers:
@@ -637,9 +593,7 @@ spec:
       },
     });
     await waitFor(() => {
-      return expect(
-        screen.getByText(/Redirected Alert Page/i),
-      ).toBeInTheDocument();
+      return expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
     });
     expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
   });
@@ -648,10 +602,7 @@ spec:
     await commonSetup();
 
     await act(async () => {
-      await userEvent.type(
-        selectors.host(),
-        'smtp4dev.default.svc.cluster.local',
-      );
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
       await userEvent.type(selectors.port(), '42');
     });
 
@@ -662,10 +613,7 @@ spec:
     await userEvent.type(selectors.password(), 'Renard Password');
 
     await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
-    await userEvent.type(
-      selectors.recipient(),
-      'user1@test.com, user2@test.com',
-    );
+    await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
 
     await userEvent.click(selectors.saveButton());
 
@@ -705,9 +653,7 @@ spec:
       },
     });
     await waitFor(() => {
-      return expect(
-        screen.getByText(/Redirected Alert Page/i),
-      ).toBeInTheDocument();
+      return expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
     });
     expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
   });
@@ -716,10 +662,7 @@ spec:
     await commonSetup();
 
     await act(async () => {
-      await userEvent.type(
-        selectors.host(),
-        'smtp4dev.default.svc.cluster.local',
-      );
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
       await userEvent.type(selectors.port(), '42');
     });
 
@@ -730,10 +673,7 @@ spec:
     await userEvent.type(selectors.secret(), 'xxxyyyzzz-secret');
 
     await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
-    await userEvent.type(
-      selectors.recipient(),
-      'user1@test.com, user2@test.com',
-    );
+    await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
 
     await userEvent.click(selectors.saveButton());
 
@@ -773,9 +713,7 @@ spec:
       },
     });
     await waitFor(() => {
-      return expect(
-        screen.getByText(/Redirected Alert Page/i),
-      ).toBeInTheDocument();
+      return expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
     });
     expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
   });
@@ -784,10 +722,7 @@ spec:
     await commonSetup();
 
     await act(async () => {
-      await userEvent.type(
-        selectors.host(),
-        'smtp4dev.default.svc.cluster.local',
-      );
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
       await userEvent.type(selectors.port(), '42');
     });
     await userEvent.click(selectors.authSelect.authClick());
@@ -798,10 +733,7 @@ spec:
     await userEvent.type(selectors.password(), 'xxxyyyzzz-password');
 
     await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
-    await userEvent.type(
-      selectors.recipient(),
-      'user1@test.com, user2@test.com',
-    );
+    await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
 
     await userEvent.click(selectors.saveButton());
 
@@ -842,9 +774,7 @@ spec:
       },
     });
     await waitFor(() => {
-      return expect(
-        screen.getByText(/Redirected Alert Page/i),
-      ).toBeInTheDocument();
+      return expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
     });
     expect(screen.getByText(/Redirected Alert Page/i)).toBeInTheDocument();
   });
@@ -853,18 +783,12 @@ spec:
     await commonSetup();
 
     await act(async () => {
-      await userEvent.type(
-        selectors.host(),
-        'smtp4dev.default.svc.cluster.local',
-      );
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
       await userEvent.type(selectors.port(), '42');
 
       await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
 
-      await userEvent.type(
-        selectors.recipient(),
-        'user1@test.com, user2@test.com',
-      );
+      await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
 
       await userEvent.click(selectors.sendTestingEmailButton());
     });
@@ -911,9 +835,7 @@ spec:
       },
     });
     await waitFor(() => {
-      return expect(
-        screen.getByText(/The email has been sent, please check your email/i),
-      ).toBeInTheDocument();
+      return expect(screen.getByText(/The email has been sent, please check your email/i)).toBeInTheDocument();
     });
   });
 
@@ -921,10 +843,7 @@ spec:
     await commonSetup();
 
     await act(async () => {
-      await userEvent.type(
-        selectors.host(),
-        'smtp4dev.default.svc.cluster.local',
-      );
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
       await userEvent.type(selectors.port(), '42');
     });
     await userEvent.click(selectors.authSelect.authClick());
@@ -934,10 +853,7 @@ spec:
     await userEvent.type(selectors.password(), 'Renard Password');
 
     await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
-    await userEvent.type(
-      selectors.recipient(),
-      'user1@test.com, user2@test.com',
-    );
+    await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
 
     await userEvent.click(selectors.sendTestingEmailButton());
 
@@ -984,9 +900,7 @@ spec:
       },
     });
     await waitFor(() => {
-      return expect(
-        screen.getByText(/The email has been sent, please check your email/i),
-      ).toBeInTheDocument();
+      return expect(screen.getByText(/The email has been sent, please check your email/i)).toBeInTheDocument();
     });
   });
 
@@ -994,10 +908,7 @@ spec:
     await commonSetup();
 
     await act(async () => {
-      await userEvent.type(
-        selectors.host(),
-        'smtp4dev.default.svc.cluster.local',
-      );
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
       await userEvent.type(selectors.port(), '42');
     });
 
@@ -1009,10 +920,7 @@ spec:
     await userEvent.type(selectors.password(), 'Renard Password');
 
     await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
-    await userEvent.type(
-      selectors.recipient(),
-      'user1@test.com, user2@test.com',
-    );
+    await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
 
     await userEvent.click(selectors.sendTestingEmailButton());
 
@@ -1060,9 +968,7 @@ spec:
       },
     });
     await waitFor(() => {
-      return expect(
-        screen.getByText(/The email has been sent, please check your email/i),
-      ).toBeInTheDocument();
+      return expect(screen.getByText(/The email has been sent, please check your email/i)).toBeInTheDocument();
     });
   });
 
@@ -1070,18 +976,12 @@ spec:
     await commonSetup();
 
     await act(async () => {
-      await userEvent.type(
-        selectors.host(),
-        'smtp4dev.default.svc.cluster.local',
-      );
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
       await userEvent.type(selectors.port(), '42');
 
       await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
 
-      await userEvent.type(
-        selectors.recipient(),
-        'user1@test.com, user2@test.com',
-      );
+      await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
       server.use(
         rest.get(
           `http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/pods/alertmanager-prometheus-operator-alertmanager-0/log`,
@@ -1137,15 +1037,11 @@ spec:
       },
     });
     await waitFor(() => {
-      return expect(
-        screen.getByText(/The email has been sent, please check your email/i),
-      ).toBeInTheDocument();
+      return expect(screen.getByText(/The email has been sent, please check your email/i)).toBeInTheDocument();
     });
     await waitFor(() => {
       return expect(
-        screen.getByText(
-          /establish connection to server: dial tcp: lookup smtp4dev.default.svc.cluster.local1/i,
-        ),
+        screen.getByText(/establish connection to server: dial tcp: lookup smtp4dev.default.svc.cluster.local1/i),
       ).toBeInTheDocument();
     });
   });
@@ -1155,16 +1051,9 @@ spec:
 
     await act(async () => {
       await userEvent.type(selectors.sender(), 'fsdjfkl');
-      await userEvent.type(
-        selectors.recipient(),
-        'user1@test.com, user2@test.com <>',
-      );
+      await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com <>');
     });
-    expect(
-      screen.getByText(/The email address is invalid/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/The email addresses are invalid/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/The email address is invalid/i)).toBeInTheDocument();
+    expect(screen.getByText(/The email addresses are invalid/i)).toBeInTheDocument();
   });
 });

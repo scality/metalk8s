@@ -1,12 +1,13 @@
-import React from 'react';
-import styled from 'styled-components';
+import { Icon, spacing } from '@scality/core-ui';
 import { Box, Button } from '@scality/core-ui/dist/next';
-import { useIntl } from 'react-intl';
 import { padding } from '@scality/core-ui/dist/style/theme';
-import NodePartitionTable from './NodePartitionTable';
+import React from 'react';
+import { useIntl } from 'react-intl';
+import styled from 'styled-components';
 import { GRAFANA_DASHBOARDS, PORT_NODE_EXPORTER } from '../constants';
 import { useTypedSelector } from '../hooks';
-import { Icon, spacing } from '@scality/core-ui';
+import NodePartitionTable from './NodePartitionTable';
+
 const TitleContainer = styled.div`
   display: flex;
   position: sticky;
@@ -21,12 +22,9 @@ const NodePagePartitionTab = (props: Record<string, any>) => {
   const intl = useIntl();
   // To redirect to the right Node(Detailed) dashboard in Grafana
   const api = useTypedSelector((state) => state.config.api);
-  const unameInfos = useTypedSelector(
-    (state) => state.app.monitoring.unameInfo,
-  );
+  const unameInfos = useTypedSelector((state) => state.app.monitoring.unameInfo);
   const hostnameLabel = unameInfos.find(
-    (unameInfo) =>
-      unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
+    (unameInfo) => unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
   )?.metric?.nodename;
   return (
     <Box height="100%" display="flex" flexDirection={'column'}>

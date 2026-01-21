@@ -1,11 +1,8 @@
-import React, { useMemo } from 'react';
+import type React from 'react';
+import { useMemo } from 'react';
 import { useQuery } from 'react-query';
 import type { TooltipContentProps } from 'recharts';
-import {
-  QuantileTooltipRenderer,
-  transformRegularPayload,
-  sortPayloadEntries,
-} from './shared/QuantileTooltipShared';
+import { QuantileTooltipRenderer, sortPayloadEntries, transformRegularPayload } from './shared/QuantileTooltipShared';
 
 type QuantileTooltipProps = {
   tooltipProps: TooltipContentProps<number, string>;
@@ -46,10 +43,7 @@ export const QuantileTooltip: React.FC<QuantileTooltipProps> = ({
   // Determine if additional fetching is needed
   const isOnHoverFetchingNeeded = useMemo(() => {
     if (!quantileData) return false;
-    return (
-      quantileData.median !== quantileData.q90 ||
-      quantileData.median !== quantileData.q5
-    );
+    return quantileData.median !== quantileData.q90 || quantileData.median !== quantileData.q5;
   }, [quantileData]);
 
   // Fetch quantile hover data
@@ -67,13 +61,7 @@ export const QuantileTooltip: React.FC<QuantileTooltipProps> = ({
   );
 
   const quantile5Result = useQuery(
-    getQuantileHoverQuery(
-      quantileData?.timestamp?.toString(),
-      quantileData?.q5,
-      '<',
-      isOnHoverFetchingNeeded,
-      devices,
-    ),
+    getQuantileHoverQuery(quantileData?.timestamp?.toString(), quantileData?.q5, '<', isOnHoverFetchingNeeded, devices),
     {
       enabled: !!quantileData && isOnHoverFetchingNeeded && !!quantileData.q5,
     },
@@ -89,12 +77,7 @@ export const QuantileTooltip: React.FC<QuantileTooltipProps> = ({
   // Add quantile results to payload entries
   const enrichedPayload = sortedPayload.map((entry) => ({
     ...entry,
-    quantileResult:
-      entry.name === 'Q90'
-        ? quantile90Result
-        : entry.name === 'Q5'
-        ? quantile5Result
-        : null,
+    quantileResult: entry.name === 'Q90' ? quantile90Result : entry.name === 'Q5' ? quantile5Result : null,
   }));
 
   return (

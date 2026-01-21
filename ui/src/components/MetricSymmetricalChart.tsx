@@ -1,21 +1,13 @@
 import React, { useCallback, useMemo } from 'react';
 import type { UseQueryOptions } from 'react-query';
 import 'react-query';
-import {
-  LineTimeSerieChart,
-  useChartId,
-  useMetricsTimeSpan,
-} from '@scality/core-ui/dist/next';
-import { getSeriesForSymmetricalChart } from '../services/graphUtils';
-import {
-  CLUSTER_AVERAGE,
-  HEIGHT_SYMMETRICAL_CHART,
-  NODE_SYNC_ID,
-} from '../constants';
-import { NodesState } from '../ducks/app/nodes';
+import { LineTimeSerieChart, useChartId, useMetricsTimeSpan } from '@scality/core-ui/dist/next';
+import { CLUSTER_AVERAGE, HEIGHT_SYMMETRICAL_CHART, NODE_SYNC_ID } from '../constants';
+import type { NodesState } from '../ducks/app/nodes';
 import { useSymetricalChartSeries } from '../hooks';
-import { TimeSpanProps } from '../services/platformlibrary/metrics';
 import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
+import { getSeriesForSymmetricalChart } from '../services/graphUtils';
+import type { TimeSpanProps } from '../services/platformlibrary/metrics';
 
 const MetricSymmetricalChart = ({
   title,
@@ -40,16 +32,8 @@ const MetricSymmetricalChart = ({
   instanceIP: string;
   showAvg: boolean;
   nodesIPsInfo: NodesState['IPsInfo'];
-  getMetricAboveQuery: (
-    instanceIP: string,
-    timeSpanProps: TimeSpanProps,
-    planeInterface: string,
-  ) => UseQueryOptions;
-  getMetricBelowQuery: (
-    instanceIP: string,
-    timeSpanProps: TimeSpanProps,
-    planeInterface: string,
-  ) => UseQueryOptions;
+  getMetricAboveQuery: (instanceIP: string, timeSpanProps: TimeSpanProps, planeInterface: string) => UseQueryOptions;
+  getMetricBelowQuery: (instanceIP: string, timeSpanProps: TimeSpanProps, planeInterface: string) => UseQueryOptions;
   getMetricAboveAvgQuery: (
     timeSpanProps: TimeSpanProps,
     showAvg: boolean,
@@ -80,27 +64,13 @@ const MetricSymmetricalChart = ({
           return [
             getMetricAboveQuery(instanceIP, timeSpanProps, planeInterface),
 
-            getMetricAboveAvgQuery(
-              timeSpanProps,
-              showAvg,
-              instanceIP,
-              nodesIPsInfo,
-            ),
+            getMetricAboveAvgQuery(timeSpanProps, showAvg, instanceIP, nodesIPsInfo),
           ];
         } else {
-          return [
-            getMetricAboveQuery(instanceIP, timeSpanProps, planeInterface),
-          ];
+          return [getMetricAboveQuery(instanceIP, timeSpanProps, planeInterface)];
         }
       },
-      [
-        instanceIP,
-        showAvg,
-        planeInterface,
-        nodesIPsInfo,
-        getMetricAboveQuery,
-        getMetricAboveAvgQuery,
-      ],
+      [instanceIP, showAvg, planeInterface, nodesIPsInfo, getMetricAboveQuery, getMetricAboveAvgQuery],
     ),
     getBelowQueries: useCallback(
       (timeSpanProps) => {
@@ -108,27 +78,13 @@ const MetricSymmetricalChart = ({
           return [
             getMetricBelowQuery(instanceIP, timeSpanProps, planeInterface),
 
-            getMetricBelowAvgQuery(
-              timeSpanProps,
-              showAvg,
-              instanceIP,
-              nodesIPsInfo,
-            ),
+            getMetricBelowAvgQuery(timeSpanProps, showAvg, instanceIP, nodesIPsInfo),
           ];
         } else {
-          return [
-            getMetricBelowQuery(instanceIP, timeSpanProps, planeInterface),
-          ];
+          return [getMetricBelowQuery(instanceIP, timeSpanProps, planeInterface)];
         }
       },
-      [
-        instanceIP,
-        showAvg,
-        planeInterface,
-        nodesIPsInfo,
-        getMetricBelowQuery,
-        getMetricBelowAvgQuery,
-      ],
+      [instanceIP, showAvg, planeInterface, nodesIPsInfo, getMetricBelowQuery, getMetricBelowAvgQuery],
     ),
     transformPrometheusDataToSeries: useCallback(
       (resultsAbove, resultsBelow) => {
@@ -161,10 +117,7 @@ const MetricSymmetricalChart = ({
       [showAvg, nodeName, metricPrefixAbove, metricPrefixBelow],
     ),
   });
-  const additionalNames = useMemo(
-    () => (showAvg ? [CLUSTER_AVERAGE] : []),
-    [showAvg],
-  );
+  const additionalNames = useMemo(() => (showAvg ? [CLUSTER_AVERAGE] : []), [showAvg]);
   useChartLegendRegistration({
     chartId,
     series,

@@ -1,14 +1,14 @@
 import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
 import { render, screen } from '@testing-library/react';
-import React from 'react';
+import type React from 'react';
 import { IntlProvider } from 'react-intl';
 import { QueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
+import { QueryClientProvider } from '../QueryClientProvider';
 import { mockOffsetSize } from '../tests/mocks/util';
 import translations_en from '../translations/en.json';
 import NodePagePodsTab from './NodePagePodsTab';
-import { QueryClientProvider } from '../QueryClientProvider';
 
 const mockUseSelector = useSelector as jest.Mock;
 
@@ -49,9 +49,7 @@ const CustomWrapper = ({ children }: { children?: React.ReactNode }) => {
       }
     >
       <IntlProvider locale="en" messages={translations_en}>
-        <ThemeProvider theme={coreUIAvailableThemes.darkRebrand}>
-          {children}
-        </ThemeProvider>
+        <ThemeProvider theme={coreUIAvailableThemes.darkRebrand}>{children}</ThemeProvider>
       </IntlProvider>
     </QueryClientProvider>
   );
@@ -89,9 +87,7 @@ describe('NodePagePodsTab', () => {
     expect(selectors.podAge()).toBeInTheDocument();
     expect(selectors.podNamespace()).toBeInTheDocument();
 
-    const { color } = window.getComputedStyle(
-      selectors.podStatus('Running (3/3)'),
-    );
+    const { color } = window.getComputedStyle(selectors.podStatus('Running (3/3)'));
 
     expect(color).toBe(statusHealthyRGB);
   });
@@ -106,9 +102,7 @@ describe('NodePagePodsTab', () => {
     expect(selectors.podAge()).toBeInTheDocument();
     expect(selectors.podNamespace()).toBeInTheDocument();
 
-    const { color } = window.getComputedStyle(
-      selectors.podStatus('Running (2/3)'),
-    );
+    const { color } = window.getComputedStyle(selectors.podStatus('Running (2/3)'));
 
     expect(color).toBe(statusWarningRGB);
   });

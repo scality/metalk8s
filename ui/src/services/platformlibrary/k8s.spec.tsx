@@ -1,11 +1,12 @@
-import React from 'react';
-import { setupServer } from 'msw/node';
-import { rest } from 'msw';
-import { renderHook } from '@testing-library/react-hooks';
-import { QueryClient, useQuery } from 'react-query';
-import { getNodesCountQuery, getVolumesCountQuery } from './k8s';
 import { afterAll, beforeAll, jest } from '@jest/globals';
+import { renderHook } from '@testing-library/react-hooks';
+import { rest } from 'msw';
+import { setupServer } from 'msw/node';
+import React from 'react';
+import { QueryClient, useQuery } from 'react-query';
 import { QueryClientProvider } from '../../QueryClientProvider';
+import { getNodesCountQuery, getVolumesCountQuery } from './k8s';
+
 const k8sUrl = 'https://10.0.0.1:8443/api/kubernetes';
 const nodes = {
   kind: 'NodeList',
@@ -43,11 +44,7 @@ describe('getNodesCount', () => {
   );
   afterEach(() => server.resetHandlers());
 
-  const wrapper = ({ children }) => (
-    <QueryClientProvider client={new QueryClient()}>
-      {children}
-    </QueryClientProvider>
-  );
+  const wrapper = ({ children }) => <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>;
 
   it('should return the number of nodes in the cluster', async () => {
     // S

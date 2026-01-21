@@ -1,22 +1,14 @@
-import {
-  FormattedDateTime,
-  Icon,
-  StatusText,
-  Tooltip,
-  spacing,
-} from '@scality/core-ui';
+import { FormattedDateTime, Icon, StatusText, spacing, Tooltip } from '@scality/core-ui';
 import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
+import { useBasenameRelativeNavigate } from '@scality/module-federation';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
 import { STATUS_HEALTH } from '../constants';
 import type { Status } from '../containers/AlertProvider';
-import {
-  useDiscoveredViews,
-  useLinkOpener,
-} from '../containers/ConfigProvider';
+import { useDiscoveredViews, useLinkOpener } from '../containers/ConfigProvider';
 import type { Alert } from '../services/alertUtils';
 import CircleStatus from './CircleStatus';
-import { useBasenameRelativeNavigate } from '@scality/module-federation';
+
 const ServiceItemLabelWrapper = styled.div`
   display: flex;
   align-items: baseline;
@@ -132,10 +124,7 @@ const HealthItem = ({
                       id: 'start',
                     })}
                   </label>
-                  <FormattedDateTime
-                    value={new Date(alerts[0].startsAt)}
-                    format="date-time"
-                  />
+                  <FormattedDateTime value={new Date(alerts[0].startsAt)} format="date-time" />
                 </NonHealthyPopUpItem>
               )}
             </NonHealthyPopUp>

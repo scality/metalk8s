@@ -1,23 +1,24 @@
 import {
-  getMultiResourceSeriesForChart,
-  getMultipleSymmetricalSeries,
-  fiterMetricValues,
-  createSymmetricalQuantileColorSet,
-  createColorSet,
-  getTimeFormatForInterval,
-} from './graphUtils';
-import {
+  CHART_COLOR_VALUES,
   lineColor2,
   lineColor3,
   lineColor4,
   lineColor5,
   lineColor6,
   lineColor7,
-  CHART_COLOR_VALUES,
+  SAMPLE_FREQUENCY_LAST_ONE_HOUR,
   SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
-  SAMPLE_FREQUENCY_LAST_ONE_HOUR,
 } from '../constants';
+import {
+  createColorSet,
+  createSymmetricalQuantileColorSet,
+  fiterMetricValues,
+  getMultipleSymmetricalSeries,
+  getMultiResourceSeriesForChart,
+  getTimeFormatForInterval,
+} from './graphUtils';
+
 const testPromData = {
   status: 'success',
   data: {
@@ -254,35 +255,25 @@ it('returns the correct labels for tooltip and legend for multi resources symmet
   //resource: 'node1'
   expect(
     allSeries
-      .find(
-        (serie) => serie.resource === 'node1' && serie.metricPrefix === 'write',
-      )
+      .find((serie) => serie.resource === 'node1' && serie.metricPrefix === 'write')
       .getTooltipLabel('write', 'node1'),
   ).toEqual('node1-write');
   expect(
     allSeries
-      .find(
-        (serie) => serie.resource === 'node1' && serie.metricPrefix === 'read',
-      )
+      .find((serie) => serie.resource === 'node1' && serie.metricPrefix === 'read')
       .getTooltipLabel('read', 'node1'),
   ).toEqual('node1-read');
   //resource: 'node2'
-  const node2WriteSerite = allSeries.find(
-    (serie) => serie.resource === 'node2' && serie.metricPrefix === 'write',
-  );
+  const node2WriteSerite = allSeries.find((serie) => serie.resource === 'node2' && serie.metricPrefix === 'write');
   expect(node2WriteSerite).toBeDefined();
   expect(
     allSeries
-      .find(
-        (serie) => serie.resource === 'node2' && serie.metricPrefix === 'write',
-      )
+      .find((serie) => serie.resource === 'node2' && serie.metricPrefix === 'write')
       .getTooltipLabel('write', 'node2'),
   ).toEqual('node2-write');
   expect(
     allSeries
-      .find(
-        (serie) => serie.resource === 'node2' && serie.metricPrefix === 'read',
-      )
+      .find((serie) => serie.resource === 'node2' && serie.metricPrefix === 'read')
       .getTooltipLabel('read', 'node2'),
   ).toEqual('node2-read');
 });
@@ -389,10 +380,7 @@ describe('createSymmetricalQuantileColorSet', () => {
   });
 
   it('assigns correct colors for both above and below series', () => {
-    const colorSet = createSymmetricalQuantileColorSet(
-      mockAboveSeries,
-      mockBelowSeries,
-    );
+    const colorSet = createSymmetricalQuantileColorSet(mockAboveSeries, mockBelowSeries);
 
     // Above series colors
     expect(colorSet['Q90-write']).toBe(lineColor3); // cyan
@@ -412,11 +400,7 @@ describe('createSymmetricalQuantileColorSet', () => {
   });
 
   it('handles series with name property instead of resource', () => {
-    const aboveSeriesWithName = [
-      { name: 'Q90-write' },
-      { name: 'Median-write' },
-      { name: 'Q5-write' },
-    ];
+    const aboveSeriesWithName = [{ name: 'Q90-write' }, { name: 'Median-write' }, { name: 'Q5-write' }];
 
     const colorSet = createSymmetricalQuantileColorSet(aboveSeriesWithName, []);
 
@@ -465,9 +449,7 @@ describe('getTimeFormatForInterval', () => {
   });
 
   it('returns day-month-abbreviated-hour-minute for 24 hours interval', () => {
-    const result = getTimeFormatForInterval(
-      SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
-    );
+    const result = getTimeFormatForInterval(SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS);
     expect(result).toBe('day-month-abbreviated-hour-minute');
   });
 

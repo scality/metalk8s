@@ -1,9 +1,10 @@
+import { spacing } from '@scality/core-ui';
+import { fontSize } from '@scality/core-ui/dist/style/theme';
+import { useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { fontSize } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './style/CommonLayoutStyle';
-import { useIntl } from 'react-intl';
-import { spacing } from '@scality/core-ui';
+
 const NodeObjectContent = styled.div`
   white-space: pre-wrap;
   font-size: ${fontSize.small};

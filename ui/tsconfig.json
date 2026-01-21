@@ -6,10 +6,7 @@
     // "incremental": true,                         /* Enable incremental compilation */
     "target": "es2021" /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
     "module": "commonjs" /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */,
-    "lib": [
-      "es2019",
-      "DOM"
-    ] /* Specify library files to be included in the compilation. */,
+    "lib": ["es2019", "DOM"] /* Specify library files to be included in the compilation. */,
     // "allowJs": true,                             /* Allow javascript files to be compiled. */
     // "checkJs": true,                             /* Report errors in .js files. */
     "jsx": "react-jsx" /* Specify JSX code generation: 'preserve', 'react-native', 'react', 'react-jsx' or 'react-jsxdev'. */,
@@ -73,12 +70,7 @@
     "skipLibCheck": true /* Skip type checking of declaration files. */,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */,
-    "types": [
-      "node",
-      "jest",
-      "@testing-library/jest-dom",
-      "@scality/core-ui/types/styled.d.ts"
-    ]
+    "types": ["node", "jest", "@testing-library/jest-dom", "@scality/core-ui/types/styled.d.ts"]
   },
   "exclude": ["cypress.config.ts", "cypress", "node_modules"]
 }

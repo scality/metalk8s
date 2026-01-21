@@ -1,5 +1,5 @@
+import { fontWeight, padding } from '@scality/core-ui/dist/style/theme';
 import styled from 'styled-components';
-import { padding, fontWeight } from '@scality/core-ui/dist/style/theme';
 export const TooltipContent = styled.div`
   color: ${(props) => props.theme.textSecondary};
   font-weight: ${fontWeight.bold};

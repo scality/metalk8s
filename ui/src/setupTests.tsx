@@ -2,9 +2,10 @@ import fetch from 'node-fetch';
 import { setupMock as setupLocalStorageMock } from './tests/mocks/localStorage';
 import '@testing-library/jest-dom/extend-expect';
 import 'babel-polyfill';
-import { Alert } from './services/alertUtils';
-import React, { JSX } from 'react';
-import { TextEncoder, TextDecoder } from 'util';
+import type React from 'react';
+import type { JSX } from 'react';
+import { TextDecoder, TextEncoder } from 'util';
+import type { Alert } from './services/alertUtils';
 
 setupLocalStorageMock();
 
@@ -192,13 +193,9 @@ export const mockShellHooks = {
 };
 
 export const mockShellAlerts = {
-  AlertsProvider: ({
-    alertManagerUrl,
-    children,
-  }: {
-    alertManagerUrl: string;
-    children: JSX.Element;
-  }) => <>{children}</>,
+  AlertsProvider: ({ alertManagerUrl, children }: { alertManagerUrl: string; children: JSX.Element }) => (
+    <>{children}</>
+  ),
   alertHooks: {
     useAlerts: jest.fn(),
     useHighestSeverityAlerts: jest.fn(),
