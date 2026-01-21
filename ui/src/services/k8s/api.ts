@@ -1,12 +1,13 @@
 import { Config } from '@kubernetes/client-node/dist/browser/config';
+import { AppsV1Api } from '@kubernetes/client-node/dist/gen/api/appsV1Api';
 import { CoreV1Api } from '@kubernetes/client-node/dist/gen/api/coreV1Api';
 import { CustomObjectsApi } from '@kubernetes/client-node/dist/gen/api/customObjectsApi';
 import { StorageV1Api } from '@kubernetes/client-node/dist/gen/api/storageV1Api';
-import { AppsV1Api } from '@kubernetes/client-node/dist/gen/api/appsV1Api';
-import { RootState } from '../../ducks/reducer';
-import { useAuth } from '../../containers/PrivateRoute';
 import { useSelector } from 'react-redux';
+import { useAuth } from '../../containers/PrivateRoute';
+import type { RootState } from '../../ducks/reducer';
 import { Metalk8sV1alpha1VolumeClient } from './Metalk8sVolumeClient.generated';
+
 let config: typeof Config;
 export let coreV1: CoreV1Api;
 export let customObjects: CustomObjectsApi;
@@ -35,11 +36,7 @@ export const useK8sApiConfig = (): K8sApiConfig => {
   return { coreV1, customObjectsApi, storage, appsV1 };
 };
 
-export const updateApiServerConfig = (
-  url: string,
-  id_token: string,
-  token_type?: string,
-) => {
+export const updateApiServerConfig = (url: string, id_token: string, token_type?: string) => {
   config = new Config(url, id_token, token_type);
   coreV1 = config.makeApiClient(CoreV1Api);
   customObjects = config.makeApiClient(CustomObjectsApi);

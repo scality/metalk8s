@@ -1,8 +1,9 @@
-import React from 'react';
-import styled from 'styled-components';
-import { Tooltip, ConstrainedText, Icon, spacing } from '@scality/core-ui';
+import { ConstrainedText, Icon, spacing, Tooltip } from '@scality/core-ui';
 import { fontWeight } from '@scality/core-ui/dist/style/theme';
+import React from 'react';
 import { useIntl } from 'react-intl';
+import styled from 'styled-components';
+
 const TableRowStyle = styled.div`
   &:hover,
   &:focus {
@@ -18,9 +19,7 @@ const TableRowStyle = styled.div`
   border-right: 4px solid
     ${(props) =>
       // @ts-expect-error - FIXME when you are working on it
-      props.isSelected
-        ? props.theme.selectedActive
-        : props.theme.backgroundLevel2};
+      props.isSelected ? props.theme.selectedActive : props.theme.backgroundLevel2};
 
   background-color: ${(props) =>
     // @ts-expect-error - FIXME when you are working on it
@@ -61,7 +60,7 @@ const TableRow = (props) => {
       row={row}
     >
       {row.cells.map((cell) => {
-        let cellProps = cell.getCellProps({
+        const cellProps = cell.getCellProps({
           style: {
             ...cell.column.cellStyle,
             // Vertically center the text in cells.

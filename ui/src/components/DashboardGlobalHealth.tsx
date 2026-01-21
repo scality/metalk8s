@@ -1,33 +1,29 @@
-import styled from 'styled-components';
-import DashboardAlerts from './DashboardAlerts';
-import { Box, useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import {
-  EmphaseText,
-  LargerText,
-  SmallerText,
-  StatusWrapper,
-  Loader,
   AppContainer,
-  spacing,
-  Stack,
+  EmphaseText,
   IconHelp,
+  LargerText,
+  Loader,
+  SmallerText,
+  Stack,
+  StatusWrapper,
+  spacing,
 } from '@scality/core-ui';
 import {
-  Alert,
+  type Alert,
+  Box,
   GlobalHealthBar as GlobalHealthBarRecharts,
+  useMetricsTimeSpan,
 } from '@scality/core-ui/dist/next';
-import {
-  highestAlertToStatus,
-  useAlertLibrary,
-  useHighestSeverityAlerts,
-} from '../containers/AlertProvider';
 import { useIntl } from 'react-intl';
-import { useStartingTimeStamp } from '../containers/StartTimeProvider';
-import CircleStatus from './CircleStatus';
-import StatusIcon from './StatusIcon';
-import { getClusterAlertSegmentQuery } from '../services/platformlibrary/metrics';
-
 import { useQuery } from 'react-query';
+import styled from 'styled-components';
+import { highestAlertToStatus, useAlertLibrary, useHighestSeverityAlerts } from '../containers/AlertProvider';
+import { useStartingTimeStamp } from '../containers/StartTimeProvider';
+import { getClusterAlertSegmentQuery } from '../services/platformlibrary/metrics';
+import CircleStatus from './CircleStatus';
+import DashboardAlerts from './DashboardAlerts';
+import StatusIcon from './StatusIcon';
 
 const HealthBarContainer = styled.div`
   flex-direction: column;
@@ -48,12 +44,8 @@ const DashboardGlobalHealth = () => {
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
   const alertsLibrary = useAlertLibrary();
   const { duration } = useMetricsTimeSpan();
-  const { data: alerts, status: historyAlertStatus } = useQuery(
-    getClusterAlertSegmentQuery(duration),
-  );
-  const platformHighestSeverityAlert = useHighestSeverityAlerts(
-    alertsLibrary.getPlatformAlertSelectors(),
-  );
+  const { data: alerts, status: historyAlertStatus } = useQuery(getClusterAlertSegmentQuery(duration));
+  const platformHighestSeverityAlert = useHighestSeverityAlerts(alertsLibrary.getPlatformAlertSelectors());
   const platformStatus = highestAlertToStatus(platformHighestSeverityAlert);
   return (
     <AppContainer.OverallSummary>
@@ -92,9 +84,7 @@ const DashboardGlobalHealth = () => {
                       })
                       .split('\n')
                       .map((line, key) => (
-                        <SmallerText key={`globalheathexplanation-${key}`}>
-                          {line}
-                        </SmallerText>
+                        <SmallerText key={`globalheathexplanation-${key}`}>{line}</SmallerText>
                       ))}
                   </Stack>
                 }
@@ -116,8 +106,7 @@ const DashboardGlobalHealth = () => {
                           startsAt: startingTimeISO,
                           endsAt: currentTimeISO,
                           severity: 'unavailable',
-                          description:
-                            'Failed to load alert history for the selected period',
+                          description: 'Failed to load alert history for the selected period',
                         },
                       ] as Alert[])
                     : alerts || []

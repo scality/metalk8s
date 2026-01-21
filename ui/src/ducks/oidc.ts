@@ -1,5 +1,6 @@
-import { User } from 'oidc-client';
-import { Effect, put } from 'redux-saga/effects';
+import type { User } from 'oidc-client';
+import { type Effect, put } from 'redux-saga/effects';
+
 const SET_USER = 'SET_USER';
 const defaultState = {
   user: null,

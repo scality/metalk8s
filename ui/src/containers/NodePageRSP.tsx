@@ -1,18 +1,10 @@
+import { AppContainer, ConstrainedText, Icon, Stack, Text, TextBadge } from '@scality/core-ui';
+import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
 import { Tabs } from '@scality/core-ui/dist/next';
 import { useEffect, useMemo, useState } from 'react';
+import { useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useParams } from 'react-router';
-
-import {
-  AppContainer,
-  ConstrainedText,
-  Icon,
-  Stack,
-  Text,
-  TextBadge,
-} from '@scality/core-ui';
-import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
-import { useIntl } from 'react-intl';
 import AlertsTab from '../components/AlertsTab';
 import { getStyle } from '../components/CircleStatus';
 import NodePageDetailsTab from '../components/NodeDetailsTab';
@@ -20,25 +12,17 @@ import NodePageOverviewTab from '../components/NodePageOverviewTab';
 import NodePagePartitionTabs from '../components/NodePagePartitionTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
-import {
-  NoInstanceSelected,
-  RightSidePanel,
-} from '../components/style/CommonLayoutStyle';
+import { NoInstanceSelected, RightSidePanel } from '../components/style/CommonLayoutStyle';
 import { NODE_ALERTS_GROUP, PORT_NODE_EXPORTER } from '../constants';
-import {
-  fetchNodeUNameInfoAction,
-  updateNodeStatsFetchArgumentAction,
-} from '../ducks/app/monitoring';
+import { fetchNodeUNameInfoAction, updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import { readNodeAction } from '../ducks/app/nodes';
 import { fetchPodsAction } from '../ducks/app/pods';
-import {
-  refreshVolumesAction,
-  stopRefreshVolumesAction,
-} from '../ducks/app/volumes';
+import { refreshVolumesAction, stopRefreshVolumesAction } from '../ducks/app/volumes';
 import { getPodsListData } from '../services/PodUtils';
 import { useRefreshEffect, useURLQuery } from '../services/utils';
 import { useAlerts } from './AlertProvider';
 import NodePageMetricsTab from './NodePageMetricsTab';
+
 const THREE_MINUTES = 3 * 60 * 1000;
 
 // <NodePageRSP> fetches the data for all the tabs given the current selected Node
@@ -98,12 +82,9 @@ const NodePageRSP = (props) => {
   }, []);
   // @ts-expect-error - FIXME when you are working on it
   const nodesIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
-  const instanceIP =
-    nodes?.find((node) => node.name === name)?.internalIP ?? '';
-  const controlPlaneInterface =
-    nodesIPsInfo[name]?.controlPlane?.interface ?? '';
-  const workloadPlaneInterface =
-    nodesIPsInfo[name]?.workloadPlane?.interface ?? '';
+  const instanceIP = nodes?.find((node) => node.name === name)?.internalIP ?? '';
+  const controlPlaneInterface = nodesIPsInfo[name]?.controlPlane?.interface ?? '';
+  const workloadPlaneInterface = nodesIPsInfo[name]?.workloadPlane?.interface ?? '';
   const currentNode = nodeTableData?.find((node) => node.name.name === name);
 
   useEffect(() => {
@@ -123,26 +104,14 @@ const NodePageRSP = (props) => {
       }),
     );
     dispatch(fetchNodeUNameInfoAction());
-  }, [
-    metricsTimeSpan,
-    dispatch,
-    instanceIP,
-    controlPlaneInterface,
-    workloadPlaneInterface,
-    name,
-    showAvg,
-  ]);
+  }, [metricsTimeSpan, dispatch, instanceIP, controlPlaneInterface, workloadPlaneInterface, name, showAvg]);
   const alertList = useAlerts({
     alertname: NODE_ALERTS_GROUP,
   });
   const alertsNode = ((alertList && alertList.alerts) || []).filter(
-    (alert) =>
-      alert.labels.instance === `${instanceIP}:${PORT_NODE_EXPORTER}` ||
-      alert.labels.node === name,
+    (alert) => alert.labels.instance === `${instanceIP}:${PORT_NODE_EXPORTER}` || alert.labels.node === name,
   );
-  const criticalAlerts = alertsNode.filter(
-    (alert) => alert.severity === 'critical',
-  );
+  const criticalAlerts = alertsNode.filter((alert) => alert.severity === 'critical');
 
   const { color } = getStyle(currentNode?.health?.health);
 
@@ -155,10 +124,7 @@ const NodePageRSP = (props) => {
           </div>
           <div style={{ overflow: 'hidden' }}>
             <Text color="textPrimary" variant="Large">
-              <ConstrainedText
-                text={currentNode.name.displayName || name}
-                lineClamp={2}
-              />
+              <ConstrainedText text={currentNode.name.displayName || name} lineClamp={2} />
             </Text>
           </div>
         </Stack>
@@ -187,9 +153,7 @@ const NodePageRSP = (props) => {
           textBadge={
             alertsNode && alertsNode.length ? (
               <TextBadge
-                variant={
-                  criticalAlerts.length > 0 ? 'statusCritical' : 'statusWarning'
-                }
+                variant={criticalAlerts.length > 0 ? 'statusCritical' : 'statusWarning'}
                 text={`${alertsNode.length}`}
               />
             ) : null
@@ -235,12 +199,7 @@ const NodePageRSP = (props) => {
           {/* @ts-expect-error - FIXME when you are working on it */}
           <NodePagePodsTab pods={podsListData} />
         </Tabs.Tab>
-        <Tabs.Tab
-          data-cy="partition_tab_node_page"
-          path={`${baseUrl}/partitions`}
-          label="Partitions"
-          withoutPadding
-        >
+        <Tabs.Tab data-cy="partition_tab_node_page" path={`${baseUrl}/partitions`} label="Partitions" withoutPadding>
           <NodePagePartitionTabs instanceIP={instanceIP} />
         </Tabs.Tab>
         <Tabs.Tab

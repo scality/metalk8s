@@ -4,8 +4,8 @@ import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { useConfig } from '../FederableApp';
 import { mockOffsetSize } from '../tests/mocks/util';
-import NodePageOverviewTab from './NodePageOverviewTab';
 import { render } from './__TEST__/util';
+import NodePageOverviewTab from './NodePageOverviewTab';
 
 const mockUseConfig = useConfig as jest.Mock<ReturnType<typeof useConfig>>;
 
@@ -43,13 +43,10 @@ const mockProps = {
 };
 
 const server = setupServer(
-  rest.patch(
-    `http://localhost/api/kubernetes/api/v1/nodes/${mockProps.nodeName}`,
-    (req, res, ctx) => {
-      SUT(req.body);
-      return res(ctx.status(200), ctx.json({}));
-    },
-  ),
+  rest.patch(`http://localhost/api/kubernetes/api/v1/nodes/${mockProps.nodeName}`, (req, res, ctx) => {
+    SUT(req.body);
+    return res(ctx.status(200), ctx.json({}));
+  }),
 );
 
 describe('NodePageOverviewTab', () => {

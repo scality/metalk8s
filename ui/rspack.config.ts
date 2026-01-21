@@ -1,9 +1,9 @@
+import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
+import type { Configuration } from '@rspack/cli';
+import * as rspack from '@rspack/core';
+import fs from 'fs';
 import path from 'path';
 import packageJson from './package.json';
-import { Configuration } from '@rspack/cli';
-import * as rspack from '@rspack/core';
-import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
-import fs from 'fs';
 
 const deps = packageJson.dependencies;
 
@@ -11,14 +11,10 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 let version = process.env.VERSION;
 if (!version) {
-  const versionFileContents = fs.readFileSync(
-    path.join(__dirname, '../VERSION'),
-    { encoding: 'utf-8' },
-  );
+  const versionFileContents = fs.readFileSync(path.join(__dirname, '../VERSION'), { encoding: 'utf-8' });
   const versionRegex =
     /.*VERSION_MAJOR=(?<versionMajor>\d+)(\n){0,1}.*VERSION_MINOR=(?<versionMinor>\d+)(\n){0,1}.*VERSION_PATCH=(?<versionPatch>\d+)(\n){0,1}.*VERSION_SUFFIX=(?<versionSuffix>.*)/m;
-  const { versionMajor, versionMinor, versionPatch, versionSuffix } =
-    versionRegex.exec(versionFileContents).groups;
+  const { versionMajor, versionMinor, versionPatch, versionSuffix } = versionRegex.exec(versionFileContents).groups;
   version = `${versionMajor}.${versionMinor}.${versionPatch}${versionSuffix}`;
 }
 
@@ -118,10 +114,8 @@ const config: Configuration = {
       exposes: {
         './FederableApp': './src/FederableApp.tsx',
         './platformLibrary': './src/services/platformlibrary/k8s.ts',
-        './AlertsNavbarUpdater':
-          './src/components/AlertNavbarUpdaterComponent.tsx',
-        './Metalk8sLocalVolumeProvider':
-          './src/services/k8s/Metalk8sLocalVolumeProvider.ts',
+        './AlertsNavbarUpdater': './src/components/AlertNavbarUpdaterComponent.tsx',
+        './Metalk8sLocalVolumeProvider': './src/services/k8s/Metalk8sLocalVolumeProvider.ts',
       },
       remotes: !isProduction
         ? {
@@ -129,9 +123,7 @@ const config: Configuration = {
           }
         : undefined,
       shared: {
-        ...Object.fromEntries(
-          Object.entries(deps).map(([key, version]) => [key, {}]),
-        ),
+        ...Object.fromEntries(Object.entries(deps).map(([key, version]) => [key, {}])),
         '@scality/module-federation': {
           singleton: true,
         },
@@ -175,8 +167,7 @@ const config: Configuration = {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-      'Access-Control-Allow-Headers':
-        'X-Requested-With, content-type, Authorization',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
     },
     static: path.join(__dirname, 'public'),
     client: {

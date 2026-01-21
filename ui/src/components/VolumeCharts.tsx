@@ -1,8 +1,4 @@
-import {
-  LineTimeSerieChart,
-  useMetricsTimeSpan,
-  useChartId,
-} from '@scality/core-ui/dist/next';
+import { LineTimeSerieChart, useChartId, useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { useCallback } from 'react';
 import {
   HEIGHT_DEFAULT_CHART,
@@ -12,10 +8,8 @@ import {
   YAXIS_TITLE_READ_WRITE,
 } from '../constants';
 import { useSingleChartSerie, useSymetricalChartSeries } from '../hooks';
-import {
-  convertPrometheusResultToSerieWithAverage,
-  getSeriesForSymmetricalChart,
-} from '../services/graphUtils';
+import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
+import { convertPrometheusResultToSerieWithAverage, getSeriesForSymmetricalChart } from '../services/graphUtils';
 import type { TimeSpanProps } from '../services/platformlibrary/metrics';
 import {
   getVolumeIOPSReadQuery,
@@ -26,7 +20,6 @@ import {
   getVolumeThroughputWriteQuery,
   getVolumeUsageQuery,
 } from '../services/platformlibrary/metrics';
-import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 
 const VOLUME_SYNC_ID = 'volume';
 
@@ -146,12 +139,8 @@ export const VolumeIOPSChart = ({
   const chartId = useChartId();
   const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    getAboveQueries: (timeSpanProps: TimeSpanProps) => [
-      getVolumeIOPSWriteQuery(instanceIp, deviceName, timeSpanProps),
-    ],
-    getBelowQueries: (timeSpanProps: TimeSpanProps) => [
-      getVolumeIOPSReadQuery(instanceIp, deviceName, timeSpanProps),
-    ],
+    getAboveQueries: (timeSpanProps: TimeSpanProps) => [getVolumeIOPSWriteQuery(instanceIp, deviceName, timeSpanProps)],
+    getBelowQueries: (timeSpanProps: TimeSpanProps) => [getVolumeIOPSReadQuery(instanceIp, deviceName, timeSpanProps)],
     transformPrometheusDataToSeries: useCallback(
       ([prometheusResultAbove], [prometheusResultBelow]) => {
         const allSeries = getSeriesForSymmetricalChart(
@@ -197,11 +186,9 @@ export const VolumeUsageChart = ({
   const chartId = useChartId();
   const { interval, duration } = useMetricsTimeSpan();
   const { series, startingTimeStamp, isLoading } = useSingleChartSerie({
-    getQuery: (timeSpanProps: TimeSpanProps) =>
-      getVolumeUsageQuery(pvcName, namespace, timeSpanProps),
+    getQuery: (timeSpanProps: TimeSpanProps) => getVolumeUsageQuery(pvcName, namespace, timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
-      (prometheusResult) =>
-        convertPrometheusResultToSerieWithAverage(prometheusResult, volumeName),
+      (prometheusResult) => convertPrometheusResultToSerieWithAverage(prometheusResult, volumeName),
       [volumeName],
     ),
   });

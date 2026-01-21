@@ -25,21 +25,12 @@ describe('Sidebar', () => {
   });
 
   it('can be expanded', () => {
-    cy.window()
-      .its('localStorage')
-      .invoke('setItem', SIDEBAR_EXPANDED, 'false');
+    cy.window().its('localStorage').invoke('setItem', SIDEBAR_EXPANDED, 'false');
     // To make sure to apply the setting of sidebar in localStorage.
     cy.visit('/');
     cy.get('.sc-sidebar > :first').click();
-    cy.get('.sc-sidebar').should(
-      'have.attr',
-      'data-cy-state-isexpanded',
-      'true',
-    );
-    cy.window()
-      .its('localStorage')
-      .invoke('getItem', SIDEBAR_EXPANDED)
-      .should('equal', 'true');
+    cy.get('.sc-sidebar').should('have.attr', 'data-cy-state-isexpanded', 'true');
+    cy.window().its('localStorage').invoke('getItem', SIDEBAR_EXPANDED).should('equal', 'true');
   });
 
   it('can be collapsed', () => {
@@ -47,23 +38,12 @@ describe('Sidebar', () => {
     cy.visit('/');
     cy.get('.sc-sidebar > :first').click();
 
-    cy.get('.sc-sidebar').should(
-      'have.attr',
-      'data-cy-state-isexpanded',
-      'false',
-    );
-    cy.window()
-      .its('localStorage')
-      .invoke('getItem', SIDEBAR_EXPANDED)
-      .should('equal', 'false');
+    cy.get('.sc-sidebar').should('have.attr', 'data-cy-state-isexpanded', 'false');
+    cy.window().its('localStorage').invoke('getItem', SIDEBAR_EXPANDED).should('equal', 'false');
   });
 
   it('is expanded by default', () => {
     // There is no sidebar_expanded item appears in localStorage if we don't change the default value.
-    cy.get('.sc-sidebar').should(
-      'have.attr',
-      'data-cy-state-isexpanded',
-      'true',
-    );
+    cy.get('.sc-sidebar').should('have.attr', 'data-cy-state-isexpanded', 'true');
   });
 });

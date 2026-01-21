@@ -1,8 +1,9 @@
-import React from 'react';
+import { useShellHooks } from '@scality/module-federation';
+import type React from 'react';
 import { IntlProvider } from 'react-intl';
 import translations_en from '../translations/en.json';
 import translations_fr from '../translations/fr.json';
-import { useShellHooks } from '@scality/module-federation';
+
 const messages = {
   EN: translations_en,
   FR: translations_fr,

@@ -2,14 +2,8 @@ import type { V1Node } from '@kubernetes/client-node';
 
 import type { Serie } from '@scality/core-ui/dist/next';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
-import React, {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import type React from 'react';
+import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { UseQueryOptions } from 'react-query';
 import { useQueries, useQuery } from 'react-query';
 import { useSelector } from 'react-redux';
@@ -25,10 +19,10 @@ import { useAlerts } from './containers/AlertProvider';
 import { useAuth } from './containers/PrivateRoute';
 import { useStartingTimeStamp } from './containers/StartTimeProvider';
 import type { RootState } from './ducks/reducer';
-import { getVolumeListData } from './services/NodeVolumesUtils';
 import { filterAlerts, getHealthStatus } from './services/alertUtils';
 import { getNodesInterfacesString } from './services/graphUtils';
 import { useK8sApiConfig } from './services/k8s/api';
+import { getVolumeListData } from './services/NodeVolumesUtils';
 import type { TimeSpanProps } from './services/platformlibrary/metrics';
 import type { PrometheusQueryResult } from './services/prometheus/api';
 import { compareHealth } from './services/utils';
@@ -81,9 +75,7 @@ export const useNodeAddressesSelector = (
 }> => {
   return nodes.map((item) => {
     return {
-      internalIP: item?.status?.addresses?.find(
-        (ip) => ip.type === 'InternalIP',
-      ).address,
+      internalIP: item?.status?.addresses?.find((ip) => ip.type === 'InternalIP').address,
       name: item?.metadata?.name,
     };
   });
@@ -94,16 +86,9 @@ export type MetricsTimeSpanContextValue = {
   metricsTimeSpan: MetricsTimeSpan;
   setMetricsTimeSpan: MetricsTimeSpanSetter;
 };
-export const MetricsTimeSpanContext =
-  createContext<MetricsTimeSpanContextValue | null>(null);
-export const MetricsTimeSpanProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  const [metricsTimeSpan, setMetricsTimeSpan] = useState(
-    SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
-  );
+export const MetricsTimeSpanContext = createContext<MetricsTimeSpanContextValue | null>(null);
+export const MetricsTimeSpanProvider = ({ children }: { children: React.ReactNode }) => {
+  const [metricsTimeSpan, setMetricsTimeSpan] = useState(SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS);
   return (
     <MetricsTimeSpanContext.Provider
       value={{
@@ -135,9 +120,7 @@ export const useVolumesWithAlerts = (nodeName?: string) => {
     const volumeHealth = getHealthStatus(volumeAlerts);
     return { ...volume, health: isVolumeBound ? volumeHealth : STATUS_NONE };
   });
-  volumeListWithStatus.sort((volumeA, volumeB) =>
-    compareHealth(volumeB.health, volumeA.health),
-  );
+  volumeListWithStatus.sort((volumeA, volumeB) => compareHealth(volumeB.health, volumeA.health));
   return volumeListWithStatus;
 };
 
@@ -146,9 +129,7 @@ export const useSingleChartSerie = ({
   transformPrometheusDataToSeries, //It should be memoised using useCallback
 }: {
   getQuery: (timeSpanProps: TimeSpanProps) => UseQueryOptions;
-  transformPrometheusDataToSeries: (
-    prometheusResult: PrometheusQueryResult,
-  ) => Serie[];
+  transformPrometheusDataToSeries: (prometheusResult: PrometheusQueryResult) => Serie[];
 }) => {
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
   const { interval } = useMetricsTimeSpan();
@@ -184,9 +165,7 @@ export const useChartSeries = ({
   transformPrometheusDataToSeries, //It should be memoised using useCallback
 }: {
   getQueries: (timeSpanProps: TimeSpanProps) => UseQueryOptions[];
-  transformPrometheusDataToSeries: (
-    prometheusResults: PrometheusQueryResult[],
-  ) => Serie[];
+  transformPrometheusDataToSeries: (prometheusResults: PrometheusQueryResult[]) => Serie[];
 }) => {
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
   const { interval } = useMetricsTimeSpan();
@@ -290,23 +269,14 @@ export const useSymetricalChartSeries = ({
     // @ts-expect-error - FIXME when you are working on it
     .sort((query1, query2) => (query1.key > query2.key ? 1 : -1));
   useEffect(() => {
-    if (
-      !isLoading &&
-      !queriesAboveData.find((data) => !data) &&
-      !queriesBelowData.find((data) => !data)
-    ) {
+    if (!isLoading && !queriesAboveData.find((data) => !data) && !queriesBelowData.find((data) => !data)) {
       chartStartTimeRef.current = startTimeRef.current;
       setSeries(
         // @ts-expect-error - FIXME when you are working on it
         transformPrometheusDataToSeries(queriesAboveData, queriesBelowData),
       );
     }
-  }, [
-    isLoading,
-    transformPrometheusDataToSeries,
-    JSON.stringify(queriesAboveData),
-    JSON.stringify(queriesBelowData),
-  ]);
+  }, [isLoading, transformPrometheusDataToSeries, JSON.stringify(queriesAboveData), JSON.stringify(queriesBelowData)]);
   return {
     series: series || { above: [], below: [] },
     startingTimeStamp: Date.parse(chartStartTimeRef.current) / 1000,
@@ -335,8 +305,7 @@ export const useQuantileOnHover = ({
   const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const devices = getNodesInterfacesString(nodeIPsInfo);
   // If the median value is the same as Q90 and Q5, then onHover fetching is not needed.
-  const isOnHoverFetchingNeeded =
-    median !== threshold90 && median !== threshold5;
+  const isOnHoverFetchingNeeded = median !== threshold90 && median !== threshold5;
   const quantile90Result = useQuery(
     getQuantileHoverQuery(
       // @ts-expect-error - FIXME when you are working on it
@@ -362,14 +331,10 @@ export const useQuantileOnHover = ({
       if (!hoverTimestamp || datum.timestamp !== hoverTimestamp) {
         setHoverTimestamp(datum.timestamp);
         setThreshold90(
-          metricPrefix
-            ? Math.abs(datum.originalData[`Q90-${metricPrefix}`])
-            : Math.abs(datum.originalData['Q90']),
+          metricPrefix ? Math.abs(datum.originalData[`Q90-${metricPrefix}`]) : Math.abs(datum.originalData['Q90']),
         );
         setThreshold5(
-          metricPrefix
-            ? Math.abs(datum.originalData[`Q5-${metricPrefix}`])
-            : Math.abs(datum.originalData['Q5']),
+          metricPrefix ? Math.abs(datum.originalData[`Q5-${metricPrefix}`]) : Math.abs(datum.originalData['Q5']),
         );
         setMedian(
           metricPrefix
@@ -395,9 +360,7 @@ export const useShowQuantileChart = (): {
   const nodes = useNodes();
   const { flags } = useTypedSelector((state) => state.config.api);
   return {
-    isShowQuantileChart:
-      (flags && flags.includes('force_quantile_chart')) ||
-      nodes.length > NODES_LIMIT_QUANTILE,
+    isShowQuantileChart: (flags && flags.includes('force_quantile_chart')) || nodes.length > NODES_LIMIT_QUANTILE,
   };
 };
 
@@ -409,11 +372,11 @@ export const useShowQuantileChart = (): {
  * @param getKey - Function to extract the key from each item (defaults to item => item)
  * @returns Record mapping each key to a color
  */
-export const useChartColors = function <T>(
+export const useChartColors = <T,>(
   items: T[],
   getKey: (item: T) => string = (item) => String(item),
-): Record<string, string> {
-  return useMemo(() => {
+): Record<string, string> =>
+  useMemo(() => {
     const colorMapping: Record<string, string> = {};
 
     items.forEach((item, index) => {
@@ -425,16 +388,13 @@ export const useChartColors = function <T>(
 
     return colorMapping;
   }, [items, getKey]);
-};
 
 /**
  * Hook specifically for node color mapping
  * @param nodes - Array of node objects with metadata containing optional name
  * @returns Record mapping each node name to a color
  */
-export const useNodeColors = (
-  nodes: Array<{ metadata?: { name?: string } }>,
-): Record<string, string> => {
+export const useNodeColors = (nodes: Array<{ metadata?: { name?: string } }>): Record<string, string> => {
   return useChartColors(
     nodes.filter((node) => node.metadata?.name),
     (node) => node.metadata!.name!,

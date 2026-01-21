@@ -1,7 +1,8 @@
+import { fireEvent } from '@testing-library/react';
+import { useAlertLibrary, useAlerts } from '../containers/AlertProvider';
 import { render } from './__TEST__/util';
 import DashboardAlerts from './DashboardAlerts';
-import { fireEvent } from '@testing-library/react';
-import { useAlerts, useAlertLibrary } from '../containers/AlertProvider';
+
 const topLevelAlert = [
   {
     id: '3',
@@ -90,9 +91,7 @@ describe('the dashboard alerts sub-panel', () => {
     (useAlerts as any).mockImplementation(() => ({
       alerts: [],
     }));
-    const { queryByTestId, getByTestId, getByText } = render(
-      <DashboardAlerts />,
-    );
+    const { queryByTestId, getByTestId, getByText } = render(<DashboardAlerts />);
     expect(getByText('No active alerts')).toBeInTheDocument();
     expect(getByTestId('all-alert-badge')).toHaveTextContent('0');
     expect(queryByTestId('warning-alert-badge')).not.toBeInTheDocument();

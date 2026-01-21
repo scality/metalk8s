@@ -1,11 +1,12 @@
-import type { RootState } from './reducer';
-import { Effect, call, takeEvery, put, select } from 'redux-saga/effects';
-import * as ApiSalt from '../services/salt/api';
+import type { User } from 'oidc-client';
+import { call, type Effect, put, select, takeEvery } from 'redux-saga/effects';
 import type { Config } from '../services/api';
-import { apiConfigSelector } from './config';
-import { connectSaltApiAction } from './app/salt';
-import { User } from 'oidc-client';
+import * as ApiSalt from '../services/salt/api';
 import { addNotificationErrorAction } from './app/notifications';
+import { connectSaltApiAction } from './app/salt';
+import { apiConfigSelector } from './config';
+import type { RootState } from './reducer';
+
 // Actions
 const AUTHENTICATE_SALT_API = 'AUTHENTICATE_SALT_API';
 export const SALT_AUTHENTICATION_SUCCESS = 'SALT_AUTHENTICATION_SUCCESS';
@@ -21,10 +22,7 @@ const defaultState = {
 export type LoginState = {
   salt: ApiSalt.SaltToken | null | undefined;
 };
-export default function reducer(
-  state: LoginState = defaultState,
-  action: any = {},
-) {
+export default function reducer(state: LoginState = defaultState, action: any = {}) {
   switch (action.type) {
     case SALT_AUTHENTICATION_SUCCESS:
       return { ...state, salt: action.payload };
@@ -34,9 +32,7 @@ export default function reducer(
   }
 } // Action Creators
 
-export const setSaltAuthenticationSuccessAction = (
-  payload: ApiSalt.SaltToken,
-) => {
+export const setSaltAuthenticationSuccessAction = (payload: ApiSalt.SaltToken) => {
   return {
     type: SALT_AUTHENTICATION_SUCCESS,
     payload,

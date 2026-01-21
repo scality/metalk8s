@@ -1,20 +1,15 @@
+import { Icon, spacing, Tooltip } from '@scality/core-ui';
+import { Table } from '@scality/core-ui/dist/next';
+import isEqual from 'lodash.isequal';
 import React from 'react';
+import { useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import isEqual from 'lodash.isequal';
-import { Tooltip, Icon, spacing } from '@scality/core-ui';
-import { Table } from '@scality/core-ui/dist/next';
+import { GRAFANA_DASHBOARDS, STATUS_FAILED, STATUS_PENDING, STATUS_RUNNING, STATUS_UNKNOWN } from '../constants';
+import { fromMilliSectoAge } from '../services/utils';
 import { NodeTab } from './style/CommonLayoutStyle';
 import { TooltipContent } from './TableRow';
-import { fromMilliSectoAge } from '../services/utils';
-import {
-  STATUS_RUNNING,
-  STATUS_PENDING,
-  STATUS_FAILED,
-  STATUS_UNKNOWN,
-  GRAFANA_DASHBOARDS,
-} from '../constants';
-import { useIntl } from 'react-intl';
+
 const PodTableContainer = styled.div`
   color: ${(props) => props.theme.textPrimary};
   padding-top: ${spacing.r20};
@@ -34,10 +29,7 @@ const StatusText = styled.div<{ status; numContainer?; numContainerRunning? }>`
 
     if (status === STATUS_RUNNING && numContainer === numContainerRunning) {
       return props.theme.statusHealthy;
-    } else if (
-      status === STATUS_RUNNING &&
-      numContainer !== numContainerRunning
-    ) {
+    } else if (status === STATUS_RUNNING && numContainer !== numContainerRunning) {
       return props.theme.statusWarning;
     } else if (status === STATUS_RUNNING || status === STATUS_PENDING) {
       return props.theme.statusWarning;
@@ -83,20 +75,14 @@ const NodePagePodsTab = React.memo((props) => {
           const {
             values: { status: statusB },
           } = rowb;
-          const valueA =
-            statusA.status + statusA.numContainer + statusA.numContainerRunning;
-          const valueB =
-            statusB.status + statusB.numContainer + statusB.numContainerRunning;
+          const valueA = statusA.status + statusA.numContainer + statusA.numContainerRunning;
+          const valueB = statusB.status + statusB.numContainer + statusB.numContainerRunning;
           return valueA.localeCompare(valueB);
         },
         Cell: (cellProps) => {
           const { status, numContainer, numContainerRunning } = cellProps.value;
           return status === STATUS_RUNNING ? (
-            <StatusText
-              status={status}
-              numContainer={numContainer}
-              numContainerRunning={numContainerRunning}
-            >
+            <StatusText status={status} numContainer={numContainer} numContainerRunning={numContainerRunning}>
               {`${status} (${numContainerRunning}/${numContainer})`}
             </StatusText>
           ) : (
@@ -174,10 +160,7 @@ const NodePagePodsTab = React.memo((props) => {
           },
         }}
       >
-        <Table.SingleSelectableContent
-          rowHeight="h48"
-          separationLineVariant="backgroundLevel3"
-        />
+        <Table.SingleSelectableContent rowHeight="h48" separationLineVariant="backgroundLevel3" />
       </Table>
     </NodeTab>
   );

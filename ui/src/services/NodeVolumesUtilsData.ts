@@ -52,8 +52,7 @@ export const stateApp = {
             },
             name: 'master-0-alertmanager',
             resourceVersion: '876564',
-            selfLink:
-              '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/master-0-alertmanager',
+            selfLink: '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/master-0-alertmanager',
             uid: 'dadda9e7-dc1f-4632-8450-61eb3bdf0db3',
           },
           spec: {
@@ -101,8 +100,7 @@ export const stateApp = {
             },
             name: 'master-1-alertmanager',
             resourceVersion: '2639792',
-            selfLink:
-              '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/master-1-alertmanager',
+            selfLink: '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/master-1-alertmanager',
             uid: '5d31d785-7364-49fd-93bd-86baedbca860',
           },
           spec: {
@@ -150,8 +148,7 @@ export const stateApp = {
             },
             name: 'master-1-prometheus',
             resourceVersion: '2639557',
-            selfLink:
-              '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/master-1-prometheus',
+            selfLink: '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/master-1-prometheus',
             uid: '183dd142-9c46-411f-b160-d99bbd03f6c9',
           },
           spec: {
@@ -195,8 +192,7 @@ export const stateApp = {
             },
             name: 'prom-m0-reldev',
             resourceVersion: '1454956',
-            selfLink:
-              '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/prom-m0-reldev',
+            selfLink: '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/prom-m0-reldev',
             uid: 'bfd1709b-b4ce-4e53-8cea-8fbe236b31e5',
           },
           spec: {
@@ -237,10 +233,7 @@ export const stateApp = {
               'pv.kubernetes.io/bound-by-controller': 'yes',
             },
             creationTimestamp: '2020-08-06T15:18:19.000Z',
-            finalizers: [
-              'storage.metalk8s.scality.com/volume-protection',
-              'kubernetes.io/pv-protection',
-            ],
+            finalizers: ['storage.metalk8s.scality.com/volume-protection', 'kubernetes.io/pv-protection'],
             labels: {
               'app.kubernetes.io/name': 'prometheus-operator-alertmanager',
             },
@@ -267,8 +260,7 @@ export const stateApp = {
             claimRef: {
               apiVersion: 'v1',
               kind: 'PersistentVolumeClaim',
-              name:
-                'alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0',
+              name: 'alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0',
               namespace: 'metalk8s-monitoring',
               resourceVersion: '1100',
               uid: 'dad7079f-c565-47cd-b7f9-adac7d22139c',
@@ -307,10 +299,7 @@ export const stateApp = {
               'pv.kubernetes.io/bound-by-controller': 'yes',
             },
             creationTimestamp: '2020-08-06T15:23:11.000Z',
-            finalizers: [
-              'storage.metalk8s.scality.com/volume-protection',
-              'kubernetes.io/pv-protection',
-            ],
+            finalizers: ['storage.metalk8s.scality.com/volume-protection', 'kubernetes.io/pv-protection'],
             labels: {
               'app.kubernetes.io/name': 'prometheus-operator-alertmanager',
             },
@@ -337,8 +326,7 @@ export const stateApp = {
             claimRef: {
               apiVersion: 'v1',
               kind: 'PersistentVolumeClaim',
-              name:
-                'alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-1',
+              name: 'alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-1',
               namespace: 'metalk8s-monitoring',
               resourceVersion: '1659',
               uid: 'dfb10f4a-b200-4561-b000-1c15918de452',
@@ -377,10 +365,7 @@ export const stateApp = {
               'pv.kubernetes.io/bound-by-controller': 'yes',
             },
             creationTimestamp: '2020-08-06T15:17:58.000Z',
-            finalizers: [
-              'storage.metalk8s.scality.com/volume-protection',
-              'kubernetes.io/pv-protection',
-            ],
+            finalizers: ['storage.metalk8s.scality.com/volume-protection', 'kubernetes.io/pv-protection'],
             labels: {
               'app.kubernetes.io/name': 'prometheus-operator-prometheus',
             },
@@ -407,8 +392,7 @@ export const stateApp = {
             claimRef: {
               apiVersion: 'v1',
               kind: 'PersistentVolumeClaim',
-              name:
-                'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0',
+              name: 'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0',
               namespace: 'metalk8s-monitoring',
               resourceVersion: '1193',
               uid: '2e2db599-5f27-4c0d-b490-a5dd48cc711c',
@@ -447,10 +431,7 @@ export const stateApp = {
               'pv.kubernetes.io/bound-by-controller': 'yes',
             },
             creationTimestamp: '2020-08-12T07:57:11.000Z',
-            finalizers: [
-              'storage.metalk8s.scality.com/volume-protection',
-              'kubernetes.io/pv-protection',
-            ],
+            finalizers: ['storage.metalk8s.scality.com/volume-protection', 'kubernetes.io/pv-protection'],
             labels: {
               'app.kubernetes.io/name': 'prometheus-operator-prometheus',
             },
@@ -477,8 +458,7 @@ export const stateApp = {
             claimRef: {
               apiVersion: 'v1',
               kind: 'PersistentVolumeClaim',
-              name:
-                'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1',
+              name: 'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1',
               namespace: 'metalk8s-monitoring',
               resourceVersion: '1483663',
               uid: '0c00f9a7-968d-4d8c-b519-78dd5fa4d32f',
@@ -526,8 +506,7 @@ export const stateApp = {
               alertmanager: 'prometheus-operator-alertmanager',
               app: 'alertmanager',
             },
-            name:
-              'alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0',
+            name: 'alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0',
             namespace: 'metalk8s-monitoring',
             resourceVersion: '6125',
             selfLink:
@@ -570,8 +549,7 @@ export const stateApp = {
               alertmanager: 'prometheus-operator-alertmanager',
               app: 'alertmanager',
             },
-            name:
-              'alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-1',
+            name: 'alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-1',
             namespace: 'metalk8s-monitoring',
             resourceVersion: '7227',
             selfLink:
@@ -614,8 +592,7 @@ export const stateApp = {
               app: 'prometheus',
               prometheus: 'prometheus-operator-prometheus',
             },
-            name:
-              'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0',
+            name: 'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0',
             namespace: 'metalk8s-monitoring',
             resourceVersion: '5985',
             selfLink:
@@ -660,8 +637,7 @@ export const stateApp = {
               app: 'prometheus',
               prometheus: 'prometheus-operator-prometheus',
             },
-            name:
-              'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1',
+            name: 'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1',
             namespace: 'metalk8s-monitoring',
             resourceVersion: '1483670',
             selfLink:

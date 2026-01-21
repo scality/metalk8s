@@ -1,36 +1,16 @@
-import {
-  Button,
-  ChartLegend,
-  ChartLegendWrapper,
-} from '@scality/core-ui/dist/next';
-import { useSelector } from 'react-redux';
 import { Icon, spacing } from '@scality/core-ui';
+import { Button, ChartLegend, ChartLegendWrapper } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
+import { useSelector } from 'react-redux';
 import { GRAFANA_DASHBOARDS, VOLUME_CONDITION_LINK } from '../constants';
-
+import { ChartContainer, GraphGrid } from '../containers/NodePageMetricsTab';
 import TimespanSelector from '../containers/TimespanSelector';
-import {
-  MetricsActionContainer,
-  NotBoundContainer,
-} from './style/CommonLayoutStyle';
-import {
-  VolumeIOPSChart,
-  VolumeLatencyChart,
-  VolumeThroughputChart,
-  VolumeUsageChart,
-} from './VolumeCharts';
-import { GraphGrid, ChartContainer } from '../containers/NodePageMetricsTab';
 import { createColorSet } from '../services/graphUtils';
+import { MetricsActionContainer, NotBoundContainer } from './style/CommonLayoutStyle';
+import { VolumeIOPSChart, VolumeLatencyChart, VolumeThroughputChart, VolumeUsageChart } from './VolumeCharts';
 
 const MetricsTab = (props) => {
-  const {
-    volumeCondition,
-    deviceName,
-    instanceIp,
-    volumeName,
-    volumeNamespace,
-    volumePVCName,
-  } = props;
+  const { volumeCondition, deviceName, instanceIp, volumeName, volumeNamespace, volumePVCName } = props;
   const intl = useIntl();
   // @ts-expect-error - FIXME when you are working on it
   const config = useSelector((state) => state.config);
@@ -60,29 +40,13 @@ const MetricsTab = (props) => {
           </MetricsActionContainer>
           <ChartContainer>
             <GraphGrid id="graph_container">
-              <VolumeUsageChart
-                pvcName={volumePVCName}
-                namespace={volumeNamespace}
-                volumeName={volumeName}
-              />
+              <VolumeUsageChart pvcName={volumePVCName} namespace={volumeNamespace} volumeName={volumeName} />
 
-              <VolumeLatencyChart
-                instanceIp={instanceIp}
-                deviceName={deviceName}
-                volumeName={volumeName}
-              />
+              <VolumeLatencyChart instanceIp={instanceIp} deviceName={deviceName} volumeName={volumeName} />
 
-              <VolumeThroughputChart
-                instanceIp={instanceIp}
-                deviceName={deviceName}
-                volumeName={volumeName}
-              />
+              <VolumeThroughputChart instanceIp={instanceIp} deviceName={deviceName} volumeName={volumeName} />
 
-              <VolumeIOPSChart
-                instanceIp={instanceIp}
-                deviceName={deviceName}
-                volumeName={volumeName}
-              />
+              <VolumeIOPSChart instanceIp={instanceIp} deviceName={deviceName} volumeName={volumeName} />
             </GraphGrid>
             <ChartLegend shape="line" legendSize="Smaller" />
           </ChartContainer>

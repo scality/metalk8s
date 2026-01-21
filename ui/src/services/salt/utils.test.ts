@@ -1,7 +1,8 @@
 import { JOB_ID, NODE_NAME } from '../../tests/mocks/salt/constants';
-import { data as dataPrintJob } from '../../tests/mocks/salt/printJob';
 import { data as dataEventRet } from '../../tests/mocks/salt/eventRet';
-import { getJobStatusFromPrintJob, getJobStatusFromEventRet } from './utils';
+import { data as dataPrintJob } from '../../tests/mocks/salt/printJob';
+import { getJobStatusFromEventRet, getJobStatusFromPrintJob } from './utils';
+
 describe('`getJobStatusFromPrintJob` utility method', () => {
   test('handles a job not yet completed', () => {
     const data = {

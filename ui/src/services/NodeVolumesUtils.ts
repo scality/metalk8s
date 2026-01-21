@@ -1,34 +1,29 @@
+import type { V1PersistentVolume } from '@kubernetes/client-node/dist/gen/model/models';
 import { createSelector } from 'reselect';
 import {
-  getNodeNameFromUrl,
-  getVolumes,
-  computeVolumeCondition,
-  bytesToSize,
-  formatSizeForDisplay,
-  allSizeUnitsToBytes,
-} from './utils';
-import {
-  STATUS_UNKNOWN,
-  STATUS_TERMINATING,
-  STATUS_PENDING,
-  STATUS_FAILED,
+  PORT_NODE_EXPORTER,
   STATUS_AVAILABLE,
   STATUS_BOUND,
-  STATUS_RELEASED,
+  STATUS_FAILED,
+  STATUS_PENDING,
   STATUS_READY,
-  PORT_NODE_EXPORTER,
+  STATUS_RELEASED,
+  STATUS_TERMINATING,
+  STATUS_UNKNOWN,
 } from '../constants';
+import { filterAlerts, getHealthStatus } from '../services/alertUtils';
+import type { Metalk8sV1alpha1Volume } from '../services/k8s/Metalk8sVolumeClient.generated';
 import type { Alert, Health } from './alertUtils';
 import type { InstantVectorResult } from './prometheus/api';
-import { V1PersistentVolume } from '@kubernetes/client-node/dist/gen/model/models';
-import type { Metalk8sV1alpha1Volume } from '../services/k8s/Metalk8sVolumeClient.generated';
-import { getHealthStatus, filterAlerts } from '../services/alertUtils';
-export type VolumeStatus =
-  | 'Unknown'
-  | 'Ready'
-  | 'Failed'
-  | 'Pending'
-  | 'Terminating';
+import {
+  allSizeUnitsToBytes,
+  bytesToSize,
+  computeVolumeCondition,
+  formatSizeForDisplay,
+  getNodeNameFromUrl,
+  getVolumes,
+} from './utils';
+export type VolumeStatus = 'Unknown' | 'Ready' | 'Failed' | 'Pending' | 'Terminating';
 export const isVolumeDeletable = (
   volumeStatus: VolumeStatus,
   volumeName: string,
@@ -45,9 +40,7 @@ export const isVolumeDeletable = (
       if (persistentVolumes.length === 0) {
         return true;
       } else {
-        const persistentVolume = persistentVolumes.find(
-          (pv) => pv?.metadata?.name === volumeName,
-        );
+        const persistentVolume = persistentVolumes.find((pv) => pv?.metadata?.name === volumeName);
 
         if (!persistentVolume) {
           return true;
@@ -67,17 +60,13 @@ export const isVolumeDeletable = (
             return false;
 
           default:
-            console.error(
-              `Unexpected state for PersistentVolume ${volumeName}:${persistentVolumeStatus}`,
-            );
+            console.error(`Unexpected state for PersistentVolume ${volumeName}:${persistentVolumeStatus}`);
             return false;
         }
       }
 
     default:
-      console.error(
-        `Unexpected state for Volume ${volumeName}:${volumeStatus}`,
-      );
+      console.error(`Unexpected state for Volume ${volumeName}:${volumeStatus}`);
       return false;
   }
 };
@@ -89,18 +78,13 @@ export const isVolumeDeletable = (
 //
 // Returns
 //     The computed global status of the volume.
-export const computeVolumeGlobalStatus = (
-  name: string,
-  status: Metalk8sV1alpha1Volume['status'],
-): VolumeStatus => {
+export const computeVolumeGlobalStatus = (name: string, status: Metalk8sV1alpha1Volume['status']): VolumeStatus => {
   if (status && status.conditions) {
     if (!Array.isArray(status.conditions)) {
       return STATUS_UNKNOWN;
     }
 
-    const condition = status.conditions.find(
-      (condition) => condition.type === 'Ready',
-    );
+    const condition = status.conditions.find((condition) => condition.type === 'Ready');
 
     if (condition === undefined) {
       return STATUS_UNKNOWN;
@@ -125,16 +109,12 @@ export const computeVolumeGlobalStatus = (
             return STATUS_TERMINATING;
 
           default:
-            console.error(
-              `Unexpected Ready reason for Volume ${name}: ${condReason}`,
-            );
+            console.error(`Unexpected Ready reason for Volume ${name}: ${condReason}`);
             return STATUS_UNKNOWN;
         }
 
       default:
-        console.error(
-          `Unexpected Ready status for Volume ${name}: ${condStatus}`,
-        );
+        console.error(`Unexpected Ready status for Volume ${name}: ${condStatus}`);
         return STATUS_UNKNOWN;
     }
   }
@@ -148,16 +128,12 @@ export const computeVolumeGlobalStatus = (
 //
 // Returns
 //     a tuple (error code, error message).
-export const volumeGetError = (
-  status?: Metalk8sV1alpha1Volume['status'],
-): [string, string] => {
+export const volumeGetError = (status?: Metalk8sV1alpha1Volume['status']): [string, string] => {
   if (!status || !Array.isArray(status.conditions)) {
     return ['', ''];
   }
 
-  const condition = status.conditions.find(
-    (condition) => condition.type === 'Ready',
-  );
+  const condition = status.conditions.find((condition) => condition.type === 'Ready');
   return [condition?.reason ?? '', condition?.message ?? ''];
 };
 
@@ -167,14 +143,11 @@ const getPVCList = (state) => state?.app?.volumes?.pVCList;
 
 const getNodes = (state) => state?.app?.nodes?.list;
 
-const getVolumeLatencyCurrent = (state) =>
-  state?.app?.monitoring?.volumeCurrentStats?.metrics?.volumeLatencyCurrent;
+const getVolumeLatencyCurrent = (state) => state?.app?.monitoring?.volumeCurrentStats?.metrics?.volumeLatencyCurrent;
 
-const getVolumeUsedCurrent = (state) =>
-  state?.app?.monitoring?.volumeCurrentStats?.metrics?.volumeUsedCurrent;
+const getVolumeUsedCurrent = (state) => state?.app?.monitoring?.volumeCurrentStats?.metrics?.volumeUsedCurrent;
 
-const getVolumeCapacityCurrent = (state) =>
-  state?.app?.monitoring?.volumeCurrentStats?.metrics?.volumeCapacityCurrent;
+const getVolumeCapacityCurrent = (state) => state?.app?.monitoring?.volumeCurrentStats?.metrics?.volumeCapacityCurrent;
 
 export const getVolumeListData = createSelector(
   // @ts-expect-error - FIXME when you are working on it
@@ -199,9 +172,7 @@ export const getVolumeListData = createSelector(
     let nodeVolumes = volumes;
 
     if (nodeFilter) {
-      nodeVolumes = volumes?.filter(
-        (volume) => volume.spec.nodeName === nodeFilter,
-      );
+      nodeVolumes = volumes?.filter((volume) => volume.spec.nodeName === nodeFilter);
     }
 
     if (!pVCList || !pVCList.length) {
@@ -209,13 +180,9 @@ export const getVolumeListData = createSelector(
     }
 
     nodeVolumes = nodeVolumes?.map((volume) => {
-      const volumePV = pVList?.find(
-        (pV) => pV.metadata.name === volume.metadata.name,
-      );
+      const volumePV = pVList?.find((pV) => pV.metadata.name === volume.metadata.name);
       // find the mapping PVC of this specific volume
-      const volumePVC = pVCList?.find(
-        (pVC) => pVC.spec.volumeName === volume.metadata.name,
-      );
+      const volumePVC = pVCList?.find((pVC) => pVC.spec.volumeName === volume.metadata.name);
       const volumeComputedCondition = computeVolumeCondition(
         computeVolumeGlobalStatus(volume.metadata.name, volume?.status),
         volumePV?.status?.phase === STATUS_BOUND,
@@ -228,18 +195,14 @@ export const getVolumeListData = createSelector(
       if (volumePVC) {
         persistentvolumeclaim = volumePVC.metadata.name;
         volumeUsedCurrent = volumeUsedCurrentList?.find(
-          (volUsed) =>
-            volUsed.metric.persistentvolumeclaim === volumePVC.metadata.name,
+          (volUsed) => volUsed.metric.persistentvolumeclaim === volumePVC.metadata.name,
         );
         volumeCapacityCurrent = volumeCapacityCurrentList?.find(
-          (volCap) =>
-            volCap.metric.persistentvolumeclaim === volumePVC.metadata.name,
+          (volCap) => volCap.metric.persistentvolumeclaim === volumePVC.metadata.name,
         );
       }
 
-      const instanceIP = nodeList?.find(
-        (node) => node.name === volume?.spec?.nodeName,
-      )?.internalIP;
+      const instanceIP = nodeList?.find((node) => node.name === volume?.spec?.nodeName)?.internalIP;
       const volumeCurrentLatency = volumeLatencyCurrent?.find(
         (vLV) =>
           vLV.metric.device === volume?.status?.deviceName &&
@@ -251,10 +214,7 @@ export const getVolumeListData = createSelector(
         persistentvolumeclaim,
         usage:
           volumeUsedCurrent && volumeCapacityCurrent
-            ? (
-                (volumeUsedCurrent?.value[1] / volumeCapacityCurrent.value[1]) *
-                100
-              ).toFixed(2)
+            ? ((volumeUsedCurrent?.value[1] / volumeCapacityCurrent.value[1]) * 100).toFixed(2)
             : undefined,
         status: volumeComputedCondition,
         storageCapacity: volumeCapacityCurrent?.value[1]
@@ -264,13 +224,9 @@ export const getVolumeListData = createSelector(
           ? volumeCapacityCurrent?.value[1]
           : allSizeUnitsToBytes(volumePV?.spec?.capacity?.storage),
         storageClass: volume?.spec?.storageClassName,
-        usageRawData: volumeUsedCurrent?.value[1]
-          ? bytesToSize(volumeUsedCurrent?.value[1])
-          : 0,
+        usageRawData: volumeUsedCurrent?.value[1] ? bytesToSize(volumeUsedCurrent?.value[1]) : 0,
         // for latency we need to query the volumeLatecyCurrent based on both `instance` and `deviceName`
-        latency: volumeCurrentLatency
-          ? Math.round(volumeCurrentLatency?.value[1])
-          : undefined,
+        latency: volumeCurrentLatency ? Math.round(volumeCurrentLatency?.value[1]) : undefined,
         errorReason: volume?.status?.conditions[0]?.reason,
       };
     });
@@ -278,17 +234,7 @@ export const getVolumeListData = createSelector(
   },
 );
 export const formatVolumeCreationData = (newVolumes) => {
-  const {
-    multiVolumeCreation,
-    volumes,
-    node,
-    labels,
-    type,
-    size,
-    storageClass,
-    vgName,
-    forceLVCreate,
-  } = newVolumes;
+  const { multiVolumeCreation, volumes, node, labels, type, size, storageClass, vgName, forceLVCreate } = newVolumes;
 
   if (multiVolumeCreation) {
     // multi-volume creation mode
@@ -359,13 +305,8 @@ export const getNodePartitionsTableData = (
   return partitions;
 };
 
-const getPartitionSize = (
-  partitionPath: string,
-  sizes: InstantVectorResult['result'],
-): string => {
-  const partition = sizes.find(
-    (size) => size.metric.mountpoint === partitionPath,
-  );
+const getPartitionSize = (partitionPath: string, sizes: InstantVectorResult['result']): string => {
+  const partition = sizes.find((size) => size.metric.mountpoint === partitionPath);
 
   if (partition) {
     return bytesToSize(partition.value[1]);

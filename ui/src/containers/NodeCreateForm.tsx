@@ -1,14 +1,4 @@
-import {
-  Banner,
-  Checkbox,
-  Form,
-  FormGroup,
-  FormSection,
-  Icon,
-  Stack,
-  Text,
-  Toggle,
-} from '@scality/core-ui';
+import { Banner, Checkbox, Form, FormGroup, FormSection, Icon, Stack, Text, Toggle } from '@scality/core-ui';
 import { Button, Input } from '@scality/core-ui/dist/next';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import { Formik } from 'formik';
@@ -19,12 +9,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 import * as yup from 'yup';
-import {
-  clearCreateNodeErrorAction,
-  createNodeAction,
-  fetchClusterVersionAction,
-} from '../ducks/app/nodes';
+import { clearCreateNodeErrorAction, createNodeAction, fetchClusterVersionAction } from '../ducks/app/nodes';
 import { useShellConfig } from './PrivateRoute';
+
 const CheckboxGroup = styled.div`
   display: flex;
   flex-direction: column;
@@ -89,15 +76,7 @@ const NodeCreateForm = () => {
       onSubmit={createNode}
     >
       {(props) => {
-        const {
-          values,
-          touched,
-          errors,
-          dirty,
-          setFieldTouched,
-          setFieldValue,
-          handleSubmit,
-        } = props;
+        const { values, touched, errors, dirty, setFieldTouched, setFieldValue, handleSubmit } = props;
 
         //handleChange of the Formik props does not update 'values' when field value is empty
         const handleChange = (field) => (e) => {
@@ -119,11 +98,7 @@ const NodeCreateForm = () => {
             banner={
               asyncErrors &&
               asyncErrors.create_node && (
-                <Banner
-                  icon={<Icon name="Exclamation-triangle" />}
-                  title="Error"
-                  variant="danger"
-                >
+                <Banner icon={<Icon name="Exclamation-triangle" />} title="Error" variant="danger">
                   {asyncErrors.create_node}
                 </Banner>
               )
@@ -145,13 +120,7 @@ const NodeCreateForm = () => {
                   variant="primary"
                   type="submit"
                   disabled={
-                    !dirty ||
-                    !isEmpty(errors) ||
-                    !(
-                      values.workload_plane ||
-                      values.control_plane ||
-                      values.infra
-                    )
+                    !dirty || !isEmpty(errors) || !(values.workload_plane || values.control_plane || values.infra)
                   }
                 />
               </Stack>
@@ -201,11 +170,7 @@ const NodeCreateForm = () => {
                   id="roles"
                   helpErrorPosition="bottom"
                   error={
-                    !(
-                      values.workload_plane ||
-                      values.control_plane ||
-                      values.infra
-                    )
+                    !(values.workload_plane || values.control_plane || values.infra)
                       ? intl.formatMessage({
                           id: 'role_values_error',
                         })

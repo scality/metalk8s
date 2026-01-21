@@ -1,32 +1,25 @@
+import { all, call, delay, put, select, takeEvery, takeLatest } from 'redux-saga/effects';
 import {
-  put,
-  takeEvery,
-  takeLatest,
-  call,
-  all,
-  delay,
-  select,
-} from 'redux-saga/effects';
+  LAST_ONE_HOUR,
+  LAST_SEVEN_DAYS,
+  LAST_TWENTY_FOUR_HOURS,
+  REFRESH_METRICS_GRAPH,
+  REFRESH_TIMEOUT,
+  SAMPLE_DURATION_LAST_ONE_HOUR,
+  SAMPLE_DURATION_LAST_SEVEN_DAYS,
+  SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
+  SAMPLE_FREQUENCY_LAST_ONE_HOUR,
+  SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
+  SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
+} from '../../constants';
 import {
   getAlerts,
   queryPrometheus,
   queryPrometheusRange,
-  RangeMatrixResult,
+  type RangeMatrixResult,
 } from '../../services/prometheus/api';
-import {
-  REFRESH_TIMEOUT,
-  REFRESH_METRICS_GRAPH,
-  LAST_SEVEN_DAYS,
-  LAST_TWENTY_FOUR_HOURS,
-  LAST_ONE_HOUR,
-  SAMPLE_DURATION_LAST_SEVEN_DAYS,
-  SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
-  SAMPLE_DURATION_LAST_ONE_HOUR,
-  SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
-  SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
-  SAMPLE_FREQUENCY_LAST_ONE_HOUR,
-} from '../../constants';
-import { RootState } from '../reducer';
+import type { RootState } from '../reducer';
+
 const REFRESH_CLUSTER_STATUS = 'REFRESH_CLUSTER_STATUS';
 const STOP_REFRESH_CLUSTER_STATUS = 'STOP_REFRESH_CLUSTER_STATUS';
 export const UPDATE_CLUSTER_STATUS = 'UPDATE_CLUSTER_STATUS';
@@ -301,22 +294,15 @@ export const updateNodeUNameInfoAction = (payload) => {
   };
 };
 // Selectors
-export const isClusterRefreshing = (state) =>
-  state.app.monitoring.cluster.isRefreshing;
-export const isVolumeStatsRefreshing = (state) =>
-  state.app.monitoring.volumeStats.isRefreshing;
-export const isCurrentVolumeStatsRefresh = (state) =>
-  state.app.monitoring.volumeCurrentStats.isRefreshing;
+export const isClusterRefreshing = (state) => state.app.monitoring.cluster.isRefreshing;
+export const isVolumeStatsRefreshing = (state) => state.app.monitoring.volumeStats.isRefreshing;
+export const isCurrentVolumeStatsRefresh = (state) => state.app.monitoring.volumeCurrentStats.isRefreshing;
 
-const volumeMetricsTimeSpan = (state) =>
-  state.app.monitoring.volumeStats.metricsTimeSpan;
+const volumeMetricsTimeSpan = (state) => state.app.monitoring.volumeStats.metricsTimeSpan;
 
 // Sagas
 function getClusterQueryStatus(result) {
-  return result &&
-    result.status === 'success' &&
-    result.data.result.length &&
-    result.data.result[0].value.length
+  return result && result.status === 'success' && result.data.result.length && result.data.result[0].value.length
     ? parseInt(result.data.result[0].value[1])
     : 0;
 }
@@ -329,21 +315,13 @@ export function* handlePrometheusError(clusterHealth, result) {
     clusterHealth.error = `Prometheus - ${result.error.response.statusText}`;
   } else {
     const coreApi = yield select((state: RootState) => state.config.coreApi);
-    const prometheusPod = yield call(() =>
-      coreApi.queryPodInNamespace('metalk8s-monitoring', 'prometheus'),
-    );
+    const prometheusPod = yield call(() => coreApi.queryPodInNamespace('metalk8s-monitoring', 'prometheus'));
 
     if (!prometheusPod.error) {
       const conditions = prometheusPod?.body?.items[0]?.status?.conditions;
-      const scheduledCondition = conditions?.find(
-        (c) => c.type === 'PodScheduled',
-      );
+      const scheduledCondition = conditions?.find((c) => c.type === 'PodScheduled');
 
-      if (
-        scheduledCondition?.message?.includes(
-          `didn't find available persistent volumes to bind`,
-        )
-      ) {
+      if (scheduledCondition?.message?.includes(`didn't find available persistent volumes to bind`)) {
         clusterHealth.isPrometheusVolumeProvisioned = false;
       }
     }
@@ -378,9 +356,7 @@ export function* fetchClusterStatus() {
   if (!errorResult) {
     clusterHealth.apiServerStatus = getClusterQueryStatus(results[0]);
     clusterHealth.kubeSchedulerStatus = getClusterQueryStatus(results[1]);
-    clusterHealth.kubeControllerManagerStatus = getClusterQueryStatus(
-      results[2],
-    );
+    clusterHealth.kubeControllerManagerStatus = getClusterQueryStatus(results[2]);
     yield put(setPrometheusApiAvailable(true));
   } else {
     yield call(handlePrometheusError, clusterHealth, errorResult);
@@ -403,7 +379,7 @@ export function* fetchAlerts() {
     }),
   );
   const resultAlerts = yield call(getAlerts);
-  let alert = {
+  const alert = {
     list: [],
     error: null,
   };
@@ -499,11 +475,9 @@ export function* fetchVolumeStats() {
   const currentTime = new Date();
   const currentTimeISO = currentTime.toISOString(); // To query Prometheus the date should follow `RFC3339` format
 
-  const startingTimestamp =
-    Math.round(currentTime.getTime() / 1000) - sampleDuration;
+  const startingTimestamp = Math.round(currentTime.getTime() / 1000) - sampleDuration;
   const startingTimeISO = new Date(startingTimestamp * 1000).toISOString();
-  const volumeUsageQuery =
-    'kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes';
+  const volumeUsageQuery = 'kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes';
   // the queries for `Throughput` and `IOPS`
   // rate calculates the per-second average rate of increase of the time series in the range vector.
   // group the result of the query by instance and device (remove the filter {job="node-exporter"})
@@ -525,55 +499,13 @@ export function* fetchVolumeStats() {
     volumeIOPSReadQueryResult,
     volumeIOPSWriteQueryResult,
   ] = yield all([
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      volumeUsageQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      volumeThroughputReadQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      volumeThroughputWriteQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      volumeLatencyWriteQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      volumeLatencyReadQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      volumeIOPSReadQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      volumeIOPSWriteQuery,
-    ),
+    call(queryPrometheusRange, startingTimeISO, currentTimeISO, sampleFrequency, volumeUsageQuery),
+    call(queryPrometheusRange, startingTimeISO, currentTimeISO, sampleFrequency, volumeThroughputReadQuery),
+    call(queryPrometheusRange, startingTimeISO, currentTimeISO, sampleFrequency, volumeThroughputWriteQuery),
+    call(queryPrometheusRange, startingTimeISO, currentTimeISO, sampleFrequency, volumeLatencyWriteQuery),
+    call(queryPrometheusRange, startingTimeISO, currentTimeISO, sampleFrequency, volumeLatencyReadQuery),
+    call(queryPrometheusRange, startingTimeISO, currentTimeISO, sampleFrequency, volumeIOPSReadQuery),
+    call(queryPrometheusRange, startingTimeISO, currentTimeISO, sampleFrequency, volumeIOPSWriteQuery),
   ]);
 
   if (!volumeUsageQueryResult.error) {
@@ -628,11 +560,7 @@ export function* fetchCurrentVolumeStats() {
   // Grafana - Used Space: kubelet_volume_stats_capacity_bytes - kubelet_volume_stats_available_bytes
   const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
   const volumeCapacityQuery = 'kubelet_volume_stats_capacity_bytes';
-  const [
-    volumeUsedCurrentQueryResult,
-    volumeCapacityCurrentQueryResult,
-    volumeLatencyCurrentResult,
-  ] = yield all([
+  const [volumeUsedCurrentQueryResult, volumeCapacityCurrentQueryResult, volumeLatencyCurrentResult] = yield all([
     call(queryPrometheus, volumeUsedQuery),
     call(queryPrometheus, volumeCapacityQuery),
     call(queryPrometheus, volumeLatencyCurrentQuery),

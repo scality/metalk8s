@@ -4,8 +4,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient } from 'react-query';
 import { MemoryRouter, useLocation } from 'react-router';
-import ActiveAlertsFilter from './ActiveAlertsFilters';
 import { QueryClientProvider } from '../QueryClientProvider';
+import ActiveAlertsFilter from './ActiveAlertsFilters';
 
 describe('ActiveAlertsFilter', () => {
   it('should redirect on click', async () => {
@@ -27,9 +27,7 @@ describe('ActiveAlertsFilter', () => {
       </QueryClientProvider>,
     );
 
-    await userEvent.click(
-      screen.getByRole('textbox', { name: 'Filter by severity' }),
-    );
+    await userEvent.click(screen.getByRole('textbox', { name: 'Filter by severity' }));
     await userEvent.click(screen.getByRole('option', { name: 'Critical' }));
 
     expect(SUT).toHaveBeenCalledWith(
@@ -38,9 +36,7 @@ describe('ActiveAlertsFilter', () => {
       }),
     );
 
-    await userEvent.click(
-      screen.getByRole('textbox', { name: 'Filter by severity' }),
-    );
+    await userEvent.click(screen.getByRole('textbox', { name: 'Filter by severity' }));
     await userEvent.click(screen.getByRole('option', { name: 'Warning' }));
     expect(SUT).toHaveBeenCalledWith(
       expect.objectContaining({

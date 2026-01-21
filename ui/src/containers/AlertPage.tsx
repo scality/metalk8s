@@ -4,12 +4,13 @@ import {
   FormattedDateTime,
   Stack,
   StatusWrapper,
+  spacing,
   TextBadge,
   Wrap,
-  spacing,
 } from '@scality/core-ui';
 import { Button, Table } from '@scality/core-ui/dist/next';
 import { fontSize } from '@scality/core-ui/dist/style/theme';
+import { useBasenameRelativeNavigate } from '@scality/module-federation';
 import isEqual from 'lodash.isequal';
 import React, { useMemo } from 'react';
 import { useIntl } from 'react-intl';
@@ -20,7 +21,6 @@ import { STATUS_CRITICAL, STATUS_HEALTH, STATUS_WARNING } from '../constants';
 import { useUserAccessRight } from '../hooks';
 import { compareHealth } from '../services/utils';
 import { useAlerts } from './AlertProvider';
-import { useBasenameRelativeNavigate } from '@scality/module-federation';
 
 const AlertPageHeaderContainer = styled.div`
   display: flex;
@@ -82,20 +82,11 @@ const isEqualAlert = (a = [], b = []) => {
     return false;
   }
 
-  return a.every((alertData) =>
-    b.find(
-      (alert) =>
-        alert.id === alertData.id && alert.severity === alertData.severity,
-    ),
-  );
+  return a.every((alertData) => b.find((alert) => alert.id === alertData.id && alert.severity === alertData.severity));
 };
 
 const getAlertStatus = (numbersOfCritical, numbersOfWarning) =>
-  numbersOfCritical > 0
-    ? STATUS_CRITICAL
-    : numbersOfWarning > 0
-    ? STATUS_WARNING
-    : STATUS_HEALTH;
+  numbersOfCritical > 0 ? STATUS_CRITICAL : numbersOfWarning > 0 ? STATUS_WARNING : STATUS_HEALTH;
 
 function AlertPageHeader({
   activeAlerts,
@@ -230,12 +221,8 @@ export default function AlertPage() {
     () => alerts?.alerts?.filter((alert) => !alert.labels.children) || [],
     [JSON.stringify(alerts?.alerts)],
   );
-  const criticalAlerts = leafAlerts.filter(
-    (alert) => alert.severity === 'critical',
-  );
-  const wariningAlerts = leafAlerts.filter(
-    (alert) => alert.severity === 'warning',
-  );
+  const criticalAlerts = leafAlerts.filter((alert) => alert.severity === 'critical');
+  const wariningAlerts = leafAlerts.filter((alert) => alert.severity === 'warning');
   const columns = React.useMemo(
     () => [
       {
@@ -274,12 +261,7 @@ export default function AlertPage() {
           textAlign: 'right',
           marginRight: spacing.r12,
         },
-        Cell: (cell) => (
-          <FormattedDateTime
-            value={new Date(cell.value)}
-            format="date-time-second"
-          />
-        ),
+        Cell: (cell) => <FormattedDateTime value={new Date(cell.value)} format="date-time-second" />,
       },
     ],
     [],

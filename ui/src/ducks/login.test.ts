@@ -3,7 +3,8 @@
 import { call, put } from 'redux-saga/effects';
 import * as ApiSalt from '../services/salt/api';
 import { CONNECT_SALT_API } from './app/salt';
-import { SALT_AUTHENTICATION_SUCCESS, authenticateSaltApi } from './login';
+import { authenticateSaltApi, SALT_AUTHENTICATION_SUCCESS } from './login';
+
 jest.mock('../index.ts', () => {
   return {
     store: 'store',

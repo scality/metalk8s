@@ -1,8 +1,4 @@
-import {
-  padding,
-  fontSize,
-  fontWeight,
-} from '@scality/core-ui/dist/style/theme';
+import { fontSize, fontWeight, padding } from '@scality/core-ui/dist/style/theme';
 import styled from 'styled-components';
 export const InformationListContainer = styled.div`
   color: ${(props) => props.theme.textPrimary};

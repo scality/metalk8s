@@ -1,25 +1,13 @@
-import {
-  Banner,
-  FormattedDateTime,
-  Icon,
-  Link,
-  Modal,
-  ProgressBar,
-  spacing,
-} from '@scality/core-ui';
+import { Banner, FormattedDateTime, Icon, Link, Modal, ProgressBar, spacing } from '@scality/core-ui';
 import { Box, Button } from '@scality/core-ui/dist/next';
 import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
+import { useBasenameRelativeNavigate } from '@scality/module-federation';
 import { useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import styled, { useTheme } from 'styled-components';
-import {
-  LVM_LOGICAL_VOLUME,
-  STATUS_CRITICAL,
-  STATUS_WARNING,
-  VOLUME_CONDITION_LINK,
-} from '../constants';
+import { LVM_LOGICAL_VOLUME, STATUS_CRITICAL, STATUS_WARNING, VOLUME_CONDITION_LINK } from '../constants';
 import { RenderNoDataAvailable } from '../containers/NodePageMetricsTab';
 import { deleteVolumeAction } from '../ducks/app/volumes';
 import { isVolumeDeletable } from '../services/NodeVolumesUtils';
@@ -35,7 +23,7 @@ import {
   OverviewResourceName,
   VolumeTab,
 } from './style/CommonLayoutStyle';
-import { useBasenameRelativeNavigate } from '@scality/module-federation';
+
 const VolumeDetailCardContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -115,11 +103,9 @@ const VolumeDetailCard = (props) => {
   const theme = useTheme();
   const isVolumeUsageRetrievable = volumeUsagePercentage !== undefined;
 
-  const deleteVolume = (deleteVolumeName) =>
-    dispatch(deleteVolumeAction(deleteVolumeName));
+  const deleteVolume = (deleteVolumeName) => dispatch(deleteVolumeAction(deleteVolumeName));
 
-  const [isDeleteConfirmationModalOpen, setisDeleteConfirmationModalOpen] =
-    useState(false);
+  const [isDeleteConfirmationModalOpen, setisDeleteConfirmationModalOpen] = useState(false);
 
   // Confirm the deletion
   const onClickDeleteButton = (deleteVolumeName, nodeName) => {
@@ -233,9 +219,7 @@ const VolumeDetailCard = (props) => {
                 id: 'status',
               })}
             </OverviewInformationLabel>
-            <OverviewInformationValue data-cy="volume_status_value">
-              {status}
-            </OverviewInformationValue>
+            <OverviewInformationValue data-cy="volume_status_value">{status}</OverviewInformationValue>
           </OverviewInformationSpan>
           <OverviewInformationSpan>
             <OverviewInformationLabel>
@@ -243,9 +227,7 @@ const VolumeDetailCard = (props) => {
                 id: 'storageClass',
               })}
             </OverviewInformationLabel>
-            <OverviewInformationValue>
-              {storageClassName}
-            </OverviewInformationValue>
+            <OverviewInformationValue>{storageClassName}</OverviewInformationValue>
           </OverviewInformationSpan>
           <OverviewInformationSpan>
             <OverviewInformationLabel>
@@ -255,10 +237,7 @@ const VolumeDetailCard = (props) => {
             </OverviewInformationLabel>
             {creationTimestamp ? (
               <OverviewInformationValue>
-                <FormattedDateTime
-                  format="date-time-second"
-                  value={new Date(creationTimestamp)}
-                />
+                <FormattedDateTime format="date-time-second" value={new Date(creationTimestamp)} />
               </OverviewInformationValue>
             ) : (
               ''
@@ -288,18 +267,12 @@ const VolumeDetailCard = (props) => {
                     id: 'backend_disk',
                   })}
                 </OverviewInformationLabel>
-                <OverviewInformationValue data-cy="backend_disk_value">
-                  {devicePath}
-                </OverviewInformationValue>
+                <OverviewInformationValue data-cy="backend_disk_value">{devicePath}</OverviewInformationValue>
               </>
             ) : (
               <>
-                <OverviewInformationLabel data-cy="vg_name_label">
-                  VG Name
-                </OverviewInformationLabel>
-                <OverviewInformationValue data-cy="vg_name_value">
-                  {vgName}
-                </OverviewInformationValue>
+                <OverviewInformationLabel data-cy="vg_name_label">VG Name</OverviewInformationLabel>
+                <OverviewInformationValue data-cy="vg_name_value">{vgName}</OverviewInformationValue>
               </>
             )}
           </OverviewInformationSpan>
@@ -313,12 +286,8 @@ const VolumeDetailCard = (props) => {
               {labels?.map((label) => {
                 return (
                   <div key={label.name}>
-                    <LabelName data-cy="volume_label_name">
-                      {label.name}
-                    </LabelName>
-                    <LabelValue data-cy="volume_label_value">
-                      {label.value}
-                    </LabelValue>
+                    <LabelName data-cy="volume_label_name">{label.name}</LabelName>
+                    <LabelValue data-cy="volume_label_value">{label.value}</LabelValue>
                   </div>
                 );
               })}
@@ -335,16 +304,8 @@ const VolumeDetailCard = (props) => {
                 })}
               </ActiveAlertTitle>
               <ActiveAlertsCounter
-                criticalCounter={
-                  alertlist?.filter(
-                    (item) => item?.labels?.severity === STATUS_CRITICAL,
-                  ).length
-                }
-                warningCounter={
-                  alertlist?.filter(
-                    (item) => item?.labels?.severity === STATUS_WARNING,
-                  ).length
-                }
+                criticalCounter={alertlist?.filter((item) => item?.labels?.severity === STATUS_CRITICAL).length}
+                warningCounter={alertlist?.filter((item) => item?.labels?.severity === STATUS_WARNING).length}
               />
             </ActiveAlertWrapper>
           )}
@@ -355,22 +316,19 @@ const VolumeDetailCard = (props) => {
               })}
             </VolumeSectionTitle>
             {!isVolumeUsageRetrievable && <RenderNoDataAvailable />}
-            {isVolumeUsageRetrievable &&
-              condition === VOLUME_CONDITION_LINK && (
-                <ProgressBarContainer>
-                  <ProgressBar
-                    size="large"
-                    percentage={volumeUsagePercentage}
-                    topRightLabel={`${volumeUsagePercentage}%`}
-                    bottomLeftLabel={`${volumeUsageBytes} USED`}
-                    bottomRightLabel={`${formatSizeForDisplay(
-                      storageCapacity,
-                    )} TOTAL`}
-                    color={theme.infoSecondary}
-                    backgroundColor={theme.buttonSecondary}
-                  />
-                </ProgressBarContainer>
-              )}
+            {isVolumeUsageRetrievable && condition === VOLUME_CONDITION_LINK && (
+              <ProgressBarContainer>
+                <ProgressBar
+                  size="large"
+                  percentage={volumeUsagePercentage}
+                  topRightLabel={`${volumeUsagePercentage}%`}
+                  bottomLeftLabel={`${volumeUsageBytes} USED`}
+                  bottomRightLabel={`${formatSizeForDisplay(storageCapacity)} TOTAL`}
+                  color={theme.infoSecondary}
+                  backgroundColor={theme.buttonSecondary}
+                />
+              </ProgressBarContainer>
+            )}
           </VolumeUsage>
         </VolumeGraph>
         <Modal
