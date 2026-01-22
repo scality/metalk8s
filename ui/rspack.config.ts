@@ -17,10 +17,13 @@ class MicroAppRuntimeConfigurationPlugin {
   private config: MicroAppRuntimeConfiguration;
   private prefix: string;
   private headers: Record<string, string>;
-  constructor(defaultConfig: MicroAppRuntimeConfiguration, prefix = 'MICRO_APP_RUNTIME_', headers = {}) {
-    this.config = this.applyEnvOverrides(defaultConfig);
+  private debug: boolean;
+
+  constructor(defaultConfig: MicroAppRuntimeConfiguration, prefix = 'MICRO_APP_RUNTIME_', headers = {}, debug = false) {
     this.prefix = prefix;
     this.headers = headers;
+    this.debug = debug;
+    this.config = this.applyEnvOverrides(defaultConfig);
   }
 
   private applyEnvOverrides(config: MicroAppRuntimeConfiguration): MicroAppRuntimeConfiguration {
@@ -28,16 +31,33 @@ class MicroAppRuntimeConfigurationPlugin {
 
     for (const [key, value] of Object.entries(process.env)) {
       if (key.startsWith(this.prefix) && value !== undefined) {
-        const specPath = key.slice(this.prefix.length).toLowerCase().replace(/__/g, '.');
-        this.setNestedValue(result.spec, specPath, this.parseValue(value));
+        // Use "__" as path separator (e.g., "selfConfiguration__url_salt" → ["selfConfiguration", "url_salt"])
+        const specPath = key.slice(this.prefix.length).split('__');
+        const currentValue = this.getNestedValue(result.spec, specPath);
+        this.setNestedValue(result.spec, specPath, this.parseValue(value, currentValue));
       }
     }
 
+    if (this.debug) {
+      console.log('config', result);
+    }
     return result;
   }
 
-  private setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
-    const keys = path.split('.');
+  private getNestedValue(obj: Record<string, unknown>, keys: string[]): unknown {
+    let current: unknown = obj;
+
+    for (const key of keys) {
+      if (current === null || typeof current !== 'object') {
+        return undefined;
+      }
+      current = (current as Record<string, unknown>)[key];
+    }
+
+    return current;
+  }
+
+  private setNestedValue(obj: Record<string, unknown>, keys: string[], value: unknown): void {
     let current: Record<string, unknown> = obj;
 
     for (let i = 0; i < keys.length - 1; i++) {
@@ -51,11 +71,15 @@ class MicroAppRuntimeConfigurationPlugin {
     current[keys[keys.length - 1]] = value;
   }
 
-  private parseValue(value: string): unknown {
-    // Try parsing as JSON (handles arrays, objects, booleans, numbers)
+  private parseValue(value: string, currentValue?: unknown): unknown {
+    // Try parsing as JSON first (handles arrays, objects, booleans, numbers)
     try {
       return JSON.parse(value);
     } catch {
+      // If the current value is an array, treat comma-separated values as array
+      if (Array.isArray(currentValue) && value.includes(',')) {
+        return value.split(',').map((v) => v.trim());
+      }
       // Return as string if not valid JSON
       return value;
     }
