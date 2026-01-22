@@ -2,8 +2,89 @@ import path from 'path';
 import packageJson from './package.json';
 import type { Configuration } from '@rspack/cli';
 import * as rspack from '@rspack/core';
+import type { Compiler } from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
 import fs from 'fs';
+
+interface MicroAppRuntimeConfiguration {
+  kind: string;
+  apiVersion: string;
+  metadata: Record<string, unknown>;
+  spec: Record<string, unknown>;
+}
+
+class MicroAppRuntimeConfigurationPlugin {
+  private config: MicroAppRuntimeConfiguration;
+  private prefix: string;
+  private headers: Record<string, string>;
+  constructor(defaultConfig: MicroAppRuntimeConfiguration, prefix = 'MICRO_APP_RUNTIME_', headers = {}) {
+    this.config = this.applyEnvOverrides(defaultConfig);
+    this.prefix = prefix;
+    this.headers = headers;
+  }
+
+  private applyEnvOverrides(config: MicroAppRuntimeConfiguration): MicroAppRuntimeConfiguration {
+    const result = JSON.parse(JSON.stringify(config)) as MicroAppRuntimeConfiguration;
+
+    for (const [key, value] of Object.entries(process.env)) {
+      if (key.startsWith(this.prefix) && value !== undefined) {
+        const specPath = key.slice(this.prefix.length).toLowerCase().replace(/__/g, '.');
+        this.setNestedValue(result.spec, specPath, this.parseValue(value));
+      }
+    }
+
+    return result;
+  }
+
+  private setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
+    const keys = path.split('.');
+    let current: Record<string, unknown> = obj;
+
+    for (let i = 0; i < keys.length - 1; i++) {
+      const key = keys[i];
+      if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
+        current[key] = {};
+      }
+      current = current[key] as Record<string, unknown>;
+    }
+
+    current[keys[keys.length - 1]] = value;
+  }
+
+  private parseValue(value: string): unknown {
+    // Try parsing as JSON (handles arrays, objects, booleans, numbers)
+    try {
+      return JSON.parse(value);
+    } catch {
+      // Return as string if not valid JSON
+      return value;
+    }
+  }
+
+  apply(compiler: Compiler): void {
+    const publicPath = compiler.options.output?.publicPath ?? '/';
+    const normalizedPublicPath = typeof publicPath === 'string' ? publicPath.replace(/\/$/, '') : '';
+
+    // Extend devServer configuration
+    const originalSetupMiddlewares = compiler.options.devServer?.setupMiddlewares;
+
+    if (compiler.options.devServer) {
+      compiler.options.devServer.setupMiddlewares = (middlewares, devServer) => {
+        const endpoint = `${normalizedPublicPath}/.well-known/runtime-app-configuration`;
+
+        devServer.app?.get(endpoint, (_req, res) => {
+          res.set(this.headers);
+          res.json(this.config);
+        });
+
+        if (originalSetupMiddlewares) {
+          return originalSetupMiddlewares(middlewares, devServer);
+        }
+        return middlewares;
+      };
+    }
+  }
+}
 
 const deps = packageJson.dependencies;
 
@@ -169,6 +250,42 @@ const config: Configuration = {
       NODE_ENV: process.env.NODE_ENV,
       PUBLIC_URL: JSON.stringify('/'),
     }),
+    new MicroAppRuntimeConfigurationPlugin(
+      {
+        kind: 'MicroAppRuntimeConfiguration',
+        apiVersion: 'ui.scality.com/v1alpha1',
+        metadata: {
+          kind: 'metalk8s-ui',
+          name: 'metalk8s.eu-west-1',
+        },
+        spec: {
+          title: 'MetalK8s Platform',
+          selfConfiguration: {
+            url: '/api/kubernetes',
+            url_salt: '/api/salt',
+            url_prometheus: '/api/prometheus',
+            url_grafana: '/grafana',
+            url_doc: '/docs',
+            url_alertmanager: '/api/alertmanager',
+            url_loki: '/api/loki',
+            flags: [],
+            ui_base_path: '/',
+            url_support: 'https://github.com/scality/metalk8s/discussions/new',
+          },
+          auth: {
+            kind: 'OIDC',
+            providerUrl: '/oidc',
+            redirectUrl: 'http://localhost:8084/',
+            clientId: 'metalk8s-ui',
+            responseType: 'code',
+            scopes: 'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
+            providerLogout: true,
+          },
+        },
+      },
+      'METALK8S_RUNTIME_',
+      corsHeaders,
+    ),
   ],
   devServer: {
     port: 3000,
@@ -180,18 +297,6 @@ const config: Configuration = {
         warnings: false,
         errors: true,
       },
-    },
-    setupMiddlewares: (middlewares, devServer) => {
-      devServer.app.get('/metalk8s/.well-known/runtime-app-configuration', (req, res) => {
-        res.set(corsHeaders);
-        const devConfigPath = path.join(__dirname, 'public/.well-known/dev.runtime-app-configuration');
-        const defaultConfigPath = path.join(__dirname, 'public/.well-known/runtime-app-configuration');
-
-        const configPath = fs.existsSync(devConfigPath) ? devConfigPath : defaultConfigPath;
-
-        res.sendFile(configPath);
-      });
-      return middlewares;
     },
   },
 };
