@@ -54,7 +54,7 @@ const server = setupServer(
     },
   ),
 
-  rest.get('http://localhost/brand/email.html', (req, res, ctx) => {
+  rest.get('http://localhost/metalk8s/brand/email.html', (req, res, ctx) => {
     const result = 'TEMPLATE DELETED';
     return res(ctx.text(result));
   }),
