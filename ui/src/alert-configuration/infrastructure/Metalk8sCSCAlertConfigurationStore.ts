@@ -286,7 +286,7 @@ export class Metalk8sCSCAlertConfigurationStore
     alertConfiguration: AlertConfiguration,
     currentEmailreceiver: Receiver,
   ): Promise<Receiver> {
-    const html = await fetch(`/brand/email.html`).then((res) => res.text());
+    const html = await fetch(`/metalk8s/brand/email.html`).then((res) => res.text());
 
     return {
       ...currentEmailreceiver,
