@@ -119,7 +119,7 @@ PersistentVolume creation, taking care of putting a finalizer on the
 PersistentVolume (so that its lifetime is tied to ours) and setting ourself as
 the owner of the PersistentVolume.
 
-Once we have successfuly created the PersistentVolume, we can move into the
+Once we have successfully created the PersistentVolume, we can move into the
 `Available` state and reschedule the request (the next iteration will check the
 health of the PersistentVolume we just created).
 
@@ -220,8 +220,10 @@ reclaim its storage and remove the finalizers to let the object be deleted.
 
 }}} */
 
-const VOLUME_PROTECTION = "storage.metalk8s.scality.com/volume-protection"
-const JOB_DONE_MARKER = "DONE"
+const (
+	VolumeProtection = "storage.metalk8s.scality.com/volume-protection"
+	JobDoneMarker    = "DONE"
+)
 
 var log = logf.Log.WithName("volume-controller")
 
@@ -360,7 +362,7 @@ func (self *VolumeReconciler) addVolumeFinalizer(
 	ctx context.Context, volume *storagev1alpha1.Volume,
 ) error {
 	finalizers := volume.GetFinalizers()
-	volume.SetFinalizers(SliceAppendUnique(finalizers, VOLUME_PROTECTION))
+	volume.SetFinalizers(SliceAppendUnique(finalizers, VolumeProtection))
 	return self.Client.Update(ctx, volume)
 }
 
@@ -369,7 +371,7 @@ func (self *VolumeReconciler) removeVolumeFinalizer(
 	ctx context.Context, volume *storagev1alpha1.Volume,
 ) error {
 	finalizers := volume.GetFinalizers()
-	volume.SetFinalizers(SliceRemoveValue(finalizers, VOLUME_PROTECTION))
+	volume.SetFinalizers(SliceRemoveValue(finalizers, VolumeProtection))
 	return self.Client.Update(ctx, volume)
 }
 
@@ -416,7 +418,7 @@ func (self *VolumeReconciler) removePvFinalizer(
 	ctx context.Context, pv *corev1.PersistentVolume,
 ) error {
 	finalizers := pv.GetFinalizers()
-	pv.SetFinalizers(SliceRemoveValue(finalizers, VOLUME_PROTECTION))
+	pv.SetFinalizers(SliceRemoveValue(finalizers, VolumeProtection))
 	return self.Client.Update(ctx, pv)
 }
 
@@ -745,7 +747,7 @@ func (self *VolumeReconciler) prepareStorage(
 			)
 			return self.setPendingVolumeStatus(ctx, volume, job.String())
 		}
-	case JOB_DONE_MARKER: // Storage is ready, let's get its information.
+	case JobDoneMarker: // Storage is ready, let's get its information.
 		job.Name = "GetDeviceInfo"
 		job.ID = ""
 		return self.getStorageSize(ctx, volume, job)
@@ -755,7 +757,7 @@ func (self *VolumeReconciler) prepareStorage(
 			self.setPendingVolumeStatus,
 			storagev1alpha1.ReasonCreationError,
 			func(_ map[string]interface{}) (reconcile.Result, error) {
-				job.ID = JOB_DONE_MARKER
+				job.ID = JobDoneMarker
 				return self.setPendingVolumeStatus(ctx, volume, job.String())
 			},
 		)
@@ -786,7 +788,7 @@ func (self *VolumeReconciler) getStorageSize(
 			)
 			return self.setPendingVolumeStatus(ctx, volume, job.String())
 		}
-	case JOB_DONE_MARKER: // We have everything we need: let's create the PV!
+	case JobDoneMarker: // We have everything we need: let's create the PV!
 		return self.createPersistentVolume(ctx, volume)
 	default: // GetDeviceInfo in progress: poll its state.
 		return self.pollSaltJob(
@@ -807,7 +809,7 @@ func (self *VolumeReconciler) getStorageSize(
 					)
 				}
 				self.devices[volume.Name] = *info
-				job.ID = JOB_DONE_MARKER
+				job.ID = JobDoneMarker
 				return self.setPendingVolumeStatus(ctx, volume, job.String())
 			},
 		)
@@ -907,7 +909,7 @@ func newPersistentVolume(
 	}
 	pv.ObjectMeta.Name = volume.Name
 	pv.ObjectMeta.Finalizers = append(
-		pv.ObjectMeta.Finalizers, VOLUME_PROTECTION,
+		pv.ObjectMeta.Finalizers, VolumeProtection,
 	)
 	pv.Spec.AccessModes = []corev1.PersistentVolumeAccessMode{
 		corev1.ReadWriteOnce,
@@ -968,7 +970,7 @@ func isPersistentVolumeUnused(pv *corev1.PersistentVolume) bool {
 	case corev1.VolumeAvailable, corev1.VolumeReleased, corev1.VolumeFailed:
 		reqLogger.Info("the backing PersistentVolume is in a removable state")
 		finalizers := pv.GetFinalizers()
-		if len(finalizers) == 1 && finalizers[0] == VOLUME_PROTECTION {
+		if len(finalizers) == 1 && finalizers[0] == VolumeProtection {
 			reqLogger.Info("the backing PersistentVolume is unused")
 			return true
 		}
@@ -999,15 +1001,15 @@ func (self *VolumeReconciler) reclaimStorage(
 		reqLogger.Error(err, "cannot parse Salt job from Volume status")
 		return requeue(err)
 	}
-	jobId := job.ID
+	jobID := job.ID
 
 	// Ignore existing Job ID in Failed case (no job are running), JID only here
 	// for debug (which is now useless as we're going to delete the Volume).
 	if volume.ComputePhase() == storagev1alpha1.VolumeFailed {
-		jobId = ""
+		jobID = ""
 	}
 
-	switch jobId {
+	switch jobID {
 	case "": // No job in progress: call Salt to unprepare the volume.
 		job, err := self.salt.UnprepareVolume(
 			ctx, nodeName, volume.Name, saltenv,
@@ -1023,7 +1025,7 @@ func (self *VolumeReconciler) reclaimStorage(
 			)
 			return self.setTerminatingVolumeStatus(ctx, volume, job.String())
 		}
-	case JOB_DONE_MARKER: // Salt job is done, now let's remove the finalizers.
+	case JobDoneMarker: // Salt job is done, now let's remove the finalizers.
 		if pv != nil {
 			if err := self.removePvFinalizer(ctx, pv); err != nil {
 				reqLogger.Error(err, "cannot remove PersistentVolume finalizer")
@@ -1047,7 +1049,7 @@ func (self *VolumeReconciler) reclaimStorage(
 			self.setTerminatingVolumeStatus,
 			storagev1alpha1.ReasonDestructionError,
 			func(_ map[string]interface{}) (reconcile.Result, error) {
-				job.ID = JOB_DONE_MARKER
+				job.ID = JobDoneMarker
 				return self.setTerminatingVolumeStatus(ctx, volume, job.String())
 			},
 		)
@@ -1086,7 +1088,7 @@ func getAuthCredential(config *rest.Config) *salt.Credential {
 
 // Extract the device info from a Salt result.
 func parseDeviceInfo(result map[string]interface{}) (*deviceInfo, error) {
-	size_str, ok := result["size"].(string)
+	sizeStr, ok := result["size"].(string)
 	if !ok {
 		return nil, fmt.Errorf(
 			"cannot find a string value for key 'size' in %v", result,
@@ -1099,9 +1101,9 @@ func parseDeviceInfo(result map[string]interface{}) (*deviceInfo, error) {
 		)
 	}
 
-	if size, err := strconv.ParseInt(size_str, 10, 64); err != nil {
+	if size, err := strconv.ParseInt(sizeStr, 10, 64); err != nil {
 		return nil, errorsng.Wrapf(
-			err, "cannot parse device size (%s)", size_str,
+			err, "cannot parse device size (%s)", sizeStr,
 		)
 	} else {
 		return &deviceInfo{size, path}, nil

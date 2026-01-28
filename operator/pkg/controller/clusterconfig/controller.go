@@ -116,7 +116,7 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Starting here some change might be done on the cluster, so make sure to publish status update
-	defer r.client.Status().Update(ctx, instance)
+	defer func() { _ = r.client.Status().Update(ctx, instance) }()
 
 	subReconcilers := map[string]utils.SubReconciler{
 		"ControlPlaneIngress":        &controlplane.IngressReconciler{},

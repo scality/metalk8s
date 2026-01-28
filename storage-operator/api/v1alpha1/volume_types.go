@@ -250,7 +250,7 @@ func (self *Volume) ComputePhase() VolumePhase {
 //	format:    the string format for the error message
 //	args:      values used in the error message
 func (self *Volume) SetFailedStatus(
-	reason ConditionReason, format string, args ...interface{},
+	reason ConditionReason, format string, args ...any,
 ) {
 	message := fmt.Sprintf(format, args...)
 

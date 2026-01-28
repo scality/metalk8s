@@ -87,7 +87,7 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Nothing to do, all objects that should be deleted are
-			// automatically grabage collected because of owner reference
+			// automatically garbage collected because of owner reference
 			return utils.EndReconciliation()
 		}
 		return utils.Requeue(err)
@@ -120,7 +120,7 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	r.handler = utils.NewObjectHandler(&r.instance, r.client, r.scheme, r.recorder, reqLogger, componentName, appName)
 
 	// Starting here some change might be done on the cluster, so make sure to publish status update
-	defer r.client.Status().Update(ctx, &r.instance)
+	defer func() { _ = r.client.Status().Update(ctx, &r.instance) }()
 
 	changed, err := r.handler.CreateOrUpdateOrDelete(ctx, objsToUpdate, nil, r.mutate)
 	if err != nil {

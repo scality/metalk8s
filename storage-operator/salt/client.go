@@ -323,7 +323,7 @@ func (self *Client) authenticatedRequest(
 	if response.StatusCode == 401 {
 		self.logger.Info("valid token rejected: try to re-authenticate")
 
-		response.Body.Close() // Terminate this request before starting another.
+		_ = response.Body.Close() // Terminate this request before starting another.
 
 		self.token = nil
 		if err := self.authenticate(ctx); err != nil {
@@ -331,7 +331,7 @@ func (self *Client) authenticatedRequest(
 		}
 		response, err = self.doRequest(ctx, verb, endpoint, payload, true)
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 
 	return decodeApiResponse(response)
 }
@@ -352,7 +352,7 @@ func (self *Client) authenticate(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 
 	result, err := decodeApiResponse(response)
 	if err != nil {
@@ -448,7 +448,7 @@ func (self *Client) logRequest(
 //
 //	The HTTP request.
 func (self *Client) newRequest(
-	verb string, endpoint string, payload map[string]interface{}, is_auth bool,
+	verb string, endpoint string, payload map[string]interface{}, isAuth bool,
 ) (*http.Request, error) {
 	// Build target URL.
 	url := fmt.Sprintf("%s%s", self.address, endpoint)
@@ -477,7 +477,7 @@ func (self *Client) newRequest(
 
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Content-Type", "application/json")
-	if is_auth {
+	if isAuth {
 		request.Header.Set("X-Auth-Token", self.token.value)
 	}
 	return request, nil
