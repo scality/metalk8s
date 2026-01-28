@@ -2,6 +2,16 @@
 
 ## Release 133.0.0 (in development)
 
+### Enhancements
+
+- Bump Kubernetes version to [1.33.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.33.7)
+
+  - Bump Golang libraries version to 0.33.7
+  (PR[#4750](https://github.com/scality/metalk8s/pull/4750))
+
+- Bump Golang version to [1.25.5](https://go.dev/doc/devel/release#go1.25.5)
+  (PR[#4750](https://github.com/scality/metalk8s/pull/4750))
+
 ## Release 132.0.0 (in development)
 
 ### Enhancements

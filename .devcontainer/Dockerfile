@@ -72,7 +72,7 @@ RUN curl --fail -L -o /tmp/helm.tar.gz https://get.helm.sh/helm-v${HELM_VERSION}
     rm -rf /tmp/helm.tar.gz
 
 # Install go
-ARG GO_VERSION=1.21.13
+ARG GO_VERSION=1.25.5
 ENV GOROOT="/usr/local/go"
 # NOTE: We use a custom GOPATH so that we can use it both for vscode and root users
 ENV GOPATH="/usr/lib/go"
