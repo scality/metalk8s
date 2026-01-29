@@ -2,3 +2,7 @@ node_modules
 build
 @mf-types
 build_ts/
+
+dev.proxy.json
+public/dev.deployed-ui-apps.json
+public/dev.config.json
