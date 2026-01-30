@@ -71,6 +71,7 @@
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-react": "^7.12.10",
     "@babel/preset-typescript": "^7.21.0",
+    "@biomejs/biome": "2.3.11",
     "@module-federation/enhanced": "^0.21.6",
     "@redux-saga/testing-utils": "^1.0.2",
     "@rspack/cli": "^1.6.7",
