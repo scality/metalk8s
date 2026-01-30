@@ -1,8 +1,9 @@
 import path from 'path';
 import packageJson from './package.json';
-import { Configuration } from '@rspack/cli';
+import type { Configuration } from '@rspack/cli';
 import * as rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
+import { MicroAppRuntimeConfigurationPlugin } from '@scality/module-federation';
 import fs from 'fs';
 
 const deps = packageJson.dependencies;
@@ -11,16 +12,18 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 let version = process.env.VERSION;
 if (!version) {
-  const versionFileContents = fs.readFileSync(
-    path.join(__dirname, '../VERSION'),
-    { encoding: 'utf-8' },
-  );
+  const versionFileContents = fs.readFileSync(path.join(__dirname, '../VERSION'), { encoding: 'utf-8' });
   const versionRegex =
     /.*VERSION_MAJOR=(?<versionMajor>\d+)(\n){0,1}.*VERSION_MINOR=(?<versionMinor>\d+)(\n){0,1}.*VERSION_PATCH=(?<versionPatch>\d+)(\n){0,1}.*VERSION_SUFFIX=(?<versionSuffix>.*)/m;
-  const { versionMajor, versionMinor, versionPatch, versionSuffix } =
-    versionRegex.exec(versionFileContents).groups;
+  const { versionMajor, versionMinor, versionPatch, versionSuffix } = versionRegex.exec(versionFileContents).groups;
   version = `${versionMajor}.${versionMinor}.${versionPatch}${versionSuffix}`;
 }
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+  'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
+};
 
 const config: Configuration = {
   experiments: {
@@ -118,10 +121,8 @@ const config: Configuration = {
       exposes: {
         './FederableApp': './src/FederableApp.tsx',
         './platformLibrary': './src/services/platformlibrary/k8s.ts',
-        './AlertsNavbarUpdater':
-          './src/components/AlertNavbarUpdaterComponent.tsx',
-        './Metalk8sLocalVolumeProvider':
-          './src/services/k8s/Metalk8sLocalVolumeProvider.ts',
+        './AlertsNavbarUpdater': './src/components/AlertNavbarUpdaterComponent.tsx',
+        './Metalk8sLocalVolumeProvider': './src/services/k8s/Metalk8sLocalVolumeProvider.ts',
       },
       remotes: !isProduction
         ? {
@@ -129,9 +130,7 @@ const config: Configuration = {
           }
         : undefined,
       shared: {
-        ...Object.fromEntries(
-          Object.entries(deps).map(([key, version]) => [key, {}]),
-        ),
+        ...Object.fromEntries(Object.entries(deps).map(([key, version]) => [key, {}])),
         '@scality/module-federation': {
           singleton: true,
         },
@@ -168,16 +167,47 @@ const config: Configuration = {
       NODE_ENV: process.env.NODE_ENV,
       PUBLIC_URL: JSON.stringify('/'),
     }),
+    new MicroAppRuntimeConfigurationPlugin(
+      {
+        kind: 'MicroAppRuntimeConfiguration',
+        apiVersion: 'ui.scality.com/v1alpha1',
+        metadata: {
+          kind: 'metalk8s-ui',
+          name: 'metalk8s.eu-west-1',
+        },
+        spec: {
+          title: 'MetalK8s Platform',
+          selfConfiguration: {
+            url: '/api/kubernetes',
+            url_salt: '/api/salt',
+            url_prometheus: '/api/prometheus',
+            url_grafana: '/grafana',
+            url_doc: '/docs',
+            url_alertmanager: '/api/alertmanager',
+            url_loki: '/api/loki',
+            flags: [],
+            ui_base_path: '/',
+            url_support: 'https://github.com/scality/metalk8s/discussions/new',
+          },
+          auth: {
+            kind: 'OIDC',
+            providerUrl: '/oidc',
+            redirectUrl: 'http://localhost:8084/',
+            clientId: 'metalk8s-ui',
+            responseType: 'code',
+            scopes: 'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
+            providerLogout: true,
+          },
+        },
+      },
+      'METALK8S_RUNTIME_',
+      corsHeaders,
+    ),
   ],
   devServer: {
     port: 3000,
     hot: !isProduction,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-      'Access-Control-Allow-Headers':
-        'X-Requested-With, content-type, Authorization',
-    },
+    headers: corsHeaders,
     static: path.join(__dirname, 'public'),
     client: {
       overlay: {
