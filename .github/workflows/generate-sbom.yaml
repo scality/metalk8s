@@ -98,7 +98,7 @@ jobs:
         uses: scality/sbom-upload@v1
         with:
           url: ${{ vars.DEPENDENCY_TRACK_HOSTNAME }}
-          api-key: ${{ secrets.DEPENDENCYTRACK_APIKEY }}
+          api-key: ${{ secrets.DEPENDENCY_TRACK_APIKEY }}
           hierarchy-input-dir: ${{ env.SBOM_PATH }}
           generate-hierarchy: true
           hierarchy-upload: true
