@@ -3,6 +3,7 @@ package clusterconfig
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -91,11 +92,15 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		if errors.IsNotFound(err) {
 			if req.Name == instanceName {
 				// NOTE: The main ClusterConfig object get created at operator startup,
-				// so if, for whatever reason, this one get deleted we just "panic" so that
-				// the operator restart and re-create the ClusterConfig
-				panic(fmt.Errorf(
-					"%s ClusterConfig object should not be deleted", req.Name,
-				))
+				// so if, for whatever reason, this one get deleted we need to force
+				// the operator to restart and re-create the ClusterConfig.
+				// We use os.Exit(1) instead of panic() because controller-runtime
+				// recovers panics in reconciliation goroutines without crashing the pod.
+				reqLogger.Error(
+					fmt.Errorf("%s ClusterConfig object should not be deleted", req.Name),
+					"FATAL: main ClusterConfig deleted, forcing operator restart",
+				)
+				os.Exit(1)
 			}
 			reqLogger.Info("ClusterConfig already deleted: nothing to do")
 			return utils.EndReconciliation()
