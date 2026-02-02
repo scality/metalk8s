@@ -315,4 +315,9 @@ def get_control_plane_ingress_external_ips():
     if control_plane_ingress_ip in mine_control_plane_ips:
         mine_control_plane_ips.remove(control_plane_ingress_ip)
 
-    return [control_plane_ingress_ip] + sorted(mine_control_plane_ips)
+    result = [control_plane_ingress_ip] + sorted(mine_control_plane_ips)
+
+    # Filter out empty/None values to comply with Kubernetes 1.33.7 strict validation
+    # which rejects empty strings in Service.spec.externalIPs[]
+    # This can happen during ClusterConfig reconciliation (e.g., during deletion tests)
+    return [ip for ip in result if ip]

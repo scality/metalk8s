@@ -336,3 +336,30 @@ get_control_plane_ingress_external_ips:
   - mine_ret: "ErROr"
     raises: true
     result: "Unable to get master Control Plane IPs: ErROr"
+
+  # 8. Empty control plane ingress IP (e.g., during ClusterConfig deletion)
+  # Should filter out empty values to comply with K8s 1.33.7+ strict validation
+  - cp_ingress_ip_ret: ""
+    mine_ret:
+      bootstrap: 1.1.1.1
+    result:
+      - 1.1.1.1
+
+  # 9. None control plane ingress IP (ClusterConfig not ready)
+  - cp_ingress_ip_ret: null
+    mine_ret:
+      bootstrap: 1.1.1.1
+    result:
+      - 1.1.1.1
+
+  # 10. Empty ingress IP in multi-node
+  - cp_ingress_ip_ret: ""
+    master_nodes_ret:
+      - bootstrap
+      - node-1
+    mine_ret:
+      bootstrap: 1.1.1.1
+      node-1: 1.1.1.2
+    result:
+      - 1.1.1.1
+      - 1.1.1.2
