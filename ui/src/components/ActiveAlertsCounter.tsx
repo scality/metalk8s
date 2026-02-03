@@ -82,7 +82,7 @@ const ActiveAlertsCounter = (props) => {
       >
         <CounterTitle>Warning</CounterTitle>
         <CounterValueWrapper>
-          <CounterIcon name="Exclamation-triangle" status={STATUS_WARNING} />
+          <CounterIcon name="Exclamation-circle" status={STATUS_WARNING} />
           <CounterValue>{warningCounter}</CounterValue>
         </CounterValueWrapper>
       </CounterWrapper>

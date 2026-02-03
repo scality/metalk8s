@@ -1,6 +1,5 @@
-import { Text, TextBadge } from '@scality/core-ui';
+import { spacing, Text, TextBadge } from '@scality/core-ui';
 import { Box } from '@scality/core-ui/dist/next';
-import { spacing } from '@scality/core-ui/dist/style/theme';
 import { useMemo } from 'react';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
@@ -19,7 +18,7 @@ const AlertsContainer = styled.div`
 const BadgesContainer = styled.div`
   display: flex;
   & > div {
-    margin-right: ${spacing.sp16};
+    margin-right: ${spacing.r16};
   }
 `;
 const Link = styled.div`
