@@ -113,7 +113,7 @@ const NotificationCenter = () => {
   const navigate = useShellHistory();
   return (
     <div
-      style={{ position: 'relative' }}
+      style={{ position: 'relative'}}
       {...getToggleButtonProps({
         'aria-label': 'Notification Center',
         ref: (e: HTMLDivElement) => {
@@ -127,7 +127,7 @@ const NotificationCenter = () => {
       })}
     >
       <Button
-        style={isOpen ? { background: theme?.highlight } : {}}
+        style={isOpen ? { background: theme?.highlight } : { backgroundColor: 'transparent' }}
         icon={
           <span className="fa-layers fa-fw">
             <Icon
