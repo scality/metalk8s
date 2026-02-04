@@ -29,24 +29,26 @@ runs:
       with:
         NODE: ${{ inputs.from-node }}
         COMMAND: >
-          sudo crictl exec -i \"${{ steps.get-container.outputs.RESULT }}\" sh -c \"
-          ETCDCTL_API=3 etcdctl --endpoints https://127.0.0.1:2379
-          --cert /etc/kubernetes/pki/etcd/server.crt
-          --key /etc/kubernetes/pki/etcd/server.key
-          --cacert /etc/kubernetes/pki/etcd/ca.crt
-          member list\" | awk -F ', ' '\$3 ~ \"${{ inputs.node-to-remove }}\" { print \$1 }'
+          sudo crictl exec -i \"${{ steps.get-container.outputs.RESULT }}\"
+          etcdctl
+          --endpoints=https://127.0.0.1:2379
+          --cert=/etc/kubernetes/pki/etcd/server.crt
+          --key=/etc/kubernetes/pki/etcd/server.key
+          --cacert=/etc/kubernetes/pki/etcd/ca.crt
+          member list | awk -F ', ' '\$3 ~ \"${{ inputs.node-to-remove }}\" { print \$1 }'
         CAPTURE_RESULT: "true"
     - name: "Remove the etcd member"
       uses: ./.github/actions/run-command-ssh
       with:
         NODE: ${{ inputs.from-node }}
         COMMAND: >
-          sudo crictl exec -i \"${{ steps.get-container.outputs.RESULT }}\" sh -c \"
-          ETCDCTL_API=3 etcdctl --endpoints https://127.0.0.1:2379
-          --cert /etc/kubernetes/pki/etcd/server.crt
-          --key /etc/kubernetes/pki/etcd/server.key
-          --cacert /etc/kubernetes/pki/etcd/ca.crt
-          member remove ${{ steps.get-id.outputs.RESULT }}\"
+          sudo crictl exec -i \"${{ steps.get-container.outputs.RESULT }}\"
+          etcdctl
+          --endpoints=https://127.0.0.1:2379
+          --cert=/etc/kubernetes/pki/etcd/server.crt
+          --key=/etc/kubernetes/pki/etcd/server.key
+          --cacert=/etc/kubernetes/pki/etcd/ca.crt
+          member remove \"${{ steps.get-id.outputs.RESULT }}\"
     - name: "Remove the node object"
       uses: ./.github/actions/run-command-ssh
       with:
