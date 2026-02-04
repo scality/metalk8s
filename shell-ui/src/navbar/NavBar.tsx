@@ -34,7 +34,7 @@ import type { Link as TypeLink } from './navbarHooks';
 import { useNavbar } from './navbarHooks';
 
 const Logo = styled.img`
-  height: 2.143rem;
+  height: 1.5rem;
 `;
 export const LoadingNavbar = ({ logo }: { logo: string }) => (
   <CoreUINavbar
@@ -403,6 +403,7 @@ export const Navbar = ({
     rightTabs.unshift({
       render: () => (
         <Button
+        style={{ backgroundColor: 'transparent' }}
           onClick={() => {
             setThemeMode(switchThemeTo);
           }}

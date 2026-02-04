@@ -44,7 +44,7 @@ const SecondaryTitle = styled.div`
   justify-content: center;
   font-size: ${fontSize.base};
   width: 250px;
-  color: ${(props) => props.theme.textSecondary};
+  color: ${(props) => props.theme.textPrimary};
 `;
 const TertiaryTitle = styled.div`
   display: flex;
@@ -184,8 +184,9 @@ const ActiveAlertTab = React.memo(
         startsAt: (row1, row2) => {
           const a = row1?.values?.startsAt;
           const b = row2.values?.startsAt;
-          // @ts-expect-error - FIXME when you are working on it
-          return new Date(a) - new Date(b);
+          const dateA = new Date(a).getTime();
+          const dateB = new Date(b).getTime();
+          return dateA - dateB;
         },
       };
     }, []);
