@@ -120,7 +120,7 @@ const NodeCreateForm = () => {
               asyncErrors &&
               asyncErrors.create_node && (
                 <Banner
-                  icon={<Icon name="Exclamation-triangle" />}
+                  icon={<Icon name="Exclamation-circle" />}
                   title="Error"
                   variant="danger"
                 >
@@ -207,8 +207,8 @@ const NodeCreateForm = () => {
                       values.infra
                     )
                       ? intl.formatMessage({
-                          id: 'role_values_error',
-                        })
+                        id: 'role_values_error',
+                      })
                       : undefined
                   }
                   content={

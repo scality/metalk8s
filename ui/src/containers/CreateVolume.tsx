@@ -422,11 +422,11 @@ const CreateVolume = (props) => {
               error = intl.formatMessage(
                 isLabelPrefixMatched
                   ? {
-                      id: 'label_name_error',
-                    }
+                    id: 'label_name_error',
+                  }
                   : {
-                      id: 'label_prefix_name_error',
-                    },
+                    id: 'label_prefix_name_error',
+                  },
               );
             } else {
               error = intl.formatMessage({
@@ -683,7 +683,7 @@ const CreateVolume = (props) => {
               isStorageClassExist ? null : (
                 <Banner
                   variant="warning"
-                  icon={<Icon name="Exclamation-triangle" />}
+                  icon={<Icon name="Exclamation-circle" />}
                   title={intl.formatMessage({
                     id: 'no_storage_class_found',
                   })}
