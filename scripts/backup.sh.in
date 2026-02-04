@@ -24,29 +24,29 @@ _usage() {
 }
 
 while (( "$#" )); do
-  case "$1" in
-    -v|--verbose)
-      VERBOSE=1
-      ;;
-    -l|--log-file)
-      LOGFILE="$2"
-      shift
-      ;;
-    -b|--backup-file)
-      BACKUP_ARCHIVE="$2"
-      shift
-      ;;
-    # Disable the backup replication on other master nodes
-    -n|--no-replication)
-      REPLICATION=0
-      ;;
-    *) # unsupported flags
-      echo "Error: Unsupported flag $1" >&2
-      _usage
-      exit 1
-      ;;
-  esac
-  shift
+    case "$1" in
+        -v|--verbose)
+            VERBOSE=1
+        ;;
+        -l|--log-file)
+            LOGFILE="$2"
+            shift
+        ;;
+        -b|--backup-file)
+            BACKUP_ARCHIVE="$2"
+            shift
+        ;;
+        # Disable the backup replication on other master nodes
+        -n|--no-replication)
+            REPLICATION=0
+        ;;
+        *) # unsupported flags
+            echo "Error: Unsupported flag $1" >&2
+            _usage
+            exit 1
+        ;;
+    esac
+    shift
 done
 
 TMPFILES=$(mktemp -d)
@@ -79,8 +79,8 @@ _save_cp() {
     if [ -f "$src" ]; then
         echo "Copying '$src' to '$dst'"
         if [ ! -d "$(dirname "$dst")" ]; then
-          echo "Creating '$(dirname "$dst")' directory"
-          mkdir -p "$(dirname "$dst")"
+            echo "Creating '$(dirname "$dst")' directory"
+            mkdir -p "$(dirname "$dst")"
         fi
         cp -a "$src" "$dst"
     elif [ -d "$src" ]; then
@@ -116,11 +116,11 @@ backup_cas() {
 backup_etcd() {
     local -r etcd_snapshot="etcd_snapshot_$(date -u +%Y%m%d_%H%M%S)"
     local -r cmd=(
-      "ETCDCTL_API=3 etcdctl --endpoints https://127.0.0.1:2379"
-      "--cert /etc/kubernetes/pki/etcd/salt-master-etcd-client.crt"
-      "--key /etc/kubernetes/pki/etcd/salt-master-etcd-client.key"
-      "--cacert /etc/kubernetes/pki/etcd/ca.crt"
-      "snapshot save $etcd_snapshot"
+        "ETCDCTL_API=3 etcdctl --endpoints https://127.0.0.1:2379"
+        "--cert /etc/kubernetes/pki/etcd/salt-master-etcd-client.crt"
+        "--key /etc/kubernetes/pki/etcd/salt-master-etcd-client.key"
+        "--cacert /etc/kubernetes/pki/etcd/ca.crt"
+        "snapshot save $etcd_snapshot"
     )
     local etcd_container=''
     echo "Snapshot etcd"
@@ -175,8 +175,8 @@ replicate_archives() {
     salt_master_exec=(crictl exec -i "$(get_salt_container)")
 
     "${salt_master_exec[@]}" salt-run --state-output=mixed state.orchestrate \
-	metalk8s.orchestrate.backup.replication \
-	saltenv=metalk8s-@@VERSION
+        metalk8s.orchestrate.backup.replication \
+        saltenv=metalk8s-@@VERSION
 }
 
 run "Backing up MetalK8s configurations" backup_metalk8s_conf
