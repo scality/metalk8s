@@ -2,6 +2,11 @@
 
 ## Release 133.0.0 (in development)
 
+### Enhancements
+
+- Support etcd distroless images for Kubernetes 1.33+. Above etcd 3.5.21, etcd images are now distroless and upstreamed to the etcd project.
+  (PR[#4740](https://github.com/scality/metalk8s/pull/4740))
+
 ## Release 132.0.0 (in development)
 
 ### Enhancements

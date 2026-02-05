@@ -56,10 +56,10 @@ Restoring a Bootstrap Node
       .. code::
 
          crictl exec -it "$CONT_ID" \
-            etcdctl --endpoints https://localhost:2379 \
-            --cacert /etc/kubernetes/pki/etcd/ca.crt \
-            --key /etc/kubernetes/pki/etcd/server.key \
-            --cert /etc/kubernetes/pki/etcd/server.crt \
+            etcdctl --endpoints=https://localhost:2379 \
+            --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+            --key=/etc/kubernetes/pki/etcd/server.key \
+            --cert=/etc/kubernetes/pki/etcd/server.crt \
             member list
 
    #. Remove the etcd member (replace ``<etcd_id>`` in the command).
@@ -67,10 +67,10 @@ Restoring a Bootstrap Node
       .. code::
 
          crictl exec -it "$CONT_ID" \
-            etcdctl --endpoints https://localhost:2379 \
-            --cacert /etc/kubernetes/pki/etcd/ca.crt \
-            --key /etc/kubernetes/pki/etcd/server.key \
-            --cert /etc/kubernetes/pki/etcd/server.crt \
+            etcdctl --endpoints=https://localhost:2379 \
+            --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+            --key=/etc/kubernetes/pki/etcd/server.key \
+            --cert=/etc/kubernetes/pki/etcd/server.crt \
             member remove <etcd_id>
 
 #. Because multiple bootstrap nodes are not supported, remove the old
