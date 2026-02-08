@@ -14,7 +14,9 @@
   net.bridge.bridge-nf-call-iptables sysctls
   (PR[#4724](https://github.com/scality/metalk8s/pull/4724))
 
-## Release 131.0.10 (in development)
+## Release 131.0.11 (in development)
+
+## Release 131.0.10
 
 ## Release 131.0.9
 
