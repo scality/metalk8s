@@ -125,26 +125,19 @@ backup_etcd() {
     # Note: etcd image in Kubernetes 1.33+ is distroless (no shell), so we must
     # exec etcdctl directly without using "sh -c".
     # etcd 3.4+ defaults to API v3, so ETCDCTL_API=3 is no longer required.
+    # In distroless images, the root filesystem is read-only, so we save the
+    # snapshot to /var/lib/etcd which is a writable mounted volume.
     crictl exec -i "$etcd_container" \
         etcdctl \
         --endpoints=https://127.0.0.1:2379 \
         --cert=/etc/kubernetes/pki/etcd/salt-master-etcd-client.crt \
         --key=/etc/kubernetes/pki/etcd/salt-master-etcd-client.key \
         --cacert=/etc/kubernetes/pki/etcd/ca.crt \
-        snapshot save "$etcd_snapshot"
+        snapshot save "/var/lib/etcd/${etcd_snapshot}"
 
-    local -r rootfs_v1="/run/containerd/io.containerd.runtime.v1.linux/k8s.io/${etcd_container}/rootfs"
-    local -r rootfs_v2="/run/containerd/io.containerd.runtime.v2.task/k8s.io/${etcd_container}/rootfs"
-    local rootfs=''
-    if test -d "${rootfs_v2}"; then
-        rootfs="${rootfs_v2}"
-    elif test -d "${rootfs_v1}"; then
-        rootfs="${rootfs_v1}"
-    else
-        die "Unable to find etcd container rootfs"
-    fi
-
-    local -r snapshot_file="${rootfs}/${etcd_snapshot}"
+    # In distroless images, we need to retrieve the snapshot from the mounted
+    # volume path on the host (/var/lib/etcd), not from the container rootfs.
+    local -r snapshot_file="/var/lib/etcd/${etcd_snapshot}"
     if ! test -f "${snapshot_file}"; then
         die "etcd snapshot file not found"
     fi
