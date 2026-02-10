@@ -16,6 +16,12 @@
 - Support etcd distroless images for Kubernetes 1.33+. Above etcd 3.5.21, etcd images are now distroless and upstreamed to the etcd project.
   (PR[#4740](https://github.com/scality/metalk8s/pull/4740))
 
+- Bump dex chart version to
+  [0.24.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.0)
+  Dex itself has been bumped accordingly to
+  [v2.44.0](https://github.com/dexidp/dex/releases/tag/v2.44.0)
+  (PR[#4774](https://github.com/scality/metalk8s/pull/4774))
+
 ## Release 132.0.0 (in development)
 
 ### Enhancements

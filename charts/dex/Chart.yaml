@@ -1,16 +1,16 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: "Use tpl for dynamic image values and add digest support"
+    - kind: changed
+      description: "Update Dex to 2.44.0"
   artifacthub.io/images: |
     - name: dex
-      image: ghcr.io/dexidp/dex:v2.42.0
+      image: ghcr.io/dexidp/dex:v2.44.0
 apiVersion: v2
-appVersion: 2.42.0
+appVersion: 2.44.0
 description: OpenID Connect (OIDC) identity and OAuth 2.0 provider with pluggable
   connectors.
 home: https://dexidp.io/
-icon: https://dexidp.io/favicon.png
+icon: https://dexidp.io/favicons/favicon.png
 keywords:
 - oidc
 - oauth
@@ -26,4 +26,4 @@ sources:
 - https://github.com/dexidp/dex
 - https://github.com/dexidp/helm-charts/tree/master/charts/dex
 type: application
-version: 0.23.0
+version: 0.24.0
