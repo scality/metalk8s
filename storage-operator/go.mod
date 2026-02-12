@@ -1,6 +1,7 @@
 module github.com/scality/metalk8s/storage-operator
 
 go 1.22.0
+toolchain go1.24.13
 
 require (
 	github.com/go-logr/logr v1.4.1
