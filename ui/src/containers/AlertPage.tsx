@@ -118,7 +118,7 @@ function AlertPageHeader({
         <Title>
           <AlertStatusIcon>
             <StatusWrapper status={alertStatus}>
-              <StatusIcon status={alertStatus} name="Alert" />
+              <StatusIcon status={alertStatus} name="Alert" entity='Alerts' />
             </StatusWrapper>
           </AlertStatusIcon>
           <>

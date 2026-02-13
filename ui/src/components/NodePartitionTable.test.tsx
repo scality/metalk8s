@@ -350,7 +350,7 @@ describe('the system partition table', () => {
     );
     // Verify
     expect(
-      screen.getByLabelText('Exclamation-circle status warning'),
+      screen.getByLabelText('status warning'),
     ).toBeInTheDocument();
     expect(screen.getByLabelText('97%')).toBeInTheDocument();
     expect(screen.getByText('/mnt/testpart')).toBeInTheDocument();
