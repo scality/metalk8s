@@ -1,8 +1,6 @@
-import React from 'react';
 import { screen } from '@testing-library/react';
 import DashboardInventory from './DashboardInventory';
 import { waitForLoadingToFinish, render } from './__TEST__/util';
-import type { Alert } from '../services/alertUtils';
 import { useHighestSeverityAlerts } from '../containers/AlertProvider';
 import {
   getNodesCountQuery,
@@ -63,10 +61,10 @@ describe('the dashboard inventory panel', () => {
     await waitForLoadingToFinish();
     // Verify
     expect(
-      screen.getAllByLabelText(`Node-backend ${STATUS_CRITICAL}`).length,
+      screen.getAllByLabelText(`Nodes status is ${STATUS_CRITICAL}`).length,
     ).toEqual(1);
     expect(
-      screen.getAllByLabelText(`Volume-backend ${STATUS_CRITICAL}`).length,
+      screen.getAllByLabelText(`Volumes status is ${STATUS_CRITICAL}`).length,
     ).toEqual(1);
   });
   test('displays properly the status WARNING for nodes and volumes', async () => {
@@ -78,10 +76,10 @@ describe('the dashboard inventory panel', () => {
     await waitForLoadingToFinish();
     // Verify
     expect(
-      screen.getAllByLabelText(`Node-backend ${STATUS_WARNING}`).length,
+      screen.getAllByLabelText(`Nodes status is ${STATUS_WARNING}`).length,
     ).toEqual(1);
     expect(
-      screen.getAllByLabelText(`Volume-backend ${STATUS_WARNING}`).length,
+      screen.getAllByLabelText(`Volumes status is ${STATUS_WARNING}`).length,
     ).toEqual(1);
   });
   test('displays properly the status HEALTHY for nodes and volumes', async () => {
@@ -93,10 +91,10 @@ describe('the dashboard inventory panel', () => {
     await waitForLoadingToFinish();
     // Verify
     expect(
-      screen.getAllByLabelText(`Node-backend ${STATUS_HEALTH}`).length,
+      screen.getAllByLabelText(`Nodes status is ${STATUS_HEALTH}`).length,
     ).toEqual(1);
     expect(
-      screen.getAllByLabelText(`Volume-backend ${STATUS_HEALTH}`).length,
+      screen.getAllByLabelText(`Volumes status is ${STATUS_HEALTH}`).length,
     ).toEqual(1);
   });
   test('displays the loader if the query does not return a result', async () => {

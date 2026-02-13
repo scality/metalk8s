@@ -48,7 +48,7 @@ describe('the dashboard inventory panel', () => {
     render(<DashboardServices />);
     // Verify
     expect(
-      screen.getAllByLabelText(`Check-circle status ${STATUS_HEALTH}`),
+      screen.getAllByLabelText(`status ${STATUS_HEALTH}`),
     ).toHaveLength(8);
   });
   test('displays the services panel and display all 8 warning statuses when warning alerts are present as well as link to the alerts page', async () => {
@@ -58,7 +58,7 @@ describe('the dashboard inventory panel', () => {
     render(<DashboardServices />);
     // Verify
     expect(
-      screen.getAllByLabelText(`Exclamation-circle status ${STATUS_WARNING}`),
+      screen.getAllByLabelText(`status ${STATUS_WARNING}`),
     ).toHaveLength(8);
     expect(screen.getAllByTestId('alert-link')).toHaveLength(8);
   });
@@ -69,7 +69,7 @@ describe('the dashboard inventory panel', () => {
     render(<DashboardServices />);
     // Verify
     expect(
-      screen.getAllByLabelText(`Times-circle status ${STATUS_CRITICAL}`),
+      screen.getAllByLabelText(`status ${STATUS_CRITICAL}`),
     ).toHaveLength(8);
     expect(screen.getAllByTestId('alert-link')).toHaveLength(8);
   });

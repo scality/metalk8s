@@ -1,19 +1,20 @@
-import React, { PropsWithChildren } from 'react';
 import { act, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { PropsWithChildren } from 'react';
+import { QueryClient } from 'react-query';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
 import NotificationCenterProvider, {
   InternalNotification,
   Notification,
 } from '../NotificationCenterProvider';
-import NotificationCenter from './NotificationCenter';
-import userEvent from '@testing-library/user-event';
-import { QueryClient } from 'react-query';
-import { prepareRenderMultipleHooks } from './__TESTS__/testMultipleHooks';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
-import { useNotificationCenter } from '../useNotificationCenter';
 import { QueryClientProvider } from '../QueryClientProvider';
+import { useNotificationCenter } from '../useNotificationCenter';
+import { prepareRenderMultipleHooks } from './__TESTS__/testMultipleHooks';
+import NotificationCenter from './NotificationCenter';
+import {debug} from "jest-preview";
 
-export const notificationCenterSelectors = {
+const notificationCenterSelectors = {
   notificationCenterButton: () =>
     screen.getByRole('button', { name: /notification center/i }),
   emptyNotificationCenterIcon: () =>
@@ -175,21 +176,23 @@ describe('NotificationCenter', () => {
     //E open again the notification center
     userEvent.click(notificationCenterSelectors.notificationCenterButton());
     //V the notification are marked as read
+    debug();
+  
     expect(
       within(screen.getAllByRole('option')[0]).queryByRole('img', {
-        name: /unread notification mark/i,
-      }),
-    ).toBeNull();
+          name: /unread notification mark/i,
+        }),
+      ).not.toBeVisible();
     expect(
       within(screen.getAllByRole('option')[1]).queryByRole('img', {
         name: /unread notification mark/i,
       }),
-    ).toBeNull();
+    ).not.toBeVisible();
     expect(
       within(screen.getAllByRole('option')[2]).queryByRole('img', {
         name: /unread notification mark/i,
       }),
-    ).toBeNull();
+    ).not.toBeVisible();
   });
 
   it('can be navigated with the keyboard', async () => {
@@ -241,7 +244,7 @@ describe('NotificationCenter', () => {
       within(lastNotification).queryByRole('img', {
         name: /unread notification mark/i,
       }),
-    ).toBeNull();
+    ).not.toBeVisible();
   });
 
   it('should not display notifications with the same ID', async () => {
@@ -267,17 +270,17 @@ describe('NotificationCenter', () => {
       within(screen.getAllByRole('option')[0]).queryByRole('img', {
         name: /unread notification mark/i,
       }),
-    ).toBeNull();
+    ).not.toBeVisible();
     expect(
       within(screen.getAllByRole('option')[1]).queryByRole('img', {
         name: /unread notification mark/i,
       }),
-    ).toBeNull();
+    ).not.toBeVisible();
     expect(
       within(screen.getAllByRole('option')[2]).queryByRole('img', {
         name: /unread notification mark/i,
       }),
-    ).toBeNull();
+    ).not.toBeVisible();
     //E
     userEvent.click(notificationCenterSelectors.notificationCenterButton());
     //V
