@@ -7,7 +7,7 @@ import {
   STATUS_HEALTH,
 } from '../constants';
 
-const StatusIcon = ({ name, status }) => {
+const StatusIcon = ({ name, status, entity }) => {
   const color = (() => {
     switch (status) {
       case STATUS_SUCCESS:
@@ -30,7 +30,7 @@ const StatusIcon = ({ name, status }) => {
     }
   })();
 
-  return <Icon color={color} name={name} />;
+  return <Icon color={color} name={name} ariaLabel={`${entity} status is ${status}`}/>;
 };
 
 export default StatusIcon;

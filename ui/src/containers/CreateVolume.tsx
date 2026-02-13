@@ -818,6 +818,9 @@ const CreateVolume = (props) => {
                               icon={<Icon name="Delete" />}
                               type="button"
                               onClick={() => removeLabel(key)}
+                              tooltip={{
+                                overlay: "Remove label",
+                              }}
                             />
                           </LabelsKeyValue>
                         ))}

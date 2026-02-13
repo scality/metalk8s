@@ -61,7 +61,7 @@ const DashboardGlobalHealth = () => {
         <Box flex="1" display="flex">
           <PlatformStatusIcon>
             <StatusWrapper status={platformStatus}>
-              <StatusIcon status={platformStatus} name="Datacenter" />
+              <StatusIcon status={platformStatus} name="Datacenter" entity='Platform' />
             </StatusWrapper>
           </PlatformStatusIcon>
 
