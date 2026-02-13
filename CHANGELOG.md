@@ -20,6 +20,12 @@
   and Fluent Bit Helm chart version to [0.55.0](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.55.0)
   (PR[#4778](https://github.com/scality/metalk8s/pull/4778))
 
+- Bump dex chart version to
+  [0.24.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.0)
+  Dex itself has been bumped accordingly to
+  [v2.44.0](https://github.com/dexidp/dex/releases/tag/v2.44.0)
+  (PR[#4774](https://github.com/scality/metalk8s/pull/4774))
+
 ## Release 132.0.0 (in development)
 
 ### Enhancements
