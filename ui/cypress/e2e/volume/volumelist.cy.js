@@ -34,7 +34,7 @@ describe('Volume list', () => {
       cy.visit('/volumes');
       // The application re-renders, it's possible the element we're interacting with has become "dead"
       // cy... failed because the element has been detached from the DOM
-      cy.findAllByLabelText('Check-circle status healthy');
+      cy.findAllByLabelText('status healthy');
       cy.findByRole('gridcell', {
         name: UNHEALTHY_VOLUME_NAME,
       }).click({ force: true });
@@ -68,7 +68,7 @@ describe('Volume list', () => {
   it('updates url query param with the search input', () => {
     cy.visit('/volumes/master-1-prometheus/overview');
     //E
-    cy.findAllByLabelText('Check-circle status healthy');
+    cy.findAllByLabelText('status healthy');
     cy.findByText(/delete volume/i);
     cy.findByRole('searchbox').type('hello');
     //V
