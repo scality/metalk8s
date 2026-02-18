@@ -3,7 +3,7 @@
 OSTYPE="$(uname -s)"
 # System-wide Python 3 command.
 PYTHON_SYS="${PYTHON_SYS:-python3}"
-MINIMUM_PYTHON_VERSION='(3, 6)'
+MINIMUM_PYTHON_VERSION='(3, 10)'
 # Buildchain location.
 BUILDCHAIN=buildchain
 # Location of the virtual environment for the buildchain.
@@ -26,7 +26,7 @@ EOF
 
 if [ "$?" -eq 1 ];
 then
-    echo "$($PYTHON_SYS -V) too old, 3.6 minimum is required" >&2
+    echo "$($PYTHON_SYS -V) too old, 3.10 minimum is required" >&2
     exit 1
 fi
 
