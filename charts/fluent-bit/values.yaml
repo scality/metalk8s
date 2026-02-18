@@ -31,6 +31,7 @@ serviceAccount:
   create: true
   annotations: {}
   name:
+  automountServiceAccountToken:
 
 rbac:
   create: true
@@ -519,8 +520,18 @@ hotReload:
   enabled: false
   image:
     repository: ghcr.io/jimmidyson/configmap-reload
-    tag: v0.14.0
+    tag: v0.15.0
     digest:
     pullPolicy: IfNotPresent
   resources: {}
   extraWatchVolumes: []
+  securityContext:
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65532
+    runAsGroup: 65532
+    capabilities:
+      drop:
+        - ALL

@@ -1,10 +1,10 @@
 annotations:
-  artifacthub.io/changes: |
-    - kind: added
-      description: "Add VPA controlledValues option"
+  artifacthub.io/changes: |-
+    - kind: changed
+      description: "Update Fluent Bit OCI image to 4.2.2."
 apiVersion: v1
-appVersion: 4.0.3
-description: Fast and lightweight log processor and forwarder or Linux, OSX and BSD
+appVersion: 4.2.2
+description: Fast and lightweight log processor and forwarder for Linux, OSX and BSD
   family operating systems.
 home: https://fluentbit.io/
 icon: https://raw.githubusercontent.com/cncf/artwork/master/projects/fluentd/fluentbit/icon/fluentbit-icon-color.svg
@@ -24,4 +24,4 @@ maintainers:
 name: fluent-bit
 sources:
 - https://github.com/fluent/fluent-bit/
-version: 0.50.0
+version: 0.55.0
