@@ -198,7 +198,9 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="pause",
         version="3.10",
-        digest="sha256:873ed75102791e5b0b8a7fcd41606c92fcec98d56d05ead4ac5131650004c136",
+        # Do not check the digest for this image, since this one is re-published
+        # several times with the same tag
+        digest=None,
     ),
     Image(
         name="prometheus",
