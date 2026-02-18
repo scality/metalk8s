@@ -294,6 +294,7 @@ def docker_pull(
         # For some reason, the repository must include the image name…
         f"{repository}/{name}",
         tag=version,
+        platform="linux/amd64",
     )
     if digest and pulled.id != digest:
         raise ValueError(
