@@ -37,7 +37,9 @@ class ContainerdTestCase(TestCase, mixins.LoaderModuleMockMixin):
         with patch.dict(containerd.__salt__, {"cmd.run_all": mock_cmd}):
             self.assertEqual(containerd.load_cri_image(path), cmd)
             mock_cmd.assert_called_once_with(
-                'ctr --debug -n k8s.io image import "{}"'.format(path)
+                'ctr --debug -n k8s.io image import --platform "linux/amd64" "{}"'.format(
+                    path
+                )
             )
 
     def test_load_cri_image_with_fullname(self):
@@ -61,5 +63,5 @@ class ContainerdTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 cmd,
             )
             mock_cmd.assert_called_once_with(
-                'ctr --debug -n k8s.io image import "/tmp/toto.tar" --index-name "abc.def/my-image:3.5"'
+                'ctr --debug -n k8s.io image import --platform "linux/amd64" "/tmp/toto.tar" --index-name "abc.def/my-image:3.5"'
             )
