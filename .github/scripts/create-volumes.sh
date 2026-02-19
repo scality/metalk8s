@@ -13,7 +13,7 @@ retry() {
     until "$@"; do
         [ $try -lt "$max_tries" ] || return 1
         (( ++try ))
-        sleep 1
+        sleep 5
     done
 }
 
