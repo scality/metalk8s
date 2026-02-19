@@ -26,7 +26,9 @@
   [v2.44.0](https://github.com/dexidp/dex/releases/tag/v2.44.0)
   (PR[#4774](https://github.com/scality/metalk8s/pull/4774))
 
-## Release 132.0.0 (in development)
+## Release 132.0.1 (in development)
+
+## Release 132.0.0
 
 ### Enhancements
 
