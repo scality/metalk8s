@@ -39,13 +39,11 @@ export const wrapper = ({ children }) => {
               <LanguageProvider>
                 <NotificationCenterProvider>
                   <WithInitFederationProviders>
-                    <MemoryRouter>
-                      <FirstTimeLoginProvider>
-                        <ShellHistoryProvider>
-                          <SolutionsNavbar>{children}</SolutionsNavbar>
-                        </ShellHistoryProvider>
-                      </FirstTimeLoginProvider>
-                    </MemoryRouter>
+                    <FirstTimeLoginProvider>
+                      <ShellHistoryProvider>
+                        <SolutionsNavbar>{children}</SolutionsNavbar>
+                      </ShellHistoryProvider>
+                    </FirstTimeLoginProvider>
                   </WithInitFederationProviders>
                 </NotificationCenterProvider>
               </LanguageProvider>
