@@ -11,6 +11,12 @@ spec:
     retention_time: "10d"
     retention_size: "0" # "0" to disable size-based retention
     enable_admin_api: false
+    enable_oidc_authentication: false
+    oidc:
+      issuer: "" # OIDC provider URL
+      audience: "" # Expected audience claim in the token
+      groupsClaim: "" # JWT claim name that carries user groups/roles
+      authorizedGroups: [] # Groups/roles allowed to access Prometheus
     serviceMonitor:
       kubelet:
         scrapeTimeout: 10s

@@ -13,6 +13,13 @@ spec:
   # Configure the Alertmanager Deployment
   deployment:
     replicas: 1
+  config:
+    enable_oidc_authentication: false
+    oidc:
+      issuer: "" # OIDC provider URL
+      audience: "" # Expected audience claim in the token
+      groupsClaim: "" # JWT claim name that carries user groups/roles
+      authorizedGroups: [] # Groups/roles allowed to access Alertmanager
   notification:
     config:
       global:
