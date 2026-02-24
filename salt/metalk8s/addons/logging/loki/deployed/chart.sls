@@ -252,7 +252,7 @@ spec:
           value: '60'
         - name: LOG_LEVEL
           value: INFO
-        image: docker.io/kiwigrid/k8s-sidecar:1.30.9
+        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.28.0
         imagePullPolicy: IfNotPresent
         name: loki-sc-rules
         securityContext:
