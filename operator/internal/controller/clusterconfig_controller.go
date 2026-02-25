@@ -58,5 +58,6 @@ func (r *ClusterConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	//return ctrl.NewControllerManagedBy(mgr).
 	//	For(&metalk8sscalitycomv1alpha1.ClusterConfig{}).
+	//	Named("clusterconfig").
 	//	Complete(r)
 }

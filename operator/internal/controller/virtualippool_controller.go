@@ -60,5 +60,6 @@ func (r *VirtualIPPoolReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	//return ctrl.NewControllerManagedBy(mgr).
 	//	For(&metalk8sscalitycomv1alpha1.VirtualIPPool{}).
+	//	Named("virtualippool").
 	//	Complete(r)
 }

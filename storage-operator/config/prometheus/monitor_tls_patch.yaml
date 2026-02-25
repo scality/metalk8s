@@ -1,0 +1,10 @@
+# This patch configures the ServiceMonitor to use TLS with certificates
+# managed by cert-manager. Uncomment and configure as needed.
+- op: replace
+  path: /spec/endpoints/0/tlsConfig
+  value:
+    serverName: storage-operator-controller-manager-metrics-service.storage-operator-system.svc
+    insecureSkipVerify: false
+    caFile: /etc/metrics-certs/ca.crt
+    certFile: /etc/metrics-certs/tls.crt
+    keyFile: /etc/metrics-certs/tls.key
