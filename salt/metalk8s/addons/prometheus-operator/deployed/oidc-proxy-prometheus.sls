@@ -1,0 +1,127 @@
+{%- from "metalk8s/map.jinja" import repo with context %}
+
+{%- set prometheus_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/prometheus-operator/config/prometheus.yaml',
+        saltenv=saltenv
+    )
+%}
+
+{%- set prometheus = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-monitoring', 'metalk8s-prometheus-config', prometheus_defaults
+    )
+%}
+
+{%- set prometheus_oidc_enabled = prometheus.spec.config.get('enable_oidc_authentication', False) %}
+{%- set prometheus_oidc = prometheus.spec.config.get('oidc', {}) %}
+
+{%- set ingress_ca_file = 'namespace_metalk8s-ingress.secret_ingress-control-plane-default-certificate.tls.crt' %}
+
+{%- if prometheus_oidc_enabled %}
+
+Create oauth2-proxy Deployment:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: oauth2-proxy
+          namespace: metalk8s-monitoring
+          labels:
+            app: oauth2-proxy
+            app.kubernetes.io/managed-by: salt
+            app.kubernetes.io/part-of: metalk8s
+            heritage: metalk8s
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: oauth2-proxy
+          template:
+            metadata:
+              labels:
+                app: oauth2-proxy
+            spec:
+              serviceAccountName: oidc-proxy
+              initContainers:
+              - name: k8s-sidecar
+                image: {{ repo.registry_endpoint }}/{{ saltenv }}/k8s-sidecar:1.28.0
+                imagePullPolicy: IfNotPresent
+                restartPolicy: Always
+                env:
+                - name: LABEL
+                  value: metalk8s.scality.com/version
+                - name: FOLDER
+                  value: /tmp/secrets
+                - name: NAMESPACE
+                  value: metalk8s-ingress
+                - name: RESOURCE
+                  value: secret
+                - name: UNIQUE_FILENAMES
+                  value: "true"
+                volumeMounts:
+                - name: secrets-volume
+                  mountPath: /tmp/secrets
+              containers:
+              - name: oauth2-proxy
+                image: {{ repo.registry_endpoint }}/{{ saltenv }}/oauth2-proxy/oauth2-proxy:v7.6.0
+                args:
+                - --provider=oidc
+                - --oidc-issuer-url={{ prometheus_oidc.get('issuer', '') }}
+                - --client-id={{ prometheus_oidc.get('audience', '') }}
+                - --cookie-secret=MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnN0dXY=
+                - --client-secret=unused-but-required
+                - --skip-jwt-bearer-tokens=true
+                - --email-domain=*
+                - --upstream=http://thanos-query-http.metalk8s-monitoring.svc:10902
+                - --oidc-groups-claim={{ prometheus_oidc.get('groupsClaim', 'roles') }}
+                {%- for group in prometheus_oidc.get('authorizedGroups', []) %}
+                - --allowed-group={{ group }}
+                {%- endfor %}
+                - --provider-ca-file=/tmp/secrets/{{ ingress_ca_file }}
+                - --http-address=0.0.0.0:4180
+                ports:
+                - containerPort: 4180
+                volumeMounts:
+                - name: secrets-volume
+                  mountPath: /tmp/secrets
+                  readOnly: true
+              volumes:
+              - name: secrets-volume
+                emptyDir: {}
+
+Create oauth2-proxy Service:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: oauth2-proxy
+          namespace: metalk8s-monitoring
+          labels:
+            app: oauth2-proxy
+            app.kubernetes.io/managed-by: salt
+            app.kubernetes.io/part-of: metalk8s
+            heritage: metalk8s
+        spec:
+          selector:
+            app: oauth2-proxy
+          ports:
+          - port: 4180
+
+{%- else %}
+
+Ensure oauth2-proxy Deployment does not exist:
+  metalk8s_kubernetes.object_absent:
+    - name: oauth2-proxy
+    - namespace: metalk8s-monitoring
+    - kind: Deployment
+    - apiVersion: apps/v1
+
+Ensure oauth2-proxy Service does not exist:
+  metalk8s_kubernetes.object_absent:
+    - name: oauth2-proxy
+    - namespace: metalk8s-monitoring
+    - kind: Service
+    - apiVersion: v1
+
+{%- endif %}

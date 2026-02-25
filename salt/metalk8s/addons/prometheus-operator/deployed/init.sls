@@ -10,3 +10,6 @@ include:
   - .kube-alerts-rules
   - .thanos-query-sd-files
   - .thanos-chart
+  - .oidc-proxy-rbac
+  - .oidc-proxy-prometheus
+  - .oidc-proxy-alertmanager
