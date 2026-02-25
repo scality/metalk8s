@@ -9,13 +9,13 @@ labels:
 
 images:
   - name: controller
-    newName: 'BUILD_IMAGE_CLUSTER_OPERATOR'
-    newTag: 'latest'
+    newName: "BUILD_IMAGE_CLUSTER_OPERATOR"
+    newTag: "latest"
 
 resources:
-- ../crd
-- ../rbac
-- ../manager
+  - ../crd
+  - ../rbac
+  - ../manager
 
 patches:
   - path: deploy_patch.yaml

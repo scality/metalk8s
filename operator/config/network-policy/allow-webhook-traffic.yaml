@@ -13,6 +13,7 @@ spec:
   podSelector:
     matchLabels:
       control-plane: controller-manager
+      app.kubernetes.io/name: operator
   policyTypes:
     - Ingress
   ingress:

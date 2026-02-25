@@ -74,6 +74,7 @@ func Add(mgr ctrl.Manager) error {
 		For(&metalk8sscalitycomv1alpha1.ClusterConfig{}).
 		Owns(&metalk8sscalitycomv1alpha1.VirtualIPPool{}).
 		Owns(&corev1.Namespace{}).
+		Named("clusterconfig").
 		Complete(reconciler)
 }
 

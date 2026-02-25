@@ -18,3 +18,6 @@ resources:
 - metrics_auth_role.yaml
 - metrics_auth_role_binding.yaml
 - metrics_reader_role.yaml
+- volume_admin_role.yaml
+- volume_editor_role.yaml
+- volume_viewer_role.yaml

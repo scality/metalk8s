@@ -18,3 +18,9 @@ resources:
 - metrics_auth_role.yaml
 - metrics_auth_role_binding.yaml
 - metrics_reader_role.yaml
+- clusterconfig_admin_role.yaml
+- clusterconfig_editor_role.yaml
+- clusterconfig_viewer_role.yaml
+- virtualippool_admin_role.yaml
+- virtualippool_editor_role.yaml
+- virtualippool_viewer_role.yaml

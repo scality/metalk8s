@@ -73,6 +73,7 @@ func Add(mgr ctrl.Manager) error {
 		For(&metalk8sscalitycomv1alpha1.VirtualIPPool{}).
 		Owns(&corev1.ConfigMap{}).
 		Owns(&appsv1.DaemonSet{}).
+		Named("virtualippool").
 		Complete(reconciler)
 }
 

@@ -519,6 +519,83 @@ kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: operator
+    app.kubernetes.io/part-of: metalk8s
+  name: metalk8s-operator-clusterconfig-admin-role
+rules:
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - clusterconfigs
+  verbs:
+  - '*'
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - clusterconfigs/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: operator
+    app.kubernetes.io/part-of: metalk8s
+  name: metalk8s-operator-clusterconfig-editor-role
+rules:
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - clusterconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - clusterconfigs/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: operator
+    app.kubernetes.io/part-of: metalk8s
+  name: metalk8s-operator-clusterconfig-viewer-role
+rules:
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - clusterconfigs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - clusterconfigs/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/created-by: metalk8s
     app.kubernetes.io/part-of: metalk8s
   name: metalk8s-operator-manager-role
 rules:
@@ -623,6 +700,79 @@ metadata:
 rules:
 - nonResourceURLs:
   - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: operator
+    app.kubernetes.io/part-of: metalk8s
+  name: metalk8s-operator-virtualippool-admin-role
+rules:
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - virtualippools
+  verbs:
+  - '*'
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - virtualippools/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/part-of: metalk8s
+  name: metalk8s-operator-virtualippool-editor-role
+rules:
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - virtualippools
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - virtualippools/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/created-by: metalk8s
+    app.kubernetes.io/part-of: metalk8s
+  name: metalk8s-operator-virtualippool-viewer-role
+rules:
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - virtualippools
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - virtualippools/status
   verbs:
   - get
 ---

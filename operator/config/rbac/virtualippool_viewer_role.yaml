@@ -4,17 +4,17 @@ kind: ClusterRole
 metadata:
   name: virtualippool-viewer-role
 rules:
-- apiGroups:
-  - metalk8s.scality.com
-  resources:
-  - virtualippools
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - metalk8s.scality.com
-  resources:
-  - virtualippools/status
-  verbs:
-  - get
+  - apiGroups:
+      - metalk8s.scality.com
+    resources:
+      - virtualippools
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - metalk8s.scality.com
+    resources:
+      - virtualippools/status
+    verbs:
+      - get

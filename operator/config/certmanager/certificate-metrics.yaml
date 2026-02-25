@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: operator
     app.kubernetes.io/managed-by: kustomize
-  name: metrics-certs # this name should match the one appeared in kustomizeconfig.yaml
+  name: metrics-certs  # this name should match the one appeared in kustomizeconfig.yaml
   namespace: system
 spec:
   dnsNames:
