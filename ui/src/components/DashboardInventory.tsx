@@ -102,7 +102,7 @@ const DashboardInventory = () => {
                 <InventoryIcon>
                   <StatusWrapper status={nodesStatus}>
                     <Icon
-                      name="Exclamation-circle"
+                      name="Node-pdf"
                       color={getStatusColor(nodesStatus)}
                       ariaLabel={`Nodes status is ${nodesStatus}`}
                     />
@@ -137,7 +137,7 @@ const DashboardInventory = () => {
                 <InventoryIcon>
                   <StatusWrapper status={volumesStatus}>
                     <Icon
-                      name="Volume-backend"
+                      name="Volume-pdf"
                       color={getStatusColor(volumesStatus)}
                       ariaLabel={`Volumes status is ${volumesStatus}`}
                     />
