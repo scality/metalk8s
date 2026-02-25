@@ -26,6 +26,13 @@
   [v2.44.0](https://github.com/dexidp/dex/releases/tag/v2.44.0)
   (PR[#4774](https://github.com/scality/metalk8s/pull/4774))
 
+- Bump `operator-sdk` version to [1.42.0](https://github.com/operator-framework/operator-sdk/releases/tag/v1.42.0)
+  in `metalk8s-operator` and `storage-operator`.
+  Go version has been bumped to
+  [1.24.13](https://golang.org/doc/devel/release.html#go1.24.minor)
+  and `k8s.io/*` dependencies have been bumped to [0.33.8](https://github.com/kubernetes/kubernetes/releases/tag/v1.33.8)
+  (PR[#4791](https://github.com/scality/metalk8s/pull/4791))
+
 ## Release 132.0.1 (in development)
 
 ## Release 132.0.0
