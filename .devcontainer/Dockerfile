@@ -88,7 +88,7 @@ RUN curl --fail -L -o /tmp/go.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-amd
     rm -rf /tmp/go.tar.gz
 
 # Install golangci-lint
-ARG GOLANGCI_VERSION=1.54.2
+ARG GOLANGCI_VERSION=2.8.0
 
 RUN curl --fail -L -o /tmp/install.sh https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh && \
     sudo bash /tmp/install.sh v${GOLANGCI_VERSION} && \
