@@ -79,6 +79,12 @@ monitoring:
 lokiCanary:
   enabled: false
 
+sidecar:
+  image:
+    registry: ""
+    repository: "__image__(k8s-sidecar)"
+    tag: 1.28.0
+
 gateway:
   enabled: false
 

@@ -33,6 +33,10 @@
   and `k8s.io/*` dependencies have been bumped to [0.33.8](https://github.com/kubernetes/kubernetes/releases/tag/v1.33.8)
   (PR[#4791](https://github.com/scality/metalk8s/pull/4791))
 
+- Bump Loki chart version to [6.53.0](https://github.com/grafana/loki/releases/tag/helm-loki-6.53.0)
+  and Loki image version to [3.6.5](https://github.com/grafana/loki/releases/tag/v3.6.5)
+  (PR[#4792](https://github.com/scality/metalk8s/pull/4792))
+
 ## Release 132.0.1 (in development)
 
 ## Release 132.0.0
