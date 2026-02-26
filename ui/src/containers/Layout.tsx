@@ -114,7 +114,7 @@ const Layout = () => {
         label: intl.formatMessage({
           id: 'nodes',
         }),
-        icon: <Icon name="Node-backend" />,
+        icon: <Icon name="Node-pdf" />,
         onClick: () => {
           navigate('/nodes');
         },
@@ -125,7 +125,7 @@ const Layout = () => {
         label: intl.formatMessage({
           id: 'volumes',
         }),
-        icon: <Icon name="Node-pdf" />,
+        icon: <Icon name="Volume-pdf" />,
         onClick: () => {
           navigate('/volumes');
         },
