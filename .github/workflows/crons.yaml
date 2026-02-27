@@ -28,15 +28,15 @@ jobs:
           # Daily build jobs, needed to make sure we have at least one build
           # on latests commits of each branch. It is especially needed because
           # artifacts from builds expire after 2 weeks and nightly builds fail
-          # current=132.0
+          # current=133.0
+          - name: "Build for MetalK8s 133.0"
+            cron: "0 22 * * 1-5"
+            branch: "development/133.0"
+            workflow: "build.yaml"
+          # old=132.0
           - name: "Build for MetalK8s 132.0"
             cron: "0 22 * * 1-5"
             branch: "development/132.0"
-            workflow: "build.yaml"
-          # old=131.0
-          - name: "Build for MetalK8s 131.0"
-            cron: "0 22 * * 1-5"
-            branch: "development/131.0"
             workflow: "build.yaml"
 
           # Nightly jobs
@@ -54,16 +54,16 @@ jobs:
             workflow: "nightly.yaml"
 
           # Nightly retry jobs
-          # current=132.0
+          # current=133.0
+          - name: "Retry Nightly for MetalK8s 133.0"
+            cron: "0 6 * * 1-5"
+            branch: "development/133.0"
+            workflow: "nightly.yaml"
+            type: "retry"
+          # old=132.0
           - name: "Retry Nightly for MetalK8s 132.0"
             cron: "0 6 * * 1-5"
             branch: "development/132.0"
-            workflow: "nightly.yaml"
-            type: "retry"
-          # old=131.0
-          - name: "Retry Nightly for MetalK8s 131.0"
-            cron: "0 6 * * 1-5"
-            branch: "development/131.0"
             workflow: "nightly.yaml"
             type: "retry"
     steps:
