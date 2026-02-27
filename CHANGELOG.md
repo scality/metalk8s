@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## Release 132.0.1 (in development)
+## Release 132.0.2 (in development)
+
+## Release 132.0.1
 
 ## Release 132.0.0
 
