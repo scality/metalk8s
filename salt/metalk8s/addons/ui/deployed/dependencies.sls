@@ -77,6 +77,42 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
+  name: oauth2-proxy
+  namespace: metalk8s-ui
+  labels:
+    app: metalk8s-ui
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: metalk8s-ui
+    app.kubernetes.io/part-of: metalk8s
+    heritage: metalk8s
+spec:
+  type: ExternalName
+  externalName: oauth2-proxy.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
+  ports:
+    - name: http
+      port: 4180
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: oauth2-proxy-alertmanager
+  namespace: metalk8s-ui
+  labels:
+    app: metalk8s-ui
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: metalk8s-ui
+    app.kubernetes.io/part-of: metalk8s
+    heritage: metalk8s
+spec:
+  type: ExternalName
+  externalName: oauth2-proxy-alertmanager.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
+  ports:
+    - name: http
+      port: 4180
+---
+kind: Service
+apiVersion: v1
+metadata:
   name: loki-api
   namespace: metalk8s-ui
   labels:
