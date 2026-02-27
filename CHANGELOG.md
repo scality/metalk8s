@@ -30,7 +30,9 @@
   and Loki image version to [3.6.5](https://github.com/grafana/loki/releases/tag/v3.6.5)
   (PR[#4792](https://github.com/scality/metalk8s/pull/4792))
 
-## Release 132.0.1 (in development)
+## Release 132.0.2 (in development)
+
+## Release 132.0.1
 
 ## Release 132.0.0
 
