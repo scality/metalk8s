@@ -20,7 +20,7 @@ jobs:
   crons:
     runs-on: ubuntu-24.04
     env:
-      MAX_RETRIES: '2'
+      MAX_RETRIES: "2"
     strategy:
       fail-fast: false
       matrix:
@@ -84,15 +84,15 @@ jobs:
         with:
           branch: ${{ matrix.branch }}
           workflow: ${{ matrix.workflow }}
-          step-name: 'Spawn cluster with Terraform'
+          step-name: "Spawn cluster with Terraform"
           max-retries: ${{ env.MAX_RETRIES }}
-          retry-mode: 'failed-only'
+          retry-mode: "failed-only"
           access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Notify Slack on retry triggered
         if: matrix.type == 'retry' && steps.retry.outputs.was-retried == 'true'
         uses: slackapi/slack-github-action@v1
         with:
-          channel-id: '#squad-metalk8s'
+          channel-id: "#squad-metalk8s"
           slack-message: |
             Nightly retry triggered for ${{ matrix.branch }}
             Job: ${{ matrix.name }}
@@ -106,7 +106,7 @@ jobs:
         if: matrix.type == 'retry' && steps.retry.outputs.retry-count != '' && fromJSON(steps.retry.outputs.retry-count) >= fromJSON(env.MAX_RETRIES)
         uses: slackapi/slack-github-action@v1
         with:
-          channel-id: '#squad-metalk8s'
+          channel-id: "#squad-metalk8s"
           slack-message: |
             ⚠️ MANUAL ACTION REQUIRED ⚠️
             Nightly for ${{ matrix.branch }} failed after ${{ steps.retry.outputs.retry-count }} retry attempts
