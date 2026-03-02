@@ -15,6 +15,11 @@ SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
 PYTHON=${PYTHON:-$(command -v python3 || command -v python || true)}
 LOGFILE_MAX_ROTATIONS=10
 
+# NOTE: We do not use kubectl nor crictl to execute commands in containers,
+# since some commands may restart kube-apiserver and/or containerd and/or kubelet.
+# That's why we use runc directly to execute commands in containers.
+EXEC_CONTAINER_COMMAND=(runc --root=/run/containerd/runc/k8s.io exec)
+
 
 determine_os() {
     # We rely on /etc/os-release to discover the OS because its present on all
@@ -355,7 +360,7 @@ get_salt_minion_ids() {
 
     (
         set -o pipefail
-        retry 5 10 crictl exec -i "$salt_container" \
+        retry 5 10 "${EXEC_CONTAINER_COMMAND[@]}" "$salt_container" \
             salt \* grains.get id --out txt | \
             cut -d ' ' -f 2
     )

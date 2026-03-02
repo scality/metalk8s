@@ -89,7 +89,7 @@ cleanup() {
 trap cleanup EXIT
 
 precheck_downgrade () {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv="$SALTENV"
     # Due to a bug in salt do not "raises" when we run from CLI
@@ -102,7 +102,7 @@ precheck_downgrade () {
 }
 
 launch_pre_downgrade () {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv="$SALTENV"
 
@@ -112,14 +112,14 @@ launch_pre_downgrade () {
 }
 
 launch_post_downgrade () {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.downgrade.post \
         saltenv="$SALTENV"
 }
 
 launch_downgrade () {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     # NOTE: We want to use `$SALTENV` version for the runners
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         extmod_whitelist="{'runners': []}" \
@@ -146,7 +146,7 @@ downgrade_bootstrap () {
     repo_endpoint="$($SALT_CALL pillar.get metalk8s:endpoints:repositories --out txt \
         | cut -d' ' -f2- )"
 
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.bootstrap.pre-downgrade \
         saltenv="$SALTENV" || return 1
@@ -159,7 +159,7 @@ downgrade_bootstrap () {
 
 # patch the kube-system namespace annotation with <destination-version> input
 patch_kubesystem_namespace() {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
 
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv="$SALTENV"

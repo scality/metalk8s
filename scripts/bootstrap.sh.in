@@ -95,7 +95,7 @@ orchestrate_bootstrap() {
             pillarenv=metalk8s-@@VERSION \
             pillar="${pillar[*]}"
 
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
 
     run "Syncing Utility modules on Salt master" \
         "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed saltutil.sync_utils \

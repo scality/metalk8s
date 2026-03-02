@@ -241,7 +241,7 @@ salt_minion_exec() {
 salt_master_exec() {
     SALTENV=${SALTENV:-$(get_salt_env)}
     SALT_MASTER_CONTAINER_ID=${SALT_MASTER_CONTAINER_ID:-$(get_salt_container)}
-    crictl exec -i "$SALT_MASTER_CONTAINER_ID" "$@" saltenv="$SALTENV"
+    "${EXEC_CONTAINER_COMMAND[@]}" "$SALT_MASTER_CONTAINER_ID" "$@" saltenv="$SALTENV"
 }
 
 activate_solution() {

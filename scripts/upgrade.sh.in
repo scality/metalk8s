@@ -80,7 +80,7 @@ upgrade_bootstrap () {
     "$SALT_CALL" saltutil.sync_all saltenv="$SALTENV"
     "$SALT_CALL" saltutil.refresh_grains
 
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.bootstrap.pre-upgrade \
         saltenv="$SALTENV"
@@ -93,7 +93,7 @@ upgrade_bootstrap () {
 }
 
 launch_pre_upgrade () {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv="$SALTENV"
 
@@ -103,14 +103,14 @@ launch_pre_upgrade () {
 }
 
 launch_post_upgrade () {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.upgrade.post \
         saltenv="$SALTENV"
 }
 
 upgrade_etcd () {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv="$SALTENV"
 
@@ -125,7 +125,7 @@ upgrade_etcd () {
 }
 
 upgrade_apiservers () {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.apiserver saltenv="$SALTENV"
 }
@@ -166,14 +166,14 @@ upgrade_local_engines () {
 }
 
 upgrade_nodes () {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.upgrade saltenv="$SALTENV" \
         pillar="{'orchestrate': {'drain_timeout': $DRAIN_TIMEOUT}}"
 }
 
 precheck_upgrade() {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv="$SALTENV"
     # Due to a bug in salt do not "raises" when we run from CLI
@@ -186,7 +186,7 @@ precheck_upgrade() {
 
 # patch the kube-system namespace annotation with <destination-version> input
 patch_kubesystem_namespace() {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
 
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv="$SALTENV"

@@ -182,7 +182,7 @@ configure_salt_master() {
         saltenv=metalk8s-@@VERSION \
         pillar="${pillar[*]}"
 
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
 
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv=metalk8s-@@VERSION
@@ -237,7 +237,7 @@ push_cas() {
 }
 
 mark_control_plane() {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
 
     local -r bootstrap_id=$(
         ${SALT_CALL} --local --out txt grains.get id \
@@ -252,7 +252,7 @@ mark_control_plane() {
 }
 
 reconfigure_nodes() {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     local -r non_bootstrap=$(
         ${SALT_CALL} --out=txt slsutil.renderer \
         string="{{ pillar.metalk8s.nodes.keys() | difference(salt.metalk8s.minions_by_role('bootstrap')) | join(',') }}" \
@@ -290,7 +290,7 @@ reconfigure_nodes() {
 }
 
 highstate_bootstrap() {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     local -r bootstrap_id=$(
         ${SALT_CALL} --local --out txt grains.get id \
         | awk '/^local\: /{ print $2 }'
@@ -306,7 +306,7 @@ highstate_bootstrap() {
 }
 
 reconfigure_k8s_obj() {
-    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
 
     "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
         metalk8s.addons.nginx-ingress-control-plane.deployed \
