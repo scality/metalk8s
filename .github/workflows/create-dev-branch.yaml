@@ -105,8 +105,8 @@ jobs:
       # edit cron jobs
       - name: bump version in cron jobs
         run: |
-          current=$(grep current .github/workflows/crons.yaml | sed -E "s/\s*# current=//")
-          old=$(grep old .github/workflows/crons.yaml | sed -E "s/\s*# old=//")
+          current=$(grep -m 1 "# current=" .github/workflows/crons.yaml | sed -E "s/.*# current=//")
+          old=$(grep -m 1 "# old=" .github/workflows/crons.yaml | sed -E "s/.*# old=//")
           sed -i "s/$current/${{ env.NEW_SHORT_VERSION }}/g" .github/workflows/crons.yaml
           sed -i "s/$old/$current/g" .github/workflows/crons.yaml
       # push

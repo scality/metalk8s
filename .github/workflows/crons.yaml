@@ -20,7 +20,7 @@ jobs:
   crons:
     runs-on: ubuntu-24.04
     env:
-      MAX_RETRIES: '2'
+      MAX_RETRIES: "2"
     strategy:
       fail-fast: false
       matrix:
@@ -28,15 +28,15 @@ jobs:
           # Daily build jobs, needed to make sure we have at least one build
           # on latests commits of each branch. It is especially needed because
           # artifacts from builds expire after 2 weeks and nightly builds fail
-          # current=132.0
+          # current=133.0
+          - name: "Build for MetalK8s 133.0"
+            cron: "0 22 * * 1-5"
+            branch: "development/133.0"
+            workflow: "build.yaml"
+          # old=132.0
           - name: "Build for MetalK8s 132.0"
             cron: "0 22 * * 1-5"
             branch: "development/132.0"
-            workflow: "build.yaml"
-          # old=131.0
-          - name: "Build for MetalK8s 131.0"
-            cron: "0 22 * * 1-5"
-            branch: "development/131.0"
             workflow: "build.yaml"
 
           # Nightly jobs
@@ -54,16 +54,16 @@ jobs:
             workflow: "nightly.yaml"
 
           # Nightly retry jobs
-          # current=132.0
+          # current=133.0
+          - name: "Retry Nightly for MetalK8s 133.0"
+            cron: "0 6 * * 1-5"
+            branch: "development/133.0"
+            workflow: "nightly.yaml"
+            type: "retry"
+          # old=132.0
           - name: "Retry Nightly for MetalK8s 132.0"
             cron: "0 6 * * 1-5"
             branch: "development/132.0"
-            workflow: "nightly.yaml"
-            type: "retry"
-          # old=131.0
-          - name: "Retry Nightly for MetalK8s 131.0"
-            cron: "0 6 * * 1-5"
-            branch: "development/131.0"
             workflow: "nightly.yaml"
             type: "retry"
     steps:
@@ -84,15 +84,15 @@ jobs:
         with:
           branch: ${{ matrix.branch }}
           workflow: ${{ matrix.workflow }}
-          step-name: 'Spawn cluster with Terraform'
+          step-name: "Spawn cluster with Terraform"
           max-retries: ${{ env.MAX_RETRIES }}
-          retry-mode: 'failed-only'
+          retry-mode: "failed-only"
           access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Notify Slack on retry triggered
         if: matrix.type == 'retry' && steps.retry.outputs.was-retried == 'true'
         uses: slackapi/slack-github-action@v1
         with:
-          channel-id: '#squad-metalk8s'
+          channel-id: "#squad-metalk8s"
           slack-message: |
             Nightly retry triggered for ${{ matrix.branch }}
             Job: ${{ matrix.name }}
@@ -106,7 +106,7 @@ jobs:
         if: matrix.type == 'retry' && steps.retry.outputs.retry-count != '' && fromJSON(steps.retry.outputs.retry-count) >= fromJSON(env.MAX_RETRIES)
         uses: slackapi/slack-github-action@v1
         with:
-          channel-id: '#squad-metalk8s'
+          channel-id: "#squad-metalk8s"
           slack-message: |
             ⚠️ MANUAL ACTION REQUIRED ⚠️
             Nightly for ${{ matrix.branch }} failed after ${{ steps.retry.outputs.retry-count }} retry attempts
