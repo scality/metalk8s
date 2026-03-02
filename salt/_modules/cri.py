@@ -99,48 +99,6 @@ def pull_image(image):
     return ret
 
 
-def execute(name, command, *args):
-    """
-    Run a command in a container.
-
-    .. note::
-
-       This uses the :command:`crictl` command, which should be configured
-       correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
-
-    name
-        Name of the target container
-    command
-        Command to run
-    args
-        Command parameters
-    """
-    log.info('Retrieving ID of container "%s"', name)
-    out = __salt__["cmd.run_all"](
-        f'crictl ps -q --label io.kubernetes.container.name="{name}"'
-    )
-
-    if out["retcode"] != 0:
-        log.error('Failed to find container "%s"', name)
-        return None
-
-    container_id = out["stdout"]
-    if not container_id:
-        log.error('Container "%s" does not exists', name)
-        return None
-
-    cmd_opts = f"{command} {' '.join(args)}"
-
-    log.info('Executing command "%s"', cmd_opts)
-    out = __salt__["cmd.run_all"](f"crictl exec {container_id} {cmd_opts}")
-
-    if out["retcode"] != 0:
-        log.error('Failed run command "%s"', cmd_opts)
-        return None
-
-    return out["stdout"]
-
-
 def wait_container(name, state, timeout=60, delay=5):
     """
     Wait for a container to be in given state.

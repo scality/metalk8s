@@ -159,40 +159,6 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @parameterized.expand(
         [
-            (0, "292c3b07b", 0, "All ok", "All ok"),
-            (1, "292c3b07b", 0, "All ok", None),
-            (0, "", 0, "All ok", None),
-            (0, "292c3b07b", 1, "All not ok", None),
-            (0, "292c3b07b", 0, "", ""),
-        ]
-    )
-    def test_execute(self, ret_ps, stdout_ps, ret_exec, stdout_exec, result):
-        """
-        Tests the return of `execute` function
-        """
-        cmd_ps = utils.cmd_output(retcode=ret_ps, stdout=stdout_ps)
-        cmd_exec = utils.cmd_output(retcode=ret_exec, stdout=stdout_exec)
-
-        def _cmd_run_all_mock(cmd):
-            if "crictl ps" in cmd:
-                return cmd_ps
-            elif "crictl exec" in cmd:
-                return cmd_exec
-            return None
-
-        mock_cmd = MagicMock(side_effect=_cmd_run_all_mock)
-        with patch.dict(cri.__salt__, {"cmd.run_all": mock_cmd}):
-            self.assertEqual(cri.execute("my_cont", "my command"), result)
-            mock_cmd.assert_any_call(
-                'crictl ps -q --label io.kubernetes.container.name="my_cont"'
-            )
-            if ret_ps == 0 and stdout_ps:
-                mock_cmd.assert_called_with(
-                    "crictl exec {} my command ".format(stdout_ps)
-                )
-
-    @parameterized.expand(
-        [
             # Success: Found one container
             (None, 6, 0, "292c3b07b", True),
             # Failure: Container does not exist
