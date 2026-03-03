@@ -107,6 +107,8 @@ const NodePagePodsTab = React.memo((props) => {
           marginRight: spacing.r8,
         },
       },
+      // Loki need to be activate for this link to works. Since it's deactivated by default,
+      // We decide to hide this column for now. See: https://scality.atlassian.net/browse/MK8S-178
       // {
       //   Header: 'Logs',
       //   accessor: 'log',
