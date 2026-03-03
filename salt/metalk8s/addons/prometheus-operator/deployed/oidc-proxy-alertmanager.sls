@@ -1,4 +1,4 @@
-{%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 {%- set alertmanager_defaults = salt.slsutil.renderer(
         'salt://metalk8s/addons/prometheus-operator/config/alertmanager.yaml',
@@ -44,7 +44,7 @@ Create oauth2-proxy-alertmanager Deployment:
               serviceAccountName: oidc-proxy
               initContainers:
               - name: k8s-sidecar
-                image: {{ repo.registry_endpoint }}/{{ saltenv }}/k8s-sidecar:1.28.0
+                image: {{ build_image_name("k8s-sidecar") }}
                 imagePullPolicy: IfNotPresent
                 restartPolicy: Always
                 env:
@@ -63,7 +63,7 @@ Create oauth2-proxy-alertmanager Deployment:
                   mountPath: /tmp/secrets
               containers:
               - name: oauth2-proxy
-                image: {{ repo.registry_endpoint }}/{{ saltenv }}/oauth2-proxy/oauth2-proxy:v7.6.0
+                image: {{ build_image_name("oauth2-proxy") }}
                 args:
                 - --provider=oidc
                 - --oidc-issuer-url={{ alertmanager_oidc.get('issuer', '') }}
