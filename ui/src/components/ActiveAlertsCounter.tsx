@@ -1,10 +1,9 @@
-import React from 'react';
-import styled from 'styled-components';
-import { useLocation, useResolvedPath } from 'react-router';
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
-import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
-import { useBasenameRelativeNavigate } from '@scality/module-federation';
+import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import { useLocation, useNavigate, useResolvedPath } from 'react-router';
+import styled from 'styled-components';
+import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
+
 export const CountersWrapper = styled.div`
   color: ${(props) => props.theme.textPrimary};
   display: flex;
@@ -48,7 +47,7 @@ const CounterIcon = ({ name, status }) => {
 
 const ActiveAlertsCounter = (props) => {
   const { criticalCounter, warningCounter } = props;
-  const navigate = useBasenameRelativeNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
   let url = useResolvedPath('').pathname;
 
@@ -60,26 +59,20 @@ const ActiveAlertsCounter = (props) => {
       query.set('severity', status);
     }
 
-    url = url?.replace(/\/overview/, '/alerts');
+    url = '../alerts';
     return `${url}?${query.toString()}`;
   };
 
   return (
     <CountersWrapper>
-      <CounterWrapper
-        onClick={() => navigate(getLink(STATUS_CRITICAL))}
-        data-cy="critical_counter_node"
-      >
+      <CounterWrapper onClick={() => navigate(getLink(STATUS_CRITICAL))} data-cy="critical_counter_node">
         <CounterTitle>Critical</CounterTitle>
         <CounterValueWrapper>
           <CounterIcon name="Times-circle" status={STATUS_CRITICAL} />
           <CounterValue>{criticalCounter}</CounterValue>
         </CounterValueWrapper>
       </CounterWrapper>
-      <CounterWrapper
-        onClick={() => navigate(getLink(STATUS_WARNING))}
-        data-cy="warning_counter_node"
-      >
+      <CounterWrapper onClick={() => navigate(getLink(STATUS_WARNING))} data-cy="warning_counter_node">
         <CounterTitle>Warning</CounterTitle>
         <CounterValueWrapper>
           <CounterIcon name="Exclamation-circle" status={STATUS_WARNING} />
