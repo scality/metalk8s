@@ -107,37 +107,37 @@ const NodePagePodsTab = React.memo((props) => {
           marginRight: spacing.r8,
         },
       },
-      {
-        Header: 'Logs',
-        accessor: 'log',
-        cellStyle: {
-          minWidth: '3rem',
-          textAlign: 'center',
-          flex: 0.5,
-          marginRight: spacing.r16,
-        },
-        Cell: ({ value }) => {
-          return (
-            <Tooltip
-              overlay={
-                <TooltipContent>
-                  {intl.formatMessage({
-                    id: 'advanced_monitoring',
-                  })}
-                </TooltipContent>
-              }
-            >
-              <ExternalLink
-                href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.logs}?orgId=1&var-logs=Loki&var-logmetrics=Prometheus&var-metrics=Prometheus&var-podlogs=.*&var-systemlogs=.%2B&var-deployment=calico-kube-controllers&var-pod=${value}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Icon name="Metrics" />
-              </ExternalLink>
-            </Tooltip>
-          );
-        },
-      },
+      // {
+      //   Header: 'Logs',
+      //   accessor: 'log',
+      //   cellStyle: {
+      //     minWidth: '3rem',
+      //     textAlign: 'center',
+      //     flex: 0.5,
+      //     marginRight: spacing.r16,
+      //   },
+      //   Cell: ({ value }) => {
+      //     return (
+      //       <Tooltip
+      //         overlay={
+      //           <TooltipContent>
+      //             {intl.formatMessage({
+      //               id: 'advanced_monitoring',
+      //             })}
+      //           </TooltipContent>
+      //         }
+      //       >
+      //         <ExternalLink
+      //           href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.logs}?orgId=1&var-logs=Loki&var-logmetrics=Prometheus&var-metrics=Prometheus&var-podlogs=.*&var-systemlogs=.%2B&var-deployment=calico-kube-controllers&var-pod=${value}`}
+      //           target="_blank"
+      //           rel="noopener noreferrer"
+      //         >
+      //           <Icon name="Metrics" />
+      //         </ExternalLink>
+      //       </Tooltip>
+      //     );
+      //   },
+      // },
     ], // eslint-disable-next-line react-hooks/exhaustive-deps
     [config],
   );
