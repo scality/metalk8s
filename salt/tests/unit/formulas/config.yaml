@@ -115,6 +115,104 @@ metalk8s:
                         kind: PrometheusConfig
                         spec: {}
 
+        oidc-proxy-prometheus.sls:
+          _cases:
+            "OIDC disabled (default)": {}
+            "OIDC enabled with full configuration":
+              k8s_overrides:
+                add:
+                  - kind: ConfigMap
+                    apiVersion: v1
+                    metadata:
+                      name: metalk8s-prometheus-config
+                      namespace: metalk8s-monitoring
+                    data:
+                      config.yaml: |-
+                        apiVersion: addons.metalk8s.scality.com
+                        kind: PrometheusConfig
+                        spec:
+                          config:
+                            enable_oidc_authentication: true
+                            oidc:
+                              issuer: "https://test-oidc.example.com/oidc"
+                              audience: "prometheus-audience"
+                              groupsClaim: "roles"
+                              authorizedGroups:
+                                - "prometheus-admins"
+                                - "monitoring-team"
+
+        oidc-proxy-alertmanager.sls:
+          _cases:
+            "OIDC disabled (default)": {}
+            "OIDC enabled with full configuration":
+              k8s_overrides:
+                add:
+                  - kind: ConfigMap
+                    apiVersion: v1
+                    metadata:
+                      name: metalk8s-alertmanager-config
+                      namespace: metalk8s-monitoring
+                    data:
+                      config.yaml: |-
+                        apiVersion: addons.metalk8s.scality.com
+                        kind: AlertmanagerConfig
+                        spec:
+                          config:
+                            enable_oidc_authentication: true
+                            oidc:
+                              issuer: "https://test-oidc.example.com/oidc"
+                              audience: "alertmanager-audience"
+                              groupsClaim: "roles"
+                              authorizedGroups:
+                                - "alertmanager-admins"
+                                - "monitoring-team"
+
+        oidc-proxy-rbac.sls:
+          _cases:
+            "Both OIDC disabled (default)": {}
+            "Prometheus OIDC enabled only":
+              k8s_overrides:
+                add:
+                  - kind: ConfigMap
+                    apiVersion: v1
+                    metadata:
+                      name: metalk8s-prometheus-config
+                      namespace: metalk8s-monitoring
+                    data:
+                      config.yaml: |-
+                        apiVersion: addons.metalk8s.scality.com
+                        kind: PrometheusConfig
+                        spec:
+                          config:
+                            enable_oidc_authentication: true
+                            oidc:
+                              issuer: "https://test-oidc.example.com/oidc"
+                              audience: "prometheus-audience"
+                              groupsClaim: "roles"
+                              authorizedGroups:
+                                - "prometheus-admins"
+            "Alertmanager OIDC enabled only":
+              k8s_overrides:
+                add:
+                  - kind: ConfigMap
+                    apiVersion: v1
+                    metadata:
+                      name: metalk8s-alertmanager-config
+                      namespace: metalk8s-monitoring
+                    data:
+                      config.yaml: |-
+                        apiVersion: addons.metalk8s.scality.com
+                        kind: AlertmanagerConfig
+                        spec:
+                          config:
+                            enable_oidc_authentication: true
+                            oidc:
+                              issuer: "https://test-oidc.example.com/oidc"
+                              audience: "alertmanager-audience"
+                              groupsClaim: "roles"
+                              authorizedGroups:
+                                - "alertmanager-admins"
+
     solutions:
       deployed:
         configmap.sls:
