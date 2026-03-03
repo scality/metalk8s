@@ -14,7 +14,11 @@
 {%- set alertmanager_oidc_enabled = alertmanager.spec.get('config', {}).get('enable_oidc_authentication', False) %}
 {%- set alertmanager_oidc = alertmanager.spec.get('config', {}).get('oidc', {}) %}
 
-{%- set ingress_ca_file = 'namespace_metalk8s-ingress.secret_ingress-control-plane-default-certificate.tls.crt' %}
+{%- set alertmanager_oidc_ca = alertmanager_oidc.get('caSecret', {}) %}
+{%- set ca_namespace = alertmanager_oidc_ca.get('namespace', '') %}
+{%- set ca_name = alertmanager_oidc_ca.get('name', '') %}
+{%- set ca_configured = ca_namespace and ca_name %}
+{%- set ca_file = 'namespace_' ~ ca_namespace ~ '.secret_' ~ ca_name ~ '.tls.crt' %}
 
 {%- if alertmanager_oidc_enabled %}
 
@@ -39,6 +43,7 @@ Create oauth2-proxy-alertmanager Deployment:
                 app: oauth2-proxy-alertmanager
             spec:
               serviceAccountName: oidc-proxy
+              {%- if ca_configured %}
               initContainers:
               - name: k8s-sidecar
                 image: {{ build_image_name("k8s-sidecar") }}
@@ -46,11 +51,11 @@ Create oauth2-proxy-alertmanager Deployment:
                 restartPolicy: Always
                 env:
                 - name: LABEL
-                  value: metalk8s.scality.com/version
+                  value: metalk8s.scality.com/oidc-ca
                 - name: FOLDER
                   value: /tmp/secrets
                 - name: NAMESPACE
-                  value: metalk8s-ingress
+                  value: {{ ca_namespace }}
                 - name: RESOURCE
                   value: secret
                 - name: UNIQUE_FILENAMES
@@ -58,6 +63,7 @@ Create oauth2-proxy-alertmanager Deployment:
                 volumeMounts:
                 - name: secrets-volume
                   mountPath: /tmp/secrets
+              {%- endif %}
               containers:
               - name: oauth2-proxy
                 image: {{ build_image_name("oauth2-proxy") }}
@@ -74,7 +80,9 @@ Create oauth2-proxy-alertmanager Deployment:
                 {%- for group in alertmanager_oidc.get('authorizedGroups', []) %}
                 - --allowed-group={{ group }}
                 {%- endfor %}
-                - --provider-ca-file=/tmp/secrets/{{ ingress_ca_file }}
+                {%- if ca_configured %}
+                - --provider-ca-file=/tmp/secrets/{{ ca_file }}
+                {%- endif %}
                 - --http-address=0.0.0.0:4180
                 ports:
                 - containerPort: 4180

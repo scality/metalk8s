@@ -17,6 +17,9 @@ spec:
       audience: "" # Expected audience claim in the token
       groupsClaim: "" # JWT claim name that carries user groups/roles
       authorizedGroups: [] # Groups/roles allowed to access Prometheus
+      caSecret:
+        namespace: "" # Namespace of the secret containing the CA certificate (must be labeled with metalk8s.scality.com/oidc-ca: "true")
+        name: "" # Name of the secret containing the CA certificate
     serviceMonitor:
       kubelet:
         scrapeTimeout: 10s
