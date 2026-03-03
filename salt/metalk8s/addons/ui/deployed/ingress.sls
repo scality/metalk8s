@@ -13,32 +13,6 @@
 {%- set stripped_base_path = metalk8s_ui_config.spec.basePath.strip('/') %}
 {%- set normalized_base_path = '/' ~ stripped_base_path %}
 
-{%- set prometheus_defaults = salt.slsutil.renderer(
-        'salt://metalk8s/addons/prometheus-operator/config/prometheus.yaml',
-        saltenv=saltenv
-    )
-%}
-
-{%- set prometheus = salt.metalk8s_service_configuration.get_service_conf(
-        'metalk8s-monitoring', 'metalk8s-prometheus-config', prometheus_defaults
-    )
-%}
-
-{%- set prometheus_oidc_enabled = prometheus.spec.config.get('enable_oidc_authentication', False) %}
-
-{%- set alertmanager_defaults = salt.slsutil.renderer(
-        'salt://metalk8s/addons/prometheus-operator/config/alertmanager.yaml',
-        saltenv=saltenv
-    )
-%}
-
-{%- set alertmanager = salt.metalk8s_service_configuration.get_service_conf(
-        'metalk8s-monitoring', 'metalk8s-alertmanager-config', alertmanager_defaults
-    )
-%}
-
-{%- set alertmanager_oidc_enabled = alertmanager.spec.get('config', {}).get('enable_oidc_authentication', False) %}
-
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -103,28 +77,16 @@ spec:
         pathType: Prefix
         backend:
           service:
-            {%- if prometheus_oidc_enabled %}
-            name: oauth2-proxy
-            port:
-              number: 4180
-            {%- else %}
             name: thanos-api
             port:
-              number: 10902
-            {%- endif %}
+              name: http
       - path: /api/alertmanager(/|$)(.*)
         pathType: Prefix
         backend:
           service:
-            {%- if alertmanager_oidc_enabled %}
-            name: oauth2-proxy-alertmanager
-            port:
-              number: 4180
-            {%- else %}
             name: alertmanager-api
             port:
-              number: 9093
-            {%- endif %}
+              name: http
       {%- if pillar.addons.loki.enabled %}
       - path: /api/loki(/|$)(.*)
         pathType: Prefix
