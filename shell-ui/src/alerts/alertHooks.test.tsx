@@ -11,8 +11,7 @@ const testService = 'http://10.0.0.1/api/alertmanager';
 
 const VOLUME_DEGRADED_ALERT = {
   annotations: {
-    description:
-      'Filesystem on /dev/vdc at 192.168.1.29:9100 has only 3.13% available space left.',
+    description: 'Filesystem on /dev/vdc at 192.168.1.29:9100 has only 3.13% available space left.',
     runbook_url:
       'https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemalmostoutofspace',
     summary: 'Filesystem has less than 5% space left.',
@@ -33,8 +32,7 @@ const VOLUME_DEGRADED_ALERT = {
 };
 const VOLUME_AT_RISK_ALERT = {
   annotations: {
-    description:
-      'Filesystem on /dev/vdc at 192.168.1.29:9100 has only 3.13% available space left.',
+    description: 'Filesystem on /dev/vdc at 192.168.1.29:9100 has only 3.13% available space left.',
     runbook_url:
       'https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemalmostoutofspace',
     summary: 'Filesystem has less than 5% space left.',
@@ -55,8 +53,7 @@ const VOLUME_AT_RISK_ALERT = {
 };
 const VOLUME_AT_RISK_ALERT_NON_ACTIVE = {
   annotations: {
-    description:
-      'Filesystem on /dev/vdc at 192.168.1.29:9100 has only 3.13% available space left.',
+    description: 'Filesystem on /dev/vdc at 192.168.1.29:9100 has only 3.13% available space left.',
     runbook_url:
       'https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemalmostoutofspace',
     summary: 'Filesystem has less than 5% space left.',

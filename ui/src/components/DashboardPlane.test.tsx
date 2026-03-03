@@ -48,9 +48,7 @@ describe("the dashboard network's plane panel", () => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()
     (useHighestSeverityAlerts as any).mockImplementation(() => noAlerts);
     render(<DashboardPlaneHealth />);
-    expect(
-      screen.getAllByLabelText(`Check-circle status ${STATUS_HEALTH}`),
-    ).toHaveLength(NB_ITEMS);
+    expect(screen.getAllByLabelText(`Check-circle status ${STATUS_HEALTH}`)).toHaveLength(NB_ITEMS);
   });
   test('displays 2 warning statuses when warning alerts are present as well as link to the alerts page', async () => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()
@@ -58,9 +56,7 @@ describe("the dashboard network's plane panel", () => {
     // Render
     render(<DashboardPlaneHealth />);
     // Verify
-    expect(
-      screen.getAllByLabelText(`Exclamation-circle status ${STATUS_WARNING}`),
-    ).toHaveLength(NB_ITEMS);
+    expect(screen.getAllByLabelText(`Exclamation-circle status ${STATUS_WARNING}`)).toHaveLength(NB_ITEMS);
     expect(screen.getAllByTestId('alert-link')).toHaveLength(NB_ITEMS);
   });
   test('displays 2 critical statuses when warning alerts are present as well as link to the alerts page', async () => {
@@ -69,9 +65,7 @@ describe("the dashboard network's plane panel", () => {
     // Render
     render(<DashboardPlaneHealth />);
     // Verify
-    expect(
-      screen.getAllByLabelText(`Times-circle status ${STATUS_CRITICAL}`),
-    ).toHaveLength(NB_ITEMS);
+    expect(screen.getAllByLabelText(`Times-circle status ${STATUS_CRITICAL}`)).toHaveLength(NB_ITEMS);
     expect(screen.getAllByTestId('alert-link')).toHaveLength(NB_ITEMS);
   });
 });

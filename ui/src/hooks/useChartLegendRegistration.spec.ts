@@ -34,10 +34,7 @@ describe('useChartLegendRegistration', () => {
         }),
       );
 
-      expect(mockRegister).toHaveBeenCalledWith('test-chart', [
-        'cpu-usage',
-        'memory-usage',
-      ]);
+      expect(mockRegister).toHaveBeenCalledWith('test-chart', ['cpu-usage', 'memory-usage']);
     });
 
     it('should register chart with empty array when series is empty', () => {
@@ -65,9 +62,7 @@ describe('useChartLegendRegistration', () => {
     });
 
     it('should include additional names when provided', () => {
-      const mockSeries: Serie[] = [
-        { resource: 'cpu-usage', data: [], getTooltipLabel: () => 'CPU Usage' },
-      ];
+      const mockSeries: Serie[] = [{ resource: 'cpu-usage', data: [], getTooltipLabel: () => 'CPU Usage' }];
 
       renderHook(() =>
         useChartLegendRegistration({
@@ -78,11 +73,7 @@ describe('useChartLegendRegistration', () => {
         }),
       );
 
-      expect(mockRegister).toHaveBeenCalledWith('test-chart', [
-        'cpu-usage',
-        'custom-metric',
-        'another-metric',
-      ]);
+      expect(mockRegister).toHaveBeenCalledWith('test-chart', ['cpu-usage', 'custom-metric', 'another-metric']);
     });
   });
 
@@ -151,9 +142,7 @@ describe('useChartLegendRegistration', () => {
         }),
       );
 
-      expect(mockRegister).toHaveBeenCalledWith('symmetrical-chart', [
-        'network-in',
-      ]);
+      expect(mockRegister).toHaveBeenCalledWith('symmetrical-chart', ['network-in']);
     });
 
     it('should register chart with only below series when above is empty', () => {
@@ -176,9 +165,7 @@ describe('useChartLegendRegistration', () => {
         }),
       );
 
-      expect(mockRegister).toHaveBeenCalledWith('symmetrical-chart', [
-        'network-out',
-      ]);
+      expect(mockRegister).toHaveBeenCalledWith('symmetrical-chart', ['network-out']);
     });
 
     it('should not register when both above and below are empty', () => {
@@ -237,19 +224,13 @@ describe('useChartLegendRegistration', () => {
         }),
       );
 
-      expect(mockRegister).toHaveBeenCalledWith('symmetrical-chart', [
-        'network-in',
-        'network-out',
-        'total-bandwidth',
-      ]);
+      expect(mockRegister).toHaveBeenCalledWith('symmetrical-chart', ['network-in', 'network-out', 'total-bandwidth']);
     });
   });
 
   describe('Effect dependencies', () => {
     it('should re-register when chartId changes', () => {
-      const mockSeries: Serie[] = [
-        { resource: 'cpu-usage', data: [], getTooltipLabel: () => 'CPU Usage' },
-      ];
+      const mockSeries: Serie[] = [{ resource: 'cpu-usage', data: [], getTooltipLabel: () => 'CPU Usage' }];
 
       const { rerender } = renderHook(
         ({ chartId }) =>
@@ -270,9 +251,7 @@ describe('useChartLegendRegistration', () => {
     });
 
     it('should re-register when series changes', () => {
-      const initialSeries: Serie[] = [
-        { resource: 'cpu-usage', data: [], getTooltipLabel: () => 'CPU Usage' },
-      ];
+      const initialSeries: Serie[] = [{ resource: 'cpu-usage', data: [], getTooltipLabel: () => 'CPU Usage' }];
       const updatedSeries: Serie[] = [
         { resource: 'cpu-usage', data: [], getTooltipLabel: () => 'CPU Usage' },
         {
@@ -296,17 +275,12 @@ describe('useChartLegendRegistration', () => {
 
       rerender({ series: updatedSeries });
 
-      expect(mockRegister).toHaveBeenCalledWith('test-chart', [
-        'cpu-usage',
-        'memory-usage',
-      ]);
+      expect(mockRegister).toHaveBeenCalledWith('test-chart', ['cpu-usage', 'memory-usage']);
       expect(mockRegister).toHaveBeenCalledTimes(2);
     });
 
     it('should re-register when additionalNames changes', () => {
-      const mockSeries: Serie[] = [
-        { resource: 'cpu-usage', data: [], getTooltipLabel: () => 'CPU Usage' },
-      ];
+      const mockSeries: Serie[] = [{ resource: 'cpu-usage', data: [], getTooltipLabel: () => 'CPU Usage' }];
 
       const { rerender } = renderHook(
         ({ additionalNames }) =>
@@ -319,18 +293,11 @@ describe('useChartLegendRegistration', () => {
         { initialProps: { additionalNames: ['metric-1'] } },
       );
 
-      expect(mockRegister).toHaveBeenCalledWith('test-chart', [
-        'cpu-usage',
-        'metric-1',
-      ]);
+      expect(mockRegister).toHaveBeenCalledWith('test-chart', ['cpu-usage', 'metric-1']);
 
       rerender({ additionalNames: ['metric-1', 'metric-2'] });
 
-      expect(mockRegister).toHaveBeenCalledWith('test-chart', [
-        'cpu-usage',
-        'metric-1',
-        'metric-2',
-      ]);
+      expect(mockRegister).toHaveBeenCalledWith('test-chart', ['cpu-usage', 'metric-1', 'metric-2']);
       expect(mockRegister).toHaveBeenCalledTimes(2);
     });
   });

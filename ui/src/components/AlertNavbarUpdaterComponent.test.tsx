@@ -22,8 +22,7 @@ describe('AlertNavbarUpdaterComponent', () => {
   };
   const WATCHDOG_ALERT = {
     id: 'fc30b79dbdb0a043',
-    summary:
-      'An alert that should always be firing to certify that Alertmanager is working properly.',
+    summary: 'An alert that should always be firing to certify that Alertmanager is working properly.',
     description:
       'This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n"DeadMansSnitch" integration in PagerDuty.',
     startsAt: '2023-08-11T06:02:15.628Z',
@@ -91,8 +90,7 @@ describe('AlertNavbarUpdaterComponent', () => {
     expect(publishNotification).toBeCalledWith({
       id: 'CriticalNotification',
       title: 'Alerts',
-      description:
-        'There is 1 critical alert currently firing on the platform.',
+      description: 'There is 1 critical alert currently firing on the platform.',
       severity: 'critical',
       createdOn: new Date('2023-08-11T06:03:19.730Z'),
       redirectUrl: '/platform/alerts',
@@ -177,8 +175,7 @@ describe('AlertNavbarUpdaterComponent', () => {
     expect(publishNotification).toBeCalledWith({
       id: 'CriticalNotification',
       title: 'Alerts',
-      description:
-        'There are 1 critical alert and 1 warning alert currently firing on the platform.',
+      description: 'There are 1 critical alert and 1 warning alert currently firing on the platform.',
       severity: 'critical',
       createdOn: new Date('2023-08-11T06:03:19.730Z'),
       redirectUrl: '/platform/alerts',

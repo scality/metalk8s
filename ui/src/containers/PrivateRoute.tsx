@@ -2,17 +2,8 @@ import { ErrorPage401, ErrorPageAuth } from '@scality/core-ui';
 import { ReactNode, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateAPIConfigAction } from '../ducks/config';
-import {
-  UserAccessRight,
-  UserRoles,
-  useTypedSelector,
-  useUserAccessRight,
-  useUserRoles,
-} from '../hooks';
-import {
-  useBasenameRelativeNavigate,
-  useShellHooks,
-} from '@scality/module-federation';
+import { UserAccessRight, UserRoles, useTypedSelector, useUserAccessRight, useUserRoles } from '../hooks';
+import { useBasenameRelativeNavigate, useShellHooks } from '@scality/module-federation';
 
 export const useAuth = () => {
   const { useAuth } = useShellHooks();
@@ -76,17 +67,9 @@ const PrivateRoute = ({ children, ...rest }: PrivateRouteProps) => {
       />
     );
   } else if (userData.token && userData.username) {
-    return (
-      <AccessRouteGuard canAccess={canAccess}>{children}</AccessRouteGuard>
-    );
+    return <AccessRouteGuard canAccess={canAccess}>{children}</AccessRouteGuard>;
   } else {
-    return (
-      <ErrorPageAuth
-        data-cy="sc-error-pageauth"
-        supportLink={url_support}
-        locale={language}
-      />
-    );
+    return <ErrorPageAuth data-cy="sc-error-pageauth" supportLink={url_support} locale={language} />;
   }
 };
 

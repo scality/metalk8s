@@ -66,20 +66,14 @@ const ActiveAlertsCounter = (props) => {
 
   return (
     <CountersWrapper>
-      <CounterWrapper
-        onClick={() => navigate(getLink(STATUS_CRITICAL))}
-        data-cy="critical_counter_node"
-      >
+      <CounterWrapper onClick={() => navigate(getLink(STATUS_CRITICAL))} data-cy="critical_counter_node">
         <CounterTitle>Critical</CounterTitle>
         <CounterValueWrapper>
           <CounterIcon name="Times-circle" status={STATUS_CRITICAL} />
           <CounterValue>{criticalCounter}</CounterValue>
         </CounterValueWrapper>
       </CounterWrapper>
-      <CounterWrapper
-        onClick={() => navigate(getLink(STATUS_WARNING))}
-        data-cy="warning_counter_node"
-      >
+      <CounterWrapper onClick={() => navigate(getLink(STATUS_WARNING))} data-cy="warning_counter_node">
         <CounterTitle>Warning</CounterTitle>
         <CounterValueWrapper>
           <CounterIcon name="Exclamation-triangle" status={STATUS_WARNING} />

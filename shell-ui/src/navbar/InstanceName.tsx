@@ -1,9 +1,4 @@
-import React, {
-  PropsWithChildren,
-  createContext,
-  useContext,
-  useState,
-} from 'react';
+import React, { PropsWithChildren, createContext, useContext, useState } from 'react';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { InlineInput } from '@scality/core-ui/dist/components/inlineinput/InlineInput';
 import { useMutation, useQuery } from 'react-query';
@@ -21,18 +16,14 @@ const InstanceNameContext = createContext<{
 export const InstanceNameProvider = ({ children }: PropsWithChildren<{}>) => {
   const [instanceName, setInstanceName] = useState('');
   return (
-    <InstanceNameContext.Provider value={{ instanceName, setInstanceName }}>
-      {children}
-    </InstanceNameContext.Provider>
+    <InstanceNameContext.Provider value={{ instanceName, setInstanceName }}>{children}</InstanceNameContext.Provider>
   );
 };
 
 export const useInstanceName = () => {
   const context = useContext(InstanceNameContext);
   if (!context) {
-    throw new Error(
-      'useInstanceName must be used within a InstanceNameProvider',
-    );
+    throw new Error('useInstanceName must be used within a InstanceNameProvider');
   }
   return context.instanceName;
 };
@@ -40,9 +31,7 @@ export const useInstanceName = () => {
 const useSetInstanceName = () => {
   const context = useContext(InstanceNameContext);
   if (!context) {
-    throw new Error(
-      'useSetInstanceName must be used within a InstanceNameProvider',
-    );
+    throw new Error('useSetInstanceName must be used within a InstanceNameProvider');
   }
   return context.setInstanceName;
 };
@@ -76,10 +65,7 @@ export const _InternalInstanceName = ({
   moduleExports: {
     [moduleName: string]: {
       getInstanceName: (userData: UserData | undefined) => Promise<string>;
-      setInstanceName: (
-        userData: UserData | undefined,
-        name: string,
-      ) => Promise<void>;
+      setInstanceName: (userData: UserData | undefined, name: string) => Promise<void>;
     };
   };
 }) => {
@@ -89,10 +75,7 @@ export const _InternalInstanceName = ({
   const { userData } = useAuth();
   const { data, status } = useQuery({
     queryKey: ['instanceName'],
-    queryFn: () =>
-      moduleExports[instanceNameAdapter?.module ?? ''].getInstanceName(
-        userData,
-      ),
+    queryFn: () => moduleExports[instanceNameAdapter?.module ?? ''].getInstanceName(userData),
     onSuccess: (data) => {
       setInstanceName(data);
     },
@@ -100,10 +83,7 @@ export const _InternalInstanceName = ({
 
   const mutation = useMutation({
     mutationFn: ({ value }: { value: string }) => {
-      return moduleExports[instanceNameAdapter?.module ?? ''].setInstanceName(
-        userData,
-        value,
-      );
+      return moduleExports[instanceNameAdapter?.module ?? ''].setInstanceName(userData, value);
     },
   });
 

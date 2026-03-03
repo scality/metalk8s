@@ -9,12 +9,7 @@ function saveJobsToLocalStorage(jobs) {
   localStorage.setItem(JOBS, JSON.stringify(jobs));
 }
 
-export function addJobToLocalStorage({
-  jid,
-  type,
-  completedAt = null,
-  ...props
-}) {
+export function addJobToLocalStorage({ jid, type, completedAt = null, ...props }) {
   const jobs = listJobsFromLocalStorage();
   const job = jobs.find((item) => item.jid === jid);
 

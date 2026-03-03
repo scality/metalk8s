@@ -12,15 +12,8 @@ import {
   Stack,
   IconHelp,
 } from '@scality/core-ui';
-import {
-  Alert,
-  GlobalHealthBar as GlobalHealthBarRecharts,
-} from '@scality/core-ui/dist/next';
-import {
-  highestAlertToStatus,
-  useAlertLibrary,
-  useHighestSeverityAlerts,
-} from '../containers/AlertProvider';
+import { Alert, GlobalHealthBar as GlobalHealthBarRecharts } from '@scality/core-ui/dist/next';
+import { highestAlertToStatus, useAlertLibrary, useHighestSeverityAlerts } from '../containers/AlertProvider';
 import { useIntl } from 'react-intl';
 import { useStartingTimeStamp } from '../containers/StartTimeProvider';
 import CircleStatus from './CircleStatus';
@@ -48,12 +41,8 @@ const DashboardGlobalHealth = () => {
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
   const alertsLibrary = useAlertLibrary();
   const { duration } = useMetricsTimeSpan();
-  const { data: alerts, status: historyAlertStatus } = useQuery(
-    getClusterAlertSegmentQuery(duration),
-  );
-  const platformHighestSeverityAlert = useHighestSeverityAlerts(
-    alertsLibrary.getPlatformAlertSelectors(),
-  );
+  const { data: alerts, status: historyAlertStatus } = useQuery(getClusterAlertSegmentQuery(duration));
+  const platformHighestSeverityAlert = useHighestSeverityAlerts(alertsLibrary.getPlatformAlertSelectors());
   const platformStatus = highestAlertToStatus(platformHighestSeverityAlert);
   return (
     <AppContainer.OverallSummary>
@@ -92,9 +81,7 @@ const DashboardGlobalHealth = () => {
                       })
                       .split('\n')
                       .map((line, key) => (
-                        <SmallerText key={`globalheathexplanation-${key}`}>
-                          {line}
-                        </SmallerText>
+                        <SmallerText key={`globalheathexplanation-${key}`}>{line}</SmallerText>
                       ))}
                   </Stack>
                 }
@@ -116,8 +103,7 @@ const DashboardGlobalHealth = () => {
                           startsAt: startingTimeISO,
                           endsAt: currentTimeISO,
                           severity: 'unavailable',
-                          description:
-                            'Failed to load alert history for the selected period',
+                          description: 'Failed to load alert history for the selected period',
                         },
                       ] as Alert[])
                     : alerts || []

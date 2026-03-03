@@ -1,16 +1,5 @@
-import {
-  act,
-  render,
-  screen,
-  waitFor,
-  waitForOptions,
-} from '@testing-library/react';
-import {
-  FunctionComponent,
-  PropsWithChildren,
-  useState,
-  useEffect,
-} from 'react';
+import { act, render, screen, waitFor, waitForOptions } from '@testing-library/react';
+import { FunctionComponent, PropsWithChildren, useState, useEffect } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import React from 'react';
 import { WaitFor } from '@testing-library/react-hooks';
@@ -24,9 +13,7 @@ export type RenderAdditionalHook = <THookResult>(
 };
 
 export function prepareRenderMultipleHooks(options: {
-  wrapper: FunctionComponent<
-    React.PropsWithChildren<PropsWithChildren<Record<string, never>>>
-  >;
+  wrapper: FunctionComponent<React.PropsWithChildren<PropsWithChildren<Record<string, never>>>>;
 }): {
   renderAdditionalHook: RenderAdditionalHook;
   waitForWrapperToBeReady: () => Promise<void>;
@@ -34,17 +21,11 @@ export function prepareRenderMultipleHooks(options: {
   const RENDER_HOOK_EVENT = 'RENDER_HOOK_EVENT';
   const READY_STRING = 'READY_STRING';
 
-  function TestComponents({
-    addValues,
-  }: {
-    addValues: (vals: { key: string; value: unknown }[]) => void;
-  }) {
+  function TestComponents({ addValues }: { addValues: (vals: { key: string; value: unknown }[]) => void }) {
     const [components, setComponents] = useState<JSX.Element[]>([]);
 
     useEffect(() => {
-      const listener = (
-        e: CustomEvent<{ key: string; callback: () => unknown }>,
-      ) => {
+      const listener = (e: CustomEvent<{ key: string; callback: () => unknown }>) => {
         function TestComponent() {
           const hook = e.detail.callback();
 
@@ -78,10 +59,7 @@ export function prepareRenderMultipleHooks(options: {
   }
   const values: { key: string; value: unknown }[] = [];
   render(
-    <ErrorBoundary
-      onError={console.error}
-      fallbackRender={() => <div>error</div>}
-    >
+    <ErrorBoundary onError={console.error} fallbackRender={() => <div>error</div>}>
       {/* @ts-expect-error - FIXME when you are working on it */}
       <options.wrapper>
         <TestComponents
@@ -102,10 +80,7 @@ export function prepareRenderMultipleHooks(options: {
     //eslint-disable-next-line
     //@ts-ignore
     //eslint-disable-next-line
-    renderAdditionalHook: <THookResult extends unknown>(
-      key: string,
-      callback: () => THookResult,
-    ) => {
+    renderAdditionalHook: <THookResult extends unknown>(key: string, callback: () => THookResult) => {
       try {
         screen.getByText(READY_STRING);
       } catch (e) {

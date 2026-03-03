@@ -1,9 +1,6 @@
 import React, { PropsWithChildren } from 'react';
 import { act, screen, waitFor, within } from '@testing-library/react';
-import NotificationCenterProvider, {
-  InternalNotification,
-  Notification,
-} from '../NotificationCenterProvider';
+import NotificationCenterProvider, { InternalNotification, Notification } from '../NotificationCenterProvider';
 import NotificationCenter from './NotificationCenter';
 import userEvent from '@testing-library/user-event';
 import { QueryClient } from 'react-query';
@@ -14,16 +11,11 @@ import { useNotificationCenter } from '../useNotificationCenter';
 import { QueryClientProvider } from '../QueryClientProvider';
 
 export const notificationCenterSelectors = {
-  notificationCenterButton: () =>
-    screen.getByRole('button', { name: /notification center/i }),
-  emptyNotificationCenterIcon: () =>
-    screen.getByRole('img', { name: /Notification Center \(Empty\)/i }),
-  noNotifications: () =>
-    screen.getByText(/You have no new notifications at the moment./i),
-  notification: (title: string | RegExp) =>
-    screen.getByRole('option', { name: title }),
-  notificationCenterComboBox: () =>
-    screen.getByRole('combobox', { name: /notification center/i }),
+  notificationCenterButton: () => screen.getByRole('button', { name: /notification center/i }),
+  emptyNotificationCenterIcon: () => screen.getByRole('img', { name: /Notification Center \(Empty\)/i }),
+  noNotifications: () => screen.getByText(/You have no new notifications at the moment./i),
+  notification: (title: string | RegExp) => screen.getByRole('option', { name: title }),
+  notificationCenterComboBox: () => screen.getByRole('combobox', { name: /notification center/i }),
 };
 
 describe('NotificationCenter', () => {
@@ -94,15 +86,11 @@ describe('NotificationCenter', () => {
     return { TRIAL_LICENSE_EXPIRED, NEW_ALERTS, NEW_VERSION_AVAILABLE };
   }
   const renderNotificationCenter = async () => {
-    const { renderAdditionalHook, waitForWrapperToBeReady } =
-      prepareRenderMultipleHooks({
-        wrapper,
-      });
+    const { renderAdditionalHook, waitForWrapperToBeReady } = prepareRenderMultipleHooks({
+      wrapper,
+    });
     await waitForWrapperToBeReady();
-    const { result, waitFor } = renderAdditionalHook(
-      'useNotificationCenter',
-      useNotificationCenter,
-    );
+    const { result, waitFor } = renderAdditionalHook('useNotificationCenter', useNotificationCenter);
 
     return { result, waitFor };
   };
@@ -113,9 +101,7 @@ describe('NotificationCenter', () => {
     });
     //E
     await waitFor(() => {
-      expect(
-        notificationCenterSelectors.emptyNotificationCenterIcon(),
-      ).toBeInTheDocument();
+      expect(notificationCenterSelectors.emptyNotificationCenterIcon()).toBeInTheDocument();
     });
     userEvent.click(notificationCenterSelectors.notificationCenterButton());
     //V
@@ -126,30 +112,19 @@ describe('NotificationCenter', () => {
     //S+E
     //We use the `prepareRenderMultipleHooks` to get the `screen`, which is not exposed by the React Hook Testing Library.
     const { result, waitFor } = await renderNotificationCenter();
-    const { TRIAL_LICENSE_EXPIRED, NEW_ALERTS, NEW_VERSION_AVAILABLE } =
-      publishNewNotifications(result);
-    expect(
-      notificationCenterSelectors.notificationCenterButton(),
-    ).toBeInTheDocument();
+    const { TRIAL_LICENSE_EXPIRED, NEW_ALERTS, NEW_VERSION_AVAILABLE } = publishNewNotifications(result);
+    expect(notificationCenterSelectors.notificationCenterButton()).toBeInTheDocument();
     // Open the notification center
     userEvent.click(notificationCenterSelectors.notificationCenterButton());
     // Note that the waitFor from the React Hook Testing Library is different from the one from the React Testing Library.
-    await waitFor(
-      () => !!screen.queryByText(new RegExp(TRIAL_LICENSE_EXPIRED)),
-    );
+    await waitFor(() => !!screen.queryByText(new RegExp(TRIAL_LICENSE_EXPIRED)));
 
     //V the trial license expired is the first notification list
-    expect(screen.getAllByRole('option')[0]).toHaveTextContent(
-      new RegExp(NEW_ALERTS),
-    );
+    expect(screen.getAllByRole('option')[0]).toHaveTextContent(new RegExp(NEW_ALERTS));
     //V the new version available is the second notification list
-    expect(screen.getAllByRole('option')[1]).toHaveTextContent(
-      new RegExp(NEW_VERSION_AVAILABLE),
-    );
+    expect(screen.getAllByRole('option')[1]).toHaveTextContent(new RegExp(NEW_VERSION_AVAILABLE));
     //V the new alerts is the third notification list
-    expect(screen.getAllByRole('option')[2]).toHaveTextContent(
-      new RegExp(TRIAL_LICENSE_EXPIRED),
-    );
+    expect(screen.getAllByRole('option')[2]).toHaveTextContent(new RegExp(TRIAL_LICENSE_EXPIRED));
     //V the notifications are marked as unread
     expect(
       within(screen.getAllByRole('option')[0]).getByRole('img', {
@@ -194,40 +169,23 @@ describe('NotificationCenter', () => {
 
   it('can be navigated with the keyboard', async () => {
     const { result } = await renderNotificationCenter();
-    const { TRIAL_LICENSE_EXPIRED, NEW_ALERTS, NEW_VERSION_AVAILABLE } =
-      publishNewNotifications(result);
-    const notificationCenterButton =
-      notificationCenterSelectors.notificationCenterButton();
+    const { TRIAL_LICENSE_EXPIRED, NEW_ALERTS, NEW_VERSION_AVAILABLE } = publishNewNotifications(result);
+    const notificationCenterButton = notificationCenterSelectors.notificationCenterButton();
     userEvent.click(notificationCenterButton);
-    const notificationCenterComboBox =
-      notificationCenterSelectors.notificationCenterComboBox();
+    const notificationCenterComboBox = notificationCenterSelectors.notificationCenterComboBox();
     userEvent.keyboard('{arrowdown}');
-    const notification = notificationCenterSelectors.notification(
-      new RegExp(NEW_ALERTS),
-    );
-    expect(
-      notificationCenterComboBox.attributes.getNamedItem(
-        'aria-activedescendant',
-      )?.value,
-    ).toBe(notification.id);
+    const notification = notificationCenterSelectors.notification(new RegExp(NEW_ALERTS));
+    expect(notificationCenterComboBox.attributes.getNamedItem('aria-activedescendant')?.value).toBe(notification.id);
     userEvent.keyboard('{arrowdown}');
-    const nextNotification = notificationCenterSelectors.notification(
-      new RegExp(NEW_VERSION_AVAILABLE),
+    const nextNotification = notificationCenterSelectors.notification(new RegExp(NEW_VERSION_AVAILABLE));
+    expect(notificationCenterComboBox.attributes.getNamedItem('aria-activedescendant')?.value).toBe(
+      nextNotification.id,
     );
-    expect(
-      notificationCenterComboBox.attributes.getNamedItem(
-        'aria-activedescendant',
-      )?.value,
-    ).toBe(nextNotification.id);
     userEvent.keyboard('{arrowdown}');
-    const lastNotification = notificationCenterSelectors.notification(
-      new RegExp(TRIAL_LICENSE_EXPIRED),
+    const lastNotification = notificationCenterSelectors.notification(new RegExp(TRIAL_LICENSE_EXPIRED));
+    expect(notificationCenterComboBox.attributes.getNamedItem('aria-activedescendant')?.value).toBe(
+      lastNotification.id,
     );
-    expect(
-      notificationCenterComboBox.attributes.getNamedItem(
-        'aria-activedescendant',
-      )?.value,
-    ).toBe(lastNotification.id);
 
     userEvent.keyboard('{enter}');
 

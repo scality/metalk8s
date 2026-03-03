@@ -1,8 +1,4 @@
-import {
-  V1ContainerStatus,
-  V1Pod,
-  V1PodList,
-} from '@kubernetes/client-node/dist/gen/model/models';
+import { V1ContainerStatus, V1Pod, V1PodList } from '@kubernetes/client-node/dist/gen/model/models';
 import { Effect, call, put, select, takeLatest } from 'redux-saga/effects';
 
 import type { APIResult } from '../../types';
@@ -30,10 +26,7 @@ export type Pod = {
 export type PodsState = {
   list: Pod[];
 };
-export default function reducer(
-  state: PodsState = defaultState,
-  action: any = {},
-) {
+export default function reducer(state: PodsState = defaultState, action: any = {}) {
   switch (action.type) {
     case SET_PODS:
       return { ...state, list: action.payload };

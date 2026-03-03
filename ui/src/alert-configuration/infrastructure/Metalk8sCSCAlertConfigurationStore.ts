@@ -1,19 +1,12 @@
 import { AlertManagerConfig, Receiver, Route } from './AlertManagerTypes';
-import {
-  AlertConfiguration,
-  AlertStoreLogLine,
-  IAlertConfigurationStore,
-} from '../domain/AlertConfigurationDomain';
+import { AlertConfiguration, AlertStoreLogLine, IAlertConfigurationStore } from '../domain/AlertConfigurationDomain';
 import YAML from 'yaml';
 import { V1ConfigMap, V1NodeList } from '@kubernetes/client-node';
 import { getTokenType } from '../../services/platformlibrary/k8s';
 
 type AlertmanagerConfigKind = 'AlertmanagerConfig';
 
-type Metalk8sCSCConfiguration<
-  KIND extends string,
-  T extends Record<string, unknown>,
-> = {
+type Metalk8sCSCConfiguration<KIND extends string, T extends Record<string, unknown>> = {
   apiVersion: 'addons.metalk8s.scality.com';
   kind: KIND;
   spec: T;
@@ -50,9 +43,7 @@ export type SaltLoginResponse =
       error: string;
     };
 
-export class Metalk8sCSCAlertConfigurationStore
-  implements IAlertConfigurationStore
-{
+export class Metalk8sCSCAlertConfigurationStore implements IAlertConfigurationStore {
   constructor(
     private k8sApiBaseUrl: string,
     private saltApiBaseUrl: string,
@@ -84,30 +75,23 @@ export class Metalk8sCSCAlertConfigurationStore
     const configMap: V1ConfigMap = await configMapResponse.json();
     const rawAlertManagerConfig = configMap.data?.['config.yaml'] || '';
 
-    const alertManagerConfig: Metalk8sAlertManagerConfig = YAML.parse(
-      rawAlertManagerConfig,
-    );
+    const alertManagerConfig: Metalk8sAlertManagerConfig = YAML.parse(rawAlertManagerConfig);
     return alertManagerConfig;
   }
 
-  async _applyConfigMapChangesAndCallSalt(
-    newConfig: Metalk8sAlertManagerConfig,
-  ) {
-    await fetch(
-      `${this.k8sApiBaseUrl}/api/v1/namespaces/metalk8s-monitoring/configmaps/metalk8s-alertmanager-config`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/merge-patch+json',
-          Authorization: `Bearer ${await this.getToken()}`,
-        },
-        body: JSON.stringify({
-          data: {
-            ['config.yaml']: YAML.stringify(newConfig),
-          },
-        }),
+  async _applyConfigMapChangesAndCallSalt(newConfig: Metalk8sAlertManagerConfig) {
+    await fetch(`${this.k8sApiBaseUrl}/api/v1/namespaces/metalk8s-monitoring/configmaps/metalk8s-alertmanager-config`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/merge-patch+json',
+        Authorization: `Bearer ${await this.getToken()}`,
       },
-    );
+      body: JSON.stringify({
+        data: {
+          ['config.yaml']: YAML.stringify(newConfig),
+        },
+      }),
+    });
 
     //Login salt api
     const saltLoginFetchResponse = await fetch(`${this.saltApiBaseUrl}/login`, {
@@ -126,33 +110,26 @@ export class Metalk8sCSCAlertConfigurationStore
       throw new Error('Error login with salt api');
     }
 
-    const saltLoginResponse: SaltLoginResponse =
-      await saltLoginFetchResponse.json();
+    const saltLoginResponse: SaltLoginResponse = await saltLoginFetchResponse.json();
 
     if ('error' in saltLoginResponse) {
       throw new Error('Error login with salt api');
     }
 
-    const nodesFetchResponse = await fetch(
-      `${this.k8sApiBaseUrl}/api/v1/nodes`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${await this.getToken()}`,
-        },
+    const nodesFetchResponse = await fetch(`${this.k8sApiBaseUrl}/api/v1/nodes`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${await this.getToken()}`,
       },
-    );
+    });
 
     if (nodesFetchResponse.status !== 200) {
       throw new Error('Error fetching nodes information');
     }
 
     const nodesResponse: V1NodeList = await nodesFetchResponse.json();
-    const metalk8sVersion =
-      nodesResponse.items[0].metadata?.labels?.[
-        'metalk8s.scality.com/version'
-      ] || null;
+    const metalk8sVersion = nodesResponse.items[0].metadata?.labels?.['metalk8s.scality.com/version'] || null;
 
     if (!metalk8sVersion) {
       throw new Error('Error fetching metalk8s version');
@@ -176,32 +153,25 @@ export class Metalk8sCSCAlertConfigurationStore
     });
   }
 
-  async _getAlertConfiguration(
-    selectTestConfig: boolean,
-  ): Promise<AlertConfiguration> {
-    const alertManagerConfig: Metalk8sAlertManagerConfig =
-      await this._getAlertManagerConfig();
+  async _getAlertConfiguration(selectTestConfig: boolean): Promise<AlertConfiguration> {
+    const alertManagerConfig: Metalk8sAlertManagerConfig = await this._getAlertManagerConfig();
 
-    const currentEmailreceiver: Receiver =
-      alertManagerConfig.spec.notification?.config?.receivers?.find(
-        (receiver) => {
-          return (
-            receiver.email_configs &&
-            receiver.email_configs.length > 0 &&
-            (selectTestConfig
-              ? receiver.name === 'test-receiver-config-from-ui'
-              : receiver.name !== 'test-receiver-config-from-ui')
-          );
-        },
-      ) || {
-        name: selectTestConfig ? 'test-receiver-config-from-ui' : 'default',
-      };
+    const currentEmailreceiver: Receiver = alertManagerConfig.spec.notification?.config?.receivers?.find((receiver) => {
+      return (
+        receiver.email_configs &&
+        receiver.email_configs.length > 0 &&
+        (selectTestConfig
+          ? receiver.name === 'test-receiver-config-from-ui'
+          : receiver.name !== 'test-receiver-config-from-ui')
+      );
+    }) || {
+      name: selectTestConfig ? 'test-receiver-config-from-ui' : 'default',
+    };
 
     const receiverName = currentEmailreceiver.name;
-    const isEnable =
-      alertManagerConfig.spec.notification?.config?.route?.routes?.find(
-        (r) => r.receiver === receiverName,
-      );
+    const isEnable = alertManagerConfig.spec.notification?.config?.route?.routes?.find(
+      (r) => r.receiver === receiverName,
+    );
 
     const smtpHostAndPort = parseHostAndPort(
       currentEmailreceiver?.email_configs?.[0].smarthost ||
@@ -209,26 +179,21 @@ export class Metalk8sCSCAlertConfigurationStore
         '',
     );
 
-    const alertConfiguration: Omit<
-      AlertConfiguration,
-      'type' | 'username' | 'password' | 'secret' | 'identity'
-    > = {
+    const alertConfiguration: Omit<AlertConfiguration, 'type' | 'username' | 'password' | 'secret' | 'identity'> = {
       enabled: !!isEnable,
       host: smtpHostAndPort.host,
       port: smtpHostAndPort.port,
       isTLSEnabled: !!(
         currentEmailreceiver?.email_configs?.[0].require_tls === true ||
         (currentEmailreceiver?.email_configs?.[0].require_tls !== false &&
-          alertManagerConfig.spec.notification?.config?.global
-            ?.smtp_require_tls)
+          alertManagerConfig.spec.notification?.config?.global?.smtp_require_tls)
       ),
       from:
         currentEmailreceiver?.email_configs?.[0].from ||
         alertManagerConfig.spec.notification?.config?.global?.smtp_from ||
         '',
       to: currentEmailreceiver?.email_configs?.[0].to || '',
-      sendResolved:
-        currentEmailreceiver?.email_configs?.[0].send_resolved === true,
+      sendResolved: currentEmailreceiver?.email_configs?.[0].send_resolved === true,
     };
 
     const username =
@@ -312,17 +277,17 @@ export class Metalk8sCSCAlertConfigurationStore
                 auth_secret: alertConfiguration.secret,
               }
             : alertConfiguration.type === 'LOGIN'
-            ? {
-                auth_username: alertConfiguration.username,
-                auth_password: alertConfiguration.password,
-              }
-            : alertConfiguration.type === 'PLAIN'
-            ? {
-                auth_identity: alertConfiguration.identity,
-                auth_username: alertConfiguration.username,
-                auth_password: alertConfiguration.password,
-              }
-            : {}),
+              ? {
+                  auth_username: alertConfiguration.username,
+                  auth_password: alertConfiguration.password,
+                }
+              : alertConfiguration.type === 'PLAIN'
+                ? {
+                    auth_identity: alertConfiguration.identity,
+                    auth_username: alertConfiguration.username,
+                    auth_password: alertConfiguration.password,
+                  }
+                : {}),
         },
         ...(currentEmailreceiver.email_configs?.slice(1) || []),
       ],
@@ -330,29 +295,20 @@ export class Metalk8sCSCAlertConfigurationStore
   }
 
   async putAlertConfiguration(alertConfiguration: AlertConfiguration) {
-    const alertManagerConfig: Metalk8sAlertManagerConfig =
-      await this._getAlertManagerConfig();
+    const alertManagerConfig: Metalk8sAlertManagerConfig = await this._getAlertManagerConfig();
 
-    const currentEmailreceiver: Receiver =
-      alertManagerConfig.spec.notification?.config?.receivers?.find(
-        (receiver) => {
-          return (
-            receiver.email_configs &&
-            receiver.email_configs.length > 0 &&
-            receiver.name !== 'test-receiver-config-from-ui'
-          );
-        },
-      ) || { name: 'default' };
+    const currentEmailreceiver: Receiver = alertManagerConfig.spec.notification?.config?.receivers?.find((receiver) => {
+      return (
+        receiver.email_configs && receiver.email_configs.length > 0 && receiver.name !== 'test-receiver-config-from-ui'
+      );
+    }) || { name: 'default' };
 
     const receiverWithoutTest =
       alertManagerConfig.spec.notification?.config?.receivers?.filter(
         (r) => r.name !== 'test-receiver-config-from-ui',
       ) || [];
     const emailReceiverIndexToPatch =
-      receiverWithoutTest.findIndex(
-        (receiver) =>
-          receiver.email_configs && receiver.email_configs.length > 0,
-      ) || 0;
+      receiverWithoutTest.findIndex((receiver) => receiver.email_configs && receiver.email_configs.length > 0) || 0;
 
     const newEmailReceiver: Receiver = await this._convertAndMergeEmailReceiver(
       alertConfiguration,
@@ -372,9 +328,7 @@ export class Metalk8sCSCAlertConfigurationStore
       ) ?? [];
 
     const defaultReceiverRouteIndex =
-      routesWithoutTest.findIndex(
-        (route) => route.receiver === currentEmailreceiver.name,
-      ) || 0;
+      routesWithoutTest.findIndex((route) => route.receiver === currentEmailreceiver.name) || 0;
 
     const routes = alertConfiguration.enabled
       ? [
@@ -382,9 +336,7 @@ export class Metalk8sCSCAlertConfigurationStore
           newDefaultReceiverRoute,
           ...(routesWithoutTest?.slice(defaultReceiverRouteIndex + 1) || []),
         ]
-      : routesWithoutTest?.filter(
-          (r) => r.receiver !== currentEmailreceiver.name,
-        );
+      : routesWithoutTest?.filter((r) => r.receiver !== currentEmailreceiver.name);
 
     const newConfig: Metalk8sAlertManagerConfig = {
       ...alertManagerConfig,
@@ -399,11 +351,9 @@ export class Metalk8sCSCAlertConfigurationStore
               routes: routes,
             },
             receivers: [
-              ...(receiverWithoutTest?.slice(0, emailReceiverIndexToPatch) ||
-                []),
+              ...(receiverWithoutTest?.slice(0, emailReceiverIndexToPatch) || []),
               newEmailReceiver,
-              ...(receiverWithoutTest?.slice(emailReceiverIndexToPatch + 1) ||
-                []),
+              ...(receiverWithoutTest?.slice(emailReceiverIndexToPatch + 1) || []),
             ],
           },
         },
@@ -413,25 +363,17 @@ export class Metalk8sCSCAlertConfigurationStore
     await this._applyConfigMapChangesAndCallSalt(newConfig);
   }
 
-  async testAlertConfiguration(
-    alertConfiguration: AlertConfiguration,
-    configurationHasChanged: boolean,
-  ) {
+  async testAlertConfiguration(alertConfiguration: AlertConfiguration, configurationHasChanged: boolean) {
     if (configurationHasChanged) {
       // Edit configmap
-      const alertManagerConfig: Metalk8sAlertManagerConfig =
-        await this._getAlertManagerConfig();
+      const alertManagerConfig: Metalk8sAlertManagerConfig = await this._getAlertManagerConfig();
 
       const testReceiverName = 'test-receiver-config-from-ui';
 
       const emptyReceiver: Receiver = {
         name: testReceiverName,
       };
-      const newEmailReceiver: Receiver =
-        await this._convertAndMergeEmailReceiver(
-          alertConfiguration,
-          emptyReceiver,
-        );
+      const newEmailReceiver: Receiver = await this._convertAndMergeEmailReceiver(alertConfiguration, emptyReceiver);
 
       delete newEmailReceiver.email_configs?.[0].send_resolved;
 
@@ -478,15 +420,12 @@ export class Metalk8sCSCAlertConfigurationStore
       // We need to wait that alert manager pods is ready to receive alert
 
       const fetchAlertManagerPods = async (): Promise<void> => {
-        const podsResponse = await fetch(
-          `${this.k8sApiBaseUrl}/api/v1/namespaces/metalk8s-monitoring/pods`,
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${await this.getToken()}`,
-            },
+        const podsResponse = await fetch(`${this.k8sApiBaseUrl}/api/v1/namespaces/metalk8s-monitoring/pods`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${await this.getToken()}`,
           },
-        );
+        });
 
         if (podsResponse.status !== 200) {
           return;
@@ -495,22 +434,17 @@ export class Metalk8sCSCAlertConfigurationStore
         const pods: V1NodeList = await podsResponse.json();
 
         const alertManagerPods = pods.items.filter((pod) => {
-          return pod.metadata?.name?.includes(
-            'alertmanager-prometheus-operator-alertmanager',
-          );
+          return pod.metadata?.name?.includes('alertmanager-prometheus-operator-alertmanager');
         });
 
         // compare each pods metadata creation timestamp with the date and  check if they status is ready
 
         const podsReady = alertManagerPods.every((pod) => {
-          const podCreationDate = new Date(
-            pod.metadata?.creationTimestamp || '',
-          );
+          const podCreationDate = new Date(pod.metadata?.creationTimestamp || '');
 
           return (
             pod.status?.conditions?.findIndex(
-              (condition) =>
-                condition.type === 'Ready' && condition.status === 'True',
+              (condition) => condition.type === 'Ready' && condition.status === 'True',
             ) !== -1 && podCreationDate.getTime() > date.getTime()
           );
         });
@@ -545,32 +479,27 @@ export class Metalk8sCSCAlertConfigurationStore
     TLS(${alertConfWithoutCreds.isTLSEnabled ? 'enabled' : 'disabled'}), 
     From(${alertConfWithoutCreds.from}), 
     To(${alertConfWithoutCreds.to}), 
-    Send resolved(${
-      alertConfWithoutCreds.sendResolved ? 'enabled' : 'disabled'
-    })
+    Send resolved(${alertConfWithoutCreds.sendResolved ? 'enabled' : 'disabled'})
     ${credsTemplate}.`;
 
-    const alertFetchResponse = await fetch(
-      `${this.alertManagerApiBaseUrl}/api/v2/alerts`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify([
-          {
-            labels: {
-              alertname: 'dummy_alert',
-              severity: 'critical',
-              testedOn: new Date().toISOString(),
-            },
-            annotations: {
-              description: descriptionTemplate,
-            },
-          },
-        ]),
+    const alertFetchResponse = await fetch(`${this.alertManagerApiBaseUrl}/api/v2/alerts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    );
+      body: JSON.stringify([
+        {
+          labels: {
+            alertname: 'dummy_alert',
+            severity: 'critical',
+            testedOn: new Date().toISOString(),
+          },
+          annotations: {
+            description: descriptionTemplate,
+          },
+        },
+      ]),
+    });
 
     if (alertFetchResponse.status !== 200) {
       throw new Error(`Error while sending test alert`);
@@ -578,9 +507,7 @@ export class Metalk8sCSCAlertConfigurationStore
 
     const alertResponse = await alertFetchResponse.json();
     if (alertResponse.status !== 'success') {
-      throw new Error(
-        `Error while sending test alert : ${alertResponse.error.message}`,
-      );
+      throw new Error(`Error while sending test alert : ${alertResponse.error.message}`);
     }
   }
 
@@ -608,20 +535,21 @@ export class Metalk8sCSCAlertConfigurationStore
           line.includes(`receiver="${receiverName}`) ||
           line.includes(`err="${receiverName}`))
       ) {
-        const components = line.match(
-          /(?<key>\w+)=("(?<value1>(\\"|[^"])+)"|(?<value2>[^ ]*))/g,
+        const components = line.match(/(?<key>\w+)=("(?<value1>(\\"|[^"])+)"|(?<value2>[^ ]*))/g);
+
+        const obj = components?.reduce(
+          (acc, component) => {
+            let [key, value] = component.split('=');
+
+            value = value.replace(/"/g, '');
+
+            return {
+              ...acc,
+              [key]: value,
+            };
+          },
+          {} as { err: string; ts: string },
         );
-
-        const obj = components?.reduce((acc, component) => {
-          let [key, value] = component.split('=');
-
-          value = value.replace(/"/g, '');
-
-          return {
-            ...acc,
-            [key]: value,
-          };
-        }, {} as { err: string; ts: string });
 
         if (!obj) {
           return [];

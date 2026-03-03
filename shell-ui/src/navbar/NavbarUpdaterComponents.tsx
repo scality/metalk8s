@@ -9,12 +9,7 @@ import { useConfigRetriever } from '../initFederation/ConfigurationProviders';
 import { useDeployedApps } from '../initFederation/UIListProvider';
 import { useNotificationCenter } from '../useNotificationCenter';
 import { useNavbar } from './navbarHooks';
-import {
-  ShellAlerts,
-  shellAlerts,
-  ShellHooks,
-  shellHooks,
-} from '../hooks/useShellHooks';
+import { ShellAlerts, shellAlerts, ShellHooks, shellHooks } from '../hooks/useShellHooks';
 
 export const NavbarUpdaterComponents = () => {
   const deployedApps = useDeployedApps();
@@ -49,11 +44,7 @@ export const NavbarUpdaterComponents = () => {
           <Fragment key={index}>
             <ErrorBoundary
               FallbackComponent={(props) => {
-                console.error(
-                  'error while loading navbar updater component',
-                  component,
-                  props,
-                );
+                console.error('error while loading navbar updater component', component, props);
                 return <></>;
               }}
             >

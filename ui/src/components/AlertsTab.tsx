@@ -8,13 +8,7 @@ import CircleStatus from './CircleStatus';
 import { useIntl } from 'react-intl';
 import { NotBoundContainer } from './style/CommonLayoutStyle';
 
-const AlertsTab = ({
-  alerts,
-  status,
-}: {
-  alerts: Alert[];
-  status: 'idle' | 'loading' | 'error' | 'success';
-}) => {
+const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'loading' | 'error' | 'success' }) => {
   const query = useURLQuery();
   // Retrieve the severity filter from URL.
   // Filter more than one severity, the URL should be:
@@ -78,12 +72,7 @@ const AlertsTab = ({
         width: 'unset',
       },
       Cell: ({ value }) => {
-        return (
-          <FormattedDateTime
-            value={new Date(value)}
-            format="date-time-second"
-          />
-        );
+        return <FormattedDateTime value={new Date(value)} format="date-time-second" />;
       },
     },
   ];
@@ -103,10 +92,7 @@ const AlertsTab = ({
           },
         }}
       >
-        <Table.SingleSelectableContent
-          rowHeight="h48"
-          separationLineVariant="backgroundLevel2"
-        />
+        <Table.SingleSelectableContent rowHeight="h48" separationLineVariant="backgroundLevel2" />
       </Table>
     </Box>
   );

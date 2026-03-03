@@ -1,22 +1,7 @@
-import {
-  Banner,
-  Checkbox,
-  Form,
-  FormGroup,
-  FormSection,
-  Icon,
-  Loader,
-  Stack,
-  Text,
-  Toggle,
-} from '@scality/core-ui';
+import { Banner, Checkbox, Form, FormGroup, FormSection, Icon, Loader, Stack, Text, Toggle } from '@scality/core-ui';
 import { convertRemToPixels } from '@scality/core-ui/dist/components/tablev2/TableUtils';
 import { Button, Input as InputV2, Select } from '@scality/core-ui/dist/next';
-import {
-  fontSize,
-  fontWeight,
-  padding,
-} from '@scality/core-ui/dist/style/theme';
+import { fontSize, fontWeight, padding } from '@scality/core-ui/dist/style/theme';
 import { Field, FieldArray, Formik, useField, useFormikContext } from 'formik';
 import isEmpty from 'lodash.isempty';
 import React, { useEffect } from 'react';
@@ -25,25 +10,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 import * as yup from 'yup';
-import {
-  LVM_LOGICAL_VOLUME,
-  RAW_BLOCK_DEVICE,
-  SPARSE_LOOP_DEVICE,
-} from '../constants';
+import { LVM_LOGICAL_VOLUME, RAW_BLOCK_DEVICE, SPARSE_LOOP_DEVICE } from '../constants';
 import { fetchNodesAction } from '../ducks/app/nodes';
-import {
-  createVolumesAction,
-  fetchStorageClassAction,
-} from '../ducks/app/volumes';
-import {
-  formatBatchName,
-  formatVolumeCreationData,
-} from '../services/NodeVolumesUtils';
-import {
-  linuxDrivesNamingIncrement,
-  sizeUnits,
-  useURLQuery,
-} from '../services/utils';
+import { createVolumesAction, fetchStorageClassAction } from '../ducks/app/volumes';
+import { formatBatchName, formatVolumeCreationData } from '../services/NodeVolumesUtils';
+import { linuxDrivesNamingIncrement, sizeUnits, useURLQuery } from '../services/utils';
 const MAX_VOLUME_BATCH_CREATION = 70;
 const LabelsList = styled.div`
   margin: ${padding.small} 0;
@@ -87,8 +58,7 @@ const CreateVolume = (props) => {
   const navigate = useNavigate();
   const intl = useIntl();
 
-  const createVolumes = (newVolumes) =>
-    dispatch(createVolumesAction(newVolumes));
+  const createVolumes = (newVolumes) => dispatch(createVolumesAction(newVolumes));
   // @ts-expect-error - FIXME when you are working on it
   const nodes = useSelector((state) => state.app.nodes.list);
   // @ts-expect-error - FIXME when you are working on it
@@ -204,15 +174,13 @@ const CreateVolume = (props) => {
     );
   };
 
-  const volumeNameRegex =
-    /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
 
   /* Valid label keys have two segments: an optional prefix and name, separated by a slash (/).
     https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set  */
   const labelFullNameRegex =
     /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*\/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$/;
-  const labelNamePrefixRegex =
-    /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  const labelNamePrefixRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
   const labelValueRegex = /^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$/;
   const positiveIntegerRegex = /^[1-9][0-9]*$/;
   const validationSchema = yup.object().shape({
@@ -341,11 +309,7 @@ const CreateVolume = (props) => {
           },
         ),
       ),
-    numberOfVolumes: yup
-      .number()
-      .positive()
-      .max(MAX_VOLUME_BATCH_CREATION)
-      .integer(),
+    numberOfVolumes: yup.number().positive().max(MAX_VOLUME_BATCH_CREATION).integer(),
     volumes: yup.array().of(
       yup.object().shape({
         name: yup.string().matches(
@@ -373,16 +337,8 @@ const CreateVolume = (props) => {
       }}
     >
       {(formikProps) => {
-        const {
-          values,
-          handleChange,
-          errors,
-          touched,
-          setFieldTouched,
-          dirty,
-          setFieldValue,
-          handleSubmit,
-        } = formikProps;
+        const { values, handleChange, errors, touched, setFieldTouched, dirty, setFieldValue, handleSubmit } =
+          formikProps;
 
         //touched is not "always" correctly set
         const handleOnBlur = (e) => setFieldTouched(e.target.name, true);
@@ -522,10 +478,7 @@ const CreateVolume = (props) => {
               })}
               required
               helpErrorPosition="bottom"
-              error={
-                (touched.sizeInput && errors.sizeInput) ||
-                (touched.selectedUnit && errors.selectedUnit)
-              }
+              error={(touched.sizeInput && errors.sizeInput) || (touched.selectedUnit && errors.selectedUnit)}
               id="sizeInput"
               content={
                 <Stack>
@@ -715,12 +668,7 @@ const CreateVolume = (props) => {
                 id="name"
                 content={
                   // @ts-expect-error - FIXME when you are working on it
-                  <InputV2
-                    name="name"
-                    value={values.name}
-                    onChange={handleChange('name')}
-                    onBlur={handleOnBlur}
-                  />
+                  <InputV2 name="name" value={values.name} onChange={handleChange('name')} onBlur={handleOnBlur} />
                 }
               />
 
@@ -760,10 +708,7 @@ const CreateVolume = (props) => {
                   id: 'labels',
                 })}
                 helpErrorPosition="bottom"
-                error={
-                  (touched.labelName && errors.labelName) ||
-                  (touched.labelValue && errors.labelValue)
-                }
+                error={(touched.labelName && errors.labelName) || (touched.labelValue && errors.labelValue)}
                 id="labelName"
                 content={
                   <Stack direction="vertical">
@@ -802,9 +747,7 @@ const CreateVolume = (props) => {
                         variant={'secondary'}
                         // @ts-expect-error - FIXME when you are working on it
                         disabled={
-                          errors.labelValue ||
-                          errors.labelName ||
-                          !values.labelName // disable the Add button if no label key specified
+                          errors.labelValue || errors.labelName || !values.labelName // disable the Add button if no label key specified
                         }
                       />
                     </Stack>
@@ -814,11 +757,7 @@ const CreateVolume = (props) => {
                           <LabelsKeyValue key={`labelKeyValue_${index}`}>
                             <LabelsName>{key}</LabelsName>
                             <LabelsValue>{values.labels[key]}</LabelsValue>
-                            <Button
-                              icon={<Icon name="Delete" />}
-                              type="button"
-                              onClick={() => removeLabel(key)}
-                            />
+                            <Button icon={<Icon name="Delete" />} type="button" onClick={() => removeLabel(key)} />
                           </LabelsKeyValue>
                         ))}
                       </LabelsList>
@@ -920,15 +859,9 @@ const CreateVolume = (props) => {
                               value={values.numberOfVolumes}
                               min="1" // Max number of the batch volume creation is 70.
                               max={`${MAX_VOLUME_BATCH_CREATION}`}
-                              onChange={setVolumeNumber(
-                                'numberOfVolumes',
-                                arrayHelpers,
-                              )}
+                              onChange={setVolumeNumber('numberOfVolumes', arrayHelpers)}
                               onBlur={handleOnBlur}
-                              error={
-                                touched.numberOfVolumes &&
-                                errors.numberOfVolumes
-                              }
+                              error={touched.numberOfVolumes && errors.numberOfVolumes}
                             />
                           }
                         />
@@ -948,8 +881,7 @@ const CreateVolume = (props) => {
                             </Text>
                           </div>
 
-                          {values.numberOfVolumes <=
-                            MAX_VOLUME_BATCH_CREATION &&
+                          {values.numberOfVolumes <= MAX_VOLUME_BATCH_CREATION &&
                             values.volumes.map((volume, index) => (
                               <Stack key={`volume${index}`}>
                                 <Text>{index + 1}- </Text>

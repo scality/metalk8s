@@ -23,19 +23,14 @@ const VolumePageContent = (props) => {
   useEffect(() => {
     if (volumeListData.length > 0) {
       const firstVolumeName = volumeListData[0]?.name;
-      if (
-        firstVolumeName &&
-        !location.pathname.includes(firstVolumeName) &&
-        location.pathname.endsWith('/volumes')
-      ) {
+      if (firstVolumeName && !location.pathname.includes(firstVolumeName) && location.pathname.endsWith('/volumes')) {
         navigate(`/volumes/${firstVolumeName}/overview`, { replace: true });
       }
     }
   }, [JSON.stringify(volumeListData)]);
 
   useEffect(() => {
-    if (previousLoading && !loading && !isFirstLoadingDone)
-      setIsFirstLoadingDone(true);
+    if (previousLoading && !loading && !isFirstLoadingDone) setIsFirstLoadingDone(true);
   }, [previousLoading, loading, isFirstLoadingDone]);
 
   if (!volumeListData.length && isFirstLoadingDone) {
@@ -58,10 +53,7 @@ const VolumePageContent = (props) => {
         leftPanel={{
           children: (
             <LeftSideInstanceList>
-              <VolumeListTable
-                volumeListData={volumeListData}
-                volumeName={currentVolumeName}
-              ></VolumeListTable>
+              <VolumeListTable volumeListData={volumeListData} volumeName={currentVolumeName}></VolumeListTable>
             </LeftSideInstanceList>
           ),
         }}

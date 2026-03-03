@@ -30,10 +30,7 @@ export const getServicesAlertSelectors = (): FilterLabels => {
 };
 export const getK8SMasterAlertSelectors = (): FilterLabels => {
   return {
-    alertname: [
-      'KubernetesControlPlaneAtRisk',
-      'KubernetesControlPlaneDegraded',
-    ],
+    alertname: ['KubernetesControlPlaneAtRisk', 'KubernetesControlPlaneDegraded'],
   };
 };
 export const getBootstrapAlertSelectors = (): FilterLabels => {
@@ -94,9 +91,7 @@ export function useAlerts(filters?: FilterLabels) {
   const query = useContext(AlertContext);
 
   if (!query) {
-    throw new Error(
-      'The useAlerts hook can only be used within AlertProvider.',
-    );
+    throw new Error('The useAlerts hook can only be used within AlertProvider.');
   } else if (query.status === 'success') {
     const newQuery = { ...query, alerts: filterAlerts(query.data, filters) };
     delete newQuery.data;
