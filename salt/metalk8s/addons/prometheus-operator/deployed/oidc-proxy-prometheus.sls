@@ -28,9 +28,6 @@ Create oauth2-proxy Deployment:
           namespace: metalk8s-monitoring
           labels:
             app: oauth2-proxy
-            app.kubernetes.io/managed-by: salt
-            app.kubernetes.io/part-of: metalk8s
-            heritage: metalk8s
         spec:
           replicas: 1
           selector:
@@ -99,9 +96,6 @@ Create oauth2-proxy Service:
           namespace: metalk8s-monitoring
           labels:
             app: oauth2-proxy
-            app.kubernetes.io/managed-by: salt
-            app.kubernetes.io/part-of: metalk8s
-            heritage: metalk8s
         spec:
           selector:
             app: oauth2-proxy

@@ -37,10 +37,6 @@ Create oidc-proxy ServiceAccount:
         metadata:
           name: oidc-proxy
           namespace: metalk8s-monitoring
-          labels:
-            app.kubernetes.io/managed-by: salt
-            app.kubernetes.io/part-of: metalk8s
-            heritage: metalk8s
 
 Create oidc-proxy-secret-reader Role:
   metalk8s_kubernetes.object_present:
@@ -50,10 +46,6 @@ Create oidc-proxy-secret-reader Role:
         metadata:
           name: oidc-proxy-secret-reader
           namespace: metalk8s-ingress
-          labels:
-            app.kubernetes.io/managed-by: salt
-            app.kubernetes.io/part-of: metalk8s
-            heritage: metalk8s
         rules:
         - apiGroups: [""]
           resources: ["secrets"]
@@ -67,10 +59,6 @@ Create oidc-proxy-secret-reader-binding RoleBinding:
         metadata:
           name: oidc-proxy-secret-reader-binding
           namespace: metalk8s-ingress
-          labels:
-            app.kubernetes.io/managed-by: salt
-            app.kubernetes.io/part-of: metalk8s
-            heritage: metalk8s
         subjects:
         - kind: ServiceAccount
           name: oidc-proxy
