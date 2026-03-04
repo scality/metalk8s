@@ -30,6 +30,12 @@
   and Loki image version to [3.6.5](https://github.com/grafana/loki/releases/tag/v3.6.5)
   (PR[#4792](https://github.com/scality/metalk8s/pull/4792))
 
+### Bug Fixes
+
+- Fix a bug where part of the upgrade process would silently be skipped
+  if the containerd socket is lost (crictl exec would exit with code 0)
+  (PR[#4802](https://github.com/scality/metalk8s/pull/4802))
+
 ## Release 132.0.2 (in development)
 
 ## Release 132.0.1

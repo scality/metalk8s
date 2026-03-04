@@ -127,7 +127,7 @@ backup_etcd() {
     # etcd 3.4+ defaults to API v3, so ETCDCTL_API=3 is no longer required.
     # In distroless images, the root filesystem is read-only, so we save the
     # snapshot to /var/lib/etcd which is a writable mounted volume.
-    crictl exec -i "$etcd_container" \
+    "${EXEC_CONTAINER_COMMAND[@]}" "$etcd_container" \
         etcdctl \
         --endpoints=https://127.0.0.1:2379 \
         --cert=/etc/kubernetes/pki/etcd/salt-master-etcd-client.crt \
@@ -167,7 +167,7 @@ EOF
 }
 
 replicate_archives() {
-    salt_master_exec=(crictl exec -i "$(get_salt_container)")
+    salt_master_exec=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
 
     "${salt_master_exec[@]}" salt-run --state-output=mixed state.orchestrate \
         metalk8s.orchestrate.backup.replication \
