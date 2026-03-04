@@ -7,20 +7,9 @@ import { Table } from '@scality/core-ui/dist/next';
 import { NodeTab } from './style/CommonLayoutStyle';
 import { TooltipContent } from './TableRow';
 import { fromMilliSectoAge } from '../services/utils';
-import {
-  STATUS_RUNNING,
-  STATUS_PENDING,
-  STATUS_FAILED,
-  STATUS_UNKNOWN,
-  GRAFANA_DASHBOARDS,
-} from '../constants';
+import { STATUS_RUNNING, STATUS_PENDING, STATUS_FAILED, STATUS_UNKNOWN, GRAFANA_DASHBOARDS } from '../constants';
 import { useIntl } from 'react-intl';
-const PodTableContainer = styled.div`
-  color: ${(props) => props.theme.textPrimary};
-  padding-top: ${spacing.r20};
-  height: calc(100% - ${spacing.r16});
-  width: 100%;
-`;
+
 // Color specification:
 // Pod Running + All Containers are ready => Green
 //  Pod Running + At least one container is not ready => Orange
@@ -34,10 +23,7 @@ const StatusText = styled.div<{ status; numContainer?; numContainerRunning? }>`
 
     if (status === STATUS_RUNNING && numContainer === numContainerRunning) {
       return props.theme.statusHealthy;
-    } else if (
-      status === STATUS_RUNNING &&
-      numContainer !== numContainerRunning
-    ) {
+    } else if (status === STATUS_RUNNING && numContainer !== numContainerRunning) {
       return props.theme.statusWarning;
     } else if (status === STATUS_RUNNING || status === STATUS_PENDING) {
       return props.theme.statusWarning;
@@ -83,20 +69,14 @@ const NodePagePodsTab = React.memo((props) => {
           const {
             values: { status: statusB },
           } = rowb;
-          const valueA =
-            statusA.status + statusA.numContainer + statusA.numContainerRunning;
-          const valueB =
-            statusB.status + statusB.numContainer + statusB.numContainerRunning;
+          const valueA = statusA.status + statusA.numContainer + statusA.numContainerRunning;
+          const valueB = statusB.status + statusB.numContainer + statusB.numContainerRunning;
           return valueA.localeCompare(valueB);
         },
         Cell: (cellProps) => {
           const { status, numContainer, numContainerRunning } = cellProps.value;
           return status === STATUS_RUNNING ? (
-            <StatusText
-              status={status}
-              numContainer={numContainer}
-              numContainerRunning={numContainerRunning}
-            >
+            <StatusText status={status} numContainer={numContainer} numContainerRunning={numContainerRunning}>
               {`${status} (${numContainerRunning}/${numContainer})`}
             </StatusText>
           ) : (
@@ -127,37 +107,39 @@ const NodePagePodsTab = React.memo((props) => {
           marginRight: spacing.r8,
         },
       },
-      {
-        Header: 'Logs',
-        accessor: 'log',
-        cellStyle: {
-          minWidth: '3rem',
-          textAlign: 'center',
-          flex: 0.5,
-          marginRight: spacing.r16,
-        },
-        Cell: ({ value }) => {
-          return (
-            <Tooltip
-              overlay={
-                <TooltipContent>
-                  {intl.formatMessage({
-                    id: 'advanced_monitoring',
-                  })}
-                </TooltipContent>
-              }
-            >
-              <ExternalLink
-                href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.logs}?orgId=1&var-logs=Loki&var-logmetrics=Prometheus&var-metrics=Prometheus&var-podlogs=.*&var-systemlogs=.%2B&var-deployment=calico-kube-controllers&var-pod=${value}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Icon name="Metrics" />
-              </ExternalLink>
-            </Tooltip>
-          );
-        },
-      },
+      // Loki need to be activate for this link to works. Since it's deactivated by default,
+      // We decide to hide this column for now. See: https://scality.atlassian.net/browse/MK8S-178
+      // {
+      //   Header: 'Logs',
+      //   accessor: 'log',
+      //   cellStyle: {
+      //     minWidth: '3rem',
+      //     textAlign: 'center',
+      //     flex: 0.5,
+      //     marginRight: spacing.r16,
+      //   },
+      //   Cell: ({ value }) => {
+      //     return (
+      //       <Tooltip
+      //         overlay={
+      //           <TooltipContent>
+      //             {intl.formatMessage({
+      //               id: 'advanced_monitoring',
+      //             })}
+      //           </TooltipContent>
+      //         }
+      //       >
+      //         <ExternalLink
+      //           href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.logs}?orgId=1&var-logs=Loki&var-logmetrics=Prometheus&var-metrics=Prometheus&var-podlogs=.*&var-systemlogs=.%2B&var-deployment=calico-kube-controllers&var-pod=${value}`}
+      //           target="_blank"
+      //           rel="noopener noreferrer"
+      //         >
+      //           <Icon name="Metrics" />
+      //         </ExternalLink>
+      //       </Tooltip>
+      //     );
+      //   },
+      // },
     ], // eslint-disable-next-line react-hooks/exhaustive-deps
     [config],
   );
@@ -174,10 +156,7 @@ const NodePagePodsTab = React.memo((props) => {
           },
         }}
       >
-        <Table.SingleSelectableContent
-          rowHeight="h48"
-          separationLineVariant="backgroundLevel3"
-        />
+        <Table.SingleSelectableContent rowHeight="h48" separationLineVariant="backgroundLevel3" />
       </Table>
     </NodeTab>
   );
