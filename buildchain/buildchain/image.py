@@ -217,6 +217,9 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "cert-manager-cainjector",
         "cert-manager-acmesolver",
     ],
+    constants.OAUTH2_PROXY_REPOSITORY: [
+        "oauth2-proxy",
+    ],
     constants.SCALITY_REPOSITORY: [
         "ui-operator",
         "crl-operator",
