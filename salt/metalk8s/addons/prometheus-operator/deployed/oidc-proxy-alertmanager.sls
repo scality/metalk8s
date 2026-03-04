@@ -71,6 +71,9 @@ Create oauth2-proxy-alertmanager Deployment:
                 - --provider=oidc
                 - --oidc-issuer-url={{ alertmanager_oidc.get('issuer', '') }}
                 - --client-id={{ alertmanager_oidc.get('audience', '') }}
+                # cookie-secret is required by oauth2-proxy but never used since all
+                # authentication goes through JWT bearer tokens (--skip-jwt-bearer-tokens=true).
+                # Any valid base64-encoded 32-byte value works here.
                 - --cookie-secret=MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnN0dXY=
                 - --client-secret=unused-but-required
                 - --skip-jwt-bearer-tokens=true
