@@ -50,7 +50,7 @@
     "@scality/module-federation": "1.6.1",
     "downshift": "^8.0.0",
     "history": "^5.3.0",
-    "jest-environment-jsdom": "^29.7.0",
+    "jest-environment-jsdom": "^30.2.0",
     "oidc-client-ts": "^3.0.1",
     "oidc-react": "^3.2.2",
     "react": "^18.3.1",
