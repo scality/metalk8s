@@ -15,8 +15,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.2
-    helm.sh/chart: fluent-bit-0.55.0
+    app.kubernetes.io/version: 4.2.3
+    helm.sh/chart: fluent-bit-0.56.0
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -1596,9 +1596,9 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.2
+    app.kubernetes.io/version: 4.2.3
     grafana_dashboard: '1'
-    helm.sh/chart: fluent-bit-0.55.0
+    helm.sh/chart: fluent-bit-0.56.0
     heritage: metalk8s
   name: fluent-bit-dashboard-fluent-bit
   namespace: metalk8s-logging
@@ -1611,8 +1611,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.2
-    helm.sh/chart: fluent-bit-0.55.0
+    app.kubernetes.io/version: 4.2.3
+    helm.sh/chart: fluent-bit-0.56.0
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -1635,8 +1635,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.2
-    helm.sh/chart: fluent-bit-0.55.0
+    app.kubernetes.io/version: 4.2.3
+    helm.sh/chart: fluent-bit-0.56.0
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -1657,8 +1657,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.2
-    helm.sh/chart: fluent-bit-0.55.0
+    app.kubernetes.io/version: 4.2.3
+    helm.sh/chart: fluent-bit-0.56.0
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -1681,8 +1681,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.2
-    helm.sh/chart: fluent-bit-0.55.0
+    app.kubernetes.io/version: 4.2.3
+    helm.sh/chart: fluent-bit-0.56.0
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -1708,7 +1708,7 @@ spec:
         - --config=/fluent-bit/etc/conf/fluent-bit.conf
         command:
         - /fluent-bit/bin/fluent-bit
-        image: {% endraw -%}{{ build_image_name("fluent-bit", False) }}{%- raw %}:4.2.2
+        image: {% endraw -%}{{ build_image_name("fluent-bit", False) }}{%- raw %}:4.2.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -1734,6 +1734,9 @@ spec:
           readOnly: true
         - mountPath: /run/log
           name: runlog
+          readOnly: true
+        - mountPath: /fluent-bit/etc/tls
+          name: certificates
           readOnly: true
       dnsPolicy: ClusterFirst
       hostNetwork: false
@@ -1764,6 +1767,9 @@ spec:
       - hostPath:
           path: /run/log
         name: runlog
+      - name: certificates
+        secret:
+          secretName: fluent-bit-certs
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -1773,8 +1779,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.2
-    helm.sh/chart: fluent-bit-0.55.0
+    app.kubernetes.io/version: 4.2.3
+    helm.sh/chart: fluent-bit-0.56.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
   name: fluent-bit
