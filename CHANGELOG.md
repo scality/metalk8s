@@ -36,7 +36,9 @@
   if the containerd socket is lost (crictl exec would exit with code 0)
   (PR[#4802](https://github.com/scality/metalk8s/pull/4802))
 
-## Release 132.0.2 (in development)
+## Release 132.0.3 (in development)
+
+## Release 132.0.2
 
 ## Release 132.0.1
 
