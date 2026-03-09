@@ -1,0 +1,19 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ solution }}-operator-metrics-auth
+  labels:
+    app: {{ solution }}-operator
+    app.kubernetes.io/name: {{ solution }}-operator
+    app.kubernetes.io/instance: {{ solution }}-operator
+    app.kubernetes.io/version: {{ version }}
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: {{ solution }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ solution }}-operator
+    namespace: {{ namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ solution }}-operator-metrics-auth
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ solution }}-operator-metrics
+  namespace: {{ namespace }}
+  labels:
+    app: {{ solution }}-operator
+    app.kubernetes.io/name: {{ solution }}-operator
+    app.kubernetes.io/instance: {{ solution }}-operator
+    app.kubernetes.io/version: {{ version }}
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: {{ solution }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: {{ metrics_scheme }}
+      port: {{ metrics_port }}
+      protocol: TCP
+      targetPort: {{ metrics_port }}
+  selector:
+    app.kubernetes.io/name: {{ solution }}-operator

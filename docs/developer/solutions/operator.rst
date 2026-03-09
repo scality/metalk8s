@@ -43,12 +43,32 @@ Most of these files are generated when using the Operator SDK.
 Monitoring
 ^^^^^^^^^^
 
-MetalK8s does not handle the monitoring of a Solution application, which means:
+MetalK8s can automatically create a ``Service`` and ``ServiceMonitor`` to
+expose operator metrics to Prometheus. This is opt-in: add a ``metrics``
+section under ``spec.operator`` in the solution ``manifest.yaml``:
 
-- the user, manually or through the Solution UI, should create ``Service`` and
-  ``ServiceMonitor`` objects for each Operator instance
-- Operators should create ``Service`` and ``ServiceMonitor`` objects for each
-  deployed component they own
+.. code-block:: yaml
+
+   spec:
+     operator:
+       metrics:
+         enabled: true        # default: false
+         scheme: https        # default: "https", available: "http" or "https"
+         port: 8443           # default: 8443 for HTTPS, 8080 for HTTP
+         path: /metrics       # default: "/metrics"
+
+When ``enabled`` is ``true``, MetalK8s will:
+
+- add a ``containerPort`` to the operator Deployment
+- create a ``ClusterIP`` Service named ``<solution>-operator-metrics``
+- create a ``ServiceMonitor`` named ``<solution>-operator`` with the label
+  ``metalk8s.scality.com/monitor: ''`` for Prometheus discovery
+
+When ``scheme`` is ``https``, the ``ServiceMonitor`` is configured with
+``bearerTokenFile`` authentication and ``insecureSkipVerify: true``.
+
+Operators should still create ``Service`` and ``ServiceMonitor`` objects for
+each deployed component they own.
 
 The `Prometheus Operator`_ deployed by MetalK8s has cluster-scoped permissions,
 and is able to read the aforementioned ``ServiceMonitor`` objects

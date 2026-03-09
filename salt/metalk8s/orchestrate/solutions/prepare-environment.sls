@@ -55,6 +55,70 @@ Apply Operator ConfigMap for Solution {{ solution.name }}:
         registry: {{ repo.registry_endpoint }}
         version: {{ solution.version }}
 
+{%- set metrics = solution.manifest.spec.operator.get('metrics', {}) %}
+{%- set metrics_enabled = metrics.get('enabled', False) %}
+{%- if metrics_enabled %}
+  {%- set metrics_scheme = metrics.get('scheme', 'https') %}
+  {%- set metrics_path = metrics.get('path', '/metrics') %}
+  {%- if metrics_scheme == 'https' %}
+    {%- set metrics_port = metrics.get('port', 8443) %}
+  {%- else %}
+    {%- set metrics_port = metrics.get('port', 8080) %}
+  {%- endif %}
+{%- endif %}
+
+{%- if metrics_enabled %}
+
+Apply Operator Metrics Auth ClusterRole for Solution {{ solution.name }}:
+  metalk8s_kubernetes.object_present:
+    - name: salt://{{ slspath }}/files/operator/metrics_auth_clusterrole.yaml.j2
+    - template: jinja
+    - defaults:
+        solution: {{ name }}
+        version: {{ solution.version }}
+
+Apply Operator Metrics Auth ClusterRoleBinding for Solution {{ solution.name }}:
+  metalk8s_kubernetes.object_present:
+    - name: salt://{{ slspath }}/files/operator/metrics_auth_clusterrolebinding.yaml.j2
+    - template: jinja
+    - defaults:
+        solution: {{ name }}
+        namespace: {{ namespace }}
+        version: {{ solution.version }}
+    - require:
+        - metalk8s_kubernetes: Apply ServiceAccount for Operator of Solution {{ solution.name }}
+        - metalk8s_kubernetes: Apply Operator Metrics Auth ClusterRole for Solution {{ solution.name }}
+    - require_in:
+        - metalk8s_kubernetes: Apply Operator Deployment for Solution {{ solution.name }}
+
+  {%- if metrics_scheme == 'https' %}
+
+Apply Operator Metrics Issuer for Solution {{ solution.name }}:
+  metalk8s_kubernetes.object_present:
+    - name: salt://{{ slspath }}/files/operator/metrics_issuer.yaml.j2
+    - template: jinja
+    - defaults:
+        solution: {{ name }}
+        namespace: {{ namespace }}
+        version: {{ solution.version }}
+
+Apply Operator Metrics Certificate for Solution {{ solution.name }}:
+  metalk8s_kubernetes.object_present:
+    - name: salt://{{ slspath }}/files/operator/metrics_certificate.yaml.j2
+    - template: jinja
+    - defaults:
+        solution: {{ name }}
+        namespace: {{ namespace }}
+        version: {{ solution.version }}
+    - require:
+        - metalk8s_kubernetes: Apply Operator Metrics Issuer for Solution {{ solution.name }}
+    - require_in:
+        - metalk8s_kubernetes: Apply Operator Deployment for Solution {{ solution.name }}
+
+  {%- endif %}
+
+{%- endif %}
+
 Apply Operator Deployment for Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
     - name: salt://{{ slspath }}/files/operator/deployment.yaml.j2
@@ -67,8 +131,44 @@ Apply Operator Deployment for Solution {{ solution.name }}:
         image_tag: {{ solution.manifest.spec.operator.image.tag }}
         repository: {{ repo.registry_endpoint ~ '/' ~ solution.id }}
         webhook_enabled: {{ webhook_enabled }}
+        metrics_enabled: {{ metrics_enabled }}
+{%- if metrics_enabled %}
+        metrics_port: {{ metrics_port }}
+        metrics_scheme: {{ metrics_scheme }}
+{%- endif %}
     - require:
         - metalk8s_kubernetes: Apply Operator ConfigMap for Solution {{ solution.name }}
+
+{%- if metrics_enabled %}
+
+Apply Operator Metrics Service for Solution {{ solution.name }}:
+  metalk8s_kubernetes.object_present:
+    - name: salt://{{ slspath }}/files/operator/metrics_service.yaml.j2
+    - template: jinja
+    - defaults:
+        solution: {{ name }}
+        namespace: {{ namespace }}
+        version: {{ solution.version }}
+        metrics_port: {{ metrics_port }}
+        metrics_scheme: {{ metrics_scheme }}
+    - require:
+        - metalk8s_kubernetes: Apply Operator Deployment for Solution {{ solution.name }}
+
+Apply Operator ServiceMonitor for Solution {{ solution.name }}:
+  metalk8s_kubernetes.object_present:
+    - name: salt://{{ slspath }}/files/operator/service_monitor.yaml.j2
+    - template: jinja
+    - defaults:
+        solution: {{ name }}
+        namespace: {{ namespace }}
+        version: {{ solution.version }}
+        metrics_port: {{ metrics_port }}
+        metrics_scheme: {{ metrics_scheme }}
+        metrics_path: {{ metrics_path }}
+    - require:
+        - metalk8s_kubernetes: Apply Operator Metrics Service for Solution {{ solution.name }}
+
+{%- endif %}
 
 {%- endmacro %}
 

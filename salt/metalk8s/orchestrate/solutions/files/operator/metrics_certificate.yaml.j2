@@ -1,0 +1,20 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ solution }}-operator-metrics-cert
+  namespace: {{ namespace }}
+  labels:
+    app: {{ solution }}-operator
+    app.kubernetes.io/name: {{ solution }}-operator
+    app.kubernetes.io/instance: {{ solution }}-operator
+    app.kubernetes.io/version: {{ version }}
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: {{ solution }}
+spec:
+  secretName: {{ solution }}-operator-metrics-cert
+  issuerRef:
+    kind: Issuer
+    name: {{ solution }}-operator-metrics-issuer
+  dnsNames:
+    - {{ solution }}-operator-metrics.{{ namespace }}.svc
+    - {{ solution }}-operator-metrics.{{ namespace }}.svc.cluster.local

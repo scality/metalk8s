@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ solution }}-operator
+  namespace: {{ namespace }}
+  labels:
+    app: {{ solution }}-operator
+    app.kubernetes.io/name: {{ solution }}-operator
+    app.kubernetes.io/instance: {{ solution }}-operator
+    app.kubernetes.io/version: {{ version }}
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: {{ solution }}
+    metalk8s.scality.com/monitor: ''
+spec:
+  endpoints:
+    - path: {{ metrics_path }}
+      port: {{ metrics_scheme }}
+{%- if metrics_scheme == "https" %}
+      scheme: https
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      tlsConfig:
+        insecureSkipVerify: true
+{%- endif %}
+  namespaceSelector:
+    matchNames:
+      - {{ namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ solution }}-operator

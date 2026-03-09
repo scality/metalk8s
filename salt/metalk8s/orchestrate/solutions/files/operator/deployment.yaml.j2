@@ -34,7 +34,19 @@ spec:
           command:
           - {{ solution }}-operator
           - --config=/etc/config/operator.yaml
+{%- if metrics_enabled is defined and metrics_enabled %}
+          - --metrics-bind-address=:{{ metrics_port }}
+  {%- if metrics_scheme == "https" %}
+          - --metrics-cert-path=/tmp/k8s-metrics-server/metrics-certs
+  {%- endif %}
+{%- endif %}
           imagePullPolicy: Always
+{%- if metrics_enabled is defined and metrics_enabled %}
+          ports:
+            - containerPort: {{ metrics_port }}
+              name: {{ metrics_scheme }}
+              protocol: TCP
+{%- endif %}
           env:
             - name: WATCH_NAMESPACE
               valueFrom:
@@ -54,6 +66,11 @@ spec:
               mountPath: /cert
               readOnly: true
 {%- endif %}
+{%- if metrics_enabled is defined and metrics_enabled and metrics_scheme == "https" %}
+            - name: metrics-cert
+              mountPath: /tmp/k8s-metrics-server/metrics-certs
+              readOnly: true
+{%- endif %}
       volumes:
         - name: operator-config
           configMap:
@@ -63,4 +80,10 @@ spec:
           secret:
             defaultMode: 420
             secretName: {{ solution }}-cert
+{%- endif %}
+{%- if metrics_enabled is defined and metrics_enabled and metrics_scheme == "https" %}
+        - name: metrics-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ solution }}-operator-metrics-cert
 {%- endif %}

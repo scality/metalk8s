@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ solution }}-operator-metrics-issuer
+  namespace: {{ namespace }}
+  labels:
+    app: {{ solution }}-operator
+    app.kubernetes.io/name: {{ solution }}-operator
+    app.kubernetes.io/instance: {{ solution }}-operator
+    app.kubernetes.io/version: {{ version }}
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: {{ solution }}
+spec:
+  selfSigned: {}

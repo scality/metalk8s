@@ -30,6 +30,9 @@
   and Loki image version to [3.6.5](https://github.com/grafana/loki/releases/tag/v3.6.5)
   (PR[#4792](https://github.com/scality/metalk8s/pull/4792))
 
+- Allow to enable metrics collection for the solutions operators
+  (PR[#4813](https://github.com/scality/metalk8s/pull/4813))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
