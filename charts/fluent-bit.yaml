@@ -38,6 +38,10 @@ daemonSetVolumes:
 - name: runlog
   hostPath:
     path: /run/log
+# stores all needed certificates for TLS outputs
+- name: certificates
+  secret:
+    secretName: fluent-bit-certs
 
 daemonSetVolumeMounts:
 - name: run
@@ -47,6 +51,9 @@ daemonSetVolumeMounts:
   readOnly: true
 - name: runlog
   mountPath: /run/log
+  readOnly: true
+- name: certificates
+  mountPath: /fluent-bit/etc/tls
   readOnly: true
 
 serviceMonitor:
