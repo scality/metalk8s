@@ -62,7 +62,7 @@ on:
         description: "The solution version to install"
         required: false
         type: string
-        default: "1.1.0"
+        default: "1.1.1"
       solution-base-url:
         description: "The URL to download the solution"
         required: false
