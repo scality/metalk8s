@@ -59,7 +59,7 @@ on:
         description: "The solution version to install"
         required: false
         type: string
-        default: "1.0.2"
+        default: "1.1.0"
       solution-base-url:
         description: "The URL to download the solution"
         required: false
@@ -74,7 +74,7 @@ on:
         description: "The next solution version to upgrade to (only used when `test-solution` enabled)"
         required: false
         type: string
-        default: "1.0.3"
+        default: "1.1.1"
 
 env:
   NAME: single-node-${{ inputs.os }}-${{ inputs.setup-idp && 'idp' || 'no-idp' }}-${{ inputs.setup-logging && 'logging' || 'no-logging' }}
