@@ -3,10 +3,9 @@ package config
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const expectedAPIVersion = "solutions.metalk8s.scality.com/v1alpha1"
@@ -32,12 +31,10 @@ type Repository struct {
 func LoadConfiguration(input io.Reader) (*OperatorConfig, error) {
 	var config OperatorConfig
 
-	buffer, err := ioutil.ReadAll(input)
-	if err != nil {
-		return nil, fmt.Errorf("cannot read operator configuration: %w", err)
-	}
+	decoder := yaml.NewDecoder(input)
+	decoder.KnownFields(true)
 
-	if err := yaml.UnmarshalStrict(buffer, &config); err != nil {
+	if err := decoder.Decode(&config); err != nil {
 		return nil, validationError(err)
 	}
 

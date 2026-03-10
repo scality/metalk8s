@@ -33,6 +33,9 @@
 - Allow to enable metrics collection for the solutions operators
   (PR[#4813](https://github.com/scality/metalk8s/pull/4813))
 
+- Bump solution-operator-lib Go version to 1.24
+  (PR[#4817](https://github.com/scality/metalk8s/pull/4817))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
