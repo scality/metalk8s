@@ -23,80 +23,150 @@
 {%- set prometheus_oidc_enabled = prometheus.spec.config.get('enable_oidc_authentication', False) %}
 {%- set alertmanager_oidc_enabled = alertmanager.spec.get('config', {}).get('enable_oidc_authentication', False) %}
 
-{%- set oidc_enabled = prometheus_oidc_enabled or alertmanager_oidc_enabled %}
+{%- set prometheus_ca_namespace = prometheus.spec.config.get('oidc', {}).get('caSecret', {}).get('namespace', '') %}
+{%- set alertmanager_ca_namespace = alertmanager.spec.get('config', {}).get('oidc', {}).get('caSecret', {}).get('namespace', '') %}
 
-{%- set oidc_ca_namespace = prometheus.spec.config.get('oidc', {}).get('caSecret', {}).get('namespace', '') %}
-{%- if not oidc_ca_namespace %}
-  {%- set oidc_ca_namespace = alertmanager.spec.get('config', {}).get('oidc', {}).get('caSecret', {}).get('namespace', '') %}
-{%- endif %}
+{%- if prometheus_oidc_enabled %}
 
-{%- if oidc_enabled %}
-
-Create oidc-proxy ServiceAccount:
+Create oidc-proxy-prometheus ServiceAccount:
   metalk8s_kubernetes.object_present:
     - manifest:
         apiVersion: v1
         kind: ServiceAccount
         metadata:
-          name: oidc-proxy
+          name: oidc-proxy-prometheus
           namespace: metalk8s-monitoring
 
-{%- if oidc_ca_namespace %}
+{%- if prometheus_ca_namespace %}
 
-Create oidc-proxy-secret-reader Role in {{ oidc_ca_namespace }}:
+Create oidc-proxy-prometheus-secret-reader Role in {{ prometheus_ca_namespace }}:
   metalk8s_kubernetes.object_present:
     - manifest:
         apiVersion: rbac.authorization.k8s.io/v1
         kind: Role
         metadata:
-          name: oidc-proxy-secret-reader
-          namespace: {{ oidc_ca_namespace }}
+          name: oidc-proxy-prometheus-secret-reader
+          namespace: {{ prometheus_ca_namespace }}
         rules:
         - apiGroups: [""]
           resources: ["secrets"]
           verbs: ["get", "list", "watch"]
 
-Create oidc-proxy-secret-reader-binding RoleBinding in {{ oidc_ca_namespace }}:
+Create oidc-proxy-prometheus-secret-reader-binding RoleBinding in {{ prometheus_ca_namespace }}:
   metalk8s_kubernetes.object_present:
     - manifest:
         apiVersion: rbac.authorization.k8s.io/v1
         kind: RoleBinding
         metadata:
-          name: oidc-proxy-secret-reader-binding
-          namespace: {{ oidc_ca_namespace }}
+          name: oidc-proxy-prometheus-secret-reader-binding
+          namespace: {{ prometheus_ca_namespace }}
         subjects:
         - kind: ServiceAccount
-          name: oidc-proxy
+          name: oidc-proxy-prometheus
           namespace: metalk8s-monitoring
         roleRef:
           kind: Role
-          name: oidc-proxy-secret-reader
+          name: oidc-proxy-prometheus-secret-reader
           apiGroup: rbac.authorization.k8s.io
 
 {%- endif %}
 
 {%- else %}
 
-Ensure oidc-proxy ServiceAccount does not exist:
+Ensure oidc-proxy-prometheus ServiceAccount does not exist:
   metalk8s_kubernetes.object_absent:
-    - name: oidc-proxy
+    - name: oidc-proxy-prometheus
     - namespace: metalk8s-monitoring
     - kind: ServiceAccount
     - apiVersion: v1
 
-{%- if oidc_ca_namespace %}
+{%- if prometheus_ca_namespace %}
 
-Ensure oidc-proxy-secret-reader Role does not exist:
+Ensure oidc-proxy-prometheus-secret-reader Role does not exist in {{ prometheus_ca_namespace }}:
   metalk8s_kubernetes.object_absent:
-    - name: oidc-proxy-secret-reader
-    - namespace: {{ oidc_ca_namespace }}
+    - name: oidc-proxy-prometheus-secret-reader
+    - namespace: {{ prometheus_ca_namespace }}
     - kind: Role
     - apiVersion: rbac.authorization.k8s.io/v1
 
-Ensure oidc-proxy-secret-reader-binding RoleBinding does not exist:
+Ensure oidc-proxy-prometheus-secret-reader-binding RoleBinding does not exist in {{ prometheus_ca_namespace }}:
   metalk8s_kubernetes.object_absent:
-    - name: oidc-proxy-secret-reader-binding
-    - namespace: {{ oidc_ca_namespace }}
+    - name: oidc-proxy-prometheus-secret-reader-binding
+    - namespace: {{ prometheus_ca_namespace }}
+    - kind: RoleBinding
+    - apiVersion: rbac.authorization.k8s.io/v1
+
+{%- endif %}
+
+{%- endif %}
+
+{%- if alertmanager_oidc_enabled %}
+
+Create oidc-proxy-alertmanager ServiceAccount:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          name: oidc-proxy-alertmanager
+          namespace: metalk8s-monitoring
+
+{%- if alertmanager_ca_namespace %}
+
+Create oidc-proxy-alertmanager-secret-reader Role in {{ alertmanager_ca_namespace }}:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: Role
+        metadata:
+          name: oidc-proxy-alertmanager-secret-reader
+          namespace: {{ alertmanager_ca_namespace }}
+        rules:
+        - apiGroups: [""]
+          resources: ["secrets"]
+          verbs: ["get", "list", "watch"]
+
+Create oidc-proxy-alertmanager-secret-reader-binding RoleBinding in {{ alertmanager_ca_namespace }}:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: RoleBinding
+        metadata:
+          name: oidc-proxy-alertmanager-secret-reader-binding
+          namespace: {{ alertmanager_ca_namespace }}
+        subjects:
+        - kind: ServiceAccount
+          name: oidc-proxy-alertmanager
+          namespace: metalk8s-monitoring
+        roleRef:
+          kind: Role
+          name: oidc-proxy-alertmanager-secret-reader
+          apiGroup: rbac.authorization.k8s.io
+
+{%- endif %}
+
+{%- else %}
+
+Ensure oidc-proxy-alertmanager ServiceAccount does not exist:
+  metalk8s_kubernetes.object_absent:
+    - name: oidc-proxy-alertmanager
+    - namespace: metalk8s-monitoring
+    - kind: ServiceAccount
+    - apiVersion: v1
+
+{%- if alertmanager_ca_namespace %}
+
+Ensure oidc-proxy-alertmanager-secret-reader Role does not exist in {{ alertmanager_ca_namespace }}:
+  metalk8s_kubernetes.object_absent:
+    - name: oidc-proxy-alertmanager-secret-reader
+    - namespace: {{ alertmanager_ca_namespace }}
+    - kind: Role
+    - apiVersion: rbac.authorization.k8s.io/v1
+
+Ensure oidc-proxy-alertmanager-secret-reader-binding RoleBinding does not exist in {{ alertmanager_ca_namespace }}:
+  metalk8s_kubernetes.object_absent:
+    - name: oidc-proxy-alertmanager-secret-reader-binding
+    - namespace: {{ alertmanager_ca_namespace }}
     - kind: RoleBinding
     - apiVersion: rbac.authorization.k8s.io/v1
 

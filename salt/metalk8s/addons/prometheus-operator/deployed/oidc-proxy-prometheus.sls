@@ -42,7 +42,7 @@ Create oauth2-proxy-prometheus Deployment:
               labels:
                 app: oauth2-proxy-prometheus
             spec:
-              serviceAccountName: oidc-proxy
+              serviceAccountName: oidc-proxy-prometheus
               {%- if ca_configured %}
               initContainers:
               - name: k8s-sidecar

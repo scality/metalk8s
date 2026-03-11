@@ -42,7 +42,7 @@ Create oauth2-proxy-alertmanager Deployment:
               labels:
                 app: oauth2-proxy-alertmanager
             spec:
-              serviceAccountName: oidc-proxy
+              serviceAccountName: oidc-proxy-alertmanager
               {%- if ca_configured %}
               initContainers:
               - name: k8s-sidecar
