@@ -86,9 +86,9 @@ Create oauth2-proxy-alertmanager Deployment:
                 {%- if ca_configured %}
                 - --provider-ca-file=/tmp/secrets/{{ ca_file }}
                 {%- endif %}
-                - --http-address=0.0.0.0:4180
+                - --http-address=0.0.0.0:9093
                 ports:
-                - containerPort: 4180
+                - containerPort: 9093
                 volumeMounts:
                 - name: secrets-volume
                   mountPath: /tmp/secrets
@@ -111,7 +111,7 @@ Create oauth2-proxy-alertmanager Service:
           selector:
             app: oauth2-proxy-alertmanager
           ports:
-          - port: 4180
+          - port: 9093
 
 {%- else %}
 

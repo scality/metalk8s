@@ -86,9 +86,9 @@ Create oauth2-proxy-prometheus Deployment:
                 {%- if ca_configured %}
                 - --provider-ca-file=/tmp/secrets/{{ ca_file }}
                 {%- endif %}
-                - --http-address=0.0.0.0:4180
+                - --http-address=0.0.0.0:10902
                 ports:
-                - containerPort: 4180
+                - containerPort: 10902
                 volumeMounts:
                 - name: secrets-volume
                   mountPath: /tmp/secrets
@@ -111,7 +111,7 @@ Create oauth2-proxy-prometheus Service:
           selector:
             app: oauth2-proxy-prometheus
           ports:
-          - port: 4180
+          - port: 10902
 
 {%- else %}
 

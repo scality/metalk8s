@@ -78,17 +78,13 @@ metadata:
 spec:
   type: ExternalName
   {%- if prometheus_oidc_enabled %}
-  externalName: oauth2-proxy.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
+  externalName: oauth2-proxy-prometheus.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
   {%- else %}
   externalName: thanos-query-http.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
   {%- endif %}
   ports:
     - name: http
-      {%- if prometheus_oidc_enabled %}
-      port: 4180
-      {%- else %}
       port: 10902
-      {%- endif %}
 ---
 kind: Service
 apiVersion: v1
@@ -110,11 +106,7 @@ spec:
   {%- endif %}
   ports:
     - name: http
-      {%- if alertmanager_oidc_enabled %}
-      port: 4180
-      {%- else %}
       port: 9093
-      {%- endif %}
 ---
 kind: Service
 apiVersion: v1
