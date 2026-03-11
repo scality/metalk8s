@@ -22,25 +22,25 @@
 
 {%- if prometheus_oidc_enabled %}
 
-Create oauth2-proxy Deployment:
+Create oauth2-proxy-prometheus Deployment:
   metalk8s_kubernetes.object_present:
     - manifest:
         apiVersion: apps/v1
         kind: Deployment
         metadata:
-          name: oauth2-proxy
+          name: oauth2-proxy-prometheus
           namespace: metalk8s-monitoring
           labels:
-            app: oauth2-proxy
+            app: oauth2-proxy-prometheus
         spec:
           replicas: 1
           selector:
             matchLabels:
-              app: oauth2-proxy
+              app: oauth2-proxy-prometheus
           template:
             metadata:
               labels:
-                app: oauth2-proxy
+                app: oauth2-proxy-prometheus
             spec:
               serviceAccountName: oidc-proxy
               {%- if ca_configured %}
@@ -97,34 +97,34 @@ Create oauth2-proxy Deployment:
               - name: secrets-volume
                 emptyDir: {}
 
-Create oauth2-proxy Service:
+Create oauth2-proxy-prometheus Service:
   metalk8s_kubernetes.object_present:
     - manifest:
         apiVersion: v1
         kind: Service
         metadata:
-          name: oauth2-proxy
+          name: oauth2-proxy-prometheus
           namespace: metalk8s-monitoring
           labels:
-            app: oauth2-proxy
+            app: oauth2-proxy-prometheus
         spec:
           selector:
-            app: oauth2-proxy
+            app: oauth2-proxy-prometheus
           ports:
           - port: 4180
 
 {%- else %}
 
-Ensure oauth2-proxy Deployment does not exist:
+Ensure oauth2-proxy-prometheus Deployment does not exist:
   metalk8s_kubernetes.object_absent:
-    - name: oauth2-proxy
+    - name: oauth2-proxy-prometheus
     - namespace: metalk8s-monitoring
     - kind: Deployment
     - apiVersion: apps/v1
 
-Ensure oauth2-proxy Service does not exist:
+Ensure oauth2-proxy-prometheus Service does not exist:
   metalk8s_kubernetes.object_absent:
-    - name: oauth2-proxy
+    - name: oauth2-proxy-prometheus
     - namespace: metalk8s-monitoring
     - kind: Service
     - apiVersion: v1
