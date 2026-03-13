@@ -2,32 +2,6 @@
 
 {%- from "metalk8s/map.jinja" import coredns with context %}
 
-{%- set prometheus_defaults = salt.slsutil.renderer(
-        'salt://metalk8s/addons/prometheus-operator/config/prometheus.yaml',
-        saltenv=saltenv
-    )
-%}
-
-{%- set prometheus = salt.metalk8s_service_configuration.get_service_conf(
-        'metalk8s-monitoring', 'metalk8s-prometheus-config', prometheus_defaults
-    )
-%}
-
-{%- set prometheus_oidc_enabled = prometheus.spec.config.get('enable_oidc_authentication', False) %}
-
-{%- set alertmanager_defaults = salt.slsutil.renderer(
-        'salt://metalk8s/addons/prometheus-operator/config/alertmanager.yaml',
-        saltenv=saltenv
-    )
-%}
-
-{%- set alertmanager = salt.metalk8s_service_configuration.get_service_conf(
-        'metalk8s-monitoring', 'metalk8s-alertmanager-config', alertmanager_defaults
-    )
-%}
-
-{%- set alertmanager_oidc_enabled = alertmanager.spec.get('config', {}).get('enable_oidc_authentication', False) %}
-
 kind: Service
 apiVersion: v1
 metadata:
@@ -77,11 +51,7 @@ metadata:
     heritage: metalk8s
 spec:
   type: ExternalName
-  {%- if prometheus_oidc_enabled %}
-  externalName: oauth2-proxy-prometheus.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
-  {%- else %}
-  externalName: thanos-query-http.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
-  {%- endif %}
+  externalName: prometheus-proxy.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
   ports:
     - name: http
       port: 10902
@@ -99,11 +69,7 @@ metadata:
     heritage: metalk8s
 spec:
   type: ExternalName
-  {%- if alertmanager_oidc_enabled %}
-  externalName: oauth2-proxy-alertmanager.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
-  {%- else %}
-  externalName: prometheus-operator-alertmanager.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
-  {%- endif %}
+  externalName: alertmanager-proxy.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
   ports:
     - name: http
       port: 9093

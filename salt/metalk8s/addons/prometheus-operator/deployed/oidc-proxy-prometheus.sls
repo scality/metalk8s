@@ -1,4 +1,5 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/map.jinja" import coredns with context %}
 
 {%- set prometheus_defaults = salt.slsutil.renderer(
         'salt://metalk8s/addons/prometheus-operator/config/prometheus.yaml',
@@ -125,3 +126,25 @@ Ensure oauth2-proxy-prometheus Service does not exist:
     - apiVersion: v1
 
 {%- endif %}
+
+Create prometheus-proxy Service:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: prometheus-proxy
+          namespace: metalk8s-monitoring
+          labels:
+            app.kubernetes.io/managed-by: salt
+            app.kubernetes.io/part-of: metalk8s
+            heritage: metalk8s
+        spec:
+          type: ExternalName
+          {%- if prometheus_oidc_enabled %}
+          externalName: oauth2-proxy-prometheus.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
+          {%- else %}
+          externalName: thanos-query-http.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
+          {%- endif %}
+          ports:
+          - port: 10902

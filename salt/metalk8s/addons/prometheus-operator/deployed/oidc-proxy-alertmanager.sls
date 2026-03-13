@@ -1,4 +1,5 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/map.jinja" import coredns with context %}
 
 {%- set alertmanager_defaults = salt.slsutil.renderer(
         'salt://metalk8s/addons/prometheus-operator/config/alertmanager.yaml',
@@ -126,3 +127,25 @@ Ensure oauth2-proxy-alertmanager Service does not exist:
     - apiVersion: v1
 
 {%- endif %}
+
+Create alertmanager-proxy Service:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: alertmanager-proxy
+          namespace: metalk8s-monitoring
+          labels:
+            app.kubernetes.io/managed-by: salt
+            app.kubernetes.io/part-of: metalk8s
+            heritage: metalk8s
+        spec:
+          type: ExternalName
+          {%- if alertmanager_oidc_enabled %}
+          externalName: oauth2-proxy-alertmanager.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
+          {%- else %}
+          externalName: prometheus-operator-alertmanager.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
+          {%- endif %}
+          ports:
+          - port: 9093
