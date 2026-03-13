@@ -15,9 +15,9 @@
 {%- set alertmanager_oidc = alertmanager.spec.get('config', {}).get('oidc', {}) %}
 
 {%- set alertmanager_oidc_ca = alertmanager_oidc.get('caSecret', {}) %}
-{%- set ca_namespace = alertmanager_oidc_ca.get('namespace', '') %}
-{%- set ca_name = alertmanager_oidc_ca.get('name', '') %}
-{%- set ca_configured = ca_namespace and ca_name %}
+{%- set ca_namespace = alertmanager_oidc_ca.get('namespace', 'metalk8s-ingress') %}
+{%- set ca_name = alertmanager_oidc_ca.get('name', 'ingress-control-plane-default-certificate') %}
+
 {%- set ca_file = 'namespace_' ~ ca_namespace ~ '.secret_' ~ ca_name ~ '.tls.crt' %}
 
 {%- if alertmanager_oidc_enabled %}
@@ -43,7 +43,6 @@ Create oauth2-proxy-alertmanager Deployment:
                 app: oauth2-proxy-alertmanager
             spec:
               serviceAccountName: oidc-proxy-alertmanager
-              {%- if ca_configured %}
               initContainers:
               - name: k8s-sidecar
                 image: {{ build_image_name("k8s-sidecar") }}
@@ -63,7 +62,6 @@ Create oauth2-proxy-alertmanager Deployment:
                 volumeMounts:
                 - name: secrets-volume
                   mountPath: /tmp/secrets
-              {%- endif %}
               containers:
               - name: oauth2-proxy
                 image: {{ build_image_name("oauth2-proxy") }}
@@ -83,9 +81,7 @@ Create oauth2-proxy-alertmanager Deployment:
                 {%- for group in alertmanager_oidc.get('authorizedGroups', []) %}
                 - --allowed-group={{ group }}
                 {%- endfor %}
-                {%- if ca_configured %}
                 - --provider-ca-file=/tmp/secrets/{{ ca_file }}
-                {%- endif %}
                 - --http-address=0.0.0.0:9093
                 ports:
                 - containerPort: 9093
