@@ -12,8 +12,8 @@
     )
 %}
 
-{%- set prometheus_oidc_enabled = prometheus.spec.config.get('enable_oidc_authentication', False) %}
-{%- set prometheus_oidc = prometheus.spec.config.get('oidc', {}) %}
+{%- set prometheus_oidc_enabled = prometheus.spec.get('config', {}).get('enable_oidc_authentication', False) %}
+{%- set prometheus_oidc = prometheus.spec.get('config', {}).get('oidc', {}) %}
 
 {%- set prometheus_oidc_ca = prometheus_oidc.get('caSecret', {}) %}
 {%- set ca_namespace = prometheus_oidc_ca.get('namespace', 'metalk8s-ingress') %}
