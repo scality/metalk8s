@@ -38,21 +38,12 @@ Install container-selinux:
 {%- endif %}
 
 Install containerd:
-  {{ pkg_installed('containerd') }}
+  {{ pkg_installed('containerd.io') }}
     - require:
       - test: Repositories configured
       - file: Create containerd service drop-in
     - watch_in:
       - service: Ensure containerd running
-
-# Even if `runc` is a dependency of `containerd` we explicitly
-# add it so that it get hold
-Ensure runc is installed and hold:
-  pkg.installed:
-    - name: runc
-    - hold: True
-    - require:
-        - metalk8s_package_manager: Install containerd
 
 Create containerd service drop-in:
   file.managed:
@@ -103,21 +94,19 @@ Configure containerd:
     - name: /etc/containerd/config.toml
     - makedirs: true
     - contents: |
-        version = 2
+        version = 3
 
-        [plugins."io.containerd.grpc.v1.cri"]
-        sandbox_image = "{{ build_image_name("pause") }}"
+        [plugins.'io.containerd.cri.v1.images'.pinned_images]
+          sandbox = "{{ build_image_name("pause") }}"
 
-        [plugins."io.containerd.grpc.v1.cri".registry]
-        config_path = "/etc/containerd/certs.d"
+        [plugins."io.containerd.cri.v1.images".registry]
+          config_path = "/etc/containerd/certs.d"
 
-        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-        runtime_type = "io.containerd.runc.v2"
-        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-        SystemdCgroup = true
+        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
+          SystemdCgroup = true
 
         [debug]
-        level = "{{ 'debug' if metalk8s.debug else 'info' }}"
+          level = "{{ 'debug' if metalk8s.debug else 'info' }}"
     - watch_in:
       - service: Ensure containerd running
 

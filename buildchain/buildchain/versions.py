@@ -27,9 +27,8 @@ K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
 CALICO_VERSION: str = "3.29.3"
 SALT_VERSION: str = "3002.9"
-CONTAINERD_VERSION: str = "1.6.38"
+CONTAINERD_VERSION: str = "2.2.2"
 
-CONTAINERD_RELEASE: str = "1"
 SOSREPORT_RELEASE: str = "2"
 
 
@@ -394,6 +393,7 @@ PACKAGES: Dict[str, Any] = {
         # Pinned packages
         PackageVersion(name="kubectl", version=K8S_VERSION),
         PackageVersion(name="kubelet", version=K8S_VERSION),
+        PackageVersion(name="containerd.io", version=CONTAINERD_VERSION),
         # Latest packages
         PackageVersion(name="coreutils"),
         PackageVersion(name="cri-tools"),
@@ -419,11 +419,6 @@ PACKAGES: Dict[str, Any] = {
     ),
     "redhat": {
         "8": (
-            PackageVersion(
-                name="containerd",
-                version=CONTAINERD_VERSION,
-                release=f"{CONTAINERD_RELEASE}.el8",
-            ),
             PackageVersion(name="container-selinux"),
             PackageVersion(name="iptables-ebtables", override="ebtables"),
             PackageVersion(
