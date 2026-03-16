@@ -79,14 +79,14 @@ spec:
           service:
             name: thanos-api
             port:
-              number: 10902
+              name: http
       - path: /api/alertmanager(/|$)(.*)
         pathType: Prefix
         backend:
           service:
             name: alertmanager-api
             port:
-              number: 9093
+              name: http
       {%- if pillar.addons.loki.enabled %}
       - path: /api/loki(/|$)(.*)
         pathType: Prefix

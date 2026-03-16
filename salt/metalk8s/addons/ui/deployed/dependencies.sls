@@ -51,7 +51,7 @@ metadata:
     heritage: metalk8s
 spec:
   type: ExternalName
-  externalName: thanos-query-http.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
+  externalName: prometheus-proxy.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
   ports:
     - name: http
       port: 10902
@@ -69,7 +69,7 @@ metadata:
     heritage: metalk8s
 spec:
   type: ExternalName
-  externalName: prometheus-operator-alertmanager.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
+  externalName: alertmanager-proxy.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
   ports:
     - name: http
       port: 9093
