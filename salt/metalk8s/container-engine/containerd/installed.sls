@@ -12,7 +12,7 @@
   {%- set pillar_endpoints = [pillar_endpoints] %}
 {%- endif %}
 {%- for ep in pillar_endpoints %}
-  {%- do registry_eps.append('"http://' ~ ep.ip ~ ":" ~ ep.ports.http ~ '"') %}
+  {%- do registry_eps.append('http://' ~ ep.ip ~ ":" ~ ep.ports.http) %}
 {%- endfor %}
 
 {%- set no_proxy = [
@@ -42,7 +42,6 @@ Install containerd:
     - require:
       - test: Repositories configured
       - file: Create containerd service drop-in
-      - file: Configure registry IP in containerd conf
     - watch_in:
       - service: Ensure containerd running
 
@@ -99,7 +98,7 @@ Install and configure cri-tools:
     - require_in:
       - test: Ensure containerd is ready
 
-Configure registry IP in containerd conf:
+Configure containerd:
   file.managed:
     - name: /etc/containerd/config.toml
     - makedirs: true
@@ -109,8 +108,8 @@ Configure registry IP in containerd conf:
         [plugins."io.containerd.grpc.v1.cri"]
         sandbox_image = "{{ build_image_name("pause") }}"
 
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ repo.registry_endpoint }}"]
-        endpoint = [{{ registry_eps | join(",") }}]
+        [plugins."io.containerd.grpc.v1.cri".registry]
+        config_path = "/etc/containerd/certs.d"
 
         [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
         runtime_type = "io.containerd.runc.v2"
@@ -120,4 +119,21 @@ Configure registry IP in containerd conf:
         [debug]
         level = "{{ 'debug' if metalk8s.debug else 'info' }}"
     - watch_in:
-        - service: Ensure containerd running
+      - service: Ensure containerd running
+
+
+Configure containerd registries:
+  file.managed:
+    - name: /etc/containerd/certs.d/{{ repo.registry_endpoint }}/hosts.toml
+    - makedirs: true
+    - contents: |
+        {%- for ep in registry_eps %}
+        [host."{{ ep }}"]
+          capabilities = ["pull", "resolve"]
+        {%- endfor %}
+    - require:
+      - file: Configure containerd
+    # NOTE: We do not use `watch_in` here since changes on those `certs.d` file do
+    # not need a restart of the containerd service.
+    - require_in:
+      - service: Ensure containerd running

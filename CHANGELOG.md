@@ -30,6 +30,10 @@
   and Loki image version to [3.6.5](https://github.com/grafana/loki/releases/tag/v3.6.5)
   (PR[#4792](https://github.com/scality/metalk8s/pull/4792))
 
+- Configure containerd using `config_path` for registries so that changes of
+  registries mirrors does no longer require a restart of the containerd service
+  (PR[#4821](https://github.com/scality/metalk8s/pull/4821))
+
 - Allow to enable metrics collection for the solutions operators
   (PR[#4813](https://github.com/scality/metalk8s/pull/4813))
 
