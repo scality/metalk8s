@@ -36,6 +36,9 @@
 - Bump solution-operator-lib Go version to 1.24
   (PR[#4817](https://github.com/scality/metalk8s/pull/4817))
 
+- Bump prometheus-adapter chart version to [5.3.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-5.3.0)
+  (PR[#4825](https://github.com/scality/metalk8s/pull/4825))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
