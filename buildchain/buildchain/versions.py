@@ -197,6 +197,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:4032c6d5bfd752342c3e631c2f1de93ba6b86c41db6b167b9a35372c139e7706",
     ),
     Image(
+        name="oauth2-proxy",
+        version="v7.14.3",
+        digest="sha256:68336da945bdaff799262c8d14fb1d1aa9354df5e02b87e0955addc040344618",
+    ),
+    Image(
         name="pause",
         version="3.10",
         # Do not check the digest for this image, since this one is re-published
