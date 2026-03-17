@@ -7,6 +7,8 @@ kind: Secret
 metadata:
   name: ingress-control-plane-default-certificate
   namespace: metalk8s-ingress
+  labels:
+    metalk8s.scality.com/oidc-ca: "true"
 type: Opaque
 data:
   tls.crt: "{{
