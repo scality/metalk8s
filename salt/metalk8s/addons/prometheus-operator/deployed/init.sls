@@ -11,5 +11,6 @@ include:
   - .thanos-query-sd-files
   - .thanos-chart
   - .oidc-proxy-rbac
+  - .oidc-proxy-restart-script
   - .oidc-proxy-prometheus
   - .oidc-proxy-alertmanager

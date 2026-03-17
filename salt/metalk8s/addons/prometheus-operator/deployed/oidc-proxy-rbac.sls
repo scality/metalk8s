@@ -67,6 +67,37 @@ Create oidc-proxy-prometheus-secret-reader-binding RoleBinding in {{ prometheus_
           name: oidc-proxy-prometheus-secret-reader
           apiGroup: rbac.authorization.k8s.io
 
+Create oidc-proxy-prometheus-deployment-restarter Role:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: Role
+        metadata:
+          name: oidc-proxy-prometheus-deployment-restarter
+          namespace: metalk8s-monitoring
+        rules:
+        - apiGroups: ["apps"]
+          resources: ["deployments"]
+          resourceNames: ["oauth2-proxy-prometheus"]
+          verbs: ["get", "patch"]
+
+Create oidc-proxy-prometheus-deployment-restarter-binding RoleBinding:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: RoleBinding
+        metadata:
+          name: oidc-proxy-prometheus-deployment-restarter-binding
+          namespace: metalk8s-monitoring
+        subjects:
+        - kind: ServiceAccount
+          name: oidc-proxy-prometheus
+          namespace: metalk8s-monitoring
+        roleRef:
+          kind: Role
+          name: oidc-proxy-prometheus-deployment-restarter
+          apiGroup: rbac.authorization.k8s.io
+
 {%- else %}
 
 Ensure oidc-proxy-prometheus ServiceAccount does not exist:
@@ -87,6 +118,20 @@ Ensure oidc-proxy-prometheus-secret-reader-binding RoleBinding does not exist in
   metalk8s_kubernetes.object_absent:
     - name: oidc-proxy-prometheus-secret-reader-binding
     - namespace: {{ prometheus_ca_namespace }}
+    - kind: RoleBinding
+    - apiVersion: rbac.authorization.k8s.io/v1
+
+Ensure oidc-proxy-prometheus-deployment-restarter Role does not exist:
+  metalk8s_kubernetes.object_absent:
+    - name: oidc-proxy-prometheus-deployment-restarter
+    - namespace: metalk8s-monitoring
+    - kind: Role
+    - apiVersion: rbac.authorization.k8s.io/v1
+
+Ensure oidc-proxy-prometheus-deployment-restarter-binding RoleBinding does not exist:
+  metalk8s_kubernetes.object_absent:
+    - name: oidc-proxy-prometheus-deployment-restarter-binding
+    - namespace: metalk8s-monitoring
     - kind: RoleBinding
     - apiVersion: rbac.authorization.k8s.io/v1
 
@@ -133,6 +178,37 @@ Create oidc-proxy-alertmanager-secret-reader-binding RoleBinding in {{ alertmana
           name: oidc-proxy-alertmanager-secret-reader
           apiGroup: rbac.authorization.k8s.io
 
+Create oidc-proxy-alertmanager-deployment-restarter Role:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: Role
+        metadata:
+          name: oidc-proxy-alertmanager-deployment-restarter
+          namespace: metalk8s-monitoring
+        rules:
+        - apiGroups: ["apps"]
+          resources: ["deployments"]
+          resourceNames: ["oauth2-proxy-alertmanager"]
+          verbs: ["get", "patch"]
+
+Create oidc-proxy-alertmanager-deployment-restarter-binding RoleBinding:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: RoleBinding
+        metadata:
+          name: oidc-proxy-alertmanager-deployment-restarter-binding
+          namespace: metalk8s-monitoring
+        subjects:
+        - kind: ServiceAccount
+          name: oidc-proxy-alertmanager
+          namespace: metalk8s-monitoring
+        roleRef:
+          kind: Role
+          name: oidc-proxy-alertmanager-deployment-restarter
+          apiGroup: rbac.authorization.k8s.io
+
 {%- else %}
 
 Ensure oidc-proxy-alertmanager ServiceAccount does not exist:
@@ -153,6 +229,20 @@ Ensure oidc-proxy-alertmanager-secret-reader-binding RoleBinding does not exist 
   metalk8s_kubernetes.object_absent:
     - name: oidc-proxy-alertmanager-secret-reader-binding
     - namespace: {{ alertmanager_ca_namespace }}
+    - kind: RoleBinding
+    - apiVersion: rbac.authorization.k8s.io/v1
+
+Ensure oidc-proxy-alertmanager-deployment-restarter Role does not exist:
+  metalk8s_kubernetes.object_absent:
+    - name: oidc-proxy-alertmanager-deployment-restarter
+    - namespace: metalk8s-monitoring
+    - kind: Role
+    - apiVersion: rbac.authorization.k8s.io/v1
+
+Ensure oidc-proxy-alertmanager-deployment-restarter-binding RoleBinding does not exist:
+  metalk8s_kubernetes.object_absent:
+    - name: oidc-proxy-alertmanager-deployment-restarter-binding
+    - namespace: metalk8s-monitoring
     - kind: RoleBinding
     - apiVersion: rbac.authorization.k8s.io/v1
 
