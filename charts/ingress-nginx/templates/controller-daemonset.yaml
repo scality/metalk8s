@@ -57,6 +57,9 @@ spec:
     {{- if .Values.controller.priorityClassName }}
       priorityClassName: {{ .Values.controller.priorityClassName | quote }}
     {{- end }}
+    {{- if .Values.controller.runtimeClassName }}
+      runtimeClassName: {{ .Values.controller.runtimeClassName | quote }}
+    {{- end }}
     {{- if or .Values.controller.podSecurityContext .Values.controller.sysctls }}
       securityContext:
       {{- if .Values.controller.podSecurityContext }}
@@ -171,13 +174,18 @@ spec:
         {{- if .Values.controller.resources }}
           resources: {{ toYaml .Values.controller.resources | nindent 12 }}
         {{- end }}
+        {{- if semverCompare ">=1.33.0-0" .Capabilities.KubeVersion.Version }}
+        {{- if .Values.controller.resizePolicy }}
+          resizePolicy: {{ toYaml .Values.controller.resizePolicy | nindent 12 }}
+        {{- end }}
+        {{- end }}
       {{- if .Values.controller.extraContainers }}
         {{- toYaml .Values.controller.extraContainers | nindent 8 }}
       {{- end }}
     {{- if (or .Values.controller.extraInitContainers .Values.controller.extraModules) }}
       initContainers:
       {{- if .Values.controller.extraInitContainers }}
-        {{- toYaml .Values.controller.extraInitContainers | nindent 8 }}
+        {{- tpl (toYaml .Values.controller.extraInitContainers) $ | nindent 8 }}
       {{- end }}
       {{- if .Values.controller.extraModules }}
         {{- range .Values.controller.extraModules }}
@@ -202,6 +210,7 @@ spec:
       topologySpreadConstraints: {{ tpl (toYaml .Values.controller.topologySpreadConstraints) $ | nindent 8 }}
     {{- end }}
       serviceAccountName: {{ template "ingress-nginx.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
       terminationGracePeriodSeconds: {{ .Values.controller.terminationGracePeriodSeconds }}
     {{- if (or .Values.controller.customTemplate.configMapName .Values.controller.extraVolumeMounts .Values.controller.admissionWebhooks.enabled .Values.controller.extraVolumes .Values.controller.extraModules) }}
       volumes:
