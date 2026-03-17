@@ -143,7 +143,12 @@ const config: Configuration = {
         './useNotificationCenter': './src/useNotificationCenter.ts',
       },
       shared: {
-        ...Object.fromEntries(Object.entries(deps).map(([key, version]) => [key, {}])),
+        ...Object.fromEntries(
+          Object.entries(deps)
+            // @mcp-b/* are side-effect-only browser globals — must not be shared via MF
+            .filter(([key]) => !key.startsWith('@mcp-b/'))
+            .map(([key]) => [key, {}]),
+        ),
         'react-intl': {
           eager: true,
           singleton: true,
@@ -210,7 +215,23 @@ const config: Configuration = {
       excludedChunks: ['shell'],
     }),
     new rspack.CopyRspackPlugin({
-      patterns: [{ from: 'public' }],
+      patterns: [
+        { from: 'public' },
+        {
+          from: 'node_modules/@mcp-b/webmcp-local-relay/dist/browser',
+          to: '.',
+          // Increase widget.html request timeout from 10s to 60s so long-running
+          // MCP tool calls (STS assumeRole + SDK action) don't time out.
+          transform: (content: Buffer, resourcePath: string) => {
+            if (resourcePath.endsWith('widget.html')) {
+              return content
+                .toString()
+                .replace('Host response timeout: ${t}`))},1e4', 'Host response timeout: ${t}`))},6*1e4');
+            }
+            return content;
+          },
+        },
+      ],
     }),
     process.env.RSDOCTOR && new RsdoctorRspackPlugin({}),
   ].filter(Boolean),
