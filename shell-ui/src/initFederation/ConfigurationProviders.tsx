@@ -62,6 +62,7 @@ export type BuildtimeWebFinger = {
     components: Record<string, FederatedModuleInfo>;
     navbarUpdaterComponents?: FederatedModuleInfo[];
     instanceNameAdapter?: FederatedModuleInfo;
+    mcpTools?: FederatedModuleInfo;
   };
 };
 
