@@ -36,7 +36,7 @@ export const _InternalMCPRegistrar = ({
   navigate,
 }: {
   // ComponentWithFederatedImports injects moduleExports as Record<string, unknown>
-  moduleExports: Record<string, unknown>;
+  moduleExports: Record<string, { tools: MCPToolDefinition[] }>;
   mcpToolsModuleInfo: FederatedModuleInfo;
   selfConfiguration: Record<string, unknown>;
   navigate: (path: string) => void;
@@ -92,7 +92,7 @@ export const _InternalMCPRegistrar = ({
     }
 
     return () => {
-      registeredNames.forEach((name) =>
+      registeredNames.map((name) =>
         navigator.modelContext?.unregisterTool?.(name),
       );
     };

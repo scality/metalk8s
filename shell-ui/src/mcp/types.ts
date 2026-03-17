@@ -4,7 +4,6 @@
  * It contains only what shell-ui itself owns. Micro-frontends extend it with their own
  * app-specific context derived from selfConfiguration.
  */
-
 import type { UserData } from '../auth/AuthProvider';
 export type { UserData };
 
@@ -53,3 +52,4 @@ export type MCPToolDefinition<
     client: ModelContextClient,
   ) => Promise<unknown>;
 };
+
