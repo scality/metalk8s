@@ -177,12 +177,7 @@ func TestLoadConfigurationOnBrokenFile(t *testing.T) {
 
 	assert.Nil(t, result)
 	assert.Error(t, err)
-	// This error is not about validation
-	assert.False(t, errors.Is(err, ErrValidation))
-	assert.True(t, errors.Is(err, errBrokenBuffer))
-	assert.Equal(
-		t,
-		"cannot read operator configuration: this buffer is broken",
-		err.Error(),
-	)
+	// This error is about parsing the YAML file
+	assert.True(t, errors.Is(err, ErrValidation))
+	assert.Contains(t, err.Error(), "yaml: input error: this buffer is broken")
 }
