@@ -414,15 +414,7 @@ register_basic("file.join")(lambda *args: "/".join(args))
 register_basic("file.read")(MagicMock(return_value="<file contents>"))
 
 
-@register_basic("cp.get_file_str")
-def cp_get_file_str(source: str, **_kwargs: Any) -> str:
-    """Read the relevant file directly from local sources."""
-    assert source.startswith("salt://")
-    path = paths.SALT_DIR / source[len("salt://") :]
-    with path.open("r") as src_file:
-        return src_file.read()
-
-
+register_basic("cp.get_file_str")(MagicMock(return_value="<file contents>"))
 register_basic("hashutil.base64_b64decode")(lambda input_data: input_data)
 register_basic("hashutil.base64_encodefile")(
     MagicMock(return_value="<b64-encoded data>")
