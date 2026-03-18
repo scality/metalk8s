@@ -3,6 +3,7 @@
 include:
   - .configmap
   - .service-configuration
+  - .secret
   - .chart
 
 {%- else %}
