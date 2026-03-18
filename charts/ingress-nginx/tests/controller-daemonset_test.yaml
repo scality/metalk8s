@@ -96,6 +96,24 @@ tests:
               maxSkew: 1
               whenUnsatisfiable: ScheduleAnyway
 
+  - it: should create a DaemonSet with templated init containers if `controller.extraInitContainers` contains Helm templates
+    set:
+      controller.kind: DaemonSet
+      controller.extraInitContainers:
+        - name: '{{ .Release.Name }}-init'
+          image: busybox
+          command:
+            - sh
+            - -c
+            - echo '{{ .Release.Namespace }}';
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: RELEASE-NAME-init
+      - contains:
+          path: spec.template.spec.initContainers[0].command
+          content: echo 'NAMESPACE';
+
   - it: should create a DaemonSet with affinity if `controller.affinity` is set
     set:
       controller.kind: DaemonSet
@@ -190,3 +208,41 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].image
           value: registry.k8s.io/ingress-nginx/controller:custom-tag@sha256:faa2d18687f734994b6bd9e309e7a73852a81c30e1b8f63165fcd4f0a087e3cd
+
+  - it: should create a DaemonSet with token auto-mounting disabled if `serviceAccount.automountServiceAccountToken` is false
+    set:
+      controller.kind: DaemonSet
+      serviceAccount.automountServiceAccountToken: false
+    asserts:
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false
+
+  - it: should create a DaemonSet with a custom runtime if `controller.runtimeClassName` is set
+    set:
+      controller.kind: DaemonSet
+      controller.runtimeClassName: myClass
+    asserts:
+      - equal:
+          path: spec.template.spec.runtimeClassName
+          value: myClass
+
+  - it: should create a DaemonSet with resize policy if `controller.resizePolicy` is set
+    capabilities:
+      majorVersion: 1
+      minorVersion: 33
+    set:
+      controller.kind: DaemonSet
+      controller.resizePolicy:
+        - resourceName: cpu
+          restartPolicy: NotRequired
+        - resourceName: memory
+          restartPolicy: RestartContainer
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].resizePolicy
+          value:
+            - resourceName: cpu
+              restartPolicy: NotRequired
+            - resourceName: memory
+              restartPolicy: RestartContainer

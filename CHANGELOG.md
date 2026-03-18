@@ -36,6 +36,10 @@
 - Bump solution-operator-lib Go version to 1.24
   (PR[#4817](https://github.com/scality/metalk8s/pull/4817))
 
+- Bump ingress-nginx chart version to [4.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.15.0)
+  and ingress-nginx controller to [v1.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.15.0)
+  (PR[#4824](https://github.com/scality/metalk8s/pull/4824))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
