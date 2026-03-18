@@ -64,3 +64,9 @@ serviceMonitor:
 dashboards:
   enabled: true
   deterministicUid: true
+
+env:
+  - name: NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName

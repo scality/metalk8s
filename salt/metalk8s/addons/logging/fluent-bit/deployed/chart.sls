@@ -1708,6 +1708,11 @@ spec:
         - --config=/fluent-bit/etc/conf/fluent-bit.conf
         command:
         - /fluent-bit/bin/fluent-bit
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
         image: {% endraw -%}{{ build_image_name("fluent-bit", False) }}{%- raw %}:4.2.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
