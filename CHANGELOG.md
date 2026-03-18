@@ -40,6 +40,13 @@
   and ingress-nginx controller to [v1.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.15.0)
   (PR[#4824](https://github.com/scality/metalk8s/pull/4824))
 
+- Bump `operator-sdk` version to [1.42.1](https://github.com/operator-framework/operator-sdk/releases/tag/v1.42.1)
+  in `metalk8s-operator` and `storage-operator`.
+  Go version has been bumped to
+  [1.25.8](https://golang.org/doc/devel/release.html#go1.25.minor)
+  and `k8s.io/*` dependencies have been bumped to [0.33.9](https://github.com/kubernetes/kubernetes/releases/tag/v1.33.9)
+  (PR[#4818](https://github.com/scality/metalk8s/pull/4818))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
