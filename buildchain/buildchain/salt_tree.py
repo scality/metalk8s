@@ -408,6 +408,14 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/prometheus-operator/deployed/thanos-chart.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/thanos-query-sd-files.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/oidc-proxy-rbac.sls"),
+    Path(
+        "salt/metalk8s/addons/prometheus-operator/deployed/",
+        "oidc-proxy-restart-script.sls",
+    ),
+    Path(
+        "salt/metalk8s/addons/prometheus-operator/deployed/files/",
+        "restart-on-ca-change.py",
+    ),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/oidc-proxy-prometheus.sls"),
     Path(
         "salt/metalk8s/addons/prometheus-operator/deployed/oidc-proxy-alertmanager.sls"
