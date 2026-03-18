@@ -920,6 +920,13 @@ edited as follows:
               limits:
                 memory: "4Gi"
 
+Configure Fluent-Bit with TLS outputs
+"""""""""""""""""""""""""""""""""""""
+
+When configuring Fluent-Bit to output to an endpoint using TLS or mTLS,
+it is useful to add certificates to Fluent-Bit.
+This can be done by adding the secrets to the `fluent-bit-certs` secret.
+
 .. _csc-ui-customization:
 
 Metalk8s UI Configuration Customization
