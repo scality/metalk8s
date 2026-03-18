@@ -12,7 +12,7 @@ class ApiClient {
 
   setHeaders = (headers) => {
     // @ts-expect-error - FIXME when you are working on it
-    this.headers = headers;
+    this.headers = { ...this.headers, ...headers };
   };
 
   async get(endpoint, params = {}, opts = {}) {
