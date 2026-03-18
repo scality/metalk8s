@@ -26,9 +26,9 @@
 - Support etcd distroless images for Kubernetes 1.33+. Above etcd 3.5.21, etcd images are now distroless and upstreamed to the etcd project.
   (PR[#4740](https://github.com/scality/metalk8s/pull/4740))
 
-- Bump Fluent Bit image version to [4.2.2](https://github.com/fluent/fluent-bit/releases/tag/v4.2.2)
-  and Fluent Bit Helm chart version to [0.55.0](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.55.0)
-  (PR[#4778](https://github.com/scality/metalk8s/pull/4778))
+- Bump Fluent Bit image version to [4.2.3](https://github.com/fluent/fluent-bit/releases/tag/v4.2.3)
+  and Fluent Bit Helm chart version to [0.56.0](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.56.0)
+  (PR[#4812](https://github.com/scality/metalk8s/pull/4812))
 
 - Bump dex chart version to
   [0.24.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.0)
@@ -56,6 +56,8 @@
 - Bump ingress-nginx chart version to [4.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.15.0)
   and ingress-nginx controller to [v1.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.15.0)
   (PR[#4824](https://github.com/scality/metalk8s/pull/4824))
+- Implement ability to add certificates to fluent-bit by mounting a fluent-bit-certs secret
+  (PR[#4812](https://github.com/scality/metalk8s/pull/4812))
 
 ### Bug Fixes
 
