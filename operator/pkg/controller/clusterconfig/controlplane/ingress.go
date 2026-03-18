@@ -176,7 +176,7 @@ func (r *IngressReconciler) Reconcile(ctx context.Context) utils.SubReconcilerRe
 				"BootstrapRetrievingError",
 				message,
 			)
-			return utils.NeedRequeue(fmt.Errorf(message))
+			return utils.NeedRequeue(fmt.Errorf("%s", message))
 		}
 
 		for _, addr := range nodeList.Items[0].Status.Addresses {
@@ -193,7 +193,7 @@ func (r *IngressReconciler) Reconcile(ctx context.Context) utils.SubReconcilerRe
 				"BootstrapIPRetrievingError",
 				message,
 			)
-			return utils.NeedRequeue(fmt.Errorf(message))
+			return utils.NeedRequeue(fmt.Errorf("%s", message))
 		}
 	}
 	r.instance.Status.ControlPlane.Ingress.IP = ingressIP
