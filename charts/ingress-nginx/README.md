@@ -2,7 +2,7 @@
 
 [ingress-nginx](https://github.com/kubernetes/ingress-nginx) Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
 
-![Version: 4.12.1](https://img.shields.io/badge/Version-4.12.1-informational?style=flat-square) ![AppVersion: 1.12.1](https://img.shields.io/badge/AppVersion-1.12.1-informational?style=flat-square)
+![Version: 4.15.0](https://img.shields.io/badge/Version-4.15.0-informational?style=flat-square) ![AppVersion: 1.15.0](https://img.shields.io/badge/AppVersion-1.15.0-informational?style=flat-square)
 
 To use, add `ingressClassName: nginx` spec field or the `kubernetes.io/ingress.class: nginx` annotation to your Ingress resources.
 
@@ -255,12 +255,17 @@ metadata:
 | controller.addHeaders | object | `{}` | Will add custom headers before sending response traffic to the client according to: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#add-headers |
 | controller.admissionWebhooks.annotations | object | `{}` |  |
 | controller.admissionWebhooks.certManager.admissionCert.duration | string | `""` |  |
+| controller.admissionWebhooks.certManager.admissionCert.revisionHistoryLimit | int | `0` | Revision history limit of the webhook certificate. Ref.: https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.CertificateSpec |
 | controller.admissionWebhooks.certManager.enabled | bool | `false` |  |
 | controller.admissionWebhooks.certManager.rootCert.duration | string | `""` |  |
+| controller.admissionWebhooks.certManager.rootCert.revisionHistoryLimit | int | `0` | Revision history limit of the root certificate. Ref.: https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.CertificateSpec |
 | controller.admissionWebhooks.certificate | string | `"/usr/local/certificates/cert"` |  |
+| controller.admissionWebhooks.createSecretJob.activeDeadlineSeconds | int | `0` | Deadline in seconds for the job to complete. Must be greater than 0 to enforce. If unset or 0, no deadline is enforced. |
 | controller.admissionWebhooks.createSecretJob.name | string | `"create"` |  |
 | controller.admissionWebhooks.createSecretJob.resources | object | `{}` |  |
 | controller.admissionWebhooks.createSecretJob.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532,"seccompProfile":{"type":"RuntimeDefault"}}` | Security context for secret creation containers |
+| controller.admissionWebhooks.createSecretJob.volumeMounts | list | `[]` | Volume mounts for secret creation containers |
+| controller.admissionWebhooks.createSecretJob.volumes | list | `[]` | Volumes for secret creation pod |
 | controller.admissionWebhooks.enabled | bool | `true` |  |
 | controller.admissionWebhooks.extraEnvs | list | `[]` | Additional environment variables to set |
 | controller.admissionWebhooks.failurePolicy | string | `"Fail"` | Admission Webhook failure policy to use |
@@ -270,10 +275,10 @@ metadata:
 | controller.admissionWebhooks.namespaceSelector | object | `{}` |  |
 | controller.admissionWebhooks.objectSelector | object | `{}` |  |
 | controller.admissionWebhooks.patch.enabled | bool | `true` |  |
-| controller.admissionWebhooks.patch.image.digest | string | `"sha256:e8825994b7a2c7497375a9b945f386506ca6a3eda80b89b74ef2db743f66a5ea"` |  |
+| controller.admissionWebhooks.patch.image.digest | string | `"sha256:d7e8257f8d8bce64b6df55f81fba92011a6a77269b3350f8b997b152af348dba"` |  |
 | controller.admissionWebhooks.patch.image.image | string | `"ingress-nginx/kube-webhook-certgen"` |  |
 | controller.admissionWebhooks.patch.image.pullPolicy | string | `"IfNotPresent"` |  |
-| controller.admissionWebhooks.patch.image.tag | string | `"v1.5.2"` |  |
+| controller.admissionWebhooks.patch.image.tag | string | `"v1.6.8"` |  |
 | controller.admissionWebhooks.patch.labels | object | `{}` | Labels to be added to patch job resources |
 | controller.admissionWebhooks.patch.networkPolicy.enabled | bool | `false` | Enable 'networkPolicy' or not |
 | controller.admissionWebhooks.patch.nodeSelector."kubernetes.io/os" | string | `"linux"` |  |
@@ -281,15 +286,19 @@ metadata:
 | controller.admissionWebhooks.patch.priorityClassName | string | `""` | Provide a priority class name to the webhook patching job # |
 | controller.admissionWebhooks.patch.rbac | object | `{"create":true}` | Admission webhook patch job RBAC |
 | controller.admissionWebhooks.patch.rbac.create | bool | `true` | Create RBAC or not |
+| controller.admissionWebhooks.patch.runtimeClassName | string | `""` | Instruct the kubelet to use the named RuntimeClass to run the pod |
 | controller.admissionWebhooks.patch.securityContext | object | `{}` | Security context for secret creation & webhook patch pods |
 | controller.admissionWebhooks.patch.serviceAccount | object | `{"automountServiceAccountToken":true,"create":true,"name":""}` | Admission webhook patch job service account |
 | controller.admissionWebhooks.patch.serviceAccount.automountServiceAccountToken | bool | `true` | Auto-mount service account token or not |
 | controller.admissionWebhooks.patch.serviceAccount.create | bool | `true` | Create a service account or not |
 | controller.admissionWebhooks.patch.serviceAccount.name | string | `""` | Custom service account name |
 | controller.admissionWebhooks.patch.tolerations | list | `[]` |  |
+| controller.admissionWebhooks.patchWebhookJob.activeDeadlineSeconds | int | `0` | Deadline in seconds for the job to complete. Must be greater than 0 to enforce. If unset or 0, no deadline is enforced. |
 | controller.admissionWebhooks.patchWebhookJob.name | string | `"patch"` |  |
 | controller.admissionWebhooks.patchWebhookJob.resources | object | `{}` |  |
 | controller.admissionWebhooks.patchWebhookJob.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true,"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532,"seccompProfile":{"type":"RuntimeDefault"}}` | Security context for webhook patch containers |
+| controller.admissionWebhooks.patchWebhookJob.volumeMounts | list | `[]` | Volume mounts for webhook patch containers |
+| controller.admissionWebhooks.patchWebhookJob.volumes | list | `[]` | Volumes for webhook patch pod |
 | controller.admissionWebhooks.port | int | `8443` |  |
 | controller.admissionWebhooks.service.annotations | object | `{}` |  |
 | controller.admissionWebhooks.service.externalIPs | list | `[]` |  |
@@ -326,7 +335,7 @@ metadata:
 | controller.extraArgs | object | `{}` | Additional command line arguments to pass to Ingress-Nginx Controller E.g. to specify the default SSL certificate you can use |
 | controller.extraContainers | list | `[]` | Additional containers to be added to the controller pod. See https://github.com/lemonldap-ng-controller/lemonldap-ng-controller as example. |
 | controller.extraEnvs | list | `[]` | Additional environment variables to set |
-| controller.extraInitContainers | list | `[]` | Containers, which are run before the app containers are started. |
+| controller.extraInitContainers | list | `[]` | Containers, which are run before the app containers are started. Values may contain Helm templates. |
 | controller.extraModules | list | `[]` | Modules, which are mounted into the core nginx image. |
 | controller.extraVolumeMounts | list | `[]` | Additional volumeMounts to the controller main container. |
 | controller.extraVolumes | list | `[]` | Additional volumes to the controller pod. |
@@ -340,8 +349,8 @@ metadata:
 | controller.hostname | object | `{}` | Optionally customize the pod hostname. |
 | controller.image.allowPrivilegeEscalation | bool | `false` |  |
 | controller.image.chroot | bool | `false` |  |
-| controller.image.digest | string | `"sha256:d2fbc4ec70d8aa2050dd91a91506e998765e86c96f32cffb56c503c9c34eed5b"` |  |
-| controller.image.digestChroot | string | `"sha256:90155c86548e0bb95b3abf1971cd687d8f5d43f340cfca0ad3484e2b8351096e"` |  |
+| controller.image.digest | string | `"sha256:4eea9a4cc2cb6ddcb7da14d377aaf452e68bd3dbe87fe280755d225c4d5e7e4e"` |  |
+| controller.image.digestChroot | string | `"sha256:8f3634837abc5c739baff6527934e08131e095317d69bf64d168e07aef53ac12"` |  |
 | controller.image.image | string | `"ingress-nginx/controller"` |  |
 | controller.image.pullPolicy | string | `"IfNotPresent"` |  |
 | controller.image.readOnlyRootFilesystem | bool | `false` |  |
@@ -349,7 +358,7 @@ metadata:
 | controller.image.runAsNonRoot | bool | `true` |  |
 | controller.image.runAsUser | int | `101` | This value must not be changed using the official image. uid=101(www-data) gid=82(www-data) groups=82(www-data) |
 | controller.image.seccompProfile.type | string | `"RuntimeDefault"` |  |
-| controller.image.tag | string | `"v1.12.1"` |  |
+| controller.image.tag | string | `"v1.15.0"` |  |
 | controller.ingressClass | string | `"nginx"` | For backwards compatibility with ingress.class annotation, use ingressClass. Algorithm is as follows, first ingressClassName is considered, if not present, controller looks for ingress.class annotation |
 | controller.ingressClassByName | bool | `false` | Process IngressClass per name (additionally as per spec.controller). |
 | controller.ingressClassResource | object | `{"aliases":[],"annotations":{},"controllerValue":"k8s.io/ingress-nginx","default":false,"enabled":true,"name":"nginx","parameters":{}}` | This section refers to the creation of the IngressClass resource. IngressClasses are immutable and cannot be changed after creation. We do not support namespaced IngressClasses, yet, so a ClusterRole and a ClusterRoleBinding is required. |
@@ -399,12 +408,18 @@ metadata:
 | controller.metrics.serviceMonitor.additionalLabels | object | `{}` |  |
 | controller.metrics.serviceMonitor.annotations | object | `{}` | Annotations to be added to the ServiceMonitor. |
 | controller.metrics.serviceMonitor.enabled | bool | `false` |  |
+| controller.metrics.serviceMonitor.labelLimit | int | `0` | Per-scrape limit on number of labels that will be accepted for a sample. |
+| controller.metrics.serviceMonitor.labelNameLengthLimit | int | `0` | Per-scrape limit on length of labels name that will be accepted for a sample. |
+| controller.metrics.serviceMonitor.labelValueLengthLimit | int | `0` | Per-scrape limit on length of labels value that will be accepted for a sample. |
 | controller.metrics.serviceMonitor.metricRelabelings | list | `[]` |  |
 | controller.metrics.serviceMonitor.namespace | string | `""` |  |
 | controller.metrics.serviceMonitor.namespaceSelector | object | `{}` |  |
 | controller.metrics.serviceMonitor.relabelings | list | `[]` |  |
+| controller.metrics.serviceMonitor.sampleLimit | int | `0` | Defines a per-scrape limit on the number of scraped samples that will be accepted. |
 | controller.metrics.serviceMonitor.scrapeInterval | string | `"30s"` |  |
+| controller.metrics.serviceMonitor.scrapeTimeout | string | `""` | Timeout after which the scrape is ended. Not being set if empty and therefore defaults to the global Prometheus scrape timeout. |
 | controller.metrics.serviceMonitor.targetLabels | list | `[]` |  |
+| controller.metrics.serviceMonitor.targetLimit | int | `0` | Defines a limit on the number of scraped targets that will be accepted. |
 | controller.minAvailable | int | `1` | Minimum available pods set in PodDisruptionBudget. Define either 'minAvailable' or 'maxUnavailable', never both. |
 | controller.minReadySeconds | int | `0` | `minReadySeconds` to avoid killing pods before we are ready # |
 | controller.name | string | `"controller"` |  |
@@ -429,28 +444,34 @@ metadata:
 | controller.readinessProbe.timeoutSeconds | int | `1` |  |
 | controller.replicaCount | int | `1` |  |
 | controller.reportNodeInternalIp | bool | `false` | Bare-metal considerations via the host network https://kubernetes.github.io/ingress-nginx/deploy/baremetal/#via-the-host-network Ingress status was blank because there is no Service exposing the Ingress-Nginx Controller in a configuration using the host network, the default --publish-service flag used in standard cloud setups does not apply |
+| controller.resizePolicy | list | `[]` | Resize policy for controller containers. Ref: https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources |
 | controller.resources.requests.cpu | string | `"100m"` |  |
 | controller.resources.requests.memory | string | `"90Mi"` |  |
+| controller.runtimeClassName | string | `""` | Instruct the kubelet to use the named RuntimeClass to run the pod |
 | controller.scope.enabled | bool | `false` | Enable 'scope' or not |
 | controller.scope.namespace | string | `""` | Namespace to limit the controller to; defaults to $(POD_NAMESPACE) |
 | controller.scope.namespaceSelector | string | `""` | When scope.enabled == false, instead of watching all namespaces, we watching namespaces whose labels only match with namespaceSelector. Format like foo=bar. Defaults to empty, means watching all namespaces. |
 | controller.service.annotations | object | `{}` | Annotations to be added to the external controller service. See `controller.service.internal.annotations` for annotations to be added to the internal controller service. |
 | controller.service.appProtocol | bool | `true` | Declare the app protocol of the external HTTP and HTTPS listeners or not. Supersedes provider-specific annotations for declaring the backend protocol. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#application-protocol |
 | controller.service.clusterIP | string | `""` | Pre-defined cluster internal IP address of the external controller service. Take care of collisions with existing services. This value is immutable. Set once, it can not be changed without deleting and re-creating the service. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#choosing-your-own-ip-address |
+| controller.service.clusterIPs | list | `[]` | Pre-defined cluster internal IP addresses of the external controller service. Take care of collisions with existing services. This value is immutable. Set once, it can not be changed without deleting and re-creating the service. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#choosing-your-own-ip-address |
 | controller.service.enableHttp | bool | `true` | Enable the HTTP listener on both controller services or not. |
 | controller.service.enableHttps | bool | `true` | Enable the HTTPS listener on both controller services or not. |
 | controller.service.enabled | bool | `true` | Enable controller services or not. This does not influence the creation of either the admission webhook or the metrics service. |
 | controller.service.external.enabled | bool | `true` | Enable the external controller service or not. Useful for internal-only deployments. |
+| controller.service.external.labels | object | `{}` | Labels to be added to the external controller service. |
 | controller.service.externalIPs | list | `[]` | List of node IP addresses at which the external controller service is available. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#external-ips |
 | controller.service.externalTrafficPolicy | string | `""` | External traffic policy of the external controller service. Set to "Local" to preserve source IP on providers supporting it. Ref: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip |
 | controller.service.internal.annotations | object | `{}` | Annotations to be added to the internal controller service. Mandatory for the internal controller service to be created. Varies with the cloud service. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer |
 | controller.service.internal.appProtocol | bool | `true` | Declare the app protocol of the internal HTTP and HTTPS listeners or not. Supersedes provider-specific annotations for declaring the backend protocol. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#application-protocol |
 | controller.service.internal.clusterIP | string | `""` | Pre-defined cluster internal IP address of the internal controller service. Take care of collisions with existing services. This value is immutable. Set once, it can not be changed without deleting and re-creating the service. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#choosing-your-own-ip-address |
+| controller.service.internal.clusterIPs | list | `[]` | Pre-defined cluster internal IP addresses of the internal controller service. Take care of collisions with existing services. This value is immutable. Set once, it can not be changed without deleting and re-creating the service. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#choosing-your-own-ip-address |
 | controller.service.internal.enabled | bool | `false` | Enable the internal controller service or not. Remember to configure `controller.service.internal.annotations` when enabling this. |
 | controller.service.internal.externalIPs | list | `[]` | List of node IP addresses at which the internal controller service is available. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#external-ips |
 | controller.service.internal.externalTrafficPolicy | string | `""` | External traffic policy of the internal controller service. Set to "Local" to preserve source IP on providers supporting it. Ref: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip |
 | controller.service.internal.ipFamilies | list | `["IPv4"]` | List of IP families (e.g. IPv4, IPv6) assigned to the internal controller service. This field is usually assigned automatically based on cluster configuration and the `ipFamilyPolicy` field. Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services |
 | controller.service.internal.ipFamilyPolicy | string | `"SingleStack"` | Represents the dual-stack capabilities of the internal controller service. Possible values are SingleStack, PreferDualStack or RequireDualStack. Fields `ipFamilies` and `clusterIP` depend on the value of this field. Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services |
+| controller.service.internal.labels | object | `{}` | Labels to be added to the internal controller service. |
 | controller.service.internal.loadBalancerClass | string | `""` | Load balancer class of the internal controller service. Used by cloud providers to select a load balancer implementation other than the cloud provider default. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-class |
 | controller.service.internal.loadBalancerIP | string | `""` | Deprecated: Pre-defined IP address of the internal controller service. Used by cloud providers to connect the resulting load balancer service to a pre-existing static IP. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer |
 | controller.service.internal.loadBalancerSourceRanges | list | `[]` | Restrict access to the internal controller service. Values must be CIDRs. Allows any source address by default. |
@@ -461,6 +482,7 @@ metadata:
 | controller.service.internal.ports | object | `{}` |  |
 | controller.service.internal.sessionAffinity | string | `""` | Session affinity of the internal controller service. Must be either "None" or "ClientIP" if set. Defaults to "None". Ref: https://kubernetes.io/docs/reference/networking/virtual-ips/#session-affinity |
 | controller.service.internal.targetPorts | object | `{}` |  |
+| controller.service.internal.trafficDistribution | string | `""` | Traffic distribution policy of the internal controller service. Set to "PreferClose" to route traffic to endpoints that are topologically closer to the client. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#traffic-distribution |
 | controller.service.internal.type | string | `""` | Type of the internal controller service. Defaults to the value of `controller.service.type`. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types |
 | controller.service.ipFamilies | list | `["IPv4"]` | List of IP families (e.g. IPv4, IPv6) assigned to the external controller service. This field is usually assigned automatically based on cluster configuration and the `ipFamilyPolicy` field. Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services |
 | controller.service.ipFamilyPolicy | string | `"SingleStack"` | Represents the dual-stack capabilities of the external controller service. Possible values are SingleStack, PreferDualStack or RequireDualStack. Fields `ipFamilies` and `clusterIP` depend on the value of this field. Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services |
@@ -477,6 +499,7 @@ metadata:
 | controller.service.sessionAffinity | string | `""` | Session affinity of the external controller service. Must be either "None" or "ClientIP" if set. Defaults to "None". Ref: https://kubernetes.io/docs/reference/networking/virtual-ips/#session-affinity |
 | controller.service.targetPorts.http | string | `"http"` | Port of the ingress controller the external HTTP listener is mapped to. |
 | controller.service.targetPorts.https | string | `"https"` | Port of the ingress controller the external HTTPS listener is mapped to. |
+| controller.service.trafficDistribution | string | `""` | Traffic distribution policy of the external controller service. Set to "PreferClose" to route traffic to endpoints that are topologically closer to the client. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#traffic-distribution |
 | controller.service.type | string | `"LoadBalancer"` | Type of the external controller service. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types |
 | controller.shareProcessNamespace | bool | `false` |  |
 | controller.sysctls | object | `{}` | sysctls for controller pods # Ref: https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ |
@@ -536,7 +559,9 @@ metadata:
 | defaultBackend.readinessProbe.timeoutSeconds | int | `5` |  |
 | defaultBackend.replicaCount | int | `1` |  |
 | defaultBackend.resources | object | `{}` |  |
+| defaultBackend.runtimeClassName | string | `""` | Instruct the kubelet to use the named RuntimeClass to run the pod |
 | defaultBackend.service.annotations | object | `{}` |  |
+| defaultBackend.service.clusterIPs | list | `[]` | Pre-defined cluster internal IP addresses of the default backend service. Take care of collisions with existing services. This value is immutable. Set once, it can not be changed without deleting and re-creating the service. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#choosing-your-own-ip-address |
 | defaultBackend.service.externalIPs | list | `[]` | List of IP addresses at which the default backend service is available # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#external-ips # |
 | defaultBackend.service.loadBalancerSourceRanges | list | `[]` |  |
 | defaultBackend.service.servicePort | int | `80` |  |

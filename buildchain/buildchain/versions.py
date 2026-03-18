@@ -86,7 +86,7 @@ NGINX_IMAGE_VERSION: str = "1.27.5-alpine"
 NODEJS_IMAGE_VERSION: str = "20.11.1"
 KEEPALIVED_VERSION: str = "2.3.3"
 CERT_MANAGER_VERSION: str = "1.17.1"
-UI_OPERATOR_VERSION: str = "1.0.15"
+UI_OPERATOR_VERSION: str = "1.0.16"
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
 # image, e.g. because the `Dockerfile` is changed, or one of the dependencies
@@ -188,13 +188,18 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="nginx-ingress-controller",
-        version="v1.12.1",
-        digest="sha256:d2fbc4ec70d8aa2050dd91a91506e998765e86c96f32cffb56c503c9c34eed5b",
+        version="v1.15.0",
+        digest="sha256:4eea9a4cc2cb6ddcb7da14d377aaf452e68bd3dbe87fe280755d225c4d5e7e4e",
     ),
     Image(
         name="node-exporter",
         version="v1.8.2",
         digest="sha256:4032c6d5bfd752342c3e631c2f1de93ba6b86c41db6b167b9a35372c139e7706",
+    ),
+    Image(
+        name="oauth2-proxy",
+        version="v7.14.3",
+        digest="sha256:68336da945bdaff799262c8d14fb1d1aa9354df5e02b87e0955addc040344618",
     ),
     Image(
         name="pause",
@@ -272,7 +277,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="ui-operator",
         version=UI_OPERATOR_VERSION,
-        digest="sha256:ab78cb6f8094e846af8c5c09d2b26b1641c66f751f6dbb8fc22b520dd898f84c",
+        digest="sha256:9dcdb02407fc452b2d6334c796558ebd79ca2f1abca1496ebdf79592f7fff66f",
     ),
     Image(
         name="loki",

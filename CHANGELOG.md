@@ -39,6 +39,10 @@
 - Bump prometheus-adapter chart version to [5.3.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-5.3.0)
   (PR[#4825](https://github.com/scality/metalk8s/pull/4825))
 
+- Bump ingress-nginx chart version to [4.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.15.0)
+  and ingress-nginx controller to [v1.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.15.0)
+  (PR[#4824](https://github.com/scality/metalk8s/pull/4824))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
@@ -65,7 +69,9 @@
   net.bridge.bridge-nf-call-iptables sysctls
   (PR[#4724](https://github.com/scality/metalk8s/pull/4724))
 
-## Release 131.0.11 (in development)
+## Release 131.0.12 (in development)
+
+## Release 131.0.11
 
 ## Release 131.0.10
 
