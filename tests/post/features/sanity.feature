@@ -57,6 +57,7 @@ Feature: Cluster Sanity Checks
         | metalk8s-ingress    | ingress-nginx-controller                     |
         | metalk8s-ingress    | ingress-nginx-control-plane-controller       |
         | metalk8s-monitoring | prometheus-operator-prometheus-node-exporter |
+        | kube-system         | disk-management-agent-controller-manager     |
 
     @volumes_provisioned
     Scenario Outline: StatefulSet has available replicas

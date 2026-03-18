@@ -313,6 +313,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         version="v1.0.0",
         digest="sha256:86b4198036c1f83f1d9363a1e2ae78015482ca4fe60cd706939b8730c179ac8a",
     ),
+    Image(
+        name="disk-management-agent",
+        version="v0.1.0",
+        digest=None,
+    ),
 )
 
 CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}

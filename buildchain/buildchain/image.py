@@ -223,6 +223,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.SCALITY_REPOSITORY: [
         "ui-operator",
         "crl-operator",
+        "disk-management-agent",
     ],
 }
 
