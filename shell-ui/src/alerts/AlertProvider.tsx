@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import { useAuth } from '../auth/AuthProvider';
 import { getAlerts } from './services/alertManager';
 import { AlertContext } from './alertContext';
 /**
@@ -18,13 +19,18 @@ export default function AlertProvider({
   alertManagerUrl: string;
   children: React.ReactNode;
 }) {
-  const query = useQuery('activeAlerts', () => getAlerts(alertManagerUrl), {
-    // refetch the alerts every 10 seconds
-    refetchInterval: 30000,
-    // TODO manage this refresh interval globally
-    // avoid stucking at the hard loading state before alertmanager is ready
-    initialData: [],
-  });
+  const { userData } = useAuth();
+  const query = useQuery(
+    ['activeAlerts', userData?.token],
+    () => getAlerts(alertManagerUrl, userData?.token),
+    {
+      // refetch the alerts every 30 seconds
+      refetchInterval: 30000,
+      // TODO manage this refresh interval globally
+      // avoid stucking at the hard loading state before alertmanager is ready
+      initialData: [],
+    },
+  );
   return (
     <AlertContext.Provider value={{ ...query }}>
       {query.status === 'loading' && (

@@ -29,8 +29,10 @@ export type AlertLabels = {
   selectors?: string[];
   [labelName: string]: string;
 };
-export function getAlerts(alertManagerUrl: string) {
-  return fetch(alertManagerUrl + '/api/v2/alerts')
+export function getAlerts(alertManagerUrl: string, token?: string) {
+  return fetch(alertManagerUrl + '/api/v2/alerts', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
     .then((r) => {
       if (r.ok) {
         return r.json();
