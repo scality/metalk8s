@@ -56,6 +56,7 @@
 - Bump ingress-nginx chart version to [4.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.15.0)
   and ingress-nginx controller to [v1.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.15.0)
   (PR[#4824](https://github.com/scality/metalk8s/pull/4824))
+
 - Implement ability to add certificates to fluent-bit by mounting a fluent-bit-certs secret
   (PR[#4812](https://github.com/scality/metalk8s/pull/4812))
 
