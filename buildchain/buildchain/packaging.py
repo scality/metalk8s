@@ -22,7 +22,7 @@ Overview;
 ┌─────────┐       │──────>│  build   │──────>│    build     │
 │  mkdir  │──────>│       │ packages │       │ repositories │
 └─────────┘               └──────────┘       └──────────────┘
-                        (e.g: containerd)     (e.g.: scality)
+                        (e.g.: sosreport)     (e.g.: scality)
 """
 
 
@@ -311,20 +311,6 @@ def _rpm_repository(
     )
 
 
-def _rpm_package_containerd(releasever: str) -> targets.RPMPackage:
-    """Containerd RPM package."""
-    return _rpm_package(
-        name="containerd",
-        releasever=releasever,
-        sources=[
-            Path("0001-Revert-commit-for-Windows-metrics.patch"),
-            Path("containerd.service"),
-            Path("containerd.toml"),
-            Path(f"v{versions.CONTAINERD_VERSION}.tar.gz"),
-        ],
-    )
-
-
 def _rpm_package_metalk8s_sosreport(releasever: str) -> targets.RPMPackage:
     """SOS report custom plugins RPM package."""
     return _rpm_package(
@@ -339,10 +325,7 @@ def _rpm_package_metalk8s_sosreport(releasever: str) -> targets.RPMPackage:
 
 RPM_TO_BUILD: Dict[str, Dict[str, Tuple[targets.RPMPackage, ...]]] = {
     "scality": {
-        "8": (
-            _rpm_package_containerd("8"),
-            _rpm_package_metalk8s_sosreport("8"),
-        ),
+        "8": (_rpm_package_metalk8s_sosreport("8"),),
     },
 }
 
@@ -381,6 +364,7 @@ REDHAT_REPOSITORIES: Dict[str, Tuple[targets.RPMRepository, ...]] = {
         _rpm_repository(name="epel", releasever="8"),
         _rpm_repository(name="kubernetes", releasever="8"),
         _rpm_repository(name="saltstack", releasever="8"),
+        _rpm_repository(name="docker-ce", releasever="8"),
     ),
 }
 

@@ -2,10 +2,20 @@
 
 ## Release 133.0.0 (in development)
 
+### Breaking changes
+
+- Due to the migration from our own RPM for containerd v1 to the official
+  containerd.io RPM from docker.io, downgrading from 133 to 132 will not be
+  possible.
+
 ### Enhancements
 
 - Bump Kubernetes version to [1.33.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.33.7)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))
+
+- Move from our own RPM for containerd v1 to the official containerd.io RPM from docker.io
+  to version [v2.2.2](https://github.com/containerd/containerd/releases/tag/v2.2.2)
+  (PR[#4821](https://github.com/scality/metalk8s/pull/4821))
 
 - Bump etcd version to [3.5.26](https://github.com/etcd-io/etcd/releases/tag/v3.5.26)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))
@@ -29,6 +39,10 @@
 - Bump Loki chart version to [6.53.0](https://github.com/grafana/helm-charts/releases/tag/loki-6.53.0)
   and Loki image version to [3.6.5](https://github.com/grafana/loki/releases/tag/v3.6.5)
   (PR[#4792](https://github.com/scality/metalk8s/pull/4792))
+
+- Configure containerd using `config_path` for registries so that changes of
+  registries mirrors does no longer require a restart of the containerd service
+  (PR[#4821](https://github.com/scality/metalk8s/pull/4821))
 
 - Allow to enable metrics collection for the solutions operators
   (PR[#4813](https://github.com/scality/metalk8s/pull/4813))

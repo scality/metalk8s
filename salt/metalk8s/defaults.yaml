@@ -51,7 +51,8 @@ repo:
     # Is version list is None then we consider all versions as conflicting
     docker: null
     docker-ce: null
-    containerd.io: null
+    containerd: null
+    runc: null
 
   config:
     directory: '/var/lib/metalk8s/repositories/conf.d'

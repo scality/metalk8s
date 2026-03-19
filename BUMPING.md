@@ -148,7 +148,7 @@ This guide is applied for both `metalk8s-operator` and `storage-operator`.
 
 ## Containerd
 
-Instructions to bump Containerd version are in its [spec file](./packages/redhat/common/containerd.spec)
+The version just needs to be updated in `buildchain/buildchain/versions.py`.
 
 ## Update the sls state
 
