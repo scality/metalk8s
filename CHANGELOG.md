@@ -68,6 +68,12 @@
 
 ## Release 132.0.3 (in development)
 
+### Bug Fixes
+
+- Fix a bug where Salt master process may report an error about `VerboseLogger`
+  not having attributes `trace`
+  (PR[#4831](https://github.com/scality/metalk8s/pull/4831))
+
 ## Release 132.0.2
 
 ## Release 132.0.1
