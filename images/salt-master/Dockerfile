@@ -17,7 +17,14 @@ gpgkey=https://downloads.scality.com/repository/redhat/\$releasever/saltstack/%s
  && microdnf clean all \
  && microdnf update -y \
  && microdnf install -y glibc-all-langpacks langpacks-en python3-pip epel-release \
- && pip3 install "pip == 21.3.1" \
+ # NOTE: We pin the pip version to 21.1.3 since it's the last version that do not have
+ # the VerboseLogger that may cause issues with salt logger
+ # Sees: https://github.com/pypa/pip/issues/10212
+ # Sees: https://github.com/pypa/pip/pull/9450
+ # It seems newer versions of Salt workaround this issue so it has to be removed
+ # when we will bump the Salt version to a version that does not have this issue
+ # Sees: https://github.com/saltstack/salt/issues/62279
+ && pip3 install "pip == 21.1.3" \
  && pip3 install "protobuf ~= 3.19.4" "etcd3 != 0.11.0" "kubernetes ~= 30.1.0" \
  && microdnf install -y salt-master salt-api salt-ssh openssh-clients procps-ng \
  && microdnf remove -y epel-release \
