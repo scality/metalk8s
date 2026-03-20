@@ -125,6 +125,10 @@ Create fluent-bit ConfigMap:
                 Add            namespace unknown
                 Add            pod unknown
                 Add            stream unknown
+            [Filter]
+                Name           record_modifier
+                Match          audit.*
+                Record         hostname ${NODE_NAME}
             {%- for output in fluent_bit.spec.config.output %}
             [Output]
                 {%- for key, value in output.items() %}
