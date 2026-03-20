@@ -44,13 +44,17 @@ gh pr diff <number> --repo <owner/repo>
 | Kubernetes operator | RBAC scoping (least-privilege), reconciler idempotency, status subresource updates only via `Status().Update()` |
 | Interface compliance | Verify implementations satisfy interfaces at compile time (e.g. `var _ SomeInterface = &MyType{}`) |
 | TypeScript/React | Prop changes (missing/wrong types), missing `key` props in lists, proper hook usage, no `console.log` in production code |
-| Scality dep pinning | `@scality/core-ui`, `@scality/module-federation`, `@kubernetes/client-node` must be pinned to a specific tag/commit, not a branch |
-| Salt states | Correct use of requisites (`require`, `watch`, `onchanges`); no hardcoded credentials; proper Jinja templating |
+| Scality dep pinning | `@scality/core-ui`, `@scality/module-federation` must be pinned to a specific tag/commit, not a branch |
+| External dep pinning |  `@kubernetes/client-node` must be pinned to a specific git tag in package.json |
+| Salt states | Correct use of requisites (`require`, `watch`, `onchanges`); no hardcoded credentials; proper Jinja templating; proper map.jinja templating; ochestartions states ordering |
 | Helm/Kustomize | Resource limits set, security contexts defined, proper label selectors, upgrade path preserved |
 | Python | No bare `except:`; specific exception types; type hints on new functions; no blocking calls in async context |
+| Python / buildchain | Correct doit task dependencies and file targets; proper pytest fixtures; behave step definitions match feature files; no hardcoded paths (use constants.py) |
 | Security | No secrets/tokens in plain text; no OWASP-relevant issues (injection, XSS, insecure defaults) |
 | Breaking changes | Public API changes, CRD schema changes, Salt pillar schema changes, UI prop interface changes |
-
+| Test coverage | New logic paths have corresponding unit tests; changed functions have updated tests; no test files deleted without replacement, no orphan test that would be never run |
+| Test impact | Changes to shared code (`map.jinja`, `constants.py`, CRD types, API types) are reflected in dependent tests across all affected layers |
+| BDD / integration | New user-facing behavior has matching behave scenarios in `tests/`; modified Salt orchestrations have updated integration steps |
 4. **Deliver your review:**
 
 ### If CI mode: post to GitHub
