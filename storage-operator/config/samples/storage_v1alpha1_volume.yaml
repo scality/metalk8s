@@ -1,6 +1,9 @@
 apiVersion: storage.metalk8s.scality.com/v1alpha1
 kind: Volume
 metadata:
+  labels:
+    app.kubernetes.io/name: storage-operator
+    app.kubernetes.io/managed-by: kustomize
   name: volume-sample
 spec:
-  # Add fields here
+  # TODO(user): Add fields here
