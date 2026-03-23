@@ -1,4 +1,4 @@
-import { spacing, Text, TextBadge } from '@scality/core-ui';
+import { Banner, Icon, spacing, Text, TextBadge } from '@scality/core-ui';
 import { Box } from '@scality/core-ui/dist/next';
 import { useMemo } from 'react';
 import { useIntl } from 'react-intl';
@@ -61,25 +61,45 @@ const DashboardAlerts = () => {
   const totalAlerts = criticalAlerts.length + warningAlerts.length;
   return (
     <AlertsContainer>
-      <div>
-        <Text isEmphazed>
-          {intl.formatMessage({
-            id: 'platform_active_alerts',
-          })}
-        </Text>
-        <TextBadge
-          variant="infoPrimary"
-          data-testid="all-alert-badge"
-          text={totalAlerts}
-        />
+      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.r8 }}>
+        <div>
+          <Text isEmphazed>
+            {intl.formatMessage({
+              id: 'platform_active_alerts',
+            })}
+          </Text>
+          <TextBadge
+            variant="infoPrimary"
+            data-testid="all-alert-badge"
+            text={totalAlerts}
+          />
+          {totalAlerts === 0 && (
+            <div>
+              <Text variant="Smaller" color="textSecondary">
+                {intl.formatMessage({
+                  id: 'no_active_alerts',
+                })}
+              </Text>
+            </div>
+          )}
+        </div>
+        {alerts.error && (
+          <div style={{ flex: 1 }}>
+            <Banner
+              variant="warning"
+              icon={<Icon name="Exclamation-circle" />}
+              title={intl.formatMessage({
+                id: 'monitoring_information_unavailable',
+              })}
+            >
+              {intl.formatMessage({
+                id: 'some_data_not_retrieved',
+              })}
+            </Banner>
+          </div>
+        )}
       </div>
-      {totalAlerts === 0 ? (
-        <Text variant="Smaller" color="textSecondary">
-          {intl.formatMessage({
-            id: 'no_active_alerts',
-          })}
-        </Text>
-      ) : (
+      {totalAlerts === 0 ? null : (
         <Box pr={24}>
           <BadgesContainer>
             <div>
