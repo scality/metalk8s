@@ -2,7 +2,6 @@
 
 import importlib.util
 import os
-import os.path
 
 import requests
 from unittest import TestCase
@@ -11,6 +10,7 @@ from unittest.mock import mock_open, patch
 # The script has a hyphenated filename, so we need importlib to load it
 _SCRIPT_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
+    os.pardir,
     os.pardir,
     os.pardir,
     "metalk8s",

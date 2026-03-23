@@ -45,7 +45,7 @@ Create oidc-proxy-restart-script ConfigMap:
             heritage: metalk8s
         data:
           restart-on-ca-change.py: |-
-{{ script_content | indent(12, first=True) }}
+            {{ script_content | indent(12) }}
 
 {%- else %}
 

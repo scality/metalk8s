@@ -412,8 +412,6 @@ register_basic("cri.get_pod_id")(MagicMock(return_value="abcd1234"))
 register_basic("file.find")(MagicMock(return_value=[]))
 register_basic("file.join")(lambda *args: "/".join(args))
 register_basic("file.read")(MagicMock(return_value="<file contents>"))
-
-
 register_basic("cp.get_file_str")(MagicMock(return_value="<file contents>"))
 register_basic("hashutil.base64_b64decode")(lambda input_data: input_data)
 register_basic("hashutil.base64_encodefile")(
