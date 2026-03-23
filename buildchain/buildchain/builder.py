@@ -53,6 +53,7 @@ RPM_BUILDER: Dict[str, LocalImage] = {
         file_dep=[
             REDHAT_REPOS_ROOT / "kubernetes.repo",
             REDHAT_REPOS_ROOT / "saltstack.repo",
+            REDHAT_REPOS_ROOT / "docker-ce.repo",
         ],
         build_args={
             # Used to template the repository definition

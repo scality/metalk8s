@@ -161,7 +161,7 @@ def check_pkg_availability(pkgs_info, exclude=None):
         Value of pillar key `repo:packages` to consider for the requiring
         packages to check (format {"<name>": {"version": "<version>"}, ...})
     exclude
-        List of package to exclude (e.g.: containerd.io)
+        List of package to exclude (e.g.: docker)
     """
     for name, info in pkgs_info.items():
         if info.get("version"):

@@ -12,7 +12,7 @@
   {%- set pillar_endpoints = [pillar_endpoints] %}
 {%- endif %}
 {%- for ep in pillar_endpoints %}
-  {%- do registry_eps.append('"http://' ~ ep.ip ~ ":" ~ ep.ports.http ~ '"') %}
+  {%- do registry_eps.append('http://' ~ ep.ip ~ ":" ~ ep.ports.http) %}
 {%- endfor %}
 
 {%- set no_proxy = [
@@ -38,22 +38,12 @@ Install container-selinux:
 {%- endif %}
 
 Install containerd:
-  {{ pkg_installed('containerd') }}
+  {{ pkg_installed('containerd.io') }}
     - require:
       - test: Repositories configured
       - file: Create containerd service drop-in
-      - file: Configure registry IP in containerd conf
     - watch_in:
       - service: Ensure containerd running
-
-# Even if `runc` is a dependency of `containerd` we explicitly
-# add it so that it get hold
-Ensure runc is installed and hold:
-  pkg.installed:
-    - name: runc
-    - hold: True
-    - require:
-        - metalk8s_package_manager: Install containerd
 
 Create containerd service drop-in:
   file.managed:
@@ -99,25 +89,40 @@ Install and configure cri-tools:
     - require_in:
       - test: Ensure containerd is ready
 
-Configure registry IP in containerd conf:
+Configure containerd:
   file.managed:
     - name: /etc/containerd/config.toml
     - makedirs: true
     - contents: |
-        version = 2
+        version = 3
 
-        [plugins."io.containerd.grpc.v1.cri"]
-        sandbox_image = "{{ build_image_name("pause") }}"
+        [plugins.'io.containerd.cri.v1.images'.pinned_images]
+          sandbox = "{{ build_image_name("pause") }}"
 
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ repo.registry_endpoint }}"]
-        endpoint = [{{ registry_eps | join(",") }}]
+        [plugins."io.containerd.cri.v1.images".registry]
+          config_path = "/etc/containerd/certs.d"
 
-        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-        runtime_type = "io.containerd.runc.v2"
-        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-        SystemdCgroup = true
+        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
+          SystemdCgroup = true
 
         [debug]
-        level = "{{ 'debug' if metalk8s.debug else 'info' }}"
+          level = "{{ 'debug' if metalk8s.debug else 'info' }}"
     - watch_in:
-        - service: Ensure containerd running
+      - service: Ensure containerd running
+
+
+Configure containerd registries:
+  file.managed:
+    - name: /etc/containerd/certs.d/{{ repo.registry_endpoint }}/hosts.toml
+    - makedirs: true
+    - contents: |
+        {%- for ep in registry_eps %}
+        [host."{{ ep }}"]
+          capabilities = ["pull", "resolve"]
+        {%- endfor %}
+    - require:
+      - file: Configure containerd
+    # NOTE: We do not use `watch_in` here since changes on those `certs.d` file do
+    # not need a restart of the containerd service.
+    - require_in:
+      - service: Ensure containerd running

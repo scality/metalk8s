@@ -27,9 +27,8 @@ K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
 CALICO_VERSION: str = "3.29.3"
 SALT_VERSION: str = "3002.9"
-CONTAINERD_VERSION: str = "1.6.38"
+CONTAINERD_VERSION: str = "2.2.2"
 
-CONTAINERD_RELEASE: str = "1"
 SOSREPORT_RELEASE: str = "2"
 
 
@@ -286,8 +285,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="fluent-bit",
-        version="4.2.2",
-        digest="sha256:7d727245767ae632eb296c2ff4d206bf2e205b5f244c1f37b8fdd61f9fb33985",
+        version="4.2.3",
+        digest="sha256:a5761fa961cb22dd0875883a4d446b1acd99d4935d77358aa9f50ee177e44fe2",
     ),
     Image(
         name="cert-manager-controller",
@@ -399,6 +398,7 @@ PACKAGES: Dict[str, Any] = {
         # Pinned packages
         PackageVersion(name="kubectl", version=K8S_VERSION),
         PackageVersion(name="kubelet", version=K8S_VERSION),
+        PackageVersion(name="containerd.io", version=CONTAINERD_VERSION),
         # Latest packages
         PackageVersion(name="coreutils"),
         PackageVersion(name="cri-tools"),
@@ -424,11 +424,6 @@ PACKAGES: Dict[str, Any] = {
     ),
     "redhat": {
         "8": (
-            PackageVersion(
-                name="containerd",
-                version=CONTAINERD_VERSION,
-                release=f"{CONTAINERD_RELEASE}.el8",
-            ),
             PackageVersion(name="container-selinux"),
             PackageVersion(name="iptables-ebtables", override="ebtables"),
             PackageVersion(

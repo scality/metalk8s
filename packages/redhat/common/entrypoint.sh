@@ -7,6 +7,7 @@ set -o pipefail
 declare -r ENABLED_REPOS=(
     epel
     kubernetes
+    docker-ce
     saltstack
 )
 
@@ -135,6 +136,11 @@ add_dependencies(){
                     KUBERNETES_DEPS+=("$dependency")
                 fi
                 ;;
+            docker-ce)
+                if [ ${#DOCKER_CE_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${DOCKER_CE_DEPS[@]}"; then
+                    DOCKER_CE_DEPS+=("$dependency")
+                fi
+                ;;
             saltstack)
                 # We exclude all package from "base" directory of Saltstack since those
                 # packages are available in "base" CentOS/RHEL 7 repositories
@@ -152,7 +158,7 @@ add_dependencies(){
 
 download_packages() {
     set -x
-    declare -ga EPEL_DEPS=() KUBERNETES_DEPS=() SALT_DEPS=()
+    declare -ga EPEL_DEPS=() KUBERNETES_DEPS=() DOCKER_CE_DEPS=() SALT_DEPS=()
     local -r releasever=${RELEASEVER:-7}
     local -a packages=("$@")
     local query_format query_opts repo_dir
@@ -195,6 +201,9 @@ download_packages() {
                 ;;
             kubernetes)
                 dependencies=("${KUBERNETES_DEPS[@]}")
+                ;;
+            docker-ce)
+                dependencies=("${DOCKER_CE_DEPS[@]}")
                 ;;
             saltstack)
                 dependencies=("${SALT_DEPS[@]}")

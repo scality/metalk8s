@@ -90,7 +90,7 @@ jobs:
           access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Notify Slack on retry triggered
         if: matrix.type == 'retry' && steps.retry.outputs.was-retried == 'true'
-        uses: slackapi/slack-github-action@v1
+        uses: slackapi/slack-github-action@v3
         with:
           channel-id: "#squad-metalk8s"
           slack-message: |
@@ -104,7 +104,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Notify Slack on manual action needed
         if: matrix.type == 'retry' && steps.retry.outputs.retry-count != '' && fromJSON(steps.retry.outputs.retry-count) >= fromJSON(env.MAX_RETRIES)
-        uses: slackapi/slack-github-action@v1
+        uses: slackapi/slack-github-action@v3
         with:
           channel-id: "#squad-metalk8s"
           slack-message: |

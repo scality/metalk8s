@@ -2,10 +2,20 @@
 
 ## Release 133.0.0 (in development)
 
+### Breaking changes
+
+- Due to the migration from our own RPM for containerd v1 to the official
+  containerd.io RPM from docker.io, downgrading from 133 to 132 will not be
+  possible.
+
 ### Enhancements
 
 - Bump Kubernetes version to [1.33.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.33.7)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))
+
+- Move from our own RPM for containerd v1 to the official containerd.io RPM from docker.io
+  to version [v2.2.2](https://github.com/containerd/containerd/releases/tag/v2.2.2)
+  (PR[#4821](https://github.com/scality/metalk8s/pull/4821))
 
 - Bump etcd version to [3.5.26](https://github.com/etcd-io/etcd/releases/tag/v3.5.26)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))
@@ -16,9 +26,9 @@
 - Support etcd distroless images for Kubernetes 1.33+. Above etcd 3.5.21, etcd images are now distroless and upstreamed to the etcd project.
   (PR[#4740](https://github.com/scality/metalk8s/pull/4740))
 
-- Bump Fluent Bit image version to [4.2.2](https://github.com/fluent/fluent-bit/releases/tag/v4.2.2)
-  and Fluent Bit Helm chart version to [0.55.0](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.55.0)
-  (PR[#4778](https://github.com/scality/metalk8s/pull/4778))
+- Bump Fluent Bit image version to [4.2.3](https://github.com/fluent/fluent-bit/releases/tag/v4.2.3)
+  and Fluent Bit Helm chart version to [0.56.0](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.56.0)
+  (PR[#4812](https://github.com/scality/metalk8s/pull/4812))
 
 - Bump dex chart version to
   [0.24.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.0)
@@ -30,11 +40,18 @@
   and Loki image version to [3.6.5](https://github.com/grafana/loki/releases/tag/v3.6.5)
   (PR[#4792](https://github.com/scality/metalk8s/pull/4792))
 
+- Configure containerd using `config_path` for registries so that changes of
+  registries mirrors does no longer require a restart of the containerd service
+  (PR[#4821](https://github.com/scality/metalk8s/pull/4821))
+
 - Allow to enable metrics collection for the solutions operators
   (PR[#4813](https://github.com/scality/metalk8s/pull/4813))
 
 - Bump solution-operator-lib Go version to 1.24
   (PR[#4817](https://github.com/scality/metalk8s/pull/4817))
+
+- Bump prometheus-adapter chart version to [5.3.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-5.3.0)
+  (PR[#4825](https://github.com/scality/metalk8s/pull/4825))
 
 - Bump ingress-nginx chart version to [4.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.15.0)
   and ingress-nginx controller to [v1.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.15.0)
@@ -47,6 +64,9 @@
   and `k8s.io/*` dependencies have been bumped to [0.33.9](https://github.com/kubernetes/kubernetes/releases/tag/v1.33.9)
   (PR[#4818](https://github.com/scality/metalk8s/pull/4818))
 
+- Implement ability to add certificates to fluent-bit by mounting a fluent-bit-certs secret
+  (PR[#4812](https://github.com/scality/metalk8s/pull/4812))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
@@ -54,6 +74,12 @@
   (PR[#4802](https://github.com/scality/metalk8s/pull/4802))
 
 ## Release 132.0.3 (in development)
+
+### Bug Fixes
+
+- Fix a bug where Salt master process may report an error about `VerboseLogger`
+  not having attributes `trace`
+  (PR[#4831](https://github.com/scality/metalk8s/pull/4831))
 
 ## Release 132.0.2
 

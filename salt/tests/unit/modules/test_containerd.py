@@ -63,5 +63,6 @@ class ContainerdTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 cmd,
             )
             mock_cmd.assert_called_once_with(
-                'ctr --debug -n k8s.io image import --platform "linux/amd64" "/tmp/toto.tar" --index-name "abc.def/my-image:3.5"'
+                'ctr --debug -n k8s.io image import --platform "linux/amd64" '
+                '--index-name "abc.def/my-image:3.5" "/tmp/toto.tar"'
             )
