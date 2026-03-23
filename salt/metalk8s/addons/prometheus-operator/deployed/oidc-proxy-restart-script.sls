@@ -46,8 +46,6 @@ Create oidc-proxy-restart-script ConfigMap:
         data:
           restart-on-ca-change.py: |-
 {{ script_content | indent(12, first=True) }}
-          restart-on-ca-change.sh: |
-            python3 /scripts/restart-on-ca-change.py
 
 {%- else %}
 

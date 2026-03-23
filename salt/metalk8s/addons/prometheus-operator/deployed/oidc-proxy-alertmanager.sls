@@ -61,7 +61,7 @@ Create oauth2-proxy-alertmanager Deployment:
                 - name: UNIQUE_FILENAMES
                   value: "true"
                 - name: SCRIPT
-                  value: /scripts/restart-on-ca-change.sh
+                  value: /scripts/restart-on-ca-change.py
                 - name: DEPLOYMENT_NAMESPACE
                   value: metalk8s-monitoring
                 - name: DEPLOYMENT_NAME
@@ -109,6 +109,7 @@ Create oauth2-proxy-alertmanager Deployment:
               - name: restart-script
                 configMap:
                   name: oidc-proxy-restart-script
+                  defaultMode: "0555"
 
 Create oauth2-proxy-alertmanager Service:
   metalk8s_kubernetes.object_present:
