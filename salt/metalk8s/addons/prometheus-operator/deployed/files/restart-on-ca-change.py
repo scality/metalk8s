@@ -1,78 +1,69 @@
 #!/usr/bin/env python3
 import hashlib
-import json
 import os
-import ssl
 import sys
-import urllib.error
-import urllib.request
 from datetime import datetime, timezone
 
-CA_DIR = "/tmp/secrets"
-HASH_FILE = os.path.join(CA_DIR, ".ca-hash-previous")
+import requests
+
+HASH_FILE_NAME = ".ca-hash-previous"
+
+SA_TOKEN = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+SA_CA = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+K8S_API = "https://kubernetes.default.svc"
 
 
-def hash_dir(path):
+def hash_file(file_path: str) -> str:
     h = hashlib.sha256()
-    for fname in sorted(os.listdir(path)):
-        if fname.startswith("."):
-            continue
-        fpath = os.path.join(path, fname)
-        if os.path.isfile(fpath):
-            with open(fpath, "rb") as f:
-                h.update(fname.encode())
-                h.update(f.read())
+    with open(file_path, "rb") as f:
+        h.update(f.read())
     return h.hexdigest()
 
 
-def trigger_restart(namespace, deployment):
-    with open("/var/run/secrets/kubernetes.io/serviceaccount/token") as f:
+def trigger_restart(namespace: str, deployment: str) -> None:
+    with open(SA_TOKEN) as f:
         token = f.read()
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    body = json.dumps(
-        {
-            "spec": {
-                "template": {
-                    "metadata": {
-                        "annotations": {"kubectl.kubernetes.io/restartedAt": timestamp}
-                    }
+    body = {
+        "spec": {
+            "template": {
+                "metadata": {
+                    "annotations": {"kubectl.kubernetes.io/restartedAt": timestamp}
                 }
             }
         }
-    ).encode()
-    ctx = ssl.create_default_context(
-        cafile="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
-    )
-    url = (
-        f"https://kubernetes.default.svc/apis/apps/v1"
-        f"/namespaces/{namespace}/deployments/{deployment}"
-    )
-    req = urllib.request.Request(
+    }
+    url = f"{K8S_API}/apis/apps/v1/namespaces/{namespace}/deployments/{deployment}"
+    response = requests.patch(
         url,
-        data=body,
-        method="PATCH",
+        json=body,
         headers={
-            "Authorization": "Bearer " + token,
+            "Authorization": f"Bearer {token}",
             "Content-Type": "application/strategic-merge-patch+json",
         },
+        verify=SA_CA,
     )
-    urllib.request.urlopen(req, context=ctx)
+    response.raise_for_status()
 
 
-def main():
-    if not [f for f in os.listdir(CA_DIR) if not f.startswith(".")]:
-        print("CA directory empty, skipping")
+def main() -> None:
+    ca_dir = os.environ["CA_DIR"]
+    ca_file = os.path.join(ca_dir, os.environ["CA_FILE_NAME"])
+    hash_file_path = os.path.join(ca_dir, HASH_FILE_NAME)
+
+    if not os.path.exists(ca_file):
+        print(f"CA file {ca_file} does not exist, skipping")
         return
 
-    current_hash = hash_dir(CA_DIR)
+    current_hash = hash_file(ca_file)
 
-    if not os.path.exists(HASH_FILE):
-        with open(HASH_FILE, "w") as f:
+    if not os.path.exists(hash_file_path):
+        with open(hash_file_path, "w") as f:
             f.write(current_hash)
         print("Initial CA load, skipping restart")
         return
 
-    with open(HASH_FILE) as f:
+    with open(hash_file_path) as f:
         previous_hash = f.read().strip()
 
     if current_hash == previous_hash:
@@ -83,7 +74,7 @@ def main():
 
     try:
         trigger_restart(namespace, deployment)
-    except urllib.error.URLError as e:
+    except requests.RequestException as e:
         print(
             f"Failed to trigger restart for {deployment}: {e}",
             file=sys.stderr,
@@ -91,7 +82,7 @@ def main():
         sys.exit(1)
 
     # Persist hash only after successful restart
-    with open(HASH_FILE, "w") as f:
+    with open(hash_file_path, "w") as f:
         f.write(current_hash)
     print(f"Rolling restart triggered for {deployment}")
 

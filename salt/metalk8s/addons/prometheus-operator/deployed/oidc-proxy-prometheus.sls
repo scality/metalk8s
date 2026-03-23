@@ -65,6 +65,10 @@ Create oauth2-proxy-prometheus Deployment:
                   value: metalk8s-monitoring
                 - name: DEPLOYMENT_NAME
                   value: oauth2-proxy-prometheus
+                - name: CA_DIR
+                  value: /tmp/secrets
+                - name: CA_FILE_NAME
+                  value: {{ ca_file }}
                 volumeMounts:
                 - name: secrets-volume
                   mountPath: /tmp/secrets
