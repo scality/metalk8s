@@ -27,7 +27,7 @@ _spec.loader.exec_module(restart_on_ca_change)
 ENV_VARS = {
     "CA_DIR": "/tmp/secrets",
     "CA_FILE_NAME": "ca.crt",
-    "POD_NAMESPACE": "metalk8s-monitoring",
+    "DEPLOYMENT_NAMESPACE": "metalk8s-monitoring",
     "DEPLOYMENT_NAME": "oauth2-proxy-prometheus",
 }
 

@@ -61,7 +61,7 @@ Create oauth2-proxy-prometheus Deployment:
                   value: "true"
                 - name: SCRIPT
                   value: /scripts/restart-on-ca-change.sh
-                - name: POD_NAMESPACE
+                - name: DEPLOYMENT_NAMESPACE
                   value: metalk8s-monitoring
                 - name: DEPLOYMENT_NAME
                   value: oauth2-proxy-prometheus

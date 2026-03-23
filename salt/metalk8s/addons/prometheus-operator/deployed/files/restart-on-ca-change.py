@@ -69,7 +69,7 @@ def main() -> None:
     if current_hash == previous_hash:
         return
 
-    namespace = os.environ["POD_NAMESPACE"]
+    namespace = os.environ["DEPLOYMENT_NAMESPACE"]
     deployment = os.environ["DEPLOYMENT_NAME"]
 
     try:
