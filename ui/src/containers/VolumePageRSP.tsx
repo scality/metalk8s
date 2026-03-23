@@ -54,7 +54,7 @@ export const VolumePageRSP = (props) => {
   const alertsVolume = useAlerts({
     persistentvolumeclaim: PVCName,
   });
-  const alertlist = alertsVolume && alertsVolume.alerts;
+  const alertlist = alertsVolume?.alerts ?? [];
   const criticalAlerts = alertlist.filter(
     (alert) => alert.severity === 'critical',
   );
