@@ -7,6 +7,16 @@ import AlertProvider from './AlertProvider';
 import { useHighestSeverityAlerts } from './alertHooks';
 import { afterAll, beforeAll, jest } from '@jest/globals';
 import { QueryClientProvider } from '../QueryClientProvider';
+
+jest.mock('../auth/AuthProvider', () => ({
+  useAuth: () => ({
+    userData: {
+      token: 'test-token',
+    },
+    getToken: () => Promise.resolve('test-token'),
+  }),
+}));
+
 const testService = 'http://10.0.0.1/api/alertmanager';
 
 const VOLUME_DEGRADED_ALERT = {

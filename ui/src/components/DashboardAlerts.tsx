@@ -61,7 +61,7 @@ const DashboardAlerts = () => {
   const totalAlerts = criticalAlerts.length + warningAlerts.length;
   return (
     <AlertsContainer>
-      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.r8 }}>
+      <Box display="flex" alignItems="center" gap={spacing.r8}>
         <div>
           <Text isEmphazed>
             {intl.formatMessage({
@@ -98,7 +98,7 @@ const DashboardAlerts = () => {
             </Banner>
           </div>
         )}
-      </div>
+      </Box>
       {totalAlerts === 0 ? null : (
         <Box pr={24}>
           <BadgesContainer>

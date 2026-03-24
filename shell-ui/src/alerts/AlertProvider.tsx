@@ -19,12 +19,11 @@ export default function AlertProvider({
   alertManagerUrl: string;
   children: React.ReactNode;
 }) {
-  const { userData } = useAuth();
+  const { getToken } = useAuth();
   const query = useQuery(
-    ['activeAlerts', userData?.token],
-    () => getAlerts(alertManagerUrl, userData?.token),
+    ['activeAlerts'],
+    async () => getAlerts(alertManagerUrl, await getToken()),
     {
-      // refetch the alerts every 30 seconds
       refetchInterval: 30000,
       // TODO manage this refresh interval globally
       // avoid stucking at the hard loading state before alertmanager is ready
