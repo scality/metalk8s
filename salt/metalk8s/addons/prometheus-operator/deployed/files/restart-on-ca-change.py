@@ -3,26 +3,25 @@ import hashlib
 import os
 import sys
 from datetime import datetime, timezone
+from pathlib import Path
 
 import requests
 
 HASH_FILE_NAME = ".ca-hash-previous"
 
-SA_TOKEN = "/var/run/secrets/kubernetes.io/serviceaccount/token"
-SA_CA = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+SA_TOKEN = Path("/var/run/secrets/kubernetes.io/serviceaccount/token")
+SA_CA = Path("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
 K8S_API = "https://kubernetes.default.svc"
 
 
-def hash_file(file_path: str) -> str:
+def hash_file(file_path: Path) -> str:
     h = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        h.update(f.read())
+    h.update(file_path.read_bytes())
     return h.hexdigest()
 
 
 def trigger_restart(namespace: str, deployment: str) -> None:
-    with open(SA_TOKEN) as f:
-        token = f.read()
+    token = SA_TOKEN.read_text()
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     body = {
         "spec": {
@@ -47,24 +46,22 @@ def trigger_restart(namespace: str, deployment: str) -> None:
 
 
 def main() -> None:
-    ca_dir = os.environ["CA_DIR"]
-    ca_file = os.path.join(ca_dir, os.environ["CA_FILE_NAME"])
-    hash_file_path = os.path.join(ca_dir, HASH_FILE_NAME)
+    ca_dir = Path(os.environ["CA_DIR"])
+    ca_file = ca_dir / os.environ["CA_FILE_NAME"]
+    hash_file_path = ca_dir / HASH_FILE_NAME
 
-    if not os.path.exists(ca_file):
+    if not ca_file.exists():
         print(f"CA file {ca_file} does not exist, skipping")
         return
 
     current_hash = hash_file(ca_file)
 
-    if not os.path.exists(hash_file_path):
-        with open(hash_file_path, "w") as f:
-            f.write(current_hash)
+    if not hash_file_path.exists():
+        hash_file_path.write_text(current_hash)
         print("Initial CA load, skipping restart")
         return
 
-    with open(hash_file_path) as f:
-        previous_hash = f.read().strip()
+    previous_hash = hash_file_path.read_text().strip()
 
     if current_hash == previous_hash:
         return
@@ -82,8 +79,7 @@ def main() -> None:
         sys.exit(1)
 
     # Persist hash only after successful restart
-    with open(hash_file_path, "w") as f:
-        f.write(current_hash)
+    hash_file_path.write_text(current_hash)
     print(f"Rolling restart triggered for {deployment}")
 
 
