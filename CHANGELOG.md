@@ -60,8 +60,7 @@
 - Bump `operator-sdk` version to [1.42.1](https://github.com/operator-framework/operator-sdk/releases/tag/v1.42.1)
   in `metalk8s-operator` and `storage-operator`.
   Go version has been bumped to
-  [1.25.8](https://golang.org/doc/devel/release.html#go1.25.minor)
-  and `k8s.io/*` dependencies have been bumped to [0.33.9](https://github.com/kubernetes/kubernetes/releases/tag/v1.33.9)
+  [1.24.13](https://golang.org/doc/devel/release.html#go1.24.minor)
   (PR[#4818](https://github.com/scality/metalk8s/pull/4818))
 
 - Implement ability to add certificates to fluent-bit by mounting a fluent-bit-certs secret
