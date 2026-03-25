@@ -702,6 +702,28 @@ get_object_digest:
     raises: True
     result: 'Unable to find key "metadata:invalid:path" in the object'
 
+  # ignore_not_found = true and path points to an empty dict
+  - obj:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: my_secret
+      data: {}
+    path: 'data'
+    ignore_not_found: True
+    result: ''
+
+  # ignore_not_found = true but there is a typo in the path
+  - obj:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: my_secret
+      data: {}
+    path: 'daat'
+    ignore_not_found: True
+    result: ''
+
 check_object_ready:
   # Simple Pod Ready
   - obj:
