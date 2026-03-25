@@ -60,6 +60,10 @@
 - Implement ability to add certificates to fluent-bit by mounting a fluent-bit-certs secret
   (PR[#4812](https://github.com/scality/metalk8s/pull/4812))
 
+- Add x509 `subjectKeyIdentifier` extension to CA certificates and
+  `authorityKeyIdentifier` extension to leaf certificates per RFC 5280
+  (PR[#4836](https://github.com/scality/metalk8s/pull/4836))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
