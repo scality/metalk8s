@@ -29,6 +29,7 @@ Generate etcd healthcheck client certificate:
     - signing_policy: {{ etcd.cert.healthcheck_client_signing_policy }}
     - CN: kube-etcd-healthcheck-client
     - O: "system:masters"
+    - authorityKeyIdentifier: keyid
     - days_valid: {{
         certificates.client.files['etcd-healthcheck'].days_valid |
         default(certificates.client.days_valid) }}

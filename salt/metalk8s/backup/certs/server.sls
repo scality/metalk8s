@@ -35,6 +35,7 @@ Generate backup server certificate:
     - signing_policy: {{ backup_server.cert.server_signing_policy }}
     - CN: backup
     - subjectAltName: "{{ salt['metalk8s.format_san'](certSANs | unique) }}"
+    - authorityKeyIdentifier: keyid
     - days_valid: {{
         certificates.server.files["backup-server"].days_valid |
         default(certificates.server.days_valid) }}

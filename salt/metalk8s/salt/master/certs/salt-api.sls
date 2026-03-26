@@ -42,6 +42,7 @@ Generate Salt API certificate:
     - signing_policy: {{ kube_api.cert.server_signing_policy }}
     - CN: salt-api on {{ grains.id }}
     - subjectAltName: "{{ salt['metalk8s.format_san'](certSANs | unique) }}"
+    - authorityKeyIdentifier: keyid
     - days_valid: {{
         certificates.server.files['salt-api'].days_valid |
         default(certificates.server.days_valid) }}

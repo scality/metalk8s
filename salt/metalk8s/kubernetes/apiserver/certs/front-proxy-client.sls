@@ -28,6 +28,7 @@ Generate front proxy client certificate:
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ front_proxy.cert.client_signing_policy }}
     - CN: front-proxy-client
+    - authorityKeyIdentifier: keyid
     - days_valid: {{
         certificates.client.files['front-proxy'].days_valid |
         default(certificates.client.days_valid) }}
