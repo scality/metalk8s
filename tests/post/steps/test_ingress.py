@@ -14,6 +14,31 @@ from tests import utils
 
 MAIN_CC_NAME = "main"
 
+OPERATOR_DEPLOYMENT = "metalk8s-operator-controller-manager"
+OPERATOR_NAMESPACE = "kube-system"
+
+
+@pytest.fixture(autouse=True, scope="module")
+def restart_operator_after_ingress_tests(host):
+    """Reset the operator CrashLoopBackOff timer after all ingress tests.
+
+    Ingress tests heavily modify the ClusterConfig, which can cause the
+    operator to panic and enter CrashLoopBackOff with increasing backoff
+    delays.  A rollout restart at the end of this module ensures the
+    operator pod starts fresh (restartCount=0) before subsequent test
+    modules (e.g. test_operator) that depend on quick operator recovery.
+    """
+    yield
+    with host.sudo():
+        host.check_output(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
+            f"rollout restart deployment/{OPERATOR_DEPLOYMENT} --namespace {OPERATOR_NAMESPACE}"
+        )
+        host.check_output(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
+            f"rollout status deployment/{OPERATOR_DEPLOYMENT} --namespace {OPERATOR_NAMESPACE} --timeout=120s"
+        )
+
 
 @scenario("../features/ingress.feature", "Access HTTP services")
 def test_access_http_services(host):

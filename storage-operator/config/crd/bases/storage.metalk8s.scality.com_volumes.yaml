@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.15.0
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: volumes.storage.metalk8s.scality.com
 spec:
   group: storage.metalk8s.scality.com
@@ -127,6 +127,8 @@ spec:
                         description: |-
                           awsElasticBlockStore represents an AWS Disk resource that is attached to a
                           kubelet's host machine and then exposed to the pod.
+                          Deprecated: AWSElasticBlockStore is deprecated. All operations for the in-tree
+                          awsElasticBlockStore type are redirected to the ebs.csi.aws.com CSI driver.
                           More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore
                         properties:
                           fsType:
@@ -135,7 +137,6 @@ spec:
                               Tip: Ensure that the filesystem type is supported by the host operating system.
                               Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
                               More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore
-                              TODO: how do we prevent errors in the filesystem from compromising the machine
                             type: string
                           partition:
                             description: |-
@@ -159,8 +160,10 @@ spec:
                         - volumeID
                         type: object
                       azureDisk:
-                        description: azureDisk represents an Azure Data Disk mount
-                          on the host and bind mount to the pod.
+                        description: |-
+                          azureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.
+                          Deprecated: AzureDisk is deprecated. All operations for the in-tree azureDisk type
+                          are redirected to the disk.csi.azure.com CSI driver.
                         properties:
                           cachingMode:
                             description: 'cachingMode is the Host Caching mode: None,
@@ -175,6 +178,7 @@ spec:
                               storage
                             type: string
                           fsType:
+                            default: ext4
                             description: |-
                               fsType is Filesystem type to mount.
                               Must be a filesystem type supported by the host operating system.
@@ -188,6 +192,7 @@ spec:
                               shared'
                             type: string
                           readOnly:
+                            default: false
                             description: |-
                               readOnly Defaults to false (read/write). ReadOnly here will force
                               the ReadOnly setting in VolumeMounts.
@@ -197,8 +202,10 @@ spec:
                         - diskURI
                         type: object
                       azureFile:
-                        description: azureFile represents an Azure File Service mount
-                          on the host and bind mount to the pod.
+                        description: |-
+                          azureFile represents an Azure File Service mount on the host and bind mount to the pod.
+                          Deprecated: AzureFile is deprecated. All operations for the in-tree azureFile type
+                          are redirected to the file.csi.azure.com CSI driver.
                         properties:
                           readOnly:
                             description: |-
@@ -233,8 +240,9 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#capacity
                         type: object
                       cephfs:
-                        description: cephFS represents a Ceph FS mount on the host
-                          that shares a pod's lifetime
+                        description: |-
+                          cephFS represents a Ceph FS mount on the host that shares a pod's lifetime.
+                          Deprecated: CephFS is deprecated and the in-tree cephfs type is no longer supported.
                         properties:
                           monitors:
                             description: |-
@@ -285,6 +293,8 @@ spec:
                       cinder:
                         description: |-
                           cinder represents a cinder volume attached and mounted on kubelets host machine.
+                          Deprecated: Cinder is deprecated. All operations for the in-tree cinder type
+                          are redirected to the cinder.csi.openstack.org CSI driver.
                           More info: https://examples.k8s.io/mysql-cinder-pd/README.md
                         properties:
                           fsType:
@@ -342,7 +352,6 @@ spec:
                               the event) or if no container name is specified "spec.containers[2]" (container with
                               index 2 in this pod). This syntax is chosen only to have some well-defined way of
                               referencing a part of an object.
-                              TODO: this design is not final and this field is subject to change in the future.
                             type: string
                           kind:
                             description: |-
@@ -373,7 +382,7 @@ spec:
                         x-kubernetes-map-type: granular
                       csi:
                         description: csi represents storage that is handled by an
-                          external CSI driver (Beta feature).
+                          external CSI driver.
                         properties:
                           controllerExpandSecretRef:
                             description: |-
@@ -505,7 +514,6 @@ spec:
                               fsType is the filesystem type to mount.
                               Must be a filesystem type supported by the host operating system.
                               Ex. "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
-                              TODO: how do we prevent errors in the filesystem from compromising the machine
                             type: string
                           lun:
                             description: 'lun is Optional: FC target lun number'
@@ -536,6 +544,7 @@ spec:
                         description: |-
                           flexVolume represents a generic volume resource that is
                           provisioned/attached using an exec based plugin.
+                          Deprecated: FlexVolume is deprecated. Consider using a CSIDriver instead.
                         properties:
                           driver:
                             description: driver is the name of the driver to use for
@@ -580,10 +589,9 @@ spec:
                         - driver
                         type: object
                       flocker:
-                        description: flocker represents a Flocker volume attached
-                          to a kubelet's host machine and exposed to the pod for its
-                          usage. This depends on the Flocker control service being
-                          running
+                        description: |-
+                          flocker represents a Flocker volume attached to a kubelet's host machine and exposed to the pod for its usage. This depends on the Flocker control service being running.
+                          Deprecated: Flocker is deprecated and the in-tree flocker type is no longer supported.
                         properties:
                           datasetName:
                             description: |-
@@ -599,6 +607,8 @@ spec:
                         description: |-
                           gcePersistentDisk represents a GCE Disk resource that is attached to a
                           kubelet's host machine and then exposed to the pod. Provisioned by an admin.
+                          Deprecated: GCEPersistentDisk is deprecated. All operations for the in-tree
+                          gcePersistentDisk type are redirected to the pd.csi.storage.gke.io CSI driver.
                           More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk
                         properties:
                           fsType:
@@ -607,7 +617,6 @@ spec:
                               Tip: Ensure that the filesystem type is supported by the host operating system.
                               Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
                               More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk
-                              TODO: how do we prevent errors in the filesystem from compromising the machine
                             type: string
                           partition:
                             description: |-
@@ -636,6 +645,7 @@ spec:
                         description: |-
                           glusterfs represents a Glusterfs volume that is attached to a host and
                           exposed to the pod. Provisioned by an admin.
+                          Deprecated: Glusterfs is deprecated and the in-tree glusterfs type is no longer supported.
                           More info: https://examples.k8s.io/volumes/glusterfs/README.md
                         properties:
                           endpoints:
@@ -706,7 +716,6 @@ spec:
                               Tip: Ensure that the filesystem type is supported by the host operating system.
                               Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
                               More info: https://kubernetes.io/docs/concepts/storage/volumes#iscsi
-                              TODO: how do we prevent errors in the filesystem from compromising the machine
                             type: string
                           initiatorName:
                             description: |-
@@ -718,6 +727,7 @@ spec:
                             description: iqn is Target iSCSI Qualified Name.
                             type: string
                           iscsiInterface:
+                            default: default
                             description: |-
                               iscsiInterface is the interface Name that uses an iSCSI transport.
                               Defaults to 'default' (tcp).
@@ -920,8 +930,9 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#reclaiming
                         type: string
                       photonPersistentDisk:
-                        description: photonPersistentDisk represents a PhotonController
-                          persistent disk attached and mounted on kubelets host machine
+                        description: |-
+                          photonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelets host machine.
+                          Deprecated: PhotonPersistentDisk is deprecated and the in-tree photonPersistentDisk type is no longer supported.
                         properties:
                           fsType:
                             description: |-
@@ -937,8 +948,11 @@ spec:
                         - pdID
                         type: object
                       portworxVolume:
-                        description: portworxVolume represents a portworx volume attached
-                          and mounted on kubelets host machine
+                        description: |-
+                          portworxVolume represents a portworx volume attached and mounted on kubelets host machine.
+                          Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type
+                          are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate
+                          is on.
                         properties:
                           fsType:
                             description: |-
@@ -958,8 +972,9 @@ spec:
                         - volumeID
                         type: object
                       quobyte:
-                        description: quobyte represents a Quobyte mount on the host
-                          that shares a pod's lifetime
+                        description: |-
+                          quobyte represents a Quobyte mount on the host that shares a pod's lifetime.
+                          Deprecated: Quobyte is deprecated and the in-tree quobyte type is no longer supported.
                         properties:
                           group:
                             description: |-
@@ -998,6 +1013,7 @@ spec:
                       rbd:
                         description: |-
                           rbd represents a Rados Block Device mount on the host that shares a pod's lifetime.
+                          Deprecated: RBD is deprecated and the in-tree rbd type is no longer supported.
                           More info: https://examples.k8s.io/volumes/rbd/README.md
                         properties:
                           fsType:
@@ -1006,7 +1022,6 @@ spec:
                               Tip: Ensure that the filesystem type is supported by the host operating system.
                               Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
                               More info: https://kubernetes.io/docs/concepts/storage/volumes#rbd
-                              TODO: how do we prevent errors in the filesystem from compromising the machine
                             type: string
                           image:
                             description: |-
@@ -1014,6 +1029,7 @@ spec:
                               More info: https://examples.k8s.io/volumes/rbd/README.md#how-to-use-it
                             type: string
                           keyring:
+                            default: /etc/ceph/keyring
                             description: |-
                               keyring is the path to key ring for RBDUser.
                               Default is /etc/ceph/keyring.
@@ -1028,6 +1044,7 @@ spec:
                             type: array
                             x-kubernetes-list-type: atomic
                           pool:
+                            default: rbd
                             description: |-
                               pool is the rados pool name.
                               Default is rbd.
@@ -1057,6 +1074,7 @@ spec:
                             type: object
                             x-kubernetes-map-type: atomic
                           user:
+                            default: admin
                             description: |-
                               user is the rados user name.
                               Default is admin.
@@ -1067,10 +1085,12 @@ spec:
                         - monitors
                         type: object
                       scaleIO:
-                        description: scaleIO represents a ScaleIO persistent volume
-                          attached and mounted on Kubernetes nodes.
+                        description: |-
+                          scaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.
+                          Deprecated: ScaleIO is deprecated and the in-tree scaleIO type is no longer supported.
                         properties:
                           fsType:
+                            default: xfs
                             description: |-
                               fsType is the filesystem type to mount.
                               Must be a filesystem type supported by the host operating system.
@@ -1110,6 +1130,7 @@ spec:
                               SSL communication with Gateway, default false
                             type: boolean
                           storageMode:
+                            default: ThinProvisioned
                             description: |-
                               storageMode indicates whether the storage for a volume should be ThickProvisioned or ThinProvisioned.
                               Default is ThinProvisioned.
@@ -1139,7 +1160,8 @@ spec:
                         type: string
                       storageos:
                         description: |-
-                          storageOS represents a StorageOS volume that is attached to the kubelet's host machine and mounted into the pod
+                          storageOS represents a StorageOS volume that is attached to the kubelet's host machine and mounted into the pod.
+                          Deprecated: StorageOS is deprecated and the in-tree storageos type is no longer supported.
                           More info: https://examples.k8s.io/volumes/storageos/README.md
                         properties:
                           fsType:
@@ -1170,7 +1192,6 @@ spec:
                                   the event) or if no container name is specified "spec.containers[2]" (container with
                                   index 2 in this pod). This syntax is chosen only to have some well-defined way of
                                   referencing a part of an object.
-                                  TODO: this design is not final and this field is subject to change in the future.
                                 type: string
                               kind:
                                 description: |-
@@ -1222,7 +1243,7 @@ spec:
                           after a volume has been updated successfully to a new class.
                           For an unbound PersistentVolume, the volumeAttributesClassName will be matched with unbound
                           PersistentVolumeClaims during the binding process.
-                          This is an alpha field and requires enabling VolumeAttributesClass feature.
+                          This is a beta field and requires enabling VolumeAttributesClass feature (off by default).
                         type: string
                       volumeMode:
                         description: |-
@@ -1230,8 +1251,10 @@ spec:
                           or to remain in raw block state. Value of Filesystem is implied when not included in spec.
                         type: string
                       vsphereVolume:
-                        description: vsphereVolume represents a vSphere volume attached
-                          and mounted on kubelets host machine
+                        description: |-
+                          vsphereVolume represents a vSphere volume attached and mounted on kubelets host machine.
+                          Deprecated: VsphereVolume is deprecated. All operations for the in-tree vsphereVolume type
+                          are redirected to the csi.vsphere.vmware.com CSI driver.
                         properties:
                           fsType:
                             description: |-
