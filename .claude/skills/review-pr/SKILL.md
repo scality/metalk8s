@@ -32,9 +32,50 @@ gh pr view <number> --repo <owner/repo> --json title,body,headRefOid,author,file
 gh pr diff <number> --repo <owner/repo>
 ```
 
-2. **Read changed files** to understand the full context around each change (not just the diff hunks).
+2. **Manage existing Claude Code threads** (run before reviewing the diff):
 
-3. **Analyze the changes** against these criteria:
+   Fetch all review threads with full pagination — loop until `hasNextPage` is false, merging nodes across pages:
+
+   ```bash
+   gh api graphql -f query='{repository(owner:"<owner>",name:"<repo>"){pullRequest(number:<number>){reviewThreads(first:100){pageInfo{hasNextPage endCursor}nodes{id isResolved isOutdated resolvedBy{login}comments(first:20){nodes{databaseId author{login}body path line}}}}}}}'
+   ```
+
+   For pagination add `after:"<endCursor>"` to `reviewThreads(first:100, after:"<endCursor>")` and repeat until `hasNextPage` is false.
+
+   For each thread whose **first comment** contains `— Claude Code`:
+
+   **OUTDATED** (`isOutdated=true`, `isResolved=false`) → resolve silently, then skip to next thread:
+   ```bash
+   gh api graphql -f query='mutation{resolveReviewThread(input:{threadId:"<id>"}){thread{isResolved}}}'
+   ```
+
+   **ACTIVE** — read ALL comments, find human replies (`author.login != "claude[bot]"`), classify:
+
+   - **`no_human_reply`** — no human comments, not resolved → add `{path, line, body_excerpt}` to **SKIP SET**. No further action.
+
+   - **`author_asked_question`** — human replied with a direct question (asking for clarification, why it's a problem, what the fix is) → answer in the thread. Add to SKIP SET.
+     ```bash
+     gh api -X POST -H "Accept: application/vnd.github+json" "repos/<owner/repo>/pulls/<number>/comments" -f body="<answer><br><br>— Claude Code" -F in_reply_to=<databaseId_of_first_comment> -f commit_id="<headRefOid>"
+     ```
+
+   - **`justified`** — human reply contains substantive technical reasoning (why issue isn't applicable, acknowledged trade-off, relevant constraint) → accept silently. Add to SKIP SET. Optionally resolve thread if still open.
+
+   - **`unjustified_dismissal`** — thread resolved by human with no reply, OR reply is dismissive with no technical reasoning (`"done"`, `"ok"`, `"wontfix"` with nothing substantive) AND flagged code still unchanged in new diff → reply in thread (do NOT post new top-level comment). Add to SKIP SET.
+     ```bash
+     gh api -X POST -H "Accept: application/vnd.github+json" "repos/<owner/repo>/pulls/<number>/comments" -f body="Issue still present in latest commit. Could you share your reasoning or clarify how it's been mitigated?<br><br>— Claude Code" -F in_reply_to=<databaseId_of_first_comment> -f commit_id="<headRefOid>"
+     ```
+     For security/correctness issues add: `"This is a security/correctness concern — a brief explanation helps reviewers and future contributors."` Scale to severity: minor issues may be accepted silently.
+
+   - **`fix_claimed_but_code_unchanged`** — human claimed fix but code unchanged in new diff → reply in thread. Add to SKIP SET.
+     ```bash
+     gh api -X POST -H "Accept: application/vnd.github+json" "repos/<owner/repo>/pulls/<number>/comments" -f body="Flagged code still appears at this location in the latest commit. Could you double-check, or clarify if the fix is elsewhere?<br><br>— Claude Code" -F in_reply_to=<databaseId_of_first_comment> -f commit_id="<headRefOid>"
+     ```
+
+   All replies: collaborative not adversarial. 1-2 sentences. Name the specific construct.
+
+3. **Read changed files** to understand the full context around each change (not just the diff hunks).
+
+4. **Analyze the changes** against these criteria:
 
 | Area | What to check |
 |------|---------------|
@@ -55,13 +96,16 @@ gh pr diff <number> --repo <owner/repo>
 | Test coverage | New logic paths have corresponding unit tests; changed functions have updated tests; no test files deleted without replacement, no orphan test that would be never run |
 | Test impact | Changes to shared code (`map.jinja`, `constants.py`, CRD types, API types) are reflected in dependent tests across all affected layers |
 | BDD / integration | New user-facing behavior has matching behave scenarios in `tests/`; modified Salt orchestrations have updated integration steps |
-4. **Deliver your review:**
+
+5. **Deliver your review:**
 
 ### If CI mode: post to GitHub
 
 #### Part A: Inline file comments
 
-For each specific issue, post a comment on the exact file and line:
+For each issue found, **check the SKIP SET from step 2 first**. The SKIP SET contains `{path, line, body_excerpt}` entries. If an entry exists with the same `path` and `line` AND the `body_excerpt` covers the same root issue → skip. A genuinely different issue at the same path+line may still be posted.
+
+Otherwise post a comment on the exact file and line:
 
 ```bash
 gh api -X POST -H "Accept: application/vnd.github+json" "repos/<owner/repo>/pulls/<number>/comments" -f body="Your comment<br><br>— Claude Code" -f path="path/to/file" -F line=<line_number> -f side="RIGHT" -f commit_id="<headRefOid>"
@@ -104,7 +148,7 @@ Do not describe or summarize the PR. For each issue, state the problem on one li
   - <suggestion>
 ```
 
-If no issues: just say "LGTM". End with: `Review by Claude Code`
+If no new issues and no thread replies needed: just say "LGTM". End with: `Review by Claude Code`
 
 ### If local mode: output the review as text
 
