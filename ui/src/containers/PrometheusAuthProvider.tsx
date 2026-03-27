@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useLayoutEffect } from 'react';
 import { useAuth } from './PrivateRoute';
 import { setHeaders } from '../services/prometheus/api';
 
@@ -16,7 +16,7 @@ export default function PrometheusAuthProvider({
   const { userData } = useAuth();
   const token = userData?.token;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (token) {
       setHeaders({ Authorization: `Bearer ${token}` });
     }
