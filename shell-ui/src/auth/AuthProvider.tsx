@@ -5,7 +5,6 @@ import {
   UserManager,
   useAuth as useOauth2Auth,
 } from 'oidc-react';
-import { isAIUserAgent } from '../mcp/userAgent';
 import React, { useCallback, useEffect } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useQuery } from 'react-query';
@@ -120,7 +119,6 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [logOut]);
   const oidcConfig: AuthProviderProps = {
-    autoSignIn: !isAIUserAgent(),
     onBeforeSignIn: () => {
       localStorage.setItem('redirectUrl', window.location.href);
       return window.location.href;
