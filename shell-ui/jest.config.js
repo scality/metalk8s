@@ -9,4 +9,7 @@ module.exports = {
     '^@mcp-b/(.*)$': '<rootDir>/src/__mocks__/@mcp-b.js',
   },
   testEnvironment: 'jsdom',
+  globals: {
+    __webpack_public_path__: '/',
+  },
 };
