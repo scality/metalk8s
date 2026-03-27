@@ -60,7 +60,7 @@ gh pr diff <number> --repo <owner/repo>
 
    - **`justified`** — human reply contains substantive technical reasoning (why issue isn't applicable, acknowledged trade-off, relevant constraint) → accept silently. Add to SKIP SET. Optionally resolve thread if still open.
 
-   - **`unjustified_dismissal`** — thread resolved by human with no reply, OR reply is dismissive with no technical reasoning (`"done"`, `"ok"`, `"wontfix"` with nothing substantive) AND flagged code still unchanged in new diff → reply in thread (do NOT post new top-level comment). Add to SKIP SET.
+   - **`unjustified_dismissal`** — (thread resolved by human with no reply, OR reply is dismissive with no technical reasoning (`"done"`, `"ok"`, `"wontfix"` with nothing substantive)) AND flagged code still unchanged in new diff → reply in thread (do NOT post new top-level comment). Add to SKIP SET.
      ```bash
      gh api -X POST -H "Accept: application/vnd.github+json" "repos/<owner/repo>/pulls/<number>/comments" -f body="Issue still present in latest commit. Could you share your reasoning or clarify how it's been mitigated?<br><br>— Claude Code" -F in_reply_to=<databaseId_of_first_comment> -f commit_id="<headRefOid>"
      ```
