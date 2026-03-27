@@ -58,18 +58,3 @@ export type MCPToolDefinition<
     client: ModelContextClient,
   ) => Promise<unknown>;
 };
-
-// Ambient type augmentation for navigator.modelContext (WebMCP API)
-declare global {
-  interface Navigator {
-    modelContext?: {
-      registerTool(def: {
-        name: string;
-        description: string;
-        inputSchema: Record<string, unknown>;
-        execute: (params: unknown, client: ModelContextClient) => Promise<unknown>;
-      }): void;
-      unregisterTool?(name: string): void;
-    };
-  }
-}
