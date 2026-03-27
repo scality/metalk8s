@@ -6,7 +6,6 @@ import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
 import * as ApiPrometheus from '../services/prometheus/api';
-import * as ApiAlertmanager from '../services/alertmanager/api';
 import * as ApiLoki from '../services/loki/api';
 import { EN_LANG } from '../constants';
 import { authenticateSaltApi } from './login';
@@ -165,7 +164,6 @@ function* setApiConfig({
 }): Generator<Effect, void, Result<Config>> {
   yield call(ApiSalt.initialize, config.url_salt);
   yield call(ApiPrometheus.initialize, config.url_prometheus);
-  yield call(ApiAlertmanager.initialize, config.url_alertmanager);
   yield call(ApiLoki.initialize, config.url_loki);
   yield put(setConfigStatusAction('success'));
 }

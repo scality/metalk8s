@@ -1,15 +1,3 @@
-import ApiClient from '../ApiClient';
-import {
-  removeWarningAlerts,
-  formatActiveAlerts,
-  sortAlerts,
-} from '../alertUtils';
-let alertmanagerApiClient: ApiClient | null | undefined = null;
-export function initialize(apiUrl: string) {
-  alertmanagerApiClient = new ApiClient({
-    apiUrl,
-  });
-}
 export type PrometheusAlert = {
   annotations: Record<string, string>;
   receivers: {
@@ -32,22 +20,3 @@ export type AlertLabels = {
   selectors?: string[];
   [labelName: string]: string;
 };
-export function getAlerts() {
-  if (!alertmanagerApiClient) {
-    throw new Error('alertmanagerApiClient should be defined');
-  }
-
-  return alertmanagerApiClient
-    .get('/api/v2/alerts')
-    .then((resolve) => {
-      if (resolve.error) {
-        throw resolve.error;
-      }
-
-      return resolve;
-    })
-    .then((result) => {
-      // format the alerts then remove the warning and finally sort the alerts.
-      return sortAlerts(removeWarningAlerts(formatActiveAlerts(result)));
-    });
-}
