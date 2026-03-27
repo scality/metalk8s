@@ -155,7 +155,6 @@ export type UserData = {
 export function useAuth(): {
   userData?: UserData;
   getToken: () => Promise<string | null>;
-  userManager: UserManager | undefined;
 } {
   try {
     const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
@@ -212,7 +211,6 @@ export function useAuth(): {
       return {
         userData: undefined,
         getToken: () => Promise.resolve(null),
-        userManager: auth?.userManager,
       };
     }
 
@@ -230,13 +228,11 @@ export function useAuth(): {
           return user?.access_token;
         });
       },
-      userManager: auth.userManager,
     };
   } catch (e) {
     return {
       userData: undefined,
       getToken: () => Promise.resolve('null'),
-      userManager: undefined,
     };
   }
 }

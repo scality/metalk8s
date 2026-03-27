@@ -1,17 +1,12 @@
 import '@mcp-b/global';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
-import { OidcClient } from 'oidc-client-ts';
 import { useEffect } from 'react';
 
 declare const __webpack_public_path__: string;
 import { ErrorBoundary } from 'react-error-boundary';
-import {
-  getAbsoluteRedirectUrl,
-  useAuth,
-} from '../auth/AuthProvider';
+import { useAuth } from '../auth/AuthProvider';
 import {
   FederatedModuleInfo,
-  OIDCConfig,
   useConfigRetriever,
 } from '../initFederation/ConfigurationProviders';
 import { useDeployedApps } from '../initFederation/UIListProvider';
@@ -22,17 +17,15 @@ export const _InternalMCPRegistrar = ({
   moduleExports,
   mcpToolsModuleInfo,
   selfConfiguration,
-  authConfig,
 }: {
   moduleExports: Record<string, { tools: MCPToolDefinition[] }>;
   mcpToolsModuleInfo: FederatedModuleInfo;
   selfConfiguration: Record<string, unknown>;
-  authConfig: OIDCConfig | null;
 }) => {
-  const { userManager } = useAuth();
+  const { getToken } = useAuth();
 
   useEffect(() => {
-    if (!navigator.modelContext || !userManager) return;
+    if (!navigator.modelContext) return;
 
     const tools = moduleExports[mcpToolsModuleInfo.module]?.tools ?? [];
     const registeredNames: string[] = [];
@@ -44,93 +37,21 @@ export const _InternalMCPRegistrar = ({
         inputSchema: tool.inputSchema,
         execute: async (params: unknown, client: ModelContextClient) => {
           if (tool.authRequired) {
-            let user = await userManager.getUser();
-
-            if (!user || user.expired) {
-              user = await userManager.signinSilent().catch(() => null);
-            }
-
-            if (!user || user.expired) {
-              if (!authConfig) {
-                return {
-                  success: false,
-                  error: {
-                    code: 'AUTH_REQUIRED',
-                    message: 'Authentication required but no OIDC configuration is available',
-                  },
-                };
-              }
-
-              const oidcClient = new OidcClient({
-                authority: authConfig.providerUrl,
-                client_id: authConfig.clientId,
-                redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
-                response_type: authConfig.responseType || 'code',
-                scope: authConfig.scopes,
-              });
-
-              // connector_id is passed as extraQueryParams rather than via MetadataServiceCtor
-              // (which is UserManager-only). The effect on the final auth URL is identical.
-              const signinRequest = await oidcClient.createSigninRequest({
-                ...(authConfig.defaultDexConnector && {
-                  extraQueryParams: { connector_id: authConfig.defaultDexConnector },
-                }),
-              });
-              const authUrl = signinRequest.url;
-
-              const authenticated = await client.requestUserInteraction(
-                (_innerClient: ModelContextClient) => {
-                  return new Promise<boolean>((resolve) => {
-                    const modal = document.createElement('div');
-                    modal.className = 'mcp-auth-modal';
-                    modal.style.cssText =
-                      'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:9999';
-                    modal.innerHTML = `
-                      <div style="background:#fff;padding:2rem;border-radius:8px;max-width:400px;text-align:center">
-                        <h3 style="margin:0 0 1rem">Authentication Required</h3>
-                        <p style="margin:0 0 1.5rem">This action requires you to sign in.</p>
-                        <a href="${authUrl}" target="_blank" style="display:inline-block;padding:0.5rem 1.5rem;background:#0066cc;color:#fff;border-radius:4px;text-decoration:none;margin-bottom:1rem">Sign in to continue</a>
-                        <br/>
-                        <button id="mcp-cancel-auth" style="margin-top:0.5rem;padding:0.4rem 1rem;cursor:pointer">Cancel</button>
-                      </div>
-                    `;
-                    document.body.appendChild(modal);
-
-                    const onUserLoaded = () => {
-                      modal.remove();
-                      userManager.events.removeUserLoaded(onUserLoaded);
-                      resolve(true);
-                    };
-                    userManager.events.addUserLoaded(onUserLoaded);
-
-                    modal
-                      .querySelector('#mcp-cancel-auth')
-                      ?.addEventListener('click', () => {
-                        userManager.events.removeUserLoaded(onUserLoaded);
-                        modal.remove();
-                        resolve(false);
-                      });
-                  });
+            const token = await getToken();
+            if (!token) {
+              return {
+                success: false,
+                error: {
+                  code: 'AUTH_REQUIRED',
+                  message:
+                    'You must log in to the browser window prior to performing this action.',
                 },
-              );
-
-              if (!authenticated) {
-                return {
-                  success: false,
-                  error: {
-                    code: 'AUTH_REQUIRED',
-                    message: 'Authentication required to perform this action',
-                  },
-                };
-              }
+              };
             }
           }
 
           const context: ToolContext = {
-            getToken: async () => {
-              const user = await userManager.getUser();
-              return user?.access_token ?? '';
-            },
+            getToken,
             selfConfiguration,
           };
 
@@ -149,7 +70,7 @@ export const _InternalMCPRegistrar = ({
         navigator.modelContext?.unregisterTool?.(name),
       );
     };
-  }, [moduleExports, mcpToolsModuleInfo, userManager, selfConfiguration, authConfig]);
+  }, [moduleExports, mcpToolsModuleInfo, getToken, selfConfiguration]);
 
   return null;
 };
@@ -194,18 +115,13 @@ export const MCPRegistrar = () => {
         const selfConfiguration =
           (runtimeConfig?.spec?.selfConfiguration as Record<string, unknown>) ??
           {};
-        const auth = runtimeConfig?.spec?.auth;
-        const authConfig =
-          auth && (auth as { kind: string }).kind === 'OIDC'
-            ? (auth as unknown as OIDCConfig)
-            : null;
         const remoteEntryUrl = app.url + buildConfig.spec.remoteEntryPath;
 
         return [
           <ErrorBoundary key={app.name} FallbackComponent={() => null}>
             <ComponentWithFederatedImports
               componentWithInjectedImports={_InternalMCPRegistrar}
-              componentProps={{ mcpToolsModuleInfo, selfConfiguration, authConfig }}
+              componentProps={{ mcpToolsModuleInfo, selfConfiguration }}
               renderOnError={null}
               federatedImports={[{ ...mcpToolsModuleInfo, remoteEntryUrl }]}
             />
