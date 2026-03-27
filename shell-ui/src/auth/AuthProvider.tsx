@@ -224,9 +224,10 @@ export function useAuth(): {
         original: auth.userData,
       },
       getToken: async () => {
-        return auth.userManager.getUser().then((user) => {
-          return user?.access_token;
-        });
+        if (auth.userManager?.getUser) {
+          return auth.userManager.getUser().then((user) => user?.access_token ?? null);
+        }
+        return auth.userData?.access_token ?? null;
       },
     };
   } catch (e) {
