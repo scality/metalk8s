@@ -1,5 +1,11 @@
 import { MetadataService, User, WebStorageStateStore } from 'oidc-client-ts';
-import { AuthProviderProps, AuthProvider as OIDCAuthProvider, UserManager, useAuth as useOauth2Auth } from 'oidc-react';
+import {
+  AuthProviderProps,
+  AuthProvider as OIDCAuthProvider,
+  UserManager,
+  useAuth as useOauth2Auth,
+} from 'oidc-react';
+import { isAIUserAgent } from '../mcp/userAgent';
 import React, { useCallback, useEffect } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useQuery } from 'react-query';
@@ -43,7 +49,7 @@ function defaultDexConnectorMetadataService(connectorId: string) {
   return DexDefaultConnectorMetadataService;
 }
 
-function getAbsoluteRedirectUrl(redirectUrl?: string) {
+export function getAbsoluteRedirectUrl(redirectUrl?: string) {
   if (!redirectUrl) {
     return window.location.href;
   }
@@ -114,6 +120,7 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [logOut]);
   const oidcConfig: AuthProviderProps = {
+    autoSignIn: !isAIUserAgent(),
     onBeforeSignIn: () => {
       localStorage.setItem('redirectUrl', window.location.href);
       return window.location.href;
@@ -150,6 +157,7 @@ export type UserData = {
 export function useAuth(): {
   userData?: UserData;
   getToken: () => Promise<string | null>;
+  userManager: UserManager | undefined;
 } {
   try {
     const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
@@ -206,6 +214,7 @@ export function useAuth(): {
       return {
         userData: undefined,
         getToken: () => Promise.resolve(null),
+        userManager: auth?.userManager,
       };
     }
 
@@ -223,11 +232,13 @@ export function useAuth(): {
           return user?.access_token;
         });
       },
+      userManager: auth.userManager,
     };
   } catch (e) {
     return {
       userData: undefined,
       getToken: () => Promise.resolve('null'),
+      userManager: undefined,
     };
   }
 }
