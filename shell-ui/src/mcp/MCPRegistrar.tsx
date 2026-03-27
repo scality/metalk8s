@@ -22,7 +22,7 @@ export const _InternalMCPRegistrar = ({
   mcpToolsModuleInfo: FederatedModuleInfo;
   selfConfiguration: Record<string, unknown>;
 }) => {
-  const { getToken } = useAuth();
+  const { getToken, userData } = useAuth();
 
   useEffect(() => {
     if (!navigator.modelContext) return;
@@ -36,22 +36,9 @@ export const _InternalMCPRegistrar = ({
         description: tool.description,
         inputSchema: tool.inputSchema,
         execute: async (params: unknown, client: ModelContextClient) => {
-          if (tool.authRequired) {
-            const token = await getToken();
-            if (!token) {
-              return {
-                success: false,
-                error: {
-                  code: 'AUTH_REQUIRED',
-                  message:
-                    'You must log in to the browser window prior to performing this action.',
-                },
-              };
-            }
-          }
-
           const context: ToolContext = {
             getToken,
+            userData,
             selfConfiguration,
           };
 
@@ -70,7 +57,7 @@ export const _InternalMCPRegistrar = ({
         navigator.modelContext?.unregisterTool?.(name),
       );
     };
-  }, [moduleExports, mcpToolsModuleInfo, getToken, selfConfiguration]);
+  }, [moduleExports, mcpToolsModuleInfo, getToken, userData, selfConfiguration]);
 
   return null;
 };

@@ -48,7 +48,7 @@ function defaultDexConnectorMetadataService(connectorId: string) {
   return DexDefaultConnectorMetadataService;
 }
 
-export function getAbsoluteRedirectUrl(redirectUrl?: string) {
+function getAbsoluteRedirectUrl(redirectUrl?: string) {
   if (!redirectUrl) {
     return window.location.href;
   }

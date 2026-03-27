@@ -5,13 +5,23 @@
  * app-specific context derived from selfConfiguration.
  */
 
+export type UserData = {
+  token: string;
+  username: string;
+  groups: string[];
+  email: string;
+  id: string;
+};
+
 export type ToolContext = {
   /**
    * Always returns the latest token — safe to call multiple times during
    * long-running tool executions where the token may be silently renewed
    * by oidc-client-ts in the background.
    */
-  getToken: () => Promise<string>;
+  getToken: () => Promise<string | null>;
+  /** Authenticated user information. Undefined if the user is not logged in. */
+  userData: UserData | undefined;
   /**
    * Raw selfConfiguration from the app's runtime WebFinger.
    * Micro-frontends cast this to their own known config shape to extract endpoints etc.
@@ -43,8 +53,6 @@ export type MCPToolDefinition<
   description: string;
   /** JSON Schema Draft 7 object describing the tool's input parameters (excluding context) */
   inputSchema: Record<string, unknown>;
-  /** When true, shell-ui will resolve a token and inject ToolContext before calling execute() */
-  authRequired: boolean;
   execute: (
     params: TParams & { context: ToolContext },
     client: ModelContextClient,
