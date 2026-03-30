@@ -20,6 +20,8 @@ import { STATUS_CRITICAL, STATUS_HEALTH, STATUS_WARNING } from '../constants';
 import { useUserAccessRight } from '../hooks';
 import { compareHealth } from '../services/utils';
 import { useAlerts } from './AlertProvider';
+import type { Alert } from '../services/alertUtils';
+import type { QueryStatus } from 'react-query';
 import { useBasenameRelativeNavigate } from '@scality/module-federation';
 
 const AlertPageHeaderContainer = styled.div`
@@ -94,8 +96,8 @@ const getAlertStatus = (numbersOfCritical, numbersOfWarning) =>
   numbersOfCritical > 0
     ? STATUS_CRITICAL
     : numbersOfWarning > 0
-    ? STATUS_WARNING
-    : STATUS_HEALTH;
+      ? STATUS_WARNING
+      : STATUS_HEALTH;
 
 function AlertPageHeader({
   activeAlerts,
@@ -118,7 +120,7 @@ function AlertPageHeader({
         <Title>
           <AlertStatusIcon>
             <StatusWrapper status={alertStatus}>
-              <StatusIcon status={alertStatus} name="Alert" entity='Alerts' />
+              <StatusIcon status={alertStatus} name="Alert" entity="Alerts" />
             </StatusWrapper>
           </AlertStatusIcon>
           <>
@@ -163,9 +165,14 @@ function AlertPageHeader({
   );
 }
 
+type ActiveAlertTabProps = {
+  columns: Record<string, unknown>[];
+  data: Alert[];
+  status: QueryStatus;
+};
+
 const ActiveAlertTab = React.memo(
-  // @ts-expect-error - FIXME when you are working on it
-  ({ columns, data }) => {
+  ({ columns, data, status }: ActiveAlertTabProps) => {
     const sortTypes = React.useMemo(() => {
       return {
         severity: (row1, row2) => {
@@ -197,6 +204,7 @@ const ActiveAlertTab = React.memo(
         data={data}
         defaultSortingKey={DEFAULT_SORTING_KEY}
         sortTypes={sortTypes}
+        status={status}
         entityName={{
           en: {
             singular: 'active alert',
@@ -219,10 +227,12 @@ const ActiveAlertTab = React.memo(
       </Table>
     );
   },
-  (a, b) => {
-    // compare the alert only on id and severity
-    // @ts-expect-error - FIXME when you are working on it
-    return isEqual(a.columns, b.columns) && isEqualAlert(a.data, b.data);
+  (prevProps: ActiveAlertTabProps, nextProps: ActiveAlertTabProps) => {
+    return (
+      isEqual(prevProps.columns, nextProps.columns) &&
+      isEqualAlert(prevProps.data, nextProps.data) &&
+      prevProps.status === nextProps.status
+    );
   },
 );
 export default function AlertPage() {
@@ -295,8 +305,11 @@ export default function AlertPage() {
         />
       </AppContainer.OverallSummary>
       <AppContainer.MainContent>
-        {/* @ts-expect-error - FIXME when you are working on it */}
-        <ActiveAlertTab data={leafAlerts} columns={columns} />
+        <ActiveAlertTab
+          data={leafAlerts}
+          columns={columns}
+          status={alerts.status}
+        />
       </AppContainer.MainContent>
     </AppContainer>
   );

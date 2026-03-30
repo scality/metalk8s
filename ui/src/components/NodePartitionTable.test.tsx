@@ -4,7 +4,6 @@ import { rest } from 'msw';
 import NodePartitionTable from './NodePartitionTable';
 import { render, FAKE_CONTROL_PLANE_IP } from './__TEST__/util';
 import { initialize as initializeProm } from '../services/prometheus/api';
-import { initialize as initializeAM } from '../services/alertmanager/api';
 import { initialize as initializeLoki } from '../services/loki/api';
 import { mockOffsetSize } from '../tests/mocks/util';
 import { useAlerts } from '../containers/AlertProvider';
@@ -338,7 +337,6 @@ describe('the system partition table', () => {
     });
     // Setup
     initializeProm(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus`);
-    initializeAM(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager`);
     initializeLoki(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/loki`);
     render(<NodePartitionTable instanceIP={'192.168.1.29'} />);
     expect(
@@ -361,7 +359,6 @@ describe('the system partition table', () => {
   test('handles server error', async () => {
     // S
     initializeProm(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus`);
-    initializeAM(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager`);
     initializeLoki(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/loki`);
     // override the default route with error status
     server.use(

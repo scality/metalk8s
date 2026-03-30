@@ -51,6 +51,16 @@ export function initialize(apiUrl: string) {
   prometheusApiClient = new ApiClient({ apiUrl });
 }
 
+export function setHeaders(headers: Record<string, string>) {
+  if (prometheusApiClient) {
+    prometheusApiClient.setHeaders(headers);
+  } else {
+    console.warn(
+      'setHeaders called before prometheusApiClient was initialized',
+    );
+  }
+}
+
 export function getAlerts() {
   if (prometheusApiClient) {
     return prometheusApiClient.get('/api/v1/alerts');

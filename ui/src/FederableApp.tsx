@@ -6,6 +6,7 @@ import { applyMiddleware, compose, createStore, Store } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import 'regenerator-runtime/runtime';
 import App from './containers/App';
+import PrometheusAuthProvider from './containers/PrometheusAuthProvider';
 import { authErrorAction } from './ducks/app/authError';
 import { setApiConfigAction } from './ducks/config';
 import { setHistory as setReduxHistory } from './ducks/history';
@@ -125,11 +126,13 @@ export default function FederableApp(props: FederatedAppProps) {
     >
       <Provider store={store}>
         <AppConfigProvider>
-          <ToastProvider>
-            <RouterWithBaseName>
-              <App />
-            </RouterWithBaseName>
-          </ToastProvider>
+          <PrometheusAuthProvider>
+            <ToastProvider>
+              <RouterWithBaseName>
+                <App />
+              </RouterWithBaseName>
+            </ToastProvider>
+          </PrometheusAuthProvider>
         </AppConfigProvider>
       </Provider>
     </ShellHooksProvider>

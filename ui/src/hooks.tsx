@@ -121,13 +121,9 @@ export const useVolumesWithAlerts = (nodeName?: string) => {
     // @ts-expect-error - FIXME when you are working on it
     getVolumeListData(state, null, nodeName),
   );
-  //This forces alerts to have been fetched at least once (watchdog alert should be present)
-  // before rendering volume list
-  // TODO enhance this using useAlerts status
-  if (!alerts || alerts.length === 0) return [];
   // @ts-expect-error - FIXME when you are working on it
   const volumeListWithStatus = volumeListData.map((volume) => {
-    const volumeAlerts = filterAlerts(alerts, {
+    const volumeAlerts = filterAlerts(alerts || [], {
       persistentvolumeclaim: volume.persistentvolumeclaim,
     });
     // For the unbound volume, the health status should be none.

@@ -2,8 +2,6 @@ import {
   removeWarningAlerts,
   formatActiveAlerts,
   sortAlerts,
-  STATUS_CRITICAL,
-  STATUS_HEALTH,
 } from './alertUtils';
 export type PrometheusAlert = {
   annotations: Record<string, string>;
@@ -29,8 +27,10 @@ export type AlertLabels = {
   selectors?: string[];
   [labelName: string]: string;
 };
-export function getAlerts(alertManagerUrl: string) {
-  return fetch(alertManagerUrl + '/api/v2/alerts')
+export function getAlerts(alertManagerUrl: string, token?: string) {
+  return fetch(alertManagerUrl + '/api/v2/alerts', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
     .then((r) => {
       if (r.ok) {
         return r.json();
@@ -50,16 +50,3 @@ export function getAlerts(alertManagerUrl: string) {
       return sortAlerts(removeWarningAlerts(formatActiveAlerts(result)));
     });
 }
-export const checkActiveAlertProvider = (): Promise<{
-  status: 'healthy' | 'critical';
-}> => {
-  // depends on Watchdog to see the if Alertmanager is up
-  // @ts-expect-error - FIXME when you are working on it
-  return getAlerts().then((result) => {
-    const watchdog = result.find(
-      (alert) => alert.labels.alertname === 'Watchdog',
-    );
-    if (watchdog) return STATUS_HEALTH;
-    else return STATUS_CRITICAL;
-  });
-};
