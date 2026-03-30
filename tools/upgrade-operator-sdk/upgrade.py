@@ -200,6 +200,7 @@ def load_config(config_dir: str, operator_dir: str) -> dict[str, Any]:
     cfg["patches_dir"] = d / "patches"
     cfg["backup_dir"] = op.parent / f"{op.name}.bak"
     cfg.setdefault("raw_copy", [])
+    cfg.setdefault("delete", [])
     cfg.setdefault("extra_commands", [])
 
     return cfg
@@ -299,15 +300,14 @@ def reconcile_versions(
 ) -> None:
     """Compare detected versions with YAML pins.
 
-    - No pin: auto-pin and update the YAML file.
+    - No pin: use detected, log info.
     - Pin < detected: warn (newer available), keep pinned.
     - Pin == detected: all good.
     - Pin > detected: warn (unusual), use detected.
 
-    Zero interactive input — CI-safe.
+    Never modifies the YAML file. Zero interactive input -- CI-safe.
     """
     log_step("Reconciling versions")
-    auto_pins: dict[str, str] = {}
 
     for key in ("operator_sdk_version", "go_toolchain", "k8s_libs"):
         found = detected.get(key, "")
@@ -316,37 +316,16 @@ def reconcile_versions(
         pinned = cfg.get(key, "")
 
         if not pinned:
-            log_info(f"  {key}: {found} (detected, auto-pinning)")
+            log_info(f"  {key}: {found} (detected, not pinned)")
             cfg[key] = found
-            auto_pins[key] = found
         elif found == pinned:
             log_info(f"  {key}: {pinned} (up to date)")
         elif found > pinned:  # lexicographic, works for semver
-            log_warn(f"  {key}: pinned {pinned}, " f"newer {found} available")
+            log_warn(f"  {key}: pinned {pinned}, newer {found} available")
             cfg[key] = pinned
         else:
-            log_warn(f"  {key}: pinned {pinned} > detected {found}, " "using detected")
+            log_warn(f"  {key}: pinned {pinned} > detected {found}, using detected")
             cfg[key] = found
-
-    if auto_pins:
-        _update_yaml(cfg["config_file"], auto_pins)
-
-
-def _update_yaml(config_file: Path, updates: dict[str, str]) -> None:
-    """Update specific keys in the YAML config file in-place."""
-    text = config_file.read_text(encoding=_ENCODING)
-    for key, value in updates.items():
-        pattern = rf"^{re.escape(key)}:.*$"
-        replacement = f"{key}: {value}"
-        new_text = re.sub(pattern, replacement, text, flags=re.MULTILINE)
-        if new_text == text:
-            if not text.endswith("\n"):
-                text += "\n"
-            text += f"{key}: {value}\n"
-        else:
-            text = new_text
-    config_file.write_text(text, encoding=_ENCODING)
-    log_info(f"Updated {config_file.name}: {', '.join(updates)}")
 
 
 def confirm_upgrade(cfg: dict[str, Any]) -> None:
@@ -480,12 +459,23 @@ def scaffold_project(cfg: dict[str, Any]) -> None:
     for api in cfg["apis"]:
         _create_api(op_dir, sdk, api, cfg)
 
-    devcontainer = op_dir / ".devcontainer"
-    if devcontainer.exists():
-        shutil.rmtree(devcontainer)
-        log_info("Removed .devcontainer/ (not needed)")
+    _delete_scaffold_files(cfg)
 
     log_info("Scaffold complete")
+
+
+def _delete_scaffold_files(cfg: dict[str, Any]) -> None:
+    """Remove files/dirs listed in the 'delete' config field."""
+    op_dir: Path = cfg["operator_dir"]
+    for rel_path in cfg.get("delete", []):
+        target = op_dir / rel_path
+        if not target.exists():
+            continue
+        if target.is_dir():
+            shutil.rmtree(target)
+        else:
+            target.unlink()
+        log_info(f"  Deleted {rel_path}")
 
 
 def _create_api(
@@ -541,8 +531,26 @@ def restore_backup(cfg: dict[str, Any]) -> None:
 
         if src.is_dir():
             if dst.exists():
-                log_warn(f"  {rel_path} exists in scaffold, replacing")
-                shutil.rmtree(dst)
+                # Compare scaffold vs backup; skip if identical, error if different.
+                result = subprocess.run(
+                    ["diff", "-rq", str(dst), str(src)],
+                    capture_output=True,
+                    text=True,
+                )
+                if result.returncode == 0:
+                    n = sum(1 for _ in dst.rglob("*") if _.is_file())
+                    log_info(f"  {rel_path} ({n} files, identical to scaffold)")
+                    count += n
+                    continue
+                log_error(f"  {rel_path} exists in scaffold with different content")
+                subprocess.run(
+                    ["diff", "-ru", str(dst), str(src)],
+                    capture_output=False,
+                )
+                die(
+                    f"Conflict in {rel_path}. Update the directory in "
+                    ".bak/ then re-run with --skip-backup."
+                )
             shutil.copytree(src, dst)
             n = sum(1 for _ in dst.rglob("*") if _.is_file())
             log_info(f"  {rel_path} ({n} files)")
@@ -621,7 +629,6 @@ def _substitute_placeholders(cfg: dict[str, Any]) -> None:
         text = makefile.read_text(encoding=_ENCODING)
         if cfg.get("go_toolchain"):
             text = text.replace("__GOTOOLCHAIN__", cfg["go_toolchain"])
-        text = text.replace("__IMAGE__", cfg.get("image_placeholder", ""))
         makefile.write_text(text, encoding=_ENCODING)
 
     log_info("Placeholders substituted")

@@ -12,4 +12,4 @@
 +metalk8s: manifests kustomize ## Generate MetalK8s resulting manifests
 +	mkdir -p deploy
 +	$(KUSTOMIZE) build config/metalk8s | \
-+	sed 's/BUILD_IMAGE_CLUSTER_OPERATOR:latest/__IMAGE__/' > deploy/manifests.yaml
++	sed 's/BUILD_IMAGE_CLUSTER_OPERATOR:latest/{{ build_image_name("storage-operator") }}/' > deploy/manifests.yaml

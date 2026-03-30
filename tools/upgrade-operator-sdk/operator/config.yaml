@@ -27,7 +27,12 @@ raw_copy:
   - api/v1alpha1/virtualippool_types_test.go
   - api/v1alpha1/v1alpha1_suite_test.go
 
-image_placeholder: '{{ build_image_name("metalk8s-operator") }}'
+# Files/dirs to delete from the scaffold (not needed or incompatible).
+delete:
+  - .devcontainer
+  - .github
+  - internal/controller/clusterconfig_controller_test.go
+  - internal/controller/virtualippool_controller_test.go
 
 extra_commands:
   - ["make", "metalk8s"]

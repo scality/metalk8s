@@ -188,7 +188,7 @@ Each operator has a config directory at `scripts/upgrade-operator-sdk/<name>/` c
 - **Versions**: `operator_sdk_version`, `go_toolchain` (optional pin), `k8s_libs` (optional pin)
 - **Scaffold**: `repo`, `domain`, `apis` (with `group`, `version`, `kind`, `namespaced`). The operator name is derived from the config directory name.
 - **Raw copy**: `raw_copy` -- directories or files copied as-is from backup (purely custom code with no scaffold equivalent: `pkg/`, `version/`, `config/metalk8s/`, `salt/`, individual test/helper files)
-- **Post-processing**: `image_placeholder`, `extra_commands`
+- **Post-processing**: `extra_commands`
 
 ### Patch files
 
@@ -205,10 +205,9 @@ apply cleanly, look for `.rej` files and resolve manually.
 
 Patch files use `__PLACEHOLDER__` tokens for runtime values:
 
-| Placeholder       | Replaced with                   | Source     |
-| ----------------- | ------------------------------- | ---------- |
-| `__GOTOOLCHAIN__` | Detected/pinned Go toolchain    | `Makefile` |
-| `__IMAGE__`       | `image_placeholder` from config | `Makefile` |
+| Placeholder       | Replaced with                | Source     |
+| ----------------- | ---------------------------- | ---------- |
+| `__GOTOOLCHAIN__` | Detected/pinned Go toolchain | `Makefile` |
 
 New `.patch` files in the patches directory are automatically picked up.
 
