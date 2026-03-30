@@ -126,18 +126,91 @@ A few tips to bump image versions and SHAs:
 
 ## Operator-sdk and Go version
 
-This guide is applied for both `metalk8s-operator` and `storage-operator`.
+The upgrade is automated by `scripts/upgrade-operator-sdk.py`. The script detects
+the latest compatible versions of operator-sdk, Go toolchain and golangci-lint from
+their respective public APIs, scaffolds fresh projects, and merges the existing
+custom code back. It applies to both `operator/` and `storage-operator/`.
 
- - check [documentation](https://sdk.operatorframework.io/docs/upgrading-sdk-version/$version)
-   for important changes and apply them.
- - bump version in Makefile.
- - if necessary, bump go version in pre_merge github action.
- - if necessary, bump go version in Dockerfile.
- - if necessary, bump go dependencies versions.
- - in the root of each operator, run `go mod tidy`.
- - run `make metalk8s`
- - check a diff between the two latest versions of this [test project](https://github.com/operator-framework/operator-sdk/tree/master/testdata/go/v4/memcached-operator)
- - the diff in this repo and the test project should be more or less the same
+### Prerequisites
+
+- `go` and `curl` in `PATH`.
+- A GitHub personal access token is optional but strongly recommended: without it,
+  GitHub API calls are subject to a 60 requests/hour anonymous rate limit. The token
+  must be **exported** so child processes inherit it:
+
+  ```
+  export GITHUB_TOKEN=<your_token>
+  ```
+
+  Setting the variable without `export` (e.g. `GITHUB_TOKEN=xxx`) is silently
+  ignored by the script because Python's `os.environ` only sees exported variables.
+
+### Running the upgrade
+
+```
+python3 scripts/upgrade-operator-sdk.py
+```
+
+The script will display the resolved versions and prompt for confirmation before
+making any changes. Use `--yes` to skip the confirmation (e.g. in CI). The original
+operator directories are preserved as `<name>.bak/` for the duration of the review.
+
+Options:
+
+```
+--operator-only   Only process operator/
+--storage-only    Only process storage-operator/
+--skip-backup     Reuse an existing .bak directory (no new backup)
+--clean-tools     Delete .tmp/bin/ after the upgrade (~150 MB, re-downloaded next run)
+--yes, -y         Skip the confirmation prompt
+```
+
+The script caches `operator-sdk` and `golangci-lint` in `.tmp/bin/` so they are not
+re-downloaded on repeated runs. Use `--clean-tools` to reclaim disk space once the
+upgrade is validated.
+
+### What to review after the upgrade
+
+After a successful run:
+
+1. Compare the backup against the result to spot unexpected differences:
+
+   ```
+   diff -r operator.bak/ operator/
+   diff -r storage-operator.bak/ storage-operator/
+   ```
+
+2. Run the unit test suite for each operator:
+
+   ```
+   cd operator && make test
+   cd storage-operator && make test
+   ```
+
+3. Check that generated CRD scopes are correct:
+   `config/crd/bases/` — `ClusterConfig` must be `Cluster`-scoped,
+   `VirtualIPPool` must be `Namespaced`, `Volume` must be `Cluster`-scoped.
+
+4. Check that the generated RBAC is complete:
+   `config/rbac/role.yaml` in each operator.
+
+5. Check that the MetalK8s manifests contain the correct Jinja template:
+   `deploy/manifests.yaml` must contain
+   `{{ build_image_name("metalk8s-operator") }}` / `{{ build_image_name("storage-operator") }}`.
+
+6. Remove the backup directories once satisfied:
+
+   ```
+   rm -rf operator.bak/ storage-operator.bak/
+   ```
+
+### Stale compatibility fixes
+
+The `OPERATORS` dict in `scripts/upgrade-operator-sdk.py` contains a `fixes` tuple
+per operator. These entries are one-shot source-level corrections applied after the
+backup merge (e.g. deprecated API replacements). Once the backup no longer contains
+the old pattern — i.e. after the script has been run at least once — the entry
+becomes a no-op and should be removed to keep the script clean.
 
 ## Calico
 

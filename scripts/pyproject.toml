@@ -1,0 +1,39 @@
+# Linting and formatting configuration for scripts/upgrade-operator-sdk.py
+# Run from the scripts/ directory:
+#   python3 -m black upgrade-operator-sdk.py
+#   python3 -m ruff check upgrade-operator-sdk.py
+#   python3 -m mypy upgrade-operator-sdk.py
+
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes (undefined names, unused imports, …)
+    "I",   # isort (import ordering)
+    "N",   # pep8-naming conventions
+    "UP",  # pyupgrade (modernise Python syntax)
+    "B",   # flake8-bugbear (likely bugs and design issues)
+    "C4",  # flake8-comprehensions (better list/dict/set comprehensions)
+    "SIM", # flake8-simplify (simplifiable code patterns)
+    "RET", # flake8-return (return statement issues)
+    "PTH", # flake8-use-pathlib (prefer pathlib over os.path)
+    "TRY", # tryceratops (exception handling anti-patterns)
+]
+ignore = [
+    "RET504", # allow x = ...; return x (readability)
+    "TRY003", # allow long messages in raise/die() calls
+    "TRY300", # allow return inside try block
+]
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
+python_version = "3.9"
