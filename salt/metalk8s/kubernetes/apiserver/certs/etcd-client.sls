@@ -29,6 +29,7 @@ Generate apiserver etcd client certificate:
     - signing_policy: {{ etcd.cert.apiserver_client_signing_policy }}
     - CN: kube-apiserver-etcd-client
     - O: "system:masters"
+    - authorityKeyIdentifier: keyid
     - days_valid: {{
         certificates.client.files['apiserver-etcd'].days_valid |
         default(certificates.client.days_valid) }}

@@ -27,6 +27,7 @@ Generate backup server CA certificate:
     - CN: backup-server-ca
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
+    - subjectKeyIdentifier: hash
     - days_valid: {{ backup_server.ca.cert.days_valid }}
     - user: root
     - group: root

@@ -29,6 +29,7 @@ Generate kube-apiserver kubelet client certificate:
     - signing_policy: {{ kube_api.cert.client_signing_policy }}
     - CN: kube-apiserver-kubelet-client
     - O: "system:masters"
+    - authorityKeyIdentifier: keyid
     - days_valid: {{
         certificates.client.files['apiserver-kubelet'].days_valid |
         default(certificates.client.days_valid) }}

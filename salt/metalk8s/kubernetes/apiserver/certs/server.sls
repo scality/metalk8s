@@ -43,6 +43,7 @@ Generate kube-apiserver certificate:
     - signing_policy: {{ kube_api.cert.server_signing_policy }}
     - CN: kube-apiserver
     - subjectAltName: "{{ salt['metalk8s.format_san'](certSANs | unique) }}"
+    - authorityKeyIdentifier: keyid
     - days_valid: {{
         certificates.server.files.apiserver.days_valid |
         default(certificates.server.days_valid) }}

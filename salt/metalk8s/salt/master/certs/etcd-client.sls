@@ -28,6 +28,7 @@ Generate salt master etcd client certificate:
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ etcd.cert.apiserver_client_signing_policy }}
     - CN: etcd-salt-master-client
+    - authorityKeyIdentifier: keyid
     - days_valid: {{
         certificates.client.files['salt-master-etcd'].days_valid |
         default(certificates.client.days_valid) }}
