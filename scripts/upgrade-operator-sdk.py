@@ -70,6 +70,10 @@ _URL_OPERATOR_SDK_GOMOD: Final = (
     + _GITHUB_REPO_OPERATOR_SDK
     + "/{version}/go.mod"
 )
+_URL_CONTROLLER_RUNTIME_GOMOD: Final = "https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/{version}/go.mod"
+# Go module proxy — returns a newline-separated list of available versions.
+_URL_GO_MODULE_VERSIONS: Final = "https://proxy.golang.org/{module}/@v/list"
+
 _URL_OPERATOR_SDK_DOWNLOAD: Final = (
     "https://github.com/"
     + _GITHUB_REPO_OPERATOR_SDK
@@ -81,6 +85,42 @@ _URL_GOLANGCI_INSTALL: Final = (
     + _GITHUB_REPO_GOLANGCI_LINT
     + "/HEAD/install.sh"
 )
+
+# k8s.io libraries that are always released in lock-step.
+_K8S_LIBS: Final = ("k8s.io/api", "k8s.io/apimachinery", "k8s.io/client-go")
+# The lib whose version drives the cadence for all three (queried for latest patch).
+_K8S_LIB_MODULE: Final = _K8S_LIBS[0]
+
+# ---------------------------------------------------------------------------
+# Regex patterns
+#
+# Centralised here so the business logic functions stay free of raw string
+# literals and a change in format only needs updating in one place.
+# Patterns used inside file_regex_replace() embed flags (e.g. (?m)) because
+# that helper does not accept a separate flags argument.
+# ---------------------------------------------------------------------------
+
+# Go version strings
+_PAT_GO_MAJOR_MINOR: Final = r"^go(\d+\.\d+).*"
+_PAT_GO_VERSION_IN_GOMOD: Final = r"^go\s+(\d+\.\d+)(?:\.\d+)?"
+_PAT_SEMVER_MAJOR_MINOR: Final = r"(v\d+\.\d+)\."
+
+# Dependency versions in go.mod files
+_PAT_CONTROLLER_RUNTIME_IN_GOMOD: Final = r"sigs\.k8s\.io/controller-runtime\s+(v\S+)"
+_PAT_K8S_API_IN_GOMOD: Final = r"k8s\.io/api\s+(v\S+)"
+
+# golangci-lint configuration
+_PAT_GOLANGCI_CONFIG_VERSION: Final = r'^version:\s+"(\d+)"'
+
+# Makefile lines (MULTILINE flag kept at call site for clarity)
+_PAT_MAKEFILE_ENVTEST_LINE: Final = r"(^#?ENVTEST_K8S_VERSION[^\n]*\n)"
+_PAT_MAKEFILE_GOLANGCI_VERSION: Final = r"^GOLANGCI_LINT_VERSION \?=.*$"
+
+# Dockerfile (passed to file_regex_replace — no separate flags argument)
+_PAT_DOCKERFILE_FROM_GOLANG: Final = r"FROM golang:\d+\.\d+"
+
+# operator-sdk PROJECT file ((?m) embedded because used in file_regex_replace)
+_PAT_PROJECT_GROUP_LINE: Final = r"(?m)^  group: metalk8s\n"
 
 # ---------------------------------------------------------------------------
 # Makefile fragment templates
@@ -192,7 +232,7 @@ _GOLANGCI_MIN_CONFIG_VERSION: Final = 2
 
 def _golangci_config_version(content: str) -> int | None:
     """Return the numeric config version from a .golangci.yml, or None."""
-    m = re.search(r'^version:\s+"(\d+)"', content, re.MULTILINE)
+    m = re.search(_PAT_GOLANGCI_CONFIG_VERSION, content, re.MULTILINE)
     return int(m.group(1)) if m else None
 
 
@@ -217,7 +257,7 @@ class VersionInfo:
 
         Example: 'go1.24.13' -> '1.24'.
         """
-        return re.sub(r"^go(\d+\.\d+).*", r"\1", self.go_toolchain)
+        return re.sub(_PAT_GO_MAJOR_MINOR, r"\1", self.go_toolchain)
 
 
 # Module-level reference; replaced by detect_versions() before any phase runs.
@@ -801,7 +841,7 @@ def _create_api(op_dir: Path, sdk: str, api: ApiDef) -> None:
     # scrub it from PROJECT so the CRD group stays empty.
     log_warn(f"Empty group rejected for {api.kind}, retrying with placeholder")
     run([sdk, "create", "api", "--group", "metalk8s", *tail], cwd=op_dir)
-    file_regex_replace(op_dir / "PROJECT", r"(?m)^  group: metalk8s\n", "")
+    file_regex_replace(op_dir / "PROJECT", _PAT_PROJECT_GROUP_LINE, "")
     log_info("Patched PROJECT: removed placeholder group")
 
 
@@ -874,7 +914,7 @@ def _adapt_makefile(spec: OperatorSpec) -> None:
             "__TOOLCHAIN__", versions.go_toolchain
         )
         new_text, count = re.subn(
-            r"(^#?ENVTEST_K8S_VERSION[^\n]*\n)",
+            _PAT_MAKEFILE_ENVTEST_LINE,
             rf"\1{gotoolchain_block}",
             text,
             count=1,
@@ -891,7 +931,7 @@ def _adapt_makefile(spec: OperatorSpec) -> None:
             text = new_text
 
     text = re.sub(
-        r"^GOLANGCI_LINT_VERSION \?=.*$",
+        _PAT_MAKEFILE_GOLANGCI_VERSION,
         f"GOLANGCI_LINT_VERSION ?= {versions.golangci_lint}",
         text,
         flags=re.MULTILINE,
@@ -911,7 +951,7 @@ def _adapt_dockerfile(spec: OperatorSpec) -> None:
     # Dockerfile comes from backup via merge_backup; we only update the Go image.
     dst = spec.op_dir / "Dockerfile"
     file_regex_replace(
-        dst, r"FROM golang:\d+\.\d+", f"FROM golang:{versions.go_major_minor}"
+        dst, _PAT_DOCKERFILE_FROM_GOLANG, f"FROM golang:{versions.go_major_minor}"
     )
     log_info(f"Dockerfile updated (Go base image -> {versions.go_major_minor})")
 
