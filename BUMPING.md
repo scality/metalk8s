@@ -131,144 +131,79 @@ This guide is applied for both `metalk8s-operator` and `storage-operator`.
 ### Prerequisites
 
 - `go`, `curl`, and `patch` in `PATH`.
-- A GitHub personal access token is optional but strongly recommended: without it,
-  GitHub API calls are subject to a 60 requests/hour anonymous rate limit. The token
-  must be **exported** so child processes inherit it:
+- `pyyaml` Python package: `pip install pyyaml`
 
-  ```
-  export GITHUB_TOKEN=<your_token>
-  ```
+### Updating the versions
 
-  Setting the variable without `export` (e.g. `GITHUB_TOKEN=xxx`) is silently
-  ignored by the script because Python's `os.environ` only sees exported variables.
+Before running the script, update the target versions in the YAML config files at
+`scripts/upgrade-operator-sdk/<name>/config.yaml`:
+
+```yaml
+operator_sdk_version: v1.42.1    # target operator-sdk release
+go_toolchain: go1.25.8           # Go toolchain (for GOTOOLCHAIN + FROM golang:X.Y)
+k8s_libs: v0.33.9                # k8s.io/{api,apimachinery,client-go} version
+```
+
+The script makes **no version-detection API calls**; all versions are read from the
+YAML config.
 
 ### Running the upgrade
 
-```
-python3 scripts/upgrade-operator-sdk.py
+The script processes one operator at a time. Run it once per operator:
+
+```bash
+python3 scripts/upgrade-operator-sdk/upgrade.py operator
+python3 scripts/upgrade-operator-sdk/upgrade.py storage-operator
 ```
 
-The script will display the resolved versions and prompt for confirmation before
-making any changes. Use `--yes` to skip the confirmation (e.g. in CI). The original
-operator directories are preserved as `<name>.bak/` for the duration of the review.
+The argument is the name of the config directory next to the script
+(i.e. `scripts/upgrade-operator-sdk/<name>/`). A full path can also be
+given for configs stored elsewhere.
 
 Options:
 
 ```
---operator-only   Only process operator/
---storage-only    Only process storage-operator/
 --skip-backup     Reuse an existing .bak directory (no new backup)
---clean-tools     Delete .tmp/bin/ after the upgrade (~150 MB, re-downloaded next run)
+--clean-tools     Delete .tmp/bin/ after the upgrade
 --yes, -y         Skip the confirmation prompt
 ```
 
-The script caches `operator-sdk` in `.tmp/bin/` so it is not re-downloaded on
-repeated runs. Use `--clean-tools` to reclaim disk space once the upgrade is
-validated.
+### YAML config files
 
-### What to review after the upgrade
+Each operator has a config directory at `scripts/upgrade-operator-sdk/<name>/` containing
+`config.yaml` and a `patches/` subdirectory. The config fields are:
 
-After a successful run:
-
-1. Compare the backup against the result to spot unexpected differences:
-
-   ```
-   diff -r operator.bak/ operator/
-   diff -r storage-operator.bak/ storage-operator/
-   ```
-
-2. Run the unit test suite for each operator:
-
-   ```
-   cd operator && make test
-   cd storage-operator && make test
-   ```
-
-3. Check that generated CRD scopes are correct:
-   `config/crd/bases/` — `ClusterConfig` must be `Cluster`-scoped,
-   `VirtualIPPool` must be `Namespaced`, `Volume` must be `Cluster`-scoped.
-
-4. Check that the generated RBAC is complete:
-   `config/rbac/role.yaml` in each operator.
-
-5. Check that the MetalK8s manifests contain the correct Jinja template:
-   `deploy/manifests.yaml` must contain
-   `{{ build_image_name("metalk8s-operator") }}` / `{{ build_image_name("storage-operator") }}`.
-
-6. Remove the backup directories once satisfied:
-
-   ```
-   rm -rf operator.bak/ storage-operator.bak/
-   ```
+- **Versions**: `operator_sdk_version`, `go_toolchain`, `k8s_libs`
+- **Scaffold**: `repo`, `domain`, `apis` (with `group`, `version`, `kind`, `namespaced`). The operator name is derived from the config directory name.
+- **Paths**: `operator_dir`, `patches_dir`, `backup_paths`
+- **Post-processing**: `image_placeholder`, `extra_commands`
 
 ### Patch files
 
 MetalK8s-specific customizations to scaffold-generated files (`Dockerfile`, `Makefile`)
-are stored as standard GNU unified diff files in `scripts/patches/<operator>/`:
+are stored as GNU unified diff files in the `patches/` subdirectory next to `config.yaml`. The script
+applies them with `patch -p1` after scaffolding. If a patch does not apply cleanly,
+look for `.rej` files and resolve manually.
 
-```
-scripts/patches/
-  operator/
-    Dockerfile.patch    # extra COPY dirs, ldflags, Scality LABEL block
-    Makefile.patch      # GOTOOLCHAIN export, metalk8s make target
-  storage-operator/
-    Dockerfile.patch    # extra COPY salt/, Scality LABEL block
-    Makefile.patch      # GOTOOLCHAIN export, metalk8s make target
-```
+Patch files use `__PLACEHOLDER__` tokens for values from the YAML config:
 
-The script applies them with `patch -p1` after scaffolding. If a patch does not
-apply cleanly (e.g. because the scaffold changed significantly), the script warns
-but continues — look for `.rej` files in the operator directory and resolve manually.
+| Placeholder       | Replaced with                                | Source     |
+| ----------------- | -------------------------------------------- | ---------- |
+| `__GOTOOLCHAIN__` | `go_toolchain` from config (e.g. `go1.25.8`) | `Makefile` |
+| `__IMAGE__`       | `image_placeholder` from config              | `Makefile` |
 
-#### Placeholders
+The `FROM golang:X.Y` in `Dockerfile` is derived from `go_toolchain` in the config.
 
-Patch files use `__PLACEHOLDER__` tokens for values that are only known at runtime.
-The script replaces them after applying the patches:
+New `.patch` files in the patches directory are automatically picked up.
 
-| Placeholder | Replaced with | File |
-|---|---|---|
-| `__GOTOOLCHAIN__` | Detected Go toolchain (e.g. `go1.25.8`) | `Makefile` |
-| `__IMAGE__` | Jinja2 `build_image_name(...)` expression | `Makefile` |
+### What to review after the upgrade
 
-The `FROM golang:X.Y` line in `Dockerfile` and `GOLANGCI_LINT_VERSION` in `Makefile`
-are updated by simple regex substitutions (not via patches), since their values change
-with every upgrade.
-
-#### How to add or update a patch
-
-Patches are plain `diff -u` output — you can edit them by hand or regenerate them.
-To regenerate after modifying an operator customization:
-
-```bash
-# 1. Run the upgrade script with --skip-backup to get a fresh scaffold
-python3 scripts/upgrade-operator-sdk.py --operator-only --skip-backup --yes
-
-# 2. The script applies existing patches; to start fresh, reset the file:
-git checkout operator/Dockerfile
-
-# 3. Make your changes to the scaffold file
-vim operator/Dockerfile
-
-# 4. Generate the new patch (a/ b/ prefixes are required for patch -p1)
-diff -u <(git show HEAD:operator/Dockerfile) operator/Dockerfile \
-  | sed '1s|.*|--- a/Dockerfile|;2s|.*|+++ b/Dockerfile|' \
-  > scripts/patches/operator/Dockerfile.patch
-
-# 5. Verify it applies cleanly
-git checkout operator/Dockerfile
-patch -p1 --dry-run -d operator < scripts/patches/operator/Dockerfile.patch
-```
-
-To add a patch for a new file (e.g. `README.md`), create a new `.patch` file in
-the same directory — the script automatically picks up all `*.patch` files.
-
-### Stale compatibility fixes
-
-The `OPERATORS` dict in `scripts/upgrade-operator-sdk.py` contains a `fixes` tuple
-per operator. These entries are one-shot source-level corrections applied after the
-backup merge (e.g. deprecated API replacements). Once the backup no longer contains
-the old pattern — i.e. after the script has been run at least once — the entry
-becomes a no-op and should be removed to keep the script clean.
+1. `git diff` to review all changes
+2. `cd <operator> && make test` to run tests
+3. Check `config/crd/bases/` for correct CRD scopes
+4. Check `config/rbac/role.yaml` for RBAC completeness
+5. Check `deploy/manifests.yaml` for correct Jinja templates
+6. Remove backup: `rm -rf <operator>.bak/`
 
 ## Calico
 

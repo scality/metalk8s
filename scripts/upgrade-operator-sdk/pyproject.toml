@@ -1,8 +1,8 @@
-# Linting and formatting configuration for scripts/upgrade-operator-sdk.py
+# Linting and formatting configuration for scripts/upgrade-operator-sdk/upgrade.py
 # Run from the scripts/ directory:
-#   python3 -m black upgrade-operator-sdk.py
-#   python3 -m ruff check upgrade-operator-sdk.py
-#   python3 -m mypy upgrade-operator-sdk.py
+#   python3 -m black upgrade-operator-sdk/upgrade.py
+#   python3 -m ruff check upgrade-operator-sdk/upgrade.py
+#   python3 -m mypy upgrade-operator-sdk/upgrade.py
 
 [tool.black]
 line-length = 88

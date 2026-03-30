@@ -1,0 +1,25 @@
+repo: github.com/scality/metalk8s/storage-operator
+domain: metalk8s.scality.com
+operator_dir: storage-operator
+
+operator_sdk_version: v1.42.1
+go_toolchain: go1.25.8
+k8s_libs: v0.33.9
+
+apis:
+  - group: storage
+    version: v1alpha1
+    kind: Volume
+    namespaced: false
+
+backup_paths:
+  - api/
+  - hack/
+  - internal/controller/
+  - config/metalk8s/
+  - salt/
+
+image_placeholder: '{{ build_image_name("storage-operator") }}'
+
+extra_commands:
+  - ["make", "metalk8s"]
