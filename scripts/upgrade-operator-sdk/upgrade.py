@@ -2,22 +2,22 @@
 """Automates the upgrade of operator-sdk based projects.
 
 Scaffolds a fresh project, detects the latest Go and k8s.io patch
-versions from the scaffold's go.mod, restores custom code from a backup,
-applies GNU patch files, and runs the build pipeline.
+versions, restores custom code from a backup, applies GNU patch files,
+and runs the build pipeline.
 
 Usage:
-    python3 scripts/upgrade-operator-sdk/upgrade.py <name> [OPTIONS]
+    python3 scripts/upgrade-operator-sdk/upgrade.py \\
+        --operator-dir <path> <config-dir> [OPTIONS]
 
 Examples:
-    python3 scripts/upgrade-operator-sdk/upgrade.py operator
-    python3 scripts/upgrade-operator-sdk/upgrade.py storage-operator
-
-The <name> is resolved relative to the script directory. A full path
-can also be given for configs stored elsewhere.
+    python3 scripts/upgrade-operator-sdk/upgrade.py \\
+        --operator-dir operator \\
+        scripts/upgrade-operator-sdk/operator
 
 Options:
+    --operator-dir     Path to the operator project directory (required)
     --skip-backup      Skip the backup step (assumes .bak already exists)
-    --clean-tools      Remove .tmp/bin/ after the upgrade (forces re-download)
+    --clean-tools      Remove tool cache after the upgrade (forces re-download)
     --yes, -y          Skip the confirmation prompt
     -h, --help         Show this help message
 
@@ -50,8 +50,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-REPO_ROOT: Final = Path(__file__).resolve().parent.parent.parent
-TOOLS_BIN: Final = REPO_ROOT / ".tmp" / "bin"
+TOOLS_BIN: Final = Path.home() / ".cache" / "upgrade-operator-sdk" / "bin"
 _SDK_BIN: Final = TOOLS_BIN / "operator-sdk"
 
 _ENCODING: Final = "utf-8"
@@ -162,7 +161,7 @@ def _github_headers() -> dict[str, str]:
 
 
 def _fetch_latest_github_release(repo: str) -> str:
-    """Return the latest release tag for a GitHub repository."""
+    """Return the latest release tag, or empty string on failure."""
     try:
         data = json.loads(
             _http_get(
@@ -181,35 +180,27 @@ def _fetch_latest_github_release(repo: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def load_config(config_dir: str) -> dict[str, Any]:
-    """Load and validate the operator config from a directory.
-
-    If *config_dir* is a plain name (no path separators), it is resolved
-    relative to the script's own directory.
-    """
-    # Plain name like "operator" → look next to this script.
-    # Path like "./foo" or "/abs/path" → use as-is.
-    p = Path(config_dir)
-    if not p.is_absolute() and os.sep not in config_dir and "/" not in config_dir:
-        p = Path(__file__).resolve().parent / config_dir
-    d = p.resolve()
+def load_config(config_dir: str, operator_dir: str) -> dict[str, Any]:
+    """Load and validate the operator config from a directory."""
+    d = Path(config_dir).resolve()
     config_file = d / "config.yaml"
     if not config_file.exists():
         die(f"Config file not found: {config_file}")
     with config_file.open(encoding=_ENCODING) as f:
         cfg: dict[str, Any] = yaml.safe_load(f)
 
-    for key in ("repo", "domain", "operator_dir", "apis", "operator_sdk_version"):
+    for key in ("repo", "domain", "apis", "operator_sdk_version"):
         if key not in cfg:
             die(f"Missing required key {key!r} in {config_file}")
 
+    op = Path(operator_dir).resolve()
     cfg["name"] = d.name
     cfg["config_file"] = config_file
-    cfg.setdefault("backup_paths", [])
-    cfg.setdefault("extra_commands", [])
-    cfg["operator_dir"] = REPO_ROOT / cfg["operator_dir"]
+    cfg["operator_dir"] = op
     cfg["patches_dir"] = d / "patches"
-    cfg["backup_dir"] = REPO_ROOT / f"{cfg['operator_dir'].name}.bak"
+    cfg["backup_dir"] = op.parent / f"{op.name}.bak"
+    cfg.setdefault("raw_copy", [])
+    cfg.setdefault("extra_commands", [])
 
     return cfg
 
@@ -308,12 +299,12 @@ def reconcile_versions(
 ) -> None:
     """Compare detected versions with YAML pins.
 
-    - No pin in YAML: auto-pin the detected value and update the file.
-    - Pin < detected: warn (newer available), keep the pinned value.
+    - No pin: auto-pin and update the YAML file.
+    - Pin < detected: warn (newer available), keep pinned.
     - Pin == detected: all good.
-    - Pin > detected: warn (unusual), use the detected value.
+    - Pin > detected: warn (unusual), use detected.
 
-    Zero interactive input — safe for CI.
+    Zero interactive input — CI-safe.
     """
     log_step("Reconciling versions")
     auto_pins: dict[str, str] = {}
@@ -365,8 +356,8 @@ def confirm_upgrade(cfg: dict[str, Any]) -> None:
     print()
     print(f"  operator-sdk   {cfg['operator_sdk_version']}")
     print()
-    print(f"  Target:        {cfg['name']}")
-    print(f"  Directory:     {cfg['operator_dir']}")
+    print(f"  Target:           {cfg['name']}")
+    print(f"  Operator dir:     {cfg['operator_dir']}")
     print()
     answer = input(f"{_BOLD}Proceed? [y/N] {_RESET}").strip().lower()
     if answer not in ("y", "yes"):
@@ -384,7 +375,6 @@ def _tool_env(cfg: dict[str, Any]) -> dict[str, str]:
         "PATH": f"{TOOLS_BIN}:{os.environ.get('PATH', '')}",
     }
     # Set after reconcile_versions() resolves the latest patch.
-    # Before that, cfg may not have go_toolchain yet.
     if cfg.get("go_toolchain"):
         env["GOTOOLCHAIN"] = cfg["go_toolchain"]
     return env
@@ -527,39 +517,37 @@ def _create_api(
 
 
 def restore_backup(cfg: dict[str, Any]) -> None:
+    """Copy raw_copy entries from backup into the scaffold output.
+
+    Entries are directories or files that are purely custom (not
+    generated by operator-sdk). The scaffold version is replaced
+    entirely for directories.
+
+    For files: if the file already exists in the scaffold, an error is
+    raised with a diff.  For directories: the scaffold directory is
+    replaced entirely.
+    """
     op_dir: Path = cfg["operator_dir"]
     bak: Path = cfg["backup_dir"]
     log_step(f"Phase 3: Restoring custom code for {cfg['name']}")
 
     count = 0
-    conflicts: list[str] = []
-    for rel_path in cfg["backup_paths"]:
+    for rel_path in cfg["raw_copy"]:
         src = bak / rel_path
         dst = op_dir / rel_path
 
         if not src.exists():
-            log_warn(f"  {rel_path} not found in backup, skipping")
-            continue
+            die(f"  {rel_path} not found in backup at {src}")
 
-        is_dir = rel_path.endswith("/")
-
-        if is_dir:
-            # Replace scaffold directory entirely with our custom code.
-            # zz_generated files are excluded — they are regenerated by
-            # `make generate` in Phase 5.
+        if src.is_dir():
             if dst.exists():
+                log_warn(f"  {rel_path} exists in scaffold, replacing")
                 shutil.rmtree(dst)
-            shutil.copytree(
-                src,
-                dst,
-                ignore=shutil.ignore_patterns("*zz_generated*"),
-            )
+            shutil.copytree(src, dst)
             n = sum(1 for _ in dst.rglob("*") if _.is_file())
             log_info(f"  {rel_path} ({n} files)")
             count += n
         else:
-            if "zz_generated" in rel_path:
-                continue
             if dst.exists():
                 log_error(f"  {rel_path} exists in both scaffold and backup")
                 result = subprocess.run(
@@ -569,23 +557,14 @@ def restore_backup(cfg: dict[str, Any]) -> None:
                 )
                 if result.stdout:
                     print(result.stdout)
-                conflicts.append(rel_path)
-                continue
+                die(
+                    f"Conflict: {rel_path}. Update the file in .bak/ "
+                    "then re-run with --skip-backup."
+                )
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(src, dst)
             log_info(f"  {rel_path}")
             count += 1
-
-    if conflicts:
-        log_error(f"{len(conflicts)} file(s) conflict between scaffold " "and backup:")
-        for c in conflicts:
-            log_error(f"  - {c}")
-        log_info(
-            "Update the conflicting files in the .bak/ directory "
-            "to match the desired result, then re-run with "
-            "--skip-backup."
-        )
-        die("Aborting due to backup/scaffold conflicts")
 
     log_info(f"Custom code restored: {count} file(s)")
 
@@ -612,7 +591,14 @@ def _apply_patches(cfg: dict[str, Any]) -> None:
     for patch_file in sorted(patch_dir.glob("*.patch")):
         log_info(f"Applying {patch_file.name}...")
         result = subprocess.run(
-            ["patch", "-p1", "--no-backup-if-mismatch", "-i", str(patch_file)],
+            [
+                "patch",
+                "-p1",
+                "--forward",
+                "--no-backup-if-mismatch",
+                "-i",
+                str(patch_file),
+            ],
             cwd=op_dir,
             capture_output=True,
             text=True,
@@ -683,9 +669,9 @@ def generate(cfg: dict[str, Any]) -> None:
 
 
 def _clean_tools() -> None:
-    """Remove the script's tool cache (.tmp/bin/)."""
+    """Remove the tool cache."""
     if TOOLS_BIN.exists():
-        log_step(f"Cleaning tool cache ({TOOLS_BIN.relative_to(REPO_ROOT)}/)")
+        log_step(f"Cleaning tool cache ({TOOLS_BIN})")
         shutil.rmtree(TOOLS_BIN)
         log_info(f"Removed {TOOLS_BIN}")
     else:
@@ -718,12 +704,16 @@ def _log_recovery_hint(cfg: dict[str, Any]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Upgrade an operator-sdk project by scaffolding "
-        "fresh and applying patches from a YAML config.",
+        "fresh and applying patches from a config directory.",
     )
     parser.add_argument(
         "config_dir",
-        help="Operator config directory name (e.g. 'operator') or "
-        "full path to a directory containing config.yaml",
+        help="Path to config directory containing config.yaml " "and patches/",
+    )
+    parser.add_argument(
+        "--operator-dir",
+        required=True,
+        help="Path to the operator project directory",
     )
     parser.add_argument(
         "--skip-backup",
@@ -733,19 +723,19 @@ def main() -> None:
     parser.add_argument(
         "--clean-tools",
         action="store_true",
-        help="Remove .tmp/bin/ after upgrade",
+        help="Remove tool cache after upgrade",
     )
     parser.add_argument(
         "--yes",
         "-y",
         action="store_true",
-        help="Skip all confirmation prompts",
+        help="Skip the confirmation prompt",
     )
     args = parser.parse_args()
 
     _check_prerequisites()
 
-    cfg = load_config(args.config_dir)
+    cfg = load_config(args.config_dir, args.operator_dir)
 
     if not args.yes:
         confirm_upgrade(cfg)
@@ -792,8 +782,8 @@ def main() -> None:
     log_info(f"Backup preserved at: {bak}/")
     print()
     log_info("Recommended next steps:")
-    log_info("  1. git diff                     Review changes")
-    log_info(f"  2. cd {cfg['name']} && make test Run tests")
+    log_info("  1. git diff")
+    log_info(f"  2. cd {cfg['name']} && make test")
 
 
 if __name__ == "__main__":

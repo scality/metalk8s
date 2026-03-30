@@ -141,8 +141,8 @@ Target versions are pinned in `scripts/upgrade-operator-sdk/<name>/config.yaml`:
 
 ```yaml
 operator_sdk_version: v1.42.1    # target operator-sdk release
-go_toolchain: go1.25.8           # pin Go toolchain (for GOTOOLCHAIN)
-k8s_libs: v0.33.9                # pin k8s.io libs version
+go_toolchain: go1.24.13          # pin Go toolchain (for GOTOOLCHAIN)
+k8s_libs: v0.33.10               # pin k8s.io libs version
 ```
 
 After scaffolding, the script detects the latest available versions (operator-sdk
@@ -159,22 +159,24 @@ This is CI-friendly: zero interactive input during reconciliation.
 
 ### Running the upgrade
 
-The script processes one operator at a time. Run it once per operator:
+The script processes one operator at a time:
 
 ```bash
-python3 scripts/upgrade-operator-sdk/upgrade.py operator
-python3 scripts/upgrade-operator-sdk/upgrade.py storage-operator
-```
+python3 scripts/upgrade-operator-sdk/upgrade.py \
+    --operator-dir operator \
+    scripts/upgrade-operator-sdk/operator
 
-The argument is the name of the config directory next to the script
-(i.e. `scripts/upgrade-operator-sdk/<name>/`). A full path can also be
-given for configs stored elsewhere.
+python3 scripts/upgrade-operator-sdk/upgrade.py \
+    --operator-dir storage-operator \
+    scripts/upgrade-operator-sdk/storage-operator
+```
 
 Options:
 
 ```
+--operator-dir    Path to the operator project directory (required)
 --skip-backup     Reuse an existing .bak directory (no new backup)
---clean-tools     Delete .tmp/bin/ after the upgrade
+--clean-tools     Remove tool cache after upgrade
 --yes, -y         Skip the confirmation prompt
 ```
 
@@ -185,17 +187,23 @@ Each operator has a config directory at `scripts/upgrade-operator-sdk/<name>/` c
 
 - **Versions**: `operator_sdk_version`, `go_toolchain` (optional pin), `k8s_libs` (optional pin)
 - **Scaffold**: `repo`, `domain`, `apis` (with `group`, `version`, `kind`, `namespaced`). The operator name is derived from the config directory name.
-- **Paths**: `operator_dir`, `backup_paths`
+- **Raw copy**: `raw_copy` -- directories or files copied as-is from backup (purely custom code with no scaffold equivalent: `pkg/`, `version/`, `config/metalk8s/`, `salt/`, individual test/helper files)
 - **Post-processing**: `image_placeholder`, `extra_commands`
 
 ### Patch files
 
-MetalK8s-specific customizations to scaffold-generated files (`Dockerfile`, `Makefile`)
-are stored as GNU unified diff files in the `patches/` subdirectory next to `config.yaml`. The script
-applies them with `patch -p1` after scaffolding. If a patch does not apply cleanly,
-look for `.rej` files and resolve manually.
+All customizations to scaffold-generated files are stored as GNU unified diff
+files in the `patches/` subdirectory. This includes:
 
-Patch files use `__PLACEHOLDER__` tokens for values from the YAML config:
+- **Dockerfile** and **Makefile** customizations
+- **CRD type definitions** (`*_types.go`)
+- **Controller implementations** (`*_controller.go`)
+- **Scaffold test stubs** (`*_controller_test.go`) -- neutralized when incompatible with the delegation pattern
+
+The script applies them with `patch -p1` after scaffolding. If a patch does not
+apply cleanly, look for `.rej` files and resolve manually.
+
+Patch files use `__PLACEHOLDER__` tokens for runtime values:
 
 | Placeholder       | Replaced with                   | Source     |
 | ----------------- | ------------------------------- | ---------- |

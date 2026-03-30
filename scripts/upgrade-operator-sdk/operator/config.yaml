@@ -1,11 +1,10 @@
 repo: github.com/scality/metalk8s/operator
 domain: metalk8s.scality.com
-operator_dir: operator
 
 operator_sdk_version: v1.42.1
 
-# Optional: pin versions. If absent or empty, the script detects the
-# latest patch from the scaffold's go.mod and offers to update this file.
+# Optional: pin versions. If absent, the script detects the latest
+# patch from the scaffold's go.mod and auto-pins them here.
 go_toolchain: go1.24.13
 k8s_libs: v0.33.10
 
@@ -17,13 +16,16 @@ apis:
     kind: VirtualIPPool
     namespaced: true
 
-backup_paths:
-  - pkg/
-  - version/
-  - config/metalk8s/
-  - api/
-  - hack/
-  - internal/controller/
+# Directories/files copied as-is from backup (purely custom, no scaffold equivalent).
+raw_copy:
+  - pkg
+  - version
+  - config/metalk8s
+  - api/v1alpha1/conditions.go
+  - api/v1alpha1/conditions_test.go
+  - api/v1alpha1/clusterconfig_types_test.go
+  - api/v1alpha1/virtualippool_types_test.go
+  - api/v1alpha1/v1alpha1_suite_test.go
 
 image_placeholder: '{{ build_image_name("metalk8s-operator") }}'
 
