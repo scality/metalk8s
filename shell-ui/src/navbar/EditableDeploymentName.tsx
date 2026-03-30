@@ -192,7 +192,7 @@ export function EditableDeploymentName({
         <Stack direction="vertical" gap="r24" style={{ width: '500px' }}>
           <InfoMessage
             title="About deployment names"
-            content="The deployment name is a label for this instance, visible in the UI and potentially shared with external systems. It is auto-generated at installation. Renaming it early helps distinguish this deployment from others when several are running in parallel."
+            content="The deployment name is a label for this instance, visible in the UI. It is auto-generated at installation. Renaming it early helps distinguish this deployment from others in multi-deployment environments."
           />
           <Text>Are you sure you want to rename this deployment?</Text>
           <KeyValueGrid>
