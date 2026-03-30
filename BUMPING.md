@@ -132,20 +132,30 @@ This guide is applied for both `metalk8s-operator` and `storage-operator`.
 
 - `go`, `curl`, and `patch` in `PATH`.
 - `pyyaml` Python package: `pip install pyyaml`
+- `GITHUB_TOKEN` (optional): raises the GitHub API rate limit from 60 to 5000
+  req/hour. Set via `export GITHUB_TOKEN=<token>`.
 
 ### Updating the versions
 
-Before running the script, update the target versions in the YAML config files at
-`scripts/upgrade-operator-sdk/<name>/config.yaml`:
+Target versions are pinned in `scripts/upgrade-operator-sdk/<name>/config.yaml`:
 
 ```yaml
 operator_sdk_version: v1.42.1    # target operator-sdk release
-go_toolchain: go1.25.8           # Go toolchain (for GOTOOLCHAIN + FROM golang:X.Y)
-k8s_libs: v0.33.9                # k8s.io/{api,apimachinery,client-go} version
+go_toolchain: go1.25.8           # pin Go toolchain (for GOTOOLCHAIN)
+k8s_libs: v0.33.9                # pin k8s.io libs version
 ```
 
-The script makes **no version-detection API calls**; all versions are read from the
-YAML config.
+After scaffolding, the script detects the latest available versions (operator-sdk
+from GitHub, Go and k8s.io patches from go.dev / module proxy) and compares with
+the pinned values:
+
+- **No pin** in YAML: the detected version is used and auto-pinned in the file.
+- **Pin matches detected**: all good, no action.
+- **Pin is older** than detected: warning printed with the newer version available.
+  The pinned value is still used. Update the YAML manually when ready.
+- **Pin is newer** than detected (unusual): warning, the detected value is used.
+
+This is CI-friendly: zero interactive input during reconciliation.
 
 ### Running the upgrade
 
@@ -173,9 +183,9 @@ Options:
 Each operator has a config directory at `scripts/upgrade-operator-sdk/<name>/` containing
 `config.yaml` and a `patches/` subdirectory. The config fields are:
 
-- **Versions**: `operator_sdk_version`, `go_toolchain`, `k8s_libs`
+- **Versions**: `operator_sdk_version`, `go_toolchain` (optional pin), `k8s_libs` (optional pin)
 - **Scaffold**: `repo`, `domain`, `apis` (with `group`, `version`, `kind`, `namespaced`). The operator name is derived from the config directory name.
-- **Paths**: `operator_dir`, `patches_dir`, `backup_paths`
+- **Paths**: `operator_dir`, `backup_paths`
 - **Post-processing**: `image_placeholder`, `extra_commands`
 
 ### Patch files
@@ -187,12 +197,10 @@ look for `.rej` files and resolve manually.
 
 Patch files use `__PLACEHOLDER__` tokens for values from the YAML config:
 
-| Placeholder       | Replaced with                                | Source     |
-| ----------------- | -------------------------------------------- | ---------- |
-| `__GOTOOLCHAIN__` | `go_toolchain` from config (e.g. `go1.25.8`) | `Makefile` |
-| `__IMAGE__`       | `image_placeholder` from config              | `Makefile` |
-
-The `FROM golang:X.Y` in `Dockerfile` is derived from `go_toolchain` in the config.
+| Placeholder       | Replaced with                   | Source     |
+| ----------------- | ------------------------------- | ---------- |
+| `__GOTOOLCHAIN__` | Detected/pinned Go toolchain    | `Makefile` |
+| `__IMAGE__`       | `image_placeholder` from config | `Makefile` |
 
 New `.patch` files in the patches directory are automatically picked up.
 

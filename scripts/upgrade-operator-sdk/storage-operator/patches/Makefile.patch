@@ -1,16 +1,12 @@
 --- a/Makefile
 +++ b/Makefile
-@@ -1,2 +1,6 @@
- #ENVTEST_K8S_VERSION is the version of Kubernetes to use for setting up ENVTEST binaries (i.e. 1.31)
-+
-+# Force Go toolchain version to prevent automatic selection issues
-+# See: https://go.dev/doc/toolchain
-+export GOTOOLCHAIN = __GOTOOLCHAIN__
- ENVTEST_K8S_VERSION ?= $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{printf "1.%d", $$3}')
-@@ -4,3 +8,9 @@
+@@ -3,3 +3,12 @@
  .PHONY: catalog-push
  catalog-push: ## Push a catalog image.
  	$(MAKE) docker-push IMG=$(CATALOG_IMG)
++
++# Force Go toolchain version
++export GOTOOLCHAIN = __GOTOOLCHAIN__
 +
 +.PHONY: metalk8s
 +metalk8s: manifests kustomize ## Generate MetalK8s resulting manifests

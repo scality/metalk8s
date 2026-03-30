@@ -3,8 +3,11 @@ domain: metalk8s.scality.com
 operator_dir: storage-operator
 
 operator_sdk_version: v1.42.1
-go_toolchain: go1.25.8
-k8s_libs: v0.33.9
+
+# Optional: pin versions. If absent or empty, the script detects the
+# latest patch from the scaffold's go.mod and offers to update this file.
+go_toolchain: go1.24.13
+k8s_libs: v0.33.10
 
 apis:
   - group: storage
