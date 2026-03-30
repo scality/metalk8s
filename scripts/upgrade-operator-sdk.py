@@ -105,9 +105,10 @@ _PAT_MAKEFILE_GOLANGCI_VERSION: Final = r"^GOLANGCI_LINT_VERSION \?=.*$"
 
 # Dockerfile patterns
 _PAT_DOCKERFILE_FROM_GOLANG: Final = r"FROM golang:\d+\.\d+"
-_PAT_DOCKERFILE_LAST_SCAFFOLD_COPY: Final = (
-    r"(COPY internal/controller/ internal/controller/\n)"
-)
+# Last COPY before the "# Build" section; used as insertion anchor for extra dirs.
+# Matches any COPY line whose target starts with "internal" (the scaffold's last
+# source COPY, regardless of whether it copies internal/ or internal/controller/).
+_PAT_DOCKERFILE_LAST_SCAFFOLD_COPY: Final = r"(COPY internal\S* internal\S*\n)"
 
 # operator-sdk PROJECT file ((?m) embedded because used in file_regex_replace)
 _PAT_PROJECT_GROUP_LINE: Final = r"(?m)^  group: metalk8s\n"
