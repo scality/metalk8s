@@ -20,8 +20,6 @@ Environment variables:
                        anonymous rate limit when querying the releases API.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import os

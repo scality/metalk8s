@@ -6,11 +6,11 @@
 
 [tool.black]
 line-length = 88
-target-version = ["py39"]
+target-version = ["py310"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [
@@ -36,4 +36,4 @@ ignore = [
 [tool.mypy]
 strict = true
 ignore_missing_imports = true
-python_version = "3.9"
+python_version = "3.10"
