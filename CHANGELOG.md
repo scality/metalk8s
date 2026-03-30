@@ -67,6 +67,9 @@
 - Ensure fluent-bit pods are restarted when its configmap or secret is modified
   (PR[#4834](https://github.com/scality/metalk8s/pull/4834))
 
+- Bump nginx image to [1.28.3-alpine](https://github.com/nginx/nginx/releases/tag/release-1.28.3)
+  (PR[#4852](https://github.com/scality/metalk8s/pull/4852))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
