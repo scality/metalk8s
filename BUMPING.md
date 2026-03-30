@@ -130,7 +130,7 @@ This guide is applied for both `metalk8s-operator` and `storage-operator`.
 
 ### Prerequisites
 
-- `go` and `curl` in `PATH`.
+- `go`, `curl`, and `patch` in `PATH`.
 - A GitHub personal access token is optional but strongly recommended: without it,
   GitHub API calls are subject to a 60 requests/hour anonymous rate limit. The token
   must be **exported** so child processes inherit it:
@@ -200,6 +200,67 @@ After a successful run:
    ```
    rm -rf operator.bak/ storage-operator.bak/
    ```
+
+### Patch files
+
+MetalK8s-specific customizations to scaffold-generated files (`Dockerfile`, `Makefile`)
+are stored as standard GNU unified diff files in `scripts/patches/<operator>/`:
+
+```
+scripts/patches/
+  operator/
+    Dockerfile.patch    # extra COPY dirs, ldflags, Scality LABEL block
+    Makefile.patch      # GOTOOLCHAIN export, metalk8s make target
+  storage-operator/
+    Dockerfile.patch    # extra COPY salt/, Scality LABEL block
+    Makefile.patch      # GOTOOLCHAIN export, metalk8s make target
+```
+
+The script applies them with `patch -p1` after scaffolding. If a patch does not
+apply cleanly (e.g. because the scaffold changed significantly), the script warns
+but continues — look for `.rej` files in the operator directory and resolve manually.
+
+#### Placeholders
+
+Patch files use `__PLACEHOLDER__` tokens for values that are only known at runtime.
+The script replaces them after applying the patches:
+
+| Placeholder | Replaced with | File |
+|---|---|---|
+| `__GOTOOLCHAIN__` | Detected Go toolchain (e.g. `go1.25.8`) | `Makefile` |
+| `__IMAGE__` | Jinja2 `build_image_name(...)` expression | `Makefile` |
+
+The `FROM golang:X.Y` line in `Dockerfile` and `GOLANGCI_LINT_VERSION` in `Makefile`
+are updated by simple regex substitutions (not via patches), since their values change
+with every upgrade.
+
+#### How to add or update a patch
+
+Patches are plain `diff -u` output — you can edit them by hand or regenerate them.
+To regenerate after modifying an operator customization:
+
+```bash
+# 1. Run the upgrade script with --skip-backup to get a fresh scaffold
+python3 scripts/upgrade-operator-sdk.py --operator-only --skip-backup --yes
+
+# 2. The script applies existing patches; to start fresh, reset the file:
+git checkout operator/Dockerfile
+
+# 3. Make your changes to the scaffold file
+vim operator/Dockerfile
+
+# 4. Generate the new patch (a/ b/ prefixes are required for patch -p1)
+diff -u <(git show HEAD:operator/Dockerfile) operator/Dockerfile \
+  | sed '1s|.*|--- a/Dockerfile|;2s|.*|+++ b/Dockerfile|' \
+  > scripts/patches/operator/Dockerfile.patch
+
+# 5. Verify it applies cleanly
+git checkout operator/Dockerfile
+patch -p1 --dry-run -d operator < scripts/patches/operator/Dockerfile.patch
+```
+
+To add a patch for a new file (e.g. `README.md`), create a new `.patch` file in
+the same directory — the script automatically picks up all `*.patch` files.
 
 ### Stale compatibility fixes
 

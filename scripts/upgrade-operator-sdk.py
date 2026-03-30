@@ -40,6 +40,7 @@ from typing import Any, Final, NoReturn
 REPO_ROOT: Final = Path(__file__).resolve().parent.parent
 TOOLS_BIN: Final = REPO_ROOT / ".tmp" / "bin"
 _SDK_BIN: Final = TOOLS_BIN / "operator-sdk"
+_PATCHES_DIR: Final = REPO_ROOT / "scripts" / "patches"
 
 # All file I/O uses this encoding explicitly.
 _ENCODING: Final = "utf-8"
@@ -99,95 +100,12 @@ _PAT_SEMVER_MAJOR_MINOR: Final = r"(v\d+\.\d+)\."
 _PAT_CONTROLLER_RUNTIME_IN_GOMOD: Final = r"sigs\.k8s\.io/controller-runtime\s+(v\S+)"
 _PAT_K8S_API_IN_GOMOD: Final = r"k8s\.io/api\s+(v\S+)"
 
-# Makefile lines (MULTILINE flag kept at call site for clarity)
-_PAT_MAKEFILE_ENVTEST_LINE: Final = r"(^#?ENVTEST_K8S_VERSION[^\n]*\n)"
-_PAT_MAKEFILE_GOLANGCI_VERSION: Final = r"^GOLANGCI_LINT_VERSION \?=.*$"
-
-# Dockerfile patterns
+# Version substitution patterns applied after patch files
 _PAT_DOCKERFILE_FROM_GOLANG: Final = r"FROM golang:\d+\.\d+"
-# Last COPY before the "# Build" section; used as insertion anchor for extra dirs.
-# Matches any COPY line whose target starts with "internal" (the scaffold's last
-# source COPY, regardless of whether it copies internal/ or internal/controller/).
-_PAT_DOCKERFILE_LAST_SCAFFOLD_COPY: Final = r"(COPY internal\S* internal\S*\n)"
+_PAT_MAKEFILE_GOLANGCI_VERSION: Final = r"^GOLANGCI_LINT_VERSION \?=.*$"
 
 # operator-sdk PROJECT file ((?m) embedded because used in file_regex_replace)
 _PAT_PROJECT_GROUP_LINE: Final = r"(?m)^  group: metalk8s\n"
-
-# ---------------------------------------------------------------------------
-# Makefile fragment templates
-#
-# __PLACEHOLDER__ tokens replace Python f-string escaping, which is especially
-# confusing around the Jinja-style {{ }} delimiters used in the Makefile.
-# ---------------------------------------------------------------------------
-
-# Inserted after the ENVTEST_K8S_VERSION line in the generated Makefile.
-_GOTOOLCHAIN_BLOCK: Final = (
-    "\n"
-    "# Force Go toolchain version to prevent automatic selection issues\n"
-    "# See: https://go.dev/doc/toolchain\n"
-    "export GOTOOLCHAIN = __TOOLCHAIN__\n"
-)
-
-# Appended to the Makefile; __IMAGE__ is replaced by spec.image_name at runtime.
-# The outer {{ }} are Jinja2 delimiters — literal in the resulting Makefile.
-_METALK8S_MAKE_TARGET: Final = (
-    "\n"
-    ".PHONY: metalk8s\n"
-    "metalk8s: manifests kustomize ## Generate MetalK8s resulting manifests\n"
-    "\tmkdir -p deploy\n"
-    "\t$(KUSTOMIZE) build config/metalk8s | \\\n"
-    "\tsed 's/BUILD_IMAGE_CLUSTER_OPERATOR:latest/"
-    '{{ build_image_name("__IMAGE__") }}/\''
-    " > deploy/manifests.yaml\n"
-)
-
-# ---------------------------------------------------------------------------
-# Dockerfile fragment template
-#
-# Appended after ENTRYPOINT in the scaffold-generated Dockerfile.
-# __NAME__, __DESCRIPTION__, and __TAGS__ are replaced at runtime.
-# ---------------------------------------------------------------------------
-
-_DOCKERFILE_LABEL_BLOCK: Final = (
-    "\n"
-    "# Timestamp of the build, formatted as RFC3339\n"
-    "ARG BUILD_DATE\n"
-    "# Git revision o the tree at build time\n"
-    "ARG VCS_REF\n"
-    "# Version of the image\n"
-    "ARG VERSION\n"
-    "# Version of the project, e.g. `git describe --always --long --dirty --broken`\n"
-    "ARG METALK8S_VERSION\n"
-    "\n"
-    "# These contain BUILD_DATE so should come 'late' for layer caching\n"
-    'LABEL maintainer="squad-metalk8s@scality.com" \\\n'
-    "      # http://label-schema.org/rc1/\n"
-    '      org.label-schema.build-date="$BUILD_DATE" \\\n'
-    '      org.label-schema.name="__NAME__" \\\n'
-    '      org.label-schema.description="__DESCRIPTION__" \\\n'
-    '      org.label-schema.url="https://github.com/scality/metalk8s/" \\\n'
-    '      org.label-schema.vcs-url="https://github.com/scality/metalk8s.git" \\\n'
-    '      org.label-schema.vcs-ref="$VCS_REF" \\\n'
-    '      org.label-schema.vendor="Scality" \\\n'
-    '      org.label-schema.version="$VERSION" \\\n'
-    '      org.label-schema.schema-version="1.0" \\\n'
-    "      # https://github.com/opencontainers/image-spec/blob/master/annotations.md\n"
-    '      org.opencontainers.image.created="$BUILD_DATE" \\\n'
-    '      org.opencontainers.image.authors="squad-metalk8s@scality.com" \\\n'
-    '      org.opencontainers.image.url="https://github.com/scality/metalk8s/" \\\n'
-    "      org.opencontainers.image.source="
-    '"https://github.com/scality/metalk8s.git" \\\n'
-    '      org.opencontainers.image.version="$VERSION" \\\n'
-    '      org.opencontainers.image.revision="$VCS_REF" \\\n'
-    '      org.opencontainers.image.vendor="Scality" \\\n'
-    '      org.opencontainers.image.title="__NAME__" \\\n'
-    '      org.opencontainers.image.description="__DESCRIPTION__" \\\n'
-    "      # https://docs.openshift.org/latest/creating_images/metadata.html\n"
-    '      io.openshift.tags="__TAGS__" \\\n'
-    '      io.k8s.description="__DESCRIPTION__" \\\n'
-    "      # Various\n"
-    '      com.scality.metalk8s.version="$METALK8S_VERSION"\n'
-)
 
 # ---------------------------------------------------------------------------
 # Merge policy
@@ -611,20 +529,6 @@ def file_regex_replace(path: Path, pattern: str, repl: str) -> None:
 
 
 @dataclass(frozen=True)
-class DockerfilePatch:
-    """Customizations applied on top of the scaffold-generated Dockerfile.
-
-    The scaffold Dockerfile is kept as the base; these fields describe the
-    MetalK8s-specific additions (extra COPY layers, ldflags, OCI labels).
-    """
-
-    extra_copy_dirs: tuple[str, ...]
-    ldflags: str
-    label_description: str
-    openshift_tags: str
-
-
-@dataclass(frozen=True)
 class SourceFix:
     """A text replacement applied to a source file after merge.
 
@@ -661,7 +565,6 @@ class OperatorSpec:
     repo: str
     apis: tuple[ApiDef, ...]
     image_name: str = ""
-    dockerfile: DockerfilePatch = DockerfilePatch((), "", "", "")
     fixes: tuple[SourceFix, ...] = ()
 
     @property
@@ -684,14 +587,6 @@ OPERATORS: Final[dict[str, OperatorSpec]] = {
             ApiDef("", "v1alpha1", "VirtualIPPool"),
         ),
         image_name="metalk8s-operator",
-        dockerfile=DockerfilePatch(
-            extra_copy_dirs=("pkg/", "version/"),
-            ldflags="-X 'github.com/scality/metalk8s/operator/"
-            "version.Version=${METALK8S_VERSION}'",
-            label_description="Kubernetes Operator for managing "
-            "MetalK8s cluster config",
-            openshift_tags="metalk8s,operator",
-        ),
         fixes=(
             # Go 1.24+: go vet rejects non-constant format strings in fmt.Errorf.
             # Remove once the backup no longer contains this pattern
@@ -709,13 +604,6 @@ OPERATORS: Final[dict[str, OperatorSpec]] = {
         repo="github.com/scality/metalk8s/storage-operator",
         apis=(ApiDef("storage", "v1alpha1", "Volume"),),
         image_name="storage-operator",
-        dockerfile=DockerfilePatch(
-            extra_copy_dirs=("salt/",),
-            ldflags="",
-            label_description="Kubernetes Operator for managing "
-            "PersistentVolumes in MetalK8s",
-            openshift_tags="metalk8s,storage,operator",
-        ),
         fixes=(
             # Go 1.16: io/ioutil deprecated.
             # Remove once the backup no longer imports io/ioutil
@@ -747,7 +635,7 @@ assert all(
 
 def _check_prerequisites() -> None:
     """Fail early with a clear message if required system tools are missing."""
-    missing = [tool for tool in ("go", "curl") if shutil.which(tool) is None]
+    missing = [tool for tool in ("go", "curl", "patch") if shutil.which(tool) is None]
     if missing:
         die(f"Required tools not found in PATH: {', '.join(missing)}")
 
@@ -915,95 +803,78 @@ def merge_backup(spec: OperatorSpec) -> None:
 
 def adapt_project(spec: OperatorSpec) -> None:
     """Apply all post-merge adaptations."""
-    _adapt_makefile(spec)
-    _adapt_dockerfile(spec)
+    _apply_patches(spec)
+    _substitute_versions(spec)
     _apply_source_fixes(spec)
     _remove_incompatible_scaffold_tests(spec.op_dir)
 
 
-def _adapt_makefile(spec: OperatorSpec) -> None:
-    log_info("Adapting Makefile...")
-    makefile = spec.op_dir / "Makefile"
-    text = makefile.read_text(encoding=_ENCODING)
+def _apply_patches(spec: OperatorSpec) -> None:
+    """Apply GNU patch files from scripts/patches/<operator>/.
 
-    if "export GOTOOLCHAIN" not in text:
-        gotoolchain_block = _GOTOOLCHAIN_BLOCK.replace(
-            "__TOOLCHAIN__", versions.go_toolchain
+    Each ``.patch`` file is a unified diff against the scaffold output.
+    Patches use ``__PLACEHOLDER__`` tokens for dynamic values that are
+    filled in by ``_substitute_versions()`` afterwards.
+
+    On failure the script warns but does not abort — the user is expected
+    to resolve rejected hunks manually.
+    """
+    patch_dir = _PATCHES_DIR / spec.name
+    if not patch_dir.is_dir():
+        log_warn(f"No patch directory found at {patch_dir}")
+        return
+
+    for patch_file in sorted(patch_dir.glob("*.patch")):
+        log_info(f"Applying {patch_file.name}...")
+        result = subprocess.run(
+            ["patch", "-p1", "--no-backup-if-mismatch", "-i", str(patch_file)],
+            cwd=spec.op_dir,
+            capture_output=True,
+            text=True,
         )
-        new_text, count = re.subn(
-            _PAT_MAKEFILE_ENVTEST_LINE,
-            rf"\1{gotoolchain_block}",
+        if result.returncode != 0:
+            log_warn(
+                f"{patch_file.name} did not apply cleanly "
+                f"(exit {result.returncode}); resolve manually:\n"
+                f"  {result.stdout.strip()}"
+            )
+        else:
+            log_info(f"  {patch_file.name} applied")
+
+
+def _substitute_versions(spec: OperatorSpec) -> None:
+    """Replace dynamic version placeholders and scaffold defaults.
+
+    Runs after ``_apply_patches()`` to fill in values that are only known
+    at runtime (Go toolchain, golangci-lint version, image name).
+    """
+    op = spec.op_dir
+
+    dockerfile = op / "Dockerfile"
+    if dockerfile.exists():
+        text = dockerfile.read_text(encoding=_ENCODING)
+        text = re.sub(
+            _PAT_DOCKERFILE_FROM_GOLANG,
+            f"FROM golang:{versions.go_major_minor}",
             text,
-            count=1,
+        )
+        dockerfile.write_text(text, encoding=_ENCODING)
+
+    makefile = op / "Makefile"
+    if makefile.exists():
+        text = makefile.read_text(encoding=_ENCODING)
+        text = text.replace("__GOTOOLCHAIN__", versions.go_toolchain)
+        jinja_image = '{{ build_image_name("' + spec.image_name + '") }}'
+        text = text.replace("__IMAGE__", jinja_image)
+        text = re.sub(
+            _PAT_MAKEFILE_GOLANGCI_VERSION,
+            f"GOLANGCI_LINT_VERSION ?= {versions.golangci_lint}",
+            text,
             flags=re.MULTILINE,
         )
-        if count == 0:
-            # The scaffold template may change; fall back to appending.
-            log_warn(
-                "ENVTEST_K8S_VERSION not found in Makefile; "
-                "appending GOTOOLCHAIN block at end"
-            )
-            text += gotoolchain_block
-        else:
-            text = new_text
+        makefile.write_text(text, encoding=_ENCODING)
 
-    text = re.sub(
-        _PAT_MAKEFILE_GOLANGCI_VERSION,
-        f"GOLANGCI_LINT_VERSION ?= {versions.golangci_lint}",
-        text,
-        flags=re.MULTILINE,
-    )
-
-    # Guard against appending twice when --skip-backup is used on an
-    # already-upgraded project.
-    if ".PHONY: metalk8s" not in text:
-        text += _METALK8S_MAKE_TARGET.replace("__IMAGE__", spec.image_name)
-
-    makefile.write_text(text, encoding=_ENCODING)
-    log_info("Makefile adapted")
-
-
-def _adapt_dockerfile(spec: OperatorSpec) -> None:
-    """Apply MetalK8s customizations on top of the scaffold-generated Dockerfile."""
-    log_info("Adapting Dockerfile...")
-    df = spec.op_dir / "Dockerfile"
-    text = df.read_text(encoding=_ENCODING)
-    patch = spec.dockerfile
-
-    text = re.sub(
-        _PAT_DOCKERFILE_FROM_GOLANG,
-        f"FROM golang:{versions.go_major_minor}",
-        text,
-    )
-
-    if patch.extra_copy_dirs:
-        copies = "".join(f"COPY {d} {d}\n" for d in patch.extra_copy_dirs)
-        text = re.sub(_PAT_DOCKERFILE_LAST_SCAFFOLD_COPY, rf"\g<1>{copies}", text)
-
-    if patch.ldflags:
-        text = text.replace(
-            "\n# Build\n",
-            "\n# Version of the project, e.g. "
-            "`git describe --always --long --dirty --broken`\n"
-            "ARG METALK8S_VERSION\n"
-            "\n# Build\n",
-        )
-        text = text.replace(
-            "go build -a -o manager cmd/main.go",
-            "go build -a -o manager \\\n"
-            f'      -ldflags "{patch.ldflags}" \\\n'
-            "      cmd/main.go",
-        )
-
-    label = (
-        _DOCKERFILE_LABEL_BLOCK.replace("__NAME__", spec.image_name)
-        .replace("__DESCRIPTION__", patch.label_description)
-        .replace("__TAGS__", patch.openshift_tags)
-    )
-    text += label
-
-    df.write_text(text, encoding=_ENCODING)
-    log_info("Dockerfile adapted")
+    log_info("Version substitutions applied")
 
 
 def _apply_source_fix(op_dir: Path, fix: SourceFix) -> None:
