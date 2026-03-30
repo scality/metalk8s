@@ -75,8 +75,8 @@ ROCKY_BASE_IMAGE_8_SHA256: str = (
     "6d2ede107b4f005a638728711dae05d5fbbfd8abd521cecf5ab61196b361c965"
 )
 ROCKY_BASE_IMAGE_9_SHA256: str = (
-    # rockylinux:9.5-minimal
-    "2cb86b2d8326a987546dc7fb393f43d43d478fea12ce3ce4accbda571f47f86b"
+    # rockylinux:9.7-minimal
+    "c26c789bd9b2c9fd092109688dbac8bdab27e51651d8130d7e10220f8e07614a"
 )
 
 ETCD_VERSION: str = "3.5.26"
