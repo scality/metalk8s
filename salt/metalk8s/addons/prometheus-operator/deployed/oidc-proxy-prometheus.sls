@@ -59,9 +59,22 @@ Create oauth2-proxy-prometheus Deployment:
                   value: secret
                 - name: UNIQUE_FILENAMES
                   value: "true"
+                - name: SCRIPT
+                  value: /scripts/restart-on-ca-change.py
+                - name: DEPLOYMENT_NAMESPACE
+                  value: metalk8s-monitoring
+                - name: DEPLOYMENT_NAME
+                  value: oauth2-proxy-prometheus
+                - name: CA_DIR
+                  value: /tmp/secrets
+                - name: CA_FILE_NAME
+                  value: {{ ca_file }}
                 volumeMounts:
                 - name: secrets-volume
                   mountPath: /tmp/secrets
+                - name: restart-script
+                  mountPath: /scripts
+                  readOnly: true
               containers:
               - name: oauth2-proxy
                 image: {{ build_image_name("oauth2-proxy") }}
@@ -92,6 +105,10 @@ Create oauth2-proxy-prometheus Deployment:
               volumes:
               - name: secrets-volume
                 emptyDir: {}
+              - name: restart-script
+                configMap:
+                  name: oidc-proxy-restart-script
+                  defaultMode: "0555"
 
 Create oauth2-proxy-prometheus Service:
   metalk8s_kubernetes.object_present:

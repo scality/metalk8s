@@ -1694,10 +1694,11 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-        prometheus.io/path: /api/v1/metrics/prometheus
-        prometheus.io/port: '2020'
-        prometheus.io/scrape: 'true'
+        checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap",
+          apiVersion="v1", namespace="metalk8s-logging", name="fluent-bit", path="data:fluent-bit.conf")
+        checksum/secret: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret",
+          apiVersion="v1", namespace="metalk8s-logging", name="fluent-bit-certs",
+          path="data", ignore_not_found=True)
       labels:
         app.kubernetes.io/instance: fluent-bit
         app.kubernetes.io/name: fluent-bit

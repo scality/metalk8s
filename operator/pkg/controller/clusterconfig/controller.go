@@ -2,7 +2,7 @@ package clusterconfig
 
 import (
 	"context"
-	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -91,11 +91,10 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		if errors.IsNotFound(err) {
 			if req.Name == instanceName {
 				// NOTE: The main ClusterConfig object get created at operator startup,
-				// so if, for whatever reason, this one get deleted we just "panic" so that
-				// the operator restart and re-create the ClusterConfig
-				panic(fmt.Errorf(
-					"%s ClusterConfig object should not be deleted", req.Name,
-				))
+				// so if, for whatever reason, this one get deleted we log the error
+				// and exit so that the operator restarts and re-creates the ClusterConfig
+				reqLogger.Error(nil, "ClusterConfig object should not be deleted, exiting")
+				os.Exit(1)
 			}
 			reqLogger.Info("ClusterConfig already deleted: nothing to do")
 			return utils.EndReconciliation()

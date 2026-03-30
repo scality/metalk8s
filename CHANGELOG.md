@@ -57,12 +57,19 @@
   and ingress-nginx controller to [v1.15.0](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.15.0)
   (PR[#4824](https://github.com/scality/metalk8s/pull/4824))
 
+- Bump `operator-sdk` version to [1.42.1](https://github.com/operator-framework/operator-sdk/releases/tag/v1.42.1)
+  in `metalk8s-operator` and `storage-operator`
+  (PR[#4818](https://github.com/scality/metalk8s/pull/4818))
+
 - Implement ability to add certificates to fluent-bit by mounting a fluent-bit-certs secret
   (PR[#4812](https://github.com/scality/metalk8s/pull/4812))
 
 - Add x509 `subjectKeyIdentifier` extension to CA certificates and
   `authorityKeyIdentifier` extension to leaf certificates per RFC 5280
   (PR[#4836](https://github.com/scality/metalk8s/pull/4836))
+
+- Ensure fluent-bit pods are restarted when its configmap or secret is modified
+  (PR[#4834](https://github.com/scality/metalk8s/pull/4834))
 
 ### Bug Fixes
 
