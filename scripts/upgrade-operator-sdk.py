@@ -208,6 +208,8 @@ class VersionInfo:
     operator_sdk: str
     go_toolchain: str
     golangci_lint: str
+    controller_runtime: str  # sigs.k8s.io/controller-runtime
+    k8s_libs: str  # k8s.io/{api,apimachinery,client-go} — always in sync
 
     @property
     def go_major_minor(self) -> str:
@@ -222,7 +224,11 @@ class VersionInfo:
 # Sentinel values make it obvious if versions is accidentally read early.
 _UNSET = "<unset>"
 versions: VersionInfo = VersionInfo(
-    operator_sdk=_UNSET, go_toolchain=_UNSET, golangci_lint=_UNSET
+    operator_sdk=_UNSET,
+    go_toolchain=_UNSET,
+    golangci_lint=_UNSET,
+    controller_runtime=_UNSET,
+    k8s_libs=_UNSET,
 )
 
 # ---------------------------------------------------------------------------
@@ -334,27 +340,27 @@ def _fetch_latest_github_release(repo: str) -> str:
 # Version detection
 #
 # Resolution chain:
-#   1. operator-sdk   <- GitHub releases/latest
-#   2. Go major.minor <- operator-sdk's go.mod at that tag
-#   3. Go toolchain   <- latest stable patch from go.dev for that minor
-#   4. golangci-lint   <- GitHub releases/latest
+#   1. operator-sdk       <- GitHub releases/latest
+#   2. Go major.minor     <- operator-sdk's go.mod at that tag (fetched once)
+#   3. Go toolchain       <- latest stable patch from go.dev for that minor
+#   4. controller-runtime <- operator-sdk's go.mod (same fetch)
+#   5. k8s.io libs        <- controller-runtime's go.mod at that tag
+#   6. golangci-lint       <- GitHub releases/latest
 # ---------------------------------------------------------------------------
 
 
 def _detect_operator_sdk_version() -> str:
     log_info("Querying GitHub for latest operator-sdk release...")
     ver = _fetch_latest_github_release(_GITHUB_REPO_OPERATOR_SDK)
-    log_info(f"  operator-sdk:   {ver}")
+    log_info(f"  operator-sdk:       {ver}")
     return ver
 
 
-def _detect_go_toolchain(sdk_version: str) -> str:
-    """Return the latest stable Go patch for the minor pinned by *sdk_version*."""
-    log_info("Querying operator-sdk go.mod for Go version...")
-    gomod = _fetch_text(_URL_OPERATOR_SDK_GOMOD.format(version=sdk_version))
+def _detect_go_toolchain_from_gomod(gomod: str) -> str:
+    """Return the latest stable Go patch for the minor declared in *gomod* content."""
     m = re.search(r"^go\s+(\d+\.\d+)(?:\.\d+)?", gomod, re.MULTILINE)
     if not m:
-        die("Failed to parse Go version from operator-sdk go.mod")
+        die("Failed to parse Go version from go.mod")
     # m.group(0) is e.g. "go 1.24.6"; m.group(1) is the major.minor "1.24"
     go_version = m.group(0).split()[1]
     go_major_minor = m.group(1)
@@ -371,14 +377,78 @@ def _detect_go_toolchain(sdk_version: str) -> str:
         ),
         f"go{go_major_minor}.0",
     )
-    log_info(f"  Go toolchain:   {toolchain}")
+    log_info(f"  Go toolchain:       {toolchain}")
     return toolchain
+
+
+def _latest_k8s_patch(base_version: str) -> str:
+    """Return the latest stable patch for the k8s.io major.minor of *base_version*.
+
+    Queries the Go module proxy for ``k8s.io/api`` — which drives the patch
+    cadence for all three libs — and returns the highest patch in the same
+    major.minor series.  Falls back to *base_version* on any parse error.
+    """
+    m = re.match(_PAT_SEMVER_MAJOR_MINOR, base_version)
+    if not m:
+        return base_version
+    prefix = m.group(1) + "."
+
+    url = _URL_GO_MODULE_VERSIONS.format(module=_K8S_LIB_MODULE)
+    log_info(f"Querying Go module proxy for latest k8s.io {m.group(1)}.x patch...")
+    content = _fetch_text(url)
+
+    candidates = [
+        v.strip()
+        for v in content.splitlines()
+        # Only stable releases of the right minor; skip pre-releases (contain "-")
+        if v.strip().startswith(prefix) and "-" not in v.strip()
+    ]
+    if not candidates:
+        return base_version
+
+    def _patch(v: str) -> int:
+        try:
+            return int(v.rsplit(".", 1)[-1])
+        except ValueError:
+            return -1
+
+    latest = max(candidates, key=_patch)
+    log_info(f"  k8s.io libs:        {latest}")
+    return latest
+
+
+def _detect_controller_runtime_and_k8s(sdk_gomod: str) -> tuple[str, str]:
+    """Return (controller_runtime_version, k8s_libs_latest_patch).
+
+    Both versions are derived from the operator-sdk go.mod content.
+    The k8s.io version is bumped to the latest compatible patch via the
+    Go module proxy (k8s.io/api, apimachinery and client-go are in lock-step).
+    """
+    # controller-runtime version is declared in operator-sdk's own go.mod.
+    m_cr = re.search(_PAT_CONTROLLER_RUNTIME_IN_GOMOD, sdk_gomod)
+    if not m_cr:
+        die("Failed to parse controller-runtime version from operator-sdk go.mod")
+    cr_version = m_cr.group(1)
+    log_info(f"  controller-runtime: {cr_version}")
+
+    # The minimum compatible k8s.io/api version comes from controller-runtime.
+    log_info("Querying controller-runtime go.mod for k8s.io base version...")
+    cr_gomod = _fetch_text(_URL_CONTROLLER_RUNTIME_GOMOD.format(version=cr_version))
+    m_k8s = re.search(_PAT_K8S_API_IN_GOMOD, cr_gomod)
+    if not m_k8s:
+        die("Failed to parse k8s.io/api version from controller-runtime go.mod")
+    base_k8s = m_k8s.group(1)
+
+    # Bump to the latest patch of that major.minor.
+    k8s_version = _latest_k8s_patch(base_k8s)
+
+    return cr_version, k8s_version
 
 
 def _detect_golangci_lint_version() -> str:
     log_info("Querying GitHub for latest golangci-lint release...")
     ver = _fetch_latest_github_release(_GITHUB_REPO_GOLANGCI_LINT)
-    log_info(f"  golangci-lint:  {ver}")
+    log_info(f"  golangci-lint:      {ver}")
     return ver
 
 
@@ -386,10 +456,21 @@ def detect_versions() -> VersionInfo:
     """Fetch the latest compatible versions from public APIs and return them."""
     log_step("Detecting latest compatible versions")
     sdk = _detect_operator_sdk_version()
+
+    # Fetch operator-sdk's go.mod once; reuse content for Go toolchain and
+    # controller-runtime detection to avoid redundant network requests.
+    log_info("Querying operator-sdk go.mod...")
+    sdk_gomod = _fetch_text(_URL_OPERATOR_SDK_GOMOD.format(version=sdk))
+
+    go_toolchain = _detect_go_toolchain_from_gomod(sdk_gomod)
+    cr_version, k8s_version = _detect_controller_runtime_and_k8s(sdk_gomod)
+
     return VersionInfo(
         operator_sdk=sdk,
-        go_toolchain=_detect_go_toolchain(sdk),
+        go_toolchain=go_toolchain,
         golangci_lint=_detect_golangci_lint_version(),
+        controller_runtime=cr_version,
+        k8s_libs=k8s_version,
     )
 
 
@@ -398,9 +479,11 @@ def confirm_versions(targets: list[str]) -> None:
     print()
     print(f"{_BOLD}The following upgrade will be performed:{_RESET}")
     print()
-    print(f"  operator-sdk    {versions.operator_sdk}")
-    print(f"  Go toolchain    {versions.go_toolchain}")
-    print(f"  golangci-lint   {versions.golangci_lint}")
+    print(f"  operator-sdk        {versions.operator_sdk}")
+    print(f"  controller-runtime  {versions.controller_runtime}")
+    print(f"  k8s.io libs         {versions.k8s_libs}  (api, apimachinery, client-go)")
+    print(f"  Go toolchain        {versions.go_toolchain}")
+    print(f"  golangci-lint       {versions.golangci_lint}")
     print()
     print(f"  Targets:        {' '.join(targets)}")
     print(f"  Repository:     {REPO_ROOT}")
@@ -912,6 +995,12 @@ def generate_and_build(spec: OperatorSpec) -> None:
     bin_dir = op_dir / "bin"
     if bin_dir.exists():
         shutil.rmtree(bin_dir)
+
+    # Explicitly pin k8s.io libs to the latest compatible patch before tidy,
+    # so `go mod tidy` does not silently keep an older patch from the scaffold.
+    k8s_get_args = [f"{lib}@{versions.k8s_libs}" for lib in _K8S_LIBS]
+    log_info(f"Bumping k8s.io libs to {versions.k8s_libs}...")
+    run(["go", "get", *k8s_get_args], cwd=op_dir)
 
     steps = [
         ("go mod tidy...", ["go", "mod", "tidy"]),
