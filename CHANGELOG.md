@@ -71,6 +71,10 @@
 - Ensure fluent-bit pods are restarted when its configmap or secret is modified
   (PR[#4834](https://github.com/scality/metalk8s/pull/4834))
 
+- Bump the rocky base image used by `metalk8s-utils` image to
+  `rockylinux:9.7-minimal`
+  (PR[#4851](https://github.com/scality/metalk8s/pull/4851))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
