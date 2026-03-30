@@ -52,7 +52,7 @@ plantuml==0.3.0
     # via -r requirements.in
 pyenchant==3.2.2
     # via sphinxcontrib-spelling
-pygments==2.15.0
+pygments==2.20.0
     # via
     #   doc8
     #   sphinx
