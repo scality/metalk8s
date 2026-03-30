@@ -24,7 +24,6 @@ import argparse
 import json
 import os
 import re
-import shlex
 import shutil
 import subprocess
 import sys
@@ -41,7 +40,6 @@ from typing import Any, Final, NoReturn
 REPO_ROOT: Final = Path(__file__).resolve().parent.parent
 TOOLS_BIN: Final = REPO_ROOT / ".tmp" / "bin"
 _SDK_BIN: Final = TOOLS_BIN / "operator-sdk"
-_GOLANGCI_LINT_BIN: Final = TOOLS_BIN / "golangci-lint"
 
 # All file I/O uses this encoding explicitly.
 _ENCODING: Final = "utf-8"
@@ -78,11 +76,6 @@ _URL_OPERATOR_SDK_DOWNLOAD: Final = (
     + "/releases/download/{version}/operator-sdk_{goos}_{goarch}"
 )
 _URL_GO_RELEASES: Final = "https://go.dev/dl/?mode=json&include=all"
-_URL_GOLANGCI_INSTALL: Final = (
-    "https://raw.githubusercontent.com/"
-    + _GITHUB_REPO_GOLANGCI_LINT
-    + "/HEAD/install.sh"
-)
 
 # k8s.io libraries that are always released in lock-step.
 _K8S_LIBS: Final = ("k8s.io/api", "k8s.io/apimachinery", "k8s.io/client-go")
@@ -100,22 +93,21 @@ _K8S_LIB_MODULE: Final = _K8S_LIBS[0]
 
 # Go version strings
 _PAT_GO_MAJOR_MINOR: Final = r"^go(\d+\.\d+).*"
-_PAT_GO_VERSION_IN_GOMOD: Final = r"^go\s+(\d+\.\d+)(?:\.\d+)?"
 _PAT_SEMVER_MAJOR_MINOR: Final = r"(v\d+\.\d+)\."
 
 # Dependency versions in go.mod files
 _PAT_CONTROLLER_RUNTIME_IN_GOMOD: Final = r"sigs\.k8s\.io/controller-runtime\s+(v\S+)"
 _PAT_K8S_API_IN_GOMOD: Final = r"k8s\.io/api\s+(v\S+)"
 
-# golangci-lint configuration
-_PAT_GOLANGCI_CONFIG_VERSION: Final = r'^version:\s+"(\d+)"'
-
 # Makefile lines (MULTILINE flag kept at call site for clarity)
 _PAT_MAKEFILE_ENVTEST_LINE: Final = r"(^#?ENVTEST_K8S_VERSION[^\n]*\n)"
 _PAT_MAKEFILE_GOLANGCI_VERSION: Final = r"^GOLANGCI_LINT_VERSION \?=.*$"
 
-# Dockerfile (passed to file_regex_replace — no separate flags argument)
+# Dockerfile patterns
 _PAT_DOCKERFILE_FROM_GOLANG: Final = r"FROM golang:\d+\.\d+"
+_PAT_DOCKERFILE_LAST_SCAFFOLD_COPY: Final = (
+    r"(COPY internal/controller/ internal/controller/\n)"
+)
 
 # operator-sdk PROJECT file ((?m) embedded because used in file_regex_replace)
 _PAT_PROJECT_GROUP_LINE: Final = r"(?m)^  group: metalk8s\n"
@@ -149,6 +141,54 @@ _METALK8S_MAKE_TARGET: Final = (
 )
 
 # ---------------------------------------------------------------------------
+# Dockerfile fragment template
+#
+# Appended after ENTRYPOINT in the scaffold-generated Dockerfile.
+# __NAME__, __DESCRIPTION__, and __TAGS__ are replaced at runtime.
+# ---------------------------------------------------------------------------
+
+_DOCKERFILE_LABEL_BLOCK: Final = (
+    "\n"
+    "# Timestamp of the build, formatted as RFC3339\n"
+    "ARG BUILD_DATE\n"
+    "# Git revision o the tree at build time\n"
+    "ARG VCS_REF\n"
+    "# Version of the image\n"
+    "ARG VERSION\n"
+    "# Version of the project, e.g. `git describe --always --long --dirty --broken`\n"
+    "ARG METALK8S_VERSION\n"
+    "\n"
+    "# These contain BUILD_DATE so should come 'late' for layer caching\n"
+    'LABEL maintainer="squad-metalk8s@scality.com" \\\n'
+    "      # http://label-schema.org/rc1/\n"
+    '      org.label-schema.build-date="$BUILD_DATE" \\\n'
+    '      org.label-schema.name="__NAME__" \\\n'
+    '      org.label-schema.description="__DESCRIPTION__" \\\n'
+    '      org.label-schema.url="https://github.com/scality/metalk8s/" \\\n'
+    '      org.label-schema.vcs-url="https://github.com/scality/metalk8s.git" \\\n'
+    '      org.label-schema.vcs-ref="$VCS_REF" \\\n'
+    '      org.label-schema.vendor="Scality" \\\n'
+    '      org.label-schema.version="$VERSION" \\\n'
+    '      org.label-schema.schema-version="1.0" \\\n'
+    "      # https://github.com/opencontainers/image-spec/blob/master/annotations.md\n"
+    '      org.opencontainers.image.created="$BUILD_DATE" \\\n'
+    '      org.opencontainers.image.authors="squad-metalk8s@scality.com" \\\n'
+    '      org.opencontainers.image.url="https://github.com/scality/metalk8s/" \\\n'
+    "      org.opencontainers.image.source="
+    '"https://github.com/scality/metalk8s.git" \\\n'
+    '      org.opencontainers.image.version="$VERSION" \\\n'
+    '      org.opencontainers.image.revision="$VCS_REF" \\\n'
+    '      org.opencontainers.image.vendor="Scality" \\\n'
+    '      org.opencontainers.image.title="__NAME__" \\\n'
+    '      org.opencontainers.image.description="__DESCRIPTION__" \\\n'
+    "      # https://docs.openshift.org/latest/creating_images/metadata.html\n"
+    '      io.openshift.tags="__TAGS__" \\\n'
+    '      io.k8s.description="__DESCRIPTION__" \\\n'
+    "      # Various\n"
+    '      com.scality.metalk8s.version="$METALK8S_VERSION"\n'
+)
+
+# ---------------------------------------------------------------------------
 # Merge policy
 #
 # After scaffolding, every file from the backup is copied to the new project
@@ -156,15 +196,17 @@ _METALK8S_MAKE_TARGET: Final = (
 # preserved automatically without maintaining an explicit restore list.
 #
 # Scaffold-only — keep new scaffold version, do NOT copy from backup:
-#   Directories: .devcontainer  .github  bin  cmd  config (except metalk8s/)
-#   Root files:  .dockerignore  .gitignore  go.mod  go.sum  Makefile  PROJECT
-#                README.md
+#   Directories: .github  bin  cmd  config (except config/metalk8s/)
+#   Root files:  .dockerignore  .gitignore  .golangci.yml  Dockerfile
+#                go.mod  go.sum  Makefile  PROJECT  README.md
 #   Generated:   *zz_generated*  internal/controller/suite_test.go
+#
+# NOTE: .devcontainer/ is removed explicitly by scaffold_project() and is
+#       not listed here — it is gitignored and never present in backups.
 # ---------------------------------------------------------------------------
 
 _SCAFFOLD_ONLY_DIRS: Final[frozenset[str]] = frozenset(
     {
-        ".devcontainer",
         ".github",
         "bin",
         "cmd",
@@ -179,13 +221,13 @@ _SCAFFOLD_ONLY_FILES: Final[frozenset[str]] = frozenset(
     {
         ".dockerignore",
         ".gitignore",
+        ".golangci.yml",
+        "Dockerfile",
         "go.mod",
         "go.sum",
         "Makefile",
         "PROJECT",
         "README.md",
-        # test coverage artefact — regenerated by `make test`, not custom code
-        "cover.out",
         # scaffold-generated test setup (version-specific, not custom code)
         "internal/controller/suite_test.go",
     }
@@ -198,12 +240,10 @@ _KNOWN_SCAFFOLD_ROOTS: Final[frozenset[str]] = frozenset(
     _SCAFFOLD_ONLY_DIRS
     | {f.split("/")[0] for f in _SCAFFOLD_ONLY_FILES}
     | {
+        ".devcontainer",  # removed by scaffold_project(), not in _SCAFFOLD_ONLY_DIRS
         "api",
         "hack",
         "internal",  # created by `create api`
-        # root files scaffold creates that we intentionally overwrite from backup
-        ".golangci.yml",
-        "Dockerfile",
     }
 )
 
@@ -218,20 +258,6 @@ def _should_merge(rel: str) -> bool:
     if rel in _SCAFFOLD_ONLY_FILES:
         return False
     return rel.split("/")[0] not in _SCAFFOLD_ONLY_DIRS
-
-
-# ---------------------------------------------------------------------------
-# golangci-lint config versioning
-# ---------------------------------------------------------------------------
-
-# Minimum golangci-lint config version we consider "already migrated".
-_GOLANGCI_MIN_CONFIG_VERSION: Final = 2
-
-
-def _golangci_config_version(content: str) -> int | None:
-    """Return the numeric config version from a .golangci.yml, or None."""
-    m = re.search(_PAT_GOLANGCI_CONFIG_VERSION, content, re.MULTILINE)
-    return int(m.group(1)) if m else None
 
 
 # ---------------------------------------------------------------------------
@@ -567,24 +593,9 @@ def run(
     return subprocess.run(cmd, check=check, **kwargs)
 
 
-def run_shell(
-    cmd: str, *, cwd: Path | None = None
-) -> subprocess.CompletedProcess[bytes]:
-    """Run a shell string (use sparingly — only when pipes are required)."""
-    return subprocess.run(
-        cmd, shell=True, cwd=cwd, env={**os.environ, **_tool_env()}, check=True
-    )
-
-
 # ---------------------------------------------------------------------------
 # File helpers
 # ---------------------------------------------------------------------------
-
-
-def file_replace(path: Path, old: str, new: str) -> None:
-    path.write_text(
-        path.read_text(encoding=_ENCODING).replace(old, new), encoding=_ENCODING
-    )
 
 
 def file_regex_replace(path: Path, pattern: str, repl: str) -> None:
@@ -596,6 +607,20 @@ def file_regex_replace(path: Path, pattern: str, repl: str) -> None:
 # ---------------------------------------------------------------------------
 # Operator descriptor
 # ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class DockerfilePatch:
+    """Customizations applied on top of the scaffold-generated Dockerfile.
+
+    The scaffold Dockerfile is kept as the base; these fields describe the
+    MetalK8s-specific additions (extra COPY layers, ldflags, OCI labels).
+    """
+
+    extra_copy_dirs: tuple[str, ...]
+    ldflags: str
+    label_description: str
+    openshift_tags: str
 
 
 @dataclass(frozen=True)
@@ -635,6 +660,7 @@ class OperatorSpec:
     repo: str
     apis: tuple[ApiDef, ...]
     image_name: str = ""
+    dockerfile: DockerfilePatch = DockerfilePatch((), "", "", "")
     fixes: tuple[SourceFix, ...] = ()
 
     @property
@@ -657,6 +683,14 @@ OPERATORS: Final[dict[str, OperatorSpec]] = {
             ApiDef("", "v1alpha1", "VirtualIPPool"),
         ),
         image_name="metalk8s-operator",
+        dockerfile=DockerfilePatch(
+            extra_copy_dirs=("pkg/", "version/"),
+            ldflags="-X 'github.com/scality/metalk8s/operator/"
+            "version.Version=${METALK8S_VERSION}'",
+            label_description="Kubernetes Operator for managing "
+            "MetalK8s cluster config",
+            openshift_tags="metalk8s,operator",
+        ),
         fixes=(
             # Go 1.24+: go vet rejects non-constant format strings in fmt.Errorf.
             # Remove once the backup no longer contains this pattern
@@ -674,6 +708,13 @@ OPERATORS: Final[dict[str, OperatorSpec]] = {
         repo="github.com/scality/metalk8s/storage-operator",
         apis=(ApiDef("storage", "v1alpha1", "Volume"),),
         image_name="storage-operator",
+        dockerfile=DockerfilePatch(
+            extra_copy_dirs=("salt/",),
+            ldflags="",
+            label_description="Kubernetes Operator for managing "
+            "PersistentVolumes in MetalK8s",
+            openshift_tags="metalk8s,storage,operator",
+        ),
         fixes=(
             # Go 1.16: io/ioutil deprecated.
             # Remove once the backup no longer imports io/ioutil
@@ -735,28 +776,6 @@ def install_operator_sdk() -> None:
     run(["curl", "-sSLo", str(_SDK_BIN), url])
     _SDK_BIN.chmod(0o755)
     ver = run([str(_SDK_BIN), "version"], capture=True).stdout.strip().split("\n")[0]
-    log_info(f"Installed: {ver}")
-
-
-def install_golangci_lint() -> None:
-    log_step(f"Installing golangci-lint {versions.golangci_lint}")
-    TOOLS_BIN.mkdir(parents=True, exist_ok=True)
-
-    if _is_installed(_GOLANGCI_LINT_BIN, versions.golangci_lint):
-        log_info("Already installed")
-        return
-
-    log_info("Downloading...")
-    run_shell(
-        f"curl -sSfL {_URL_GOLANGCI_INSTALL}"
-        f" | sh -s -- -b {shlex.quote(str(TOOLS_BIN))}"
-        f" {shlex.quote(versions.golangci_lint)}",
-    )
-    ver = (
-        run([str(_GOLANGCI_LINT_BIN), "version"], capture=True)
-        .stdout.strip()
-        .split("\n")[0]
-    )
     log_info(f"Installed: {ver}")
 
 
@@ -897,7 +916,6 @@ def adapt_project(spec: OperatorSpec) -> None:
     """Apply all post-merge adaptations."""
     _adapt_makefile(spec)
     _adapt_dockerfile(spec)
-    _adapt_golangci_lint(spec)
     _apply_source_fixes(spec)
     _remove_incompatible_scaffold_tests(spec.op_dir)
 
@@ -945,44 +963,46 @@ def _adapt_makefile(spec: OperatorSpec) -> None:
 
 
 def _adapt_dockerfile(spec: OperatorSpec) -> None:
+    """Apply MetalK8s customizations on top of the scaffold-generated Dockerfile."""
     log_info("Adapting Dockerfile...")
-    # Dockerfile comes from backup via merge_backup; we only update the Go image.
-    dst = spec.op_dir / "Dockerfile"
-    file_regex_replace(
-        dst, _PAT_DOCKERFILE_FROM_GOLANG, f"FROM golang:{versions.go_major_minor}"
+    df = spec.op_dir / "Dockerfile"
+    text = df.read_text(encoding=_ENCODING)
+    patch = spec.dockerfile
+
+    text = re.sub(
+        _PAT_DOCKERFILE_FROM_GOLANG,
+        f"FROM golang:{versions.go_major_minor}",
+        text,
     )
-    log_info(f"Dockerfile updated (Go base image -> {versions.go_major_minor})")
 
+    if patch.extra_copy_dirs:
+        copies = "".join(f"COPY {d} {d}\n" for d in patch.extra_copy_dirs)
+        text = re.sub(_PAT_DOCKERFILE_LAST_SCAFFOLD_COPY, rf"\g<1>{copies}", text)
 
-def _adapt_golangci_lint(spec: OperatorSpec) -> None:
-    log_info("Adapting .golangci.yml...")
-    dst_cfg = spec.op_dir / ".golangci.yml"
-    content = dst_cfg.read_text(encoding=_ENCODING)
+    if patch.ldflags:
+        text = text.replace(
+            "\n# Build\n",
+            "\n# Version of the project, e.g. "
+            "`git describe --always --long --dirty --broken`\n"
+            "ARG METALK8S_VERSION\n"
+            "\n# Build\n",
+        )
+        text = text.replace(
+            "go build -a -o manager cmd/main.go",
+            "go build -a -o manager \\\n"
+            f'      -ldflags "{patch.ldflags}" \\\n'
+            "      cmd/main.go",
+        )
 
-    # Check config version numerically to remain correct when golangci-lint
-    # releases a future config format (e.g. version "3").
-    cfg_version = _golangci_config_version(content)
-    if cfg_version is not None and cfg_version >= _GOLANGCI_MIN_CONFIG_VERSION:
-        log_info(f".golangci.yml already at config version {cfg_version}")
-        return
+    label = (
+        _DOCKERFILE_LABEL_BLOCK.replace("__NAME__", spec.image_name)
+        .replace("__DESCRIPTION__", patch.label_description)
+        .replace("__TAGS__", patch.openshift_tags)
+    )
+    text += label
 
-    # Normalize deprecated v1 fields that the migrate command rejects.
-    if "  deadline:" in content:
-        content = content.replace("  deadline:", "  timeout:")
-        dst_cfg.write_text(content, encoding=_ENCODING)
-
-    result = run([str(_GOLANGCI_LINT_BIN), "migrate"], cwd=spec.op_dir, check=False)
-    if result.returncode != 0:
-        log_warn("golangci-lint migrate reported warnings (review manually)")
-
-    for bck in (
-        dst_cfg.with_suffix(".yml.bck"),
-        dst_cfg.parent / ".golangci.bck.yml",
-        dst_cfg.with_suffix(".yml.bak"),
-    ):
-        bck.unlink(missing_ok=True)
-
-    log_info(".golangci.yml migrated to v2")
+    df.write_text(text, encoding=_ENCODING)
+    log_info("Dockerfile adapted")
 
 
 def _apply_source_fix(op_dir: Path, fix: SourceFix) -> None:
@@ -1062,10 +1082,10 @@ def generate_and_build(spec: OperatorSpec) -> None:
 def _clean_tools() -> None:
     """Remove the script's tool cache (.tmp/bin/).
 
-    This forces operator-sdk and golangci-lint to be re-downloaded on the next
-    run, which is useful to reclaim disk space (~150 MB) after the upgrade.
-    The operator bin/ directories created during scaffolding are not affected;
-    they are controlled by each operator's Makefile.
+    This forces operator-sdk to be re-downloaded on the next run, which is
+    useful to reclaim disk space after the upgrade.  The operator bin/
+    directories created during scaffolding are not affected; they are
+    controlled by each operator's Makefile.
     """
     if TOOLS_BIN.exists():
         log_step(f"Cleaning tool cache ({TOOLS_BIN.relative_to(REPO_ROOT)}/)")
@@ -1142,7 +1162,6 @@ def main() -> None:
     log_step(f"Operator SDK Upgrade -> {versions.operator_sdk}")
 
     install_operator_sdk()
-    install_golangci_lint()
 
     for name in targets:
         spec = OPERATORS[name]

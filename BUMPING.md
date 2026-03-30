@@ -126,10 +126,7 @@ A few tips to bump image versions and SHAs:
 
 ## Operator-sdk and Go version
 
-The upgrade is automated by `scripts/upgrade-operator-sdk.py`. The script detects
-the latest compatible versions of operator-sdk, Go toolchain and golangci-lint from
-their respective public APIs, scaffolds fresh projects, and merges the existing
-custom code back. It applies to both `operator/` and `storage-operator/`.
+This guide is applied for both `metalk8s-operator` and `storage-operator`.
 
 ### Prerequisites
 
@@ -165,9 +162,9 @@ Options:
 --yes, -y         Skip the confirmation prompt
 ```
 
-The script caches `operator-sdk` and `golangci-lint` in `.tmp/bin/` so they are not
-re-downloaded on repeated runs. Use `--clean-tools` to reclaim disk space once the
-upgrade is validated.
+The script caches `operator-sdk` in `.tmp/bin/` so it is not re-downloaded on
+repeated runs. Use `--clean-tools` to reclaim disk space once the upgrade is
+validated.
 
 ### What to review after the upgrade
 
