@@ -71,7 +71,7 @@
 - Ensure fluent-bit pods are restarted when its configmap or secret is modified
   (PR[#4834](https://github.com/scality/metalk8s/pull/4834))
 
-- Bump nginx image to [1.28.3-alpine](https://github.com/nginx/nginx/releases/tag/release-1.28.3)
+- Bump nginx image to [1.29.7-alpine](https://github.com/nginx/nginx/releases/tag/release-1.29.7)
   (PR[#4852](https://github.com/scality/metalk8s/pull/4852))
 
 - Bump the rocky base image used by `metalk8s-utils` image to
