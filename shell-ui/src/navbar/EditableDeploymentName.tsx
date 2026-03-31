@@ -11,6 +11,9 @@ import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.compo
 import { Box } from '@scality/core-ui/dist/components/box/Box';
 
 import { spacing } from '@scality/core-ui/dist/spacing';
+import { Banner } from '@scality/core-ui/dist/components/banner/Banner.component';
+import type { InstanceNameAdapter } from './InstanceName';
+import { useMutation, useQueryClient } from 'react-query';
 
 const ModalDivider = styled.hr`
   border: none;
@@ -27,6 +30,23 @@ const InlineLoaderWrapper = styled.span`
   }
 `;
 
+const ValidationInputWrapper = styled.div`
+  position: relative;
+`;
+
+const ValidationError = styled.p`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin: ${spacing.r4} 0 0;
+  padding: ${spacing.r2} ${spacing.r8};
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.statusCritical};
+  background: ${(props) => props.theme.backgroundLevel1};
+  border-radius: ${spacing.r4};
+  white-space: nowrap;
+`;
+
 const NameInput = styled.input`
   font-size: 1rem;
   font-family: 'Lato';
@@ -41,6 +61,11 @@ const NameInput = styled.input`
   &:focus {
     border-color: ${(props) => props.theme.selectedActive};
     box-shadow: 0 0 0 2px ${(props) => props.theme.selectedActive}33;
+  }
+
+  &[aria-invalid='true'] {
+    border-color: ${(props) => props.theme.statusCritical};
+    box-shadow: 0 0 0 2px ${(props) => props.theme.statusCritical}33;
   }
 `;
 
@@ -61,7 +86,6 @@ const KeyValue = styled.dd`
   margin: 0;
 `;
 
-/** Pill around deployment name: typography + interactive hover chrome */
 const NameTrigger = styled.span`
   display: inline-flex;
   align-items: center;
@@ -89,17 +113,21 @@ const NameTrigger = styled.span`
 
 export function EditableDeploymentName({
   name,
-  isPropagating,
-  onChange,
+  checkInstanceName,
+  setInstanceName,
 }: {
   name: string;
-  isPropagating: boolean;
-  onChange: (newName: string) => void;
+  checkInstanceName?: InstanceNameAdapter['checkInstanceName'];
+  setInstanceName: (name: string) => Promise<void>;
 }) {
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [pendingName, setPendingName] = useState(name);
   const [modalOpen, setModalOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [inputValidationError, setInputValidationError] = useState<string | undefined>(undefined);
+
+  const [setInstanceNameErrorMessage, setSetInstanceNameErrorMessage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (isEditing) {
@@ -109,8 +137,30 @@ export function EditableDeploymentName({
     }
   }, [isEditing, name]);
 
+  const mutation = useMutation({
+    mutationFn: async ({ value }: { value: string }) => {
+      return setInstanceName(value);
+    },
+    onSuccess: () => {
+      setSetInstanceNameErrorMessage(undefined);
+    },
+    onError: (error) => {
+      let errorMessage = 'An error occurred while updating the deployment name';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        setSetInstanceNameErrorMessage(errorMessage);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(['instanceName']);
+    },
+  });
+
+  const isMutationLoading = mutation.isLoading;
+  const showInputError = !!inputValidationError;
+
   const handleEditStart = () => {
-    if (isPropagating) {
+    if (isMutationLoading) {
       return;
     }
     setIsEditing(true);
@@ -118,6 +168,14 @@ export function EditableDeploymentName({
 
   const submit = () => {
     const trimmed = pendingName.trim();
+    const validationResult = checkInstanceName ? checkInstanceName(trimmed) : ({ hasError: false } as const);
+    if (validationResult.hasError === true) {
+      setInputValidationError(validationResult.message);
+      return;
+    }
+
+    setInputValidationError(undefined);
+
     if (trimmed && trimmed !== name) {
       setIsEditing(false);
       setModalOpen(true);
@@ -135,7 +193,7 @@ export function EditableDeploymentName({
   };
 
   const handleConfirm = () => {
-    onChange(pendingName.trim());
+    mutation.mutate({ value: pendingName.trim() });
     setModalOpen(false);
   };
 
@@ -147,28 +205,36 @@ export function EditableDeploymentName({
     <>
       <Box gap={spacing.r4} style={{ alignItems: 'center' }}>
         {isEditing ? (
-          <NameInput
-            ref={inputRef}
-            value={pendingName}
-            onChange={(e) => setPendingName(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={submit}
-            aria-label="Deployment name"
-          />
+          <ValidationInputWrapper>
+            <NameInput
+              ref={inputRef}
+              value={pendingName}
+              onChange={(e) => setPendingName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={submit}
+              aria-label="Deployment name"
+              aria-invalid={showInputError ? 'true' : 'false'}
+            />
+            {showInputError && inputValidationError && (
+              <ValidationError id="name-error" role="alert">
+                {inputValidationError}
+              </ValidationError>
+            )}
+          </ValidationInputWrapper>
         ) : (
           <Tooltip
-            overlay={isPropagating ? 'Cannot edit while propagating' : 'Edit deployment name'}
+            overlay={isMutationLoading ? 'Cannot edit while propagating' : 'Edit deployment name'}
             placement="bottom"
           >
             <NameTrigger
-              data-disabled={isPropagating || modalOpen ? 'true' : undefined}
+              data-disabled={isMutationLoading || modalOpen ? 'true' : undefined}
               onClick={handleEditStart}
-              role={isPropagating ? undefined : 'button'}
-              tabIndex={isPropagating ? undefined : 0}
-              onKeyDown={(e) => !isPropagating && e.key === 'Enter' && handleEditStart()}
+              role={isMutationLoading ? undefined : 'button'}
+              tabIndex={isMutationLoading ? undefined : 0}
+              onKeyDown={(e) => !isMutationLoading && e.key === 'Enter' && handleEditStart()}
             >
               {modalOpen ? pendingName.trim() : name}
-              {isPropagating && (
+              {isMutationLoading && (
                 <InlineLoaderWrapper>
                   <Loader size="smaller" />
                 </InlineLoaderWrapper>
@@ -190,6 +256,11 @@ export function EditableDeploymentName({
         }
       >
         <Stack direction="vertical" gap="r24" style={{ width: '500px' }}>
+          {setInstanceNameErrorMessage && (
+            <Banner variant="danger" title="Error renaming deployment">
+              {setInstanceNameErrorMessage}
+            </Banner>
+          )}
           <InfoMessage
             title="About deployment names"
             content="The deployment name is a label for this instance, visible in the UI. It is auto-generated at installation. Renaming it early helps distinguish this deployment from others in multi-deployment environments."

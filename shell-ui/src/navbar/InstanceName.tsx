@@ -10,7 +10,6 @@ import { EditableDeploymentName } from './EditableDeploymentName';
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { Tooltip } from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
-import { useToast } from '@scality/core-ui/dist/components/toast/ToastProvider';
 
 const InstanceNameContext = createContext<{
   instanceName: string;
@@ -88,26 +87,31 @@ export const useInstanceNameConfiguration = () => {
   };
 };
 
+export type InstanceNameAdapter = {
+  getInstanceName: (
+    userData: UserData | undefined,
+    configuration: RuntimeWebFinger<Record<string, unknown>>,
+  ) => Promise<string>;
+  setInstanceName: (
+    userData: UserData | undefined,
+    name: string,
+    configuration: RuntimeWebFinger<Record<string, unknown>>,
+  ) => Promise<void>;
+  checkInstanceName: (name: string) => { hasError: true; message: string } | { hasError: false };
+};
+
 //Do not use directly - exported for testing purposes
 export const _InternalInstanceName = ({
   moduleExports,
 }: {
   moduleExports: {
     [moduleName: string]: {
-      getInstanceName: (
-        userData: UserData | undefined,
-        configuration: RuntimeWebFinger<Record<string, unknown>>,
-      ) => Promise<string>;
-      setInstanceName: (
-        userData: UserData | undefined,
-        name: string,
-        configuration: RuntimeWebFinger<Record<string, unknown>>,
-      ) => Promise<void>;
+      getInstanceName: InstanceNameAdapter['getInstanceName'];
+      setInstanceName: InstanceNameAdapter['setInstanceName'];
+      checkInstanceName?: InstanceNameAdapter['checkInstanceName'];
     };
   };
 }) => {
-  const queryClient = useQueryClient();
-  const { showToast } = useToast();
   const instanceNameAdapter = useInstanceNameAdapter();
   const instanceNameConfiguration = useInstanceNameConfiguration();
   const runtimeAppConfiguration = instanceNameConfiguration?.runtimeAppConfiguration;
@@ -120,40 +124,7 @@ export const _InternalInstanceName = ({
     onSuccess: (data) => {
       setInstanceName(data);
     },
-    onError: (error) => {
-      let errorMessage = 'An error occurred while loading the deployment name';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      showToast({
-        open: true,
-        status: 'error',
-        message: errorMessage,
-      });
-    },
     enabled: !!runtimeAppConfiguration,
-  });
-
-  const mutation = useMutation({
-    mutationFn: async ({ value }: { value: string }) => {
-      return moduleExports[instanceNameAdapter?.module ?? ''].setInstanceName(userData, value, runtimeAppConfiguration);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['instanceName']);
-    },
-    onError: (error) => {
-      let errorMessage = 'An error occurred while updating the deployment name';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      queryClient.invalidateQueries(['instanceName']);
-      showToast({
-        open: true,
-        status: 'error',
-        message: errorMessage,
-      });
-    },
   });
 
   if (status === 'loading' || status === 'idle') {
@@ -175,9 +146,13 @@ export const _InternalInstanceName = ({
   return (
     <EditableDeploymentName
       name={data}
-      isPropagating={mutation.isLoading}
-      onChange={(value) => {
-        mutation.mutate({ value });
+      checkInstanceName={moduleExports[instanceNameAdapter?.module ?? ''].checkInstanceName}
+      setInstanceName={(name) => {
+        return moduleExports[instanceNameAdapter?.module ?? ''].setInstanceName(
+          userData,
+          name,
+          runtimeAppConfiguration,
+        );
       }}
     />
   );
