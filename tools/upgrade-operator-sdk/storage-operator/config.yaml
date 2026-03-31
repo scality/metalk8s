@@ -1,0 +1,32 @@
+repo: github.com/scality/metalk8s/storage-operator
+domain: metalk8s.scality.com
+
+operator_sdk_version: v1.42.1
+
+# Optional: pin versions. If absent, the script detects the latest
+# patch from the scaffold's go.mod and auto-pins them here.
+go_toolchain: go1.24.13
+k8s_libs: v0.33.10
+
+apis:
+  - group: storage
+    version: v1alpha1
+    kind: Volume
+    namespaced: false
+
+# Directories/files copied as-is from backup (purely custom, no scaffold equivalent).
+raw_copy:
+  - config/metalk8s
+  - salt
+  - api/v1alpha1/volume_types_test.go
+  - internal/controller/slice.go
+  - internal/controller/volume_controller_test.go
+
+# Files/dirs to delete from the scaffold (not needed or incompatible).
+delete:
+  - .devcontainer
+  - .github
+  - internal/controller/volume_controller_test.go
+
+extra_commands:
+  - ["make", "metalk8s"]

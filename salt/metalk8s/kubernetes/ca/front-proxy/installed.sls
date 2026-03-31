@@ -27,6 +27,7 @@ Generate front proxy CA certificate:
     - CN: front-proxy-ca
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
+    - subjectKeyIdentifier: hash
     - days_valid: {{ front_proxy.ca.cert.days_valid }}
     - user: root
     - group: root

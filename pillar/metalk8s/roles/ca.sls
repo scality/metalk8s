@@ -34,45 +34,53 @@ x509_signing_policies:
     - signing_cert: /etc/kubernetes/pki/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: clientAuth
+    - authorityKeyIdentifier: keyid
   kube_apiserver_server_policy:
     - minions: '*'
     - signing_private_key: /etc/kubernetes/pki/ca.key
     - signing_cert: /etc/kubernetes/pki/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth
+    - authorityKeyIdentifier: keyid
   etcd_client_policy:
     - minions: '*'
     - signing_private_key: /etc/kubernetes/pki/etcd/ca.key
     - signing_cert: /etc/kubernetes/pki/etcd/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: clientAuth
+    - authorityKeyIdentifier: keyid
   etcd_server_client_policy:
     - minions: '*'
     - signing_private_key: /etc/kubernetes/pki/etcd/ca.key
     - signing_cert: /etc/kubernetes/pki/etcd/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth, clientAuth
+    - authorityKeyIdentifier: keyid
   front_proxy_client_policy:
     - minions: '*'
     - signing_private_key: /etc/kubernetes/pki/front-proxy-ca.key
     - signing_cert: /etc/kubernetes/pki/front-proxy-ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: clientAuth
+    - authorityKeyIdentifier: keyid
   ingress_server_policy:
     - minions: '*'
     - signing_private_key: /etc/metalk8s/pki/nginx-ingress/ca.key
     - signing_cert: /etc/metalk8s/pki/nginx-ingress/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth
+    - authorityKeyIdentifier: keyid
   dex_server_policy:
     - minions: '*'
     - signing_private_key: /etc/metalk8s/pki/dex/ca.key
     - signing_cert: /etc/metalk8s/pki/dex/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth
+    - authorityKeyIdentifier: keyid
   backup_server_policy:
     - minions: '*'
     - signing_private_key: /etc/metalk8s/pki/backup-server/ca.key
     - signing_cert: /etc/metalk8s/pki/backup-server/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth
+    - authorityKeyIdentifier: keyid

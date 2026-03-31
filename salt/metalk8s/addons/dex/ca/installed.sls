@@ -27,6 +27,7 @@ Generate dex CA certificate:
     - CN: dex-ca
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
+    - subjectKeyIdentifier: hash
     - days_valid: {{ dex.ca.cert.days_valid }}
     - user: root
     - group: root

@@ -64,11 +64,19 @@
 - Implement ability to add certificates to fluent-bit by mounting a fluent-bit-certs secret
   (PR[#4812](https://github.com/scality/metalk8s/pull/4812))
 
+- Add x509 `subjectKeyIdentifier` extension to CA certificates and
+  `authorityKeyIdentifier` extension to leaf certificates per RFC 5280
+  (PR[#4836](https://github.com/scality/metalk8s/pull/4836))
+
 - Ensure fluent-bit pods are restarted when its configmap or secret is modified
   (PR[#4834](https://github.com/scality/metalk8s/pull/4834))
 
 - Bump nginx image to [1.28.3-alpine](https://github.com/nginx/nginx/releases/tag/release-1.28.3)
   (PR[#4852](https://github.com/scality/metalk8s/pull/4852))
+
+- Bump the rocky base image used by `metalk8s-utils` image to
+  `rockylinux:9.7-minimal`
+  (PR[#4851](https://github.com/scality/metalk8s/pull/4851))
 
 ### Bug Fixes
 

@@ -33,3 +33,6 @@ junit/
 /_build/
 
 vagrant_config.rb
+
+# Binaries downloaded by the upgrade-operator-sdk.py script
+/.tmp/

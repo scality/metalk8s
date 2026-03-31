@@ -45,6 +45,7 @@ Generate Dex server certificate:
     - signing_policy: {{ dex.cert.server_signing_policy }}
     - CN: dex-server
     - subjectAltName: "{{ salt['metalk8s.format_san'](certSANs | unique) }}"
+    - authorityKeyIdentifier: keyid
     - days_valid: {{
         certificates.server.files.dex.days_valid |
         default(certificates.server.days_valid) }}

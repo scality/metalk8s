@@ -27,6 +27,7 @@ Generate CA certificate:
     - CN: kubernetes
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
+    - subjectKeyIdentifier: hash
     - days_valid: {{ ca.cert.days_valid }}
     - user: root
     - group: root

@@ -45,6 +45,7 @@ Generate Control-Plane Ingress server certificate:
     - signing_policy: {{ nginx_ingress.cert.server_signing_policy }}
     - CN: nginx-ingress-control-plane-server
     - subjectAltName: "{{ salt['metalk8s.format_san'](certSANs | unique) }}"
+    - authorityKeyIdentifier: keyid
     - days_valid: {{
         certificates.server.files['control-plane-ingress'].days_valid |
         default(certificates.server.days_valid) }}

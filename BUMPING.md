@@ -128,16 +128,97 @@ A few tips to bump image versions and SHAs:
 
 This guide is applied for both `metalk8s-operator` and `storage-operator`.
 
- - check [documentation](https://sdk.operatorframework.io/docs/upgrading-sdk-version/$version)
-   for important changes and apply them.
- - bump version in Makefile.
- - if necessary, bump go version in pre_merge github action.
- - if necessary, bump go version in Dockerfile.
- - if necessary, bump go dependencies versions.
- - in the root of each operator, run `go mod tidy`.
- - run `make metalk8s`
- - check a diff between the two latest versions of this [test project](https://github.com/operator-framework/operator-sdk/tree/master/testdata/go/v4/memcached-operator)
- - the diff in this repo and the test project should be more or less the same
+### Prerequisites
+
+- `go`, `curl`, and `patch` in `PATH`.
+- `pyyaml` Python package: `pip install pyyaml`
+- `GITHUB_TOKEN` (optional): raises the GitHub API rate limit from 60 to 5000
+  req/hour. Set via `export GITHUB_TOKEN=<token>`.
+
+### Updating the versions
+
+Target versions are pinned in `scripts/upgrade-operator-sdk/<name>/config.yaml`:
+
+```yaml
+operator_sdk_version: v1.42.1    # target operator-sdk release
+go_toolchain: go1.24.13          # pin Go toolchain (for GOTOOLCHAIN)
+k8s_libs: v0.33.10               # pin k8s.io libs version
+```
+
+After scaffolding, the script detects the latest available versions (operator-sdk
+from GitHub, Go and k8s.io patches from go.dev / module proxy) and compares with
+the pinned values:
+
+- **No pin** in YAML: the detected version is used and auto-pinned in the file.
+- **Pin matches detected**: all good, no action.
+- **Pin is older** than detected: warning printed with the newer version available.
+  The pinned value is still used. Update the YAML manually when ready.
+- **Pin is newer** than detected (unusual): warning, the detected value is used.
+
+This is CI-friendly: zero interactive input during reconciliation.
+
+### Running the upgrade
+
+The script processes one operator at a time:
+
+```bash
+python3 scripts/upgrade-operator-sdk/upgrade.py \
+    --operator-dir operator \
+    scripts/upgrade-operator-sdk/operator
+
+python3 scripts/upgrade-operator-sdk/upgrade.py \
+    --operator-dir storage-operator \
+    scripts/upgrade-operator-sdk/storage-operator
+```
+
+Options:
+
+```
+--operator-dir    Path to the operator project directory (required)
+--skip-backup     Reuse an existing .bak directory (no new backup)
+--clean-tools     Remove tool cache after upgrade
+--yes, -y         Skip the confirmation prompt
+```
+
+### YAML config files
+
+Each operator has a config directory at `scripts/upgrade-operator-sdk/<name>/` containing
+`config.yaml` and a `patches/` subdirectory. The config fields are:
+
+- **Versions**: `operator_sdk_version`, `go_toolchain` (optional pin), `k8s_libs` (optional pin)
+- **Scaffold**: `repo`, `domain`, `apis` (with `group`, `version`, `kind`, `namespaced`). The operator name is derived from the config directory name.
+- **Raw copy**: `raw_copy` -- directories or files copied as-is from backup (purely custom code with no scaffold equivalent: `pkg/`, `version/`, `config/metalk8s/`, `salt/`, individual test/helper files)
+- **Post-processing**: `extra_commands`
+
+### Patch files
+
+All customizations to scaffold-generated files are stored as GNU unified diff
+files in the `patches/` subdirectory. This includes:
+
+- **Dockerfile** and **Makefile** customizations
+- **CRD type definitions** (`*_types.go`)
+- **Controller implementations** (`*_controller.go`)
+- **Scaffold test stubs** (`*_controller_test.go`) -- neutralized when incompatible with the delegation pattern
+
+The script applies them with `patch -p1` after scaffolding. If a patch does not
+apply cleanly, look for `.rej` files and resolve manually.
+
+Patch files use `__PLACEHOLDER__` tokens for runtime values:
+
+| Placeholder       | Replaced with                | Source     |
+| ----------------- | ---------------------------- | ---------- |
+| `__GOTOOLCHAIN__` | Detected/pinned Go toolchain | `Makefile` |
+
+New `.patch` files in the patches directory are automatically picked up.
+
+### What to review after the upgrade
+
+1. `git diff` to review all changes
+2. `cd <operator> && make test` to run tests
+3. Check `config/crd/bases/` for correct CRD scopes
+4. Check `config/rbac/role.yaml` for RBAC completeness
+5. Check `deploy/manifests.yaml` for correct Jinja templates
+6. Remove backup: `rm -rf <operator>.bak/`
 
 ## Calico
 

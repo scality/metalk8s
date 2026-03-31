@@ -29,6 +29,7 @@ Generate etcd server certificate:
     - signing_policy: {{ etcd.cert.server_signing_policy }}
     - CN: "{{ grains['fqdn'] }}"
     - subjectAltName: "DNS:{{ grains['fqdn'] }}, DNS:localhost, IP:{{ grains['metalk8s']['control_plane_ip'] }}, IP:127.0.0.1"
+    - authorityKeyIdentifier: keyid
     - days_valid: {{
         certificates.server.files.etcd.days_valid |
         default(certificates.server.days_valid) }}

@@ -27,6 +27,7 @@ Generate etcd CA certificate:
     - CN: etcd-ca
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
+    - subjectKeyIdentifier: hash
     - days_valid: {{ etcd.ca.cert.days_valid }}
     - user: root
     - group: root
