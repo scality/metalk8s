@@ -78,6 +78,9 @@
   `rockylinux:9.7-minimal`
   (PR[#4851](https://github.com/scality/metalk8s/pull/4851))
 
+- Bump Alpine base image version to [3.23.3](https://github.com/alpinelinux/aports/releases/tag/v3.23.3)
+  (PR[#4858](https://github.com/scality/metalk8s/pull/4858))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
