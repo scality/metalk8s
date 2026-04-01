@@ -24,20 +24,12 @@ export const InstanceNameProvider = ({ children }: PropsWithChildren<{}>) => {
   );
 };
 
-export const useInstanceName = () => {
-  const context = useContext(InstanceNameContext);
-  if (!context) {
-    throw new Error('useInstanceName must be used within a InstanceNameProvider');
-  }
-  return context.instanceName;
-};
-
-const useSetInstanceName = () => {
-  const context = useContext(InstanceNameContext);
-  if (!context) {
-    throw new Error('useSetInstanceName must be used within a InstanceNameProvider');
-  }
-  return context.setInstanceName;
+export const useInstanceName = (): string => {
+  const { data } = useQuery({
+    queryKey: [INSTANCE_NAME_QUERY_KEY],
+    enabled: false, // Don't refetch, just read from cache
+  });
+  return (data as string) ?? '';
 };
 
 export const useInstanceNameAdapter = () => {
