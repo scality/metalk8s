@@ -1,15 +1,15 @@
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import { Tooltip } from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
 import { createContext, useContext, useState, type PropsWithChildren } from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import { useAuth, type UserData } from '../auth/AuthProvider';
 import { useConfigRetriever, type RuntimeWebFinger } from '../initFederation/ConfigurationProviders';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { useDeployedApps } from '../initFederation/UIListProvider';
 import { EditableDeploymentName } from './EditableDeploymentName';
-import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
-import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
-import { Tooltip } from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
 
 const InstanceNameContext = createContext<{
   instanceName: string;
@@ -87,6 +87,8 @@ export const useInstanceNameConfiguration = () => {
   };
 };
 
+export const INSTANCE_NAME_QUERY_KEY = 'instanceName';
+
 export type InstanceNameAdapter = {
   getInstanceName: (
     userData: UserData | undefined,
@@ -118,7 +120,7 @@ export const _InternalInstanceName = ({
   const setInstanceName = useSetInstanceName();
   const { userData } = useAuth();
   const { data, status } = useQuery({
-    queryKey: ['instanceName'],
+    queryKey: [INSTANCE_NAME_QUERY_KEY],
     queryFn: async () =>
       moduleExports[instanceNameAdapter?.module ?? ''].getInstanceName(userData, runtimeAppConfiguration),
     onSuccess: (data) => {

@@ -12,7 +12,7 @@ import { Box } from '@scality/core-ui/dist/components/box/Box';
 
 import { spacing } from '@scality/core-ui/dist/spacing';
 import { Banner } from '@scality/core-ui/dist/components/banner/Banner.component';
-import type { InstanceNameAdapter } from './InstanceName';
+import { type InstanceNameAdapter, INSTANCE_NAME_QUERY_KEY } from './InstanceName';
 import { useMutation, useQueryClient } from 'react-query';
 
 const ModalDivider = styled.hr`
@@ -143,16 +143,17 @@ export function EditableDeploymentName({
     },
     onSuccess: () => {
       setSetInstanceNameErrorMessage(undefined);
+      setModalOpen(false);
     },
     onError: (error) => {
       let errorMessage = 'An error occurred while updating the deployment name';
       if (error instanceof Error) {
         errorMessage = error.message;
-        setSetInstanceNameErrorMessage(errorMessage);
       }
+      setSetInstanceNameErrorMessage(errorMessage);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(['instanceName']);
+      queryClient.invalidateQueries([INSTANCE_NAME_QUERY_KEY]);
     },
   });
 
@@ -194,11 +195,12 @@ export function EditableDeploymentName({
 
   const handleConfirm = () => {
     mutation.mutate({ value: pendingName.trim() });
-    setModalOpen(false);
   };
 
   const handleModalCancel = () => {
     setModalOpen(false);
+    setSetInstanceNameErrorMessage(undefined);
+    setInputValidationError(undefined);
   };
 
   return (
@@ -251,7 +253,13 @@ export function EditableDeploymentName({
         footer={
           <Stack gap="r8" direction="horizontal" style={{ justifyContent: 'flex-end' }}>
             <Button variant="outline" label="Cancel" onClick={handleModalCancel} />
-            <Button variant="primary" label="Rename" onClick={handleConfirm} />
+            <Button
+              variant="primary"
+              label="Rename"
+              onClick={handleConfirm}
+              isLoading={isMutationLoading}
+              disabled={isMutationLoading}
+            />
           </Stack>
         }
       >
