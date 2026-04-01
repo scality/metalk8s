@@ -1,32 +1,50 @@
-import type { PropsWithChildren } from 'react';
-import React from 'react';
+import type { ComponentProps, PropsWithChildren } from 'react';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { jest } from '@jest/globals';
 import userEvent from '@testing-library/user-event';
+import { QueryClient } from 'react-query';
 import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
 
+import { QueryClientProvider } from '../QueryClientProvider';
 import { EditableDeploymentName } from './EditableDeploymentName';
+import type { InstanceNameAdapter } from './InstanceName';
 
-const Wrapper = ({ children }: PropsWithChildren) => (
-  <CoreUiThemeProvider theme={coreUIAvailableThemes.darkRebrand}>{children}</CoreUiThemeProvider>
-);
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+}
+
+type SetInstanceNameFn = (name: string) => Promise<void>;
 
 function renderEditable(
-  props: Partial<React.ComponentProps<typeof EditableDeploymentName>> & {
-    onChange?: jest.Mock;
+  props: Partial<ComponentProps<typeof EditableDeploymentName>> & {
+    setInstanceName?: jest.MockedFunction<SetInstanceNameFn>;
   } = {},
 ) {
-  const onChange = props.onChange ?? jest.fn();
+  const queryClient = createTestQueryClient();
+  const setInstanceName =
+    props.setInstanceName ?? (jest.fn() as jest.MockedFunction<SetInstanceNameFn>).mockResolvedValue(undefined);
+
+  const Wrapper = ({ children }: PropsWithChildren) => (
+    <QueryClientProvider client={queryClient}>
+      <CoreUiThemeProvider theme={coreUIAvailableThemes.darkRebrand}>{children}</CoreUiThemeProvider>
+    </QueryClientProvider>
+  );
+
   render(
     <EditableDeploymentName
       name={props.name ?? 'prod-cluster'}
-      isPropagating={props.isPropagating ?? false}
-      onChange={onChange}
+      checkInstanceName={props.checkInstanceName}
+      setInstanceName={setInstanceName}
     />,
     { wrapper: Wrapper },
   );
-  return { onChange };
+  return { setInstanceName };
 }
 
 async function openEditMode(name = 'prod-cluster') {
@@ -50,38 +68,95 @@ describe('EditableDeploymentName', () => {
     });
   });
 
-  it('closes edit mode on Escape without opening modal or calling onChange', async () => {
-    const { onChange } = renderEditable();
+  it('closes edit mode on Escape without opening modal or calling setInstanceName', async () => {
+    const { setInstanceName } = renderEditable();
     await openEditMode();
     await userEvent.type(screen.getByRole('textbox', { name: 'Deployment name' }), 'new-name');
     await userEvent.keyboard('{Escape}');
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(onChange).not.toHaveBeenCalled();
+    expect(setInstanceName).not.toHaveBeenCalled();
   });
 
-  it('closes edit mode on Enter when value unchanged (no modal, no onChange)', async () => {
-    const { onChange } = renderEditable({ name: 'same' });
+  it('closes edit mode on Enter when value unchanged (no modal, no setInstanceName)', async () => {
+    const { setInstanceName } = renderEditable({ name: 'same' });
     await userEvent.click(screen.getByRole('button', { name: 'same' }));
     await userEvent.keyboard('{Enter}');
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(onChange).not.toHaveBeenCalled();
+    expect(setInstanceName).not.toHaveBeenCalled();
   });
 
-  it('closes edit mode on blur when only whitespace (no modal, no onChange)', async () => {
-    const { onChange } = renderEditable({ name: 'same' });
+  it('closes edit mode on blur when only whitespace (no modal, no setInstanceName)', async () => {
+    const { setInstanceName } = renderEditable({ name: 'same' });
     await userEvent.click(screen.getByRole('button', { name: 'same' }));
     await userEvent.clear(screen.getByRole('textbox', { name: 'Deployment name' }));
     await userEvent.type(screen.getByRole('textbox', { name: 'Deployment name' }), '   ');
     await userEvent.tab();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(onChange).not.toHaveBeenCalled();
+    expect(setInstanceName).not.toHaveBeenCalled();
+  });
+
+  it('shows inline validation error when checkInstanceName reports an error', async () => {
+    const checkInstanceName: InstanceNameAdapter['checkInstanceName'] = jest.fn(() => ({
+      hasError: true,
+      message: 'Invalid deployment name',
+    }));
+    renderEditable({ checkInstanceName });
+    await openEditMode();
+    const input = screen.getByRole('textbox', { name: 'Deployment name' });
+    await userEvent.clear(input);
+    await userEvent.type(input, 'bad-value');
+    await userEvent.keyboard('{Enter}');
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('Invalid deployment name');
+    expect(alert).toHaveAttribute('id', 'name-error');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(checkInstanceName).toHaveBeenCalledWith('bad-value');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('shows danger banner in modal when setInstanceName rejects with Error', async () => {
+    const { setInstanceName } = renderEditable({
+      setInstanceName: (jest.fn() as jest.MockedFunction<SetInstanceNameFn>).mockRejectedValue(
+        new Error('K8s not available'),
+      ),
+    });
+    await openEditMode();
+    const input = screen.getByRole('textbox', { name: 'Deployment name' });
+    await userEvent.clear(input);
+    await userEvent.type(input, 'new-name');
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Rename' }));
+    const dialog = screen.getByRole('dialog');
+    await waitFor(() => {
+      expect(within(dialog).getByText('K8s not available')).toBeInTheDocument();
+    });
+    expect(within(dialog).getByText('Error renaming deployment')).toBeInTheDocument();
+    expect(setInstanceName).toHaveBeenCalledWith('new-name');
+  });
+
+  it('shows default banner message when setInstanceName rejects with a non-Error value', async () => {
+    const setInstanceName = (jest.fn() as jest.MockedFunction<SetInstanceNameFn>).mockRejectedValue('unknown');
+    renderEditable({ setInstanceName });
+    await openEditMode();
+    const input = screen.getByRole('textbox', { name: 'Deployment name' });
+    await userEvent.clear(input);
+    await userEvent.type(input, 'new-name');
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Rename' }));
+    const dialog = screen.getByRole('dialog');
+    await waitFor(() => {
+      expect(within(dialog).getByText('An error occurred while updating the deployment name')).toBeInTheDocument();
+    });
+    expect(setInstanceName).toHaveBeenCalledWith('new-name');
   });
 
   it('opens confirm modal on Enter when name trimmed differs', async () => {
-    const { onChange } = renderEditable();
+    const { setInstanceName } = renderEditable();
     await openEditMode();
     const input = screen.getByRole('textbox', { name: 'Deployment name' });
     await userEvent.clear(input);
@@ -92,11 +167,11 @@ describe('EditableDeploymentName', () => {
     });
     expect(within(screen.getByRole('dialog')).getByText('prod-cluster')).toBeInTheDocument();
     expect(within(screen.getByRole('dialog')).getByText('new-cluster')).toBeInTheDocument();
-    expect(onChange).not.toHaveBeenCalled();
+    expect(setInstanceName).not.toHaveBeenCalled();
   });
 
-  it('calls onChange with trimmed name when Rename is confirmed', async () => {
-    const { onChange } = renderEditable();
+  it('calls setInstanceName with trimmed name when Rename is confirmed', async () => {
+    const { setInstanceName } = renderEditable();
     await openEditMode();
     const input = screen.getByRole('textbox', { name: 'Deployment name' });
     await userEvent.clear(input);
@@ -106,11 +181,14 @@ describe('EditableDeploymentName', () => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
     await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Rename' }));
-    expect(onChange).toHaveBeenCalledWith('renamed');
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+    expect(setInstanceName).toHaveBeenCalledWith('renamed');
   });
 
-  it('closes modal on Cancel without calling onChange', async () => {
-    const { onChange } = renderEditable();
+  it('closes modal on Cancel without calling setInstanceName', async () => {
+    const { setInstanceName } = renderEditable();
     await openEditMode();
     const input = screen.getByRole('textbox', { name: 'Deployment name' });
     await userEvent.clear(input);
@@ -121,16 +199,30 @@ describe('EditableDeploymentName', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
-    expect(onChange).not.toHaveBeenCalled();
+    expect(setInstanceName).not.toHaveBeenCalled();
   });
 
-  it('does not enter edit mode when propagating', async () => {
-    const { onChange } = renderEditable({ isPropagating: true });
+  it('does not enter edit mode while rename is in progress', async () => {
+    const setInstanceName = jest
+      .fn()
+      .mockImplementation((): Promise<void> => new Promise(() => {})) as jest.MockedFunction<SetInstanceNameFn>;
+    renderEditable({ setInstanceName });
+    await openEditMode();
+    const input = screen.getByRole('textbox', { name: 'Deployment name' });
+    await userEvent.clear(input);
+    await userEvent.type(input, 'x');
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Rename' }));
+    await waitFor(() => expect(setInstanceName).toHaveBeenCalled());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.getByText('prod-cluster')).toBeInTheDocument();
     await userEvent.click(screen.getByText('prod-cluster'));
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-    expect(onChange).not.toHaveBeenCalled();
+    expect(setInstanceName).toHaveBeenCalledTimes(1);
   });
 
   it('starts edit from keyboard Enter on trigger when focusable', async () => {
@@ -144,17 +236,23 @@ describe('EditableDeploymentName', () => {
   });
 
   it('updates displayed name when name prop changes in view mode', () => {
+    const queryClient = createTestQueryClient();
+    const setInstanceName = (jest.fn() as jest.MockedFunction<SetInstanceNameFn>).mockResolvedValue(undefined);
     const { rerender } = render(
-      <CoreUiThemeProvider theme={coreUIAvailableThemes.darkRebrand}>
-        <EditableDeploymentName name="v1" isPropagating={false} onChange={() => {}} />
-      </CoreUiThemeProvider>,
+      <QueryClientProvider client={queryClient}>
+        <CoreUiThemeProvider theme={coreUIAvailableThemes.darkRebrand}>
+          <EditableDeploymentName name="before-change" setInstanceName={setInstanceName} />
+        </CoreUiThemeProvider>
+      </QueryClientProvider>,
     );
-    expect(screen.getByRole('button', { name: 'v1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'before-change' })).toBeInTheDocument();
     rerender(
-      <CoreUiThemeProvider theme={coreUIAvailableThemes.darkRebrand}>
-        <EditableDeploymentName name="v2" isPropagating={false} onChange={() => {}} />
-      </CoreUiThemeProvider>,
+      <QueryClientProvider client={queryClient}>
+        <CoreUiThemeProvider theme={coreUIAvailableThemes.darkRebrand}>
+          <EditableDeploymentName name="after-change" setInstanceName={setInstanceName} />
+        </CoreUiThemeProvider>
+      </QueryClientProvider>,
     );
-    expect(screen.getByRole('button', { name: 'v2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'after-change' })).toBeInTheDocument();
   });
 });
