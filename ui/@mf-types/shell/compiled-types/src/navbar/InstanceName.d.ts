@@ -12,6 +12,7 @@ export declare const useInstanceNameConfiguration: () => {
     microAppConfiguration: import("../initFederation/ConfigurationProviders").EnrichedBuildtimeWebFinger;
     runtimeAppConfiguration: RuntimeWebFinger<Record<string, unknown>>;
 };
+export declare const INSTANCE_NAME_QUERY_KEY = "instanceName";
 export type InstanceNameAdapter = {
     getInstanceName: (userData: UserData | undefined, configuration: RuntimeWebFinger<Record<string, unknown>>) => Promise<string>;
     setInstanceName: (userData: UserData | undefined, name: string, configuration: RuntimeWebFinger<Record<string, unknown>>) => Promise<void>;
@@ -27,7 +28,7 @@ export declare const _InternalInstanceName: ({ moduleExports, }: {
         [moduleName: string]: {
             getInstanceName: InstanceNameAdapter["getInstanceName"];
             setInstanceName: InstanceNameAdapter["setInstanceName"];
-            checkInstanceName: InstanceNameAdapter["checkInstanceName"];
+            checkInstanceName?: InstanceNameAdapter["checkInstanceName"];
         };
     };
 }) => import("react/jsx-runtime").JSX.Element;
