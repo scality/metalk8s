@@ -15,6 +15,13 @@ import { Banner } from '@scality/core-ui/dist/components/banner/Banner.component
 import { type InstanceNameAdapter, INSTANCE_NAME_QUERY_KEY } from './InstanceName';
 import { useMutation, useQueryClient } from 'react-query';
 
+function renameMutationErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return 'An error occurred while updating the deployment name';
+}
+
 const ModalDivider = styled.hr`
   border: none;
   border-top: 1px solid ${(props) => props.theme.backgroundLevel3};
@@ -127,8 +134,6 @@ export function EditableDeploymentName({
   const inputRef = useRef<HTMLInputElement>(null);
   const [inputValidationError, setInputValidationError] = useState<string | undefined>(undefined);
 
-  const [setInstanceNameErrorMessage, setSetInstanceNameErrorMessage] = useState<string | undefined>(undefined);
-
   useEffect(() => {
     if (isEditing) {
       setPendingName(name);
@@ -142,15 +147,7 @@ export function EditableDeploymentName({
       return setInstanceName(value);
     },
     onSuccess: () => {
-      setSetInstanceNameErrorMessage(undefined);
       setModalOpen(false);
-    },
-    onError: (error) => {
-      let errorMessage = 'An error occurred while updating the deployment name';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      setSetInstanceNameErrorMessage(errorMessage);
     },
     onSettled: () => {
       queryClient.invalidateQueries([INSTANCE_NAME_QUERY_KEY]);
@@ -199,8 +196,10 @@ export function EditableDeploymentName({
 
   const handleModalCancel = () => {
     setModalOpen(false);
-    setSetInstanceNameErrorMessage(undefined);
     setInputValidationError(undefined);
+    if (!mutation.isLoading) {
+      mutation.reset();
+    }
   };
 
   return (
@@ -264,9 +263,9 @@ export function EditableDeploymentName({
         }
       >
         <Stack direction="vertical" gap="r24" style={{ width: '500px' }}>
-          {setInstanceNameErrorMessage && (
+          {mutation.isError && mutation.error != null && (
             <Banner variant="danger" title="Error renaming deployment">
-              {setInstanceNameErrorMessage}
+              {renameMutationErrorMessage(mutation.error)}
             </Banner>
           )}
           <InfoMessage
