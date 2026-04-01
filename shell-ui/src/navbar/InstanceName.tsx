@@ -11,6 +11,8 @@ import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { useDeployedApps } from '../initFederation/UIListProvider';
 import { EditableDeploymentName } from './EditableDeploymentName';
 
+export const INSTANCE_NAME_QUERY_KEY = 'instanceName';
+
 const InstanceNameContext = createContext<{
   instanceName: string;
   setInstanceName: (name: string) => void;
@@ -87,8 +89,6 @@ export const useInstanceNameConfiguration = () => {
   };
 };
 
-export const INSTANCE_NAME_QUERY_KEY = 'instanceName';
-
 export type InstanceNameAdapter = {
   getInstanceName: (
     userData: UserData | undefined,
@@ -117,15 +117,11 @@ export const _InternalInstanceName = ({
   const instanceNameAdapter = useInstanceNameAdapter();
   const instanceNameConfiguration = useInstanceNameConfiguration();
   const runtimeAppConfiguration = instanceNameConfiguration?.runtimeAppConfiguration;
-  const setInstanceName = useSetInstanceName();
   const { userData } = useAuth();
   const { data, status } = useQuery({
     queryKey: [INSTANCE_NAME_QUERY_KEY],
     queryFn: async () =>
       moduleExports[instanceNameAdapter?.module ?? ''].getInstanceName(userData, runtimeAppConfiguration),
-    onSuccess: (data) => {
-      setInstanceName(data);
-    },
     enabled: !!runtimeAppConfiguration,
   });
 
