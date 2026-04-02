@@ -23,8 +23,8 @@
 {%- set prometheus_oidc_enabled = prometheus.spec.get('config', {}).get('enable_oidc_authentication', False) %}
 {%- set alertmanager_oidc_enabled = alertmanager.spec.get('config', {}).get('enable_oidc_authentication', False) %}
 
-{%- set prometheus_ca_namespace = prometheus.spec.get('config', {}).get('oidc', {}).get('caSecret', {}).get('namespace', 'metalk8s-ingress') %}
-{%- set alertmanager_ca_namespace = alertmanager.spec.get('config', {}).get('oidc', {}).get('caSecret', {}).get('namespace', 'metalk8s-ingress') %}
+{%- set prometheus_ca_namespace = prometheus.spec.get('config', {}).get('oidc', {}).get('caSecret', {}).get('namespace') or 'metalk8s-ingress' %}
+{%- set alertmanager_ca_namespace = alertmanager.spec.get('config', {}).get('oidc', {}).get('caSecret', {}).get('namespace') or 'metalk8s-ingress' %}
 
 {%- if prometheus_oidc_enabled %}
 
