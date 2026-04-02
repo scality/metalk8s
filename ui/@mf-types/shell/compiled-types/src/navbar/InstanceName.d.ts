@@ -1,7 +1,6 @@
-import { type PropsWithChildren } from 'react';
 import { type UserData } from '../auth/AuthProvider';
 import { type RuntimeWebFinger } from '../initFederation/ConfigurationProviders';
-export declare const InstanceNameProvider: ({ children }: PropsWithChildren<{}>) => import("react/jsx-runtime").JSX.Element;
+export declare const INSTANCE_NAME_QUERY_KEY = "instanceName";
 export declare const useInstanceName: () => string;
 export declare const useInstanceNameAdapter: () => {
     remoteEntryUrl: string;
@@ -12,7 +11,6 @@ export declare const useInstanceNameConfiguration: () => {
     microAppConfiguration: import("../initFederation/ConfigurationProviders").EnrichedBuildtimeWebFinger;
     runtimeAppConfiguration: RuntimeWebFinger<Record<string, unknown>>;
 };
-export declare const INSTANCE_NAME_QUERY_KEY = "instanceName";
 export type InstanceNameAdapter = {
     getInstanceName: (userData: UserData | undefined, configuration: RuntimeWebFinger<Record<string, unknown>>) => Promise<string>;
     setInstanceName: (userData: UserData | undefined, name: string, configuration: RuntimeWebFinger<Record<string, unknown>>) => Promise<void>;

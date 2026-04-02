@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react';
-import { InstanceNameProvider, _InternalInstanceName } from './InstanceName';
+import { _InternalInstanceName } from './InstanceName';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { jest } from '@jest/globals';
 import userEvent from '@testing-library/user-event';
@@ -55,21 +55,19 @@ jest.mock('../auth/AuthProvider', () => ({
 const Wrapper = ({ children }: PropsWithChildren) => (
   <CoreUiThemeProvider theme={coreUIAvailableThemes.darkRebrand}>
     <ToastProvider>
-      <InstanceNameProvider>
-        <QueryClientProvider
-          client={
-            new QueryClient({
-              defaultOptions: {
-                queries: {
-                  retry: false,
-                },
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: {
+                retry: false,
               },
-            })
-          }
-        >
-          {children}
-        </QueryClientProvider>
-      </InstanceNameProvider>
+            },
+          })
+        }
+      >
+        {children}
+      </QueryClientProvider>
     </ToastProvider>
   </CoreUiThemeProvider>
 );

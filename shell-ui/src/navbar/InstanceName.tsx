@@ -3,7 +3,6 @@ import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { Tooltip } from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
-import { createContext, useContext, useState, type PropsWithChildren } from 'react';
 import { useQuery } from 'react-query';
 import { useAuth, type UserData } from '../auth/AuthProvider';
 import { useConfigRetriever, type RuntimeWebFinger } from '../initFederation/ConfigurationProviders';
@@ -12,17 +11,6 @@ import { useDeployedApps } from '../initFederation/UIListProvider';
 import { EditableDeploymentName } from './EditableDeploymentName';
 
 export const INSTANCE_NAME_QUERY_KEY = 'instanceName';
-
-const InstanceNameContext = createContext<{
-  instanceName: string;
-  setInstanceName: (name: string) => void;
-} | null>(null);
-export const InstanceNameProvider = ({ children }: PropsWithChildren<{}>) => {
-  const [instanceName, setInstanceName] = useState('');
-  return (
-    <InstanceNameContext.Provider value={{ instanceName, setInstanceName }}>{children}</InstanceNameContext.Provider>
-  );
-};
 
 export const useInstanceName = (): string => {
   const { data } = useQuery({
