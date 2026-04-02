@@ -2,10 +2,11 @@ name: Code Review
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, ready_for_review]
 
 jobs:
   review:
+    if: ${{ !github.event.pull_request.draft }}
     uses: scality/workflows/.github/workflows/claude-code-review.yml@v2
     secrets:
       GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
