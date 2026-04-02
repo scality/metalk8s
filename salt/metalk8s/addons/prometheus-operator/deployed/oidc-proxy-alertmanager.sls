@@ -16,8 +16,8 @@
 {%- set alertmanager_oidc = alertmanager.spec.get('config', {}).get('oidc', {}) %}
 
 {%- set alertmanager_oidc_ca = alertmanager_oidc.get('caSecret', {}) %}
-{%- set ca_namespace = alertmanager_oidc_ca.get('namespace') or 'metalk8s-ingress' %}
-{%- set ca_name = alertmanager_oidc_ca.get('name') or 'ingress-control-plane-default-certificate' %}
+{%- set ca_namespace = alertmanager_oidc_ca.get('namespace', '') or 'metalk8s-ingress' %}
+{%- set ca_name = alertmanager_oidc_ca.get('name', '') or 'ingress-control-plane-default-certificate' %}
 
 {%- set ca_file = 'namespace_' ~ ca_namespace ~ '.secret_' ~ ca_name ~ '.tls.crt' %}
 
