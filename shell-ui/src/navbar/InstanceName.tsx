@@ -12,12 +12,13 @@ import { EditableDeploymentName } from './EditableDeploymentName';
 
 export const INSTANCE_NAME_QUERY_KEY = 'instanceName';
 
-export const useInstanceName = (): string => {
-  const { data } = useQuery({
+export const useInstanceName = (): string | undefined => {
+  const { data } = useQuery<string>({
     queryKey: [INSTANCE_NAME_QUERY_KEY],
     enabled: false, // Don't refetch, just read from cache
   });
-  return (data as string) ?? '';
+
+  return data;
 };
 
 export const useInstanceNameAdapter = () => {
