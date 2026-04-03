@@ -25,7 +25,7 @@ describe('volume creation fails', () => {
       fixture: '/kubernetes/volumecreation.json',
     });
 
-    cy.intercept('GET', /^\/api\/kubernetes\/apis\/storage.metalk8s.scality.com\/v1alpha1\/volumes\/[a-z0-9_\-]+$/, {
+    cy.intercept('GET', /^\/api\/kubernetes\/apis\/storage\.metalk8s\.scality\.com\/v1alpha1\/volumes\/[a-z0-9_\-]+$/, {
       fixture: '/kubernetes/volumecreation.json',
     });
     cy.findByRole('button', { name: /create/i }).click();
