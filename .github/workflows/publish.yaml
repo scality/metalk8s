@@ -149,7 +149,9 @@ jobs:
           name: Metalk8s ${{ env.SHELL_UI_VERSION }}
           tag_name: ${{ env.SHELL_UI_VERSION }}
           body: ${{ steps.get_tag_message.outputs.message }}
-          prerelease: "${{ ! fromJSON(env.IS_STABLE) }}"
+          # We consider pre-releases if the tag contains a hyphen
+          # e.g. 1.2.3-alpha.0
+          prerelease: ${{ contains(env.SHELL_UI_VERSION, '-') }}
           draft: false
           files: |
             shell.tar
