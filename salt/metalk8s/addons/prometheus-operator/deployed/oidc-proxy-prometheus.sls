@@ -16,8 +16,8 @@
 {%- set prometheus_oidc = prometheus.spec.get('config', {}).get('oidc', {}) %}
 
 {%- set prometheus_oidc_ca = prometheus_oidc.get('caSecret', {}) %}
-{%- set ca_namespace = prometheus_oidc_ca.get('namespace', 'metalk8s-ingress') %}
-{%- set ca_name = prometheus_oidc_ca.get('name', 'ingress-control-plane-default-certificate') %}
+{%- set ca_namespace = prometheus_oidc_ca.get('namespace', '') or 'metalk8s-ingress' %}
+{%- set ca_name = prometheus_oidc_ca.get('name', '') or 'ingress-control-plane-default-certificate' %}
 {%- set ca_file = 'namespace_' ~ ca_namespace ~ '.secret_' ~ ca_name ~ '.tls.crt' %}
 
 {%- if prometheus_oidc_enabled %}
@@ -108,7 +108,7 @@ Create oauth2-proxy-prometheus Deployment:
               - name: restart-script
                 configMap:
                   name: oidc-proxy-restart-script
-                  defaultMode: "0555"
+                  defaultMode: 365
 
 Create oauth2-proxy-prometheus Service:
   metalk8s_kubernetes.object_present:

@@ -16,8 +16,8 @@
 {%- set alertmanager_oidc = alertmanager.spec.get('config', {}).get('oidc', {}) %}
 
 {%- set alertmanager_oidc_ca = alertmanager_oidc.get('caSecret', {}) %}
-{%- set ca_namespace = alertmanager_oidc_ca.get('namespace', 'metalk8s-ingress') %}
-{%- set ca_name = alertmanager_oidc_ca.get('name', 'ingress-control-plane-default-certificate') %}
+{%- set ca_namespace = alertmanager_oidc_ca.get('namespace', '') or 'metalk8s-ingress' %}
+{%- set ca_name = alertmanager_oidc_ca.get('name', '') or 'ingress-control-plane-default-certificate' %}
 
 {%- set ca_file = 'namespace_' ~ ca_namespace ~ '.secret_' ~ ca_name ~ '.tls.crt' %}
 
@@ -109,7 +109,7 @@ Create oauth2-proxy-alertmanager Deployment:
               - name: restart-script
                 configMap:
                   name: oidc-proxy-restart-script
-                  defaultMode: "0555"
+                  defaultMode: 365
 
 Create oauth2-proxy-alertmanager Service:
   metalk8s_kubernetes.object_present:
