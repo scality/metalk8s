@@ -20,6 +20,9 @@
 - Bump etcd version to [3.5.26](https://github.com/etcd-io/etcd/releases/tag/v3.5.26)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))
 
+- Bump Calico version to [3.31.4](https://github.com/projectcalico/calico/releases/tag/v3.31.4)
+  (PR[#4856](https://github.com/scality/metalk8s/pull/4856))
+
 - Bump CoreDNS version to [1.12.4](https://github.com/coredns/coredns/releases/tag/v1.12.4)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))
 
