@@ -1,7 +1,8 @@
 apiVersion: v2
-appVersion: 0.29.2
+appVersion: 0.31.5
 description: A Helm chart for prometheus windows-exporter
 home: https://github.com/prometheus-community/windows_exporter/
+icon: https://raw.githubusercontent.com/cncf/artwork/master/prometheus/icon/color/prometheus-icon-color.svg
 keywords:
 - windows-exporter
 - windows
@@ -9,9 +10,10 @@ keywords:
 - exporter
 maintainers:
 - email: github@jkroepke.de
-  name: jkroepke
+  name: Jan-Otto Kröpke
+  url: https://github.com/jkroepke
 name: prometheus-windows-exporter
 sources:
 - https://github.com/prometheus-community/windows_exporter/
 type: application
-version: 0.7.1
+version: 0.12.5

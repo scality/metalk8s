@@ -1,5 +1,5 @@
 {{- if .Values.podDisruptionBudget }}
-apiVersion: {{ include "grafana.podDisruptionBudget.apiVersion" . }}
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "grafana.fullname" . }}
@@ -19,4 +19,7 @@ spec:
   selector:
     matchLabels:
       {{- include "grafana.selectorLabels" . | nindent 6 }}
+  {{- with .Values.podDisruptionBudget.unhealthyPodEvictionPolicy }}
+  unhealthyPodEvictionPolicy: {{ . }}
+  {{- end }}
 {{- end }}

@@ -23,6 +23,18 @@
 - Bump Calico version to [3.31.4](https://github.com/projectcalico/calico/releases/tag/v3.31.4)
   (PR[#4856](https://github.com/scality/metalk8s/pull/4856))
 
+- Bump kube-prometheus-stack chart version to [82.15.1](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-82.15.1)
+  The following images have also been bumped accordingly:
+  - alertmanager to [v0.31.1](https://github.com/prometheus/alertmanager/releases/tag/v0.31.1)
+  - grafana to [12.4.2](https://github.com/grafana/grafana/releases/tag/v12.4.2)
+  - k8s-sidecar to [2.5.0](https://github.com/kiwigrid/k8s-sidecar/releases/tag/2.5.0)
+  - kube-state-metrics to [v2.18.0](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.18.0)
+  - node-exporter to [v1.10.2](https://github.com/prometheus/node_exporter/releases/tag/v1.10.2)
+  - prometheus to [v3.10.0](https://github.com/prometheus/prometheus/releases/tag/v3.10.0)
+  - prometheus-operator to [v0.89.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.89.0)
+  - thanos to [v0.41.0](https://github.com/thanos-io/thanos/releases/tag/v0.41.0)
+  (PR[#4857](https://github.com/scality/metalk8s/pull/4857))
+
 - Bump CoreDNS version to [1.12.4](https://github.com/coredns/coredns/releases/tag/v1.12.4)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))
 
