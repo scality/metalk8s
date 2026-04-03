@@ -69,10 +69,7 @@ query:
   extraFlags:
     - --query.auto-downsampling
 
-  podSecurityContext:
-    enabled: false
-  containerSecurityContext:
-    enabled: false
+  automountServiceAccountToken: false
 
   pdb:
     create: false

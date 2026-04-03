@@ -158,7 +158,7 @@ spec:
                   app.kubernetes.io/name: thanos
               topologyKey: kubernetes.io/hostname
             weight: 1
-      automountServiceAccountToken: true
+      automountServiceAccountToken: false
       containers:
       - args:
         - query
@@ -210,11 +210,29 @@ spec:
             cpu: 100m
             ephemeral-storage: 50Mi
             memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsGroup: 1001
+          runAsNonRoot: true
+          runAsUser: 1001
+          seLinuxOptions: {}
+          seccompProfile:
+            type: RuntimeDefault
         volumeMounts:
         - mountPath: /conf/sd
           name: sd-config
       nodeSelector:
         node-role.kubernetes.io/infra: ''
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+        supplementalGroups: []
+        sysctls: []
       serviceAccountName: thanos-query
       tolerations:
       - effect: NoSchedule
