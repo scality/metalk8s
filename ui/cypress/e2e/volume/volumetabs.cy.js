@@ -29,10 +29,7 @@ describe('Volume page overview tab', () => {
     it(`brings me to the alert tab prefiltered by ${severity} severity`, () => {
       cy.stubHistory();
       cy.get(`[data-cy="${severity}_counter_node"]`).click();
-      cy.url().should(
-        'include',
-        `/volumes/master-0-alertmanager/alerts?severity=${severity}`,
-      );
+      cy.url().should('include', `/volumes/master-0-alertmanager/alerts?severity=${severity}`);
     });
   });
 
