@@ -126,7 +126,7 @@ def teardown(context, k8s_client):
 def check_grafana_api(grafana_api):
     try:
         grafana_api.get_admin_stats()
-    except utils.GrafanaApiError as exc:
+    except utils.GrafanaAPIError as exc:
         pytest.fail(str(exc))
 
 
