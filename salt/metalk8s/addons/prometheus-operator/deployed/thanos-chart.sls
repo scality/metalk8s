@@ -16,7 +16,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: thanos
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 0.39.2
+    app.kubernetes.io/version: {% endraw -%}{{ repo.images.thanos.version }}{%- raw %}
     helm.sh/chart: thanos-17.3.1
     heritage: metalk8s
   name: thanos-query
@@ -49,7 +49,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: thanos
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 0.39.2
+    app.kubernetes.io/version: {% endraw -%}{{ repo.images.thanos.version }}{%- raw %}
     helm.sh/chart: thanos-17.3.1
     heritage: metalk8s
   name: thanos-query
@@ -64,7 +64,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: thanos
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 0.39.2
+    app.kubernetes.io/version: {% endraw -%}{{ repo.images.thanos.version }}{%- raw %}
     helm.sh/chart: thanos-17.3.1
     heritage: metalk8s
   name: thanos-query-grpc
@@ -91,7 +91,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: thanos
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 0.39.2
+    app.kubernetes.io/version: {% endraw -%}{{ repo.images.thanos.version }}{%- raw %}
     helm.sh/chart: thanos-17.3.1
     heritage: metalk8s
   name: thanos-query
@@ -118,7 +118,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: thanos
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 0.39.2
+    app.kubernetes.io/version: {% endraw -%}{{ repo.images.thanos.version }}{%- raw %}
     helm.sh/chart: thanos-17.3.1
     heritage: metalk8s
   name: thanos-query
@@ -141,7 +141,7 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: thanos
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 0.39.2
+        app.kubernetes.io/version: {% endraw -%}{{ repo.images.thanos.version }}{%- raw %}
         helm.sh/chart: thanos-17.3.1
         heritage: metalk8s
     spec:

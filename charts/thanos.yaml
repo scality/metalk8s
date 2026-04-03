@@ -2,6 +2,9 @@
 # Only the Query component is deployed; the sidecar is managed by
 # kube-prometheus-stack / Prometheus Operator.
 
+commonLabels:
+  app.kubernetes.io/version: '__var__(repo.images.thanos.version)'
+
 global:
   security:
     allowInsecureImages: true
