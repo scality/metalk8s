@@ -73159,7 +73159,7 @@ data:
       name: Prometheus
       type: prometheus
       uid: metalk8s-prometheus
-      url: http://thanos-query-http:10902/
+      url: http://thanos-query:9090/
 kind: ConfigMap
 metadata:
   labels:

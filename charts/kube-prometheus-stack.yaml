@@ -199,7 +199,7 @@ grafana:
       access: proxy
       isDefault: true
       # Service deployed by Thanos
-      url: http://thanos-query-http:10902/
+      url: http://thanos-query:9090/
       jsonData:
         timeInterval: 30s
 

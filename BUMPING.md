@@ -92,8 +92,8 @@ After the first failed build, rules.json and alerting_rules.json from
 
 ```
 CHART_NAME=thanos
-REPO_NAME=banzaicloud-stable
-REPO_URL=https://kubernetes-charts.banzaicloud.com/
+REPO_NAME=bitnami
+REPO_URL=https://charts.bitnami.com/bitnami
 ```
 
 ### General Outline

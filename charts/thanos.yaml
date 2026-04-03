@@ -1,41 +1,78 @@
-store:
-  enabled: false
+# Bitnami Thanos chart values override for MetalK8s.
+# Only the Query component is deployed; the sidecar is managed by
+# kube-prometheus-stack / Prometheus Operator.
+
+global:
+  security:
+    allowInsecureImages: true
+
+# -- Disable every component except Query --------------------------------
 
 queryFrontend:
   enabled: false
 
-compact:
+bucketweb:
   enabled: false
 
-bucket:
+compactor:
   enabled: false
 
-rule:
+storegateway:
   enabled: false
 
-# This one is deployed by Prometheus operator
-sidecar:
+ruler:
   enabled: false
+
+receive:
+  enabled: false
+
+receiveDistributor:
+  enabled: false
+
+minio:
+  enabled: false
+
+# -- Image ----------------------------------------------------------------
+# Use the upstream Thanos image via the MetalK8s __image__ macro.
+# Setting registry to empty lets common.images.image produce
+# "<repository>:<tag>" without a registry prefix.
 
 image:
+  registry: ""
   repository: '__image__(thanos)'
-  tag: v0.36.1
+  tag: v0.41.0
+  pullPolicy: IfNotPresent
+
+volumePermissions:
+  enabled: false
+
+# -- Query ----------------------------------------------------------------
 
 query:
   enabled: true
 
-  replicaLabels:
+  replicaLabel:
     - prometheus_replica
 
-  storeDNSDiscovery: false
-  sidecarDNSDiscovery: false
+  dnsDiscovery:
+    enabled: false
 
   stores:
-    # Service deployed by Prometheus operator to expose Thanos sidecars
+    # Service deployed by Prometheus Operator to expose Thanos sidecars
     - dnssrv+_grpc._tcp.prometheus-operator-thanos-discovery
 
-  serviceDiscoveryFileConfigMaps:
-    - thanos-query-sd-files
+  existingSDConfigmap: thanos-query-sd-files
+
+  extraFlags:
+    - --query.auto-downsampling
+
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+
+  pdb:
+    create: false
 
   tolerations:
     - key: 'node-role.kubernetes.io/bootstrap'

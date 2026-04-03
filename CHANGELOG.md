@@ -35,6 +35,10 @@
   - thanos to [v0.41.0](https://github.com/thanos-io/thanos/releases/tag/v0.41.0)
   (PR[#4857](https://github.com/scality/metalk8s/pull/4857))
 
+- Migrate the Thanos Helm chart from the abandoned Banzai Cloud chart (v0.4.9) to
+  the actively maintained [Bitnami Thanos chart (17.3.1)](https://github.com/bitnami/charts/tree/main/bitnami/thanos)
+  (PR[#4857](https://github.com/scality/metalk8s/pull/4857))
+
 - Bump CoreDNS version to [1.12.4](https://github.com/coredns/coredns/releases/tag/v1.12.4)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))
 

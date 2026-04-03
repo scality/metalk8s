@@ -7,6 +7,54 @@
 
 {% raw %}
 
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels:
+    app.kubernetes.io/component: query
+    app.kubernetes.io/instance: thanos
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: thanos
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 0.39.2
+    helm.sh/chart: thanos-17.3.1
+    heritage: metalk8s
+  name: thanos-query
+  namespace: metalk8s-monitoring
+spec:
+  egress:
+  - {}
+  ingress:
+  - ports:
+    - port: 10902
+    - port: 10901
+    - port: 9090
+    - port: 10901
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: query
+      app.kubernetes.io/instance: thanos
+      app.kubernetes.io/name: thanos
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: v1
+automountServiceAccountToken: false
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: query
+    app.kubernetes.io/instance: thanos
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: thanos
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 0.39.2
+    helm.sh/chart: thanos-17.3.1
+    heritage: metalk8s
+  name: thanos-query
+  namespace: metalk8s-monitoring
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -16,15 +64,15 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: thanos
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 0.28.1
-    helm.sh/chart: thanos-0.4.9
+    app.kubernetes.io/version: 0.39.2
+    helm.sh/chart: thanos-17.3.1
     heritage: metalk8s
   name: thanos-query-grpc
   namespace: metalk8s-monitoring
 spec:
-  clusterIP: None
   ports:
   - name: grpc
+    nodePort: null
     port: 10901
     protocol: TCP
     targetPort: grpc
@@ -43,15 +91,16 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: thanos
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 0.28.1
-    helm.sh/chart: thanos-0.4.9
+    app.kubernetes.io/version: 0.39.2
+    helm.sh/chart: thanos-17.3.1
     heritage: metalk8s
-  name: thanos-query-http
+  name: thanos-query
   namespace: metalk8s-monitoring
 spec:
   ports:
   - name: http
-    port: 10902
+    nodePort: null
+    port: 9090
     protocol: TCP
     targetPort: http
   selector:
@@ -69,25 +118,47 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: thanos
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 0.28.1
-    helm.sh/chart: thanos-0.4.9
+    app.kubernetes.io/version: 0.39.2
+    helm.sh/chart: thanos-17.3.1
     heritage: metalk8s
   name: thanos-query
   namespace: metalk8s-monitoring
 spec:
   replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/component: query
       app.kubernetes.io/instance: thanos
       app.kubernetes.io/name: thanos
+  strategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
         app.kubernetes.io/component: query
         app.kubernetes.io/instance: thanos
+        app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: thanos
+        app.kubernetes.io/part-of: metalk8s
+        app.kubernetes.io/version: 0.39.2
+        helm.sh/chart: thanos-17.3.1
+        heritage: metalk8s
     spec:
+      affinity:
+        nodeAffinity: null
+        podAffinity: null
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: query
+                  app.kubernetes.io/instance: thanos
+                  app.kubernetes.io/name: thanos
+              topologyKey: kubernetes.io/hostname
+            weight: 1
+      automountServiceAccountToken: true
       containers:
       - args:
         - query
@@ -96,35 +167,55 @@ spec:
         - --grpc-address=0.0.0.0:10901
         - --http-address=0.0.0.0:10902
         - --query.replica-label=prometheus_replica
+        - --store.sd-files=/conf/sd/servicediscovery.yml
+        - --endpoint=dnssrv+_grpc._tcp.prometheus-operator-thanos-discovery
+        - --alert.query-url=http://thanos-query.metalk8s-monitoring.svc.cluster.local:9090
         - --query.auto-downsampling
-        - --store.sd-dns-resolver=miekgdns
-        - --store=dnssrv+_grpc._tcp.prometheus-operator-thanos-discovery
-        - --store.sd-files=/etc/query/thanos-query-sd-files/*.yaml
-        - --store.sd-files=/etc/query/thanos-query-sd-files/*.yml
-        - --store.sd-files=/etc/query/thanos-query-sd-files/*.json
-        - --store.sd-interval=5m
-        image: {% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.36.1
+        image: {% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.41.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
+          failureThreshold: 6
           httpGet:
             path: /-/healthy
             port: http
-        name: thanos-query
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 30
+        name: query
         ports:
         - containerPort: 10902
           name: http
+          protocol: TCP
         - containerPort: 10901
           name: grpc
+          protocol: TCP
         readinessProbe:
+          failureThreshold: 6
           httpGet:
             path: /-/ready
             port: http
-        resources: {}
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 30
+        resources:
+          limits:
+            cpu: 150m
+            ephemeral-storage: 2Gi
+            memory: 192Mi
+          requests:
+            cpu: 100m
+            ephemeral-storage: 50Mi
+            memory: 128Mi
         volumeMounts:
-        - mountPath: /etc/query/thanos-query-sd-files
-          name: thanos-query-sd-files
+        - mountPath: /conf/sd
+          name: sd-config
       nodeSelector:
         node-role.kubernetes.io/infra: ''
+      serviceAccountName: thanos-query
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/bootstrap
@@ -134,8 +225,7 @@ spec:
         operator: Exists
       volumes:
       - configMap:
-          defaultMode: 420
           name: thanos-query-sd-files
-        name: thanos-query-sd-files
+        name: sd-config
 
 {% endraw %}
