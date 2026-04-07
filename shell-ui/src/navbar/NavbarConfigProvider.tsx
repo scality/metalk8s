@@ -4,11 +4,7 @@ import { useFederatedNavbarEntries } from './NavBar';
 import type { NavbarLinks, Navbar, Link } from './navbarHooks';
 import './navbarHooks';
 import { NavbarContext } from './navbarContext';
-export const NavbarConfigProvider = ({
-  children,
-}: {
-  children: ReactElement<any>;
-}): ReactElement<any> => {
+export const NavbarConfigProvider = ({ children }: { children: ReactElement<any> }): ReactElement<any> => {
   const { accessibleViews } = useFederatedNavbarEntries();
   const [logoLink, setLogoLink] = useState<string>('');
   const [mainLinks, setMainLinks] = useState<Link[]>([]);
@@ -43,7 +39,5 @@ export const NavbarConfigProvider = ({
     setUserDropdownLinks,
     getLinks: () => navbarLinks,
   };
-  return (
-    <NavbarContext.Provider value={navbar}>{children}</NavbarContext.Provider>
-  );
+  return <NavbarContext.Provider value={navbar}>{children}</NavbarContext.Provider>;
 };

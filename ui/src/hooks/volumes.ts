@@ -6,11 +6,7 @@ import {
   useGetVolumeQueryOption,
   useGetPersistentVolumeQueryOption,
 } from '../services/platformlibrary/k8s';
-import {
-  setVolumesAction,
-  setCurrentVolumeObjectAction,
-  setPersistentVolumesAction,
-} from '../ducks/app/volumes';
+import { setVolumesAction, setCurrentVolumeObjectAction, setPersistentVolumesAction } from '../ducks/app/volumes';
 import { REFRESH_TIMEOUT } from '../constants';
 export function useRefreshVolume() {
   const dispatch = useDispatch();

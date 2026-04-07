@@ -21,10 +21,7 @@ const defaultState = {
 export type LoginState = {
   salt: ApiSalt.SaltToken | null | undefined;
 };
-export default function reducer(
-  state: LoginState = defaultState,
-  action: any = {},
-) {
+export default function reducer(state: LoginState = defaultState, action: any = {}) {
   switch (action.type) {
     case SALT_AUTHENTICATION_SUCCESS:
       return { ...state, salt: action.payload };
@@ -34,9 +31,7 @@ export default function reducer(
   }
 } // Action Creators
 
-export const setSaltAuthenticationSuccessAction = (
-  payload: ApiSalt.SaltToken,
-) => {
+export const setSaltAuthenticationSuccessAction = (payload: ApiSalt.SaltToken) => {
   return {
     type: SALT_AUTHENTICATION_SUCCESS,
     payload,

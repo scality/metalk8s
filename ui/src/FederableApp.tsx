@@ -13,11 +13,7 @@ import reducer from './ducks/reducer';
 import sagas from './ducks/sagas';
 import { useTypedSelector } from './hooks';
 import { AuthError } from './services/errorhandler';
-import {
-  ShellHooksProvider,
-  useBasenameRelativeNavigate,
-  useShellHooks,
-} from '@scality/module-federation';
+import { ShellHooksProvider, useBasenameRelativeNavigate, useShellHooks } from '@scality/module-federation';
 import { FederatedAppProps } from '../@mf-types/shell/App';
 
 const composeEnhancers =
@@ -119,10 +115,7 @@ export const AppConfigProvider = ({
 
 export default function FederableApp(props: FederatedAppProps) {
   return (
-    <ShellHooksProvider
-      shellHooks={props.shellHooks}
-      shellAlerts={props.shellAlerts}
-    >
+    <ShellHooksProvider shellHooks={props.shellHooks} shellAlerts={props.shellAlerts}>
       <Provider store={store}>
         <AppConfigProvider>
           <ToastProvider>

@@ -1,12 +1,6 @@
 import React, { PropsWithChildren } from 'react';
 import { InstanceNameProvider, _InternalInstanceName } from './InstanceName';
-import {
-  render,
-  screen,
-  waitFor,
-  waitForElementToBeRemoved,
-  within,
-} from '@testing-library/react';
+import { render, screen, waitFor, waitForElementToBeRemoved, within } from '@testing-library/react';
 import { jest } from '@jest/globals';
 import userEvent from '@testing-library/user-event';
 import { QueryClient } from 'react-query';
@@ -67,9 +61,7 @@ const Wrapper = ({ children }: PropsWithChildren<{}>) => (
 describe('InstanceName', () => {
   it('should display the instance name input when it resolved its configuration', async () => {
     //S
-    const getInstanceName = jest
-      .fn<(userData: UserData) => Promise<string>>()
-      .mockResolvedValue('default');
+    const getInstanceName = jest.fn<(userData: UserData) => Promise<string>>().mockResolvedValue('default');
     const setInstanceName = jest.fn<(userData: UserData) => Promise<void>>();
     render(
       <_InternalInstanceName
@@ -98,9 +90,6 @@ describe('InstanceName', () => {
     await waitFor(() => expect(setInstanceName).toHaveBeenCalledTimes(1));
     //V
     expect(getInstanceName).toHaveBeenCalledTimes(1);
-    expect(setInstanceName).toHaveBeenCalledWith(
-      { token: 'test' },
-      'defaulttest',
-    );
+    expect(setInstanceName).toHaveBeenCalledWith({ token: 'test' }, 'defaulttest');
   });
 });

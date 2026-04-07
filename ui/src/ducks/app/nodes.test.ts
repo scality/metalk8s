@@ -14,10 +14,7 @@ import {
   historySelector,
 } from './nodes';
 import { allJobsSelector } from './salt';
-import {
-  ADD_NOTIFICATION_SUCCESS,
-  ADD_NOTIFICATION_ERROR,
-} from './notifications';
+import { ADD_NOTIFICATION_SUCCESS, ADD_NOTIFICATION_ERROR } from './notifications';
 // Helpers {{{
 const DEFAULT_NAME = 'node1';
 const DEFAULT_CLUSTER_VERSION = '2.4.2';

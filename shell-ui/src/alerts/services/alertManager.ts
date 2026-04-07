@@ -1,10 +1,4 @@
-import {
-  removeWarningAlerts,
-  formatActiveAlerts,
-  sortAlerts,
-  STATUS_CRITICAL,
-  STATUS_HEALTH,
-} from './alertUtils';
+import { removeWarningAlerts, formatActiveAlerts, sortAlerts, STATUS_CRITICAL, STATUS_HEALTH } from './alertUtils';
 export type PrometheusAlert = {
   annotations: Record<string, string>;
   receivers: {
@@ -56,9 +50,7 @@ export const checkActiveAlertProvider = (): Promise<{
   // depends on Watchdog to see the if Alertmanager is up
   // @ts-expect-error - FIXME when you are working on it
   return getAlerts().then((result) => {
-    const watchdog = result.find(
-      (alert) => alert.labels.alertname === 'Watchdog',
-    );
+    const watchdog = result.find((alert) => alert.labels.alertname === 'Watchdog');
     if (watchdog) return STATUS_HEALTH;
     else return STATUS_CRITICAL;
   });

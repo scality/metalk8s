@@ -1,17 +1,9 @@
 import { MetadataService, User, WebStorageStateStore } from 'oidc-client-ts';
-import {
-  AuthProviderProps,
-  AuthProvider as OIDCAuthProvider,
-  UserManager,
-  useAuth as useOauth2Auth,
-} from 'oidc-react';
+import { AuthProviderProps, AuthProvider as OIDCAuthProvider, UserManager, useAuth as useOauth2Auth } from 'oidc-react';
 import React, { useCallback, useEffect } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useQuery } from 'react-query';
-import type {
-  OAuth2ProxyConfig,
-  OIDCConfig,
-} from '../initFederation/ConfigurationProviders';
+import type { OAuth2ProxyConfig, OIDCConfig } from '../initFederation/ConfigurationProviders';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { getUserGroups } from '../navbar/auth/permissionUtils';
 import { useAuthConfig } from './AuthConfigProvider';
@@ -36,17 +28,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 function defaultDexConnectorMetadataService(connectorId: string) {
   class DexDefaultConnectorMetadataService extends MetadataService {
     getAuthorizationEndpoint() {
-      return this._getMetadataProperty('authorization_endpoint').then(
-        (authorizationEndpoint) => {
-          const queryParamas = new URLSearchParams(window.location.search);
+      return this._getMetadataProperty('authorization_endpoint').then((authorizationEndpoint) => {
+        const queryParamas = new URLSearchParams(window.location.search);
 
-          if (!queryParamas.has('displayLoginChoice')) {
-            return authorizationEndpoint + '?connector_id=' + connectorId;
-          }
+        if (!queryParamas.has('displayLoginChoice')) {
+          return authorizationEndpoint + '?connector_id=' + connectorId;
+        }
 
-          return authorizationEndpoint as string;
-        },
-      );
+        return authorizationEndpoint as string;
+      });
     }
   }
 
@@ -264,14 +254,9 @@ function useInternalLogout(
       if (authConfig.providerLogout) {
         userManager.signoutRedirect().catch((e) => {
           if (e.message === 'no end session endpoint') {
-            console.log(
-              "OIDC provider doesn't support end session endpoint, fallback to clearing document cookies",
-            );
+            console.log("OIDC provider doesn't support end session endpoint, fallback to clearing document cookies");
             document.cookie.split(';').forEach(function (c) {
-              document.cookie =
-                c.trim().split('=')[0] +
-                '=;' +
-                'expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+              document.cookie = c.trim().split('=')[0] + '=;' + 'expires=Thu, 01 Jan 1970 00:00:00 UTC;';
             });
           } else {
             console.error(e);

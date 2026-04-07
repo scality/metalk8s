@@ -26,8 +26,7 @@ it('should filter out the expected alerts', () => {
       severity: 'warning',
       documentationUrl: '',
       labels: {
-        alertname:
-          'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+        alertname: 'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
         prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
         severity: 'warning',
         description:
@@ -64,8 +63,7 @@ it('should filter out the expected alerts', () => {
         generatorURL:
           'http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=avg%28avg_over_time%28s3_cloudserver_quota_utilization_service_available%7Bnamespace%3D%22zenko%22%2Cservice%3D%22data-internal-s3api-metrics%22%7D%5B1m%5D%29%29+%3C+0.5&g0.tab=1',
         labels: {
-          alertname:
-            'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+          alertname: 'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
           prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
           severity: 'warning',
         },
@@ -82,8 +80,7 @@ it('should filter out the expected alerts', () => {
       severity: 'critical',
       documentationUrl: '',
       labels: {
-        alertname:
-          'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+        alertname: 'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
         prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
         severity: 'critical',
         description:
@@ -120,8 +117,7 @@ it('should filter out the expected alerts', () => {
         generatorURL:
           'http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=avg%28avg_over_time%28s3_cloudserver_quota_utilization_service_available%7Bnamespace%3D%22zenko%22%2Cservice%3D%22data-internal-s3api-metrics%22%7D%5B1m%5D%29%29+%3C+0.5&g0.tab=1',
         labels: {
-          alertname:
-            'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+          alertname: 'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
           prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
           severity: 'critical',
         },
@@ -183,8 +179,7 @@ it('should filter out the expected alerts', () => {
       severity: 'critical',
       documentationUrl: '',
       labels: {
-        alertname:
-          'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+        alertname: 'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
         prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
         severity: 'critical',
         description:
@@ -221,8 +216,7 @@ it('should filter out the expected alerts', () => {
         generatorURL:
           'http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=avg%28avg_over_time%28s3_cloudserver_quota_utilization_service_available%7Bnamespace%3D%22zenko%22%2Cservice%3D%22data-connector-s3api-metrics%22%7D%5B1m%5D%29%29+%3C+0.5&g0.tab=1',
         labels: {
-          alertname:
-            'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+          alertname: 'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
           prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
           severity: 'critical',
         },
@@ -239,8 +233,7 @@ it('should filter out the expected alerts', () => {
       severity: 'warning',
       documentationUrl: '',
       labels: {
-        alertname:
-          'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+        alertname: 'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
         prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
         severity: 'warning',
         description:
@@ -277,8 +270,7 @@ it('should filter out the expected alerts', () => {
         generatorURL:
           'http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=avg%28avg_over_time%28s3_cloudserver_quota_utilization_service_available%7Bnamespace%3D%22zenko%22%2Cservice%3D%22data-connector-s3api-metrics%22%7D%5B1m%5D%29%29+%3C+0.5&g0.tab=1',
         labels: {
-          alertname:
-            'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+          alertname: 'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
           prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
           severity: 'warning',
         },
@@ -347,35 +339,29 @@ it('should filter out the expected alerts', () => {
     },
     {
       id: 'fc30b79dbdb0a043',
-      summary:
-        'An alert that should always be firing to certify that Alertmanager is working properly.',
+      summary: 'An alert that should always be firing to certify that Alertmanager is working properly.',
       description:
         'This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n"DeadMansSnitch" integration in PagerDuty.',
       startsAt: '2024-06-04T12:55:51.687Z',
       endsAt: '2024-06-04T15:11:51.687Z',
       severity: 'none',
-      documentationUrl:
-        'https://runbooks.prometheus-operator.dev/runbooks/general/watchdog',
+      documentationUrl: 'https://runbooks.prometheus-operator.dev/runbooks/general/watchdog',
       labels: {
         alertname: 'Watchdog',
         prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
         severity: 'none',
         description:
           'This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n"DeadMansSnitch" integration in PagerDuty.',
-        runbook_url:
-          'https://runbooks.prometheus-operator.dev/runbooks/general/watchdog',
-        summary:
-          'An alert that should always be firing to certify that Alertmanager is working properly.',
+        runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/general/watchdog',
+        summary: 'An alert that should always be firing to certify that Alertmanager is working properly.',
         selectors: [],
       },
       originalAlert: {
         annotations: {
           description:
             'This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n"DeadMansSnitch" integration in PagerDuty.',
-          runbook_url:
-            'https://runbooks.prometheus-operator.dev/runbooks/general/watchdog',
-          summary:
-            'An alert that should always be firing to certify that Alertmanager is working properly.',
+          runbook_url: 'https://runbooks.prometheus-operator.dev/runbooks/general/watchdog',
+          summary: 'An alert that should always be firing to certify that Alertmanager is working properly.',
         },
         endsAt: '2024-06-04T15:11:51.687Z',
         fingerprint: 'fc30b79dbdb0a043',
@@ -409,31 +395,23 @@ it('should filter out the expected alerts', () => {
   const result = removeWarningAlerts(alerts);
   expect(
     result.filter(
-      (alert) =>
-        alert.labels.alertname ===
-        'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+      (alert) => alert.labels.alertname === 'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
     ),
   ).toHaveLength(1);
   expect(
     result.filter(
-      (alert) =>
-        alert.labels.alertname ===
-        'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
+      (alert) => alert.labels.alertname === 'data-ops-alerting-internal-cloudserver-QuotaMetricsNotAvailable',
     )[0].severity,
   ).toBe('critical');
 
   expect(
     result.filter(
-      (alert) =>
-        alert.labels.alertname ===
-        'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+      (alert) => alert.labels.alertname === 'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
     ),
   ).toHaveLength(1);
   expect(
     result.filter(
-      (alert) =>
-        alert.labels.alertname ===
-        'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
+      (alert) => alert.labels.alertname === 'data-ops-alerting-connector-cloudserver-QuotaMetricsNotAvailable',
     )[0].severity,
   ).toBe('critical');
 });

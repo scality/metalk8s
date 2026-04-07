@@ -1,10 +1,5 @@
 import { Stack } from '@scality/core-ui';
-import {
-  ChartLegend,
-  ChartLegendWrapper,
-  LineTimeSerieChart,
-  useMetricsTimeSpan,
-} from '@scality/core-ui/dist/next';
+import { ChartLegend, ChartLegendWrapper, LineTimeSerieChart, useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { fontSize } from '@scality/core-ui/dist/style/theme';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,10 +11,7 @@ import {
   useShowQuantileChart,
   useSymetricalChartSeries,
 } from '../hooks';
-import {
-  getMultipleSymmetricalSeries,
-  getNodesInterfacesString,
-} from '../services/graphUtils';
+import { getMultipleSymmetricalSeries, getNodesInterfacesString } from '../services/graphUtils';
 import {
   getNodesPlanesBandwidthInOutpassingThresholdQuery,
   getNodesPlanesBandwidthInQuantileQuery,
@@ -56,12 +48,8 @@ const DashboardBandwidthChartWithoutQuantile = ({
   const { interval, duration } = useMetricsTimeSpan();
 
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
-    getAboveQueries: (timeSpanProps) => [
-      getNodesPlanesBandwidthInQuery(timeSpanProps, devices),
-    ],
-    getBelowQueries: (timeSpanProps) => [
-      getNodesPlanesBandwidthOutQuery(timeSpanProps, devices),
-    ],
+    getAboveQueries: (timeSpanProps) => [getNodesPlanesBandwidthInQuery(timeSpanProps, devices)],
+    getBelowQueries: (timeSpanProps) => [getNodesPlanesBandwidthOutQuery(timeSpanProps, devices)],
     // @ts-expect-error - FIXME when you are working on it
     transformPrometheusDataToSeries: useCallback(
       ([prometheusResultAbove], [prometheusResultBelow]) => {
@@ -113,13 +101,7 @@ const DashboardBandwidthChartWithoutQuantile = ({
   );
 };
 
-const DashboardBandwidthChart = ({
-  title,
-  plane,
-}: {
-  title: string;
-  plane: 'controlPlane' | 'workloadPlane';
-}) => {
+const DashboardBandwidthChart = ({ title, plane }: { title: string; plane: 'controlPlane' | 'workloadPlane' }) => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(fetchNodesAction());
@@ -132,12 +114,8 @@ const DashboardBandwidthChart = ({
         <SymmetricalQuantileChart
           getAboveQuantileQuery={getNodesPlanesBandwidthInQuantileQuery}
           getBelowQuantileQuery={getNodesPlanesBandwidthOutQuantileQuery}
-          getAboveQuantileHoverQuery={
-            getNodesPlanesBandwidthInOutpassingThresholdQuery
-          }
-          getBelowQuantileHoverQuery={
-            getNodesPlanesBandwidthOutOutpassingThresholdQuery
-          }
+          getAboveQuantileHoverQuery={getNodesPlanesBandwidthInOutpassingThresholdQuery}
+          getBelowQuantileHoverQuery={getNodesPlanesBandwidthOutOutpassingThresholdQuery}
           metricPrefixAbove={'in'}
           metricPrefixBelow={'out'}
           title={title}

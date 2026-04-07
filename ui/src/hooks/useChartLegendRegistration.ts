@@ -35,14 +35,9 @@ export const useChartLegendRegistration = ({
     if (isSymmetrical) {
       // Symmetrical chart (has above/below structure)
       const symmetricalSeries = series;
-      if (
-        symmetricalSeries.above?.length > 0 ||
-        symmetricalSeries.below?.length > 0
-      ) {
-        const aboveNames =
-          symmetricalSeries.above?.map((s) => s.resource) || [];
-        const belowNames =
-          symmetricalSeries.below?.map((s) => s.resource) || [];
+      if (symmetricalSeries.above?.length > 0 || symmetricalSeries.below?.length > 0) {
+        const aboveNames = symmetricalSeries.above?.map((s) => s.resource) || [];
+        const belowNames = symmetricalSeries.below?.map((s) => s.resource) || [];
         seriesNames = [...aboveNames, ...belowNames];
       }
     } else if (isSymmetrical === false) {

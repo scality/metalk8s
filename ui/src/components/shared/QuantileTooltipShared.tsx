@@ -1,18 +1,9 @@
 import { fontSize, fontWeight } from '@scality/core-ui/dist/style/theme';
 import React from 'react';
-import {
-  Stack,
-  spacing,
-  SmallerText,
-  Wrap,
-  FormattedDateTime,
-} from '@scality/core-ui/dist/index';
+import { Stack, spacing, SmallerText, Wrap, FormattedDateTime } from '@scality/core-ui/dist/index';
 import styled from 'styled-components';
 import { ChartLegend } from '@scality/core-ui/dist/next';
-import {
-  SmallerSecondaryText,
-  Text,
-} from '@scality/core-ui/dist/components/text/Text.component';
+import { SmallerSecondaryText, Text } from '@scality/core-ui/dist/components/text/Text.component';
 import type { TooltipContentProps } from 'recharts';
 import { useIntl } from 'react-intl';
 
@@ -60,21 +51,12 @@ export type SymmetricalQuantileData = {
 };
 
 // Payload transformation functions
-export const transformRegularPayload = (
-  payload: any[],
-  label: string | number,
-): RegularQuantileData | null => {
+export const transformRegularPayload = (payload: any[], label: string | number): RegularQuantileData | null => {
   if (!payload || !payload.length) return null;
 
-  const q90Item = payload.find(
-    (item) => item.name === 'Q90' || item.dataKey === 'Q90',
-  );
-  const q5Item = payload.find(
-    (item) => item.name === 'Q5' || item.dataKey === 'Q5',
-  );
-  const medianItem = payload.find(
-    (item) => item.name === 'Median' || item.dataKey === 'Median',
-  );
+  const q90Item = payload.find((item) => item.name === 'Q90' || item.dataKey === 'Q90');
+  const q5Item = payload.find((item) => item.name === 'Q5' || item.dataKey === 'Q5');
+  const medianItem = payload.find((item) => item.name === 'Median' || item.dataKey === 'Median');
   if (!q90Item && !q5Item && !medianItem) return null;
 
   return {
@@ -98,9 +80,7 @@ export const transformSymmetricalPayload = (
       (item) =>
         item.name === `${quantileName}-${metricPrefix}` ||
         item.dataKey === `${quantileName}-${metricPrefix}` ||
-        (item.name &&
-          item.name.includes(quantileName) &&
-          item.name.includes(metricPrefix)),
+        (item.name && item.name.includes(quantileName) && item.name.includes(metricPrefix)),
     );
   };
 
@@ -181,14 +161,7 @@ export const QuantileNodeList: React.FC<{
   valueBase: number;
   unitLabel: string;
   intl: any;
-}> = ({
-  queryResult,
-  quantileName,
-  nodeMapPerIp,
-  valueBase,
-  unitLabel,
-  intl,
-}) => {
+}> = ({ queryResult, quantileName, nodeMapPerIp, valueBase, unitLabel, intl }) => {
   const { isIdle, isLoading, isSuccess, isError, data } = queryResult;
 
   if (isLoading || isIdle) {
@@ -196,11 +169,7 @@ export const QuantileNodeList: React.FC<{
   }
 
   if (isError) {
-    return (
-      <ErrorText>
-        {intl.formatMessage({ id: 'error_occur_outpassing_threshold' })}
-      </ErrorText>
-    );
+    return <ErrorText>{intl.formatMessage({ id: 'error_occur_outpassing_threshold' })}</ErrorText>;
   }
 
   if (isSuccess && data?.data?.result.length > 0) {
@@ -210,18 +179,12 @@ export const QuantileNodeList: React.FC<{
           const nodeName = nodeMapPerIp[nodeData.metric.instance];
           const rawValue = parseFloat(nodeData.value[1]);
           const formattedValue = (rawValue / (valueBase || 1)).toFixed(2);
-          const displayValue = unitLabel
-            ? `${formattedValue} ${unitLabel}`
-            : formattedValue;
+          const displayValue = unitLabel ? `${formattedValue} ${unitLabel}` : formattedValue;
 
           return (
             <Wrap key={index + nodeName}>
               <SmallerSecondaryText>{nodeName}</SmallerSecondaryText>
-              <Text
-                variant="Smaller"
-                color="textSecondary"
-                style={{ whiteSpace: 'nowrap' }}
-              >
+              <Text variant="Smaller" color="textSecondary" style={{ whiteSpace: 'nowrap' }}>
                 {displayValue}
               </Text>
             </Wrap>
@@ -265,8 +228,8 @@ export const OverOrBelowThresholdSection: React.FC<{
       ? `Nodes above ${quantileName}-${metricPrefix}`
       : `Nodes below ${quantileName}-${metricPrefix}`
     : quantileName === 'Q90'
-    ? `Nodes above ${quantileName}`
-    : `Nodes below ${quantileName}`;
+      ? `Nodes above ${quantileName}`
+      : `Nodes below ${quantileName}`;
 
   return (
     <Stack direction="vertical" gap={'r2'} style={{ paddingLeft: spacing.r32 }}>
@@ -377,19 +340,18 @@ export const TooltipEntry = ({
           </Text>
         </Wrap>
 
-        {(quantileName === 'Q90' || quantileName === 'Q5') &&
-          quantileResult && (
-            <OverOrBelowThresholdSection
-              quantileName={quantileName}
-              metricPrefix={metricPrefix}
-              isOnHoverFetchingNeeded={isOnHoverFetchingNeeded}
-              quantileResult={quantileResult}
-              nodeMapPerIp={nodeMapPerIp}
-              valueBase={valueBase}
-              unitLabel={unitLabel}
-              intl={intl}
-            />
-          )}
+        {(quantileName === 'Q90' || quantileName === 'Q5') && quantileResult && (
+          <OverOrBelowThresholdSection
+            quantileName={quantileName}
+            metricPrefix={metricPrefix}
+            isOnHoverFetchingNeeded={isOnHoverFetchingNeeded}
+            quantileResult={quantileResult}
+            nodeMapPerIp={nodeMapPerIp}
+            valueBase={valueBase}
+            unitLabel={unitLabel}
+            intl={intl}
+          />
+        )}
       </Stack>
       {isLastAboveEntry && <SeparatorLine />}
     </>
@@ -412,9 +374,7 @@ export interface QuantileTooltipRendererProps {
   metricPrefixBelow?: string;
 }
 
-export const QuantileTooltipRenderer: React.FC<
-  QuantileTooltipRendererProps
-> = ({
+export const QuantileTooltipRenderer: React.FC<QuantileTooltipRendererProps> = ({
   tooltipProps,
   sortedPayload,
   isOnHoverFetchingNeeded,

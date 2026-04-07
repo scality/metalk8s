@@ -49,9 +49,7 @@ const CustomWrapper = ({ children }: { children?: React.ReactNode }) => {
       }
     >
       <IntlProvider locale="en" messages={translations_en}>
-        <ThemeProvider theme={coreUIAvailableThemes.darkRebrand}>
-          {children}
-        </ThemeProvider>
+        <ThemeProvider theme={coreUIAvailableThemes.darkRebrand}>{children}</ThemeProvider>
       </IntlProvider>
     </QueryClientProvider>
   );
@@ -89,9 +87,7 @@ describe('NodePagePodsTab', () => {
     expect(selectors.podAge()).toBeInTheDocument();
     expect(selectors.podNamespace()).toBeInTheDocument();
 
-    const { color } = window.getComputedStyle(
-      selectors.podStatus('Running (3/3)'),
-    );
+    const { color } = window.getComputedStyle(selectors.podStatus('Running (3/3)'));
 
     expect(color).toBe(statusHealthyRGB);
   });
@@ -106,9 +102,7 @@ describe('NodePagePodsTab', () => {
     expect(selectors.podAge()).toBeInTheDocument();
     expect(selectors.podNamespace()).toBeInTheDocument();
 
-    const { color } = window.getComputedStyle(
-      selectors.podStatus('Running (2/3)'),
-    );
+    const { color } = window.getComputedStyle(selectors.podStatus('Running (2/3)'));
 
     expect(color).toBe(statusWarningRGB);
   });

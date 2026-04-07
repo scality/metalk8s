@@ -16,8 +16,7 @@ const testService = 'http://10.0.0.1/api/alertmanager';
 const alerts = [
   {
     annotations: {
-      description:
-        'Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure.',
+      description: 'Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure.',
       runbook_url:
         'https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecpuovercommit',
       summary: 'Cluster has overcommitted CPU resource requests.',
@@ -46,8 +45,7 @@ const alerts = [
   },
   {
     annotations: {
-      description:
-        'Cluster has overcommitted memory resource requests for Pods and cannot tolerate node failure.',
+      description: 'Cluster has overcommitted memory resource requests for Pods and cannot tolerate node failure.',
       runbook_url:
         'https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubememoryovercommit',
       summary: 'Cluster has overcommitted memory resource requests.',
@@ -141,9 +139,7 @@ describe('alerts', () => {
     });
     await waitForNextUpdate();
     //V
-    expect(
-      result.current.alerts.map((alert) => alert.originalAlert),
-    ).toStrictEqual(alerts);
+    expect(result.current.alerts.map((alert) => alert.originalAlert)).toStrictEqual(alerts);
   });
   afterAll(() => server.close());
 });

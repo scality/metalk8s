@@ -1,11 +1,5 @@
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
-import {
-  STATUS_WARNING,
-  STATUS_CRITICAL,
-  STATUS_SUCCESS,
-  STATUS_NONE,
-  STATUS_HEALTH,
-} from '../constants';
+import { STATUS_WARNING, STATUS_CRITICAL, STATUS_SUCCESS, STATUS_NONE, STATUS_HEALTH } from '../constants';
 
 const StatusIcon = ({ name, status, entity }) => {
   const color = (() => {

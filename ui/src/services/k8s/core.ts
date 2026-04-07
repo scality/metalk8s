@@ -3,7 +3,10 @@ import { CoreV1Api } from '@kubernetes/client-node/dist/gen/api/coreV1Api';
 import { AppsV1Api } from '@kubernetes/client-node/dist/gen/api/appsV1Api';
 
 export class CoreApi {
-  constructor(private coreV1: CoreV1Api, private appsV1: AppsV1Api) {}
+  constructor(
+    private coreV1: CoreV1Api,
+    private appsV1: AppsV1Api,
+  ) {}
 
   async getNodes() {
     try {
@@ -25,12 +28,7 @@ export class CoreApi {
   }
   async getKubeSystemNamespace() {
     try {
-      return await this.coreV1.listNamespace(
-        null,
-        null,
-        null,
-        'metadata.name=kube-system',
-      );
+      return await this.coreV1.listNamespace(null, null, null, 'metadata.name=kube-system');
     } catch (error) {
       return handleUnAuthorizedError({
         error,
@@ -75,14 +73,7 @@ export class CoreApi {
   }
   async queryPodInNamespace(namespace, podLabel) {
     try {
-      return await this.coreV1.listNamespacedPod(
-        namespace,
-        null,
-        null,
-        null,
-        null,
-        `app=${podLabel}`,
-      );
+      return await this.coreV1.listNamespacedPod(namespace, null, null, null, null, `app=${podLabel}`);
     } catch (error) {
       return handleUnAuthorizedError({
         error,
@@ -118,18 +109,11 @@ export class CoreApi {
     }
 
     try {
-      return await this.coreV1.patchNamespacedConfigMap(
-        name,
-        namespace,
-        body,
-        undefined,
-        undefined,
-        {
-          headers: {
-            'Content-Type': cTypeHeader,
-          },
+      return await this.coreV1.patchNamespacedConfigMap(name, namespace, body, undefined, undefined, {
+        headers: {
+          'Content-Type': cTypeHeader,
         },
-      );
+      });
     } catch (error) {
       return handleUnAuthorizedError({
         error,
@@ -156,10 +140,7 @@ export class CoreApi {
   }
   async readNamespacedConfigMap(nameConfigMap, namespace) {
     try {
-      return await this.coreV1.readNamespacedConfigMap(
-        nameConfigMap,
-        namespace,
-      );
+      return await this.coreV1.readNamespacedConfigMap(nameConfigMap, namespace);
     } catch (error) {
       return handleUnAuthorizedError({
         error,

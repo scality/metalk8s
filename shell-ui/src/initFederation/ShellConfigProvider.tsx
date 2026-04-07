@@ -1,9 +1,6 @@
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
-import {
-  CoreUITheme,
-  CoreUIThemeName,
-} from '@scality/core-ui/dist/style/theme';
+import { CoreUITheme, CoreUIThemeName } from '@scality/core-ui/dist/style/theme';
 import React, { createContext, useContext } from 'react';
 import { useQuery } from 'react-query';
 
@@ -35,9 +32,7 @@ type CustomShellThemeDescription = {
   colors: CoreUITheme;
 };
 
-type ThemeDescription =
-  | CoreUIShellThemeDescription
-  | CustomShellThemeDescription;
+type ThemeDescription = CoreUIShellThemeDescription | CustomShellThemeDescription;
 
 type Themes = {
   dark: ThemeDescription;
@@ -108,9 +103,7 @@ export const ShellConfigProvider = ({ shellConfigUrl, children }) => {
         status,
       }}
     >
-      {(status === 'idle' || status === 'loading') && (
-        <Loader size="massive" centered={true} aria-label="loading" />
-      )}
+      {(status === 'idle' || status === 'loading') && <Loader size="massive" centered={true} aria-label="loading" />}
       {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
       {status === 'success' && children}
     </ShellConfigContext.Provider>

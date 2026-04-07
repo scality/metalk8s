@@ -49,10 +49,7 @@ const defaultState: ConfigState = {
   customObjectsApi: null,
   storageApi: null,
 };
-export default function reducer(
-  state: ConfigState = defaultState,
-  action: any = {},
-) {
+export default function reducer(state: ConfigState = defaultState, action: any = {}) {
   switch (action.type) {
     case SET_LANG:
       return { ...state, language: action.payload };
@@ -158,11 +155,7 @@ export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
   }
 }
 
-function* setApiConfig({
-  payload: config,
-}: {
-  payload: Config;
-}): Generator<Effect, void, Result<Config>> {
+function* setApiConfig({ payload: config }: { payload: Config }): Generator<Effect, void, Result<Config>> {
   yield call(ApiSalt.initialize, config.url_salt);
   yield call(ApiPrometheus.initialize, config.url_prometheus);
   yield call(ApiAlertmanager.initialize, config.url_alertmanager);
@@ -183,11 +176,8 @@ export function* updateApiServerConfig({
     // @ts-expect-error - FIXME when you are working on it
     yield put(setUser(payload));
 
-    const { appsV1, coreV1, customObjects, storage } =
-      ApiK8s.updateApiServerConfig(api.url, payload.token);
-    yield put(
-      setCustomObjectApiClient(new Metalk8sV1alpha1VolumeClient(customObjects)),
-    );
+    const { appsV1, coreV1, customObjects, storage } = ApiK8s.updateApiServerConfig(api.url, payload.token);
+    yield put(setCustomObjectApiClient(new Metalk8sV1alpha1VolumeClient(customObjects)));
     yield put(setCoreApiClient(new CoreApi(coreV1, appsV1)));
     yield put(setStoreApiClient(new StorageApi(coreV1, storage)));
 

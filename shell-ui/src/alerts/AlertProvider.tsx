@@ -27,9 +27,7 @@ export default function AlertProvider({
   });
   return (
     <AlertContext.Provider value={{ ...query }}>
-      {query.status === 'loading' && (
-        <Loader size="massive" centered={true} aria-label="loading" />
-      )}
+      {query.status === 'loading' && <Loader size="massive" centered={true} aria-label="loading" />}
       {query.status !== 'loading' && children}
     </AlertContext.Provider>
   );

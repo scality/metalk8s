@@ -392,18 +392,16 @@ describe('getSegments', () => {
       ],
     },
   ];
-  cases.forEach(
-    ({ name, pointsAtRisk, pointsDegraded, pointsWatchdog, expected }) => {
-      test(`Given ${name} points should be converted to the expected alert segments`, () => {
-        const result = getSegments({
-          pointsDegraded,
-          pointsAtRisk,
-          pointsWatchdog,
-          startTimeStampSeconds: 1,
-          endTimeStampSeconds: 6,
-        });
-        expect(result).toStrictEqual(expected);
+  cases.forEach(({ name, pointsAtRisk, pointsDegraded, pointsWatchdog, expected }) => {
+    test(`Given ${name} points should be converted to the expected alert segments`, () => {
+      const result = getSegments({
+        pointsDegraded,
+        pointsAtRisk,
+        pointsWatchdog,
+        startTimeStampSeconds: 1,
+        endTimeStampSeconds: 6,
       });
-    },
-  );
+      expect(result).toStrictEqual(expected);
+    });
+  });
 });

@@ -2,18 +2,8 @@ import { useEffect } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { useConfig } from '../FederableApp';
-import {
-  API_STATUS_NOT_READY,
-  API_STATUS_READY,
-  API_STATUS_UNKNOWN,
-  REFRESH_TIMEOUT,
-} from '../constants';
-import {
-  FETCH_NODES_IPS_INTERFACES,
-  ROLE_PREFIX,
-  fetchNodesAction,
-  updateNodesAction,
-} from '../ducks/app/nodes';
+import { API_STATUS_NOT_READY, API_STATUS_READY, API_STATUS_UNKNOWN, REFRESH_TIMEOUT } from '../constants';
+import { FETCH_NODES_IPS_INTERFACES, ROLE_PREFIX, fetchNodesAction, updateNodesAction } from '../ducks/app/nodes';
 import { allJobsSelector } from '../ducks/app/salt';
 import { useK8sApiConfig } from '../services/k8s/api';
 import { nodeKey } from '../services/k8s/core.key';
@@ -36,13 +26,11 @@ export function useAllNodesQueryOption(deployingNodes) {
     select: (data) => {
       return data?.body?.items?.map((node) => {
         const statusType =
-          node.status.conditions &&
-          node.status.conditions.find((conditon) => conditon.type === 'Ready');
+          node.status.conditions && node.status.conditions.find((conditon) => conditon.type === 'Ready');
         // Store the name of conditions which the status are True in the array, except "Ready" condition, which we can know from the `status` field.
         // Given the available conditions ("DiskPressure", "MemoryPressure", "PIDPressure", "NetworkUnavailable", "Unschedulable")
         const conditions = node?.status?.conditions?.reduce((acc, cond) => {
-          if (cond.status === 'True' && cond?.type && cond?.type !== 'Ready')
-            acc.push(cond.type);
+          if (cond.status === 'True' && cond?.type && cond?.type !== 'Ready') acc.push(cond.type);
           return acc;
         }, []);
         let status;
@@ -56,21 +44,16 @@ export function useAllNodesQueryOption(deployingNodes) {
         }
 
         // the Roles of the Node should be the ones that are stored in the labels `node-role.kubernetes.io/<role-name>`
-        const nodeRolesLabels = Object.keys(node.metadata.labels).filter(
-          (label) => label.startsWith(ROLE_PREFIX),
-        );
+        const nodeRolesLabels = Object.keys(node.metadata.labels).filter((label) => label.startsWith(ROLE_PREFIX));
         const nodeRoles = nodeRolesLabels?.map((nRL) => nRL.split('/')[1]);
         return {
           name: node.metadata.name,
-          metalk8s_version:
-            node.metadata.labels['metalk8s.scality.com/version'],
+          metalk8s_version: node.metadata.labels['metalk8s.scality.com/version'],
           status: status,
           conditions: conditions,
           roles: nodeRoles.join(' / '),
           deploying: deployingNodes.includes(node.metadata.name),
-          internalIP: node?.status?.addresses?.find(
-            (ip) => ip.type === 'InternalIP',
-          ).address,
+          internalIP: node?.status?.addresses?.find((ip) => ip.type === 'InternalIP').address,
           creationTimestamp: node?.metadata?.creationTimestamp,
           kubeletVersion: node?.status?.nodeInfo?.kubeletVersion,
         };
@@ -82,9 +65,7 @@ export function useAllNodesQueryOption(deployingNodes) {
 export function useRefreshNodes() {
   const dispatch = useDispatch();
   const allJobs = useSelector(allJobsSelector);
-  const deployingNodes = allJobs
-    .filter((job) => job.type === 'deploy-node' && !job.completed)
-    .map((job) => job.node);
+  const deployingNodes = allJobs.filter((job) => job.type === 'deploy-node' && !job.completed).map((job) => job.node);
   const result = useQuery({
     ...useAllNodesQueryOption(deployingNodes),
     refetchInterval: REFRESH_TIMEOUT,

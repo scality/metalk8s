@@ -18,9 +18,7 @@ const TableRowStyle = styled.div`
   border-right: 4px solid
     ${(props) =>
       // @ts-expect-error - FIXME when you are working on it
-      props.isSelected
-        ? props.theme.selectedActive
-        : props.theme.backgroundLevel2};
+      props.isSelected ? props.theme.selectedActive : props.theme.backgroundLevel2};
 
   background-color: ${(props) =>
     // @ts-expect-error - FIXME when you are working on it

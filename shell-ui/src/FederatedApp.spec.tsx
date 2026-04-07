@@ -7,94 +7,86 @@ import { waitForLoadingToFinish } from './navbar/__TESTS__/utils';
 import './navbar/index';
 
 export const configurationHandlers = [
-  rest.get(
-    'http://localhost:3000/.well-known/micro-app-configuration',
-    (req, res, ctx) => {
-      return res(
-        ctx.json({
-          kind: 'MicroAppConfiguration',
-          apiVersion: 'ui.scality.com/v1alpha1',
-          metadata: {
-            kind: 'metalk8s-ui',
-          },
-          spec: {
-            remoteEntryPath: '/static/js/remoteEntry.js',
-            views: {
-              platform: {
-                path: '/',
-                label: {
-                  en: 'Platform',
-                  fr: 'Plateforme',
-                },
-                module: './FederableApp',
-                scope: 'metalk8s',
+  rest.get('http://localhost:3000/.well-known/micro-app-configuration', (req, res, ctx) => {
+    return res(
+      ctx.json({
+        kind: 'MicroAppConfiguration',
+        apiVersion: 'ui.scality.com/v1alpha1',
+        metadata: {
+          kind: 'metalk8s-ui',
+        },
+        spec: {
+          remoteEntryPath: '/static/js/remoteEntry.js',
+          views: {
+            platform: {
+              path: '/',
+              label: {
+                en: 'Platform',
+                fr: 'Plateforme',
               },
-              alerts: {
-                path: '/alerts',
-                label: {
-                  en: 'Alerts',
-                  fr: 'Alertes',
-                },
-                module: './FederableApp',
-                scope: 'metalk8s',
-              },
+              module: './FederableApp',
+              scope: 'metalk8s',
             },
-            hooks: {
-              TODO_useAlert_and_platform_lib_hooks: {
-                module: '',
-                scope: '',
+            alerts: {
+              path: '/alerts',
+              label: {
+                en: 'Alerts',
+                fr: 'Alertes',
               },
-            },
-            components: {
-              TODO_AlertProvider: {
-                module: '',
-                scope: '',
-              },
+              module: './FederableApp',
+              scope: 'metalk8s',
             },
           },
-        }),
-      );
-    },
-  ),
-  rest.get(
-    'http://localhost:3000/.well-known/runtime-app-configuration',
-    (req, res, ctx) => {
-      return res(
-        ctx.json({
-          kind: 'MicroAppRuntimeConfiguration',
-          apiVersion: 'ui.scality.com/v1alpha1',
-          metadata: {
-            kind: 'metalk8s-ui',
-            name: 'metalk8s.eu-west-1',
-          },
-          spec: {
-            title: 'MetalK8s Platform',
-            selfConfiguration: {
-              url: '/api/kubernetes',
-              url_salt: '/api/salt',
-              url_prometheus: '/api/prometheus',
-              url_grafana: '/grafana',
-              url_doc: '/docs',
-              url_alertmanager: '/api/alertmanager',
-              flags: [],
-              ui_base_path: '/',
-              url_support:
-                'https://github.com/scality/metalk8s/discussions/new',
-            },
-            auth: {
-              kind: 'OIDC',
-              providerUrl: '/oidc',
-              redirectUrl: 'http://localhost:3000/',
-              clientId: 'metalk8s-ui',
-              responseType: 'code',
-              scopes:
-                'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
+          hooks: {
+            TODO_useAlert_and_platform_lib_hooks: {
+              module: '',
+              scope: '',
             },
           },
-        }),
-      );
-    },
-  ),
+          components: {
+            TODO_AlertProvider: {
+              module: '',
+              scope: '',
+            },
+          },
+        },
+      }),
+    );
+  }),
+  rest.get('http://localhost:3000/.well-known/runtime-app-configuration', (req, res, ctx) => {
+    return res(
+      ctx.json({
+        kind: 'MicroAppRuntimeConfiguration',
+        apiVersion: 'ui.scality.com/v1alpha1',
+        metadata: {
+          kind: 'metalk8s-ui',
+          name: 'metalk8s.eu-west-1',
+        },
+        spec: {
+          title: 'MetalK8s Platform',
+          selfConfiguration: {
+            url: '/api/kubernetes',
+            url_salt: '/api/salt',
+            url_prometheus: '/api/prometheus',
+            url_grafana: '/grafana',
+            url_doc: '/docs',
+            url_alertmanager: '/api/alertmanager',
+            flags: [],
+            ui_base_path: '/',
+            url_support: 'https://github.com/scality/metalk8s/discussions/new',
+          },
+          auth: {
+            kind: 'OIDC',
+            providerUrl: '/oidc',
+            redirectUrl: 'http://localhost:3000/',
+            clientId: 'metalk8s-ui',
+            responseType: 'code',
+            scopes: 'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
+          },
+        },
+      }),
+    );
+  }),
   rest.get('http://localhost/shell/deployed-ui-apps.json', (req, res, ctx) => {
     return res(
       ctx.json([
@@ -138,46 +130,24 @@ export const configurationHandlers = [
     );
   }),
   rest.get('http://localhost/static/js/remoteEntry.js', (req, res, ctx) => {
-    return res(
-      ctx.set('Content-Type', 'application/javascript'),
-      ctx.text('window.metalk8s = {init: () => {}};'),
-    );
+    return res(ctx.set('Content-Type', 'application/javascript'), ctx.text('window.metalk8s = {init: () => {}};'));
   }),
-  rest.get(
-    'http://localhost/oidc/.well-known/openid-configuration',
-    (req, res, ctx) => {
-      const result = {
-        issuer: 'https://mocked.ingress/oidc',
-        authorization_endpoint: 'https://mocked.ingress/oidc/auth',
-        token_endpoint: 'https://mocked.ingress/oidc/token',
-        jwks_uri: 'https://mocked.ingress/oidc/keys',
-        userinfo_endpoint: 'https://mocked.ingress/oidc/userinfo',
-        response_types_supported: ['code', 'id_token', 'token'],
-        subject_types_supported: ['public'],
-        id_token_signing_alg_values_supported: ['RS256'],
-        scopes_supported: [
-          'openid',
-          'email',
-          'groups',
-          'profile',
-          'offline_access',
-        ],
-        token_endpoint_auth_methods_supported: ['client_secret_basic'],
-        claims_supported: [
-          'aud',
-          'email',
-          'email_verified',
-          'exp',
-          'iat',
-          'iss',
-          'locale',
-          'name',
-          'sub',
-        ],
-      };
-      return res(ctx.json(result));
-    },
-  ),
+  rest.get('http://localhost/oidc/.well-known/openid-configuration', (req, res, ctx) => {
+    const result = {
+      issuer: 'https://mocked.ingress/oidc',
+      authorization_endpoint: 'https://mocked.ingress/oidc/auth',
+      token_endpoint: 'https://mocked.ingress/oidc/token',
+      jwks_uri: 'https://mocked.ingress/oidc/keys',
+      userinfo_endpoint: 'https://mocked.ingress/oidc/userinfo',
+      response_types_supported: ['code', 'id_token', 'token'],
+      subject_types_supported: ['public'],
+      id_token_signing_alg_values_supported: ['RS256'],
+      scopes_supported: ['openid', 'email', 'groups', 'profile', 'offline_access'],
+      token_endpoint_auth_methods_supported: ['client_secret_basic'],
+      claims_supported: ['aud', 'email', 'email_verified', 'exp', 'iat', 'iss', 'locale', 'name', 'sub'],
+    };
+    return res(ctx.json(result));
+  }),
 ];
 const server = setupServer(...configurationHandlers);
 
@@ -185,8 +155,7 @@ const mockOIDCProvider = () => {
   // This is a hack to workarround the following issue : MSW return lower cased content-type header,
   // oidc-client is internally using XMLHttpRequest to perform queries and retrieve response header Content-Type using 'XMLHttpRequest.prototype.getResponseHeader'.
   // XMLHttpRequest.prototype.getResponseHeader is case sensitive and hence when receiving a response with header content-type it is not mapping it to Content-Type
-  const caseSensitiveGetResponseHeader =
-    XMLHttpRequest.prototype.getResponseHeader;
+  const caseSensitiveGetResponseHeader = XMLHttpRequest.prototype.getResponseHeader;
 
   XMLHttpRequest.prototype.getResponseHeader = function (header) {
     if (header === 'Content-Type') {
@@ -242,9 +211,7 @@ describe('FederatedApp', () => {
     //S
     render(<App />);
     //E
-    await waitFor(() =>
-      expect(screen.getByRole('navigation')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByRole('navigation')).toBeInTheDocument());
     //V
     let navbar = screen.getByRole('navigation');
     expect(navbar).toBeInTheDocument();
@@ -253,9 +220,7 @@ describe('FederatedApp', () => {
       () => {
         navbar = screen.getByRole('navigation');
 
-        return expect(
-          within(navbar).getByText(/Platform/i),
-        ).toBeInTheDocument();
+        return expect(within(navbar).getByText(/Platform/i)).toBeInTheDocument();
       },
       { timeout: 5000 },
     );

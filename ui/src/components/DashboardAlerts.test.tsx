@@ -90,9 +90,7 @@ describe('the dashboard alerts sub-panel', () => {
     (useAlerts as any).mockImplementation(() => ({
       alerts: [],
     }));
-    const { queryByTestId, getByTestId, getByText } = render(
-      <DashboardAlerts />,
-    );
+    const { queryByTestId, getByTestId, getByText } = render(<DashboardAlerts />);
     expect(getByText('No active alerts')).toBeInTheDocument();
     expect(getByTestId('all-alert-badge')).toHaveTextContent('0');
     expect(queryByTestId('warning-alert-badge')).not.toBeInTheDocument();

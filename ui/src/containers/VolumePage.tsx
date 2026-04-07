@@ -8,11 +8,7 @@ import { fetchPersistentVolumeClaimAction } from '../ducks/app/volumes';
 import { useTypedSelector, useVolumesWithAlerts } from '../hooks';
 import { useFetchCurrentVolumeStats } from '../hooks/monitoring';
 import { useRefreshNodes } from '../hooks/nodes';
-import {
-  useFetchCurrentVolumeObject,
-  useGetPersistentVolumes,
-  useRefreshVolume,
-} from '../hooks/volumes';
+import { useFetchCurrentVolumeObject, useGetPersistentVolumes, useRefreshVolume } from '../hooks/volumes';
 import VolumeContent from './VolumePageContent';
 
 // <VolumePage> component fetchs all the data used by volume page from redux store.
@@ -38,12 +34,8 @@ const VolumePage = (props) => {
   const pods = useTypedSelector((state) => state.app.pods.list);
   const nodes = useTypedSelector((state) => state.app.nodes.list);
   const volumes = useTypedSelector((state) => state.app.volumes.list);
-  const volumesLoading = useTypedSelector(
-    (state) => state.app.volumes.isLoading,
-  );
-  const currentVolumeObject = useTypedSelector(
-    (state) => state.app.volumes.currentVolumeObject,
-  );
+  const volumesLoading = useTypedSelector((state) => state.app.volumes.isLoading);
+  const currentVolumeObject = useTypedSelector((state) => state.app.volumes.currentVolumeObject);
   const pVList = useTypedSelector((state) => state.app.volumes.pVList);
 
   /*
@@ -51,9 +43,7 @@ const VolumePage = (props) => {
    ** in order to auto select the volume when all the data are there.
    */
   const pVCList = useTypedSelector((state) => state?.app?.volumes?.pVCList);
-  const volumeStats = useTypedSelector(
-    (state) => state.app.monitoring.volumeStats.metrics,
-  );
+  const volumeStats = useTypedSelector((state) => state.app.monitoring.volumeStats.metrics);
   // get all the volumes maybe filter by node
   const volumeListData = useVolumesWithAlerts();
   return (

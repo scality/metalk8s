@@ -34,10 +34,7 @@ export const compareHealth = (status1, status2) => {
 };
 
 // Return boolean if the two alerts have the same labels but different severity
-const isSameAlertWithDiffSeverity = (
-  alert1: AlertLabels,
-  alert2: AlertLabels,
-): boolean => {
+const isSameAlertWithDiffSeverity = (alert1: AlertLabels, alert2: AlertLabels): boolean => {
   // filter out the `severity`, `summary` and `children`property
   function replacer(key, value) {
     if (key === 'severity' || key === 'summary' || key === 'children') {
@@ -62,10 +59,7 @@ export const removeWarningAlerts = (alerts: Alert[]): Alert[] => {
     }
     // check if there is a critical alert with the same labels
     const isSameAlert = alerts.find((a) => {
-      return (
-        a.severity === STATUS_CRITICAL &&
-        isSameAlertWithDiffSeverity(a.labels, alert.labels)
-      );
+      return a.severity === STATUS_CRITICAL && isSameAlertWithDiffSeverity(a.labels, alert.labels);
     });
     return !isSameAlert;
   });
@@ -93,15 +87,11 @@ export const formatActiveAlerts = (alerts: Array<PrometheusAlert>): Alert[] => {
       startsAt: alert.startsAt,
       endsAt: alert.endsAt || new Date().toISOString(),
       severity: alert.labels.severity,
-      documentationUrl:
-        (alert.annotations && alert.annotations.runbook_url) || '',
+      documentationUrl: (alert.annotations && alert.annotations.runbook_url) || '',
       labels: {
         ...alert.labels,
         ...alert.annotations,
-        selectors:
-          (alert.annotations.selectors &&
-            alert.annotations.selectors.split(',')) ||
-          [],
+        selectors: (alert.annotations.selectors && alert.annotations.selectors.split(',')) || [],
       },
       childrenJsonPath: alert.annotations && alert.annotations.childrenJsonPath,
       originalAlert: alert,
@@ -118,10 +108,7 @@ export const formatActiveAlerts = (alerts: Array<PrometheusAlert>): Alert[] => {
   e.g. alertname: [NODE_FILESYSTEM_SPACE_FILLINGUP, NODE_FILESYSTEM_ALMOST_OUTOF_SPACE, 
   NODE_FILESYSTEM_FILES_FILLINGUP, NODE_FILESYSTEM_ALMOST_OUTOF_FILES]  
   */
-export const isAlertSelected = (
-  labels: AlertLabels,
-  filters: FilterLabels,
-): boolean => {
+export const isAlertSelected = (labels: AlertLabels, filters: FilterLabels): boolean => {
   return Object.getOwnPropertyNames(filters)
     .map((key) => {
       if (!filters[key] || !labels[key]) return false;
@@ -149,10 +136,7 @@ export const isAlertSelected = (
     alerts: the formatted alert returned by AM or Loki API.
     filters: can be optional, meaning to get all the alerts.
   */
-export const filterAlerts = (
-  alerts: Alert[],
-  filters?: FilterLabels,
-): Alert[] => {
+export const filterAlerts = (alerts: Alert[], filters?: FilterLabels): Alert[] => {
   if (!alerts) return [];
 
   if (!filters) {
@@ -173,10 +157,7 @@ export const dateIsBetween = (start: string, end: string, date: string) => {
     return true;
   } else return false;
 };
-export const getHealthStatus = (
-  alerts: Alert[],
-  activeOn: string = new Date().toISOString(),
-): Health => {
+export const getHealthStatus = (alerts: Alert[], activeOn: string = new Date().toISOString()): Health => {
   if (!alerts.length) return STATUS_HEALTH;
   const severityArr = alerts.map((alert) => {
     if (dateIsBetween(alert.startsAt, alert.endsAt, activeOn)) {
@@ -186,12 +167,9 @@ export const getHealthStatus = (
     return '';
   });
   if (severityArr.every((item) => item === '')) return STATUS_HEALTH;
-  if (severityArr.find((severity) => severity === 'critical'))
-    return STATUS_CRITICAL;
-  else if (severityArr.find((severity) => severity === 'warning'))
-    return STATUS_WARNING;
-  else if (severityArr.find((severity) => severity === 'info'))
-    return STATUS_INFO;
+  if (severityArr.find((severity) => severity === 'critical')) return STATUS_CRITICAL;
+  else if (severityArr.find((severity) => severity === 'warning')) return STATUS_WARNING;
+  else if (severityArr.find((severity) => severity === 'info')) return STATUS_INFO;
   return STATUS_NONE;
 };
 
@@ -209,17 +187,12 @@ export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
         summary: (alert.annotations && alert.annotations.summary) || '',
         description: alert.annotations.description || alert.annotations.message,
         startsAt: alert.startsAt,
-        endsAt:
-          alert.status === 'firing' ? new Date().toISOString() : alert.endsAt,
+        endsAt: alert.status === 'firing' ? new Date().toISOString() : alert.endsAt,
         severity: alert.labels.severity,
-        documentationUrl:
-          (alert.annotations && alert.annotations.runbook_url) || '',
+        documentationUrl: (alert.annotations && alert.annotations.runbook_url) || '',
         labels: {
           ...alert.labels,
-          selectors:
-            (alert.annotations.selectors &&
-              alert.annotations.selectors.split(',')) ||
-            [],
+          selectors: (alert.annotations.selectors && alert.annotations.selectors.split(',')) || [],
         },
         originalAlert: alert,
       },
