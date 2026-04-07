@@ -1,17 +1,9 @@
 import React, { useCallback, useMemo } from 'react';
 import type { UseQueryOptions } from 'react-query';
 import 'react-query';
-import {
-  LineTimeSerieChart,
-  useChartId,
-  useMetricsTimeSpan,
-} from '@scality/core-ui/dist/next';
+import { LineTimeSerieChart, useChartId, useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { convertPrometheusResultToSerieWithAverage } from '../services/graphUtils';
-import {
-  CLUSTER_AVERAGE,
-  HEIGHT_DEFAULT_CHART,
-  NODE_SYNC_ID,
-} from '../constants';
+import { CLUSTER_AVERAGE, HEIGHT_DEFAULT_CHART, NODE_SYNC_ID } from '../constants';
 import { useChartSeries } from '../hooks';
 import { TimeSpanProps } from '../services/platformlibrary/metrics';
 import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
@@ -31,14 +23,8 @@ const MetricChart = ({
   nodeName: string;
   instanceIP: string;
   showAvg: boolean;
-  getMetricQuery: (
-    instanceIP: string,
-    timeSpanProps: TimeSpanProps,
-  ) => UseQueryOptions;
-  getMetricAvgQuery: (
-    timeSpanProps: TimeSpanProps,
-    showAvg: boolean,
-  ) => UseQueryOptions;
+  getMetricQuery: (instanceIP: string, timeSpanProps: TimeSpanProps) => UseQueryOptions;
+  getMetricAvgQuery: (timeSpanProps: TimeSpanProps, showAvg: boolean) => UseQueryOptions;
   unitRange?: {
     threshold: number;
     label: string;
@@ -50,10 +36,7 @@ const MetricChart = ({
     getQueries: useCallback(
       (timeSpanProps) => {
         if (showAvg) {
-          return [
-            getMetricQuery(instanceIP, timeSpanProps),
-            getMetricAvgQuery(timeSpanProps, showAvg),
-          ];
+          return [getMetricQuery(instanceIP, timeSpanProps), getMetricAvgQuery(timeSpanProps, showAvg)];
         } else {
           return [getMetricQuery(instanceIP, timeSpanProps)];
         }
@@ -63,11 +46,7 @@ const MetricChart = ({
     transformPrometheusDataToSeries: useCallback(
       ([result, resultAvg]) => {
         if (showAvg) {
-          return convertPrometheusResultToSerieWithAverage(
-            result,
-            nodeName,
-            resultAvg,
-          );
+          return convertPrometheusResultToSerieWithAverage(result, nodeName, resultAvg);
         } else {
           return convertPrometheusResultToSerieWithAverage(result, nodeName);
         }
@@ -75,10 +54,7 @@ const MetricChart = ({
       [nodeName, showAvg],
     ),
   });
-  const additionalNames = useMemo(
-    () => (showAvg ? [CLUSTER_AVERAGE] : []),
-    [showAvg],
-  );
+  const additionalNames = useMemo(() => (showAvg ? [CLUSTER_AVERAGE] : []), [showAvg]);
   useChartLegendRegistration({
     chartId,
     series,

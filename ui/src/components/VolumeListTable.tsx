@@ -85,18 +85,14 @@ const VolumeListTable = (props) => {
           width: '3rem',
         },
         Cell: (cellProps) => {
-          const volume = volumeListData?.find(
-            (vol) => vol.name === cellProps.cell.row.values.name,
-          );
+          const volume = volumeListData?.find((vol) => vol.name === cellProps.cell.row.values.name);
 
           switch (cellProps.value) {
             case 'exclamation':
               return (
                 <Tooltip
                   placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
-                  overlay={
-                    <TooltipContent>{volume?.errorReason}</TooltipContent>
-                  }
+                  overlay={<TooltipContent>{volume?.errorReason}</TooltipContent>}
                 >
                   <Icon name="Exclamation" />
                 </Tooltip>
@@ -148,9 +144,7 @@ const VolumeListTable = (props) => {
           width: '3.5rem',
         },
         Cell: (cellProps) => {
-          return cellProps.value !== undefined ? (
-            <Latency latencyInMicroSeconds={cellProps.value} />
-          ) : null;
+          return cellProps.value !== undefined ? <Latency latencyInMicroSeconds={cellProps.value} /> : null;
         },
       },
     ]; // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -165,17 +159,10 @@ const VolumeListTable = (props) => {
       location.pathname.endsWith('/details');
 
     if (isTabSelected) {
-      const newPath = location.pathname.replace(
-        /\/volumes\/[^/]*\//,
-        `/volumes/${row.values.name}/`,
-      );
+      const newPath = location.pathname.replace(/\/volumes\/[^/]*\//, `/volumes/${row.values.name}/`);
       navigate(`${newPath}?${query.toString()}`);
     } else {
-      navigate(
-        `${appHistoryBasePath}/volumes/${
-          row.values.name
-        }/overview?${query.toString()}`,
-      );
+      navigate(`${appHistoryBasePath}/volumes/${row.values.name}/overview?${query.toString()}`);
     }
   };
 

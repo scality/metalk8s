@@ -43,13 +43,10 @@ const mockProps = {
 };
 
 const server = setupServer(
-  rest.patch(
-    `http://localhost/api/kubernetes/api/v1/nodes/${mockProps.nodeName}`,
-    (req, res, ctx) => {
-      SUT(req.body);
-      return res(ctx.status(200), ctx.json({}));
-    },
-  ),
+  rest.patch(`http://localhost/api/kubernetes/api/v1/nodes/${mockProps.nodeName}`, (req, res, ctx) => {
+    SUT(req.body);
+    return res(ctx.status(200), ctx.json({}));
+  }),
 );
 
 describe('NodePageOverviewTab', () => {

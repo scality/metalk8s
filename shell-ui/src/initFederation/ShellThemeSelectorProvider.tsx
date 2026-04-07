@@ -1,8 +1,4 @@
-import {
-  CoreUITheme,
-  coreUIAvailableThemes,
-  coreUIAvailableThemesNames,
-} from '@scality/core-ui/dist/style/theme';
+import { CoreUITheme, coreUIAvailableThemes, coreUIAvailableThemesNames } from '@scality/core-ui/dist/style/theme';
 import React, { useContext, useState } from 'react';
 import { useShellConfig } from './ShellConfigProvider';
 type ThemeMode = 'dark' | 'light';
@@ -19,9 +15,7 @@ export function useShellThemeSelector(): ThemeContextValues {
   const themeContext: ThemeContextValues = useContext(ShellThemeContext);
 
   if (themeContext === null) {
-    throw new Error(
-      "useShellThemeSelector hook can't be use outside <ShellThemeSelectorProvider />",
-    );
+    throw new Error("useShellThemeSelector hook can't be use outside <ShellThemeSelectorProvider />");
   }
 
   return { ...themeContext };
@@ -53,27 +47,18 @@ export function ShellThemeSelectorProvider({
   }
 
   if (!['custom', 'core-ui'].includes(themeDescription.type)) {
-    throw new Error(
-      `"${themeDescription.type}" is not a valid theme type, use either custom or core-ui`,
-    );
+    throw new Error(`"${themeDescription.type}" is not a valid theme type, use either custom or core-ui`);
   }
 
-  if (
-    themeDescription.type === 'core-ui' &&
-    !coreUIAvailableThemesNames.includes(themeDescription.name)
-  ) {
+  if (themeDescription.type === 'core-ui' && !coreUIAvailableThemesNames.includes(themeDescription.name)) {
     throw new Error(
-      `${
-        themeDescription.name
-      } does not exist in core-ui themes. Available themes : ${coreUIAvailableThemesNames.join(
+      `${themeDescription.name} does not exist in core-ui themes. Available themes : ${coreUIAvailableThemesNames.join(
         ', ',
       )}`,
     );
   }
   const selectedTheme =
-    themeDescription.type === 'custom'
-      ? themeDescription.colors
-      : coreUIAvailableThemes[themeDescription.name];
+    themeDescription.type === 'custom' ? themeDescription.colors : coreUIAvailableThemes[themeDescription.name];
 
   const assets = {
     logoPath: themeDescription.logoPath,

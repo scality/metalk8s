@@ -1,13 +1,5 @@
 import { channel } from 'redux-saga';
-import {
-  actionChannel,
-  all,
-  call,
-  delay,
-  put,
-  select,
-  take,
-} from 'redux-saga/effects';
+import { actionChannel, all, call, delay, put, select, take } from 'redux-saga/effects';
 import { JOBS } from '../../services/salt/utils';
 import {
   ADD_JOB,
@@ -88,9 +80,7 @@ describe('`manageLocalStorage` saga', () => {
   test('has the expected nominal flow', () => {
     const gen = manageLocalStorage();
     const testChan = channel();
-    expect(gen.next().value).toEqual(
-      actionChannel([ADD_JOB, REMOVE_JOB, JOB_COMPLETED]),
-    );
+    expect(gen.next().value).toEqual(actionChannel([ADD_JOB, REMOVE_JOB, JOB_COMPLETED]));
     // @ts-expect-error - FIXME when you are working on it
     expect(gen.next(testChan).value).toEqual(take(testChan));
     let nextAction = addJobAction(exampleJob);
@@ -98,9 +88,7 @@ describe('`manageLocalStorage` saga', () => {
     expect(JSON.parse(localStorage.getItem(JOBS))).toEqual([exampleJob]);
     nextAction = setJobCompletedAction(exampleJob.jid, 'now', null);
     expect(gen.next(nextAction).value).toEqual(take(testChan));
-    expect(JSON.parse(localStorage.getItem(JOBS))).toEqual([
-      { ...exampleJob, completedAt: 'now' },
-    ]);
+    expect(JSON.parse(localStorage.getItem(JOBS))).toEqual([{ ...exampleJob, completedAt: 'now' }]);
     nextAction = removeJobAction(exampleJob);
     expect(gen.next(nextAction).value).toEqual(take(testChan));
     expect(localStorage.getItem(JOBS)).toBe(null);

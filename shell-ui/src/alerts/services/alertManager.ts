@@ -1,8 +1,4 @@
-import {
-  removeWarningAlerts,
-  formatActiveAlerts,
-  sortAlerts,
-} from './alertUtils';
+import { removeWarningAlerts, formatActiveAlerts, sortAlerts } from './alertUtils';
 export type PrometheusAlert = {
   annotations: Record<string, string>;
   receivers: {

@@ -2,10 +2,7 @@ import { screen } from '@testing-library/react';
 import DashboardInventory from './DashboardInventory';
 import { waitForLoadingToFinish, render } from './__TEST__/util';
 import { useHighestSeverityAlerts } from '../containers/AlertProvider';
-import {
-  getNodesCountQuery,
-  getVolumesCountQuery,
-} from '../services/platformlibrary/k8s';
+import { getNodesCountQuery, getVolumesCountQuery } from '../services/platformlibrary/k8s';
 import { STATUS_WARNING, STATUS_CRITICAL, STATUS_HEALTH } from '../constants';
 const alertsCritical = [
   {
@@ -60,12 +57,8 @@ describe('the dashboard inventory panel', () => {
     // Loading
     await waitForLoadingToFinish();
     // Verify
-    expect(
-      screen.getAllByLabelText(`Nodes status is ${STATUS_CRITICAL}`).length,
-    ).toEqual(1);
-    expect(
-      screen.getAllByLabelText(`Volumes status is ${STATUS_CRITICAL}`).length,
-    ).toEqual(1);
+    expect(screen.getAllByLabelText(`Nodes status is ${STATUS_CRITICAL}`).length).toEqual(1);
+    expect(screen.getAllByLabelText(`Volumes status is ${STATUS_CRITICAL}`).length).toEqual(1);
   });
   test('displays properly the status WARNING for nodes and volumes', async () => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()
@@ -75,12 +68,8 @@ describe('the dashboard inventory panel', () => {
     // Loading
     await waitForLoadingToFinish();
     // Verify
-    expect(
-      screen.getAllByLabelText(`Nodes status is ${STATUS_WARNING}`).length,
-    ).toEqual(1);
-    expect(
-      screen.getAllByLabelText(`Volumes status is ${STATUS_WARNING}`).length,
-    ).toEqual(1);
+    expect(screen.getAllByLabelText(`Nodes status is ${STATUS_WARNING}`).length).toEqual(1);
+    expect(screen.getAllByLabelText(`Volumes status is ${STATUS_WARNING}`).length).toEqual(1);
   });
   test('displays properly the status HEALTHY for nodes and volumes', async () => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()
@@ -90,12 +79,8 @@ describe('the dashboard inventory panel', () => {
     // Loading
     await waitForLoadingToFinish();
     // Verify
-    expect(
-      screen.getAllByLabelText(`Nodes status is ${STATUS_HEALTH}`).length,
-    ).toEqual(1);
-    expect(
-      screen.getAllByLabelText(`Volumes status is ${STATUS_HEALTH}`).length,
-    ).toEqual(1);
+    expect(screen.getAllByLabelText(`Nodes status is ${STATUS_HEALTH}`).length).toEqual(1);
+    expect(screen.getAllByLabelText(`Volumes status is ${STATUS_HEALTH}`).length).toEqual(1);
   });
   test('displays the loader if the query does not return a result', async () => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()

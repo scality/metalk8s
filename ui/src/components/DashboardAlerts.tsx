@@ -4,10 +4,7 @@ import { useMemo } from 'react';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
 import { useAlertLibrary, useAlerts } from '../containers/AlertProvider';
-import {
-  useDiscoveredViews,
-  useLinkOpener,
-} from '../containers/ConfigProvider';
+import { useDiscoveredViews, useLinkOpener } from '../containers/ConfigProvider';
 import { getChildrenAlerts } from '../services/alertUtils';
 import { useBasenameRelativeNavigate } from '@scality/module-federation';
 
@@ -46,18 +43,11 @@ const DashboardAlerts = () => {
   // in MetalK8s dashboard, we want to display the number of the alerts only for metalk8s namespace
   const metalk8sAtomicAlerts = useMemo(() => {
     if (topLevelAlerts?.alerts?.length && alerts?.alerts?.length)
-      return getChildrenAlerts(
-        topLevelAlerts.alerts.map((alert) => alert.childrenJsonPath) || [],
-        alerts.alerts,
-      );
+      return getChildrenAlerts(topLevelAlerts.alerts.map((alert) => alert.childrenJsonPath) || [], alerts.alerts);
     else return [];
   }, [JSON.stringify(alerts.alerts), JSON.stringify(topLevelAlerts.alerts)]);
-  const criticalAlerts = metalk8sAtomicAlerts.filter(
-    (alert) => alert.severity === 'critical',
-  );
-  const warningAlerts = metalk8sAtomicAlerts.filter(
-    (alert) => alert.severity === 'warning',
-  );
+  const criticalAlerts = metalk8sAtomicAlerts.filter((alert) => alert.severity === 'critical');
+  const warningAlerts = metalk8sAtomicAlerts.filter((alert) => alert.severity === 'warning');
   const totalAlerts = criticalAlerts.length + warningAlerts.length;
   return (
     <AlertsContainer>
@@ -68,11 +58,7 @@ const DashboardAlerts = () => {
               id: 'platform_active_alerts',
             })}
           </Text>
-          <TextBadge
-            variant="infoPrimary"
-            data-testid="all-alert-badge"
-            text={totalAlerts}
-          />
+          <TextBadge variant="infoPrimary" data-testid="all-alert-badge" text={totalAlerts} />
           {totalAlerts === 0 && (
             <div>
               <Text variant="Smaller" color="textSecondary">
@@ -104,19 +90,11 @@ const DashboardAlerts = () => {
           <BadgesContainer>
             <div>
               <Text>Critical</Text>
-              <TextBadge
-                variant="statusCritical"
-                data-testid="critical-alert-badge"
-                text={criticalAlerts.length}
-              />
+              <TextBadge variant="statusCritical" data-testid="critical-alert-badge" text={criticalAlerts.length} />
             </div>
             <div>
               <Text>Warning</Text>
-              <TextBadge
-                variant="statusWarning"
-                data-testid="warning-alert-badge"
-                text={warningAlerts.length}
-              />
+              <TextBadge variant="statusWarning" data-testid="warning-alert-badge" text={warningAlerts.length} />
             </div>
           </BadgesContainer>
           <Link

@@ -1,11 +1,4 @@
-import {
-  ConstrainedText,
-  Icon,
-  Stack,
-  Text,
-  Wrap,
-  spacing,
-} from '@scality/core-ui';
+import { ConstrainedText, Icon, Stack, Text, Wrap, spacing } from '@scality/core-ui';
 import { Button, Table } from '@scality/core-ui/dist/next';
 import React, { useCallback } from 'react';
 import { useIntl } from 'react-intl';
@@ -61,11 +54,7 @@ const NodeListTable = ({ nodeTableData }) => {
             <>
               <ConstrainedText
                 text={
-                  <Text
-                    data-cy="node_table_name_cell"
-                    variant="Basic"
-                    isEmphazed
-                  >
+                  <Text data-cy="node_table_name_cell" variant="Basic" isEmphazed>
                     {name}
                   </Text>
                 }
@@ -132,10 +121,7 @@ const NodeListTable = ({ nodeTableData }) => {
         location.pathname.endsWith('partitions') ||
         location.pathname.endsWith('details');
 
-      const newPath = location.pathname.replace(
-        /\/nodes\/[^/]*\//,
-        `/nodes/${nodeName}/`,
-      );
+      const newPath = location.pathname.replace(/\/nodes\/[^/]*\//, `/nodes/${nodeName}/`);
       if (isTabSelected) {
         navigate(`${newPath}?${query.toString()}`);
       } else {

@@ -1,9 +1,5 @@
 import { Icon, Toggle, spacing } from '@scality/core-ui';
-import {
-  Button,
-  ChartLegend,
-  ChartLegendWrapper,
-} from '@scality/core-ui/dist/next';
+import { Button, ChartLegend, ChartLegendWrapper } from '@scality/core-ui/dist/next';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
@@ -13,11 +9,7 @@ import { useIntl } from 'react-intl';
 import MetricChart from '../components/MetricChart';
 import MetricSymmetricalChart from '../components/MetricSymmetricalChart';
 import { MetricsActionContainer } from '../components/style/CommonLayoutStyle';
-import {
-  GRAFANA_DASHBOARDS,
-  PORT_NODE_EXPORTER,
-  UNIT_RANGE_BS,
-} from '../constants';
+import { GRAFANA_DASHBOARDS, PORT_NODE_EXPORTER, UNIT_RANGE_BS } from '../constants';
 import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import type { NodesState } from '../ducks/app/nodes';
 import { useTypedSelector } from '../hooks';
@@ -105,17 +97,12 @@ const NodePageMetricsTab = ({
   const query = useURLQuery();
   const intl = useIntl();
   const api = useTypedSelector((state) => state.config.api);
-  const showAvg = useTypedSelector(
-    (state) => state.app.monitoring.nodeStats.showAvg,
-  );
+  const showAvg = useTypedSelector((state) => state.app.monitoring.nodeStats.showAvg);
 
   // To redirect to the right Node(Detailed) dashboard in Grafana
-  const unameInfos = useTypedSelector(
-    (state) => state.app.monitoring.unameInfo,
-  );
+  const unameInfos = useTypedSelector((state) => state.app.monitoring.unameInfo);
   const hostnameLabel = unameInfos.find(
-    (unameInfo) =>
-      unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
+    (unameInfo) => unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
   )?.metric?.nodename;
 
   // write show avg value in URL

@@ -12,17 +12,12 @@ import {
 import VolumeDetailsTab from '../components/VolumeDetailsTab';
 import VolumeMetricsTab from '../components/VolumeMetricsTab';
 import VolumeOverviewTab from '../components/VolumeOverviewTab';
-import {
-  LVM_LOGICAL_VOLUME,
-  RAW_BLOCK_DEVICE,
-  SPARSE_LOOP_DEVICE,
-} from '../constants';
+import { LVM_LOGICAL_VOLUME, RAW_BLOCK_DEVICE, SPARSE_LOOP_DEVICE } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
 import { useAlerts } from './AlertProvider';
 
 export const VolumePageRSP = (props) => {
-  const { volumes, nodes, volumeListData, pVList, pods, currentVolumeObject } =
-    props;
+  const { volumes, nodes, volumeListData, pVList, pods, currentVolumeObject } = props;
 
   const { name } = useParams();
   const intl = useIntl();
@@ -30,39 +25,25 @@ export const VolumePageRSP = (props) => {
   const baseUrl = pathname.substring(0, pathname.lastIndexOf('/'));
 
   const currentVolumeName = name;
-  const volume = volumes?.find(
-    (volume) => volume.metadata.name === currentVolumeName,
-  );
-  const currentVolume = volumeListData?.find(
-    (vol) => vol.name === currentVolumeName,
-  );
-  const volumeStatus = computeVolumeGlobalStatus(
-    volume?.metadata?.name,
-    volume?.status,
-  );
+  const volume = volumes?.find((volume) => volume.metadata.name === currentVolumeName);
+  const currentVolume = volumeListData?.find((vol) => vol.name === currentVolumeName);
+  const volumeStatus = computeVolumeGlobalStatus(volume?.metadata?.name, volume?.status);
 
   const pV = pVList?.find((pv) => pv.metadata.name === currentVolumeName);
 
   const PVCName = pV?.spec?.claimRef?.name;
   const PVCNamespace = pV?.spec?.claimRef?.namespace;
   const UsedPod =
-    PVCName &&
-    pods?.find((pod) =>
-      pod.volumes.find((volume) => volume.persistentVolumeClaim === PVCName),
-    );
+    PVCName && pods?.find((pod) => pod.volumes.find((volume) => volume.persistentVolumeClaim === PVCName));
 
   const alertsVolume = useAlerts({
     persistentvolumeclaim: PVCName,
   });
   const alertlist = alertsVolume?.alerts ?? [];
-  const criticalAlerts = alertlist.filter(
-    (alert) => alert.severity === 'critical',
-  );
+  const criticalAlerts = alertlist.filter((alert) => alert.severity === 'critical');
 
   const deviceName = volume?.status?.deviceName;
-  const instanceIp = nodes.find(
-    (node) => node.name === volume?.spec?.nodeName,
-  )?.internalIP;
+  const instanceIp = nodes.find((node) => node.name === volume?.spec?.nodeName)?.internalIP;
 
   return currentVolumeName && volume ? (
     <RightSidePanel>
@@ -86,19 +67,11 @@ export const VolumePageRSP = (props) => {
             storageClassName={volume?.spec?.storageClassName}
             creationTimestamp={volume?.metadata?.creationTimestamp}
             volumeType={
-              volume.spec &&
-              Object.prototype.hasOwnProperty.call(
-                volume.spec,
-                'rawBlockDevice',
-              )
+              volume.spec && Object.prototype.hasOwnProperty.call(volume.spec, 'rawBlockDevice')
                 ? RAW_BLOCK_DEVICE
-                : volume.spec &&
-                  Object.prototype.hasOwnProperty.call(
-                    volume.spec,
-                    'lvmLogicalVolume',
-                  )
-                ? LVM_LOGICAL_VOLUME
-                : SPARSE_LOOP_DEVICE
+                : volume.spec && Object.prototype.hasOwnProperty.call(volume.spec, 'lvmLogicalVolume')
+                  ? LVM_LOGICAL_VOLUME
+                  : SPARSE_LOOP_DEVICE
             }
             usedPodName={
               UsedPod
@@ -121,14 +94,8 @@ export const VolumePageRSP = (props) => {
             }
             volumeUsagePercentage={currentVolume?.usage}
             volumeUsageBytes={currentVolume?.usageRawData ?? 0}
-            storageCapacity={
-              volumeListData?.find((vol) => vol.name === currentVolumeName)
-                ?.storageCapacity
-            }
-            health={
-              volumeListData?.find((vol) => vol.name === currentVolumeName)
-                ?.health
-            }
+            storageCapacity={volumeListData?.find((vol) => vol.name === currentVolumeName)?.storageCapacity}
+            health={volumeListData?.find((vol) => vol.name === currentVolumeName)?.health}
             condition={currentVolume?.status} // the delete button inside the volume detail card should know that which volume is the first one
             volumeListData={volumeListData}
             pVList={pVList}
@@ -143,9 +110,7 @@ export const VolumePageRSP = (props) => {
           textBadge={
             alertlist && alertlist.length ? (
               <TextBadge
-                variant={
-                  criticalAlerts.length > 0 ? 'statusCritical' : 'statusWarning'
-                }
+                variant={criticalAlerts.length > 0 ? 'statusCritical' : 'statusWarning'}
                 text={`${alertlist.length}`}
               />
             ) : null

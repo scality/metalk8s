@@ -2,8 +2,7 @@
 export const alerts = [
   {
     id: '1',
-    description:
-      'Filesystem on /dev/vdc2 at 192.168.1.6:9100 has only 0.00% available space left.',
+    description: 'Filesystem on /dev/vdc2 at 192.168.1.6:9100 has only 0.00% available space left.',
     documentationUrl: '',
     summary: 'Filesystem has less than 3% space left.',
     startsAt: '2021-01-18T16:43:35.358Z',
@@ -28,8 +27,7 @@ export const alerts = [
   },
   {
     id: '2',
-    description:
-      'Filesystem on /dev/vdc2 at 192.168.1.6:9100 has only 0.00% available space left.',
+    description: 'Filesystem on /dev/vdc2 at 192.168.1.6:9100 has only 0.00% available space left.',
     documentationUrl: '',
     summary: 'Filesystem has less than 5% space left.',
     endsAt: '2021-01-21T09:32:35.358Z',
@@ -54,8 +52,7 @@ export const alerts = [
   },
   {
     id: '3',
-    description:
-      'Filesystem on /dev/vdc1 at 192.168.1.6:9100 has only 3.28% available space left.',
+    description: 'Filesystem on /dev/vdc1 at 192.168.1.6:9100 has only 3.28% available space left.',
     documentationUrl: '',
     summary: 'Filesystem has less than 5% space left.',
     endsAt: '2021-01-21T09:32:35.358Z',

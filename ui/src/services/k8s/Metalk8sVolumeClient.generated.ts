@@ -200,13 +200,7 @@ export type Metalk8sV1alpha1Volume = {
       lastTransitionTime?: string;
       lastUpdateTime?: string;
       message?: string;
-      reason?:
-        | 'Pending'
-        | 'Terminating'
-        | 'InternalError'
-        | 'CreationError'
-        | 'DestructionError'
-        | 'UnavailableError';
+      reason?: 'Pending' | 'Terminating' | 'InternalError' | 'CreationError' | 'DestructionError' | 'UnavailableError';
       status: 'True' | 'False' | 'Unknown';
       type: 'Ready';
     }>;
@@ -220,16 +214,10 @@ export type Metalk8sV1alpha1VolumeList = {
 
 export class Metalk8sV1alpha1VolumeClient {
   constructor(public customObjects: CustomObjectsApi) {}
-  async getMetalk8sV1alpha1VolumeList(): Promise<
-    Result<Metalk8sV1alpha1VolumeList>
-  > {
+  async getMetalk8sV1alpha1VolumeList(): Promise<Result<Metalk8sV1alpha1VolumeList>> {
     try {
       // @ts-expect-error - FIXME when you are working on it
-      return await this.customObjects.listClusterCustomObject(
-        'storage.metalk8s.scality.com',
-        'v1alpha1',
-        'volumes',
-      );
+      return await this.customObjects.listClusterCustomObject('storage.metalk8s.scality.com', 'v1alpha1', 'volumes');
     } catch (error) {
       return { error };
     }
@@ -264,9 +252,7 @@ export class Metalk8sV1alpha1VolumeClient {
     }
   }
 
-  async createMetalk8sV1alpha1Volume(
-    body: Metalk8sV1alpha1Volume,
-  ): Promise<Result<Metalk8sV1alpha1Volume>> {
+  async createMetalk8sV1alpha1Volume(body: Metalk8sV1alpha1Volume): Promise<Result<Metalk8sV1alpha1Volume>> {
     try {
       // @ts-expect-error - FIXME when you are working on it
       return await this.customObjects.createClusterCustomObject(
@@ -280,9 +266,7 @@ export class Metalk8sV1alpha1VolumeClient {
     }
   }
 
-  async patchMetalk8sV1alpha1Volume(
-    body: Partial<Metalk8sV1alpha1Volume>,
-  ): Promise<Result<Metalk8sV1alpha1Volume>> {
+  async patchMetalk8sV1alpha1Volume(body: Partial<Metalk8sV1alpha1Volume>): Promise<Result<Metalk8sV1alpha1Volume>> {
     try {
       // @ts-expect-error - FIXME when you are working on it
       return await this.customObjects.patchClusterCustomObject(

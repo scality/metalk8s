@@ -1,9 +1,4 @@
-import React, {
-  useContext,
-  useState,
-  useLayoutEffect,
-  createContext,
-} from 'react';
+import React, { useContext, useState, useLayoutEffect, createContext } from 'react';
 import { IntlProvider } from 'react-intl';
 import translations_en from './translations/en.json';
 import translations_fr from './translations/fr.json';
@@ -25,17 +20,13 @@ export function useLanguage(): {
   const languageContext = useContext(LanguageContext);
 
   if (languageContext === null) {
-    throw new Error(
-      "useLanguage hook can't be use outside <LanguageProvider/>",
-    );
+    throw new Error("useLanguage hook can't be use outside <LanguageProvider/>");
   }
 
   return {
     language: languageContext.language,
     setLanguage: languageContext.setLanguage,
-    unSelectedLanguages: languages.filter(
-      (lang) => lang !== languageContext.language,
-    ),
+    unSelectedLanguages: languages.filter((lang) => lang !== languageContext.language),
   };
 }
 export function LanguageProvider({
@@ -49,8 +40,7 @@ export function LanguageProvider({
 }) {
   const [language, setLang] = useState<Language>(
     canChangeLanguage
-      ? (localStorage.getItem('lang') as any as Language) ||
-          (navigator.language.startsWith('fr') ? 'fr' : 'en')
+      ? (localStorage.getItem('lang') as any as Language) || (navigator.language.startsWith('fr') ? 'fr' : 'en')
       : 'en',
   );
   useLayoutEffect(() => {
@@ -75,10 +65,7 @@ export function LanguageProvider({
         setLanguage,
       }}
     >
-      <IntlProvider
-        locale={language}
-        messages={messages[language.toUpperCase()]}
-      >
+      <IntlProvider locale={language} messages={messages[language.toUpperCase()]}>
         {children}
       </IntlProvider>
     </LanguageContext.Provider>

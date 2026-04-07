@@ -5,17 +5,10 @@ import { useQuery } from 'react-query';
 import styled from 'styled-components';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
-import {
-  highestAlertToStatus,
-  useAlertLibrary,
-  useHighestSeverityAlerts,
-} from '../containers/AlertProvider';
+import { highestAlertToStatus, useAlertLibrary, useHighestSeverityAlerts } from '../containers/AlertProvider';
 import { useAuth } from '../containers/PrivateRoute';
 import { useTypedSelector } from '../hooks';
-import {
-  getNodesCountQuery,
-  getVolumesCountQuery,
-} from '../services/platformlibrary/k8s';
+import { getNodesCountQuery, getVolumesCountQuery } from '../services/platformlibrary/k8s';
 import { useBasenameRelativeNavigate } from '@scality/module-federation';
 
 const InventoryContainer = styled.div`
@@ -54,13 +47,9 @@ const getStatusColor = (status) => {
 const DashboardInventory = () => {
   const intl = useIntl();
   const alertsLibrary = useAlertLibrary();
-  const nodesAlerts = useHighestSeverityAlerts(
-    alertsLibrary.getNodesAlertSelectors(),
-  );
+  const nodesAlerts = useHighestSeverityAlerts(alertsLibrary.getNodesAlertSelectors());
   const nodesStatus = highestAlertToStatus(nodesAlerts);
-  const volumesAlerts = useHighestSeverityAlerts(
-    alertsLibrary.getVolumesAlertSelectors(),
-  );
+  const volumesAlerts = useHighestSeverityAlerts(alertsLibrary.getVolumesAlertSelectors());
   const volumesStatus = highestAlertToStatus(volumesAlerts);
   const { getToken } = useAuth();
   const config = useTypedSelector((state) => state.config.api?.url);
@@ -108,9 +97,7 @@ const DashboardInventory = () => {
                     />
                   </StatusWrapper>
                 </InventoryIcon>
-                <InventoryValue aria-label={`${nodesCount} nodes`}>
-                  {nodesCount as number}
-                </InventoryValue>
+                <InventoryValue aria-label={`${nodesCount} nodes`}>{nodesCount as number}</InventoryValue>
               </Card.Body>
             </Card.BodyContainer>
           </Card>
@@ -143,9 +130,7 @@ const DashboardInventory = () => {
                     />
                   </StatusWrapper>
                 </InventoryIcon>
-                <InventoryValue aria-label={`${volumesCount} volumes`}>
-                  {volumesCount as number}
-                </InventoryValue>
+                <InventoryValue aria-label={`${volumesCount} volumes`}>{volumesCount as number}</InventoryValue>
               </Card.Body>
             </Card.BodyContainer>
           </Card>

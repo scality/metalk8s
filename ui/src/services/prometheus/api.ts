@@ -37,11 +37,7 @@ export type PrometheusQueryResult =
     }
   | {
       status: 'success';
-      data:
-        | RangeMatrixResult
-        | InstantVectorResult
-        | ScalarResult
-        | StringResult;
+      data: RangeMatrixResult | InstantVectorResult | ScalarResult | StringResult;
       warnings?: string[];
     };
 
@@ -81,9 +77,6 @@ export function queryPrometheusRange(
   query: string, // query (the actual PromQL expression)
 ): Promise<PrometheusQueryResult | undefined> {
   if (prometheusApiClient) {
-    return prometheusApiClient.get(
-      `/api/v1/query_range?start=${start}&end=${end}&step=${step}&query=` +
-        query,
-    );
+    return prometheusApiClient.get(`/api/v1/query_range?start=${start}&end=${end}&step=${step}&query=` + query);
   }
 }
