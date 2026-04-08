@@ -37,6 +37,7 @@ import {
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
 import { ShellThemeSelectorProvider } from './initFederation/ShellThemeSelectorProvider';
 import { UIListProvider } from './initFederation/UIListProvider';
+import { GuardianBubble } from './guardian/GuardianBubble';
 import { MCPRegistrar } from './mcp/MCPRegistrar';
 import { SolutionsNavbar } from './navbar';
 import { LanguageProvider, useLanguage } from './navbar/lang';
@@ -192,6 +193,7 @@ function InternalApp() {
             {status === 'success' && (
               <>
                 <MCPRegistrar />
+                <GuardianBubble />
                 <SolutionsNavbar>
                   <InternalRouter />
                 </SolutionsNavbar>
