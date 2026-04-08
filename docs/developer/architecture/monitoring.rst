@@ -118,8 +118,7 @@ MetalK8s.
 
 Those salt states come from
 `Kubernetes Prometheus stack helm chart <https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack>`__
-and `Thanos helm chart <https://github.com/banzaicloud/banzai-charts/tree/master/thanos>`__
-as described in `the Thanos readme <https://github.com/banzaicloud/banzai-charts/tree/master/thanos#install-prometheus-operator>`__,
+and `Thanos helm chart <https://github.com/bitnami/charts/tree/main/bitnami/thanos>`__,
 then those helm charts are rendered to salt states using the ``render.py``
 script from ``charts`` directory.
 

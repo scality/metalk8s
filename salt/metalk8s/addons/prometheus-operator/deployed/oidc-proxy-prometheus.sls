@@ -89,15 +89,15 @@ Create oauth2-proxy-prometheus Deployment:
                 - --client-secret=unused-but-required
                 - --skip-jwt-bearer-tokens=true
                 - --email-domain=*
-                - --upstream=http://thanos-query-http.metalk8s-monitoring.svc:10902
+                - --upstream=http://thanos-query.metalk8s-monitoring.svc:9090
                 - --oidc-groups-claim={{ prometheus_oidc.get('groupsClaim', 'roles') }}
                 {%- for group in prometheus_oidc.get('authorizedGroups', []) %}
                 - --allowed-group={{ group }}
                 {%- endfor %}
                 - --provider-ca-file=/tmp/secrets/{{ ca_file }}
-                - --http-address=0.0.0.0:10902
+                - --http-address=0.0.0.0:9090
                 ports:
-                - containerPort: 10902
+                - containerPort: 9090
                 volumeMounts:
                 - name: secrets-volume
                   mountPath: /tmp/secrets
@@ -124,7 +124,7 @@ Create oauth2-proxy-prometheus Service:
           selector:
             app: oauth2-proxy-prometheus
           ports:
-          - port: 10902
+          - port: 9090
 
 {%- else %}
 
@@ -161,7 +161,7 @@ Create prometheus-proxy Service:
           {%- if prometheus_oidc_enabled %}
           externalName: oauth2-proxy-prometheus.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
           {%- else %}
-          externalName: thanos-query-http.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
+          externalName: thanos-query.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
           {%- endif %}
           ports:
-          - port: 10902
+          - port: 9090

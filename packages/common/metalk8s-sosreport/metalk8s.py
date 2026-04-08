@@ -379,7 +379,7 @@ class MetalK8s(Plugin, RedHatPlugin):
     def _setup_metrics(self):
         prom_svc = json.loads(
             self.exec_cmd(
-                f"{self.kube_cmd} get svc -n metalk8s-monitoring thanos-query-http -o json"
+                f"{self.kube_cmd} get svc -n metalk8s-monitoring thanos-query -o json"
             )["output"]
         )
 
