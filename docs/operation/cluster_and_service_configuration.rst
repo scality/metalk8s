@@ -1125,7 +1125,7 @@ steps:
                 label:
                   en: Documentation
                   fr: Documentation
-                url: https://13.48.197.10:8443/docs/
+                url: https://1.2.3.4:8443/docs/
 
 #. Apply your changes by running:
 
