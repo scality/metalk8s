@@ -35,7 +35,8 @@ export const _InternalMCPRegistrar = ({
   selfConfiguration,
   navigate,
 }: {
-  moduleExports: Record<string, MCPToolsModule>;
+  // ComponentWithFederatedImports injects moduleExports as Record<string, unknown>
+  moduleExports: Record<string, unknown>;
   mcpToolsModuleInfo: FederatedModuleInfo;
   selfConfiguration: Record<string, unknown>;
   navigate: (path: string) => void;
@@ -45,7 +46,7 @@ export const _InternalMCPRegistrar = ({
   useEffect(() => {
     if (!navigator.modelContext) return;
 
-    const mod = moduleExports[mcpToolsModuleInfo.module];
+    const mod = moduleExports[mcpToolsModuleInfo.module] as MCPToolsModule | undefined;
     const context: ToolContext = { getToken, userData, selfConfiguration };
     // Prefer the new createTools factory (supports navigate + dynamic context);
     // fall back to the legacy static tools array for modules not yet migrated.
