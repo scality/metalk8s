@@ -1,6 +1,7 @@
 import '@mcp-b/global';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
 
 declare const __webpack_public_path__: string;
 import { ErrorBoundary } from 'react-error-boundary';
@@ -12,38 +13,62 @@ import {
 import { useDeployedApps } from '../initFederation/UIListProvider';
 import type { MCPToolDefinition, ModelContextClient, ToolContext } from './types';
 
+type MCPToolsModule =
+  | {
+      /** New factory-based export — preferred. */
+      createTools: (
+        context: ToolContext,
+        navigate: (path: string) => void,
+      ) => MCPToolDefinition[];
+      tools?: never;
+    }
+  | {
+      /** Legacy static-array export — kept for backward compatibility. */
+      tools: MCPToolDefinition[];
+      createTools?: never;
+    };
+
 // Do not use directly - exported for testing purposes
 export const _InternalMCPRegistrar = ({
   moduleExports,
   mcpToolsModuleInfo,
   selfConfiguration,
+  navigate,
 }: {
-  moduleExports: Record<string, { tools: MCPToolDefinition[] }>;
+  moduleExports: Record<string, MCPToolsModule>;
   mcpToolsModuleInfo: FederatedModuleInfo;
   selfConfiguration: Record<string, unknown>;
+  navigate: (path: string) => void;
 }) => {
   const { getToken, userData } = useAuth();
 
   useEffect(() => {
     if (!navigator.modelContext) return;
 
-    const tools = moduleExports[mcpToolsModuleInfo.module]?.tools ?? [];
+    const mod = moduleExports[mcpToolsModuleInfo.module];
+    const context: ToolContext = { getToken, userData, selfConfiguration };
+    // Prefer the new createTools factory (supports navigate + dynamic context);
+    // fall back to the legacy static tools array for modules not yet migrated.
+    const tools = mod?.createTools
+      ? mod.createTools(context, navigate)
+      : (mod?.tools ?? []);
     const registeredNames: string[] = [];
 
     for (const tool of tools) {
       navigator.modelContext.registerTool({
         name: tool.name,
         description: tool.description,
-        inputSchema: tool.inputSchema,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        inputSchema: tool.inputSchema as any,
         execute: async (params: unknown, client: ModelContextClient) => {
-          const context: ToolContext = {
-            getToken,
-            userData,
-            selfConfiguration,
-          };
-
+          // For createTools-based modules, context is already baked into the
+          // tool's execute closure. For legacy tools, inject context here.
+          const injectedContext = mod?.createTools ? undefined : context;
           return tool.execute(
-            { ...(params as Record<string, unknown>), context },
+            {
+              ...(params as Record<string, unknown>),
+              ...(injectedContext && { context: injectedContext }),
+            },
             client,
           );
         },
@@ -57,7 +82,7 @@ export const _InternalMCPRegistrar = ({
         navigator.modelContext?.unregisterTool?.(name),
       );
     };
-  }, [moduleExports, mcpToolsModuleInfo, getToken, userData, selfConfiguration]);
+  }, [moduleExports, mcpToolsModuleInfo, getToken, userData, selfConfiguration, navigate]);
 
   return null;
 };
@@ -82,6 +107,9 @@ export const MCPRegistrar = () => {
   useRelayEmbed();
   const deployedApps = useDeployedApps();
   const { retrieveConfiguration } = useConfigRetriever();
+  // Captured once per render — stable across registrations and passed into
+  // createTools() so that navigateToRoute drives client-side navigation.
+  const navigate = useNavigate();
 
   return (
     <>
@@ -108,7 +136,7 @@ export const MCPRegistrar = () => {
           <ErrorBoundary key={app.name} FallbackComponent={() => null}>
             <ComponentWithFederatedImports
               componentWithInjectedImports={_InternalMCPRegistrar}
-              componentProps={{ mcpToolsModuleInfo, selfConfiguration }}
+              componentProps={{ mcpToolsModuleInfo, selfConfiguration, navigate }}
               renderOnError={null}
               federatedImports={[{ ...mcpToolsModuleInfo, remoteEntryUrl }]}
             />
