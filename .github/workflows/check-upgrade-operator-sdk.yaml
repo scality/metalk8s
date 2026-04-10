@@ -38,8 +38,8 @@ jobs:
         run: |
           python3 tools/upgrade-operator-sdk/upgrade.py \
             --operator-dir ${{ inputs.operator-dir }} \
-            --yes \
-            ${{ inputs.config-dir }}
+            --config-dir ${{ inputs.config-dir }} \
+            --yes
       - name: Verify no drift from upgrade tooling
         run: |
           if git diff --quiet ${{ inputs.operator-dir }}/; then

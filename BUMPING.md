@@ -164,17 +164,18 @@ The script processes one operator at a time:
 ```bash
 python3 scripts/upgrade-operator-sdk/upgrade.py \
     --operator-dir operator \
-    scripts/upgrade-operator-sdk/operator
+    --config-dir scripts/upgrade-operator-sdk/operator
 
 python3 scripts/upgrade-operator-sdk/upgrade.py \
     --operator-dir storage-operator \
-    scripts/upgrade-operator-sdk/storage-operator
+    --config-dir scripts/upgrade-operator-sdk/storage-operator
 ```
 
 Options:
 
 ```
 --operator-dir    Path to the operator project directory (required)
+--config-dir      Path to the upgrade config directory (required)
 --skip-backup     Reuse an existing .bak directory (no new backup)
 --clean-tools     Remove tool cache after upgrade
 --yes, -y         Skip the confirmation prompt
