@@ -37,20 +37,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 tools/upgrade-operator-sdk/upgrade.py \
-            --operator-dir ${{ inputs.operator-dir }} \
-            --config-dir ${{ inputs.config-dir }} \
+            --operator-dir "${{ inputs.operator-dir }}" \
+            --config-dir "${{ inputs.config-dir }}" \
             --yes
       - name: Verify no drift from upgrade tooling
         run: |
-          if git diff --quiet ${{ inputs.operator-dir }}/; then
-            echo "No drift detected in ${{ inputs.operator-dir }}/"
+          if git diff --quiet "${{ inputs.operator-dir }}"; then
+            echo "No drift detected in ${{ inputs.operator-dir }}"
           else
             echo "::error::${{ inputs.operator-dir }}/ differs from what the upgrade tool produces. Run the upgrade tool locally and commit the result, or update the upgrade config/patches."
             echo ""
             echo "=== Changed files ==="
-            git diff --stat ${{ inputs.operator-dir }}/
+            git diff --stat "${{ inputs.operator-dir }}"
             echo ""
             echo "=== Full diff ==="
-            git diff ${{ inputs.operator-dir }}/
+            git diff "${{ inputs.operator-dir }}"
             exit 1
           fi
