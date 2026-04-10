@@ -6,13 +6,13 @@ versions, restores custom code from a backup, applies GNU patch files,
 and runs the build pipeline.
 
 Usage:
-    python3 scripts/upgrade-operator-sdk/upgrade.py \\
+    python3 tools/upgrade-operator-sdk/upgrade.py \\
         --operator-dir <path> --config-dir <path> [OPTIONS]
 
 Examples:
-    python3 scripts/upgrade-operator-sdk/upgrade.py \\
+    python3 tools/upgrade-operator-sdk/upgrade.py \\
         --operator-dir operator \\
-        --config-dir scripts/upgrade-operator-sdk/operator
+        --config-dir tools/upgrade-operator-sdk/operator
 
 Options:
     --operator-dir     Path to the operator project directory (required)
