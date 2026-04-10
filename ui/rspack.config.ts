@@ -123,6 +123,7 @@ const config: Configuration = {
         './platformLibrary': './src/services/platformlibrary/k8s.ts',
         './AlertsNavbarUpdater': './src/components/AlertNavbarUpdaterComponent.tsx',
         './Metalk8sLocalVolumeProvider': './src/services/k8s/Metalk8sLocalVolumeProvider.ts',
+        './PlatformGlobalHealthBarFederated': './src/components/PlatformGlobalHealthBarFederated.tsx',
       },
       remotes: !isProduction
         ? {
