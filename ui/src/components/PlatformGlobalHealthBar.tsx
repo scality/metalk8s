@@ -35,9 +35,7 @@ const PlatformGlobalHealthBar = ({ title = 'Global Health' }: { title?: string }
         gap="r8"
       >
         <CircleStatus status={platformStatus} />
-        <Text variant="Large" isEmphazed>
-          {title}
-        </Text>
+        <Text isEmphazed>{title}</Text>
         <IconHelp
           placement="bottom"
           tooltipMessage={
