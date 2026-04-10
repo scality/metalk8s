@@ -378,6 +378,65 @@ Another example, with email receiver.
 
 There are more receivers available (PagerDuty, OpsGenie, HipChat, ...).
 
+Enable OIDC Authentication for Alertmanager
+""""""""""""""""""""""""""""""""""""""""""""
+
+By default, Alertmanager is accessible without authentication. OIDC
+authentication can be enabled to restrict access to users belonging to
+specific groups from your identity provider.
+
+When enabled, an OAuth2 proxy is deployed in front of Alertmanager, which
+validates JWT tokens against the configured OIDC provider.
+
+.. code-block:: yaml
+
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-alertmanager-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: AlertmanagerConfig
+       spec:
+         config:
+           enable_oidc_authentication: true
+           oidc:
+             issuer: "https://<control-plane-ingress-ip>:8443/oidc"
+             audience: "alertmanager"
+             groupsClaim: "groups"
+             authorizedGroups:
+               - "monitoring-admins"
+             caSecret:
+               namespace: "metalk8s-auth"
+               name: "oidc-ca-cert"
+
+The OIDC configuration fields are:
+
+- ``issuer``: The URL of the OIDC provider (e.g. Dex).
+- ``audience``: The expected audience claim in the JWT token, used to
+  verify that the token was issued for Alertmanager.
+- ``groupsClaim``: The name of the JWT claim that carries user
+  groups or roles.
+- ``authorizedGroups``: A list of groups or roles that are allowed to
+  access Alertmanager. Only users belonging to at least one of these
+  groups will be granted access.
+- ``caSecret.namespace``: The namespace of the Kubernetes Secret
+  containing the CA certificate used to verify the OIDC provider's
+  TLS certificate.
+- ``caSecret.name``: The name of the Kubernetes Secret containing the
+  CA certificate.
+
+.. note::
+
+   The Secret referenced by ``caSecret`` must be labeled with
+   ``metalk8s.scality.com/oidc-ca: "true"`` for the proxy to mount it.
+
+Then :ref:`apply the Alertmanager configuration<csc-alertmanager-apply-cfg>`.
+
+.. _csc-alertmanager-apply-cfg:
+
 Applying configuration
 """"""""""""""""""""""
 
@@ -592,6 +651,63 @@ It can be enabled with the following:
        spec:
          config:
            enable_admin_api: true
+
+Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
+
+Enable OIDC Authentication for Prometheus
+"""""""""""""""""""""""""""""""""""""""""
+
+By default, Prometheus is accessible without authentication. OIDC
+authentication can be enabled to restrict access to users belonging to
+specific groups from your identity provider.
+
+When enabled, an OAuth2 proxy is deployed in front of Prometheus, which
+validates JWT tokens against the configured OIDC provider.
+
+.. code-block:: yaml
+
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-prometheus-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: PrometheusConfig
+       spec:
+         config:
+           enable_oidc_authentication: true
+           oidc:
+             issuer: "https://<control-plane-ingress-ip>:8443/oidc"
+             audience: "prometheus"
+             groupsClaim: "groups"
+             authorizedGroups:
+               - "monitoring-admins"
+             caSecret:
+               namespace: "metalk8s-auth"
+               name: "oidc-ca-cert"
+
+The OIDC configuration fields are:
+
+- ``issuer``: The URL of the OIDC provider (e.g. Dex).
+- ``audience``: The expected audience claim in the JWT token, used to
+  verify that the token was issued for Prometheus.
+- ``groupsClaim``: The name of the JWT claim that carries user
+  groups or roles.
+- ``authorizedGroups``: A list of groups or roles that are allowed to
+  access Prometheus. Only users belonging to at least one of these
+  groups will be granted access.
+- ``caSecret.namespace``: The namespace of the Kubernetes Secret
+  containing the CA certificate used to verify the OIDC provider's
+  TLS certificate.
+- ``caSecret.name``: The name of the Kubernetes Secret containing the
+  CA certificate.
+
+.. note::
+
+   The Secret referenced by ``caSecret`` must be labeled with
+   ``metalk8s.scality.com/oidc-ca: "true"`` for the proxy to mount it.
 
 Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
 
