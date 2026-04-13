@@ -1,6 +1,6 @@
 import { MetricsTimeSpanContext } from '@scality/core-ui/dist/components/charts/MetricsTimeSpanProvider';
 import { useShellHooks } from '@scality/module-federation';
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, useMemo } from 'react';
 import FederatedIntlProvider from '../containers/IntlProvider';
 import StartTimeProvider from '../containers/StartTimeProvider';
 import { initialize as initializePrometheus, setHeaders } from '../services/prometheus/api';
@@ -34,15 +34,19 @@ export default function PlatformGlobalHealthBarFederated({
     }
   }, [prometheusUrl, token]);
 
-  if (!token) return null;
+  const timeSpan = useMemo(
+    () => ({
+      query: '',
+      label: '',
+      duration: durationSeconds,
+      interval: frequencySeconds,
+      //TODO: remove this field when QueryTimeSpan type is updated
+      frequency: frequencySeconds, // required by QueryTimeSpan type (deprecated but not optional)
+    }),
+    [durationSeconds, frequencySeconds],
+  );
 
-  const timeSpan = {
-    query: '',
-    label: '',
-    duration: durationSeconds,
-    interval: frequencySeconds,
-    frequency: frequencySeconds, // StartTimeProvider reads this deprecated field
-  };
+  if (!token) return null;
 
   return (
     <MetricsTimeSpanContext.Provider value={timeSpan}>
