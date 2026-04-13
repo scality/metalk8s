@@ -1778,6 +1778,44 @@ spec:
           secretName: fluent-bit-certs
 ---
 apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app.kubernetes.io/instance: fluent-bit
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 4.2.3
+    helm.sh/chart: fluent-bit-0.56.0
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+  name: fluent-bit
+  namespace: metalk8s-logging
+spec:
+  groups:
+  - name: fluent-bit
+    rules:
+    - alert: FluentBitBackPressure
+      annotations:
+        message: |-
+          Fluent Bit pod {{ $labels.pod }} input {{ $labels.name }} has been paused due to back pressure for more than 5 minutes. Log ingestion is halted until the output pipeline catches up.
+        summary: Fluent Bit input is experiencing back pressure.
+      expr: fluentbit_input_ingestion_paused == 1 or fluentbit_input_storage_overlimit
+        == 1
+      for: 5m
+      labels:
+        severity: warning
+    - alert: FluentBitOutputRetryLimit
+      annotations:
+        message: |-
+          Fluent Bit pod {{ $labels.pod }} output {{ $labels.name }} has been failing retries and dropping log records for more than 15 minutes. Check the destination and network connectivity.
+        summary: Fluent Bit output is dropping logs after exhausting retries.
+      expr: rate(fluentbit_output_retries_failed_total[5m]) > 0
+      for: 15m
+      labels:
+        severity: critical
+---
+apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
