@@ -94,6 +94,8 @@ LOGGING_WARNING, _ = severity_pair(
         *daemonset_alerts(
             "fluentbit", severity="warning", namespace="metalk8s-logging"
         ),
+        Existing.warning("FluentBitBackPressure"),
+        Existing.critical("FluentBitOutputRetryLimit"),
     ],
     duration="1m",
 )

@@ -589,6 +589,8 @@ Observability
    TargetDown, Warning, To be defined
    KubeStatefulSetReplicasMismatch , Warning, metalk8s-logging/loki
    KubeDaemonSetNotScheduled, Warning,metalk8s-logging/fluentbit
+   FluentBitBackPressure, Warning, metalk8s-logging
+   FluentBitOutputRetryLimit, Critical, metalk8s-logging
 
 .. _AlertingServiceAtRisk:
 
