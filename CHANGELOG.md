@@ -2,6 +2,11 @@
 
 ## Release 133.0.1 (in development)
 
+### Enhancements
+
+- Ensure fluent-bit-certs secret is always created regardless of fluent-bit's state
+  (PR[#4876](https://github.com/scality/metalk8s/pull/4876))
+
 ## Release 133.0.0
 
 ### Breaking changes
