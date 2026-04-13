@@ -85,7 +85,7 @@ ALERTING_WARNING, ALERTING_CRITICAL = severity_pair(
     duration="1m",
 )
 
-LOGGING_WARNING, _ = severity_pair(
+LOGGING_WARNING, LOGGING_CRITICAL = severity_pair(
     name="LoggingService",
     summary_name="The logging service",
     relationship=Relationship.ANY,
@@ -95,6 +95,8 @@ LOGGING_WARNING, _ = severity_pair(
             "fluentbit", severity="warning", namespace="metalk8s-logging"
         ),
         Existing.warning("FluentBitBackPressure"),
+    ],
+    critical_children=[
         Existing.critical("FluentBitOutputRetryLimit"),
     ],
     duration="1m",
@@ -125,6 +127,6 @@ OBSERVABILITY_WARNING, OBSERVABILITY_CRITICAL = severity_pair(
         LOGGING_WARNING,
         DASHBOARD_WARNING,
     ],
-    critical_children=[MONITORING_CRITICAL, ALERTING_CRITICAL],
+    critical_children=[MONITORING_CRITICAL, ALERTING_CRITICAL, LOGGING_CRITICAL],
     duration="1m",
 )
