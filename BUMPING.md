@@ -137,7 +137,7 @@ This guide is applied for both `metalk8s-operator` and `storage-operator`.
 
 ### Updating the versions
 
-Target versions are pinned in `scripts/upgrade-operator-sdk/<name>/config.yaml`:
+Target versions are pinned in `tools/upgrade-operator-sdk/<name>/config.yaml`:
 
 ```yaml
 operator_sdk_version: v1.42.1    # target operator-sdk release
@@ -162,19 +162,20 @@ This is CI-friendly: zero interactive input during reconciliation.
 The script processes one operator at a time:
 
 ```bash
-python3 scripts/upgrade-operator-sdk/upgrade.py \
+python3 tools/upgrade-operator-sdk/upgrade.py \
     --operator-dir operator \
-    scripts/upgrade-operator-sdk/operator
+    --config-dir tools/upgrade-operator-sdk/operator
 
-python3 scripts/upgrade-operator-sdk/upgrade.py \
+python3 tools/upgrade-operator-sdk/upgrade.py \
     --operator-dir storage-operator \
-    scripts/upgrade-operator-sdk/storage-operator
+    --config-dir tools/upgrade-operator-sdk/storage-operator
 ```
 
 Options:
 
 ```
 --operator-dir    Path to the operator project directory (required)
+--config-dir      Path to the upgrade config directory (required)
 --skip-backup     Reuse an existing .bak directory (no new backup)
 --clean-tools     Remove tool cache after upgrade
 --yes, -y         Skip the confirmation prompt
@@ -182,7 +183,7 @@ Options:
 
 ### YAML config files
 
-Each operator has a config directory at `scripts/upgrade-operator-sdk/<name>/` containing
+Each operator has a config directory at `tools/upgrade-operator-sdk/<name>/` containing
 `config.yaml` and a `patches/` subdirectory. The config fields are:
 
 - **Versions**: `operator_sdk_version`, `go_toolchain` (optional pin), `k8s_libs` (optional pin)

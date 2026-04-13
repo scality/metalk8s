@@ -6,16 +6,17 @@ versions, restores custom code from a backup, applies GNU patch files,
 and runs the build pipeline.
 
 Usage:
-    python3 scripts/upgrade-operator-sdk/upgrade.py \\
-        --operator-dir <path> <config-dir> [OPTIONS]
+    python3 tools/upgrade-operator-sdk/upgrade.py \\
+        --operator-dir <path> --config-dir <path> [OPTIONS]
 
 Examples:
-    python3 scripts/upgrade-operator-sdk/upgrade.py \\
+    python3 tools/upgrade-operator-sdk/upgrade.py \\
         --operator-dir operator \\
-        scripts/upgrade-operator-sdk/operator
+        --config-dir tools/upgrade-operator-sdk/operator
 
 Options:
     --operator-dir     Path to the operator project directory (required)
+    --config-dir       Path to the config directory (required)
     --skip-backup      Skip the backup step (assumes .bak already exists)
     --clean-tools      Remove tool cache after the upgrade (forces re-download)
     --yes, -y          Skip the confirmation prompt
@@ -714,8 +715,9 @@ def main() -> None:
         "fresh and applying patches from a config directory.",
     )
     parser.add_argument(
-        "config_dir",
-        help="Path to config directory containing config.yaml " "and patches/",
+        "--config-dir",
+        required=True,
+        help="Path to config directory containing config.yaml and patches/",
     )
     parser.add_argument(
         "--operator-dir",

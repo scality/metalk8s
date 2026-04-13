@@ -38,6 +38,8 @@ jobs:
       unit-tests-salt: ${{ steps.diff.outputs.unit-tests-salt_any_modified == 'true' }}
       unit-tests-lib-alert-tree: ${{ steps.diff.outputs.unit-tests-lib-alert-tree_any_modified == 'true' }}
       integration-tests-ui: ${{ steps.diff.outputs.integration-tests-ui_any_modified == 'true' }}
+      upgrade-operator-sdk-operator: ${{ steps.diff.outputs.upgrade-operator-sdk-operator_any_modified == 'true' }}
+      upgrade-operator-sdk-storage-operator: ${{ steps.diff.outputs.upgrade-operator-sdk-storage-operator_any_modified == 'true' }}
       # If the workflow is triggered on a development branch let's always build
       build: ${{ startsWith(github.ref_name, 'development/') || steps.diff.outputs.build_any_modified == 'true' }}
     steps:
@@ -71,9 +73,11 @@ jobs:
           ALL_UNIT_TESTS_SALT_CHANGED_FILES: ${{ steps.diff.outputs.unit-tests-salt_all_changed_files }}
           ALL_UNIT_TESTS_LIB_ALERT_TREE_CHANGED_FILES: ${{ steps.diff.outputs.unit-tests-lib-alert-tree_all_changed_files }}
           ALL_INTEGRATION_TESTS_UI_CHANGED_FILES: ${{ steps.diff.outputs.integration-tests-ui_all_changed_files }}
+          ALL_UPGRADE_OPERATOR_SDK_OPERATOR_CHANGED_FILES: ${{ steps.diff.outputs.upgrade-operator-sdk-operator_all_changed_files }}
+          ALL_UPGRADE_OPERATOR_SDK_STORAGE_OPERATOR_CHANGED_FILES: ${{ steps.diff.outputs.upgrade-operator-sdk-storage-operator_all_changed_files }}
           ALL_BUILD_CHANGED_FILES: ${{ steps.diff.outputs.build_all_changed_files }}
         run: |
-          for type in docs shell-ui unit-tests-ui unit-tests-shell-ui unit-tests-crd-client-generator unit-tests-metalk8s-operator unit-tests-storage-operator unit-tests-salt unit-tests-lib-alert-tree integration-tests-ui build; do
+          for type in docs shell-ui unit-tests-ui unit-tests-shell-ui unit-tests-crd-client-generator unit-tests-metalk8s-operator unit-tests-storage-operator unit-tests-salt unit-tests-lib-alert-tree integration-tests-ui upgrade-operator-sdk-operator upgrade-operator-sdk-storage-operator build; do
             echo "All $type changed files:"
             changed_files_var=$(echo "ALL_${type^^}_CHANGED_FILES" | tr '-' '_')
             echo "${!changed_files_var}"
@@ -306,6 +310,28 @@ jobs:
       - name: Run all storage-operator unit and integration tests
         run: make test
 
+  check_upgrade_metalk8s_operator:
+    needs:
+      - build-devcontainer
+      - changed-files
+    if: needs.changed-files.outputs.upgrade-operator-sdk-operator == 'true'
+    uses: ./.github/workflows/check-upgrade-operator-sdk.yaml
+    with:
+      operator-dir: operator
+      config-dir: tools/upgrade-operator-sdk/operator
+    secrets: inherit
+
+  check_upgrade_storage_operator:
+    needs:
+      - build-devcontainer
+      - changed-files
+    if: needs.changed-files.outputs.upgrade-operator-sdk-storage-operator == 'true'
+    uses: ./.github/workflows/check-upgrade-operator-sdk.yaml
+    with:
+      operator-dir: storage-operator
+      config-dir: tools/upgrade-operator-sdk/storage-operator
+    secrets: inherit
+
   unit_tests_salt:
     runs-on: ubuntu-latest
     needs:
@@ -526,6 +552,8 @@ jobs:
       - unit_tests_crd_client_generator
       - unit_tests_metalk8s_operator
       - unit_tests_storage_operator
+      - check_upgrade_metalk8s_operator
+      - check_upgrade_storage_operator
       - unit_tests_salt
       - unit_tests_lib_alert_tree
       - integration_tests_ui

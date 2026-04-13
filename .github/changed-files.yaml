@@ -25,11 +25,11 @@ unit-tests-shell-ui: &shell-ui
 unit-tests-crd-client-generator:
   - tools/crd-client-generator-js/**
 
-unit-tests-metalk8s-operator:
+unit-tests-metalk8s-operator: &metalk8s-operator
   - operator/**
   - .devcontainer/**
 
-unit-tests-storage-operator:
+unit-tests-storage-operator: &storage-operator
   - storage-operator/**
   - .devcontainer/**
 
@@ -41,6 +41,18 @@ unit-tests-salt:
 unit-tests-lib-alert-tree:
   - tools/lib-alert-tree/**
   - .devcontainer/**
+
+upgrade-operator-sdk-operator:
+  - *metalk8s-operator
+  - tools/upgrade-operator-sdk/*
+  - tools/upgrade-operator-sdk/operator/**
+  - .github/workflows/check-upgrade-operator-sdk.yaml
+
+upgrade-operator-sdk-storage-operator:
+  - *storage-operator
+  - tools/upgrade-operator-sdk/*
+  - tools/upgrade-operator-sdk/storage-operator/**
+  - .github/workflows/check-upgrade-operator-sdk.yaml
 
 integration-tests-ui:
   - *ui
