@@ -9,8 +9,8 @@ import { getClusterAlertSegmentQuery } from '../services/platformlibrary/metrics
 import CircleStatus from './CircleStatus';
 
 const HealthBarContainer = styled.div`
+  display: flex;
   flex-direction: column;
-  margin: 0 auto;
 `;
 
 const PlatformGlobalHealthBar = ({ title = 'Global Health' }: { title?: string }) => {
