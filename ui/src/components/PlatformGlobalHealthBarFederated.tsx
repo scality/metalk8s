@@ -30,7 +30,7 @@ export default function PlatformGlobalHealthBarFederated({
 
   /**
    * Initialize the Prometheus client and set the authorization header if the token is available
-   * The initialization of Prometheus client is neeeded here as it is shared with Module Federation to another ui
+   * The initialization of Prometheus client is needed here as it is shared with Module Federation to another ui
    * The prometheus client could not be initialized in the parent component rendering it.
    */
   useLayoutEffect(() => {
