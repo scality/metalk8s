@@ -60,6 +60,34 @@ serviceMonitor:
   selector:
     metalk8s.scality.com/monitor: ''
 
+prometheusRule:
+  enabled: true
+  additionalLabels:
+    metalk8s.scality.com/monitor: ''
+  rules:
+  - alert: FluentBitBackPressure
+    expr: fluentbit_input_ingestion_paused == 1 or fluentbit_input_storage_overlimit == 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: Fluent Bit input is experiencing back pressure.
+      message: >
+        Fluent Bit pod {{ $labels.pod }} input {{ $labels.name }} has been paused
+        due to back pressure for more than 5 minutes. Log ingestion is halted
+        until the output pipeline catches up.
+  - alert: FluentBitOutputRetryLimit
+    expr: rate(fluentbit_output_retries_failed_total[5m]) > 0
+    for: 15m
+    labels:
+      severity: critical
+    annotations:
+      summary: Fluent Bit output is dropping logs after exhausting retries.
+      message: >
+        Fluent Bit pod {{ $labels.pod }} output {{ $labels.name }} has been
+        failing retries and dropping log records for more than 15 minutes.
+        Check the destination and network connectivity.
+
 dashboards:
   enabled: true
   deterministicUid: true

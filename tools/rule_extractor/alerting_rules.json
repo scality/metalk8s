@@ -38,7 +38,7 @@
     {
         "message": "The observability services are at risk.",
         "name": "ObservabilityServicesAtRisk",
-        "query": "sum(ALERTS{alertname=\"MonitoringServiceAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"AlertingServiceAtRisk\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
+        "query": "sum(ALERTS{alertname=\"MonitoringServiceAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"AlertingServiceAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"LoggingServiceAtRisk\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
         "severity": "critical"
     },
     {
@@ -116,7 +116,7 @@
     {
         "message": "The logging service is degraded.",
         "name": "LoggingServiceDegraded",
-        "query": "sum(ALERTS{alertname=\"KubeStatefulSetReplicasMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-logging\",severity=\"warning\",statefulset=~\"loki\"} or ALERTS{alertname=\"KubeStatefulSetGenerationMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-logging\",severity=\"warning\",statefulset=~\"loki\"} or ALERTS{alertname=\"KubeStatefulSetUpdateNotRolledOut\",alertstate=\"firing\",namespace=~\"metalk8s-logging\",severity=\"warning\",statefulset=~\"loki\"} or ALERTS{alertname=\"KubeDaemonSetNotScheduled\",alertstate=\"firing\",daemonset=~\"fluentbit\",namespace=~\"metalk8s-logging\",severity=\"warning\"} or ALERTS{alertname=\"KubeDaemonSetMisScheduled\",alertstate=\"firing\",daemonset=~\"fluentbit\",namespace=~\"metalk8s-logging\",severity=\"warning\"} or ALERTS{alertname=\"KubeDaemonSetRolloutStuck\",alertstate=\"firing\",daemonset=~\"fluentbit\",namespace=~\"metalk8s-logging\",severity=\"warning\"}) >= 1",
+        "query": "sum(ALERTS{alertname=\"KubeStatefulSetReplicasMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-logging\",severity=\"warning\",statefulset=~\"loki\"} or ALERTS{alertname=\"KubeStatefulSetGenerationMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-logging\",severity=\"warning\",statefulset=~\"loki\"} or ALERTS{alertname=\"KubeStatefulSetUpdateNotRolledOut\",alertstate=\"firing\",namespace=~\"metalk8s-logging\",severity=\"warning\",statefulset=~\"loki\"} or ALERTS{alertname=\"KubeDaemonSetNotScheduled\",alertstate=\"firing\",daemonset=~\"fluentbit\",namespace=~\"metalk8s-logging\",severity=\"warning\"} or ALERTS{alertname=\"KubeDaemonSetMisScheduled\",alertstate=\"firing\",daemonset=~\"fluentbit\",namespace=~\"metalk8s-logging\",severity=\"warning\"} or ALERTS{alertname=\"KubeDaemonSetRolloutStuck\",alertstate=\"firing\",daemonset=~\"fluentbit\",namespace=~\"metalk8s-logging\",severity=\"warning\"} or ALERTS{alertname=\"FluentBitBackPressure\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
         "severity": "warning"
     },
     {
@@ -1054,5 +1054,23 @@
         "name": "PrometheusOperatorWatchErrors",
         "query": "(sum by (cluster, controller, namespace) (rate(prometheus_operator_watch_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m])) / sum by (cluster, controller, namespace) (rate(prometheus_operator_watch_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.4",
         "severity": "warning"
+    },
+    {
+        "message": "Fluent Bit pod {{ $labels.pod }} input {{ $labels.name }} has been paused due to back pressure for more than 5 minutes. Log ingestion is halted until the output pipeline catches up.",
+        "name": "FluentBitBackPressure",
+        "query": "fluentbit_input_ingestion_paused == 1 or fluentbit_input_storage_overlimit == 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Fluent Bit pod {{ $labels.pod }} output {{ $labels.name }} has been failing retries and dropping log records for more than 15 minutes. Check the destination and network connectivity.",
+        "name": "FluentBitOutputRetryLimit",
+        "query": "rate(fluentbit_output_retries_failed_total[5m]) > 0",
+        "severity": "critical"
+    },
+    {
+        "message": "The logging service is at risk.",
+        "name": "LoggingServiceAtRisk",
+        "query": "sum(ALERTS{alertname=\"FluentBitOutputRetryLimit\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
+        "severity": "critical"
     }
 ]
