@@ -63,13 +63,13 @@ const PlatformGlobalHealthBar = ({ title = 'Global Health' }: { title?: string }
           alerts={
             historyAlertStatus === 'error'
               ? ([
-                  {
-                    startsAt: startingTimeISO,
-                    endsAt: currentTimeISO,
-                    severity: 'unavailable',
-                    description: 'Failed to load alert history for the selected period',
-                  },
-                ] as Alert[])
+                {
+                  startsAt: startingTimeISO,
+                  endsAt: currentTimeISO,
+                  severity: 'unavailable',
+                  description: 'Failed to load alert history for the selected period',
+                },
+              ] as Alert[])
               : alerts || []
           }
           start={new Date(startingTimeISO)}

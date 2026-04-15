@@ -1,6 +1,6 @@
 import { MetricsTimeSpanContext } from '@scality/core-ui/dist/components/charts/MetricsTimeSpanProvider';
 import { useShellHooks } from '@scality/module-federation';
-import { useEffect, useLayoutEffect, useMemo } from 'react';
+import { useLayoutEffect, useMemo } from 'react';
 import FederatedIntlProvider from '../containers/IntlProvider';
 import StartTimeProvider from '../containers/StartTimeProvider';
 import { initialize as initializePrometheus, setHeaders } from '../services/prometheus/api';
@@ -33,7 +33,7 @@ export default function PlatformGlobalHealthBarFederated({
    * The initialization of Prometheus client is neeeded here as it is shared with Module Federation to another ui
    * The prometheus client could not be initialized in the parent component rendering it.
    */
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (token) {
       initializePrometheus(prometheusUrl);
       setHeaders({ Authorization: `Bearer ${token}` });
