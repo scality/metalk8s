@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MOCK_MCP_TOOLS } from './mockMcpTools';
 
 const GUARDIAN_URL = 'http://localhost:8080';
 const GUARDIAN_ORIGIN = 'http://localhost:8080';
@@ -10,6 +9,7 @@ const DISCOVERY_INTERVAL_MS = 3000;
 // BrowserMcpServer (navigator.modelContext after @mcp-b/global init) exposes callTool at runtime.
 // TypeScript types modelContext as ModelContextCore (strict core only) so we cast here.
 type RuntimeModelContext = typeof navigator.modelContext & {
+  listTools: () => unknown[];
   callTool: (params: {
     name: string;
     arguments?: Record<string, unknown>;
@@ -103,8 +103,10 @@ export const GuardianBubble: React.FC = () => {
   const sendDiscovery = useCallback(() => {
     const iframe = iframeRef.current;
     if (!iframe?.contentWindow) return;
+    const mc = navigator.modelContext as unknown as RuntimeModelContext;
+    const tools = mc?.listTools?.() ?? [];
     iframe.contentWindow.postMessage(
-      { type: 'MCP_DISCOVERY', tools: MOCK_MCP_TOOLS },
+      { type: 'MCP_DISCOVERY', tools },
       GUARDIAN_ORIGIN,
     );
   }, []);
