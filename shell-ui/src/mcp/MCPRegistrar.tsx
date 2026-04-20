@@ -1,21 +1,22 @@
 import '@mcp-b/global';
+import type { ModelContextClient } from '@mcp-b/webmcp-types';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
 import { OidcClient } from 'oidc-client-ts';
 import { useEffect } from 'react';
-
-declare const __webpack_public_path__: string;
 import { ErrorBoundary } from 'react-error-boundary';
 import {
   getAbsoluteRedirectUrl,
   useAuth,
 } from '../auth/AuthProvider';
 import {
-  FederatedModuleInfo,
-  OIDCConfig,
+  type FederatedModuleInfo,
+  type OIDCConfig,
   useConfigRetriever,
 } from '../initFederation/ConfigurationProviders';
 import { useDeployedApps } from '../initFederation/UIListProvider';
-import type { MCPToolDefinition, ModelContextClient, ToolContext } from './types';
+import type { MCPToolDefinition, ToolContext } from './types';
+
+declare const __webpack_public_path__: string;
 
 // Do not use directly - exported for testing purposes
 export const _InternalMCPRegistrar = ({
@@ -79,7 +80,7 @@ export const _InternalMCPRegistrar = ({
               const authUrl = signinRequest.url;
 
               const authenticated = await client.requestUserInteraction(
-                (_innerClient: ModelContextClient) => {
+                () => {
                   return new Promise<boolean>((resolve) => {
                     const modal = document.createElement('div');
                     modal.className = 'mcp-auth-modal';
@@ -145,7 +146,7 @@ export const _InternalMCPRegistrar = ({
     }
 
     return () => {
-      registeredNames.forEach((name) =>
+      registeredNames.map((name) =>
         navigator.modelContext?.unregisterTool?.(name),
       );
     };
