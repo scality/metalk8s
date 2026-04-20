@@ -22,34 +22,3 @@ export type ToolContext = {
    */
   selfConfiguration: Record<string, unknown>;
 };
-
-/**
- * Minimal type for the WebMCP client object passed as the second argument to execute().
- * The client is provided by the browser's WebMCP runtime.
- */
-export type ModelContextClient = {
-  requestUserInteraction: (
-    fn: (client: ModelContextClient) => Promise<boolean>,
-  ) => Promise<boolean>;
-};
-
-/**
- * A tool definition exposed by a micro-frontend via its ./MCPTools federated module.
- *
- * execute() follows the WebMCP standard:
- *   - First arg: params spread with context injected by shell-ui as params.context
- *   - Second arg: the WebMCP client object (for requestUserInteraction, etc.)
- */
-export type MCPToolDefinition<
-  TParams extends Record<string, unknown> = Record<string, unknown>,
-> = {
-  name: string;
-  description: string;
-  /** JSON Schema Draft 7 object describing the tool's input parameters (excluding context) */
-  inputSchema: Record<string, unknown>;
-  execute: (
-    params: TParams & { context: ToolContext },
-    client: ModelContextClient,
-  ) => Promise<unknown>;
-};
-

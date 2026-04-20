@@ -1,7 +1,8 @@
+import type { ToolDescriptor } from '@mcp-b/webmcp-types';
 import { render } from '@testing-library/react';
 import type { FederatedModuleInfo } from '../initFederation/ConfigurationProviders';
 import { _InternalMCPRegistrar } from './MCPRegistrar';
-import type { MCPToolDefinition, ToolContext } from './types';
+import type { ToolContext } from './types';
 
 // ─── Auth mock ────────────────────────────────────────────────────────────────
 
@@ -49,7 +50,7 @@ const mockModelContext = {
 };
 
 beforeEach(() => {
-  Object.keys(registeredTools).forEach((k) => delete registeredTools[k]);
+  Object.keys(registeredTools).map((k) => delete registeredTools[k]);
   jest.clearAllMocks();
   mockGetToken.mockResolvedValue('test-token');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,7 +69,7 @@ const mcpToolsModuleInfo: FederatedModuleInfo = { module: MODULE_KEY, scope: 'te
 const mockNavigate = jest.fn();
 const selfConfiguration = { apiEndpoint: 'http://api.test.local' };
 
-function makeTool(overrides?: Partial<MCPToolDefinition>): MCPToolDefinition {
+function makeTool(overrides?: Partial<ToolDescriptor>): ToolDescriptor {
   return {
     name: 'testTool',
     description: 'A test tool',

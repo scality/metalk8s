@@ -1,110 +1,23 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { BubbleButton } from './BubbleButton';
+import { Overlay } from './Overlay';
 
-const GUARDIAN_URL = 'http://localhost:8080';
-const GUARDIAN_ORIGIN = 'http://localhost:8080';
+const GUARDIAN_ORIGIN =
+  process.env.NODE_ENV === 'production'
+    ? 'https://guardian.scality.com'
+    : 'http://localhost:8080';
 
 // How often to re-send MCP_DISCOVERY (Guardian's React app may mount after the iframe load event)
 const DISCOVERY_INTERVAL_MS = 3000;
 
-// BrowserMcpServer (navigator.modelContext after @mcp-b/global init) exposes callTool at runtime.
-// TypeScript types modelContext as ModelContextCore (strict core only) so we cast here.
-type RuntimeModelContext = typeof navigator.modelContext & {
-  listTools: () => unknown[];
-  callTool: (params: {
-    name: string;
-    arguments?: Record<string, unknown>;
-  }) => Promise<unknown>;
-};
-
-type JsonRpcToolCallPayload = {
-  jsonrpc: string;
-  id: string | number;
-  method: string;
-  params: {
-    name: string;
-    arguments: Record<string, unknown>;
-  };
-};
-
-const BubbleButton = ({
-  isOpen,
-  onClick,
-}: {
-  isOpen: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    title={isOpen ? 'Close Guardian assistant' : 'Open Guardian assistant'}
-    style={{
-      position: 'fixed',
-      bottom: '24px',
-      right: '24px',
-      zIndex: 10000,
-      width: '56px',
-      height: '56px',
-      borderRadius: '50%',
-      background: isOpen
-        ? 'linear-gradient(135deg, #444, #222)'
-        : 'linear-gradient(135deg, #0c6dfd, #0044bb)',
-      border: 'none',
-      cursor: 'pointer',
-      boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      transition: 'background 0.2s, transform 0.15s',
-      color: '#fff',
-      fontSize: '22px',
-    }}
-  >
-    {isOpen ? '✕' : '✦'}
-  </button>
-);
-
-const Overlay = ({
-  iframeRef,
-  isOpen,
-}: {
-  iframeRef: React.RefObject<HTMLIFrameElement | null>;
-  isOpen: boolean;
-}) => (
-  <div
-    style={{
-      position: 'fixed',
-      bottom: '92px',
-      right: '24px',
-      zIndex: 9999,
-      width: '600px',
-      height: '600px',
-      borderRadius: '12px',
-      overflow: 'hidden',
-      boxShadow: '0 12px 48px rgba(0,0,0,0.6)',
-      display: isOpen ? 'flex' : 'none',
-      flexDirection: 'column',
-      border: '1px solid rgba(255,255,255,0.1)',
-    }}
-  >
-    <iframe
-      ref={iframeRef}
-      src={GUARDIAN_URL}
-      title="Guardian AI Assistant"
-      style={{ width: '100%', height: '100%', border: 'none', background: '#000' }}
-      allow="clipboard-write"
-    />
-  </div>
-);
-
-export const GuardianBubble: React.FC = () => {
+export const GuardianBubble = () => {
   const [isOpen, setIsOpen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
-  // Send MCP_DISCOVERY to the iframe
   const sendDiscovery = useCallback(() => {
     const iframe = iframeRef.current;
     if (!iframe?.contentWindow) return;
-    const mc = navigator.modelContext as unknown as RuntimeModelContext;
-    const tools = mc?.listTools?.() ?? [];
+    const tools = navigator.modelContext?.listTools?.() ?? [];
     iframe.contentWindow.postMessage(
       { type: 'MCP_DISCOVERY', tools },
       GUARDIAN_ORIGIN,
@@ -123,7 +36,7 @@ export const GuardianBubble: React.FC = () => {
       iframe.removeEventListener('load', sendDiscovery);
       clearInterval(interval);
     };
-  }, [sendDiscovery, isOpen]); // re-run when overlay opens so the ref is attached
+  }, [sendDiscovery]);
 
   // Handle MCP_CALL messages from Guardian
   useEffect(() => {
@@ -131,7 +44,7 @@ export const GuardianBubble: React.FC = () => {
       if (event.origin !== GUARDIAN_ORIGIN) return;
       if (event.data?.type !== 'MCP_CALL') return;
 
-      const payload = event.data.payload as JsonRpcToolCallPayload;
+      const payload = event.data.payload;
       const { id, params } = payload;
       const toolName = params?.name;
       const toolArgs = (params?.arguments ?? {}) as Record<string, unknown>;
@@ -145,9 +58,7 @@ export const GuardianBubble: React.FC = () => {
       );
       console.debug('[GuardianBubble] MCP_ACK sent for id:', id);
 
-      // Execute via navigator.modelContext.callTool() — routes through the BrowserMcpServer
-      // registered in @mcp-b/global, which calls execute() and wraps the result as CallToolResult.
-      const mc = navigator.modelContext as unknown as RuntimeModelContext;
+      const mc = navigator.modelContext;
       if (!mc?.callTool) {
         iframeRef.current?.contentWindow?.postMessage(
           {
@@ -191,7 +102,7 @@ export const GuardianBubble: React.FC = () => {
 
   return (
     <>
-      <Overlay iframeRef={iframeRef} isOpen={isOpen} />
+      <Overlay iframeRef={iframeRef} isOpen={isOpen} url={GUARDIAN_ORIGIN} />
       <BubbleButton isOpen={isOpen} onClick={() => setIsOpen((v) => !v)} />
     </>
   );

@@ -1,17 +1,18 @@
 import '@mcp-b/global';
+import type { ModelContextClient, ToolDescriptor } from '@mcp-b/webmcp-types';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
 import { useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router';
-
-declare const __webpack_public_path__: string;
 import { ErrorBoundary } from 'react-error-boundary';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import {
-  FederatedModuleInfo,
+  type FederatedModuleInfo,
   useConfigRetriever,
 } from '../initFederation/ConfigurationProviders';
 import { useDeployedApps } from '../initFederation/UIListProvider';
-import type { MCPToolDefinition, ModelContextClient, ToolContext } from './types';
+import type { ToolContext } from './types';
+
+declare const __webpack_public_path__: string;
 
 type MCPToolsModule =
   | {
@@ -19,12 +20,12 @@ type MCPToolsModule =
       createTools: (
         context: ToolContext,
         navigate: (path: string) => void,
-      ) => MCPToolDefinition[];
+      ) => ToolDescriptor[];
       tools?: never;
     }
   | {
       /** Legacy static-array export — kept for backward compatibility. */
-      tools: MCPToolDefinition[];
+      tools: ToolDescriptor[];
       createTools?: never;
     };
 
@@ -36,7 +37,7 @@ export const _InternalMCPRegistrar = ({
   navigate,
 }: {
   // ComponentWithFederatedImports injects moduleExports as Record<string, unknown>
-  moduleExports: Record<string, { tools: MCPToolDefinition[] }>;
+  moduleExports: Record<string, MCPToolsModule>;
   mcpToolsModuleInfo: FederatedModuleInfo;
   selfConfiguration: Record<string, unknown>;
   navigate: (path: string) => void;
@@ -73,11 +74,12 @@ export const _InternalMCPRegistrar = ({
         name: tool.name,
         description: tool.description,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        inputSchema: tool.inputSchema as any,
+        inputSchema: tool.inputSchema,
         execute: async (params: unknown, client: ModelContextClient) => {
           // For createTools-based modules, context is already baked into the
           // tool's execute closure. For legacy tools, inject context here.
           const injectedContext = mod?.createTools ? undefined : context;
+
           return tool.execute(
             {
               ...(params as Record<string, unknown>),

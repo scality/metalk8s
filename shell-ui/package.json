@@ -48,6 +48,7 @@
   "dependencies": {
     "@mcp-b/global": "^2.2.0",
     "@mcp-b/webmcp-local-relay": "^2.2.0",
+    "@mcp-b/webmcp-types": "^2.2.0",
     "@scality/core-ui": "0.197.0",
     "@scality/module-federation": "1.6.1",
     "downshift": "^8.0.0",
