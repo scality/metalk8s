@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- used in declare module augmentation below
+import type { ModelContextExtensions, ToolDescriptor } from '@mcp-b/webmcp-types';
+
 /**
  * WebMCP integration types.
  * ToolContext is the base typed contract passed by shell-ui to every tool's execute() call.
@@ -20,48 +23,19 @@ export type ToolContext = {
 };
 
 /**
- * Minimal type for the WebMCP client object passed as the second argument to execute().
- * The client is provided by the browser's WebMCP runtime.
- */
-export type ModelContextClient = {
-  requestUserInteraction: (
-    fn: (client: ModelContextClient) => Promise<boolean>,
-  ) => Promise<boolean>;
-};
-
-/**
  * A tool definition exposed by a micro-frontend via its ./MCPTools federated module.
  *
  * execute() follows the WebMCP standard:
  *   - First arg: params spread with context injected by shell-ui as params.context
  *   - Second arg: the WebMCP client object (for requestUserInteraction, etc.)
  */
-export type MCPToolDefinition<
-  TParams extends Record<string, unknown> = Record<string, unknown>,
-> = {
-  name: string;
-  description: string;
-  /** JSON Schema Draft 7 object describing the tool's input parameters (excluding context) */
-  inputSchema: Record<string, unknown>;
+export interface MCPToolDefinition extends ToolDescriptor {
   /** When true, shell-ui will resolve a token and inject ToolContext before calling execute() */
   authRequired: boolean;
-  execute: (
-    params: TParams & { context: ToolContext },
-    client: ModelContextClient,
-  ) => Promise<unknown>;
 };
 
-// Ambient type augmentation for navigator.modelContext (WebMCP API)
-declare global {
-  interface Navigator {
-    modelContext?: {
-      registerTool(def: {
-        name: string;
-        description: string;
-        inputSchema: Record<string, unknown>;
-        execute: (params: unknown, client: ModelContextClient) => Promise<unknown>;
-      }): void;
-      unregisterTool?(name: string): void;
-    };
-  }
+// Augment ModelContextCore (the type of navigator.modelContext) with the
+// BrowserMcpServer runtime extensions always present after @mcp-b/global init.
+declare module '@mcp-b/webmcp-types' {
+  interface ModelContextCore extends ModelContextExtensions {}
 }
