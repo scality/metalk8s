@@ -52,11 +52,12 @@ ISO_FILE: Path = config.BUILD_ROOT / f"{config.PROJECT_NAME.lower()}.iso"
 FILE_TREES: Tuple[helper.FileTree, ...] = (
     helper.FileTree(
         basename="_iso_add_tree",
+        source_prefix=Path("examples"),
         files=(
-            Path("examples/new-node.yaml"),
-            Path("examples/new-node_vagrant.yaml"),
-            Path("examples/prometheus-sparse.yaml"),
-            Path("examples/loki-sparse.yaml"),
+            Path("new-node.yaml"),
+            Path("new-node_vagrant.yaml"),
+            Path("prometheus-sparse.yaml"),
+            Path("loki-sparse.yaml"),
         ),
         destination_directory=constants.ISO_ROOT,
         task_dep=["_iso_mkdir_root"],
