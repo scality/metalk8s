@@ -132,7 +132,7 @@ FILE_TREES: Tuple[helper.FileTree, ...] = (
                     "DEVELOPMENT_RELEASE": "1"
                     if versions.VERSION_SUFFIX == "-dev"
                     else "0",
-                    "BUILD_TIMESTAMP": dt.datetime.utcnow().strftime(
+                    "BUILD_TIMESTAMP": dt.datetime.now(dt.timezone.utc).strftime(
                         "%Y-%m-%dT%H:%M:%SZ"
                     ),
                     "BUILD_HOST": socket.gethostname(),
