@@ -20,6 +20,13 @@ Install python psutil:
 
 Install salt-minion:
   {{ pkg_installed('salt-minion') }}
+    # Skip post-install `module_refresh`: the live minion cannot reload its
+    # modules after a self-upgrade (the onedir RPM moves files out from under
+    # the running process, yielding `LoaderError: jinja|yaml unavailable`).
+    # The detached `Restart salt-minion` below brings up a fresh process with
+    # the correct paths.
+    # NOTE: This can be removed in `development/135`
+    - reload_modules: False
     # NOTE: launch `salt-minion` installation/upgrade/downgrade at the
     # end as this may have impact on the running salt states
     - order: last

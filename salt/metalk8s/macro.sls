@@ -20,3 +20,17 @@
         - exclude={{ package_exclude_list | join(',') }}
     {%- endif %}
 {%- endmacro -%}
+
+{# Returns the SKI of an existing CA cert (or "hash" if absent), to pin
+   `subjectKeyIdentifier` on `x509.certificate_managed` and avoid
+   regenerating the cert with a new SKI — which would invalidate every leaf
+   cert's AKI (m2crypto and cryptography compute the SKI differently from
+   the same pubkey, so the silent x509 → x509_v2 flip in Salt 3006 changes
+   the value). #}
+{%- macro preserved_ski(cert_path) -%}
+  {%- set _ski = None %}
+  {%- if salt['file.file_exists'](cert_path) %}
+    {%- set _ski = salt['x509.read_certificate'](cert_path).get('extensions', {}).get('subjectKeyIdentifier', {}).get('value') %}
+  {%- endif -%}
+  {{- _ski or 'hash' -}}
+{%- endmacro -%}

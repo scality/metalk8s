@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import etcd with context %}
+{%- from "metalk8s/macro.sls" import preserved_ski with context %}
 
 {%- set private_key_path = "/etc/kubernetes/pki/etcd/ca.key" %}
 
@@ -8,7 +9,7 @@ include:
 Create etcd CA private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-    - bits: 4096
+    - keysize: 4096
     - verbose: False
     - user: root
     - group: root
@@ -27,7 +28,7 @@ Generate etcd CA certificate:
     - CN: etcd-ca
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
-    - subjectKeyIdentifier: hash
+    - subjectKeyIdentifier: {{ preserved_ski("/etc/kubernetes/pki/etcd/ca.crt") }}
     - days_valid: {{ etcd.ca.cert.days_valid }}
     - user: root
     - group: root

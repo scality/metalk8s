@@ -1,10 +1,16 @@
 import fnmatch
 import logging
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
 
 __virtualname__ = "kubernetes"
+
+# Absolute path of the salt-ssh `ssh_pre_flight` script on the salt-master.
+# The script is deployed by `metalk8s.salt.master.configured` so that this
+# roster only has to reference a stable, well-known location.
+PREFLIGHT_PATH = Path("/etc/salt/ssh-preflight.sh")
 
 
 def __virtual__():
@@ -24,6 +30,14 @@ def targets(tgt, tgt_type="glob", **_kwargs):
         log.exception("Failed to retrieve v1/NodeList")
         raise
 
+    has_preflight = PREFLIGHT_PATH.exists()
+    if not has_preflight:
+        log.warning(
+            "salt-ssh pre-flight script %s is missing; new nodes will not "
+            "get a Python 3 interpreter installed automatically",
+            PREFLIGHT_PATH,
+        )
+
     # TODO Use `tgt_type`
     prefix = "metalk8s.scality.com/ssh-"
     targets = {}
@@ -39,13 +53,21 @@ def targets(tgt, tgt_type="glob", **_kwargs):
 
         if match:
             annotations = item["metadata"]["annotations"]
-            targets[node_name] = {
+            use_sudo = bool(annotations.get(prefix + "sudo", False))
+            target = {
                 # Assume node name is resolvable
                 "host": annotations.get(prefix + "host", node_name),
                 "port": int(annotations.get(prefix + "port", 22)),
                 "user": annotations.get(prefix + "user", "root"),
                 "priv": annotations.get(prefix + "key-path", "salt-ssh.rsa"),
-                "sudo": bool(annotations.get(prefix + "sudo", False)),
+                "sudo": use_sudo,
                 "minion_opts": {"use_superseded": ["module.run"]},
             }
+            if has_preflight:
+                target["ssh_pre_flight"] = PREFLIGHT_PATH
+                # Forward the privilege-escalation command to the preflight
+                # script so it mirrors the per-target `sudo` flag instead of
+                # probing the runtime UID itself.
+                target["ssh_pre_flight_args"] = "sudo" if use_sudo else ""
+            targets[node_name] = target
     return targets

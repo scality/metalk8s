@@ -6,7 +6,7 @@ include:
 Create SA private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-    - bits: 2048
+    - keysize: 2048
     - verbose: False
     - user: root
     - group: root

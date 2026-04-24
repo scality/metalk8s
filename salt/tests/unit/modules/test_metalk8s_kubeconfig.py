@@ -63,6 +63,7 @@ class Metalk8sKubeconfigTestCase(TestCase, mixins.LoaderModuleMockMixin):
             "x509.verify_private_key": MagicMock(
                 return_value=verify_private_key_result
             ),
+            "salt_version.greater_than": MagicMock(return_value=True),
         }
 
         with patch("os.path.isfile", os_isfile_mock), patch(

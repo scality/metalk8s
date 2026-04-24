@@ -10,12 +10,12 @@ import json
 import re
 import operator
 import os
+import six
 import time
 
 import logging
 
 from salt.exceptions import CommandExecutionError
-from salt.ext import six
 
 
 log = logging.getLogger(__name__)

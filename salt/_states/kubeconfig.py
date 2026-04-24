@@ -54,14 +54,27 @@ def managed(
 
     client_priv_key = __salt__["x509.create_private_key"](text=True, verbose=False)
 
-    client_cert = __salt__["x509.create_certificate"](
-        text=True,
-        public_key=client_priv_key,  # pub key is sourced from priv key
-        ca_server=ca_server,
-        signing_policy=signing_policy,
-        days_valid=days_valid,
-        **client_cert_info,
-    )
+    # NOTE: This state is called during upgrade before actual upgrade of salt
+    # so it has to be compatible with older salt versions (relying on older x509 module)
+    # This can be removed in `development/135`
+    if __salt__["salt_version.greater_than"]("Phosphorus"):
+        client_cert = __salt__["x509.create_certificate"](
+            text=True,
+            private_key=client_priv_key,  # pub key is sourced from priv key
+            ca_server=ca_server,
+            signing_policy=signing_policy,
+            days_valid=days_valid,
+            **client_cert_info,
+        )
+    else:
+        client_cert = __salt__["x509.create_certificate"](
+            text=True,
+            public_key=client_priv_key,  # pub key is sourced from priv key
+            ca_server=ca_server,
+            signing_policy=signing_policy,
+            days_valid=days_valid,
+            **client_cert_info,
+        )
 
     dataset = {
         "apiVersion": "v1",

@@ -700,6 +700,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/salt/master/deployed.sls"),
     Path("salt/metalk8s/salt/master/files/master-99-metalk8s.conf.j2"),
     Path("salt/metalk8s/salt/master/files/salt-master-manifest.yaml.j2"),
+    Path("salt/metalk8s/salt/master/files/ssh-preflight.sh"),
     Path("salt/metalk8s/salt/master/init.sls"),
     Path("salt/metalk8s/salt/master/installed.sls"),
     Path("salt/metalk8s/salt/master/kubeconfig.sls"),

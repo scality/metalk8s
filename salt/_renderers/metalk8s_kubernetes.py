@@ -20,10 +20,10 @@ The supported options are:
 - `absent`, a boolean to toggle which state function variant (`object_present`
   or `object_absent`) to use (defaults to False)
 """
+import six
 import yaml
 
 from salt.exceptions import SaltRenderError
-from salt.ext import six
 from salt.utils.yaml import SaltYamlSafeLoader
 from salt.utils.odict import OrderedDict
 

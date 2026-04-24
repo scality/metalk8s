@@ -10,6 +10,9 @@ grains_cache: true
 use_superseded:
   - module.run
 
+features:
+  x509_v2: true
+
 log_level_logfile: {{ 'debug' if debug else 'info' }}
 
 saltenv: {{ saltenv }}

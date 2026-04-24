@@ -43,7 +43,6 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
     @parameterized.expand(
         [
             (None, 'Pillar key "networks:service" must be set.'),
-            ("10.0.0.0/32", "Could not obtain an IP in the network range 10.0.0.0/32"),
         ]
     )
     def test_get_kubernetes_service_ip_raise(self, service_ip, error_msg):

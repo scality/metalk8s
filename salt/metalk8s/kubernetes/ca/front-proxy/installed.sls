@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import front_proxy with context %}
+{%- from "metalk8s/macro.sls" import preserved_ski with context %}
 
 {%- set private_key_path = "/etc/kubernetes/pki/front-proxy-ca.key" %}
 
@@ -8,7 +9,7 @@ include:
 Create front proxy CA private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-    - bits: 4096
+    - keysize: 4096
     - verbose: False
     - user: root
     - group: root
@@ -27,7 +28,7 @@ Generate front proxy CA certificate:
     - CN: front-proxy-ca
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
-    - subjectKeyIdentifier: hash
+    - subjectKeyIdentifier: {{ preserved_ski("/etc/kubernetes/pki/front-proxy-ca.crt") }}
     - days_valid: {{ front_proxy.ca.cert.days_valid }}
     - user: root
     - group: root

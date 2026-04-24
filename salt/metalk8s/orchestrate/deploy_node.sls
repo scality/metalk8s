@@ -12,16 +12,6 @@
 {%- set roles = pillar.get('metalk8s', {}).get('nodes', {}).get(node_name, {}).get('roles', []) %}
 
 {%- if node_name not in salt.saltutil.runner('manage.up') %}
-# Salt-ssh need python3 to be installed on the destination host, so install it
-# manually using raw ssh
-Install python36:
-  metalk8s.saltutil_cmd:
-    - name: '[ "$EUID" -eq 0 ] && yum install -y python3 || sudo yum install -y python3'
-    - tgt: {{ node_name }}
-    - ssh: true
-    - raw_shell: true
-    - roster: kubernetes
-
 Set grains ssh:
   salt.state:
     - ssh: true
@@ -30,8 +20,6 @@ Set grains ssh:
     - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.node.grains
-    - require:
-      - metalk8s: Install python36
 
 Refresh grains:
   metalk8s.saltutil_cmd:

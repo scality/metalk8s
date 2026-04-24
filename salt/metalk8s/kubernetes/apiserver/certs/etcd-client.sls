@@ -9,7 +9,7 @@ include:
 Create apiserver etcd client private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-    - bits: 2048
+    - keysize: 2048
     - verbose: False
     - user: root
     - group: root
@@ -24,7 +24,14 @@ Create apiserver etcd client private key:
 Generate apiserver etcd client certificate:
   x509.certificate_managed:
     - name: {{ certificates.client.files['apiserver-etcd'].path }}
+{%- if salt.salt_version.greater_than("Phosphorus") %}
+{#- NOTE: This if block is needed since during upgrade this state is called with
+    older salt version
+    This if block can be removed in `development/135` #}
+    - private_key: {{ private_key_path }}
+{%- else %}
     - public_key: {{ private_key_path }}
+{%- endif %}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ etcd.cert.apiserver_client_signing_policy }}
     - CN: kube-apiserver-etcd-client

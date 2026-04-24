@@ -68,13 +68,13 @@ networks:
   listening_process_per_role:
     bootstrap:
       control_plane_ip:4505:
-        expected: salt-master
+        expected: "/opt/saltstack/"
         description: Salt master publisher
       control_plane_ip:4506:
-        expected: salt-master
+        expected: "/opt/saltstack/"
         description: Salt master request server
       control_plane_ip:4507:
-        expected: salt-api
+        expected: "/opt/saltstack/"
         description: Salt API
       control_plane_ip:8080:
         expected: nginx

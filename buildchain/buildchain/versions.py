@@ -26,7 +26,7 @@ K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
 K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
 CALICO_VERSION: str = "3.32.0"
-SALT_VERSION: str = "3002.9"
+SALT_VERSION: str = "3006.25"
 CONTAINERD_VERSION: str = "2.2.5"
 
 SOSREPORT_RELEASE: str = "2"
@@ -421,6 +421,10 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="python36-psutil"),
         PackageVersion(name="python36-pyOpenSSL"),
         PackageVersion(name="salt-minion", version=SALT_VERSION),
+        # NOTE: We pin also the salt package version since repository
+        # is not versioned and we want to ensure we use the same version as the
+        # salt-minion package
+        PackageVersion(name="salt", version=SALT_VERSION),
         PackageVersion(name="socat"),
         PackageVersion(name="tar"),
         PackageVersion(name="util-linux"),

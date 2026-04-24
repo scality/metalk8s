@@ -10,6 +10,9 @@ peer:
   .*:
     - x509.sign_remote_certificate
 
+features:
+  x509_v2: true
+
 # Enable grains caching on salt-master
 grains_cache: True
 
@@ -44,6 +47,15 @@ thin_extra_mods: psutil
 
 # Globally disable SSH host key checks
 no_host_keys: true
+
+# Enable netapi/salt-api
+netapi_enable_clients:
+  - local
+  - local_async
+  - local_batch
+  - local_subset
+  - runner
+  - runner_async
 
 rest_cherrypy:
   port: 4507
@@ -82,3 +94,7 @@ reactor:
     - salt://metalk8s/reactor/certs/renew.sls?saltenv={{ saltenv }}
   - 'salt/beacon/*/metalk8s_watch_kubeconfig_expiry/':
     - salt://metalk8s/reactor/certs/renew.sls?saltenv={{ saltenv }}
+
+{#- NOTE: This can be removed in `development/135` #}
+# Allow authentication with older salt versions
+minimum_auth_version: 2
