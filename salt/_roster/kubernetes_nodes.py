@@ -61,7 +61,6 @@ def targets(tgt, tgt_type="glob", **_kwargs):
                 "user": annotations.get(prefix + "user", "root"),
                 "priv": annotations.get(prefix + "key-path", "salt-ssh.rsa"),
                 "sudo": use_sudo,
-                "minion_opts": {"use_superseded": ["module.run"]},
             }
             if has_preflight:
                 target["ssh_pre_flight"] = PREFLIGHT_PATH
