@@ -4,9 +4,6 @@
 
 {%- set private_key_path = "/etc/salt/pki/api/salt-api.key" %}
 
-include:
-  - metalk8s.internal.m2crypto
-
 Create Salt API private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
@@ -17,8 +14,6 @@ Create Salt API private key:
     - mode: '0600'
     - makedirs: True
     - dir_mode: '0755'
-    - require:
-      - metalk8s_package_manager: Install m2crypto
     - unless:
       - test -f "{{ private_key_path }}"
 

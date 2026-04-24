@@ -3,9 +3,6 @@
 
 {%- set private_key_path = "/etc/metalk8s/pki/backup-server/ca.key" %}
 
-include:
-  - metalk8s.internal.m2crypto
-
 Create backup server CA private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
@@ -16,8 +13,6 @@ Create backup server CA private key:
     - mode: '0600'
     - makedirs: True
     - dir_mode: '0755'
-    - require:
-      - metalk8s_package_manager: Install m2crypto
     - unless:
       - test -f "{{ private_key_path }}"
 
