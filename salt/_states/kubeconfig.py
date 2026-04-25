@@ -52,7 +52,7 @@ def managed(
         ret.update({"comment": "kubeconfig file exists and is up-to-date"})
         return ret
 
-    client_priv_key = __salt__["x509.create_private_key"](text=True, verbose=False)
+    client_priv_key = __salt__["x509.create_private_key"](text=True)
 
     # NOTE: This state is called during upgrade before actual upgrade of salt
     # so it has to be compatible with older salt versions (relying on older x509 module)

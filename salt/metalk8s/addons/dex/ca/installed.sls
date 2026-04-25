@@ -7,7 +7,6 @@ Create dex CA private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
     - keysize: 4096
-    - verbose: False
     - user: root
     - group: root
     - mode: '0600'
