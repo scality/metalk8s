@@ -130,7 +130,7 @@ Wait for API server to be available:
 Deploy kubeconfig to bootstrap:
   salt.state:
   - tgt: {{ pillar.bootstrap_id }}
-  - sls :
+  - sls:
     - metalk8s.salt.master.kubeconfig
   - saltenv: {{ saltenv }}
   - pillar: {{ pillar_data | tojson }}
