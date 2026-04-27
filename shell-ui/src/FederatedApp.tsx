@@ -21,7 +21,8 @@ import { ShellConfigProvider, useShellConfig } from './initFederation/ShellConfi
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
 import { ShellThemeSelectorProvider } from './initFederation/ShellThemeSelectorProvider';
 import { UIListProvider } from './initFederation/UIListProvider';
-import { GuardianBubble } from './guardian/GuardianBubble';
+import { GuardianDrawer } from './guardian/GuardianDrawer';
+import { GuardianDrawerProvider } from './guardian/GuardianContext';
 import { MCPRegistrar } from './mcp/MCPRegistrar';
 import { SolutionsNavbar } from './navbar';
 import { LanguageProvider, useLanguage } from './navbar/lang';
@@ -159,19 +160,25 @@ function InternalApp() {
       <ShellHistoryProvider>
         <FirstTimeLoginProvider>
           <NotificationCenterProvider>
-            {(status === 'idle' || status === 'loading') && (
-              <Loader size="massive" centered={true} aria-label="loading" />
-            )}
-            {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
-            {status === 'success' && (
-              <>
-                <MCPRegistrar />
-                <GuardianBubble />
-                <SolutionsNavbar>
-                  <InternalRouter />
-                </SolutionsNavbar>
-              </>
-            )}
+            <GuardianDrawerProvider>
+              {(status === 'idle' || status === 'loading') && (
+                <Loader size="massive" centered={true} aria-label="loading" />
+              )}
+              {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
+              {status === 'success' && (
+                <>
+                  <MCPRegistrar />
+                  <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <SolutionsNavbar>
+                        <InternalRouter />
+                      </SolutionsNavbar>
+                    </div>
+                    <GuardianDrawer />
+                  </div>
+                </>
+              )}
+            </GuardianDrawerProvider>
           </NotificationCenterProvider>
         </FirstTimeLoginProvider>
       </ShellHistoryProvider>
