@@ -416,8 +416,7 @@ def task_transform_codegen_kustomize_disk_management_agent() -> types.TaskDict:
 def codegen_kustomize_disk_management_agent() -> types.TaskDict:
     """Generate the SLS file for the Disk Management Agent."""
     target_sls = (
-        constants.ROOT
-        / "salt/metalk8s/addons/disk-management-agent/deployed/chart.sls"
+        constants.ROOT / "salt/metalk8s/addons/disk-management-agent/deployed/chart.sls"
     )
     template_file = constants.ROOT / "kustomizes/template.sls.in"
 
