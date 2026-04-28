@@ -241,13 +241,14 @@ def task__iso_implantisomd5() -> types.TaskDict:
     def on_failure() -> None:
         utils.unlink_if_exist(ISO_FILE)
 
+    def title(_: types.Task) -> str:
+        return f"{'IMPLANTISOMD5': <{constants.CMD_WIDTH}} {utils.build_relpath(Path(ISO_FILE))}"
+
     cmd: List[Union[str, Path]] = [
         config.ExtCommand.IMPLANTISOMD5.value,
         ISO_FILE,
     ]
-    title = (
-        lambda _: f"{'IMPLANTISOMD5': <{constants.CMD_WIDTH}} {utils.build_relpath(Path(ISO_FILE))}"
-    )
+
     doc = f"Implant MD5 in ISO {utils.build_relpath(ISO_FILE)}."
     return {
         "title": title,

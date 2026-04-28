@@ -28,8 +28,10 @@ ROOT_W, ROOT_C = severity_pair(
     duration="1m",
 )
 
-EXAMPLE_CLI = cli.generate_cli({"root-degraded": ROOT_W, "root-at-risk": ROOT_C})
-EXAMPLE_CLI_WITH_CUSTOM_LABELS = cli.generate_cli(
+EXAMPLE_CLI = cli.generate_cli(  # pylint: disable=invalid-name
+    {"root-degraded": ROOT_W, "root-at-risk": ROOT_C}
+)
+EXAMPLE_CLI_WITH_CUSTOM_LABELS = cli.generate_cli(  # pylint: disable=invalid-name
     {"root-degraded": ROOT_W, "root-at-risk": ROOT_C}, {"hello": "world"}
 )
 

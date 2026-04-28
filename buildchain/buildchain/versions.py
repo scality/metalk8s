@@ -455,7 +455,7 @@ def _list_pkgs_for_os_family(os_family: str) -> Dict[str, Tuple[PackageVersion, 
     os_pkgs = {}
 
     if os_family_pkgs is None:
-        raise Exception(f"No packages for OS family: {os_family}")
+        raise ValueError(f"No packages for OS family: {os_family}")
 
     for version, pkgs in os_family_pkgs.items():
         os_override_names = [pkg.override for pkg in pkgs if pkg.override is not None]

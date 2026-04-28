@@ -14,21 +14,20 @@ repos:
           - --diff
 
   - repo: https://github.com/pycqa/pylint
-    # NOTE: Newer version does no longer support python3.6
-    rev: v2.13.9
+    rev: v4.0.5
     hooks:
       - id: pylint
         name: Lint Python (non-salt)
         # Linting for non-salt files (buildchain and python not executed
         # by salt directly)
         additional_dependencies:
-          - 'pyenchant~=3.2'
-          - 'doit~=0.32.0'
-          - 'docker~=4.1.0'
-          - 'PyYAML~=5.3.1'
-          - 'pytest~=5.4'
-          - 'Click~=8.0'
-          - 'treelib~=1.6'
+          - 'pyenchant~=3.3'
+          - 'doit~=0.37.0'
+          - 'docker~=7.1.0'
+          - 'PyYAML~=6.0.3'
+          - 'pytest~=8.4'
+          - 'Click~=8.3'
+          - 'treelib~=1.8'
         files: >
           (?x)^(
               buildchain/dodo\.py|
@@ -41,15 +40,15 @@ repos:
         name: Lint Salt
         # Linting for salt files only in directory "salt/_<module>/<module_name>.py"
         files: salt/_.*/.*\.py
-        additional_dependencies: ['saltpylint==2023.8.3', 'six==1.15.0']
+        additional_dependencies: ['saltpylint==2024.2.5', 'six==1.17.0']
         args:
           - --rcfile=salt/.pylintrc
       - id: pylint
         name: Lint Salt Formulas tests
         files: salt/tests/unit/formulas/.*\.py
         additional_dependencies:
-          - 'pyenchant~=3.2'
-          - 'salt==3002.9'
+          - 'pyenchant~=3.3'
+          - 'salt==3006.25'
           - pytest
           - Jinja2
 
@@ -59,7 +58,7 @@ repos:
         files: ^packages/common/metalk8s-sosreport/.*\.py$
         additional_dependencies:
           - requests
-          - git+https://github.com/sosreport/sos@4.7.2
+          - git+https://github.com/sosreport/sos@4.10.2
         args:
           - --rcfile=packages/common/metalk8s-sosreport/.pylintrc
 

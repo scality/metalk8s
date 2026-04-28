@@ -308,7 +308,9 @@ class RPMPackage(Package):
                     sourcefiles.remove(filename)
                     urls[self.srcdir / filename] = url
         if sourcefiles:
-            raise Exception(f"URL not found for source files: {', '.join(sourcefiles)}")
+            raise ValueError(
+                f"URL not found for source files: {', '.join(sourcefiles)}"
+            )
         return urls
 
     def _get_buildsrpm_mounts(self, srpm_dir: Path) -> List[types.Mount]:

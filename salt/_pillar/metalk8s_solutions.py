@@ -74,6 +74,7 @@ def ext_pillar(minion_id, pillar):  # pylint: disable=unused-argument
     # `metalk8s_solutions.list_available`.
     errors = []
     pillar_nodes = pillar.get("metalk8s", {}).get("nodes", {})
+    bootstrap_id = None
     if "_errors" in pillar_nodes:
         errors.append("Pillar 'metalk8s:nodes' has errors")
     else:

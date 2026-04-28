@@ -137,11 +137,11 @@ def task_error(
 )
 def docker_build(image: "LocalImage") -> None:
     """Build a Docker image using Docker API."""
-    kwargs = dict(
-        tag=image.tag,
-        buildargs=image.build_args,
-        forcerm=True,
-    )
+    kwargs = {
+        "tag": image.tag,
+        "buildargs": image.build_args,
+        "forcerm": True,
+    }
     if image.custom_context:
         kwargs["fileobj"] = image.build_context.build_tar()
         kwargs["custom_context"] = True

@@ -530,7 +530,7 @@ def metalk8s_solutions_manifest_from_iso(path: str) -> Dict[str, Any]:
 register_basic("mount.swaps")(MagicMock(return_value={}))
 
 # Used in metalk8s.internal.preflight.mandatory to check ports are free.
-register_basic("network.connect")(MagicMock(return_value=dict(result=False)))
+register_basic("network.connect")(MagicMock(return_value={"result": False}))
 
 
 @register_basic("pkg.version_cmp")
