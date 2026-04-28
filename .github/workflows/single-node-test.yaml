@@ -226,7 +226,7 @@ jobs:
         if: inputs.test-solution
         uses: ./.github/actions/bastion-tests
         with:
-          PYTEST_FILTERS: "solution-upgrade"
+          PYTEST_FILTERS: "solution_upgrade"
       - name: Run tests from Bastion
         uses: ./.github/actions/bastion-tests
         with:

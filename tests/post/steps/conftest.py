@@ -114,7 +114,10 @@ def check_all_pods_status(request, host, k8s_client, expected_status):
     _check_pods_status(k8s_client, expected_status, ssh_config)
 
 
-@given(parsers.parse("a test Volume '{name}' exists"))
+@given(
+    parsers.parse("a test Volume '{name}' exists"),
+    target_fixture="test_volume",
+)
 def test_volume(volume_client, name):
     """Get or create a Volume by name and return it as a fixture.
 

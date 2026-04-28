@@ -12,6 +12,7 @@ Feature: Volume management
     Scenario: Test volume creation (sparseLoopDevice)
         Given the Kubernetes API is available
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -25,6 +26,7 @@ Feature: Volume management
                 metadata:
                   labels:
                     random-key: random-value
+            """
         Then the Volume 'test-volume1-sparse' is 'Available'
         And the PersistentVolume 'test-volume1-sparse' has size '10Gi'
         And the PersistentVolume 'test-volume1-sparse' has label 'random-key' with value 'random-value'
@@ -39,6 +41,7 @@ Feature: Volume management
         Given the Kubernetes API is available
         And a device exists
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -52,6 +55,7 @@ Feature: Volume management
                 metadata:
                   labels:
                     random-key: random-value
+            """
         Then the Volume 'test-volume1-rawblock' is 'Available'
         And the PersistentVolume 'test-volume1-rawblock' has size '{device_size}'
         And the PersistentVolume 'test-volume1-rawblock' has label 'random-key' with value 'random-value'
@@ -62,8 +66,10 @@ Feature: Volume management
 
     Scenario: Test volume creation (lvmLogicalVolume)
         Given the Kubernetes API is available
+        And a device exists
         And a LVM VG 'test-vg-1' exists
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -78,6 +84,7 @@ Feature: Volume management
                 metadata:
                   labels:
                     random-key: random-value
+            """
         Then the Volume 'test-volume1-lvmlv' is 'Available'
         And the PersistentVolume 'test-volume1-lvmlv' has size '10Gi'
         And the PersistentVolume 'test-volume1-lvmlv' has label 'random-key' with value 'random-value'
@@ -100,6 +107,7 @@ Feature: Volume management
     Scenario: Create a volume with no volume type
         Given the Kubernetes API is available
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -107,11 +115,13 @@ Feature: Volume management
             spec:
               nodeName: bootstrap
               storageClassName: metalk8s
+            """
         Then the Volume 'test-volume4' is 'Failed' with code 'InternalError' and message matches 'volume type not found'
 
     Scenario: Create a volume with an invalid volume type
         Given the Kubernetes API is available
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -121,6 +131,7 @@ Feature: Volume management
               storageClassName: metalk8s
               someRandomDevice:
                 capacity: 10Gi
+            """
         Then the Volume 'test-volume5' is 'Failed' with code 'InternalError' and message matches 'volume type not found'
 
     Scenario: Test in-use protection
@@ -146,6 +157,7 @@ Feature: Volume management
 
     Scenario: Create a volume with unsupported FS type
         When I create the following StorageClass:
+          """
           apiVersion: storage.k8s.io/v1
           kind: StorageClass
           metadata:
@@ -157,7 +169,9 @@ Feature: Volume management
           reclaimPolicy: Retain
           mountOptions: []
           volumeBindingMode: WaitForFirstConsumer
+          """
         And I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -167,11 +181,13 @@ Feature: Volume management
               storageClassName: test-sc-btrfs
               sparseLoopDevice:
                 size: 10Gi
+            """
         Then the Volume 'test-volume8' is 'Failed' with code 'CreationError' and message matches 'unsupported filesystem: btrfs'
 
     Scenario: Create a volume using a non-existing StorageClass
         Given the StorageClass 'not-found' does not exist
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -181,11 +197,13 @@ Feature: Volume management
               storageClassName: not-found
               sparseLoopDevice:
                 size: 10Gi
+            """
         Then the Volume 'test-volume9' is 'Failed' with code 'CreationError' and message matches 'not found in pillar'
 
     Scenario: Delete a Volume with missing StorageClass
         Given a StorageClass 'test-sc-delete' exist
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -195,6 +213,7 @@ Feature: Volume management
               storageClassName: test-sc-delete
               sparseLoopDevice:
                 size: 10Gi
+            """
         And I delete the StorageClass 'test-sc-delete'
         And I delete the Volume 'test-volume10'
         Then the Volume 'test-volume10' does not exist
@@ -203,6 +222,7 @@ Feature: Volume management
     Scenario: Test deletion while creation is in progress
         Given the Kubernetes API is available
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -212,6 +232,7 @@ Feature: Volume management
               storageClassName: metalk8s
               sparseLoopDevice:
                 size: 10Gi
+            """
         Then the Volume 'test-volume11' is 'Pending'
         When I delete the Volume 'test-volume11'
         Then the Volume 'test-volume11' does not exist
@@ -220,6 +241,7 @@ Feature: Volume management
     Scenario: Test volume creation (sparseLoopDevice Block mode)
         Given the Kubernetes API is available
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -230,6 +252,7 @@ Feature: Volume management
               mode: Block
               sparseLoopDevice:
                 size: 10Gi
+            """
         Then the Volume 'test-volume12-loop' is 'Available'
         And the PersistentVolume 'test-volume12-loop' has size '10Gi'
         And the backing storage for Volume 'test-volume12-loop' is created
@@ -238,6 +261,7 @@ Feature: Volume management
         Given the Kubernetes API is available
         And a device exists
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -248,13 +272,16 @@ Feature: Volume management
               mode: Block
               rawBlockDevice:
                 devicePath: {device_path}
+            """
         Then the Volume 'test-volume12-rawblock' is 'Available'
         And the PersistentVolume 'test-volume12-rawblock' has size '{device_size}'
 
     Scenario: Test volume creation (lvmLogicalVolume Block mode)
         Given the Kubernetes API is available
+        And a device exists
         And a LVM VG 'test-vg-12' exists
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -266,6 +293,7 @@ Feature: Volume management
               lvmLogicalVolume:
                 vgName: test-vg-12
                 size: 10Gi
+            """
         Then the Volume 'test-volume12-lvmlv' is 'Available'
         And the PersistentVolume 'test-volume12-lvmlv' has size '10Gi'
         And the device '/dev/test-vg-12/test-volume12-lvmlv' exists
@@ -274,9 +302,11 @@ Feature: Volume management
         # Skip test on CentOS/RHEL 7, because lvm still creates when signatures are found
         Given the grain 'osmajorrelease' is not 7
         And the Kubernetes API is available
+        And a device exists
         And a LVM VG 'test-vg-13' exists
         And a LVM LV 'test-lv-13' in VG 'test-vg-13' was created, formatted, then removed
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -287,10 +317,12 @@ Feature: Volume management
               lvmLogicalVolume:
                 vgName: test-vg-13
                 size: 1Gi
+            """
         Then the Volume 'test-lv-13' is 'Failed' with code 'CreationError' and message matches 'signature detected on /dev/test-vg-13/test-lv-13'
         When I delete the Volume 'test-lv-13'
         Then the Volume 'test-lv-13' does not exist
         When I create the following Volume:
+            """
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
@@ -303,4 +335,5 @@ Feature: Volume management
               lvmLogicalVolume:
                 vgName: test-vg-13
                 size: 1Gi
+            """
         Then the Volume 'test-lv-13' is 'Available'

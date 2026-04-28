@@ -8,7 +8,7 @@ runs:
       uses: ./.github/actions/run-command-ssh
       with:
         NODE: bastion
-        COMMAND: sudo pip3 install requests
+        COMMAND: sudo pip3.12 install requests
     - name: "Get Control Plane Ingress IP"
       id: cp_ingress_ip
       uses: ./.github/actions/run-command-ssh
@@ -22,7 +22,7 @@ runs:
         NODE: bastion
         COMMAND: |
           mkdir -p alert_rules/
-          ./metalk8s/tools/rule_extractor/rule_extractor.py -i ${{ steps.cp_ingress_ip.outputs.RESULT }} -t rules -o alert_rules/
+          python3.12 metalk8s/tools/rule_extractor/rule_extractor.py -i ${{ steps.cp_ingress_ip.outputs.RESULT }} -t rules -o alert_rules/
     - name: "Retrieve alert rules"
       uses: ./.github/actions/copy-file-ssh
       with:
