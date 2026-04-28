@@ -113,6 +113,15 @@ repos:
     rev: v7.5.3
     hooks:
       - id: pip-compile
+        name: Pip compile buildchain
+        files: ^buildchain/requirements\.(in|txt)$
+        args:
+          - --emit-index-url
+          - --emit-trusted-host
+          - --annotate
+          - --allow-unsafe
+          - buildchain/requirements.in
+      - id: pip-compile
         name: Pip compile docs
         files: ^docs/requirements\.(in|txt)$
         args:

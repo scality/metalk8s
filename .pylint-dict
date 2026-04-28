@@ -12,6 +12,7 @@ buildsrpm
 cli
 cni
 cmd
+cloudpickle
 cmp
 codegen
 config
@@ -60,6 +61,7 @@ nginx
 observability
 pdf
 parameterized
+picklable
 prebuilt
 prometheus
 py
@@ -80,6 +82,7 @@ skopeo
 sls
 sosreport
 srv
+stdlib
 Thanos
 timestamp
 tmp
