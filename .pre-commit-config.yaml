@@ -108,3 +108,16 @@ repos:
               salt/metalk8s/defaults.yaml|
               salt/tests/unit/formulas/.*\.yaml
           )$
+
+  - repo: https://github.com/jazzband/pip-tools
+    rev: v7.5.3
+    hooks:
+      - id: pip-compile
+        name: Pip compile docs
+        files: ^docs/requirements\.(in|txt)$
+        args:
+          - --emit-index-url
+          - --emit-trusted-host
+          - --annotate
+          - --allow-unsafe
+          - docs/requirements.in
