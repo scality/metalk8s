@@ -1,7 +1,7 @@
 {%- from "metalk8s/macro.sls" import pkg_installed with context %}
 
-include :
-  - .dependencies
+include:
+  - metalk8s.repo
   - .restart
 
 # Make sure `genisoimage` is installed on every minions as it's used
