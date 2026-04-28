@@ -1,13 +1,4 @@
-{%- from "metalk8s/macro.sls" import pkg_installed with context %}
 {%- from "metalk8s/map.jinja" import certificates with context %}
-
-include:
-  - metalk8s.repo
-
-Install Python3 OpenSSL:
-  {{ pkg_installed('python36-pyOpenSSL') }}
-    - require:
-      - test: Repositories configured
 
 {%- set certs = [] %}
 {%- for cert_type in ['client', 'server'] %}

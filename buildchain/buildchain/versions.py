@@ -417,7 +417,6 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="iptables"),
         PackageVersion(name="kubernetes-cni"),
         PackageVersion(name="lvm2"),
-        PackageVersion(name="python36-pyOpenSSL"),
         PackageVersion(name="salt-minion", version=SALT_VERSION),
         # NOTE: We pin also the salt package version since repository
         # is not versioned and we want to ensure we use the same version as the
@@ -440,7 +439,6 @@ PACKAGES: Dict[str, Any] = {
             ),
             PackageVersion(name="python3-boto3"),
             PackageVersion(name="python3-dnf-plugin-versionlock"),
-            PackageVersion(name="python3-pyOpenSSL", override="python36-pyOpenSSL"),
         ),
     },
 }
