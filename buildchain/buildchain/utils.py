@@ -3,7 +3,6 @@
 
 """Miscellaneous helpers."""
 
-
 import inspect
 import subprocess
 import sys

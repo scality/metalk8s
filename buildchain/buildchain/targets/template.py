@@ -3,7 +3,6 @@
 
 """Provides template rendering, using Python standard template engine."""
 
-
 import shutil
 import string
 from typing import Any, Dict, Optional
@@ -13,6 +12,7 @@ from buildchain import types
 from buildchain import utils
 
 from . import base
+
 
 # In order to drastically reduce the escaping needs ($ is no fun in shell
 # script…), we create a custom Template class with a delimiter character rare

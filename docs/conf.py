@@ -33,7 +33,6 @@ sys.path.insert(0, str(_lib_alert_tree_path.resolve()))
 import metalk8s as metalk8s_alert_tree
 import lib_alert_tree.models
 
-
 # -- Environment toggles -----------------------------------------------------
 
 ON_RTD = os.environ.get("READTHEDOCS") == "True"

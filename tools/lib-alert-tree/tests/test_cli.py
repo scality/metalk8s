@@ -39,10 +39,7 @@ def test_show_with_colors():
     # pylint: disable=line-too-long
     runner = CliRunner()
     result = runner.invoke(EXAMPLE_CLI, "show")
-    assert (
-        result.stdout
-        == textwrap.dedent(
-            f"""
+    assert result.stdout == textwrap.dedent(f"""
             {click.style('[root]', fg=8)}
             ├── {click.style('RootAtRisk', fg='red', bold=True)}
             │   ├── {click.style('Child3', fg='red', bold=True)}
@@ -54,9 +51,7 @@ def test_show_with_colors():
                     ├── {click.style('Child3', fg='yellow', bold=True)}
                     └── {click.style('Child4', fg='yellow', bold=True)}
 
-            """
-        ).lstrip()
-    )
+            """).lstrip()
     assert result.exit_code == 0
 
 
@@ -66,17 +61,12 @@ def test_show_single_root():
     result = runner.invoke(
         EXAMPLE_CLI, ["show", "--no-pretty", "--root", "root-at-risk"]
     )
-    assert (
-        result.stdout
-        == textwrap.dedent(
-            """
+    assert result.stdout == textwrap.dedent("""
             RootAtRisk{severity='critical'}
             ├── Child3{severity='critical'}
             └── Child4{severity='critical'}
 
-            """
-        ).lstrip()
-    )
+            """).lstrip()
     assert result.exit_code == 0
 
 
@@ -87,18 +77,13 @@ def test_show_filter_alert():
         EXAMPLE_CLI,
         ["show", "--no-pretty", "--alert", "Parent1"],
     )
-    assert (
-        result.stdout
-        == textwrap.dedent(
-            """
+    assert result.stdout == textwrap.dedent("""
             [root]
             └── Parent1{severity='warning'}
                 ├── Child3{severity='warning'}
                 └── Child4{severity='warning'}
 
-            """
-        ).lstrip()
-    )
+            """).lstrip()
     assert result.exit_code == 0
 
     error = runner.invoke(EXAMPLE_CLI, ["show", "--no-pretty", "--alert", "NotFound"])
@@ -183,10 +168,7 @@ def test_gen_rule():
     with open(outfile, "r", encoding="utf-8") as handle:
         output = handle.read()
 
-    assert (
-        output
-        == textwrap.dedent(
-            """
+    assert output == textwrap.dedent("""
         apiVersion: monitoring.coreos.com/v1
         kind: PrometheusRule
         metadata:
@@ -240,9 +222,7 @@ def test_gen_rule():
               for: 1m
               labels:
                 severity: critical
-        """
-        ).lstrip()
-    )
+        """).lstrip()
 
 
 def test_gen_rule_with_custom_labels():

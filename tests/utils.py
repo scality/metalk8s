@@ -15,7 +15,6 @@ from requests.packages.urllib3.util.retry import Retry
 
 import pytest
 
-
 LOGGER = logging.getLogger(__name__)
 
 

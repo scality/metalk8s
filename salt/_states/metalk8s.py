@@ -8,7 +8,6 @@ import six
 
 from salt.exceptions import CommandExecutionError
 
-
 __virtualname__ = "metalk8s"
 log = logging.getLogger(__name__)
 
@@ -179,9 +178,9 @@ def saltutil_cmd(name, **kwargs):
     else:
         if fail:
             ret["result"] = False
-            ret[
-                "comment"
-            ] = f"Running function {name} failed on minions: {', '.join(fail)}"
+            ret["comment"] = (
+                f"Running function {name} failed on minions: {', '.join(fail)}"
+            )
         else:
             ret["comment"] = "Function ran successfully"
 

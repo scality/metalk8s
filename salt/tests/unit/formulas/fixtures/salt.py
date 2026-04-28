@@ -20,7 +20,6 @@ import salt.utils.yamlloader  # type: ignore
 from tests.unit.formulas.fixtures import kubernetes
 from tests.unit.formulas import paths
 
-
 # Default minion configuration
 DEFAULT_CONFIG = {
     "file_client": "remote",

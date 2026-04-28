@@ -9,7 +9,6 @@ from _modules import metalk8s_kubeconfig
 from tests.unit import mixins
 from tests.unit import utils
 
-
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "files", "test_metalk8s_kubeconfig.yaml"
 )
@@ -49,15 +48,19 @@ class Metalk8sKubeconfigTestCase(TestCase, mixins.LoaderModuleMockMixin):
         os_isfile_mock = MagicMock(return_value=kubeconfig is not None)
         stat_s_imode_mock = MagicMock(return_value=file_mode)
         open_mock = mock_open(
-            read_data=yaml.safe_dump(kubeconfig)
-            if not isinstance(kubeconfig, str)
-            else kubeconfig
+            read_data=(
+                yaml.safe_dump(kubeconfig)
+                if not isinstance(kubeconfig, str)
+                else kubeconfig
+            )
         )
         patch_salt_dict = {
             "x509.read_certificate": MagicMock(
-                return_value=client_certificate_content
-                if client_certificate_content is not None
-                else CLIENT_CERTIFICATE_CONTENT
+                return_value=(
+                    client_certificate_content
+                    if client_certificate_content is not None
+                    else CLIENT_CERTIFICATE_CONTENT
+                )
             ),
             "x509.verify_signature": MagicMock(return_value=verify_signature_result),
             "x509.verify_private_key": MagicMock(

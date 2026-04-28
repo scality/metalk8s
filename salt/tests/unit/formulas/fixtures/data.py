@@ -1,4 +1,5 @@
 """Fixtures for loading data files and exposing their contents to tests."""
+
 from pathlib import Path
 from typing import Any
 import sys

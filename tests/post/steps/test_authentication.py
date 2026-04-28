@@ -12,7 +12,6 @@ from kubernetes.client.rest import ApiException
 from tests import kube_utils
 from tests import utils
 
-
 # Scenarios {{{
 
 

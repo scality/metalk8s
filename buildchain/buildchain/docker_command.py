@@ -98,7 +98,7 @@ def container_error_handler(container_error: ContainerError) -> str:
 
 
 def task_error(
-    handlers: Dict[Type[Exception], Callable[[Exception], str]]
+    handlers: Dict[Type[Exception], Callable[[Exception], str]],
 ) -> Callable[[Any], Any]:
     """Wrap a callable to create a resilient `doit` task
 

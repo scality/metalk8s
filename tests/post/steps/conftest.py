@@ -9,7 +9,6 @@ from pytest_bdd import given, parsers, then
 from tests import kube_utils, utils
 from tests.conftest import wait_rollout_status
 
-
 # Fixtures {{{
 
 

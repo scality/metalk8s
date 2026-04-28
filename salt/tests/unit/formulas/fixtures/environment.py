@@ -1,4 +1,5 @@
 """Fixtures for setting up a Jinja rendering environment."""
+
 import json
 from string import Template
 from typing import Any, Callable, Dict, Tuple

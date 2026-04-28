@@ -9,7 +9,6 @@ import time
 from salt.exceptions import CommandExecutionError
 import salt.utils.json
 
-
 log = logging.getLogger(__name__)
 
 
@@ -91,7 +90,7 @@ def pull_image(image):
         "digests": {},
     }
 
-    for (digest, regex) in _PULL_RES.items():
+    for digest, regex in _PULL_RES.items():
         re_match = regex.match(stdout)
         if re_match:
             ret["digests"][digest] = re_match.group("digest")

@@ -5,7 +5,6 @@ import salt.utils.dictupdate
 import salt.utils.files
 import salt.utils.yaml
 
-
 log = logging.getLogger(__name__)
 
 

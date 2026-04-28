@@ -8,7 +8,6 @@ from pytest_bdd import parsers, scenario, then, when
 
 from tests.utils import negation
 
-
 # Scenario {{{
 
 

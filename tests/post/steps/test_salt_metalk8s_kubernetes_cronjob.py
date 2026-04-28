@@ -8,7 +8,6 @@ import yaml
 
 from tests.utils import negation, run_salt_command, retry
 
-
 # Fixtures {{{
 
 

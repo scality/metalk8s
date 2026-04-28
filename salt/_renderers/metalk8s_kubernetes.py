@@ -20,6 +20,7 @@ The supported options are:
 - `absent`, a boolean to toggle which state function variant (`object_present`
   or `object_absent`) to use (defaults to False)
 """
+
 import six
 import yaml
 

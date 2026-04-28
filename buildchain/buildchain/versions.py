@@ -6,13 +6,13 @@
 This module MUST be kept valid in a standalone context, since it is intended
 for use in tests and documentation as well.
 """
+
 import operator
 import json
 
 from collections import namedtuple
 from pathlib import Path
 from typing import Any, cast, Dict, Optional, Tuple
-
 
 Image = namedtuple("Image", ("name", "version", "digest"))
 

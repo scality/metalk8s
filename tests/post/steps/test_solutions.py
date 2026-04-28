@@ -319,7 +319,7 @@ def get_environment(k8s_client, name):
         response = k8s_client.resources.get(api_version="v1", kind="Namespace").get(
             label_selector=f"{ENVIRONMENT_LABEL}={name}",
         )
-    except (ApiException) as exc:
+    except ApiException as exc:
         if isinstance(exc, ApiException) and exc.status == 404:
             return None
         raise

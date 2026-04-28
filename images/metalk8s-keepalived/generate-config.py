@@ -9,7 +9,6 @@ import yaml
 
 import jinja2
 
-
 EXPECTED_KIND = "KeepalivedConfiguration"
 SUPPORTED_API_VERSION = ["metalk8s.scality.com/v1alpha1"]
 

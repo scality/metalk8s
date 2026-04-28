@@ -2,6 +2,7 @@
 """
 Module for handling MetalK8s specific calls.
 """
+
 import functools
 import itertools
 import logging
@@ -667,14 +668,10 @@ def get_from_map(value, saltenv=None):
         else:
             saltenv = f"metalk8s-{current_version}"
 
-    tmplstr = textwrap.dedent(
-        """\
+    tmplstr = textwrap.dedent("""\
         {{% from "{path}" import {value} with context %}}
         {{{{ {value} | tojson }}}}
-        """.format(  # pylint: disable=consider-using-f-string
-            path=path, value=value
-        )
-    )
+        """.format(path=path, value=value))  # pylint: disable=consider-using-f-string
     return salt.template.compile_template(
         ":string:",
         salt.loader.render(__opts__, __salt__),

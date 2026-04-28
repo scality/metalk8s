@@ -30,7 +30,6 @@ Overview:
                                 └───────────────┘
 """
 
-
 import datetime as dt
 import socket
 from pathlib import Path
@@ -46,7 +45,6 @@ from buildchain import targets as helper
 from buildchain import types
 from buildchain import utils
 from buildchain import versions
-
 
 ISO_FILE: Path = config.BUILD_ROOT / f"{config.PROJECT_NAME.lower()}.iso"
 FILE_TREES: Tuple[helper.FileTree, ...] = (
@@ -128,9 +126,9 @@ FILE_TREES: Tuple[helper.FileTree, ...] = (
                     "VERSION": versions.VERSION,
                     "SHORT_VERSION": versions.SHORT_VERSION,
                     "GIT": constants.GIT_REF or "",
-                    "DEVELOPMENT_RELEASE": "1"
-                    if versions.VERSION_SUFFIX == "-dev"
-                    else "0",
+                    "DEVELOPMENT_RELEASE": (
+                        "1" if versions.VERSION_SUFFIX == "-dev" else "0"
+                    ),
                     "BUILD_TIMESTAMP": dt.datetime.utcnow().strftime(
                         "%Y-%m-%dT%H:%M:%SZ"
                     ),

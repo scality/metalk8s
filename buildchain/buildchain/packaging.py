@@ -25,7 +25,6 @@ Overview;
                         (e.g.: sosreport)     (e.g.: scality)
 """
 
-
 from pathlib import Path
 from typing import Dict, FrozenSet, Iterator, List, Mapping, Optional, Sequence, Tuple
 
@@ -40,12 +39,11 @@ from buildchain import types
 from buildchain import utils
 from buildchain import versions
 
-
 # Utilities {{{
 
 
 def _list_packages_to_build(
-    pkg_cats: Mapping[str, Mapping[str, Tuple[targets.Package, ...]]]
+    pkg_cats: Mapping[str, Mapping[str, Tuple[targets.Package, ...]]],
 ) -> Dict[str, List[str]]:
     return {
         version: [pkg.name for pkg in pkg_list]
@@ -263,6 +261,7 @@ def task__build_redhat_8_repositories() -> Iterator[types.TaskDict]:
 # }}}
 # RPM packages and repository {{{
 
+
 # Packages to build, per repository.
 def _rpm_package(name: str, releasever: str, sources: List[Path]) -> targets.RPMPackage:
     try:
@@ -345,11 +344,11 @@ REDHAT_PACKAGES_TO_DOWNLOAD: Dict[str, FrozenSet[str]] = {
 
 
 # Store these versions in a dict to use with doit.tools.config_changed
-_TO_DOWNLOAD_RPM_CONFIG: Dict[
-    str, Dict[str, Optional[str]]
-] = _list_packages_to_download(
-    versions.REDHAT_PACKAGES,
-    _RPM_TO_BUILD_PKG_NAMES,
+_TO_DOWNLOAD_RPM_CONFIG: Dict[str, Dict[str, Optional[str]]] = (
+    _list_packages_to_download(
+        versions.REDHAT_PACKAGES,
+        _RPM_TO_BUILD_PKG_NAMES,
+    )
 )
 
 

@@ -3,7 +3,6 @@
 
 """Provides operations on directories."""
 
-
 from pathlib import Path
 from typing import Any
 
