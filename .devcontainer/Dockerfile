@@ -54,14 +54,12 @@ RUN sudo git clone https://github.com/pyenv/pyenv.git $PYENV_ROOT && \
     printf 'export PYENV_ROOT=%s\nexport PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"\nif command -v pyenv 1>/dev/null 2>&1; then\n eval "$(pyenv init -)"\nfi\n' $PYENV_ROOT | sudo tee -a /etc/bash.bashrc -a /etc/zsh/zshrc
 
 # Install pythons
-RUN pyenv install 3.10.12 3.6.15 && \
-    pyenv global 3.10.12 3.6.15
+RUN pyenv install 3.10.12 && \
+    pyenv global 3.10.12
 
 # Install python libs
 RUN pip3 install --no-cache-dir --upgrade pip && \
-    pip3.6 install --no-cache-dir --upgrade pip && \
-    pip3 install --no-cache-dir "tox~=4.4.12" "pre-commit~=3.3.3" "virtualenv<20.22.0" "esbonio>=0.12.0" && \
-    pip3.6 install --no-cache-dir "poetry~=1.1.15" && \
+    pip3 install --no-cache-dir "tox~=4.53.0" "pre-commit~=4.6.0" "poetry~=2.3.4" "esbonio>=0.12.0" && \
     pyenv rehash
 
 # Install helm
