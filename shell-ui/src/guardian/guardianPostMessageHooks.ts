@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from "react";
+import { useAuth } from "../auth/AuthProvider";
 
 export const GUARDIAN_ORIGIN =
   process.env.NODE_ENV === 'production'
@@ -9,14 +10,18 @@ export const GUARDIAN_ORIGIN =
 const DISCOVERY_INTERVAL_MS = 3000;
 
 export const useDiscoveryEmitter = (iframeRef: React.RefObject<HTMLIFrameElement>) => {
+  const { userData } = useAuth();
+  const instanceIdsRaw = userData?.original?.profile?.instanceIds;
+  const instanceId = instanceIdsRaw?.[0] ?? instanceIdsRaw ?? undefined;
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: useRef dependency
   const sendDiscovery = useCallback(() => {
     const tools = navigator.modelContext?.listTools?.() ?? [];
     iframeRef.current?.contentWindow?.postMessage?.(
-      { type: 'MCP_DISCOVERY', tools },
+      { type: 'MCP_DISCOVERY', tools, instanceId },
       GUARDIAN_ORIGIN,
     );
-  }, []);
+  }, [instanceId]);
 
   useEffect(() => {
     const interval = setInterval(sendDiscovery, DISCOVERY_INTERVAL_MS);
@@ -25,15 +30,15 @@ export const useDiscoveryEmitter = (iframeRef: React.RefObject<HTMLIFrameElement
 }
 
 export const useMcpCallHandler = (iframeRef: React.RefObject<HTMLIFrameElement>) => {
-  const postResponse = (id: string, response: unknown, error?: { code: number; message: string }) => {
+  const postResponse = (id: string, result: unknown, error?: { code: number; message: string }) => {
     // biome-ignore lint/suspicious/noExplicitAny: it's postMessage arg type
     const message: any = { type: 'MCP_RESPONSE', id };
     if (error) {
       console.error('[GuardianBubble] Tool execution failed:', error.message);
       message.error = error;
     } else {
-      console.debug('[GuardianBubble] MCP_RESPONSE sent:', response);
-      message.result = response;
+      console.debug('[GuardianBubble] MCP_RESPONSE sent:', result);
+      message.result = result;
     }
     iframeRef.current?.contentWindow?.postMessage(message, GUARDIAN_ORIGIN);
   };
