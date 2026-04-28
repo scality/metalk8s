@@ -54,8 +54,8 @@ RUN sudo git clone https://github.com/pyenv/pyenv.git $PYENV_ROOT && \
     printf 'export PYENV_ROOT=%s\nexport PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"\nif command -v pyenv 1>/dev/null 2>&1; then\n eval "$(pyenv init -)"\nfi\n' $PYENV_ROOT | sudo tee -a /etc/bash.bashrc -a /etc/zsh/zshrc
 
 # Install pythons
-RUN pyenv install 3.10.12 3.6.15 2.7 && \
-    pyenv global 3.10.12 3.6.15 2.7
+RUN pyenv install 3.10.12 3.6.15 && \
+    pyenv global 3.10.12 3.6.15
 
 # Install python libs
 RUN pip3 install --no-cache-dir --upgrade pip && \
