@@ -484,14 +484,11 @@ REDHAT_PACKAGES_MAP = {
 SALT_VERSIONS_JSON = {
     "kubernetes": {"version": K8S_VERSION},
     "packages": {
-        "centos": {
+        os: {
             version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
             for version, pkgs in REDHAT_PACKAGES.items()
-        },
-        "redhat": {
-            version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
-            for version, pkgs in REDHAT_PACKAGES.items()
-        },
+        }
+        for os in ["centos", "rocky", "redhat"]
     },
     "images": {img.name: {"version": img.version} for img in CONTAINER_IMAGES},
     "metalk8s": {"version": VERSION},
