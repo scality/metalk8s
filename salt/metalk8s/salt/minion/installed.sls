@@ -11,13 +11,6 @@ Install genisoimage:
     - require:
       - test: Repositories configured
 
-# Make sure `python36-psutil` is installed on every minions as it's used
-# in some MetalK8s custom execution modules
-Install python psutil:
-  {{ pkg_installed('python36-psutil') }}:
-    - require:
-      - test: Repositories configured
-
 Install salt-minion:
   {{ pkg_installed('salt-minion') }}
     # Skip post-install `module_refresh`: the live minion cannot reload its

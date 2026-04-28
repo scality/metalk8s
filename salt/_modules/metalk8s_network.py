@@ -4,8 +4,6 @@ import ipaddress
 import itertools
 import logging
 
-# Note: psutil is a dependency of Salt RPMs in MetalK8s context we
-#       always use RPMs to install Salt
 import psutil  # pylint: disable=3rd-party-module-not-gated
 
 from salt.exceptions import CommandExecutionError
