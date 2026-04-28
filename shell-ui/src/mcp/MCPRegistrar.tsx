@@ -99,6 +99,7 @@ function useRelayEmbed() {
     // ensuring the request hits the actual file rather than the SPA fallback.
     script.src = `${__webpack_public_path__}embed.js`;
     script.dataset.webmcpRelayEmbed = '1';
+    script.dataset.requestTimeout = '120000'; // 2 min — tools can chain multiple API calls
     document.head.appendChild(script);
     return () => script.remove();
   }, []);
