@@ -121,3 +121,13 @@ repos:
           - --annotate
           - --allow-unsafe
           - docs/requirements.in
+      - id: pip-compile
+        name: Pip compile tests
+        files: ^tests/requirements\.(in|txt)$
+        args:
+          - --emit-index-url
+          - --emit-trusted-host
+          - --annotate
+          - --generate-hashes
+          - --allow-unsafe
+          - tests/requirements.in
