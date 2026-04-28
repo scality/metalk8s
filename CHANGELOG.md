@@ -25,7 +25,7 @@
 ### Enhancements
 
 - Install [disk-management-agent](https://github.com/scality/disk-management-agent) version
-  [v0.1.0](https://github.com/scality/disk-management-agent/releases/tag/v0.1.0) by default
+  [v0.0.1-beta.1](https://github.com/scality/disk-management-agent/releases/tag/v0.0.1-beta.1) by default
 
 - Bump Kubernetes version to [1.33.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.33.7)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))

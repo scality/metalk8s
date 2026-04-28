@@ -1,12 +1,12 @@
 namespace: kube-system
 
 resources:
-  - github.com/scality/disk-management-agent.git/config/default?ref=v0.1.0
+  - github.com/scality/disk-management-agent.git/config/default?ref=v0.0.1-beta.1
 
 images:
   - name: controller
     newName: '{% endraw -%}{{ build_image_name("disk-management-agent", False) }}{%- raw %}'
-    newTag: v0.1.0
+    newTag: v0.0.1-beta.1
 
 patches:
   - path: deploy_patch.yaml
