@@ -100,8 +100,7 @@ repos:
       - id: salt-lint
 
   - repo: https://github.com/adrienverge/yamllint.git
-    # NOTE: Newer version does no longer support python3.6
-    rev: v1.28.0
+    rev: v1.38.0
     hooks:
       - id: yamllint
         files: >
