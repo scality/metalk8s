@@ -48,7 +48,7 @@ def fixture_buildchain_template_context() -> Any:
     buildchain_path = paths.REPO_ROOT / "buildchain"
     sys.path.insert(0, str(buildchain_path))
     # pylint: disable=import-error,import-outside-toplevel
-    from buildchain import versions
+    from buildchain import versions  # type: ignore
 
     # pylint: enable=import-error,import-outside-toplevel
 

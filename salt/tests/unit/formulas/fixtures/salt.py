@@ -9,7 +9,7 @@ import string
 from typing import Any, Callable, Dict, List, Optional, Type
 from unittest.mock import MagicMock
 
-from _modules import metalk8s_service_configuration  # type: ignore
+from _modules import metalk8s_service_configuration
 
 import jinja2
 import pytest

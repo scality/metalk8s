@@ -63,8 +63,7 @@ repos:
           - --rcfile=packages/common/metalk8s-sosreport/.pylintrc
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    # NOTE: Newer version does no longer support python3.6
-    rev: v0.931
+    rev: v1.20.2
     hooks:
       - id: mypy
         # We want this hook to be part of "pylint" so that if we run
@@ -72,7 +71,7 @@ repos:
         alias: pylint
         name: Python typing (buildchain)
         additional_dependencies:
-          - 'types-PyYAML~=5.4'
+          - 'types-PyYAML~=6.0.12'
         # Only check typing for typed files
         files: >
           (?x)^(
@@ -88,10 +87,10 @@ repos:
         alias: pylint
         name: Python typing (formulas rendering tests)
         files: ^(salt/tests/unit/formulas/.*\.py)$
-        args: [--strict]
+        args: [--strict, --config-file=salt/tests/unit/formulas/mypy.ini]
         additional_dependencies:
-          - 'pyenchant~=3.2'
-          - 'types-PyYAML~=5.4'
+          - 'pyenchant~=3.3'
+          - 'types-PyYAML~=6.0.12'
           - 'types-Jinja2~=2.11'
           - pytest
 
