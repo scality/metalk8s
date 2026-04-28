@@ -131,3 +131,13 @@ repos:
           - --generate-hashes
           - --allow-unsafe
           - tests/requirements.in
+      - id: pip-compile
+        name: Pip compile salt tests
+        files: ^salt/tests/requirements\.(in|txt)$
+        args:
+          - --emit-index-url
+          - --emit-trusted-host
+          - --annotate
+          - --generate-hashes
+          - --allow-unsafe
+          - salt/tests/requirements.in
