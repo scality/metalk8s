@@ -1,12 +1,11 @@
-pytest
-pytest-cov
-salt == 3006.24
-mock == 3.0.5
-parameterized == 0.7.4
+pytest ~= 9.0.3
+pytest-cov ~= 7.1.0
+salt == 3006.25
+mock ~= 5.2.0
+parameterized ~= 0.9.0
 etcd3 != 0.11.0
-kubernetes == 30.1.0
-urllib3
-pyfakefs
-psutil
+kubernetes ~= 33.1.0
+pyfakefs ~= 6.2.0
+psutil ~= 7.2.2
 # etcd3 require older protobuf version (may need to change this later)
 protobuf <= 3.20.1
