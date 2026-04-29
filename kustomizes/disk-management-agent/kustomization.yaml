@@ -1,4 +1,4 @@
-namespace: kube-system
+namespace: metalk8s-storage-management
 
 resources:
   - github.com/scality/disk-management-agent.git/config/default?ref=v0.0.1-beta.1

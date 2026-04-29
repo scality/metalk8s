@@ -51,13 +51,13 @@ Feature: Cluster Sanity Checks
         Then the DaemonSet <name> in the <namespace> namespace has all desired Pods ready
 
         Examples:
-        | namespace           | name                                         |
-        | kube-system         | calico-node                                  |
-        | kube-system         | kube-proxy                                   |
-        | metalk8s-ingress    | ingress-nginx-controller                     |
-        | metalk8s-ingress    | ingress-nginx-control-plane-controller       |
-        | metalk8s-monitoring | prometheus-operator-prometheus-node-exporter |
-        | kube-system         | disk-management-agent-controller-manager     |
+        | namespace                   | name                                         |
+        | kube-system                 | calico-node                                  |
+        | kube-system                 | kube-proxy                                   |
+        | metalk8s-ingress            | ingress-nginx-controller                     |
+        | metalk8s-ingress            | ingress-nginx-control-plane-controller       |
+        | metalk8s-monitoring         | prometheus-operator-prometheus-node-exporter |
+        | metalk8s-storage-management | disk-management-agent-controller-manager     |
 
     @volumes_provisioned
     Scenario Outline: StatefulSet has available replicas

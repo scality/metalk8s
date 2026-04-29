@@ -397,9 +397,12 @@ def task_transform_codegen_kustomize_disk_management_agent() -> types.TaskDict:
 
     def _transform(stdout: str) -> Dict[str, str]:
         """Transform the kustomize output."""
+        # Note: We have to replace the namespace 'disk-management-agent-system' by
+        # 'metalk8s-storage-management' as kustomize does not allow easily to patch
+        # every occurrence in "custom resources fields" like Certificate dnsNames.
         return {
             "output": stdout.strip().replace(
-                "disk-management-agent-system", "kube-system"
+                "disk-management-agent-system", "metalk8s-storage-management"
             )
         }
 
