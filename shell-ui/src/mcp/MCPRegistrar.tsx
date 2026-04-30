@@ -1,6 +1,6 @@
 import '@mcp-b/global';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router';
 
 declare const __webpack_public_path__: string;
@@ -118,46 +118,64 @@ function useRelayEmbed() {
   }, []);
 }
 
+type DeployedApp = ReturnType<typeof useDeployedApps>[0];
+
+// Extracted to a component so useMemo can stabilise selfConfiguration at hook
+// call site rather than inside a flatMap callback where hooks are forbidden.
+const AppMCPRegistrar = ({
+  app,
+  navigate,
+}: {
+  app: DeployedApp;
+  navigate: (path: string) => void;
+}) => {
+  const { retrieveConfiguration } = useConfigRetriever();
+
+  const buildConfig = retrieveConfiguration<'build'>({
+    configType: 'build',
+    name: app.name,
+  });
+
+  const runtimeConfig = retrieveConfiguration<Record<string, unknown>>({
+    configType: 'run',
+    name: app.name,
+  });
+
+  const mcpToolsModuleInfo = buildConfig?.spec.mcpTools;
+
+  // Stabilise selfConfiguration: the ?? {} fallback would otherwise produce a
+  // new object reference on every render, causing _InternalMCPRegistrar's
+  // registration useEffect to fire unnecessarily.
+  const rawSelfConfig = runtimeConfig?.spec
+    ?.selfConfiguration as Record<string, unknown> | undefined;
+  const selfConfiguration = useMemo(() => rawSelfConfig ?? {}, [rawSelfConfig]);
+
+  if (!mcpToolsModuleInfo || !buildConfig) return null;
+
+  const remoteEntryUrl = app.url + buildConfig.spec.remoteEntryPath;
+
+  return (
+    <ErrorBoundary fallbackRender={() => null}>
+      <ComponentWithFederatedImports
+        componentWithInjectedImports={_InternalMCPRegistrar}
+        componentProps={{ mcpToolsModuleInfo, selfConfiguration, navigate }}
+        renderOnError={null}
+        federatedImports={[{ ...mcpToolsModuleInfo, remoteEntryUrl }]}
+      />
+    </ErrorBoundary>
+  );
+};
+
 export const MCPRegistrar = () => {
   useRelayEmbed();
   const deployedApps = useDeployedApps();
-  const { retrieveConfiguration } = useConfigRetriever();
-  // Captured once per render — stable across registrations and passed into
-  // createTools() so that navigateToRoute drives client-side navigation.
   const navigate = useNavigate();
 
   return (
     <>
-      {deployedApps.flatMap((app) => {
-        const buildConfig = retrieveConfiguration<'build'>({
-          configType: 'build',
-          name: app.name,
-        });
-
-        if (!buildConfig?.spec.mcpTools) return [];
-
-        const runtimeConfig = retrieveConfiguration<Record<string, unknown>>({
-          configType: 'run',
-          name: app.name,
-        });
-
-        const mcpToolsModuleInfo = buildConfig.spec.mcpTools;
-        const selfConfiguration =
-          (runtimeConfig?.spec?.selfConfiguration as Record<string, unknown>) ??
-          {};
-        const remoteEntryUrl = app.url + buildConfig.spec.remoteEntryPath;
-
-        return [
-          <ErrorBoundary key={app.name} fallbackRender={() => null}>
-            <ComponentWithFederatedImports
-              componentWithInjectedImports={_InternalMCPRegistrar}
-              componentProps={{ mcpToolsModuleInfo, selfConfiguration, navigate }}
-              renderOnError={null}
-              federatedImports={[{ ...mcpToolsModuleInfo, remoteEntryUrl }]}
-            />
-          </ErrorBoundary>,
-        ];
-      })}
+      {deployedApps.map((app) => (
+        <AppMCPRegistrar key={app.name} app={app} navigate={navigate} />
+      ))}
     </>
   );
 };
