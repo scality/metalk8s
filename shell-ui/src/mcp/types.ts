@@ -5,13 +5,8 @@
  * app-specific context derived from selfConfiguration.
  */
 
-export type UserData = {
-  token: string;
-  username: string;
-  groups: string[];
-  email: string;
-  id: string;
-};
+import type { UserData } from '../auth/AuthProvider';
+export type { UserData };
 
 export type ToolContext = {
   /**

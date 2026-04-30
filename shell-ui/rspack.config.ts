@@ -224,9 +224,20 @@ const config: Configuration = {
           // MCP tool calls (STS assumeRole + SDK action) don't time out.
           transform: (content: Buffer, resourcePath: string) => {
             if (resourcePath.endsWith('widget.html')) {
-              return content
-                .toString()
-                .replace('Host response timeout: ${t}`))},1e4', 'Host response timeout: ${t}`))},6*1e4');
+              const original = content.toString();
+              const patched = original.replace(
+                'Host response timeout: ${t}`))},1e4',
+                'Host response timeout: ${t}`))},6*1e4',
+              );
+              if (patched === original) {
+                // The minified pattern didn't match — the library may have changed.
+                // The timeout stays at its default; update the pattern above.
+                console.warn(
+                  '[shell-ui] webmcp widget.html timeout patch did not match — ' +
+                  'check whether @mcp-b/webmcp-local-relay changed its minified output.',
+                );
+              }
+              return patched;
             }
             return content;
           },

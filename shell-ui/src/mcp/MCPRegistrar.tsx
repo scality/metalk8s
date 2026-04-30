@@ -1,6 +1,6 @@
 import '@mcp-b/global';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 
 declare const __webpack_public_path__: string;
@@ -43,11 +43,24 @@ export const _InternalMCPRegistrar = ({
 }) => {
   const { getToken, userData } = useAuth();
 
+  // Keep auth refs current so tool execute() always reads fresh credentials
+  // without causing the registration effect to re-run on every render.
+  const getTokenRef = useRef(getToken);
+  const userDataRef = useRef(userData);
+  useEffect(() => { getTokenRef.current = getToken; }, [getToken]);
+  useEffect(() => { userDataRef.current = userData; }, [userData]);
+
   useEffect(() => {
     if (!navigator.modelContext) return;
 
     const mod = moduleExports[mcpToolsModuleInfo.module] as MCPToolsModule | undefined;
-    const context: ToolContext = { getToken, userData, selfConfiguration };
+    // Proxy getToken/userData through refs so execute() always uses the latest
+    // values without requiring re-registration when auth state changes.
+    const context: ToolContext = {
+      get getToken() { return getTokenRef.current; },
+      get userData() { return userDataRef.current; },
+      selfConfiguration,
+    };
     // Prefer the new createTools factory (supports navigate + dynamic context);
     // fall back to the legacy static tools array for modules not yet migrated.
     const tools = mod?.createTools
@@ -83,7 +96,7 @@ export const _InternalMCPRegistrar = ({
         navigator.modelContext?.unregisterTool?.(name),
       );
     };
-  }, [moduleExports, mcpToolsModuleInfo, getToken, userData, selfConfiguration, navigate]);
+  }, [moduleExports, mcpToolsModuleInfo, selfConfiguration, navigate]);
 
   return null;
 };
@@ -135,7 +148,7 @@ export const MCPRegistrar = () => {
         const remoteEntryUrl = app.url + buildConfig.spec.remoteEntryPath;
 
         return [
-          <ErrorBoundary key={app.name} FallbackComponent={() => null}>
+          <ErrorBoundary key={app.name} fallbackRender={() => null}>
             <ComponentWithFederatedImports
               componentWithInjectedImports={_InternalMCPRegistrar}
               componentProps={{ mcpToolsModuleInfo, selfConfiguration, navigate }}
