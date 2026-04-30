@@ -85,6 +85,7 @@ Create kube-apiserver Pod manifest:
           - kube-apiserver
           - --advertise-address={{ host }}
           - --allow-privileged=true
+          - --anonymous-auth=false
           - --authorization-mode=Node,RBAC
           - --client-ca-file=/etc/kubernetes/pki/ca.crt
           - --enable-admission-plugins=NodeRestriction
