@@ -1,0 +1,52 @@
+Backport of saltstack/salt#66899 ("Fix Python 3.13 compatibility regarding
+urllib.parse module") to salt 3006.25. Despite the upstream title naming
+3.13, the same urllib.parse change was backported into recent Python 3.12
+point releases, so the bug also reproduces there (see saltstack/salt#68080,
+the downstream report on 3.12).
+
+Root cause (cpython#85110): for relative paths, urllib.parse now builds
+`urlunparse(("file", "", path, "", "", ""))` as `file:path` instead of
+`file:///path`. `salt.utils.url.create` did:
+
+    url = urlunparse(("file", "", path, "", query, ""))
+    return "salt://{}".format(url[len("file:///") :])
+
+i.e. blindly stripped 8 chars assuming `file:///` was always the prefix.
+With the new behavior the prefix is shorter, so the first bytes of the
+real path get eaten, e.g. `salt://services/foo` → `salt://vices/foo` and
+`file.managed` / `cp.cache_file` then fail with
+"Source file salt://... not found in saltenv 'base'".
+
+Empirically, on Python 3.12 the bug only triggers when `cffi` is also
+installed (via `cryptography`, which salt depends on). The mechanism is
+not documented upstream; the downstream reporter just observes that
+adding cffi flips the behavior. Either way the fix is the same - use
+`urlunsplit` with an empty scheme so no `file:///` prefix has to be
+stripped at all.
+
+Upstream fix lands in salt 3008 (Argon); not backported to 3006.x. Drop
+this patch when bumping salt past 3008.
+
+--- a/salt/utils/url.py
++++ b/salt/utils/url.py
+@@ -4,7 +4,7 @@
+
+ import re
+ import sys
+-from urllib.parse import urlparse, urlunparse
++from urllib.parse import urlparse, urlunparse, urlunsplit
+
+ import salt.utils.data
+ import salt.utils.path
+@@ -45,8 +45,9 @@ def create(path, saltenv=None):
+     path = salt.utils.data.decode(path)
+
+     query = f"saltenv={saltenv}" if saltenv else ""
+-    url = salt.utils.data.decode(urlunparse(("file", "", path, "", query, "")))
+-    return "salt://{}".format(url[len("file:///") :])
++    return "salt://{}".format(
++        salt.utils.data.decode(urlunsplit(("", "", path, query, "")))
++    )
+
+
+ def is_escaped(url):
