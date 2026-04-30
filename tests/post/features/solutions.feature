@@ -29,7 +29,6 @@ Feature: Solutions
         Given the Kubernetes API is available
         And no Solution 'example-solution' is imported
         And no Solution environment 'example-environment' is available
-        And the Solution Configuration file is absent
         When we import a Solution archive '/var/tmp/example-solution.iso'
         Then Solution archive 'example-solution' is imported correctly
         And Solution 'example-solution' version '1.1.0' is available
@@ -42,12 +41,12 @@ Feature: Solutions
         When we deploy Solution 'example-solution' in environment 'example-environment' with version '1.1.0'
         Then we have 1 running pod labeled 'app=example-solution-operator' in namespace 'example-environment'
         When we import a Solution archive '/var/tmp/example-solution-next.iso'
-        Then Solution archive 'example-solution-next' is imported correctly
-        And Solution 'example-solution-next' version '1.1.1' is available
-        When we activate Solution 'example-solution-next' version '1.1.1'
-        Then Solution 'example-solution-next' version '1.1.1' is activated
-        And CRD 'versionservers.example-solution-next.metalk8s.scality.com' exists in Kubernetes API
-        And CRD 'clockservers.example-solution-next.metalk8s.scality.com' exists in Kubernetes API
+        Then Solution archive 'example-solution' is imported correctly
+        And Solution 'example-solution' version '1.1.1' is available
+        When we activate Solution 'example-solution' version '1.1.1'
+        Then Solution 'example-solution' version '1.1.1' is activated
+        And CRD 'versionservers.metalk8s-solution-example.scality.com' exists in Kubernetes API
+        And CRD 'clockservers.metalk8s-solution-example.scality.com' exists in Kubernetes API
         When we deploy Solution 'example-solution' in environment 'example-environment' with version '1.1.1'
         Then we have 1 running pod labeled 'app=example-solution-operator,app.kubernetes.io/version=1.1.1' in namespace 'example-environment'
         When we unimport Solution archive '/var/tmp/example-solution.iso'
