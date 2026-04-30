@@ -1,5 +1,10 @@
 import { MetadataService, User, WebStorageStateStore } from 'oidc-client-ts';
-import { AuthProviderProps, AuthProvider as OIDCAuthProvider, UserManager, useAuth as useOauth2Auth } from 'oidc-react';
+import {
+  AuthProviderProps,
+  AuthProvider as OIDCAuthProvider,
+  UserManager,
+  useAuth as useOauth2Auth,
+} from 'oidc-react';
 import React, { useCallback, useEffect } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
 import { useQuery } from 'react-query';
