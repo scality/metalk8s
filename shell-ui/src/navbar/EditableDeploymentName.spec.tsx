@@ -117,6 +117,38 @@ describe('EditableDeploymentName', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('keeps original "Current name" in modal when name prop changes after a failed rename', async () => {
+    const setInstanceName = (jest.fn() as jest.MockedFunction<SetInstanceNameFn>).mockRejectedValue(
+      new Error('K8s not available'),
+    );
+    const queryClient = createTestQueryClient();
+    const Wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>
+        <CoreUiThemeProvider theme={coreUIAvailableThemes.darkRebrand}>{children}</CoreUiThemeProvider>
+      </QueryClientProvider>
+    );
+    const { rerender } = render(
+      <EditableDeploymentName name="magenta-nature" setInstanceName={setInstanceName} />,
+      { wrapper: Wrapper },
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'magenta-nature' }));
+    const input = screen.getByRole('textbox', { name: 'Deployment name' });
+    await userEvent.clear(input);
+    await userEvent.type(input, 'magenta-nature-2');
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Rename' }));
+    const dialog = screen.getByRole('dialog');
+    await waitFor(() => {
+      expect(within(dialog).getByText('K8s not available')).toBeInTheDocument();
+    });
+    rerender(
+      <EditableDeploymentName name="magenta-nature-2" setInstanceName={setInstanceName} />,
+    );
+    expect(within(dialog).getByText('magenta-nature')).toBeInTheDocument();
+    expect(within(dialog).getByText('magenta-nature-2')).toBeInTheDocument();
+  });
+
   it('shows danger banner in modal when setInstanceName rejects with Error', async () => {
     const { setInstanceName } = renderEditable({
       setInstanceName: (jest.fn() as jest.MockedFunction<SetInstanceNameFn>).mockRejectedValue(
