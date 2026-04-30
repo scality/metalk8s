@@ -131,6 +131,7 @@ export function EditableDeploymentName({
   const [isEditing, setIsEditing] = useState(false);
   const [pendingName, setPendingName] = useState(name);
   const [modalOpen, setModalOpen] = useState(false);
+  const [confirmFromName, setConfirmFromName] = useState(name);
   const inputRef = useRef<HTMLInputElement>(null);
   const [inputValidationError, setInputValidationError] = useState<string | undefined>(undefined);
 
@@ -176,6 +177,7 @@ export function EditableDeploymentName({
 
     if (trimmed && trimmed !== name) {
       setIsEditing(false);
+      setConfirmFromName(name);
       setModalOpen(true);
     } else {
       setIsEditing(false);
@@ -275,7 +277,7 @@ export function EditableDeploymentName({
           <Text>Are you sure you want to rename this deployment?</Text>
           <KeyValueGrid>
             <KeyLabel>Current name</KeyLabel>
-            <KeyValue>{name}</KeyValue>
+            <KeyValue>{confirmFromName}</KeyValue>
             <KeyLabel>New name</KeyLabel>
             <KeyValue>{pendingName.trim()}</KeyValue>
           </KeyValueGrid>
