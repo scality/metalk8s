@@ -1,19 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
-import { Modal } from '@scality/core-ui/dist/components/modal/Modal.component';
-import { Text } from '@scality/core-ui/dist/components/text/Text.component';
-import { Stack } from '@scality/core-ui/dist/spacing';
-import { Tooltip } from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
-import { InfoMessage } from '@scality/core-ui/dist/components/infomessage/InfoMessage.component';
-import { SecondaryText } from '@scality/core-ui/dist/components/text/Text.component';
-import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
-import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
-import { Box } from '@scality/core-ui/dist/components/box/Box';
-
-import { spacing } from '@scality/core-ui/dist/spacing';
 import { Banner } from '@scality/core-ui/dist/components/banner/Banner.component';
-import { type InstanceNameAdapter, INSTANCE_NAME_QUERY_KEY } from './InstanceName';
+import { Box } from '@scality/core-ui/dist/components/box/Box';
+import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
+import { InfoMessage } from '@scality/core-ui/dist/components/infomessage/InfoMessage.component';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import { Modal } from '@scality/core-ui/dist/components/modal/Modal.component';
+import { SecondaryText, Text } from '@scality/core-ui/dist/components/text/Text.component';
+import { Tooltip } from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
+import { Stack, spacing } from '@scality/core-ui/dist/spacing';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
+import styled from 'styled-components';
+import { INSTANCE_NAME_QUERY_KEY, type InstanceNameAdapter } from './InstanceName';
 
 function renameMutationErrorMessage(error: unknown): string {
   if (error instanceof Error) {
@@ -131,7 +128,7 @@ export function EditableDeploymentName({
   const [isEditing, setIsEditing] = useState(false);
   const [pendingName, setPendingName] = useState(name);
   const [modalOpen, setModalOpen] = useState(false);
-  const [confirmFromName, setConfirmFromName] = useState(name);
+  const [currentName, setCurrentName] = useState(name);
   const inputRef = useRef<HTMLInputElement>(null);
   const [inputValidationError, setInputValidationError] = useState<string | undefined>(undefined);
 
@@ -177,7 +174,7 @@ export function EditableDeploymentName({
 
     if (trimmed && trimmed !== name) {
       setIsEditing(false);
-      setConfirmFromName(name);
+      setCurrentName(name);
       setModalOpen(true);
     } else {
       setIsEditing(false);
@@ -277,7 +274,7 @@ export function EditableDeploymentName({
           <Text>Are you sure you want to rename this deployment?</Text>
           <KeyValueGrid>
             <KeyLabel>Current name</KeyLabel>
-            <KeyValue>{confirmFromName}</KeyValue>
+            <KeyValue>{currentName}</KeyValue>
             <KeyLabel>New name</KeyLabel>
             <KeyValue>{pendingName.trim()}</KeyValue>
           </KeyValueGrid>
