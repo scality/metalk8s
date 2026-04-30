@@ -21,6 +21,7 @@ import { ShellConfigProvider, useShellConfig } from './initFederation/ShellConfi
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
 import { ShellThemeSelectorProvider } from './initFederation/ShellThemeSelectorProvider';
 import { UIListProvider } from './initFederation/UIListProvider';
+import { MCPRegistrar } from './mcp/MCPRegistrar';
 import { SolutionsNavbar } from './navbar';
 import { LanguageProvider, useLanguage } from './navbar/lang';
 import NotificationCenterProvider from './NotificationCenterProvider';
@@ -162,9 +163,12 @@ function InternalApp() {
             )}
             {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
             {status === 'success' && (
-              <SolutionsNavbar>
-                <InternalRouter />
-              </SolutionsNavbar>
+              <>
+                <MCPRegistrar />
+                <SolutionsNavbar>
+                  <InternalRouter />
+                </SolutionsNavbar>
+              </>
             )}
           </NotificationCenterProvider>
         </FirstTimeLoginProvider>
