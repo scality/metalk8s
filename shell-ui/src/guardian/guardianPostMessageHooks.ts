@@ -1,3 +1,4 @@
+import type { ModelContextWithExtensions } from '@mcp-b/webmcp-types';
 import { useCallback, useEffect } from "react";
 
 export const GUARDIAN_ORIGIN =
@@ -11,7 +12,7 @@ const DISCOVERY_INTERVAL_MS = 3000;
 export const useDiscoveryEmitter = (iframeRef: React.RefObject<HTMLIFrameElement>) => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: useRef dependency
   const sendDiscovery = useCallback(() => {
-    const tools = navigator.modelContext?.listTools?.() ?? [];
+    const tools = (navigator.modelContext as ModelContextWithExtensions)?.listTools?.() ?? [];
     iframeRef.current?.contentWindow?.postMessage?.(
       { type: 'MCP_DISCOVERY', tools },
       GUARDIAN_ORIGIN,
@@ -66,11 +67,11 @@ export const useMcpCallHandler = (iframeRef: React.RefObject<HTMLIFrameElement>)
       );
 
       try {
-        const result = await navigator?.modelContext?.callTool?.(params);
+        const result = await (navigator.modelContext as ModelContextWithExtensions)?.callTool?.(params);
         postResponse(id, result);
       } catch (err) {
         console.error('[GuardianBubble] Tool execution failed:', err);
-        postResponse(id, null, { code: 1, message: err.toString() });
+        postResponse(id, null, { code: 1, message: String(err) });
       }
     };
 
