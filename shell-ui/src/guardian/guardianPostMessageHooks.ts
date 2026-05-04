@@ -1,10 +1,7 @@
 import type { ModelContextWithExtensions } from '@mcp-b/webmcp-types';
 import { useCallback, useEffect } from "react";
 
-export const GUARDIAN_ORIGIN =
-  process.env.NODE_ENV === 'production'
-    ? 'https://guardian.scality.com'
-    : 'http://localhost:8080';
+export const GUARDIAN_ORIGIN = process.env.GUARDIAN_ORIGIN || 'http://localhost:8080';
 
 // How often to re-send MCP_DISCOVERY (Guardian's React app may mount after the iframe load event)
 const DISCOVERY_INTERVAL_MS = 3000;

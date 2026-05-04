@@ -381,19 +381,21 @@ export const Navbar = ({
     });
   }
 
-  rightTabs.unshift({
-    render: () => (
-      <Button
-        style={{ backgroundColor: 'transparent' }}
-        onClick={toggleGuardian}
-        icon={<Icon name="HandSparkles" color={isGuardianOpen ? theme.selectedActive : theme.textPrimary} />}
-        tooltip={{
-          overlay: isGuardianOpen ? 'Close Guardian assistant' : 'Open Guardian assistant',
-        }}
-      />
-    ),
-    type: 'custom',
-  });
+  if (process.env.GUARDIAN_ORIGIN) {
+    rightTabs.unshift({
+      render: () => (
+        <Button
+          style={{ backgroundColor: 'transparent' }}
+          onClick={toggleGuardian}
+          icon={<Icon name="HandSparkles" color={isGuardianOpen ? theme.selectedActive : theme.textPrimary} />}
+          tooltip={{
+            overlay: isGuardianOpen ? 'Close Guardian assistant' : 'Open Guardian assistant',
+          }}
+        />
+      ),
+      type: 'custom',
+    });
+  }
 
   return (
     <>
