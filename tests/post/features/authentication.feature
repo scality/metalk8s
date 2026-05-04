@@ -21,6 +21,11 @@ Feature: Authentication is up and running
         When we perform a request on '/oidc/' on control-plane Ingress
         Then the server returns '404' with message '404 page not found'
 
+    Scenario: kube-apiserver rejects anonymous requests
+        Given the Kubernetes API is available
+        When we perform a request on '/api/kubernetes/version' on control-plane Ingress
+        Then the server returns '401' with message 'Unauthorized'
+
     Scenario: Login to Dex using incorrect email
         Given the Kubernetes API is available
         And the control-plane Ingress path '/oidc' is available

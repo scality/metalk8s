@@ -36,6 +36,14 @@ def test_access_https_service(host):
     pass
 
 
+@scenario(
+    "../features/authentication.feature",
+    "kube-apiserver rejects anonymous requests",
+)
+def test_apiserver_rejects_anonymous(host):
+    pass
+
+
 @scenario("../features/authentication.feature", "Login to Dex using incorrect email")
 def test_failed_login(host):
     pass
