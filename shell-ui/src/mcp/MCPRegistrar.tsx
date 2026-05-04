@@ -94,7 +94,7 @@ export const _InternalMCPRegistrar = ({
     }
 
     return () => {
-      registeredNames.map((name) =>
+      registeredNames.forEach((name) =>
         navigator.modelContext?.unregisterTool?.(name),
       );
     };

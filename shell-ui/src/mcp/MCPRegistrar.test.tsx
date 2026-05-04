@@ -50,7 +50,7 @@ const mockModelContext = {
 };
 
 beforeEach(() => {
-  Object.keys(registeredTools).map((k) => delete registeredTools[k]);
+  Object.keys(registeredTools).forEach((k) => delete registeredTools[k]);
   jest.clearAllMocks();
   mockGetToken.mockResolvedValue('test-token');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
