@@ -401,8 +401,11 @@ def task_transform_codegen_kustomize_disk_management_agent() -> types.TaskDict:
         # 'metalk8s-storage-management' as kustomize does not allow easily to patch
         # every occurrence in "custom resources fields" like Certificate dnsNames.
         return {
-            "output": stdout.strip().replace(
-                "disk-management-agent-system", "metalk8s-storage-management"
+            "output": stdout.strip()
+            .replace("disk-management-agent-system", "metalk8s-storage-management")
+            .replace(
+                "SERVICE_NAME.SERVICE_NAMESPACE",
+                "disk-management-agent-metrics-service.metalk8s-storage-management",
             )
         }
 

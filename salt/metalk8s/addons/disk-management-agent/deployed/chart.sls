@@ -502,8 +502,8 @@ metadata:
   namespace: metalk8s-storage-management
 spec:
   dnsNames:
-  - SERVICE_NAME.SERVICE_NAMESPACE.svc
-  - SERVICE_NAME.SERVICE_NAMESPACE.svc.cluster.local
+  - disk-management-agent-metrics-service.metalk8s-storage-management.svc
+  - disk-management-agent-metrics-service.metalk8s-storage-management.svc.cluster.local
   issuerRef:
     kind: Issuer
     name: disk-management-agent-selfsigned-issuer
