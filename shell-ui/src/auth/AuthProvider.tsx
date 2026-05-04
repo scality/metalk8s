@@ -1,6 +1,5 @@
-import { MetadataService, User, WebStorageStateStore } from 'oidc-client-ts';
-import { type AuthProviderProps, AuthProvider as OIDCAuthProvider, UserManager, useAuth as useOauth2Auth } from 'oidc-react';
-import { isAIUserAgent } from '../mcp/userAgent';
+import { MetadataService, type User, WebStorageStateStore } from 'oidc-client-ts';
+import { type AuthContextProps, type AuthProviderProps, AuthProvider as OIDCAuthProvider, UserManager, useAuth as useOauth2Auth } from 'oidc-react';
 import type React from 'react';
 import { useCallback, useEffect } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
@@ -21,9 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <>
-      <OAuth2AuthProvider>{children}</OAuth2AuthProvider>
-    </>
+    <OAuth2AuthProvider>{children}</OAuth2AuthProvider>
   );
 }
 
@@ -83,15 +80,13 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   });
   const originalSigninCallBack = userManager.signinCallback.bind(userManager);
   const { showBoundary } = useErrorBoundary();
-  userManager.signinCallback = function (url) {
-    return originalSigninCallBack(url).catch((e) => {
+  userManager.signinCallback = (url) => originalSigninCallBack(url).catch((e) => {
       showBoundary({
         en: 'We failed to log you in, this might be due to a time synchronization issue between the browser and the server.',
         fr: `Nous n'avons pas réussi à vous connecter, cela peut être dû à une dé-synchronisation de l'heure entre le navigateur et le serveur`,
       });
       throw e;
     });
-  };
   const { logOut } = useInternalLogout(userManager, authConfig);
   //Force logout on silent renewal error
   useEffect(() => {
@@ -116,7 +111,6 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [logOut]);
   const oidcConfig: AuthProviderProps = {
-    autoSignIn: !isAIUserAgent(),
     onBeforeSignIn: () => {
       localStorage.setItem('redirectUrl', window.location.href);
       return window.location.href;
@@ -153,7 +147,6 @@ export type UserData = {
 export function useAuth(): {
   userData?: UserData;
   getToken: () => Promise<string | null>;
-  userManager: UserManager | undefined;
 } {
   try {
     const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
@@ -210,7 +203,6 @@ export function useAuth(): {
       return {
         userData: undefined,
         getToken: () => Promise.resolve(null),
-        userManager: auth?.userManager,
       };
     }
 
@@ -228,13 +220,11 @@ export function useAuth(): {
           return user?.access_token;
         });
       },
-      userManager: auth.userManager,
     };
   } catch (e) {
     return {
       userData: undefined,
       getToken: () => Promise.resolve('null'),
-      userManager: undefined,
     };
   }
 }
@@ -262,8 +252,8 @@ function useInternalLogout(
         userManager.signoutRedirect().catch((e) => {
           if (e.message === 'no end session endpoint') {
             console.log("OIDC provider doesn't support end session endpoint, fallback to clearing document cookies");
-            document.cookie.split(';').forEach(function (c) {
-              document.cookie = c.trim().split('=')[0] + '=;' + 'expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+            document.cookie.split(';').forEach((c) => {
+              document.cookie = `${c.trim().split('=')[0]}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
             });
           } else {
             console.error(e);
@@ -282,7 +272,7 @@ function useInternalLogout(
 
 export function useLogOut() {
   const { authConfig } = useAuthConfig();
-  let auth;
+  let auth: AuthContextProps;
 
   try {
     auth = useOauth2Auth();
