@@ -53,6 +53,7 @@ export type ShellJSONFileConfig = {
 
   canChangeTheme?: boolean;
   canChangeInstanceName?: boolean;
+  canUseGuardian?: boolean;
   // Not yet used and working
   canChangeLanguage?: boolean;
 };

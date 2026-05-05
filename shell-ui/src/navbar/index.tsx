@@ -16,12 +16,10 @@ export const SolutionsNavbar = ({ children }: SolutionsNavbarProps) => {
   useFavicon(config?.favicon || '/brand/favicon-metalk8s.svg');
   return (
     <NavbarConfigProvider>
-      <>
-        <Navbar logo={assets.logoPath} canChangeTheme={config.canChangeTheme}>
-          {children}
-        </Navbar>
-        <NavbarUpdaterComponents />
-      </>
+      <Navbar logo={assets.logoPath} canChangeTheme={config.canChangeTheme} canUseGuardian={config.canUseGuardian}>
+        {children}
+      </Navbar>
+      <NavbarUpdaterComponents />
     </NavbarConfigProvider>
   );
 };

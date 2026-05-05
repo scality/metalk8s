@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { RouteProps, matchPath, useNavigate } from 'react-router';
+import { matchPath, useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 
@@ -17,7 +17,6 @@ import {
   NonFederatedView,
   View,
   ViewDefinition,
-  useConfigRetriever,
   useDiscoveredViews,
   useLinkOpener,
 } from '../initFederation/ConfigurationProviders';
@@ -29,6 +28,8 @@ import { normalizePath } from './auth/permissionUtils';
 import { useLanguage } from './lang';
 import type { Link as TypeLink } from './navbarHooks';
 import { useNavbar } from './navbarHooks';
+import { useGuardianDrawer } from '../guardian/GuardianContext';
+import { Box } from '@scality/core-ui/dist/next';
 
 const Logo = styled.img`
   height: 1.5rem;
@@ -175,9 +176,10 @@ export const useFederatedNavbarEntries = (): {
 };
 
 const SkipToContentLink = styled(Button)`
+  top: 0;
   left: 50%;
   width: max-content;
-  position: absolute;
+  position: fixed;
   transform: translateY(-100%);
   transition: transform 0.3s;
   &:focus {
@@ -189,11 +191,13 @@ export const Navbar = ({
   logo,
   canChangeLanguage,
   canChangeTheme,
+  canUseGuardian,
   children,
 }: {
   logo: string;
   canChangeLanguage?: boolean;
   canChangeTheme?: boolean;
+  canUseGuardian?: boolean;
   providerLogout?: boolean;
   children?: React.ReactNode;
 }) => {
@@ -205,6 +209,7 @@ export const Navbar = ({
   const { openLink } = useLinkOpener();
   const { logOut } = useLogOut();
   const { getLinks } = useNavbar();
+  const { isOpen: isGuardianOpen, toggle: toggleGuardian } = useGuardianDrawer();
   const navigate = useNavigate();
   const navbarLinks = useMemo(() => getLinks(), [getLinks]);
   const navbarMainActions = useNavbarLinksToActions(navbarLinks.main);
@@ -378,22 +383,40 @@ export const Navbar = ({
     });
   }
 
+  if (process.env.GUARDIAN_ORIGIN && canUseGuardian) {
+    rightTabs.unshift({
+      render: () => (
+        <Button
+          style={{ backgroundColor: 'transparent' }}
+          onClick={toggleGuardian}
+          icon={<Icon name="HandSparkles" color={isGuardianOpen ? theme.selectedActive : theme.textPrimary} />}
+          tooltip={{
+            overlay: isGuardianOpen ? 'Close Guardian assistant' : 'Open Guardian assistant',
+          }}
+        />
+      ),
+      type: 'custom',
+    });
+  }
+
   return (
     <>
       <GlobalStyle />
 
-      <SkipToContentLink
-        type="submit"
-        label="Skip to content"
-        variant="primary"
-        onClick={() => {
-          const link = document.createElement('a');
-          link.href = '#main';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }}
-      />
+      <Box height={0}>
+        <SkipToContentLink
+          type="submit"
+          label="Skip to content"
+          variant="primary"
+          onClick={() => {
+            const link = document.createElement('a');
+            link.href = '#main';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }}
+        />
+      </Box>
 
       <Layout
         headerNavigation={

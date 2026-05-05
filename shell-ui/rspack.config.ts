@@ -214,6 +214,9 @@ const config: Configuration = {
       filename: './index.html',
       excludedChunks: ['shell'],
     }),
+    new rspack.DefinePlugin({
+      'process.env.GUARDIAN_ORIGIN': JSON.stringify(process.env.GUARDIAN_ORIGIN ?? ''),
+    }),
     new rspack.CopyRspackPlugin({
       patterns: [
         { from: 'public' },
