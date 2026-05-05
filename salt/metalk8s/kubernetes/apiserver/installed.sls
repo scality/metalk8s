@@ -5,6 +5,7 @@
 {%- from "metalk8s/map.jinja" import networks with context %}
 
 {%- set encryption_k8s_path = "/etc/kubernetes/encryption.conf" %}
+{%- set authn_config_path = "/etc/kubernetes/authentication-config.yaml" %}
 
 include:
   - metalk8s.kubernetes.ca.advertised
@@ -34,18 +35,9 @@ include:
 {%-   do feature_gates.append(feature ~ "=" ~ value) %}
 {%- endfor %}
 
-{%- set oidc_config = {} %}
-{%- if pillar.kubernetes.get("apiServer", {}).get("oidc") %}
-  {%- do oidc_config.update(pillar.kubernetes.apiServer.oidc) %}
-{%- elif pillar.addons.dex.enabled and salt.metalk8s_network.get_control_plane_ingress_endpoint() %}
-  {%- do oidc_config.update({
-    "issuerURL": salt.metalk8s_network.get_control_plane_ingress_endpoint() ~ "/oidc",
-    "clientID": "oidc-auth-client",
-    "CAFile": "/etc/metalk8s/pki/nginx-ingress/ca.crt",
-    "usernameClaim": "email",
-    "groupsClaim": "groups",
-  }) %}
-{%- endif %}
+{# OIDC is configured via the AuthenticationConfiguration file written by
+   .authnconfig (--oidc-* flags are mutually exclusive with
+   --authentication-config in Kubernetes 1.32+). #}
 
 {%- set pod_name = "kube-apiserver-" ~ grains.id %}
 {%- set last_pod_id = salt.cri.get_pod_id(
@@ -58,6 +50,7 @@ Create kube-apiserver Pod manifest:
     - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml.j2
     - config_files:
         - {{ encryption_k8s_path }}
+        - {{ authn_config_path }}
         - {{ certificates.server.files.apiserver.path }}
         - /etc/kubernetes/pki/apiserver.key
         - {{ certificates.client.files['apiserver-etcd'].path }}
@@ -85,7 +78,7 @@ Create kube-apiserver Pod manifest:
           - kube-apiserver
           - --advertise-address={{ host }}
           - --allow-privileged=true
-          - --anonymous-auth=false
+          - --authentication-config={{ authn_config_path }}
           - --authorization-mode=Node,RBAC
           - --client-ca-file=/etc/kubernetes/pki/ca.crt
           - --enable-admission-plugins=NodeRestriction
@@ -115,15 +108,6 @@ Create kube-apiserver Pod manifest:
           - --bind-address={{ host }}
           - --encryption-provider-config={{ encryption_k8s_path }}
           - --cors-allowed-origins=^.*$
-          {%- if oidc_config %}
-          - --oidc-issuer-url={{ oidc_config.issuerURL }}
-          - --oidc-client-id={{ oidc_config.clientID }}
-          - --oidc-ca-file={{ oidc_config.CAFile }}
-          - --oidc-username-claim={{ oidc_config.usernameClaim }}
-          - --oidc-groups-claim={{ oidc_config.groupsClaim }}
-          - '"--oidc-username-prefix=oidc:"'
-          - '"--oidc-groups-prefix=oidc:"'
-          {%- endif %}
           - --v={{ 2 if metalk8s.debug else 0 }}
           {% if feature_gates %}
           - --feature-gates={{ feature_gates | join(",") }}
@@ -133,6 +117,9 @@ Create kube-apiserver Pod manifest:
           - path: {{ encryption_k8s_path }}
             type: File
             name: k8s-encryption
+          - path: {{ authn_config_path }}
+            type: File
+            name: k8s-authn-config
           {%- if grains['os_family'] == 'RedHat' %}
           - path: /etc/pki/ca-trust
             name: etc-pki-ca-trust

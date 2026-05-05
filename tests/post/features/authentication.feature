@@ -26,6 +26,28 @@ Feature: Authentication is up and running
         When we perform a request on '/api/kubernetes/version' on control-plane Ingress
         Then the server returns '401' with message 'Unauthorized'
 
+    Scenario Outline: kube-apiserver allows anonymous access to <path>
+        Given the Kubernetes API is available
+        When we perform an anonymous request on the API server '<path>' endpoint
+        Then the server returns '200' with message 'ok'
+
+        Examples:
+            | path    |
+            | livez   |
+            | readyz  |
+            | healthz |
+
+    Scenario Outline: kube-apiserver accepts authenticated access to <path>
+        Given the Kubernetes API is available
+        When we perform an authenticated request on the API server '<path>' endpoint
+        Then the server returns '200' with message 'ok'
+
+        Examples:
+            | path    |
+            | livez   |
+            | readyz  |
+            | healthz |
+
     Scenario: Login to Dex using incorrect email
         Given the Kubernetes API is available
         And the control-plane Ingress path '/oidc' is available
