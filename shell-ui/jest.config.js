@@ -7,6 +7,7 @@ module.exports = {
     '^@fortawesome/free-solid-svg-icons/(.*)\\.js$': '@fortawesome/free-solid-svg-icons/$1',
     '^@fortawesome/free-regular-svg-icons/(.*)\\.js$': '@fortawesome/free-regular-svg-icons/$1',
     '^@mcp-b/(.*)$': '<rootDir>/src/__mocks__/@mcp-b.js',
+    '^codemirror-json-schema(.*)$': '<rootDir>/src/__mocks__/codemirror-json-schema.js',
   },
   testEnvironment: 'jsdom',
   globals: {
