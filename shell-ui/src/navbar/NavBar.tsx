@@ -191,11 +191,13 @@ export const Navbar = ({
   logo,
   canChangeLanguage,
   canChangeTheme,
+  canUseGuardian,
   children,
 }: {
   logo: string;
   canChangeLanguage?: boolean;
   canChangeTheme?: boolean;
+  canUseGuardian?: boolean;
   providerLogout?: boolean;
   children?: React.ReactNode;
 }) => {
@@ -381,7 +383,7 @@ export const Navbar = ({
     });
   }
 
-  if (process.env.GUARDIAN_ORIGIN) {
+  if (process.env.GUARDIAN_ORIGIN && canUseGuardian) {
     rightTabs.unshift({
       render: () => (
         <Button
