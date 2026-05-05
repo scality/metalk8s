@@ -137,6 +137,7 @@ function InternalRouter() {
 }
 
 function InternalApp() {
+  const { config } = useShellConfig();
   const { status } = useQuery({
     queryKey: ['load-share-deps'],
     queryFn: async () => {
@@ -174,7 +175,7 @@ function InternalApp() {
                         <InternalRouter />
                       </SolutionsNavbar>
                     </div>
-                    <GuardianDrawer />
+                    {config.canUseGuardian && <GuardianDrawer />}
                   </div>
                 </>
               )}
