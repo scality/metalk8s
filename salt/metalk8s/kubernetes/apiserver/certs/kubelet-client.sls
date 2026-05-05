@@ -1,7 +1,7 @@
 {%- from "metalk8s/map.jinja" import certificates with context %}
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 
-{%- set private_key_path = "/etc/kubernetes/pki/apiserver-kubelet-client.key" %}
+{%- set private_key_path = certificates.client.files['apiserver-kubelet'].key %}
 
 include:
   - metalk8s.internal.m2crypto

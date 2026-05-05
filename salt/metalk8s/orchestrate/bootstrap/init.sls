@@ -1,5 +1,6 @@
 {# Because of the grain lookup below, the bootstrap minion *must* be available
    before invoking this SLS, otherwise rendering will fail #}
+{%- from "metalk8s/map.jinja" import certificates with context %}
 
 {%- set max_try = 5 %}
 {%- set bootstrap_grains = {} %}
@@ -123,6 +124,9 @@ Wait for API server to be available:
   - match: 'ok'
   - status: 200
   - verify_ssl: false
+  - cert:
+    - {{ certificates.client.files['apiserver-kubelet'].path }}
+    - {{ certificates.client.files['apiserver-kubelet'].key }}
   - request_interval: 1
   - require:
     - salt: Bring bootstrap minion to highstate

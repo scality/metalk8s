@@ -63,7 +63,7 @@ Create kube-apiserver Pod manifest:
         - {{ certificates.client.files['apiserver-etcd'].path }}
         - /etc/kubernetes/pki/apiserver-etcd-client.key
         - {{ certificates.client.files['apiserver-kubelet'].path }}
-        - /etc/kubernetes/pki/apiserver-kubelet-client.key
+        - {{ certificates.client.files['apiserver-kubelet'].key }}
         - /etc/kubernetes/pki/ca.crt
         - /etc/kubernetes/pki/etcd/ca.crt
         - /etc/kubernetes/pki/front-proxy-ca.crt
@@ -95,7 +95,7 @@ Create kube-apiserver Pod manifest:
           - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
           - --etcd-servers={{ etcd_servers | join(",") }}
           - --kubelet-client-certificate={{ certificates.client.files['apiserver-kubelet'].path }}
-          - --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key
+          - --kubelet-client-key={{ certificates.client.files['apiserver-kubelet'].key }}
           - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
           - --proxy-client-cert-file={{ certificates.client.files['front-proxy'].path }}
           - --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key
@@ -193,6 +193,9 @@ Make sure kube-apiserver container is up and ready:
     - name: https://{{ host }}:6443/healthz
     - verify_ssl: True
     - ca_bundle: /etc/kubernetes/pki/ca.crt
+    - cert:
+      - {{ certificates.client.files['apiserver-kubelet'].path }}
+      - {{ certificates.client.files['apiserver-kubelet'].key }}
     - status: 200
     - match: 'ok'
     - request_interval: 1

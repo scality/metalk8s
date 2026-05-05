@@ -224,6 +224,7 @@ certificates:
         watched: False
       apiserver-kubelet:
         path: /etc/kubernetes/pki/apiserver-kubelet-client.crt
+        key: /etc/kubernetes/pki/apiserver-kubelet-client.key
         renew:
           sls:
             - metalk8s.kubernetes.apiserver.certs.kubelet-client

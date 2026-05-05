@@ -2,7 +2,7 @@
 #       instead upgrades nodes fully (highstate), one by one.
 #       This orchestrate should only be called after several other upgrade
 #       steps, refer to the upgrade script.
-
+{%- from "metalk8s/map.jinja" import certificates with context %}
 {%- set dest_version = pillar.metalk8s.cluster_version %}
 
 Execute the upgrade prechecks:
@@ -62,6 +62,9 @@ Wait for API server to be available on {{ node }}:
   - match: 'ok'
   - status: 200
   - verify_ssl: false
+  - cert:
+    - {{ certificates.client.files['apiserver-kubelet'].path }}
+    - {{ certificates.client.files['apiserver-kubelet'].key }}
   - request_interval: 1
   - require:
     - salt: Install apiserver-proxy on {{ node }}
