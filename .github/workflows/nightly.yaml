@@ -29,13 +29,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Retrieve artifacts url
-        uses: scality/action-artifacts@v4
+        uses: scality/action-artifacts@PTFE-3070-add-multi-part-upload
         id: artifacts
         if: inputs.artifacts-url == ''
         with:
           method: get
           workflow-name: Post-merge
-          url: https://artifacts.scality.net
+          url: https://artifacts-scaleway.scality.net
           user: ${{ secrets.ARTIFACTS_USER }}
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
       - name: Retrieve current version

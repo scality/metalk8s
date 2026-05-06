@@ -274,10 +274,10 @@ jobs:
 
       - name: Upload artifacts
         if: always()
-        uses: scality/action-artifacts@v4
+        uses: scality/action-artifacts@PTFE-3070-add-multi-part-upload
         with:
           method: upload
-          url: https://artifacts.scality.net
+          url: https://artifacts-scaleway.scality.net
           user: ${{ secrets.ARTIFACTS_USER }}
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
           source: artifacts
@@ -296,11 +296,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Get artifacts URL
-        uses: scality/action-artifacts@v4
+        uses: scality/action-artifacts@PTFE-3070-add-multi-part-upload
         id: artifacts
         with:
           method: setup
-          url: https://artifacts.scality.net
+          url: https://artifacts-scaleway.scality.net
           user: ${{ secrets.ARTIFACTS_USER }}
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
       - name: Export environment variables for accessing the cloud
