@@ -58,3 +58,18 @@ Deploy salt-ssh pre-flight script:
     - mode: '0755'
     - makedirs: true
     - backup: false
+
+# salt-ssh's get_roster_file() unconditionally requires the configured
+# roster file to exist on disk, even with a non-flat backend like
+# kubernetes. Provide an empty stub so `salt-ssh --roster=kubernetes
+# <single-host>` doesn't fail with `OSError: Roster file
+# "/etc/salt/roster" not found`. See saltstack/salt#46576. 
+Create salt-ssh roster file:
+  file.managed:
+    - name: /etc/salt/roster
+    - user: root
+    - group: root
+    - mode: '0644'
+    - makedirs: true
+    - backup: false
+    - contents: ''
