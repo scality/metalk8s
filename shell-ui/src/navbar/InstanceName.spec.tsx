@@ -1,15 +1,15 @@
-import type { PropsWithChildren } from 'react';
-import { _InternalInstanceName } from './InstanceName';
-import { render, screen, waitFor, within } from '@testing-library/react';
 import { jest } from '@jest/globals';
-import userEvent from '@testing-library/user-event';
-import { QueryClient } from 'react-query';
 import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 import { ToastProvider } from '@scality/core-ui/dist/components/toast/ToastProvider';
 import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import type { PropsWithChildren } from 'react';
+import { QueryClient } from 'react-query';
 import type { UserData } from '../auth/AuthProvider';
 import type { RuntimeWebFinger } from '../initFederation/ConfigurationProviders';
 import { QueryClientProvider } from '../QueryClientProvider';
+import { _InternalInstanceName } from './InstanceName';
 
 jest.mock('../initFederation/ConfigurationProviders', () => ({
   useConfigRetriever: () => ({
@@ -61,6 +61,7 @@ const Wrapper = ({ children }: PropsWithChildren) => (
             defaultOptions: {
               queries: {
                 retry: false,
+                retryDelay: 0,
               },
             },
           })
@@ -190,6 +191,8 @@ describe('InstanceName', () => {
     expect(document.querySelector('[data-icon="circle-exclamation"]')).not.toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(setInstanceName).not.toHaveBeenCalled();
+    // No retry on 403: getInstanceName must be called exactly once.
+    expect(getInstanceName).toHaveBeenCalledTimes(1);
   });
 
   it('loads deployment name then renames via EditableDeploymentName and calls setInstanceName', async () => {
