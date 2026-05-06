@@ -150,6 +150,48 @@ describe('InstanceName', () => {
     expect(getInstanceName).toHaveBeenCalled();
   });
 
+  it('renders nothing when getInstanceName rejects with a 403 (forbidden) error — no pill, no warning icon', async () => {
+    const forbidden = Object.assign(new Error('Forbidden'), {
+      status: 403,
+      code: 'InstanceNameForbidden',
+    });
+    const getInstanceName = jest
+      .fn<
+        (userData: UserData | undefined, configuration: RuntimeWebFinger<Record<string, unknown>>) => Promise<string>
+      >()
+      .mockRejectedValue(forbidden);
+    const setInstanceName = jest
+      .fn<
+        (
+          userData: UserData | undefined,
+          name: string,
+          configuration: RuntimeWebFinger<Record<string, unknown>>,
+        ) => Promise<void>
+      >()
+      .mockResolvedValue(undefined);
+
+    render(
+      <_InternalInstanceName
+        moduleExports={{
+          './instanceNameAdapter': {
+            getInstanceName,
+            setInstanceName,
+          },
+        }}
+      />,
+      { wrapper: Wrapper },
+    );
+
+    await waitFor(() => expect(getInstanceName).toHaveBeenCalled());
+    await waitFor(() => {
+      expect(document.querySelector('.sc-loader')).not.toBeInTheDocument();
+    });
+
+    expect(document.querySelector('[data-icon="circle-exclamation"]')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(setInstanceName).not.toHaveBeenCalled();
+  });
+
   it('loads deployment name then renames via EditableDeploymentName and calls setInstanceName', async () => {
     const getInstanceName = jest
       .fn<

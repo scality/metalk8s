@@ -99,7 +99,7 @@ export const _InternalInstanceName = ({
   const instanceNameConfiguration = useInstanceNameConfiguration();
   const runtimeAppConfiguration = instanceNameConfiguration?.runtimeAppConfiguration;
   const { userData } = useAuth();
-  const { data, status } = useQuery({
+  const { data, error, status } = useQuery({
     queryKey: [INSTANCE_NAME_QUERY_KEY],
     queryFn: async () =>
       moduleExports[instanceNameAdapter?.module ?? ''].getInstanceName(userData, runtimeAppConfiguration),
@@ -115,6 +115,11 @@ export const _InternalInstanceName = ({
   }
 
   if (status === 'error') {
+    const err = error as (Error & { status?: number; code?: string }) | null | undefined;
+    if (err?.status === 403 || err?.code === 'InstanceNameForbidden') {
+      // User is not allowed to read the InstanceName — render nothing (no pill, no warning).
+      return null;
+    }
     return (
       <Tooltip overlay="Error loading deployment name" placement="bottom">
         <Icon color="statusWarning" name="Exclamation-circle" />
