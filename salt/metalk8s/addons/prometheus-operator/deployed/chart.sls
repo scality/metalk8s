@@ -8,7 +8,6 @@
 {%- set grafana = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-grafana-config', grafana_defaults) %}
 {%- set prometheus = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-prometheus-config', prometheus_defaults) %}
 {%- set alertmanager = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-alertmanager-config', alertmanager_defaults) %}
-{%- set cp_ingress_ep = salt.metalk8s_network.get_control_plane_ingress_endpoint() %}
 
 {% raw %}
 
@@ -80317,7 +80316,7 @@ spec:
   alertmanagerConfigNamespaceSelector: {}
   alertmanagerConfigSelector: {}
   automountServiceAccountToken: true
-  externalUrl: {% endraw -%}{{ cp_ingress_ep }}{%- raw %}/api/alertmanager
+  externalUrl: {% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}{%- raw %}
   hostNetwork: false
   image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("alertmanager", False, False) }}{%- raw %}:v0.31.1
   imagePullPolicy: IfNotPresent

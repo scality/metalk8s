@@ -19,6 +19,12 @@ customRules:
 
 alertmanager:
   alertmanagerSpec:
+    # Set the externalUrl to the control plane ingress endpoint so alert
+    # notifications and the Alertmanager UI reference a routable address
+    # instead of the in-cluster service URL. The actual endpoint is resolved
+    # at deploy time via the salt helper.
+    externalUrl: '__var__(salt.metalk8s_network.get_control_plane_ingress_endpoint())'
+
     image:
       registry: '__var__(repo.registry_endpoint)'
       repository: '__image_no_reg__(alertmanager)'
