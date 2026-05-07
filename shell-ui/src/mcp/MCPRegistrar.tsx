@@ -75,6 +75,7 @@ export const _InternalMCPRegistrar = ({
         description: tool.description,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         inputSchema: tool.inputSchema,
+        ...(tool.annotations && { annotations: tool.annotations }),
         execute: async (params: unknown, client: ModelContextClient) => {
           // For createTools-based modules, context is already baked into the
           // tool's execute closure. For legacy tools, inject context here.

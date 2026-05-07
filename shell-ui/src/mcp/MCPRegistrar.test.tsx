@@ -1,4 +1,4 @@
-import type { ToolDescriptor } from '@mcp-b/webmcp-types';
+import type { ToolAnnotations, ToolDescriptor } from '@mcp-b/webmcp-types';
 import { render } from '@testing-library/react';
 import type { FederatedModuleInfo } from '../initFederation/ConfigurationProviders';
 import { _InternalMCPRegistrar } from './MCPRegistrar';
@@ -28,6 +28,7 @@ type RegisteredTool = {
   name: string;
   description: string;
   inputSchema: Record<string, unknown>;
+  annotations?: ToolAnnotations;
   execute: (params: unknown, client: unknown) => Promise<unknown>;
 };
 
@@ -41,10 +42,11 @@ const mockModelContext = {
     delete registeredTools[name];
   }),
   listTools: jest.fn(() =>
-    Object.values(registeredTools).map(({ name, description, inputSchema }) => ({
+    Object.values(registeredTools).map(({ name, description, inputSchema, annotations }) => ({
       name,
       description,
       inputSchema,
+      ...(annotations && { annotations }),
     })),
   ),
 };
@@ -158,6 +160,32 @@ describe('_InternalMCPRegistrar', () => {
       // Simulate token refresh — the ref must pick up the new implementation
       mockGetToken.mockResolvedValueOnce('refreshed-token');
       await expect(capturedContext!.getToken()).resolves.toBe('refreshed-token');
+    });
+
+    it('forwards annotations including readOnlyHint to registerTool', () => {
+      const tool = makeTool({
+        annotations: { readOnlyHint: true, openWorldHint: true },
+      });
+      const moduleExports = {
+        [MODULE_KEY]: { createTools: () => [tool] },
+      };
+
+      render(
+        <_InternalMCPRegistrar
+          moduleExports={moduleExports}
+          mcpToolsModuleInfo={mcpToolsModuleInfo}
+          selfConfiguration={selfConfiguration}
+          navigate={mockNavigate}
+        />,
+      );
+
+      expect(mockModelContext.registerTool).toHaveBeenCalledWith(
+        expect.objectContaining({
+          annotations: { readOnlyHint: true, openWorldHint: true },
+        }),
+      );
+      const listed = mockModelContext.listTools();
+      expect(listed[0].annotations).toEqual({ readOnlyHint: true, openWorldHint: true });
     });
 
     it('registers multiple tools', () => {
