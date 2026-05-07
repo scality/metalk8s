@@ -15,7 +15,7 @@
   "discoveryUrl": "/shell/deployed-ui-apps.json",
   "productName": "MetalK8s",
   "canChangeTheme": true,
-  "canUseGuardian": false,
+  "canUseGuardian": true,
   "themes": {
     "dark": {
       "type": "core-ui",

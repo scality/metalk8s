@@ -215,7 +215,7 @@ const config: Configuration = {
       excludedChunks: ['shell'],
     }),
     new rspack.DefinePlugin({
-      'process.env.GUARDIAN_ORIGIN': JSON.stringify(process.env.GUARDIAN_ORIGIN ?? ''),
+      'process.env.GUARDIAN_ORIGIN': JSON.stringify(process.env.GUARDIAN_ORIGIN ?? 'http://localhost:8080'),
     }),
     new rspack.CopyRspackPlugin({
       patterns: [
