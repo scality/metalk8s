@@ -76,10 +76,10 @@ runs:
         cp ~/.ssh/terraform* "artifacts/terraform-context/${{ inputs.NAME }}/"
     - name: Upload SSH keypair
       if: inputs.skip-prepare == 'false'
-      uses: scality/action-artifacts@v4
+      uses: scality/action-artifacts@PTFE-3070-add-multi-part-upload
       with:
         method: upload
-        url: https://artifacts.scality.net
+        url: https://artifacts-scaleway.scality.net
         user: ${{inputs.ARTIFACTS_USER}}
         password: ${{inputs.ARTIFACTS_PASSWORD}}
         source: artifacts/

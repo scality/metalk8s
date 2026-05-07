@@ -19,11 +19,11 @@ runs:
   using: "composite"
   steps:
     - name: Get artifacts URL
-      uses: scality/action-artifacts@v4
+      uses: scality/action-artifacts@PTFE-3070-add-multi-part-upload
       id: artifacts
       with:
         method: setup
-        url: https://artifacts.scality.net
+        url: https://artifacts-scaleway.scality.net
         user: ${{ inputs.ARTIFACTS_USER }}
         password: ${{ inputs.ARTIFACTS_PASSWORD }}
     - name: Create destination directory

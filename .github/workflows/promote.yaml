@@ -28,10 +28,10 @@ jobs:
         uses: actions/checkout@v6
       - name: Promote artifacts
         id: promote
-        uses: scality/action-artifacts@v4
+        uses: scality/action-artifacts@PTFE-3070-add-multi-part-upload
         with:
           method: promote
-          url: https://artifacts.scality.net
+          url: https://artifacts-scaleway.scality.net
           name: ${{ needs.build.outputs.artifact-name }}
           tag: ${{ github.ref_name }}
           user: ${{ secrets.ARTIFACTS_USER }}
