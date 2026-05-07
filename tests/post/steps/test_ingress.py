@@ -10,6 +10,7 @@ from pytest_bdd import given, parsers, scenario, then, when
 import testinfra
 
 from tests import utils
+from tests.conftest import wait_rollout_status
 
 
 MAIN_CC_NAME = "main"
@@ -164,6 +165,21 @@ def teardown(context, host, ssh_config, version, k8s_client):
     if context.get("reconfigure_portmap"):
         re_configure_portmap(host, version, ssh_config)
 
+    # Ensure all pods are ready
+    def _wait_for_pods_ready():
+        with host.sudo():
+            result = host.run(
+                "kubectl --kubeconfig=/etc/kubernetes/admin.conf wait --for=condition=Ready "
+                "pods --all -n metalk8s-ingress --timeout=30s"
+            )
+        assert result.succeeded, (
+            f"All pods in metalk8s-ingress namespace are not ready:\n"
+            f"    stdout: {result.stdout}\n"
+            f"    stderr: {result.stderr}"
+        )
+
+    utils.retry(_wait_for_pods_ready, times=10, wait=5)
+
 
 @given("a VIP for Control Plane Ingress is available")
 def we_have_a_vip(context):
@@ -242,6 +258,7 @@ def wp_ingress_vip_setup(
     update_cc_pool(host, context, ssh_config, version, k8s_client, pool_name, ips)
     wait_cc_status(k8s_client, "Ready")
     rollout_restart(host, "daemonset/ingress-nginx-controller", "metalk8s-ingress")
+    wait_rollout_status(host, "daemonset/ingress-nginx-controller", "metalk8s-ingress")
 
 
 _SPREAD_IPS_PARSER = parsers.parse("the '{ips}' IPs are spread on nodes")
@@ -495,8 +512,11 @@ def update_portmap_cidr(host, context, ssh_config, version, plane):
     )
 )
 def rollout_restart(host, resource, namespace):
+    # Make sure any previous rollout is completed
+    wait_rollout_status(host, resource, namespace)
+
     with host.sudo():
-        result = host.run(
+        host.run_test(
             "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
             "rollout restart %s --namespace %s",
             resource,
