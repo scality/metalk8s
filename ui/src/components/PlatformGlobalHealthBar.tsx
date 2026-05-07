@@ -1,5 +1,5 @@
 import { IconHelp, Loader, SmallerText, Stack, Text } from '@scality/core-ui';
-import { Alert, Box, GlobalHealthBar as GlobalHealthBarRecharts, useMetricsTimeSpan } from '@scality/core-ui/dist/next';
+import { type Alert, Box, GlobalHealthBar as GlobalHealthBarRecharts, useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import { useQuery } from 'react-query';
 import styled from 'styled-components';
@@ -41,12 +41,10 @@ const PlatformGlobalHealthBar = ({ title = 'Global Health' }: { title?: string }
           tooltipMessage={
             <Stack direction="vertical" gap="r4">
               {intl
-                .formatMessage({
-                  id: 'global_health_explanation',
-                })
+                .formatMessage({ id: 'global_health_explanation' }, { title })
                 .split('\n')
-                .map((line, key) => (
-                  <SmallerText key={`globalheathexplanation-${key}`}>{line}</SmallerText>
+                .map((line) => (
+                  <SmallerText key={line}>{line}</SmallerText>
                 ))}
             </Stack>
           }
