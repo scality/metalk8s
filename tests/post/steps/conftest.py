@@ -207,7 +207,6 @@ def then_check_pod_different_node(ssh_config, host, k8s_client, selector):
         nodes.add(pod.spec.nodeName)
 
 
-@then("the DaemonSet <name> in the <namespace> namespace has all desired Pods ready")
 @then(
     parsers.parse(
         "the DaemonSet '{name}' in the '{namespace}' namespace has all desired "
