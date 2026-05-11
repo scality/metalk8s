@@ -4,6 +4,7 @@
  * It contains only what shell-ui itself owns. Micro-frontends extend it with their own
  * app-specific context derived from selfConfiguration.
  */
+import type { QueryClient } from 'react-query';
 import type { UserData } from '../auth/AuthProvider';
 export type { UserData };
 
@@ -21,4 +22,12 @@ export type ToolContext = {
    * Micro-frontends cast this to their own known config shape to extract endpoints etc.
    */
   selfConfiguration: Record<string, unknown>;
+  /**
+   * The shell-ui–owned QueryClient, shared across every federated app via
+   * <QueryClientProvider contextSharing> (see FederatedApp.tsx). Tools use
+   * this to keep the chat-side UI panels in sync with their mutations —
+   * `invalidateQueries`, `setQueryData` for optimistic updates, or
+   * `refetchQueries` — picking the strategy that fits the operation.
+   */
+  queryClient: QueryClient;
 };

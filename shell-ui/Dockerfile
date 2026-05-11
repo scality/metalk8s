@@ -17,6 +17,12 @@ COPY index-template.html rspack.config.ts tsconfig.json /home/node/
 COPY public /home/node/public
 COPY src /home/node/src
 
+# Origin of the Guardian backend the chat panel iframes / postMessages talks to.
+# Read by rspack.config.ts via DefinePlugin and baked into the bundle at build
+# time, so changing it requires --no-cache or a clean build context. Empty
+# default disables Guardian in the navbar — see src/navbar/NavBar.tsx.
+ARG GUARDIAN_ORIGIN=""
+ENV GUARDIAN_ORIGIN=$GUARDIAN_ORIGIN
 RUN npm run rsbuild
 
 FROM nginx:${NGINX_IMAGE_VERSION}

@@ -4,6 +4,7 @@ import { ComponentWithFederatedImports } from '@scality/module-federation';
 import { useEffect, useMemo, useRef } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate } from 'react-router';
+import { queryClient as shellQueryClient } from '../FederatedApp';
 import { useAuth } from '../auth/AuthProvider';
 import {
   type FederatedModuleInfo,
@@ -61,6 +62,7 @@ export const _InternalMCPRegistrar = ({
       get getToken() { return getTokenRef.current; },
       get userData() { return userDataRef.current; },
       selfConfiguration,
+      queryClient: shellQueryClient,
     };
     // Prefer the new createTools factory (supports navigate + dynamic context);
     // fall back to the legacy static tools array for modules not yet migrated.
