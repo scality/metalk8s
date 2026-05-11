@@ -2,6 +2,14 @@
 
 ## Release 134.0.0 (in development)
 
+### Enhancements
+
+- Bump Kubernetes version to [1.34.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.34.7)
+  (PR[#4928](https://github.com/scality/metalk8s/pull/4928))
+
+- Bump etcd version to [3.6.11](https://github.com/etcd-io/etcd/releases/tag/v3.6.11)
+  (PR[#4928](https://github.com/scality/metalk8s/pull/4928))
+
 ## Release 133.0.3 (in development)
 
 ## Release 133.0.2

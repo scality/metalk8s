@@ -377,9 +377,6 @@ metalk8s:
             "From metalk8s.kubernetes.kubelet.standalone":
               extra_context:
                 options:
-                  container-runtime: remote
-                  container-runtime-endpoint: >-
-                    unix:///run/containerd/containerd.sock
                   node-ip: "10.0.0.1"
                   hostname-override: bootstrap
                   v: 0

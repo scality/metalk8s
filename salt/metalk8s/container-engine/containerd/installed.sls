@@ -79,8 +79,8 @@ Install and configure cri-tools:
   file.serialize:
     - name: /etc/crictl.yaml
     - dataset:
-        runtime-endpoint: {{ kubelet.service.options.get("container-runtime-endpoint") }}
-        image-endpoint: {{ kubelet.service.options.get("container-runtime-endpoint") }}
+        runtime-endpoint: {{ kubelet.container_runtime_endpoint }}
+        image-endpoint: {{ kubelet.container_runtime_endpoint }}
     - merge_if_exists: true
     - user: root
     - group: root

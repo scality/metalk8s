@@ -42,7 +42,10 @@ Create coredns ConfigMap:
                   max_concurrent 1000
                 }
                 {%- endif %}
-                cache 30
+                cache 30 {
+                  disable success {{ coredns.cluster_domain }}
+                  disable denial {{ coredns.cluster_domain }}
+                }
                 loop
                 reload
                 loadbalance
