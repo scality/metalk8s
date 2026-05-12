@@ -11,6 +11,10 @@
   "packageRules": [
     {
       "matchManagers": ["dockerfile"],
+      "groupName": "ui-base-images"
+    },
+    {
+      "matchManagers": ["dockerfile"],
       "matchUpdateTypes": ["minor", "patch"],
       "addLabels": ["dependencies", "docker", "renovate"]
     },
