@@ -16,6 +16,8 @@ Create kube-scheduler Pod manifest:
         host: {{ grains['metalk8s']['control_plane_ip'] }}
         port: http-metrics
         scheme: HTTPS
+        liveness_path: /livez
+        readiness_path: /readyz
         command:
         # kubeadm flags {
           - kube-scheduler
