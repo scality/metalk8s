@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 133.0.4 (in development)
+## Release 133.0.4
 
 ## Release 133.0.3
 
