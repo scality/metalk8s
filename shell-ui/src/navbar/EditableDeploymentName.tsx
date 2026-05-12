@@ -61,6 +61,7 @@ const NameInput = styled.input`
   padding: ${spacing.r4} ${spacing.r8};
   outline: none;
   min-width: 180px;
+  max-width: 16rem;
 
   &:focus {
     border-color: ${(props) => props.theme.selectedActive};
@@ -75,7 +76,7 @@ const NameInput = styled.input`
 
 const KeyValueGrid = styled.dl`
   display: grid;
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: max-content minmax(0, 1fr);
   gap: ${spacing.r8} ${spacing.r16};
   margin: 0;
 `;
@@ -88,6 +89,7 @@ const KeyLabel = styled.dt`
 const KeyValue = styled.dd`
   color: ${(props) => props.theme.textPrimary};
   margin: 0;
+  overflow-wrap: anywhere;
 `;
 
 const NameTrigger = styled.span`
@@ -101,7 +103,8 @@ const NameTrigger = styled.span`
   font-size: 1rem;
   font-family: 'Lato';
   color: ${(props) => props.theme.textPrimary};
-  white-space: nowrap;
+  max-width: 16rem;
+  min-width: 0;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
 
@@ -113,6 +116,13 @@ const NameTrigger = styled.span`
     border-color: ${(props) => props.theme.infoPrimary};
     background: ${(props) => props.theme.highlight};
   }
+`;
+
+const NameTriggerLabel = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 `;
 
 export function EditableDeploymentName({
@@ -223,7 +233,7 @@ export function EditableDeploymentName({
           </ValidationInputWrapper>
         ) : (
           <Tooltip
-            overlay={isMutationLoading ? 'Cannot edit while propagating' : 'Edit deployment name'}
+            overlay={isMutationLoading ? 'Cannot edit while propagating' : modalOpen ? pendingName.trim() : name}
             placement="bottom"
           >
             <NameTrigger
@@ -233,7 +243,7 @@ export function EditableDeploymentName({
               tabIndex={isMutationLoading ? undefined : 0}
               onKeyDown={(e) => !isMutationLoading && e.key === 'Enter' && handleEditStart()}
             >
-              {modalOpen ? pendingName.trim() : name}
+              <NameTriggerLabel>{modalOpen ? pendingName.trim() : name}</NameTriggerLabel>
               {isMutationLoading && (
                 <InlineLoaderWrapper>
                   <Loader size="smaller" />
