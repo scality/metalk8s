@@ -21,16 +21,6 @@ DASHBOARD_UIDS_FILE = LOCAL_DIR / "files/grafana_dashboard_uids.json"
 
 NODE_EXPORTER_PORT = 9100
 
-# Alert rules that are deployed only when a given addon is enabled. When the
-# addon is disabled the rule is absent from the cluster, so it must also be
-# dropped from the reference set (`alerting_rules.json`) before comparing,
-# otherwise the equality check fails on reduced-addon clusters (e.g. no-logging).
-# Mirrors the addon-aware dashboards check below.
-# Source: salt/metalk8s/addons/logging/*/deployed/chart.sls
-ADDON_ALERT_RULES = {
-    "fluent-bit": {"FluentBitBackPressure", "FluentBitOutputRetryLimit"},
-}
-
 # }}}
 # Scenarios {{{
 
@@ -532,18 +522,13 @@ def check_deployed_rules(host, prometheus_api):
     except json.JSONDecodeError as exc:
         pytest.fail(f"Failed to decode JSON from {ALERT_RULE_FILE}: {exc!s}")
 
-    # Drop alert rules whose addon is disabled on this cluster: they are not
-    # deployed, so they must not be expected in the reference set either.
-    disabled_alert_names = set()
-    for addon, alert_names in ADDON_ALERT_RULES.items():
-        if not utils.get_pillar(host, f"addons:{addon}:enabled"):
-            disabled_alert_names |= alert_names
-
-    if disabled_alert_names:
+    if not utils.get_pillar(host, "addons:fluent-bit:enabled"):
+        # Filter out FluentBit-specific alert rules if fluent-bit is disabled
         default_alert_rules = [
             rule
             for rule in default_alert_rules
-            if rule["name"] not in disabled_alert_names
+            if rule["name"]
+            not in ["FluentBitBackPressure", "FluentBitOutputRetryLimit"]
         ]
 
     default_sorted = sorted(
