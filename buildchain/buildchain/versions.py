@@ -405,18 +405,19 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="kubelet", version=K8S_VERSION),
         PackageVersion(name="containerd.io", version=CONTAINERD_VERSION),
         # Latest packages
+        PackageVersion(name="container-selinux"),
         PackageVersion(name="coreutils"),
         PackageVersion(name="cri-tools"),
         PackageVersion(name="e2fsprogs"),
-        PackageVersion(name="ebtables"),
-        PackageVersion(name="ethtool"),
+        PackageVersion(name="iptables-nft"),
         PackageVersion(name="gdisk"),
         PackageVersion(name="genisoimage"),
         PackageVersion(name="httpd-tools"),
         PackageVersion(name="iproute"),
-        PackageVersion(name="iptables"),
         PackageVersion(name="kubernetes-cni"),
         PackageVersion(name="lvm2"),
+        PackageVersion(name="python3-boto3"),
+        PackageVersion(name="python3-dnf-plugin-versionlock"),
         PackageVersion(name="salt-minion", version=SALT_VERSION),
         # NOTE: We pin also the salt package version since repository
         # is not versioned and we want to ensure we use the same version as the
@@ -430,15 +431,12 @@ PACKAGES: Dict[str, Any] = {
     ),
     "redhat": {
         "8": (
-            PackageVersion(name="container-selinux"),
-            PackageVersion(name="iptables-ebtables", override="ebtables"),
+            PackageVersion(name="iptables-ebtables", override="iptables-nft"),
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=NONSUFFIXED_VERSION,
                 release=f"{SOSREPORT_RELEASE}.el8",
             ),
-            PackageVersion(name="python3-boto3"),
-            PackageVersion(name="python3-dnf-plugin-versionlock"),
         ),
     },
 }

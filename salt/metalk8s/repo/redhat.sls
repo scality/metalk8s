@@ -36,8 +36,7 @@ Install yum-utils:
 
 Install yum-plugin-versionlock:
   pkg.installed:
-    - name: {{
-        packages.get('yum-plugin-versionlock', 'yum-plugin-versionlock') }}
+    - name: python3-dnf-plugin-versionlock
 
 Ensure yum plugins are enabled:
   ini.options_present:

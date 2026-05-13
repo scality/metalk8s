@@ -39,8 +39,7 @@
   salt['grains.filter_by']({
     'RedHat': {
       8: {
-        'ebtables': 'iptables-ebtables',
-        'yum-plugin-versionlock': 'python3-dnf-plugin-versionlock',
+        'iptables-nft': 'iptables-ebtables',
       }
     },
   }, grain='os_family'),
