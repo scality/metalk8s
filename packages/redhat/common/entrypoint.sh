@@ -74,7 +74,7 @@ buildrepo() {
 
 get_rpm_gpg_keys() {
     declare -gA RPM_GPG_KEYS
-    local -r releasever=${RELEASEVER:-7}
+    local -r releasever=${RELEASEVER:-8}
     # shellcheck disable=SC2034
     # The variable is used in the `eval` below
     local -r basearch=${BASEARCH:-x86_64}
@@ -156,19 +156,15 @@ add_dependencies(){
 download_packages() {
     set -x
     declare -ga EPEL_DEPS=() KUBERNETES_DEPS=() DOCKER_CE_DEPS=() SALT_DEPS=()
-    local -r releasever=${RELEASEVER:-7}
+    local -r releasever=${RELEASEVER:-8}
     local -a packages=("$@")
     local query_format query_opts repo_dir
     local -a dependencies=()
 
     query_format='%{name} %{name}-%{version} %{repoid}'
-    query_opts=""
-    if [[ "$releasever" == "8" ]]; then
-        # On new repoquery version, if we do not specify the `latest-limit`
-        # it will return all packages that match the query
-        # We only want to download the latest one
-        query_opts="--latest-limit=1"
-    fi
+    # If we do not specify the `latest-limit` it will return all
+    # packages that match the query We only want to download the latest one
+    query_opts="--latest-limit=1"
 
     for package in "${packages[@]}"; do
         # Check from which repo the package come from
