@@ -9,7 +9,7 @@ This modules provides several services:
 - building local packages from sources
 - building local repositories from local packages
 
-Note that for now, it only works for CentOS/RedHat 8 x86_64.
+Note that for now, it only works for Rocky/RedHat 8 x86_64.
 
 Overview;
 

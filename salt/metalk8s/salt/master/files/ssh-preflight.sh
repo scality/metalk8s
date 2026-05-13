@@ -1,7 +1,7 @@
 #!/bin/sh
 # salt-ssh `ssh_pre_flight` script: ensure a Python interpreter compatible with
 # the salt-ssh thin tarball is available on the target host before salt-ssh
-# tries to deploy it. Salt 3006+ requires Python >= 3.7, while RHEL/CentOS 8
+# tries to deploy it. Salt 3006+ requires Python >= 3.7, while RHEL/Rocky 8
 # ships Python 3.6 by default, hence we install python3.12 and switch the
 # `python3` alternative to point at it.
 #
