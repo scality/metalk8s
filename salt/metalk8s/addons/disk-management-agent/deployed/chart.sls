@@ -419,7 +419,7 @@ spec:
         - name: SSACLI_PATH
           value: /host/libexec/ssacli
         image: '{% endraw -%}{{ build_image_name("disk-management-agent", False) }}{%-
-          raw %}:v0.0.1-beta.1'
+          raw %}:v0.0.1-beta.2'
         livenessProbe:
           httpGet:
             path: /healthz
