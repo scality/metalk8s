@@ -6,7 +6,7 @@
 A repository is either built from an existing repository (e.g. epel) or build
 from locally built packages (e.g. scality).
 
-Note that, for now, we only generate Rocky/RedHat 8 repository for x86_64
+Note that, for now, we only generate Rocky/RedHat 8 and 9 repository for x86_64
 architecture.
 
 Overview:

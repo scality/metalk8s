@@ -9,7 +9,7 @@ This modules provides several services:
 - download the source files
 - build a SRPM from the source files
 
-Note that for now, it only works for Rocky/RedHat 8 x86_64.
+Note that for now, it only works for Rocky/RedHat 8 and 9 x86_64.
 
             self.make_package_directory(),
             self.generate_meta(),

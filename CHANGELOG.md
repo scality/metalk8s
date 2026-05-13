@@ -9,6 +9,10 @@
 
 ### Enhancements
 
+- Add support for RHEL/Rocky 9.
+  RHEL/Rocky 8 support will be dropped in a future release.
+  (PR[#5014](https://github.com/scality/metalk8s/pull/5014))
+
 - Make node monitoring and Pod eviction timeouts configurable through the
   `BootstrapConfiguration`: `kube-apiserver`
   `defaultNotReadyTolerationSeconds`/`defaultUnreachableTolerationSeconds`

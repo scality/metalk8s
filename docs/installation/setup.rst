@@ -11,7 +11,7 @@ Prerequisites
 .. _SaltStack: https://www.saltstack.com
 .. _Puppet: https://puppet.com
 
-MetalK8s_ clusters require machines running RHEL_/Rocky_ 8 as
+MetalK8s_ clusters require machines running RHEL_/Rocky_ 8 or 9 as
 their operating system. These machines may be virtual or physical, with no
 difference in setup procedure. The number of machines to set up depends on the
 architecture you chose in :ref:`installation-intro-architecture`.
@@ -66,6 +66,11 @@ RHEL 8:
 
     - rhel-8-for-x86_64-baseos-rpms
     - rhel-8-for-x86_64-appstream-rpms
+
+RHEL 9:
+
+    - rhel-9-for-x86_64-baseos-rpms
+    - rhel-9-for-x86_64-appstream-rpms
 
     .. note::
 

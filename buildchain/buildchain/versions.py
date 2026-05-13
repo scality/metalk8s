@@ -438,6 +438,13 @@ PACKAGES: Dict[str, Any] = {
                 release=f"{SOSREPORT_RELEASE}.el8",
             ),
         ),
+        "9": (
+            PackageVersion(
+                name="metalk8s-sosreport",
+                version=NONSUFFIXED_VERSION,
+                release=f"{SOSREPORT_RELEASE}.el9",
+            ),
+        ),
     },
 }
 

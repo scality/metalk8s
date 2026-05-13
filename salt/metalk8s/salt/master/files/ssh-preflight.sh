@@ -17,5 +17,10 @@ set -eu
 
 SUDO="${1:-}"
 
+# shellcheck disable=SC1091
+. /etc/os-release
+
 $SUDO yum install -y python3.12
-$SUDO alternatives --set python3 /usr/bin/python3.12
+if [ "${VERSION_ID%%.*}" -eq 8 ]; then
+    $SUDO alternatives --set python3 /usr/bin/python3.12
+fi
