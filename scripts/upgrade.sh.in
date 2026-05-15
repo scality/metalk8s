@@ -99,9 +99,11 @@ flush_and_refresh_mine() {
     # fix this: it reads the corrupt file first, fails, and silently discards
     # the new data. mine.flush deletes the file (no read needed), after which
     # mine.update writes a clean cache from scratch.
-    get_salt_container > /dev/null  # wait for new salt-master to be running
-    "$SALT_CALL" mine.flush
-    "$SALT_CALL" mine.update
+    # Run on all minions so the master has a clean, up-to-date mine cache for
+    # the entire cluster before any upgrade state queries it.
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt '*' mine.flush
+    "${SALT_MASTER_CALL[@]}" salt '*' mine.update
 }
 
 launch_pre_upgrade () {
