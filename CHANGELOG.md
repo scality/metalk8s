@@ -12,6 +12,12 @@
 
 ## Release 133.0.5 (in development)
 
+### Enhancements
+
+- Bump [disk-management-agent](https://github.com/scality/disk-management-agent) to version
+  [v0.0.1-beta.2](https://github.com/scality/disk-management-agent/releases/tag/v0.0.1-beta.2)
+  (PR[#4933](https://github.com/scality/metalk8s/pull/4933))
+
 ## Release 133.0.4
 
 ## Release 133.0.3
