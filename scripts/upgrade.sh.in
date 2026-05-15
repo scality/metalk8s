@@ -223,7 +223,7 @@ run "Performing Pre-Upgrade checks" precheck_upgrade
 "$BASE_DIR"/backup.sh --no-replication
 
 run "Upgrading bootstrap" upgrade_bootstrap
-run "Refreshing Salt mine on bootstrap" flush_and_refresh_mine
+run "Refreshing Salt mine on nodes" flush_and_refresh_mine
 run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the pre-upgrade" launch_pre_upgrade
 run "Upgrading etcd cluster" upgrade_etcd

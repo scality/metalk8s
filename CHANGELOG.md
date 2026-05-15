@@ -13,7 +13,7 @@
 - Fix a bug where the salt mine fails silently during upgrades due to a corrupted mine cache.
   (PR[#4934](https://github.com/scality/metalk8s/pull/4934))
 
-- Fix a bug where the salt mine fails prints many warnings when dex is disabled.
+- Fix a bug where the salt mine fails and prints many warnings when dex is disabled.
   (PR[#4934](https://github.com/scality/metalk8s/pull/4934))
 
 
