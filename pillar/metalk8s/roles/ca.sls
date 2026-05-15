@@ -15,9 +15,11 @@ mine_functions:
     - mine_function: hashutil.base64_encodefile
     - /etc/kubernetes/pki/sa.pub
 
+{%- if pillar.addons.dex.enabled %}
   dex_ca_b64:
     - mine_function: hashutil.base64_encodefile
     - /etc/metalk8s/pki/dex/ca.crt
+{%- endif %}
 
   ingress_ca_b64:
     - mine_function: hashutil.base64_encodefile
