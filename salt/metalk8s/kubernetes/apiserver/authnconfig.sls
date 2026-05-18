@@ -15,12 +15,13 @@
 # Relies on the AnonymousAuthConfigurableEndpoints and
 # StructuredAuthenticationConfiguration feature gates, both beta and
 # on-by-default in Kubernetes 1.32+.
+{%- from "metalk8s/map.jinja" import kube_api with context %}
 
 include:
   - .installed
   - metalk8s.addons.nginx-ingress.ca.advertised
 
-{%- set authn_config_path = '/etc/kubernetes/authentication-config.yaml' %}
+{%- set authn_config_path = kube_api.authn_config_path %}
 
 {#- Build the OIDC issuer config, mirroring the historical --oidc-* selection
     logic that used to live in installed.sls. #}
@@ -56,50 +57,6 @@ include:
 {%-   endif %}
 {%- endif %}
 
-{#- TODO(MK8S-258): bump apiVersion to apiserver.config.k8s.io/v1 once metalk8s
-    pins Kubernetes >= 1.34. AuthenticationConfiguration is registered in
-    v1beta1 in 1.32/1.33 and promotes to v1 (GA) in 1.34. #}
-{%- set authn_config = {
-  "apiVersion": "apiserver.config.k8s.io/v1beta1",
-  "kind": "AuthenticationConfiguration",
-  "anonymous": {
-    "enabled": True,
-    "conditions": [
-      {"path": "/livez"},
-      {"path": "/readyz"},
-      {"path": "/healthz"},
-    ],
-  },
-} %}
-
-{%- if oidc_config and ca_pem %}
-{%-   set jwt_authenticator = {
-    "issuer": {
-      "url": oidc_config.issuerURL,
-      "audiences": [oidc_config.clientID],
-      "certificateAuthority": ca_pem,
-    },
-    "claimMappings": {
-      "username": {"claim": oidc_config.usernameClaim, "prefix": "oidc:"},
-      "groups": {"claim": oidc_config.groupsClaim, "prefix": "oidc:"},
-    },
-} %}
-{#- Reproduce the legacy --oidc-username-claim=email implicit guard: when the
-    username claim is `email`, kube-apiserver used to auto-require
-    `email_verified == true`. With AuthenticationConfiguration, we have to
-    spell the rule out as a CEL expression. #}
-{%-   if oidc_config.usernameClaim == 'email' %}
-{%-     do jwt_authenticator.update({
-      "claimValidationRules": [
-        {
-          "expression": "claims.?email_verified.orValue(true) == true",
-          "message": "email_verified claim must be true when set",
-        },
-      ],
-}) %}
-{%-   endif %}
-{%-   do authn_config.update({"jwt": [jwt_authenticator]}) %}
-{%- endif %}
 
 Create kube-apiserver authentication configuration:
   file.serialize:
@@ -108,6 +65,38 @@ Create kube-apiserver authentication configuration:
     - user: root
     - group: root
     - makedirs: True
-    - dataset: {{ authn_config | tojson }}
+    - dataset:
+        {#- TODO(MK8S-258): bump apiVersion to apiserver.config.k8s.io/v1 once metalk8s
+        pins Kubernetes >= 1.34. AuthenticationConfiguration is registered in
+        v1beta1 in 1.32/1.33 and promotes to v1 (GA) in 1.34.
+        it will also continue to be supported in v1beta1 until 1.36 #}
+        apiVersion: apiserver.config.k8s.io/v1beta1
+        kind: AuthenticationConfiguration
+        anonymous:
+          enabled: true
+          conditions:
+          - path: /livez
+          - path: /readyz
+          - path: /healthz
+        {%- if oidc_config and ca_pem %}
+        jwt:
+        - issuer:
+            url: {{ oidc_config.issuerURL }}
+            audiences:
+            - {{ oidc_config.clientID }}
+            certificateAuthority: {{ ca_pem }}
+          claimMappings:
+            username:
+              claim: {{ oidc_config.usernameClaim }}
+              prefix: "oidc:"
+            groups:
+              claim: {{ oidc_config.groupsClaim }}
+              prefix: "oidc:"
+          {%- if oidc_config.usernameClaim == 'email' %}
+          claimValidationRules:
+          - expression: "claims.?email_verified.orValue(true) == true"
+            message: "email_verified claim must be true when set"
+          {%- endif %}
+        {%- endif %}
     - require_in:
       - metalk8s: Create kube-apiserver Pod manifest

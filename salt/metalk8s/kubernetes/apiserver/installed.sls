@@ -3,10 +3,10 @@
 {%- from "metalk8s/map.jinja" import coredns with context %}
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
+{%- from "metalk8s/map.jinja" import kube_api with context %}
 
 {%- set encryption_k8s_path = "/etc/kubernetes/encryption.conf" %}
-{%- set authn_config_path = "/etc/kubernetes/authentication-config.yaml" %}
-
+{%- set authn_config_path = kube_api.authn_config_path %}
 include:
   - metalk8s.kubernetes.ca.advertised
   - metalk8s.kubernetes.sa.advertised
@@ -78,7 +78,6 @@ Create kube-apiserver Pod manifest:
           - kube-apiserver
           - --advertise-address={{ host }}
           - --allow-privileged=true
-          - --authentication-config={{ authn_config_path }}
           - --authorization-mode=Node,RBAC
           - --client-ca-file=/etc/kubernetes/pki/ca.crt
           - --enable-admission-plugins=NodeRestriction
@@ -109,6 +108,7 @@ Create kube-apiserver Pod manifest:
           - --encryption-provider-config={{ encryption_k8s_path }}
           - --cors-allowed-origins=^.*$
           - --v={{ 2 if metalk8s.debug else 0 }}
+          - --authentication-config={{ authn_config_path }}
           {% if feature_gates %}
           - --feature-gates={{ feature_gates | join(",") }}
           {%- endif %}
@@ -180,9 +180,6 @@ Make sure kube-apiserver container is up and ready:
     - name: https://{{ host }}:6443/healthz
     - verify_ssl: True
     - ca_bundle: /etc/kubernetes/pki/ca.crt
-    - cert:
-      - {{ certificates.client.files['apiserver-kubelet'].path }}
-      - {{ certificates.client.files['apiserver-kubelet'].key }}
     - status: 200
     - match: 'ok'
     - request_interval: 1

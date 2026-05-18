@@ -1,4 +1,3 @@
-{%- from "metalk8s/map.jinja" import certificates with context %}
 {%- set dest_version = pillar.metalk8s.cluster_version %}
 
 Refresh CA minion:
@@ -27,9 +26,6 @@ Wait for an API server to be available through local proxy:
     - match: 'ok'
     - status: 200
     - verify_ssl: false
-    - cert:
-      - {{ certificates.client.files['apiserver-kubelet'].path }}
-      - {{ certificates.client.files['apiserver-kubelet'].key }}
     - request_interval: 1
     - require:
       - salt: Prepare for Salt Master downgrade

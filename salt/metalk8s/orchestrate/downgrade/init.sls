@@ -1,4 +1,3 @@
-{%- from "metalk8s/map.jinja" import certificates with context %}
 {%- set dest_version = pillar.metalk8s.cluster_version %}
 {#- NOTE: This orchestrate is called with a `salt-master` running the
     `dest_version` so this orchestrate need to be backward compatible. #}
@@ -35,9 +34,6 @@ Wait for API server to be available on {{ node }}:
   - match: 'ok'
   - status: 200
   - verify_ssl: false
-  - cert:
-    - {{ certificates.client.files['apiserver-kubelet'].path }}
-    - {{ certificates.client.files['apiserver-kubelet'].key }}
   - request_interval: 1
   - require:
     - salt: Execute the downgrade prechecks

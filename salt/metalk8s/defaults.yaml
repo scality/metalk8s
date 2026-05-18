@@ -151,6 +151,7 @@ kube_api:
   cert:
     server_signing_policy: kube_apiserver_server_policy
     client_signing_policy: kube_apiserver_client_policy
+  authn_config_path: /etc/kubernetes/authn_config.yaml
 
 etcd:
   ca:

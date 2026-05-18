@@ -2,7 +2,6 @@
 {%- from "metalk8s/map.jinja" import kubernetes with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/map.jinja" import certificates with context %}
 
 {%- set node_name = pillar.orchestrate.node_name %}
 {%- set run_drain = not pillar.orchestrate.get('skip_draining', False) %}
@@ -263,9 +262,6 @@ Wait for API server to be available before highstate:
   - match: 'ok'
   - status: 200
   - verify_ssl: false
-  - cert:
-    - {{ certificates.client.files['apiserver-kubelet'].path }}
-    - {{ certificates.client.files['apiserver-kubelet'].key }}
   - request_interval: 1
 
 Check pillar before highstate:
@@ -312,9 +308,6 @@ Wait for API server to be available:
   - match: 'ok'
   - status: 200
   - verify_ssl: false
-  - cert:
-    - {{ certificates.client.files['apiserver-kubelet'].path }}
-    - {{ certificates.client.files['apiserver-kubelet'].key }}
   - request_interval: 1
 
 Uncordon the node:
