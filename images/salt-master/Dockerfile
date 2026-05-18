@@ -39,7 +39,7 @@ ENV LC_ALL=en_US.UTF-8
 
 # Disable host key checking due to a bug in salt-ssh
 # Sees: https://github.com/saltstack/salt/issues/59691
-RUN mkdir /root/.ssh \
+RUN mkdir -p /root/.ssh \
   && printf "Host *\n\
   StrictHostKeyChecking no\n" > /root/.ssh/config
 

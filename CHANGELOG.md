@@ -74,6 +74,9 @@
   `rockylinux:9.8-minimal`
   (PR[#4994](https://github.com/scality/metalk8s/pull/4994))
 
+- Move `salt-master` image to Rocky 9 minimal
+  (PR[#5014](https://github.com/scality/metalk8s/pull/5014))
+
 - Bump operator-sdk to [v1.42.3](https://github.com/operator-framework/operator-sdk/releases/tag/v1.42.3)
   for the `metalk8s-operator` and `storage-operator`, and bump their
   `k8s.io/{api,apimachinery,client-go}` dependencies to v0.33.13

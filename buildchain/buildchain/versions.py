@@ -70,10 +70,6 @@ SHELL_UI_VERSION: str = json.loads(shell_ui_package_contents)["version"]
 # Container images {{{
 
 ROCKY_BASE_IMAGE: str = "docker.io/rockylinux/rockylinux"
-ROCKY_BASE_IMAGE_8_SHA256: str = (
-    # rockylinux:8.10-minimal
-    "6d2ede107b4f005a638728711dae05d5fbbfd8abd521cecf5ab61196b361c965"
-)
 ROCKY_BASE_IMAGE_9_SHA256: str = (
     # rockylinux:9.8-minimal
     "e1d0a9f5ed99d52e7faf03afe7ee32e48b231c4dd9586808b3d1aedf894dff04"
