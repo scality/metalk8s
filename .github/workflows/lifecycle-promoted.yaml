@@ -24,7 +24,9 @@ on:
         default: false
 
 env:
-  OS: "rocky-8"
+  # In development/134 we changed the default OS to rocky-9
+  # This logic can be removed in `development/135.0`
+  OS: ${{ startsWith(inputs.promoted-version, '133.') && 'rocky-8' || 'rocky-9' }}
 
 jobs:
   snapshot-upgrade:

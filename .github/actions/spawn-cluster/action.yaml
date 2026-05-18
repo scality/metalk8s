@@ -37,7 +37,7 @@ inputs:
   OS:
     description: "Name of the OS to spawn"
     required: false
-    default: rocky-8
+    default: rocky-9
   NODES_COUNT:
     description: "Number of nodes to spawn in addition to bootstrap and bastion"
     required: false
