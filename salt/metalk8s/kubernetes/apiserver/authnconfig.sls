@@ -23,37 +23,34 @@ include:
 
 {%- set authn_config_path = kube_api.authn_config_path %}
 
-{#- Build the OIDC issuer config, mirroring the historical --oidc-* selection
-    logic that used to live in installed.sls. #}
+{#- Build the OIDC issuer config and resolve the matching CA PEM, mirroring the
+    historical --oidc-* selection logic that used to live in installed.sls.
+    AuthenticationConfiguration's `jwt[].issuer.certificateAuthority` field
+    expects PEM content inline (not a file path), so each branch resolves the
+    CA the way that fits its source:
+      * pillar override -- read the user-specified CAFile from the salt master.
+      * default Dex     -- pull the Ingress CA from the salt mine
+                           (`ingress_ca_b64`, published by
+                           `metalk8s.addons.nginx-ingress.ca.installed`), which
+                           avoids any ordering dependency on the on-disk file. #}
 {%- set oidc_config = {} %}
-{%- if pillar.kubernetes.get("apiServer", {}).get("oidc") %}
-  {%- do oidc_config.update(pillar.kubernetes.apiServer.oidc) %}
-{%- elif pillar.addons.dex.enabled and salt.metalk8s_network.get_control_plane_ingress_endpoint() %}
-  {%- do oidc_config.update({
-    "issuerURL": salt.metalk8s_network.get_control_plane_ingress_endpoint() ~ "/oidc",
-    "clientID": "oidc-auth-client",
-    "CAFile": "/etc/metalk8s/pki/nginx-ingress/ca.crt",
-    "usernameClaim": "email",
-    "groupsClaim": "groups",
-  }) %}
-{%- endif %}
-
-{#- AuthenticationConfiguration's `jwt[].issuer.certificateAuthority` field
-    expects PEM content inline, not a file path. For the default Dex case the
-    Ingress CA is published in the salt mine as `ingress_ca_b64` by
-    `metalk8s.addons.nginx-ingress.ca.installed`, which avoids any ordering
-    dependency on the on-disk file. For a pillar-provided OIDC override we
-    fall back to reading the user-specified CAFile from the salt master. #}
 {%- set ca_pem = '' %}
-{%- if oidc_config %}
-{%-   set ingress_ca_path = '/etc/metalk8s/pki/nginx-ingress/ca.crt' %}
-{%-   if oidc_config.get('CAFile') == ingress_ca_path %}
-{%-     set ingress_ca_mine = salt['mine.get'](pillar.metalk8s.ca.minion, 'ingress_ca_b64') %}
-{%-     if ingress_ca_mine %}
-{%-       set ca_pem = salt['hashutil.base64_b64decode'](ingress_ca_mine[pillar.metalk8s.ca.minion]) %}
-{%-     endif %}
-{%-   elif oidc_config.get('CAFile') %}
+{%- if pillar.kubernetes.get("apiServer", {}).get("oidc") %}
+{%-   do oidc_config.update(pillar.kubernetes.apiServer.oidc) %}
+{%-   if oidc_config.get('CAFile') %}
 {%-     set ca_pem = salt['file.read'](oidc_config.CAFile) %}
+{%-   endif %}
+{%- elif pillar.addons.dex.enabled and salt.metalk8s_network.get_control_plane_ingress_endpoint() %}
+{%-   do oidc_config.update({
+        "issuerURL": salt.metalk8s_network.get_control_plane_ingress_endpoint() ~ "/oidc",
+        "clientID": "oidc-auth-client",
+        "CAFile": "/etc/metalk8s/pki/nginx-ingress/ca.crt",
+        "usernameClaim": "email",
+        "groupsClaim": "groups",
+      }) %}
+{%-   set ingress_ca_mine = salt['mine.get'](pillar.metalk8s.ca.minion, 'ingress_ca_b64') %}
+{%-   if ingress_ca_mine %}
+{%-     set ca_pem = salt['hashutil.base64_b64decode'](ingress_ca_mine[pillar.metalk8s.ca.minion]) %}
 {%-   endif %}
 {%- endif %}
 
@@ -84,7 +81,7 @@ Create kube-apiserver authentication configuration:
             url: {{ oidc_config.issuerURL }}
             audiences:
             - {{ oidc_config.clientID }}
-            certificateAuthority: {{ ca_pem }}
+            certificateAuthority: {{ ca_pem | tojson }}
           claimMappings:
             username:
               claim: {{ oidc_config.usernameClaim }}
