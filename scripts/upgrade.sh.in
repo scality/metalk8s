@@ -92,6 +92,20 @@ upgrade_bootstrap () {
         metalk8s.salt.master.installed saltenv="$SALTENV"
 }
 
+flush_and_refresh_mine() {
+    # After upgrading salt-master, the mine cache files on the master may have
+    # been corrupted by a non-atomic write interrupted mid-SIGTERM (kubelet
+    # kills the container when the manifest changes). mine.update alone cannot
+    # fix this: it reads the corrupt file first, fails, and silently discards
+    # the new data. mine.flush deletes the file (no read needed), after which
+    # mine.update writes a clean cache from scratch.
+    # Run on all minions so the master has a clean, up-to-date mine cache for
+    # the entire cluster before any upgrade state queries it.
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt '*' mine.flush
+    "${SALT_MASTER_CALL[@]}" salt '*' mine.update
+}
+
 launch_pre_upgrade () {
     SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
@@ -209,6 +223,7 @@ run "Performing Pre-Upgrade checks" precheck_upgrade
 "$BASE_DIR"/backup.sh --no-replication
 
 run "Upgrading bootstrap" upgrade_bootstrap
+run "Refreshing Salt mine on nodes" flush_and_refresh_mine
 run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the pre-upgrade" launch_pre_upgrade
 run "Upgrading etcd cluster" upgrade_etcd
