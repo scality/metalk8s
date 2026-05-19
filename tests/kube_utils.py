@@ -258,8 +258,8 @@ class Client(abc.ABC):
 
         return utils.retry(
             _wait_for_status,
-            times=24,
-            wait=5,  # wait for 2mn
+            times=48,
+            wait=5,  # wait for 4mn
             name=f"waiting for {self._kind} {name} to become {status}",
         )
 
