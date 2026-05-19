@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 133.0.5 (in development)
+## Release 133.0.5
 
 ### Enhancements
 
