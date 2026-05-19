@@ -15,9 +15,11 @@ mine_functions:
     - mine_function: hashutil.base64_encodefile
     - /etc/kubernetes/pki/sa.pub
 
+{%- if pillar.addons.dex.enabled %}
   dex_ca_b64:
     - mine_function: hashutil.base64_encodefile
     - /etc/metalk8s/pki/dex/ca.crt
+{%- endif %}
 
   ingress_ca_b64:
     - mine_function: hashutil.base64_encodefile
@@ -70,6 +72,7 @@ x509_signing_policies:
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth
     - authorityKeyIdentifier: keyid
+{%- if pillar.addons.dex.enabled %}
   dex_server_policy:
     - minions: '*'
     - signing_private_key: /etc/metalk8s/pki/dex/ca.key
@@ -77,6 +80,7 @@ x509_signing_policies:
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth
     - authorityKeyIdentifier: keyid
+{%- endif %}
   backup_server_policy:
     - minions: '*'
     - signing_private_key: /etc/metalk8s/pki/backup-server/ca.key
