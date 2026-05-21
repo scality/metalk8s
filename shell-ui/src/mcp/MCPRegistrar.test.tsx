@@ -1,8 +1,18 @@
 import type { ToolAnnotations, ToolDescriptor } from '@mcp-b/webmcp-types';
 import { render } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { QueryClient } from 'react-query';
+import { QueryClientProvider } from '../QueryClientProvider';
 import type { FederatedModuleInfo } from '../initFederation/ConfigurationProviders';
 import { _InternalMCPRegistrar } from './MCPRegistrar';
 import type { ToolContext } from './types';
+
+const renderWithQueryClient = (ui: ReactElement) => {
+  const queryClient = new QueryClient();
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
+};
 
 // ─── Auth mock ────────────────────────────────────────────────────────────────
 
@@ -91,7 +101,7 @@ describe('_InternalMCPRegistrar', () => {
         [MODULE_KEY]: { createTools: () => [tool] },
       };
 
-      render(
+      renderWithQueryClient(
         <_InternalMCPRegistrar
           moduleExports={moduleExports}
           mcpToolsModuleInfo={mcpToolsModuleInfo}
@@ -120,7 +130,7 @@ describe('_InternalMCPRegistrar', () => {
         },
       };
 
-      render(
+      renderWithQueryClient(
         <_InternalMCPRegistrar
           moduleExports={moduleExports}
           mcpToolsModuleInfo={mcpToolsModuleInfo}
@@ -131,6 +141,7 @@ describe('_InternalMCPRegistrar', () => {
 
       expect(capturedContext?.selfConfiguration).toEqual(selfConfiguration);
       expect(capturedNavigate).toBe(mockNavigate);
+      expect(capturedContext?.queryClient).toBeDefined();
     });
 
     it('context.getToken always returns the latest token via ref', async () => {
@@ -145,7 +156,7 @@ describe('_InternalMCPRegistrar', () => {
         },
       };
 
-      render(
+      renderWithQueryClient(
         <_InternalMCPRegistrar
           moduleExports={moduleExports}
           mcpToolsModuleInfo={mcpToolsModuleInfo}
@@ -170,7 +181,7 @@ describe('_InternalMCPRegistrar', () => {
         [MODULE_KEY]: { createTools: () => [tool] },
       };
 
-      render(
+      renderWithQueryClient(
         <_InternalMCPRegistrar
           moduleExports={moduleExports}
           mcpToolsModuleInfo={mcpToolsModuleInfo}
@@ -195,7 +206,7 @@ describe('_InternalMCPRegistrar', () => {
         [MODULE_KEY]: { createTools: () => [tool1, tool2] },
       };
 
-      render(
+      renderWithQueryClient(
         <_InternalMCPRegistrar
           moduleExports={moduleExports}
           mcpToolsModuleInfo={mcpToolsModuleInfo}
@@ -216,7 +227,7 @@ describe('_InternalMCPRegistrar', () => {
         [MODULE_KEY]: { tools: [tool] },
       };
 
-      render(
+      renderWithQueryClient(
         <_InternalMCPRegistrar
           moduleExports={moduleExports}
           mcpToolsModuleInfo={mcpToolsModuleInfo}
@@ -238,7 +249,7 @@ describe('_InternalMCPRegistrar', () => {
         },
       };
 
-      render(
+      renderWithQueryClient(
         <_InternalMCPRegistrar
           moduleExports={moduleExports}
           mcpToolsModuleInfo={mcpToolsModuleInfo}
@@ -269,7 +280,7 @@ describe('_InternalMCPRegistrar', () => {
         },
       };
 
-      const { unmount } = render(
+      const { unmount } = renderWithQueryClient(
         <_InternalMCPRegistrar
           moduleExports={moduleExports}
           mcpToolsModuleInfo={mcpToolsModuleInfo}
@@ -298,7 +309,7 @@ describe('_InternalMCPRegistrar', () => {
       };
 
       expect(() =>
-        render(
+        renderWithQueryClient(
           <_InternalMCPRegistrar
             moduleExports={moduleExports}
             mcpToolsModuleInfo={mcpToolsModuleInfo}
@@ -313,7 +324,7 @@ describe('_InternalMCPRegistrar', () => {
 
     it('registers no tools when module export is missing', () => {
       // moduleExports doesn't have the expected module key
-      render(
+      renderWithQueryClient(
         <_InternalMCPRegistrar
           moduleExports={{}}
           mcpToolsModuleInfo={mcpToolsModuleInfo}
