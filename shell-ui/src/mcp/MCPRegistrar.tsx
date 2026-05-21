@@ -3,6 +3,7 @@ import type { ModelContextClient, ToolDescriptor } from '@mcp-b/webmcp-types';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
 import { useEffect, useMemo, useRef } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import { useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import {
@@ -43,6 +44,7 @@ export const _InternalMCPRegistrar = ({
   navigate: (path: string) => void;
 }) => {
   const { getToken, userData } = useAuth();
+  const queryClient = useQueryClient();
 
   // Keep auth refs current so tool execute() always reads fresh credentials
   // without causing the registration effect to re-run on every render.
@@ -61,6 +63,7 @@ export const _InternalMCPRegistrar = ({
       get getToken() { return getTokenRef.current; },
       get userData() { return userDataRef.current; },
       selfConfiguration,
+      queryClient,
     };
     // Prefer the new createTools factory (supports navigate + dynamic context);
     // fall back to the legacy static tools array for modules not yet migrated.
@@ -99,7 +102,7 @@ export const _InternalMCPRegistrar = ({
         navigator.modelContext?.unregisterTool?.(name),
       );
     };
-  }, [moduleExports, mcpToolsModuleInfo, selfConfiguration, navigate]);
+  }, [moduleExports, mcpToolsModuleInfo, selfConfiguration, navigate, queryClient]);
 
   return null;
 };
