@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## Release 133.0.6 (in development)
+## Release 133.0.7 (in development)
+
+## Release 133.0.6
 
 ### Bug Fixes
 
@@ -15,6 +17,15 @@
 - Bump [disk-management-agent](https://github.com/scality/disk-management-agent) to version
   [v0.0.1-beta.2](https://github.com/scality/disk-management-agent/releases/tag/v0.0.1-beta.2)
   (PR[#4933](https://github.com/scality/metalk8s/pull/4933))
+
+### Bug Fixes
+
+- Fix a bug where the salt mine fails silently during upgrades due to a corrupted mine cache.
+  (PR[#4934](https://github.com/scality/metalk8s/pull/4934))
+
+- Fix a bug where the salt mine fails and prints many warnings when dex is disabled.
+  (PR[#4934](https://github.com/scality/metalk8s/pull/4934))
+
 
 ## Release 133.0.4
 
