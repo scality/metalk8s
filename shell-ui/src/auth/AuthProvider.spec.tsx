@@ -34,7 +34,7 @@ jest.mock('oidc-react', () => {
   };
 
   const MockUserManager = jest.fn().mockImplementation(() => instance);
-  MockUserManager.__mockInstance = instance;
+  (MockUserManager as any).__mockInstance = instance;
 
   const AuthContext = ReactLib.createContext(null);
   let currentAuthValue: unknown = { isLoading: false, userData: null, userManager: instance };

@@ -193,15 +193,20 @@ function ExpiryWatcher({ userManager }: { userManager: UserManager }): null {
     const userIsExpired = userData.expired || !userData.expires_at;
     if (!userIsExpired) return;
 
-    userManager.getUser().then((localStorageUser) => {
-      const isActuallyExpired =
-        localStorageUser?.expired || !localStorageUser?.expires_at;
-      if (isActuallyExpired) {
-        userManager.removeUser().then(() => {
-          location.reload();
-        });
-      }
-    });
+    userManager
+      .getUser()
+      .then((localStorageUser) => {
+        const isActuallyExpired =
+          localStorageUser?.expired || !localStorageUser?.expires_at;
+        if (isActuallyExpired) {
+          return userManager.removeUser().then(() => {
+            location.reload();
+          });
+        }
+      })
+      .catch((err) => {
+        console.error('ExpiryWatcher: failed to verify/remove expired user', err);
+      });
   }, [auth?.userData, userManager]);
 
   return null;
