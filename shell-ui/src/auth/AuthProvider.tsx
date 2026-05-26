@@ -7,6 +7,7 @@ import type { OAuth2ProxyConfig, OIDCConfig } from '../initFederation/Configurat
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { getUserGroups } from '../navbar/auth/permissionUtils';
 import { useAuthConfig } from './AuthConfigProvider';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { authConfig } = useAuthConfig();
 
@@ -53,6 +54,71 @@ export function getAbsoluteRedirectUrl(redirectUrl?: string) {
   return window.location.origin + redirectUrl;
 }
 
+function buildUserManager(
+  authConfig: OIDCConfig,
+  showBoundary: (error: unknown) => void,
+): UserManager {
+  const { providerUrl, clientId, redirectUrl, responseType, scopes, defaultDexConnector } = authConfig;
+
+  const manager = new UserManager({
+    authority: providerUrl,
+    client_id: clientId,
+    redirect_uri: getAbsoluteRedirectUrl(redirectUrl),
+    silent_redirect_uri: getAbsoluteRedirectUrl(redirectUrl),
+    post_logout_redirect_uri: getAbsoluteRedirectUrl(redirectUrl),
+    response_type: responseType || 'code',
+    scope: scopes,
+    loadUserInfo: true,
+    automaticSilentRenew: true,
+    monitorSession: false,
+    MetadataServiceCtor: defaultDexConnector
+      ? defaultDexConnectorMetadataService(defaultDexConnector)
+      : MetadataService,
+    // @ts-expect-error - FIXME when you are working on it
+    userStore: new WebStorageStateStore({
+      store: localStorage,
+    }),
+  });
+
+  const originalSigninCallBack = manager.signinCallback.bind(manager);
+  manager.signinCallback = (url) =>
+    originalSigninCallBack(url).catch((e) => {
+      showBoundary({
+        en: 'We failed to log you in, this might be due to a time synchronization issue between the browser and the server.',
+        fr: `Nous n'avons pas réussi à vous connecter, cela peut être dû à une dé-synchronisation de l'heure entre le navigateur et le serveur`,
+      });
+      throw e;
+    });
+
+  return manager;
+}
+
+function buildOidcConfig(userManager: UserManager): AuthProviderProps {
+  return {
+    onBeforeSignIn: () => {
+      localStorage.setItem('redirectUrl', window.location.href);
+      return window.location.href;
+    },
+    onSignIn: () => {
+      const savedRedirectUri = localStorage.getItem('redirectUrl');
+      localStorage.removeItem('redirectUrl');
+
+      if (savedRedirectUri) {
+        location.href = savedRedirectUri;
+        return;
+      }
+
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.delete('state');
+      searchParams.delete('session_state');
+      searchParams.delete('code');
+      location.search = searchParams.toString();
+      location.hash = '';
+    },
+    userManager,
+  };
+}
+
 function OAuth2AuthProvider({ children }: { children: React.ReactNode }): JSX.Element {
   const { authConfig } = useAuthConfig();
   if (authConfig.kind === 'OAuth2Proxy') {
@@ -61,48 +127,12 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }): JSX.El
 
   const { showBoundary } = useErrorBoundary();
 
-  const {
-    providerUrl,
-    clientId,
-    redirectUrl,
-    responseType,
-    scopes,
-    defaultDexConnector,
-  } = authConfig;
+  const { providerUrl, clientId, redirectUrl, responseType, scopes, defaultDexConnector } = authConfig;
 
-  const userManager = useMemo(() => {
-    const manager = new UserManager({
-      authority: providerUrl,
-      client_id: clientId,
-      redirect_uri: getAbsoluteRedirectUrl(redirectUrl),
-      silent_redirect_uri: getAbsoluteRedirectUrl(redirectUrl),
-      post_logout_redirect_uri: getAbsoluteRedirectUrl(redirectUrl),
-      response_type: responseType || 'code',
-      scope: scopes,
-      loadUserInfo: true,
-      automaticSilentRenew: true,
-      monitorSession: false,
-      MetadataServiceCtor: defaultDexConnector
-        ? defaultDexConnectorMetadataService(defaultDexConnector)
-        : MetadataService,
-      // @ts-expect-error - FIXME when you are working on it
-      userStore: new WebStorageStateStore({
-        store: localStorage,
-      }),
-    });
-
-    const originalSigninCallBack = manager.signinCallback.bind(manager);
-    manager.signinCallback = (url) =>
-      originalSigninCallBack(url).catch((e) => {
-        showBoundary({
-          en: 'We failed to log you in, this might be due to a time synchronization issue between the browser and the server.',
-          fr: `Nous n'avons pas réussi à vous connecter, cela peut être dû à une dé-synchronisation de l'heure entre le navigateur et le serveur`,
-        });
-        throw e;
-      });
-
-    return manager;
-  }, [providerUrl, clientId, redirectUrl, responseType, scopes, defaultDexConnector, showBoundary]);
+  const userManager = useMemo(
+    () => buildUserManager(authConfig, showBoundary),
+    [providerUrl, clientId, redirectUrl, responseType, scopes, defaultDexConnector, showBoundary],
+  );
 
   useEffect(() => {
     return () => {
@@ -111,6 +141,7 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }): JSX.El
   }, [userManager]);
 
   const { logOut } = useInternalLogout(userManager, authConfig);
+
   //Force logout on silent renewal error
   useEffect(() => {
     const onSilentRenewError = (err) => {
@@ -151,29 +182,7 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }): JSX.El
     }
   }, [auth?.userData, userManager]);
 
-  const oidcConfig: AuthProviderProps = {
-    onBeforeSignIn: () => {
-      localStorage.setItem('redirectUrl', window.location.href);
-      return window.location.href;
-    },
-    onSignIn: () => {
-      const savedRedirectUri = localStorage.getItem('redirectUrl');
-      localStorage.removeItem('redirectUrl');
-
-      if (savedRedirectUri) {
-        location.href = savedRedirectUri;
-      } else {
-        const searchParams = new URLSearchParams(location.search);
-        searchParams.delete('state');
-        searchParams.delete('session_state');
-        searchParams.delete('code');
-        location.search = searchParams.toString();
-        location.hash = '';
-      }
-    },
-    userManager,
-  };
-  return <OIDCAuthProvider {...oidcConfig}>{children}</OIDCAuthProvider>;
+  return <OIDCAuthProvider {...buildOidcConfig(userManager)}>{children}</OIDCAuthProvider>;
 }
 
 export type UserData = {
@@ -224,18 +233,29 @@ export function useAuth(): {
   }
 }
 
+function getOidcConfigFields(
+  authConfig: OAuth2ProxyConfig | OIDCConfig | undefined,
+): OIDCConfig | undefined {
+  if (!authConfig || authConfig.kind === 'OAuth2Proxy') {
+    return undefined;
+  }
+  return authConfig;
+}
+
 function useInternalLogout(
   userManager?: UserManager,
   // @ts-expect-error - FIXME when you are working on it
   authConfig: OAuth2ProxyConfig | OIDCConfig | undefined,
 ): { logOut: () => void } {
-  const providerUrl = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.providerUrl : undefined;
-  const clientId = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.clientId : undefined;
-  const redirectUrl = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.redirectUrl : undefined;
-  const responseType = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.responseType : undefined;
-  const scopes = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.scopes : undefined;
-  const defaultDexConnector = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.defaultDexConnector : undefined;
-  const providerLogout = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.providerLogout : undefined;
+  const oidcConfig = getOidcConfigFields(authConfig);
+
+  const providerUrl = oidcConfig?.providerUrl;
+  const clientId = oidcConfig?.clientId;
+  const redirectUrl = oidcConfig?.redirectUrl;
+  const responseType = oidcConfig?.responseType;
+  const scopes = oidcConfig?.scopes;
+  const defaultDexConnector = oidcConfig?.defaultDexConnector;
+  const providerLogout = oidcConfig?.providerLogout;
   const kind = authConfig?.kind;
 
   return {
