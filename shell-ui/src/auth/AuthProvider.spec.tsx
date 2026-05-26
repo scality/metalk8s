@@ -184,10 +184,13 @@ describe('OAuth2AuthProvider', () => {
     expect(mockRemoveSilentRenewError).toHaveBeenCalledWith(registeredHandler);
   });
 
+  const PAST = Math.floor(Date.now() / 1000) - 3600;
+  const FUTURE = Math.floor(Date.now() / 1000) + 3600;
+
   it('does not call removeUser or reload when userData is expired but localStorage holds a valid token', async () => {
     const { mockGetUser, mockRemoveUser, mockUseAuth } = getMocks();
-    (mockUseAuth as any).__setValue({ userData: { expired: true } });
-    mockGetUser.mockResolvedValue({ expired: false });
+    (mockUseAuth as any).__setValue({ userData: { expired: true, expires_at: PAST } });
+    mockGetUser.mockResolvedValue({ expired: false, expires_at: FUTURE });
 
     render(<div />, { wrapper: Wrapper });
 
@@ -201,8 +204,27 @@ describe('OAuth2AuthProvider', () => {
 
   it('calls removeUser and reload when both userData and localStorage token are expired', async () => {
     const { mockGetUser, mockRemoveUser, mockUseAuth } = getMocks();
-    (mockUseAuth as any).__setValue({ userData: { expired: true } });
-    mockGetUser.mockResolvedValue({ expired: true });
+    (mockUseAuth as any).__setValue({ userData: { expired: true, expires_at: PAST } });
+    mockGetUser.mockResolvedValue({ expired: true, expires_at: PAST });
+
+    render(<div />, { wrapper: Wrapper });
+
+    await waitFor(() => {
+      expect(mockRemoveUser).toHaveBeenCalled();
+    });
+
+    expect(window.location.reload).toHaveBeenCalled();
+  });
+
+  // Defensive guard inherited from the pre-PR useQuery implementation: when a
+  // User record exists but has no expires_at (corrupt / unknown state), we
+  // treat it as expired and force a clean-slate logout rather than letting
+  // the bad state persist. Same rule applies on both the React-state side
+  // (auth.userData) and the localStorage side (userManager.getUser()).
+  it('logs out when userData has no expires_at and localStorage is also missing/empty', async () => {
+    const { mockGetUser, mockRemoveUser, mockUseAuth } = getMocks();
+    (mockUseAuth as any).__setValue({ userData: { /* no expired, no expires_at */ } });
+    mockGetUser.mockResolvedValue(null);
 
     render(<div />, { wrapper: Wrapper });
 
@@ -215,8 +237,8 @@ describe('OAuth2AuthProvider', () => {
 
   it('runs the expiry-check once regardless of how many useAuth consumers are mounted', async () => {
     const { mockGetUser, mockRemoveUser, mockUseAuth } = getMocks();
-    (mockUseAuth as any).__setValue({ userData: { expired: true } });
-    mockGetUser.mockResolvedValue({ expired: false });
+    (mockUseAuth as any).__setValue({ userData: { expired: true, expires_at: PAST } });
+    mockGetUser.mockResolvedValue({ expired: false, expires_at: FUTURE });
 
     const { useAuth: useAuthFromProvider } = require('./AuthProvider');
     function Consumer() {

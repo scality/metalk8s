@@ -178,16 +178,30 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }): JSX.El
 function ExpiryWatcher({ userManager }: { userManager: UserManager }): null {
   const auth = useOauth2Auth();
 
+  // Handle token expiration with a double-check mechanism.
+  //
+  // React state (auth.userData) and localStorage can get out of sync: when silent
+  // renew refreshes the token in localStorage, React state still shows the old
+  // expired token until the next re-render. To avoid an incorrect logout we
+  // re-read userManager.getUser() (localStorage) before removing the user.
+  //
+  // "Expired" here means `expired === true` OR `expires_at` missing — treating
+  // unknown-expiry as expired guards against corrupt User records.
   useEffect(() => {
-    if (auth?.userData?.expired) {
-      userManager.getUser().then((localStorageUser) => {
-        if (localStorageUser?.expired !== false) {
-          userManager.removeUser().then(() => {
-            location.reload();
-          });
-        }
-      });
-    }
+    const userData = auth?.userData;
+    if (!userData) return;
+    const userIsExpired = userData.expired || !userData.expires_at;
+    if (!userIsExpired) return;
+
+    userManager.getUser().then((localStorageUser) => {
+      const isActuallyExpired =
+        localStorageUser?.expired || !localStorageUser?.expires_at;
+      if (isActuallyExpired) {
+        userManager.removeUser().then(() => {
+          location.reload();
+        });
+      }
+    });
   }, [auth?.userData, userManager]);
 
   return null;
