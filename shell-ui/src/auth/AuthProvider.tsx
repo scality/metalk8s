@@ -1,9 +1,8 @@
 import { MetadataService, type User, WebStorageStateStore } from 'oidc-client-ts';
 import { type AuthContextProps, type AuthProviderProps, AuthProvider as OIDCAuthProvider, UserManager, useAuth as useOauth2Auth } from 'oidc-react';
 import type React from 'react';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useErrorBoundary } from 'react-error-boundary';
-import { useQuery } from 'react-query';
 import type { OAuth2ProxyConfig, OIDCConfig } from '../initFederation/ConfigurationProviders';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { getUserGroups } from '../navbar/auth/permissionUtils';
@@ -54,39 +53,63 @@ export function getAbsoluteRedirectUrl(redirectUrl?: string) {
   return window.location.origin + redirectUrl;
 }
 
-function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
+function OAuth2AuthProvider({ children }: { children: React.ReactNode }): JSX.Element {
   const { authConfig } = useAuthConfig();
   if (authConfig.kind === 'OAuth2Proxy') {
     throw new Error('OAuth2Proxy authentication kind is not yet supported');
   }
-  const userManager = new UserManager({
-    authority: authConfig.providerUrl,
-    client_id: authConfig.clientId,
-    redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
-    silent_redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
-    post_logout_redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
-    response_type: authConfig.responseType || 'code',
-    scope: authConfig.scopes,
-    loadUserInfo: true,
-    automaticSilentRenew: true,
-    monitorSession: false,
-    MetadataServiceCtor: authConfig.defaultDexConnector
-      ? defaultDexConnectorMetadataService(authConfig.defaultDexConnector)
-      : MetadataService,
-    // @ts-expect-error - FIXME when you are working on it
-    userStore: new WebStorageStateStore({
-      store: localStorage,
-    }),
-  });
-  const originalSigninCallBack = userManager.signinCallback.bind(userManager);
+
   const { showBoundary } = useErrorBoundary();
-  userManager.signinCallback = (url) => originalSigninCallBack(url).catch((e) => {
-      showBoundary({
-        en: 'We failed to log you in, this might be due to a time synchronization issue between the browser and the server.',
-        fr: `Nous n'avons pas réussi à vous connecter, cela peut être dû à une dé-synchronisation de l'heure entre le navigateur et le serveur`,
-      });
-      throw e;
+
+  const {
+    providerUrl,
+    clientId,
+    redirectUrl,
+    responseType,
+    scopes,
+    defaultDexConnector,
+  } = authConfig;
+
+  const userManager = useMemo(() => {
+    const manager = new UserManager({
+      authority: providerUrl,
+      client_id: clientId,
+      redirect_uri: getAbsoluteRedirectUrl(redirectUrl),
+      silent_redirect_uri: getAbsoluteRedirectUrl(redirectUrl),
+      post_logout_redirect_uri: getAbsoluteRedirectUrl(redirectUrl),
+      response_type: responseType || 'code',
+      scope: scopes,
+      loadUserInfo: true,
+      automaticSilentRenew: true,
+      monitorSession: false,
+      MetadataServiceCtor: defaultDexConnector
+        ? defaultDexConnectorMetadataService(defaultDexConnector)
+        : MetadataService,
+      // @ts-expect-error - FIXME when you are working on it
+      userStore: new WebStorageStateStore({
+        store: localStorage,
+      }),
     });
+
+    const originalSigninCallBack = manager.signinCallback.bind(manager);
+    manager.signinCallback = (url) =>
+      originalSigninCallBack(url).catch((e) => {
+        showBoundary({
+          en: 'We failed to log you in, this might be due to a time synchronization issue between the browser and the server.',
+          fr: `Nous n'avons pas réussi à vous connecter, cela peut être dû à une dé-synchronisation de l'heure entre le navigateur et le serveur`,
+        });
+        throw e;
+      });
+
+    return manager;
+  }, [providerUrl, clientId, redirectUrl, responseType, scopes, defaultDexConnector, showBoundary]);
+
+  useEffect(() => {
+    return () => {
+      userManager.stopSilentRenew();
+    };
+  }, [userManager]);
+
   const { logOut } = useInternalLogout(userManager, authConfig);
   //Force logout on silent renewal error
   useEffect(() => {
@@ -109,7 +132,7 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
       userManager.events.removeSilentRenewError(onSilentRenewError);
       window.removeEventListener('storage', reloadWhenUserStorageIsEmpty);
     };
-  }, [logOut]);
+  }, [logOut, userManager]);
   const oidcConfig: AuthProviderProps = {
     onBeforeSignIn: () => {
       localStorage.setItem('redirectUrl', window.location.href);
@@ -153,52 +176,6 @@ export function useAuth(): {
 
     const { config } = useShellConfig();
 
-    const hasExpiredDate = auth.userData?.expires_at;
-    const userIsExpired = auth.userData?.expired || !hasExpiredDate;
-    const shouldEnableQuery = !!(
-      auth.userData &&
-      userIsExpired &&
-      // @ts-expect-error - window.isLoggingOut is a temp flag to prevent multiple logout attempts
-      !window.isLoggingOut
-    );
-
-    // Handle token expiration with a double-check mechanism.
-    //
-    // Problem: React state (auth.userData) and localStorage can get out of sync.
-    // When silent renew refreshes the token in localStorage, React state still shows
-    // the old expired token until the next re-render. This would incorrectly trigger
-    // a logout even though a valid token exists in localStorage.
-    //
-    // Solution: Before removing the user, read directly from localStorage via
-    // userManager.getUser() to verify the token is actually expired.
-    useQuery({
-      queryKey: ['removeUser'],
-      queryFn: () => {
-        // Prevent concurrent logout attempts from multiple components
-        // @ts-expect-error - window.isLoggingOut is a temp flag
-        window.isLoggingOut = true;
-
-        // Double-check expiration against localStorage (source of truth)
-        return auth.userManager.getUser().then((user) => {
-          const isActuallyExpired = user?.expired || !user?.expires_at;
-
-          if (isActuallyExpired) {
-            // Token is genuinely expired in localStorage - log out
-            return auth.userManager.removeUser().then(() => {
-              location.reload();
-            });
-          }
-
-          // Token in localStorage is valid (silent renew succeeded).
-          // React state will catch up on next render - no action needed.
-          // @ts-expect-error - reset the flag since we're not actually logging out
-          window.isLoggingOut = false;
-          return Promise.resolve();
-        });
-      },
-      enabled: shouldEnableQuery,
-    });
-
     if (!auth || !auth.userData) {
       return {
         userData: undefined,
@@ -233,7 +210,16 @@ function useInternalLogout(
   userManager?: UserManager,
   // @ts-expect-error - FIXME when you are working on it
   authConfig: OAuth2ProxyConfig | OIDCConfig | undefined,
-) {
+): { logOut: () => void } {
+  const providerUrl = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.providerUrl : undefined;
+  const clientId = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.clientId : undefined;
+  const redirectUrl = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.redirectUrl : undefined;
+  const responseType = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.responseType : undefined;
+  const scopes = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.scopes : undefined;
+  const defaultDexConnector = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.defaultDexConnector : undefined;
+  const providerLogout = authConfig?.kind !== 'OAuth2Proxy' ? authConfig?.providerLogout : undefined;
+  const kind = authConfig?.kind;
+
   return {
     logOut: useCallback(() => {
       if (!authConfig) {
@@ -266,7 +252,7 @@ function useInternalLogout(
           });
         });
       }
-    }, [JSON.stringify(authConfig), userManager]),
+    }, [kind, providerUrl, clientId, redirectUrl, responseType, scopes, defaultDexConnector, providerLogout, userManager]),
   };
 }
 
