@@ -133,6 +133,24 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }): JSX.El
       window.removeEventListener('storage', reloadWhenUserStorageIsEmpty);
     };
   }, [logOut, userManager]);
+
+  const auth = useOauth2Auth();
+
+  // Single expiry-check side-effect: fires once per provider instance.
+  // If auth.userData is expired, double-check localStorage via userManager.getUser();
+  // only call removeUser + reload when the localStorage token is also expired.
+  useEffect(() => {
+    if (auth?.userData?.expired) {
+      userManager.getUser().then((localStorageUser) => {
+        if (localStorageUser?.expired !== false) {
+          userManager.removeUser().then(() => {
+            location.reload();
+          });
+        }
+      });
+    }
+  }, [auth?.userData, userManager]);
+
   const oidcConfig: AuthProviderProps = {
     onBeforeSignIn: () => {
       localStorage.setItem('redirectUrl', window.location.href);
