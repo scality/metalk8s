@@ -1,18 +1,19 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider } from './AuthProvider';
 import { AuthConfigProvider, useAuthConfig } from './AuthConfigProvider';
 import { ErrorBoundary } from 'react-error-boundary';
 
 // --- Mocks ---
 
-// We override the global oidc-react mock (from setupTests.ts) with one that also
-// exposes a controllable UserManager constructor. All mock references are stored on
-// UserManager.__mockInstance so they can be retrieved via jest.requireMock without
-// relying on module-level variables (which would be uninitialized when jest.mock
-// factories are hoisted).
-
+// Context-aware mock of oidc-react: the mocked AuthProvider exposes a real
+// React context, and useAuth() throws when called outside it — mirroring the
+// real library. A previous passthrough mock returned a value unconditionally,
+// which hid a structural bug where useOauth2Auth() was called from
+// OAuth2AuthProvider (the parent of OIDCAuthProvider).
 jest.mock('oidc-react', () => {
+  const ReactLib = require('react');
+
   const mockAddSilentRenewError = jest.fn();
   const mockRemoveSilentRenewError = jest.fn();
   const mockStopSilentRenew = jest.fn();
@@ -35,14 +36,28 @@ jest.mock('oidc-react', () => {
   const MockUserManager = jest.fn().mockImplementation(() => instance);
   MockUserManager.__mockInstance = instance;
 
-  const mockUseAuth = jest.fn().mockReturnValue({
-    isLoading: false,
-    userData: null,
-    userManager: instance,
+  const AuthContext = ReactLib.createContext(null);
+  let currentAuthValue: unknown = { isLoading: false, userData: null, userManager: instance };
+
+  const MockAuthProvider = ({ children }: { children: unknown }) =>
+    ReactLib.createElement(AuthContext.Provider, { value: currentAuthValue }, children);
+
+  const mockUseAuth = jest.fn(() => {
+    const ctx = ReactLib.useContext(AuthContext);
+    if (ctx === null) {
+      throw new Error(
+        'AuthProvider context is undefined, please verify you are calling useAuth() as child of a <AuthProvider> component.',
+      );
+    }
+    return ctx;
   });
 
-  // AuthProvider (OIDCAuthProvider) must be a passthrough so OAuth2AuthProvider renders correctly.
-  const MockAuthProvider = ({ children }: { children: unknown }) => children;
+  (mockUseAuth as any).__setValue = (v: Record<string, unknown>) => {
+    currentAuthValue = { ...(currentAuthValue as object), ...v, userManager: instance };
+  };
+  (mockUseAuth as any).__reset = () => {
+    currentAuthValue = { isLoading: false, userData: null, userManager: instance };
+  };
 
   return {
     AuthProvider: MockAuthProvider,
@@ -102,7 +117,7 @@ function SetAuthConfig() {
 
 function Wrapper({ children }: { children: React.ReactNode }) {
   return (
-    <ErrorBoundary FallbackComponent={() => <div>error</div>}>
+    <ErrorBoundary FallbackComponent={() => <div data-testid="error-fallback">error</div>}>
       <AuthConfigProvider>
         <SetAuthConfig />
         <AuthProvider>{children}</AuthProvider>
@@ -111,19 +126,17 @@ function Wrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
-function getOidcReactMocks() {
+function getMocks() {
   const oidcReact = jest.requireMock('oidc-react') as any;
-  const MockUserManager = oidcReact.UserManager;
-  const instance = MockUserManager.__mockInstance;
+  const instance = oidcReact.UserManager.__mockInstance;
   return {
-    MockUserManager,
+    MockUserManager: oidcReact.UserManager,
     mockUseAuth: oidcReact.useAuth,
     mockAddSilentRenewError: instance.events.addSilentRenewError,
     mockRemoveSilentRenewError: instance.events.removeSilentRenewError,
     mockGetUser: instance.getUser,
     mockRemoveUser: instance.removeUser,
     mockStopSilentRenew: instance.stopSilentRenew,
-    instance,
   };
 }
 
@@ -131,44 +144,31 @@ function getOidcReactMocks() {
 
 describe('OAuth2AuthProvider', () => {
   beforeEach(() => {
-    const { MockUserManager, mockGetUser, mockRemoveUser, mockUseAuth, instance } = getOidcReactMocks();
-    MockUserManager.mockClear();
-    mockGetUser.mockResolvedValue(null);
-    mockRemoveUser.mockResolvedValue(undefined);
-    mockUseAuth.mockReturnValue({
-      isLoading: false,
-      userData: null,
-      userManager: instance,
-    });
+    const m = getMocks();
+    m.MockUserManager.mockClear();
+    m.mockGetUser.mockReset().mockResolvedValue(null);
+    m.mockRemoveUser.mockReset().mockResolvedValue(undefined);
+    m.mockAddSilentRenewError.mockClear();
+    m.mockRemoveSilentRenewError.mockClear();
+    m.mockStopSilentRenew.mockClear();
+    (m.mockUseAuth as any).__reset();
     (window.location.reload as jest.Mock).mockClear?.();
   });
 
-  // Skipped: @testing-library/react rerender with wrapper remounts AuthConfigProvider, resetting
-  // useMemo deps. The memoization is verified manually via React DevTools profiling and by the
-  // silentRenewError test which would fail if a new userManager were constructed on each render.
-  it.skip('should construct UserManager exactly once across multiple renders', async () => {
-    const { MockUserManager } = getOidcReactMocks();
-
-    const { rerender } = render(<div />, { wrapper: Wrapper });
-
+  // Regression: ExpiryWatcher's useOauth2Auth() must be called inside
+  // OIDCAuthProvider. If anyone moves it up to OAuth2AuthProvider (the parent),
+  // the context-aware mock throws and ErrorBoundary's fallback renders.
+  it('renders OAuth2AuthProvider tree without triggering the error boundary', async () => {
+    const { mockAddSilentRenewError } = getMocks();
+    render(<div />, { wrapper: Wrapper });
     await waitFor(() => {
-      expect(MockUserManager).toHaveBeenCalled();
+      expect(mockAddSilentRenewError).toHaveBeenCalledTimes(1);
     });
-
-    // Record the call count after initial mount (authConfig goes undefined → OIDC once stabilised)
-    const callsAfterMount = MockUserManager.mock.calls.length;
-    expect(callsAfterMount).toBeGreaterThanOrEqual(1);
-
-    // Clear and re-render the *children* — the wrapper (with its stable authConfig) should
-    // not cause useMemo to rebuild the UserManager a second time.
-    MockUserManager.mockClear();
-    rerender(<span />);
-
-    expect(MockUserManager).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('error-fallback')).not.toBeInTheDocument();
   });
 
-  it('should register the silentRenewError listener once and remove it on unmount', async () => {
-    const { mockAddSilentRenewError, mockRemoveSilentRenewError } = getOidcReactMocks();
+  it('registers the silentRenewError listener once and removes it on unmount', async () => {
+    const { mockAddSilentRenewError, mockRemoveSilentRenewError } = getMocks();
 
     const { unmount } = render(<div />, { wrapper: Wrapper });
 
@@ -184,13 +184,9 @@ describe('OAuth2AuthProvider', () => {
     expect(mockRemoveSilentRenewError).toHaveBeenCalledWith(registeredHandler);
   });
 
-  it('should NOT call removeUser or location.reload when auth.userData is expired but localStorage has a valid token', async () => {
-    const { mockGetUser, mockRemoveUser, mockUseAuth, instance } = getOidcReactMocks();
-    mockUseAuth.mockReturnValue({
-      isLoading: false,
-      userData: { expired: true },
-      userManager: instance,
-    });
+  it('does not call removeUser or reload when userData is expired but localStorage holds a valid token', async () => {
+    const { mockGetUser, mockRemoveUser, mockUseAuth } = getMocks();
+    (mockUseAuth as any).__setValue({ userData: { expired: true } });
     mockGetUser.mockResolvedValue({ expired: false });
 
     render(<div />, { wrapper: Wrapper });
@@ -203,15 +199,10 @@ describe('OAuth2AuthProvider', () => {
     expect(window.location.reload).not.toHaveBeenCalled();
   });
 
-  it('should call removeUser and location.reload when both auth.userData and localStorage token are expired', async () => {
-    const { mockGetUser, mockRemoveUser, mockUseAuth, instance } = getOidcReactMocks();
-    mockUseAuth.mockReturnValue({
-      isLoading: false,
-      userData: { expired: true },
-      userManager: instance,
-    });
+  it('calls removeUser and reload when both userData and localStorage token are expired', async () => {
+    const { mockGetUser, mockRemoveUser, mockUseAuth } = getMocks();
+    (mockUseAuth as any).__setValue({ userData: { expired: true } });
     mockGetUser.mockResolvedValue({ expired: true });
-    mockRemoveUser.mockResolvedValue(undefined);
 
     render(<div />, { wrapper: Wrapper });
 
@@ -222,30 +213,22 @@ describe('OAuth2AuthProvider', () => {
     expect(window.location.reload).toHaveBeenCalled();
   });
 
-  it('should not call removeUser or reload when multiple useAuth consumers are mounted but localStorage has a valid token', async () => {
-    const { mockGetUser, mockRemoveUser, mockUseAuth, instance } = getOidcReactMocks();
-    mockUseAuth.mockReturnValue({
-      isLoading: false,
-      userData: { expired: true },
-      userManager: instance,
-    });
+  it('runs the expiry-check once regardless of how many useAuth consumers are mounted', async () => {
+    const { mockGetUser, mockRemoveUser, mockUseAuth } = getMocks();
+    (mockUseAuth as any).__setValue({ userData: { expired: true } });
     mockGetUser.mockResolvedValue({ expired: false });
 
     const { useAuth: useAuthFromProvider } = require('./AuthProvider');
-
-    function ConsumerA() {
+    function Consumer() {
       useAuthFromProvider();
-      return <span data-testid="a" />;
-    }
-    function ConsumerB() {
-      useAuthFromProvider();
-      return <span data-testid="b" />;
+      return null;
     }
 
     render(
       <>
-        <ConsumerA />
-        <ConsumerB />
+        <Consumer />
+        <Consumer />
+        <Consumer />
       </>,
       { wrapper: Wrapper },
     );
@@ -254,6 +237,7 @@ describe('OAuth2AuthProvider', () => {
       expect(mockGetUser).toHaveBeenCalled();
     });
 
+    expect(mockGetUser).toHaveBeenCalledTimes(1);
     expect(mockRemoveUser).not.toHaveBeenCalled();
     expect(window.location.reload).not.toHaveBeenCalled();
   });
