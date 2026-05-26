@@ -165,11 +165,19 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }): JSX.El
     };
   }, [logOut, userManager]);
 
+  return (
+    <OIDCAuthProvider {...buildOidcConfig(userManager)}>
+      <ExpiryWatcher userManager={userManager} />
+      {children}
+    </OIDCAuthProvider>
+  );
+}
+
+// useOauth2Auth() requires an OIDCAuthProvider ancestor, so the expiry-check
+// must live inside OIDCAuthProvider — not in OAuth2AuthProvider, which is the parent.
+function ExpiryWatcher({ userManager }: { userManager: UserManager }): null {
   const auth = useOauth2Auth();
 
-  // Single expiry-check side-effect: fires once per provider instance.
-  // If auth.userData is expired, double-check localStorage via userManager.getUser();
-  // only call removeUser + reload when the localStorage token is also expired.
   useEffect(() => {
     if (auth?.userData?.expired) {
       userManager.getUser().then((localStorageUser) => {
@@ -182,7 +190,7 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }): JSX.El
     }
   }, [auth?.userData, userManager]);
 
-  return <OIDCAuthProvider {...buildOidcConfig(userManager)}>{children}</OIDCAuthProvider>;
+  return null;
 }
 
 export type UserData = {
