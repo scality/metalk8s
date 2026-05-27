@@ -190,10 +190,10 @@ export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
         id: alert.fingerprint,
         summary: (alert.annotations && alert.annotations.summary) || '',
         description:
-        alert.annotations.description ||
-        alert.annotations.message ||
-        alert.annotations.summary ||
-        alert.labels.alertname,
+          alert.annotations.description ||
+          alert.annotations.message ||
+          alert.annotations.summary ||
+          alert.labels.alertname,
         startsAt: alert.startsAt,
         endsAt: alert.status === 'firing' ? new Date().toISOString() : alert.endsAt,
         severity: alert.labels.severity,
