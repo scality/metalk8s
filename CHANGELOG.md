@@ -12,6 +12,12 @@
 
 ## Release 133.0.7 (in development)
 
+### Bug Fixes
+
+- Disable anonymous authentication on `kube-apiserver`, except for the kubelet
+  probe endpoints (`livez`, `readyz`, `healthz`)
+  (PR[#4900](https://github.com/scality/metalk8s/pull/4900))
+
 ## Release 133.0.6
 
 ## Release 133.0.5
