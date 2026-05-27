@@ -34,8 +34,13 @@ export default function PlatformGlobalHealthBarFederated({
    * The prometheus client could not be initialized in the parent component rendering it.
    */
   useLayoutEffect(() => {
-    if (token) {
+    if (prometheusUrl) {
       initializePrometheus(prometheusUrl);
+    }
+  }, [prometheusUrl]);
+
+  useLayoutEffect(() => {
+    if (token) {
       setHeaders({ Authorization: `Bearer ${token}` });
     }
   }, [prometheusUrl, token]);
