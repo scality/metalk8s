@@ -226,19 +226,21 @@ def routes():
 
 def get_control_plane_ingress_ip():
     return __salt__["pillar.get"](
-        "metalk8s:cluster_config:status:controlPlane:ingress:ip"
+        "metalk8s:cluster_config:status:controlPlane:ingress:ip",
+        unmask=True,
     )
 
 
 def get_control_plane_ingress_endpoint():
     return __salt__["pillar.get"](
-        "metalk8s:cluster_config:status:controlPlane:ingress:endpoint"
+        "metalk8s:cluster_config:status:controlPlane:ingress:endpoint",
+        unmask=True,
     )
 
 
 def get_portmap_ips(as_cidr=False):
     result = set()
-    portmap_cidrs = __salt__["pillar.get"]("networks:portmap:cidr")
+    portmap_cidrs = __salt__["pillar.get"]("networks:portmap:cidr", unmask=True)
 
     if portmap_cidrs:
         if not isinstance(portmap_cidrs, list):
@@ -250,13 +252,16 @@ def get_portmap_ips(as_cidr=False):
                 result.update(__salt__["network.ip_addrs"](cidr=cidr))
     else:
         if as_cidr:
-            result = set(__salt__["pillar.get"]("networks:workload_plane:cidr"))
+            result = set(
+                __salt__["pillar.get"]("networks:workload_plane:cidr", unmask=True)
+            )
         else:
             result = {__grains__["metalk8s"]["workload_plane_ip"]}
 
     # Add potentials VIPs configured by the MetalK8s Operator
     vip_pools = __salt__["pillar.get"](
-        "metalk8s:cluster_config:spec:workloadPlane:virtualIPPools"
+        "metalk8s:cluster_config:spec:workloadPlane:virtualIPPools",
+        unmask=True,
     )
     if vip_pools:
         for _, pool in vip_pools.items():
@@ -275,14 +280,16 @@ def get_portmap_ips(as_cidr=False):
 
 def get_nodeport_cidrs():
     result = set()
-    nodeport_cidrs = __salt__["pillar.get"]("networks:nodeport:cidr")
+    nodeport_cidrs = __salt__["pillar.get"]("networks:nodeport:cidr", unmask=True)
 
     if nodeport_cidrs:
         if not isinstance(nodeport_cidrs, list):
             nodeport_cidrs = [nodeport_cidrs]
         result = set(nodeport_cidrs)
     else:
-        result = set(__salt__["pillar.get"]("networks:workload_plane:cidr"))
+        result = set(
+            __salt__["pillar.get"]("networks:workload_plane:cidr", unmask=True)
+        )
 
     result.add("127.0.0.1/32")
 

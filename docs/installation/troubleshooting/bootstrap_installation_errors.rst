@@ -133,7 +133,7 @@ Create the ``route-dummy-metalk8s`` network script:
   .. code-block:: shell
 
      cat > /etc/sysconfig/network-scripts/route-dummy-metalk8s << EOF
-     $(salt-call --local pillar.get networks:service --out=txt | cut -d' ' -f2-) dev dummy-metalk8s
+     $(salt-call --local pillar.get networks:service --out=txt unmask=True | cut -d' ' -f2-) dev dummy-metalk8s
      EOF
 
 Start the ``dummy-metalk8s`` interface:
@@ -148,7 +148,7 @@ Retrieve the service network CIDR:
 
   .. code-block:: shell
 
-     salt-call --local pillar.get networks:service --out=txt | cut -d' ' -f2-
+     salt-call --local pillar.get networks:service --out=txt unmask=True | cut -d' ' -f2-
 
 Create the ``dummy-metalk8s`` interface:
 

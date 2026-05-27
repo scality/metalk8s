@@ -142,9 +142,9 @@ launch_downgrade () {
 downgrade_bootstrap () {
     local saltmaster_endpoint repo_endpoint
     saltmaster_endpoint="$($SALT_CALL pillar.get metalk8s:endpoints:salt-master --out txt \
-        | cut -d' ' -f2- )"
+        unmask=True | cut -d' ' -f2- )"
     repo_endpoint="$($SALT_CALL pillar.get metalk8s:endpoints:repositories --out txt \
-        | cut -d' ' -f2- )"
+        unmask=True | cut -d' ' -f2- )"
 
     SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
@@ -173,7 +173,7 @@ patch_kubesystem_namespace() {
 
 get_cluster_version() {
     DESTINATION_VERSION=$($SALT_CALL \
-        pillar.get metalk8s:cluster_version --out txt | cut -c 8-)
+        pillar.get metalk8s:cluster_version --out txt unmask=True | cut -c 8-)
 }
 
 # Main

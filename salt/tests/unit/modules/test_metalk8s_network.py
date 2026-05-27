@@ -324,7 +324,7 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
         """
         grains = {"metalk8s": {"workload_plane_ip": "10.10.10.10"}}
 
-        def _pillar_get(key):
+        def _pillar_get(key, **_kwargs):
             if "portmap" in key:
                 return portmap_cidrs
             if "workload_plane" in key:
@@ -354,7 +354,7 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
         Tests the return of `get_nodeport_cidrs` function
         """
 
-        def _pillar_get(key):
+        def _pillar_get(key, **_kwargs):
             if "nodeport" in key:
                 return nodeport_cidrs
             if "workload_plane" in key:

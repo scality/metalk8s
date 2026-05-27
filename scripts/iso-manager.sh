@@ -9,6 +9,19 @@ SALT_CALL=${SALT_CALL:-salt-call}
 DRY_RUN="False"
 SALTENV=""
 
+# Pillar values are masked by default starting from Salt 3008.0 (Argon); pass
+# `unmask=True` to recover the previous behavior. This script may run with the
+# old Salt still in place (e.g. during an upgrade), where the kwarg is unknown,
+# so only add it when running Salt > 3007 (Chlorine).
+# NOTE: Once `development/135.0` no longer needs to upgrade from versions
+# shipping Salt < 3008.0, this conditional can be dropped and `unmask=True`
+# inlined directly.
+PILLAR_UNMASK=()
+if "$SALT_CALL" --local --out txt salt_version.greater_than Chlorine 2>/dev/null \
+        | grep -q "True"; then
+    PILLAR_UNMASK=(unmask=True)
+fi
+
 
 _usage() {
     echo "iso-manager.sh [options]"
@@ -115,7 +128,7 @@ _configure_archives() {
             pillar="{ \
                 'metalk8s': { \
                     'endpoints': \
-                        $(salt-call --out txt pillar.get metalk8s:endpoints | cut -c 8-), \
+                        $(salt-call --out txt pillar.get metalk8s:endpoints "${PILLAR_UNMASK[@]}" | cut -c 8-), \
                     'api_server': { \
                         'kubeconfig': '/etc/kubernetes/admin.conf' \
                     } \

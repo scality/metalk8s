@@ -134,7 +134,7 @@ check_certificates_renewal() {
 
         certificates_pillar=$(
             crictl exec -i "$salt_container" \
-                salt "$minion" pillar.get certificates \
+                salt "$minion" pillar.get certificates unmask=True \
                 --out json --out-indent -1
         )
 

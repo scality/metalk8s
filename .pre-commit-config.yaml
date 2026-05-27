@@ -1,3 +1,6 @@
+default_language_version:
+  python: python3.12
+
 repos:
   - repo: https://github.com/psf/black
     rev: 26.3.1
@@ -48,9 +51,10 @@ repos:
         files: salt/tests/unit/formulas/.*\.py
         additional_dependencies:
           - 'pyenchant~=3.3'
-          - 'salt==3006.26'
+          - 'salt==3008.2'
           - pytest
           - Jinja2
+          - PyYAML
 
       - id: pylint
         name: Lint sos report plugin

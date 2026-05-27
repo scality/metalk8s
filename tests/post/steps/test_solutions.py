@@ -330,7 +330,7 @@ def get_available_solution(host):
     def _get_available_solutions_from_pillar():
         with host.sudo():
             output = host.check_output(
-                f'salt-call --out=json pillar.get "{SOLUTION_PILLAR_KEY}"'
+                f'salt-call --out=json pillar.get "{SOLUTION_PILLAR_KEY}" unmask=True'
             )
         data = json.loads(output)["local"]
         assert "_errors" not in data

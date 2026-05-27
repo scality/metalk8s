@@ -182,7 +182,7 @@ def get_grain(host, key):
 def get_pillar(host, key, local=False):
     with host.sudo():
         output = host.check_output(
-            'salt-call {} --out=json pillar.get "{}"'.format(
+            'salt-call {} --out=json pillar.get "{}" unmask=True'.format(
                 "--local" if local else "", key
             )
         )

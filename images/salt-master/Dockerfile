@@ -19,20 +19,9 @@ RUN curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/d
       openssh-clients procps-ng \
       dnf \
       glibc-all-langpacks langpacks-en \
-      patch \
  && salt-pip install --no-cache-dir --upgrade pip \
  && salt-pip install --no-cache-dir "etcd3gw ~= 2.6.0" "kubernetes ~= 33.1.0" \
  && microdnf clean all
-
-# Apply local patches against the bundled salt onedir install; see
-# images/salt-master/patches/ for the standalone unified diffs and headers.
-COPY patches/ /tmp/salt-patches/
-RUN SALT_SITE_PACKAGES=$(salt-pip show salt | sed -n 's/^Location: //p') \
- && for patch_file in /tmp/salt-patches/salt-3006-*.patch; do \
-        echo "Applying $patch_file"; \
-        patch -p1 -d "$SALT_SITE_PACKAGES" < "$patch_file"; \
-    done \
- && rm -rf /tmp/salt-patches
 
 # Set up locale
 ENV LC_ALL=en_US.UTF-8

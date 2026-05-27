@@ -8,7 +8,7 @@ pod-to-pod communication:
 
    .. code-block:: shell
 
-      [root@bootstrap]# salt-call pillar.get networks
+      [root@bootstrap]# salt-call pillar.get networks unmask=True
       local:
           ----------
           control_plane:
