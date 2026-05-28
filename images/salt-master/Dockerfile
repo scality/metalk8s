@@ -21,8 +21,7 @@ RUN curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/d
       glibc-all-langpacks langpacks-en \
       patch \
  && salt-pip install --no-cache-dir --upgrade pip \
- # Pin protobuff version since newer versions does not work with etcd3
- && salt-pip install --no-cache-dir "protobuf <= 3.20.1" "etcd3 != 0.11.0" "kubernetes ~= 33.1.0" \
+ && salt-pip install --no-cache-dir "etcd3gw ~= 2.6.0" "kubernetes ~= 33.1.0" \
  && microdnf clean all
 
 # Apply local patches against the bundled salt onedir install; see
