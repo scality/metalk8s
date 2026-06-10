@@ -8,9 +8,10 @@ const DRAWER_WIDTH = 500;
 // Fallback Guardian origin for local development when shell config omits it.
 const GUARDIAN_ORIGIN_FALLBACK = 'http://localhost:8080';
 
-// Maps the shell product to the `source` value Guardian filters agents by.
-// RING reports `ring_ui`; every other console in the shell family is `artesca_ui`.
-const sourceForProduct = (productName: string): string => (productName === 'RING' ? 'ring_ui' : 'artesca_ui');
+// Maps the shell product to the `source` value Guardian filters agents by:
+// the lowercased product name with a `_ui` suffix (ARTESCA -> artesca_ui,
+// RING -> ring_ui).
+const sourceForProduct = (productName: string): string => `${productName.toLowerCase()}_ui`;
 
 export const GuardianDrawer = () => {
   const { isOpen } = useGuardianDrawer();
