@@ -21,7 +21,7 @@ export const GuardianDrawer = () => {
   // Bare origin (no query): used for postMessage targeting and origin checks.
   const guardianOrigin = config.guardianOrigin || GUARDIAN_ORIGIN_FALLBACK;
   // iframe src carries the source suffix; the origin passed to the hooks does not.
-  const iframeSrc = `${guardianOrigin}?source=${sourceForProduct(config.productName)}`;
+  const iframeSrc = `${guardianOrigin}?source=${encodeURIComponent(sourceForProduct(config.productName))}`;
 
   useDiscoveryEmitter(iframeRef, guardianOrigin);
   useMcpCallHandler(iframeRef, guardianOrigin);
