@@ -1,15 +1,29 @@
 import { useRef } from 'react';
+import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { useGuardianDrawer } from './GuardianContext';
-import { GUARDIAN_ORIGIN, useDiscoveryEmitter, useMcpCallHandler } from './guardianPostMessageHooks';
+import { useDiscoveryEmitter, useMcpCallHandler } from './guardianPostMessageHooks';
 
 const DRAWER_WIDTH = 500;
 
+// Fallback Guardian origin for local development when shell config omits it.
+const GUARDIAN_ORIGIN_FALLBACK = 'http://localhost:8080';
+
+// Maps the shell product to the `source` value Guardian filters agents by.
+// RING reports `ring_ui`; every other console in the shell family is `artesca_ui`.
+const sourceForProduct = (productName: string): string => (productName === 'RING' ? 'ring_ui' : 'artesca_ui');
+
 export const GuardianDrawer = () => {
   const { isOpen } = useGuardianDrawer();
+  const { config } = useShellConfig();
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
-  useDiscoveryEmitter(iframeRef);
-  useMcpCallHandler(iframeRef);
+  // Bare origin (no query): used for postMessage targeting and origin checks.
+  const guardianOrigin = config.guardianOrigin || GUARDIAN_ORIGIN_FALLBACK;
+  // iframe src carries the source suffix; the origin passed to the hooks does not.
+  const iframeSrc = `${guardianOrigin}?source=${sourceForProduct(config.productName)}`;
+
+  useDiscoveryEmitter(iframeRef, guardianOrigin);
+  useMcpCallHandler(iframeRef, guardianOrigin);
 
   return (
     <div
@@ -25,7 +39,7 @@ export const GuardianDrawer = () => {
     >
       <iframe
         ref={iframeRef}
-        src={GUARDIAN_ORIGIN}
+        src={iframeSrc}
         title="Guardian AI Assistant"
         style={{ width: DRAWER_WIDTH, height: '100%', border: 'none', background: '#000' }}
         allow="clipboard-write"

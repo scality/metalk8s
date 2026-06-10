@@ -1,28 +1,27 @@
 import type { ModelContextWithExtensions } from '@mcp-b/webmcp-types';
-import { useCallback, useEffect } from "react";
-
-export const GUARDIAN_ORIGIN = process.env.GUARDIAN_ORIGIN || 'http://localhost:8080';
+import { useCallback, useEffect } from 'react';
 
 // How often to re-send MCP_DISCOVERY (Guardian's React app may mount after the iframe load event)
 const DISCOVERY_INTERVAL_MS = 3000;
 
-export const useDiscoveryEmitter = (iframeRef: React.RefObject<HTMLIFrameElement>) => {
+// Both hooks take the Guardian `origin` (scheme + host + port, no query string)
+// sourced from shell config. It is used as the postMessage target origin and to
+// validate inbound message origins, so it must stay query-string-free even when
+// the iframe src carries a `?source=` suffix.
+export const useDiscoveryEmitter = (iframeRef: React.RefObject<HTMLIFrameElement>, origin: string) => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: useRef dependency
   const sendDiscovery = useCallback(() => {
     const tools = (navigator.modelContext as ModelContextWithExtensions)?.listTools?.() ?? [];
-    iframeRef.current?.contentWindow?.postMessage?.(
-      { type: 'MCP_DISCOVERY', tools },
-      GUARDIAN_ORIGIN,
-    );
-  }, []);
+    iframeRef.current?.contentWindow?.postMessage?.({ type: 'MCP_DISCOVERY', tools }, origin);
+  }, [origin]);
 
   useEffect(() => {
     const interval = setInterval(sendDiscovery, DISCOVERY_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [sendDiscovery]);
-}
+};
 
-export const useMcpCallHandler = (iframeRef: React.RefObject<HTMLIFrameElement>) => {
+export const useMcpCallHandler = (iframeRef: React.RefObject<HTMLIFrameElement>, origin: string) => {
   const postResponse = (id: string, response: unknown, error?: { code: number; message: string }) => {
     // biome-ignore lint/suspicious/noExplicitAny: it's postMessage arg type
     const message: any = { type: 'MCP_RESPONSE', id };
@@ -33,13 +32,13 @@ export const useMcpCallHandler = (iframeRef: React.RefObject<HTMLIFrameElement>)
       console.debug('[GuardianBubble] MCP_RESPONSE sent:', response);
       message.result = response;
     }
-    iframeRef.current?.contentWindow?.postMessage(message, GUARDIAN_ORIGIN);
+    iframeRef.current?.contentWindow?.postMessage(message, origin);
   };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: useRef dependency
   useEffect(() => {
     const handler = async (event: MessageEvent) => {
-      if (event.origin !== GUARDIAN_ORIGIN) return;
+      if (event.origin !== origin) return;
       if (event.data?.type !== 'MCP_CALL') return;
 
       const payload = event.data.payload;
@@ -58,10 +57,7 @@ export const useMcpCallHandler = (iframeRef: React.RefObject<HTMLIFrameElement>)
 
       // Immediately acknowledge reception
       console.debug('[GuardianBubble] MCP_ACK sent for id:', id);
-      iframeRef.current?.contentWindow?.postMessage(
-        { type: 'MCP_ACK', id },
-        GUARDIAN_ORIGIN,
-      );
+      iframeRef.current?.contentWindow?.postMessage({ type: 'MCP_ACK', id }, origin);
 
       try {
         const result = await (navigator.modelContext as ModelContextWithExtensions)?.callTool?.(params);
@@ -74,5 +70,5 @@ export const useMcpCallHandler = (iframeRef: React.RefObject<HTMLIFrameElement>)
 
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, []);
-}
+  }, [origin]);
+};
