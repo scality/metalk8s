@@ -383,7 +383,7 @@ export const Navbar = ({
     });
   }
 
-  if (process.env.GUARDIAN_ORIGIN && canUseGuardian) {
+  if (config.guardianOrigin && canUseGuardian) {
     rightTabs.unshift({
       render: () => (
         <Button
