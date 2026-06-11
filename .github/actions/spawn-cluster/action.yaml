@@ -85,7 +85,7 @@ runs:
         source: artifacts/
     - name: Checkout scality/terraform-snapshot
       if: inputs.skip-prepare == 'false'
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         repository: scality/terraform-snapshot
         path: terraform-snapshot
@@ -97,12 +97,12 @@ runs:
       run: sudo apt-get update && sudo apt-get install -y unzip
     - name: Install node
       if: inputs.skip-prepare == 'false'
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v6
       with:
         node-version: "14"
     - name: Install Terraform
       if: inputs.skip-prepare == 'false'
-      uses: hashicorp/setup-terraform@v2
+      uses: hashicorp/setup-terraform@v4
       with:
         terraform_version: ${{ inputs.TERRAFORM_VERSION }}
         terraform_wrapper: false
