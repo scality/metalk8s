@@ -80,9 +80,14 @@ Configuration
           oidc: {}
           featureGates:
             <feature_gate_name>: True
+          config:
+            defaultNotReadyTolerationSeconds: 60
+            defaultUnreachableTolerationSeconds: 60
         controllerManager:
           config:
             terminatedPodGCThreshold: 500
+            nodeMonitorGracePeriod: 30s
+            nodeMonitorPeriod: 5s
         coreDNS:
           hostForward: True
           replicas: 2
@@ -94,6 +99,7 @@ Configuration
         kubelet:
           config:
             maxPods: 110
+            nodeStatusUpdateFrequency: 10s
       salt:
         master:
           worker_threads: 12
@@ -245,13 +251,36 @@ defaults kubernetes configuration.
               hard:
                 - topologyKey: kubernetes.io/hostname
 
+  From ``apiServer`` section you can also tune how long ``kube-apiserver``
+  waits before evicting Pods running on a node that has been marked
+  ``NotReady`` or unreachable, through ``config.defaultNotReadyTolerationSeconds``
+  and ``config.defaultUnreachableTolerationSeconds`` (both default to ``60``
+  seconds).
+
   From ``controllerManager`` section you can override the number of terminated
   pods that can exist before the terminated pod garbage collector starts
   deleting them. If it's set to 0, the terminated pod garbage collector is
   disabled (default to ``500``)
 
+  You can also tune how the ``kube-controller-manager`` monitors nodes with
+  ``config.nodeMonitorGracePeriod``, the time a node can be unresponsive before
+  being marked ``NotReady`` (default to ``30s``), and ``config.nodeMonitorPeriod``,
+  the period of node status syncing (default to ``5s``).
+
   From ``kubelet`` section you can override the max number of pods that can
-  be scheduled on each nodes.
+  be scheduled on each nodes, and ``config.nodeStatusUpdateFrequency``, the
+  frequency at which the kubelet computes and reports node status (default to
+  ``10s``).
+
+  .. note::
+
+    These node monitoring and eviction settings control how fast Pods running
+    on a failed node get rescheduled elsewhere. Lowering them speeds up
+    recovery but, if set too low, transient issues (kubelet restart, brief
+    network interruption, high CPU load delaying status reports) may trigger
+    unnecessary evictions. The total time before eviction is roughly
+    ``nodeStatusUpdateFrequency + nodeMonitorGracePeriod +
+    default*TolerationSeconds``.
 
 The ``salt`` field can be omitted if you do not have any specific salt settings
 to configure.

@@ -155,9 +155,31 @@ def _load_kubernetes(config_data):
     # Default CoreDNS host forwarding to True
     kubernetes_data["coreDNS"].setdefault("hostForward", True)
 
-    kubernetes_data.setdefault("controllerManager", {}).setdefault(
+    controller_manager_config = kubernetes_data.setdefault(
+        "controllerManager", {}
+    ).setdefault("config", {})
+    controller_manager_config.setdefault("terminatedPodGCThreshold", 500)
+    # Time a node can be unresponsive before being marked NotReady by the
+    # kube-controller-manager (`--node-monitor-grace-period`).
+    controller_manager_config.setdefault("nodeMonitorGracePeriod", "30s")
+    # Period of node status syncing performed by the kube-controller-manager
+    # (`--node-monitor-period`).
+    controller_manager_config.setdefault("nodeMonitorPeriod", "5s")
+
+    # Time the kube-apiserver waits before evicting Pods from a node marked
+    # NotReady / unreachable (`--default-not-ready-toleration-seconds` and
+    # `--default-unreachable-toleration-seconds`).
+    api_server_config = kubernetes_data.setdefault("apiServer", {}).setdefault(
         "config", {}
-    ).setdefault("terminatedPodGCThreshold", 500)
+    )
+    api_server_config.setdefault("defaultNotReadyTolerationSeconds", 60)
+    api_server_config.setdefault("defaultUnreachableTolerationSeconds", 60)
+
+    # Frequency at which the kubelet computes and reports node status
+    # (`nodeStatusUpdateFrequency`).
+    kubernetes_data.setdefault("kubelet", {}).setdefault("config", {}).setdefault(
+        "nodeStatusUpdateFrequency", "10s"
+    )
 
     return kubernetes_data
 

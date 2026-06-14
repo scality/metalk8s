@@ -86,7 +86,7 @@ Create kubelet config file:
           verbosity: 0
         memorySwap: {}
         nodeStatusReportFrequency: 0s
-        nodeStatusUpdateFrequency: 0s
+        nodeStatusUpdateFrequency: {{ pillar.kubernetes.kubelet.config.nodeStatusUpdateFrequency }}
         # Disable rotate Certificates as we manage certificate rotation ourself
         # with salt
         # rotateCertificates: true
