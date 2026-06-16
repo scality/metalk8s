@@ -23,7 +23,7 @@ jobs:
           # we want to stop if this is not running on development branch
           [[ "${{github.ref_name}}" =~ ^development/[0-9.]+$ ]] || exit 1
       # create app token
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: ${{ vars.ACTIONS_APP_ID }}
@@ -119,7 +119,7 @@ jobs:
           git push --set-upstream origin ${{ env.INIT_BRANCH_NAME }}
       # create PR
       - name: create PR
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const pr = await github.rest.pulls.create({

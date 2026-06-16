@@ -11,7 +11,10 @@ const DISCOVERY_INTERVAL_MS = 3000;
 export const useDiscoveryEmitter = (iframeRef: React.RefObject<HTMLIFrameElement>, origin: string) => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: useRef dependency
   const sendDiscovery = useCallback(() => {
-    const tools = (navigator.modelContext as ModelContextWithExtensions)?.listTools?.() ?? [];
+    // Chrome 150 moved modelContext from navigator to document; navigator is a
+    // deprecated alias. https://github.com/webmachinelearning/webmcp/pull/184
+    const modelContext = document.modelContext || navigator.modelContext;
+    const tools = (modelContext as ModelContextWithExtensions)?.listTools?.() ?? [];
     iframeRef.current?.contentWindow?.postMessage?.({ type: 'MCP_DISCOVERY', tools }, origin);
   }, [origin]);
 
@@ -60,7 +63,8 @@ export const useMcpCallHandler = (iframeRef: React.RefObject<HTMLIFrameElement>,
       iframeRef.current?.contentWindow?.postMessage({ type: 'MCP_ACK', id }, origin);
 
       try {
-        const result = await (navigator.modelContext as ModelContextWithExtensions)?.callTool?.(params);
+        const modelContext = document.modelContext || navigator.modelContext;
+        const result = await (modelContext as ModelContextWithExtensions)?.callTool?.(params);
         postResponse(id, result);
       } catch (err) {
         console.error('[GuardianBubble] Tool execution failed:', err);
