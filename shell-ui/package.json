@@ -46,9 +46,9 @@
     "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "@mcp-b/global": "^2.2.0",
-    "@mcp-b/webmcp-local-relay": "^2.2.0",
-    "@mcp-b/webmcp-types": "^2.2.0",
+    "@mcp-b/global": "^3.0.0",
+    "@mcp-b/webmcp-local-relay": "^3.0.0",
+    "@mcp-b/webmcp-types": "^3.0.0",
     "@scality/core-ui": "0.219.0",
     "@scality/module-federation": "1.6.1",
     "downshift": "^8.0.0",

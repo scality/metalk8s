@@ -44,9 +44,21 @@ type RegisteredTool = {
 
 const registeredTools: Record<string, RegisteredTool> = {};
 
+// Mirror the WebMCP v3 runtime semantics: registerTool throws on a duplicate name
+// (https://github.com/WebMCP-org/npm-packages/issues/231) and an aborted
+// options.signal unregisters the tool (the spec-blessed cleanup path that
+// replaced the now-removed unregisterTool).
+type RegisterToolOptions = { signal?: AbortSignal };
+
 const mockModelContext = {
-  registerTool: jest.fn((tool: RegisteredTool) => {
+  registerTool: jest.fn((tool: RegisteredTool, options?: RegisterToolOptions) => {
+    if (registeredTools[tool.name]) {
+      throw new Error(`Tool already registered: ${tool.name}`);
+    }
     registeredTools[tool.name] = tool;
+    options?.signal?.addEventListener('abort', () => {
+      delete registeredTools[tool.name];
+    });
   }),
   unregisterTool: jest.fn((name: string) => {
     delete registeredTools[name];
@@ -65,11 +77,15 @@ beforeEach(() => {
   Object.keys(registeredTools).forEach((k) => delete registeredTools[k]);
   jest.clearAllMocks();
   mockGetToken.mockResolvedValue('test-token');
+  // Chrome 150+ exposes modelContext on document; navigator is a deprecated alias.
+  // Default tests onto document; feature-detection tests override per case.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (navigator as any).modelContext = mockModelContext;
+  (document as any).modelContext = mockModelContext;
 });
 
 afterEach(() => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  delete (document as any).modelContext;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete (navigator as any).modelContext;
 });
@@ -194,6 +210,7 @@ describe('_InternalMCPRegistrar', () => {
         expect.objectContaining({
           annotations: { readOnlyHint: true, openWorldHint: true },
         }),
+        expect.anything(),
       );
       const listed = mockModelContext.listTools();
       expect(listed[0].annotations).toEqual({ readOnlyHint: true, openWorldHint: true });
@@ -273,7 +290,7 @@ describe('_InternalMCPRegistrar', () => {
   });
 
   describe('cleanup', () => {
-    it('unregisters all tools on unmount', () => {
+    it('registers each tool with an AbortSignal and unregisters all on unmount', () => {
       const moduleExports = {
         [MODULE_KEY]: {
           createTools: () => [makeTool({ name: 'tool1' }), makeTool({ name: 'tool2' })],
@@ -290,17 +307,120 @@ describe('_InternalMCPRegistrar', () => {
       );
 
       expect(mockModelContext.listTools()).toHaveLength(2);
+      // Cleanup must go through the spec-blessed AbortSignal path, not the
+      // removed unregisterTool API.
+      expect(mockModelContext.registerTool).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
+      expect(mockModelContext.unregisterTool).not.toHaveBeenCalled();
 
       unmount();
 
       expect(mockModelContext.listTools()).toHaveLength(0);
-      expect(mockModelContext.unregisterTool).toHaveBeenCalledWith('tool1');
-      expect(mockModelContext.unregisterTool).toHaveBeenCalledWith('tool2');
+    });
+  });
+
+  describe('duplicate registration guard', () => {
+    it('does not re-register a tool whose name is already registered', () => {
+      // Simulate the name already being present (another app, a StrictMode/HMR
+      // remount, etc.). Re-registering would throw in WebMCP — see #231.
+      registeredTools['testTool'] = makeTool() as unknown as RegisteredTool;
+      const moduleExports = {
+        [MODULE_KEY]: { createTools: () => [makeTool()] },
+      };
+
+      expect(() =>
+        renderWithQueryClient(
+          <_InternalMCPRegistrar
+            moduleExports={moduleExports}
+            mcpToolsModuleInfo={mcpToolsModuleInfo}
+            selfConfiguration={selfConfiguration}
+            navigate={mockNavigate}
+          />,
+        ),
+      ).not.toThrow();
+
+      expect(mockModelContext.registerTool).not.toHaveBeenCalled();
+      expect(mockModelContext.listTools()).toHaveLength(1);
+    });
+
+    it('registers only the not-yet-registered tools from a mixed list', () => {
+      registeredTools['existing'] = makeTool({ name: 'existing' }) as unknown as RegisteredTool;
+      const moduleExports = {
+        [MODULE_KEY]: {
+          createTools: () => [makeTool({ name: 'existing' }), makeTool({ name: 'fresh' })],
+        },
+      };
+
+      renderWithQueryClient(
+        <_InternalMCPRegistrar
+          moduleExports={moduleExports}
+          mcpToolsModuleInfo={mcpToolsModuleInfo}
+          selfConfiguration={selfConfiguration}
+          navigate={mockNavigate}
+        />,
+      );
+
+      expect(mockModelContext.registerTool).toHaveBeenCalledTimes(1);
+      expect(mockModelContext.registerTool).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'fresh' }),
+        expect.anything(),
+      );
+      expect(mockModelContext.listTools().map((t) => t.name).sort()).toEqual([
+        'existing',
+        'fresh',
+      ]);
+    });
+  });
+
+  describe('modelContext feature detection (Chrome 150 document-first API)', () => {
+    it('registers via document.modelContext when present', () => {
+      const moduleExports = {
+        [MODULE_KEY]: { createTools: () => [makeTool()] },
+      };
+
+      renderWithQueryClient(
+        <_InternalMCPRegistrar
+          moduleExports={moduleExports}
+          mcpToolsModuleInfo={mcpToolsModuleInfo}
+          selfConfiguration={selfConfiguration}
+          navigate={mockNavigate}
+        />,
+      );
+
+      expect(mockModelContext.registerTool).toHaveBeenCalled();
+      expect(mockModelContext.listTools()).toHaveLength(1);
+    });
+
+    it('falls back to navigator.modelContext when document.modelContext is absent', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (document as any).modelContext;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (navigator as any).modelContext = mockModelContext;
+
+      const moduleExports = {
+        [MODULE_KEY]: { createTools: () => [makeTool()] },
+      };
+
+      renderWithQueryClient(
+        <_InternalMCPRegistrar
+          moduleExports={moduleExports}
+          mcpToolsModuleInfo={mcpToolsModuleInfo}
+          selfConfiguration={selfConfiguration}
+          navigate={mockNavigate}
+        />,
+      );
+
+      expect(mockModelContext.registerTool).toHaveBeenCalled();
+      expect(mockModelContext.listTools()).toHaveLength(1);
     });
   });
 
   describe('edge cases', () => {
-    it('does nothing when navigator.modelContext is unavailable', () => {
+    it('does nothing when modelContext is unavailable on document and navigator', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (document as any).modelContext;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (navigator as any).modelContext;
 
