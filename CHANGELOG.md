@@ -8,6 +8,12 @@
   avoid a transient upgrade failure when etcd has just been restarted
   (PR[#4974](https://github.com/scality/metalk8s/pull/4974))
 
+### Bug Fixes
+
+- upgrade script now waits for all minions to reconnect to new salt master before
+  flushing the mine
+  (PR[#4972](https://github.com/scality/metalk8s/pull/4972))
+
 ## Release 133.0.9
 
 ## Release 133.0.8
