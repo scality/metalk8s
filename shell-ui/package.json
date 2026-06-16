@@ -61,7 +61,7 @@
     "react-error-boundary": "^4.0.2",
     "react-intl": "^5.15.3",
     "react-query": "^3.34.0",
-    "react-router": "7.13.0",
+    "react-router": "7.15.1",
     "react-router-dom": "7.13.0",
     "styled-components": "^5.3.11",
     "typescript": "^5.6.3",
