@@ -54,7 +54,7 @@ def wait_minions(tgt="*", retry=10):
         # Either `minions` is empty, or not all succeeded
         return False
 
-    for attempts in range(1, retry):
+    for attempts in range(1, retry + 1):
         try:
             minions = client.cmd(tgt, "test.ping", timeout=2)
         except Exception as exc:  # pylint: disable=broad-except
