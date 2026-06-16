@@ -2,6 +2,12 @@
 
 ## Release 133.0.10 (in development)
 
+### Bug Fixes
+
+- upgrade script now waits for all minions to reconnect to new salt master before
+  flushing the mine
+  (PR[#4972](https://github.com/scality/metalk8s/pull/4972))
+
 ## Release 133.0.9
 
 ## Release 133.0.8
