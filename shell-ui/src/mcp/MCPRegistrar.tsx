@@ -1,5 +1,9 @@
 import '@mcp-b/global';
-import type { ModelContextClient, ToolDescriptor } from '@mcp-b/webmcp-types';
+import type {
+  ModelContextClient,
+  ModelContextWithExtensions,
+  ToolDescriptor,
+} from '@mcp-b/webmcp-types';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
 import { useEffect, useMemo, useRef } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -54,7 +58,11 @@ export const _InternalMCPRegistrar = ({
   useEffect(() => { userDataRef.current = userData; }, [userData]);
 
   useEffect(() => {
-    if (!navigator.modelContext) return;
+    // Chrome 150 moved the modelContext getter from Navigator to Document
+    // (webmachinelearning/webmcp#173 / PR #184). document.modelContext is now
+    // canonical; navigator.modelContext is kept as a deprecated alias.
+    const modelContext = document.modelContext || navigator.modelContext;
+    if (!modelContext) return;
 
     const mod = moduleExports[mcpToolsModuleInfo.module] as MCPToolsModule | undefined;
     // Proxy getToken/userData through refs so execute() always uses the latest
@@ -70,38 +78,56 @@ export const _InternalMCPRegistrar = ({
     const tools = mod?.createTools
       ? mod.createTools(context, navigate)
       : (mod?.tools ?? []);
-    const registeredNames: string[] = [];
+
+    // Names already present in the context — registered by another federated app,
+    // or left over from a StrictMode/HMR remount. registerTool throws on a
+    // duplicate name, so we skip those rather than crash the registrar.
+    // https://github.com/WebMCP-org/npm-packages/issues/231
+    const existingNames = new Set(
+      (modelContext as ModelContextWithExtensions).listTools?.().map((t) => t.name) ?? [],
+    );
+
+    // AbortController is the spec-blessed cleanup path: registerTool(tool, { signal })
+    // unregisters the tool when the signal aborts. unregisterTool was removed from
+    // the WebMCP spec on 2026-04-23 and is a no-op on native Chrome.
+    const controller = new AbortController();
 
     for (const tool of tools) {
-      navigator.modelContext.registerTool({
-        name: tool.name,
-        description: tool.description,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        inputSchema: tool.inputSchema,
-        ...(tool.annotations && { annotations: tool.annotations }),
-        execute: async (params: unknown, client: ModelContextClient) => {
-          // For createTools-based modules, context is already baked into the
-          // tool's execute closure. For legacy tools, inject context here.
-          const injectedContext = mod?.createTools ? undefined : context;
+      if (existingNames.has(tool.name)) {
+        console.debug(`[MCP] Tool "${tool.name}" already registered — skipping`);
+        continue;
+      }
 
-          return tool.execute(
-            {
-              ...(params as Record<string, unknown>),
-              ...(injectedContext && { context: injectedContext }),
-            },
-            client,
-          );
+      modelContext.registerTool(
+        {
+          name: tool.name,
+          description: tool.description,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          inputSchema: tool.inputSchema,
+          ...(tool.annotations && { annotations: tool.annotations }),
+          execute: async (params: unknown, client: ModelContextClient) => {
+            // For createTools-based modules, context is already baked into the
+            // tool's execute closure. For legacy tools, inject context here.
+            const injectedContext = mod?.createTools ? undefined : context;
+
+            return tool.execute(
+              {
+                ...(params as Record<string, unknown>),
+                ...(injectedContext && { context: injectedContext }),
+              },
+              client,
+            );
+          },
         },
-      });
+        { signal: controller.signal },
+      );
 
-      registeredNames.push(tool.name);
+      // Track within this registration pass so the same name appearing twice in
+      // one tools array doesn't throw either.
+      existingNames.add(tool.name);
     }
 
-    return () => {
-      registeredNames.forEach((name) =>
-        navigator.modelContext?.unregisterTool?.(name),
-      );
-    };
+    return () => controller.abort();
   }, [moduleExports, mcpToolsModuleInfo, selfConfiguration, navigate, queryClient]);
 
   return null;
