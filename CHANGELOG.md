@@ -2,6 +2,12 @@
 
 ## Release 133.0.10 (in development)
 
+### Enhancements
+
+- Wait for the kube-apiserver to be ready before upgrading the apiservers, to
+  avoid a transient upgrade failure when etcd has just been restarted
+  (PR[#4974](https://github.com/scality/metalk8s/pull/4974))
+
 ## Release 133.0.9
 
 ## Release 133.0.8
