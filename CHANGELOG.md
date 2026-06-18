@@ -29,6 +29,10 @@
   and Loki image to [v3.6.7](https://github.com/grafana/loki/releases/tag/v3.6.7)
   (PR[#4979](https://github.com/scality/metalk8s/pull/4979))
 
+- Bump ingress-nginx chart to [4.15.1](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.15.1)
+  and nginx ingress controller to [v1.15.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.15.1)
+  (PR[#4980](https://github.com/scality/metalk8s/pull/4980))
+
 ## Release 133.0.12 (in development)
 
 ## Release 133.0.11
