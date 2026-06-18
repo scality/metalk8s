@@ -25,6 +25,10 @@
   and Fluent Bit image to [v5.0.7](https://github.com/fluent/fluent-bit/releases/tag/v5.0.7)
   (PR[#4978](https://github.com/scality/metalk8s/pull/4978))
 
+- Bump loki chart to [7.0.0](https://github.com/grafana/helm-charts/releases/tag/helm-loki-7.0.0)
+  and Loki image to [v3.6.7](https://github.com/grafana/loki/releases/tag/v3.6.7)
+  (PR[#4979](https://github.com/scality/metalk8s/pull/4979))
+
 ## Release 133.0.11 (in development)
 
 ### Bug Fixes
