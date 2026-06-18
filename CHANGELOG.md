@@ -21,6 +21,10 @@
 - Bump dex chart to [0.24.1](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.1)
   (PR[#4977](https://github.com/scality/metalk8s/pull/4977))
 
+- Bump fluent-bit chart to [0.57.7](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.57.7)
+  and Fluent Bit image to [v5.0.7](https://github.com/fluent/fluent-bit/releases/tag/v5.0.7)
+  (PR[#4978](https://github.com/scality/metalk8s/pull/4978))
+
 ## Release 133.0.11 (in development)
 
 ### Bug Fixes
