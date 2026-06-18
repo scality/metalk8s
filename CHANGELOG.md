@@ -4,6 +4,9 @@
 
 ### Enhancements
 
+- Bump dex chart to [0.24.1](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.1)
+  (PR[#4977](https://github.com/scality/metalk8s/pull/4977))
+
 - Bump Kubernetes version to [1.34.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.34.7)
   (PR[#4928](https://github.com/scality/metalk8s/pull/4928))
 
