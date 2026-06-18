@@ -11,15 +11,15 @@ charset-normalizer==3.4.4
 cloudpickle==3.1.2
     # via doit
 docker==7.1.0
-    # via -r /workspaces/metalk8s/buildchain/requirements.in
+    # via -r requirements.in
 doit==0.36.0
-    # via -r /workspaces/metalk8s/buildchain/requirements.in
-idna==3.11
+    # via -r requirements.in
+idna==3.15
     # via requests
 importlib-metadata==8.7.1
     # via doit
 pyyaml==6.0.3
-    # via -r /workspaces/metalk8s/buildchain/requirements.in
+    # via -r requirements.in
 requests==2.32.5
     # via docker
 urllib3==2.6.3
@@ -28,6 +28,3 @@ urllib3==2.6.3
     #   requests
 zipp==3.23.0
     # via importlib-metadata
-# Note: these come from 'buildchain/platform-requirements.txt'
-macfsevents==0.8.1; sys_platform=="darwin"  # via doit
-pyinotify==0.9.6; sys_platform=="linux"     # via doit
