@@ -90,6 +90,13 @@ upgrade_bootstrap () {
     "$SALT_CALL" --local saltutil.refresh_grains
     "$SALT_CALL" --local --retcode-passthrough state.sls \
         metalk8s.salt.master.installed saltenv="$SALTENV"
+
+    # After the salt-master container restarts, wait for all minions to
+    # reconnect before proceeding. Without this, the subsequent mine.flush
+    # + mine.update may fire before minions have re-established their ZeroMQ
+    # connection, causing "Minion did not return. [No response]" errors.
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
+    retry 10 10 "${SALT_MASTER_CALL[@]}" salt '*' test.ping
 }
 
 flush_and_refresh_mine() {
