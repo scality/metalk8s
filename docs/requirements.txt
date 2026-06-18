@@ -117,5 +117,5 @@ tornado==6.4.2
     # via livereload
 treelib==1.6.4
     # via -r ../tools/lib-alert-tree/requirements.txt
-urllib3==2.5.0
+urllib3==2.7.0
     # via requests
