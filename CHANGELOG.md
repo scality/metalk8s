@@ -4,9 +4,6 @@
 
 ### Enhancements
 
-- Bump dex chart to [0.24.1](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.1)
-  (PR[#4977](https://github.com/scality/metalk8s/pull/4977))
-
 - Bump Kubernetes version to [1.34.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.34.7)
   (PR[#4928](https://github.com/scality/metalk8s/pull/4928))
 
@@ -15,6 +12,10 @@
 
 - Bump dex chart to [0.24.1](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.1)
   (PR[#4977](https://github.com/scality/metalk8s/pull/4977))
+
+- Bump fluent-bit chart to [0.57.7](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.57.7)
+  and Fluent Bit image to [v5.0.7](https://github.com/fluent/fluent-bit/releases/tag/v5.0.7)
+  (PR[#4978](https://github.com/scality/metalk8s/pull/4978))
 
 ## Release 133.0.10 (in development)
 
