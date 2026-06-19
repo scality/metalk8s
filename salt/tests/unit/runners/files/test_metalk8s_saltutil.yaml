@@ -142,3 +142,21 @@ wait_minions:
     raises: True
     result: >-
       Minions still have running state after 10 retries: minion-2
+
+  # 13. Success: minion answers on the very last (10th) attempt
+  # Guards against an off-by-one in the retry loop: with the default
+  # `retry=10` all 10 ping attempts must be used, so a list of 9 failures
+  # followed by a success is fully consumed and the wait succeeds.
+  - ping_ret:
+      - False
+      - False
+      - False
+      - False
+      - False
+      - False
+      - False
+      - False
+      - False
+      - True
+    result: >-
+      All minions matching "*" responded and finished startup state: my-minion

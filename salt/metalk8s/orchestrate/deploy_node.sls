@@ -93,6 +93,9 @@ Wait minion available ssh:
   salt.runner:
     - name: metalk8s_saltutil.wait_minions
     - tgt: {{ node_name }}
+    - retry:
+        attempts: 3
+        interval: 30
     - require:
       - salt: Accept key
     - require_in:
@@ -202,6 +205,13 @@ Wait minion available:
   salt.runner:
     - name: metalk8s_saltutil.wait_minions
     - tgt: {{ node_name }}
+    # After the restart the minion re-authenticates quickly but its
+    # subscription to the salt-master publish channel can take a few minutes
+    # to re-establish, during which it answers no jobs. Re-run the wait so a
+    # slow reconnect does not fail the whole deployment.
+    - retry:
+        attempts: 3
+        interval: 30
     - require:
       - test: Wait minion available
     - require_in:
