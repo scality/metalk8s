@@ -88,6 +88,17 @@ NB: thanos chart is updated at the same time
 After the first failed build, rules.json and alerting_rules.json from
 `$ARTIFACTS_URL/alert_rules` and place them in `tools/rule_extractor` folder.
 
+**k8s-sidecar cross-dependency**: kube-prometheus-stack bundles `k8s-sidecar`
+(the Grafana sidecar for dashboard/datasource discovery). The Loki chart also
+uses `k8s-sidecar`, but its version is **explicitly pinned** in
+`charts/loki.yaml` under `sidecar.image.tag`. When the sidecar version changes
+as part of a kube-prometheus-stack bump, you must also:
+1. Update the `tag:` value in `charts/loki.yaml` to match.
+2. Regenerate the Loki Salt state: `./doit.sh codegen:chart_loki`
+
+Failure to do so will cause the CI install to attempt to pull the old sidecar
+image that is no longer present in the registry.
+
 ### thanos
 
 ```
