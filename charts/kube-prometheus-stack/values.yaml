@@ -132,6 +132,10 @@ crds:
       labels: {}
       automountServiceAccountToken: true
 
+    ## Automounting API credentials for upgrade crd job pod.
+    ##
+    automountServiceAccountToken: true
+
     ## Container-specific security context configuration
     ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
     ##
@@ -299,6 +303,14 @@ defaultRules:
 
   ## Prefix for runbook URLs. Use this to override the first part of the runbookURLs that is common to all rules.
   runbookUrl: "https://runbooks.prometheus-operator.dev/runbooks"
+
+  ## Thresholds for kubelet certificate expiration alerts (in seconds)
+  kubeletServerCertificateExpiration:
+    warning: 604800     # 7 days
+    critical: 86400     # 1 day
+  kubeletClientCertificateExpiration:
+    warning: 604800     # 7 days
+    critical: 86400     # 1 day
 
   node:
     fsSelector: 'fstype!=""'
@@ -697,6 +709,14 @@ alertmanager:
       ## Filters define the filters that are applied to requests that match this rule.
       filters: []
 
+      ## Session persistence configuration for the route rule.
+      sessionPersistence: {}
+      # sessionName: route
+      # type: Cookie
+      # absoluteTimeout: 12h
+      # cookieConfig:
+      #   lifetimeType: Permanent
+
       ## Additional custom rules that can be added to the route
       additionalRules: []
 
@@ -944,7 +964,7 @@ alertmanager:
     image:
       registry: quay.io
       repository: prometheus/alertmanager
-      tag: v0.31.1
+      tag: v0.33.0
       sha: ""
       pullPolicy: IfNotPresent
 
@@ -1151,7 +1171,7 @@ alertmanager:
         type: RuntimeDefault
 
     ## Use the host's user namespace for Alertmanager pods.
-    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/user-namespaces/
     hostUsers: ~
 
     ## DNS configuration for Alertmanager.
@@ -1175,7 +1195,7 @@ alertmanager:
     containers: []
     # containers:
     # - name: oauth-proxy
-    #   image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.1
+    #   image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.3
     #   args:
     #   - --upstream=http://127.0.0.1:9093
     #   - --http-address=0.0.0.0:8081
@@ -1273,7 +1293,7 @@ alertmanager:
   #     foo:$apr1$OFG3Xybp$ckL0FHDAkoXYIlH9.cysT0
   #     someoneelse:$apr1$DMZX2Z4q$6SbQIfyuLQd.xmo/P0m2c.
 
-## Using default values from https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
+## Using default values from https://github.com/grafana-community/helm-charts/blob/main/charts/grafana/values.yaml
 ##
 grafana:
   enabled: true
@@ -1562,24 +1582,23 @@ grafana:
 
     # Path to use for scraping metrics. Might be different if server.root_url is set
     # in grafana.ini
-    path: "/metrics"
+    # path: /metrics
 
     #  namespace: monitoring  (defaults to use the namespace this chart is deployed to)
 
     # labels for the ServiceMonitor
-    labels: {}
+    # labels: {}
 
-    # Scrape interval. If not set, the Prometheus default scrape interval is used.
-    #
-    interval: ""
-    scheme: http
-    tlsConfig: {}
-    scrapeTimeout: 30s
+    # Extra scrape settings.
+    # interval: ""
+    # scheme: http
+    # tlsConfig: {}
+    # scrapeTimeout: 30s
 
     ## RelabelConfigs to apply to samples before scraping
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#relabelconfig
     ##
-    relabelings: []
+    # relabelings: []
     # - sourceLabels: [__meta_kubernetes_pod_node_name]
     #   separator: ;
     #   regex: ^(.*)$
@@ -1670,6 +1689,11 @@ kubeApiServer:
     ## defines the labels which are transferred from the associated Kubernetes Service object onto the ingested metrics.
     ## https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#servicemonitor
     targetLabels: []
+
+  ## Override the job label used for the apiserver.
+  ## This allows users who scrape apiserver metrics under a different job name (e.g. k3s-server via PushProx)
+  ## to align the recording rules and alerts with their actual job label.
+  jobNameOverride: ""
 
 ## Component scraping the kubelet and kubelet-hosted cAdvisor
 ##
@@ -2611,6 +2635,9 @@ prometheus-node-exporter:
     labels:
       jobLabel: node-exporter
 
+  image:
+    distroless: true
+
   prometheus:
     monitor:
       enabled: true
@@ -2887,6 +2914,13 @@ prometheusOperator:
       ## Decrease log verbosity to errors only
       # logLevel: error
 
+      ## PromQL parser options to enable for the admission webhook when validating PrometheusRule resources.
+      ## The options are passed to the prometheus-operator admission-webhook binary as a comma-separated --promql-options value.
+      ## Requires prometheus-operator admission-webhook v0.91.0 or newer.
+      ## Valid values: experimental-functions, duration-expression-parsing, extended-range-selectors, binop-fill-modifiers.
+      ##
+      promqlOptions: []
+
 
       ## Liveness probe
       ##
@@ -2987,7 +3021,7 @@ prometheusOperator:
       image:
         registry: ghcr.io
         repository: jkroepke/kube-webhook-certgen
-        tag: 1.8.0
+        tag: 1.8.3
         sha: ""
         pullPolicy: IfNotPresent
       resources: {}
@@ -3332,7 +3366,7 @@ prometheusOperator:
       type: RuntimeDefault
 
   ## Setup hostUsers for prometheus-operator
-  ## ref: https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/user-namespaces/
   hostUsers: ~
 
   ## Container-specific security context configuration
@@ -3890,6 +3924,14 @@ prometheus:
       ## Filters define the filters that are applied to requests that match this rule.
       filters: []
 
+      ## Session persistence configuration for the route rule.
+      sessionPersistence: {}
+      # sessionName: route
+      # type: Cookie
+      # absoluteTimeout: 12h
+      # cookieConfig:
+      #   lifetimeType: Permanent
+
       ## Additional custom rules that can be added to the route
       additionalRules: []
 
@@ -4134,7 +4176,7 @@ prometheus:
     image:
       registry: quay.io
       repository: prometheus/prometheus
-      tag: v3.10.0
+      tag: v3.12.0-distroless
       sha: ""
       pullPolicy: IfNotPresent
 
@@ -4625,6 +4667,7 @@ prometheus:
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api-reference/api.md#thanosspec
     ##
     thanos: {}
+      # image: quay.io/thanos/thanos
       # secretProviderClass:
       #   provider: gcp
       #   parameters:
@@ -4654,7 +4697,7 @@ prometheus:
     containers: []
     # containers:
     # - name: oauth-proxy
-    #   image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.1
+    #   image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.3
     #   args:
     #   - --upstream=http://127.0.0.1:9090
     #   - --http-address=0.0.0.0:8081
@@ -4775,7 +4818,7 @@ prometheus:
     hostNetwork: false
 
     ## Use the host's user namespace for Prometheus pods.
-    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/user-namespaces/
     hostUsers: ~
 
     # HostAlias holds the mapping between IP and hostnames that will be injected
@@ -5125,6 +5168,14 @@ thanosRuler:
 
       ## Filters define the filters that are applied to requests that match this rule.
       filters: []
+
+      ## Session persistence configuration for the route rule.
+      sessionPersistence: {}
+      # sessionName: route
+      # type: Cookie
+      # absoluteTimeout: 12h
+      # cookieConfig:
+      #   lifetimeType: Permanent
 
       ## Additional custom rules that can be added to the route
       additionalRules: []
@@ -5501,7 +5552,7 @@ thanosRuler:
         type: RuntimeDefault
 
     ## Use the host's user namespace for ThanosRuler pods.
-    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/user-namespaces/
     hostUsers: ~
 
     ## ListenLocal makes the ThanosRuler server listen on loopback, so that it does not bind against the Pod IP.
@@ -5512,6 +5563,13 @@ thanosRuler:
     ## Containers allows injecting additional containers. This is meant to allow adding an authentication proxy to an ThanosRuler pod.
     ##
     containers: []
+
+    ## Additional environment variables to set on the ThanosRuler container.
+    ## This is rendered through the Prometheus Operator strategic merge patch.
+    ##
+    extraEnv: []
+    # - name: EXAMPLE
+    #   value: test
 
     # Additional volumes on the output StatefulSet definition.
     volumes: []

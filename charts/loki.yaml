@@ -83,7 +83,7 @@ sidecar:
   image:
     registry: ""
     repository: "__image__(k8s-sidecar)"
-    tag: 2.5.0
+    tag: 2.7.3
 
 gateway:
   enabled: false

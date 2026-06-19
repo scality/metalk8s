@@ -252,7 +252,7 @@ spec:
           value: '60'
         - name: LOG_LEVEL
           value: INFO
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:2.5.0
+        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:2.7.3
         imagePullPolicy: IfNotPresent
         name: loki-sc-rules
         securityContext:
