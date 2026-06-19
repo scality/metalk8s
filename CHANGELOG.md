@@ -45,6 +45,9 @@
   - prometheus-operator to [v0.91.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.91.0)
   (PR[#4981](https://github.com/scality/metalk8s/pull/4981))
 
+- Bump Calico version to [3.32.0](https://github.com/projectcalico/calico/releases/tag/v3.32.0)
+  (PR[#4985](https://github.com/scality/metalk8s/pull/4985))
+
 ## Release 133.0.12 (in development)
 
 ## Release 133.0.11
