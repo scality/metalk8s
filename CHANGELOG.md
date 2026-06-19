@@ -25,6 +25,18 @@
   and nginx ingress controller to [v1.15.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.15.1)
   (PR[#4980](https://github.com/scality/metalk8s/pull/4980))
 
+- Bump kube-prometheus-stack chart version to [86.3.1](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-86.3.1)
+  The following images have also been bumped accordingly:
+  - alertmanager to [v0.33.0](https://github.com/prometheus/alertmanager/releases/tag/v0.33.0)
+  - grafana to [13.0.2](https://github.com/grafana/grafana/releases/tag/v13.0.2)
+  - k8s-sidecar to [2.7.3](https://github.com/kiwigrid/k8s-sidecar/releases/tag/2.7.3)
+  - kube-state-metrics to [v2.19.1](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.19.1)
+  - node-exporter to [v1.11.1](https://github.com/prometheus/node_exporter/releases/tag/v1.11.1)
+  - prometheus to [v3.12.0](https://github.com/prometheus/prometheus/releases/tag/v3.12.0)
+  - prometheus-config-reloader to [v0.91.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.91.0)
+  - prometheus-operator to [v0.91.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.91.0)
+  (PR[#4981](https://github.com/scality/metalk8s/pull/4981))
+
 ## Release 133.0.10 (in development)
 
 ## Release 133.0.9
