@@ -564,9 +564,7 @@ def check_deployed_rules(host, prometheus_api):
         if extra:
             details.append(f"in deployed but not default: {extra}")
         if not details:
-            details.append(
-                "same alert names/severities but differing message or query"
-            )
+            details.append("same alert names/severities but differing message or query")
         pytest.fail(
             "Deployed Prometheus alert rules differ from the default alert "
             "rules (" + "; ".join(details) + ")."
