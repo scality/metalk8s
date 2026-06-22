@@ -146,6 +146,16 @@ upgrade_etcd () {
 }
 
 upgrade_apiservers () {
+    # The etcd upgrade above restarts etcd, which can make the kube-apiserver
+    # briefly unavailable (especially on a single-node cluster). Wait for the
+    # apiserver to be ready before running the orchestrate: rendering it
+    # requires the salt-master to compile the `metalk8s_nodes` ext_pillar
+    # against the apiserver, and if it is still down the pillar compilation
+    # fails and aborts the whole upgrade.
+    "${SALT_CALL}" --local --retcode-passthrough http.wait_for_successful_query \
+        https://127.0.0.1:7443/healthz \
+        verify_ssl=False status=200 match="ok" wait_for=300 request_interval=5
+
     SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.apiserver saltenv="$SALTENV"
