@@ -202,7 +202,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="pause",
-        version="3.10",
+        version="3.10.1",
         # Do not check the digest for this image, since this one is re-published
         # several times with the same tag
         digest=None,
