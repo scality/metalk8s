@@ -522,11 +522,38 @@ def check_deployed_rules(host, prometheus_api):
     except json.JSONDecodeError as exc:
         pytest.fail(f"Failed to decode JSON from {ALERT_RULE_FILE}: {exc!s}")
 
-    assert sorted(
+    if not utils.get_pillar(host, "addons:fluent-bit:enabled"):
+        # Filter out FluentBit-specific alert rules if fluent-bit is disabled
+        default_alert_rules = [
+            rule
+            for rule in default_alert_rules
+            if rule["name"]
+            not in ["FluentBitBackPressure", "FluentBitOutputRetryLimit"]
+        ]
+
+    default_sorted = sorted(
         default_alert_rules, key=operator.itemgetter("name", "severity")
-    ) == sorted(
+    )
+    deployed_sorted = sorted(
         deployed_alert_rules, key=operator.itemgetter("name", "severity")
-    ), "Expected default Prometheus rules to be equal to deployed rules."
+    )
+
+    if default_sorted != deployed_sorted:
+        default_keys = {(r["name"], r["severity"]) for r in default_alert_rules}
+        deployed_keys = {(r["name"], r["severity"]) for r in deployed_alert_rules}
+        missing = sorted(default_keys - deployed_keys)
+        extra = sorted(deployed_keys - default_keys)
+        details = []
+        if missing:
+            details.append(f"in default but not deployed: {missing}")
+        if extra:
+            details.append(f"in deployed but not default: {extra}")
+        if not details:
+            details.append("same alert names/severities but differing message or query")
+        pytest.fail(
+            "Deployed Prometheus alert rules differ from the default alert "
+            "rules (" + "; ".join(details) + ")."
+        )
 
 
 @then("the deployed dashboards match the expected ones")
