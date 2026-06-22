@@ -48,6 +48,10 @@
 - Bump Calico version to [3.32.0](https://github.com/projectcalico/calico/releases/tag/v3.32.0)
   (PR[#4985](https://github.com/scality/metalk8s/pull/4985))
 
+- Bump containerd to [2.2.5](https://github.com/containerd/containerd/releases/tag/v2.2.5)
+  The pause image has been bumped to 3.10.1
+  (PR[#4991](https://github.com/scality/metalk8s/pull/4991))
+
 ## Release 133.0.12 (in development)
 
 ## Release 133.0.11
