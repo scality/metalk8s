@@ -52,6 +52,9 @@
   The pause image has been bumped to 3.10.1
   (PR[#4991](https://github.com/scality/metalk8s/pull/4991))
 
+- Bump nginx image to [1.31.2-alpine](https://github.com/nginx/nginx/releases/tag/release-1.31.2)
+  (PR[#4992](https://github.com/scality/metalk8s/pull/4992))
+
 ## Release 133.0.12 (in development)
 
 ## Release 133.0.11
