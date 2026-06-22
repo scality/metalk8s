@@ -1,12 +1,12 @@
 repo: github.com/scality/metalk8s/operator
 domain: metalk8s.scality.com
 
-operator_sdk_version: v1.42.1
+operator_sdk_version: v1.42.2
 
 # Optional: pin versions. If absent, the script detects the latest
 # patch from the scaffold's go.mod and auto-pins them here.
 go_toolchain: go1.24.13
-k8s_libs: v0.33.10
+k8s_libs: v0.33.13
 
 apis:
   - version: v1alpha1
