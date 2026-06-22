@@ -17,6 +17,93 @@ MAIN_CC_NAME = "main"
 OPERATOR_DEPLOYMENT = "metalk8s-operator-controller-manager"
 OPERATOR_NAMESPACE = "kube-system"
 
+# Grain holding the IP to reach, per plane the request targets.
+PLANE_GRAINS = {
+    "workload-plane": "metalk8s:workload_plane_ip",
+    "control-plane": "metalk8s:control_plane_ip",
+}
+
+
+def _format_endpoint(protocol, ip, port, path):
+    return "{proto}://{ip}:{port}/{path}".format(
+        proto=protocol.lower(), ip=ip, port=port, path=path or ""
+    )
+
+
+def _resolve_endpoint(host, protocol, port, plane, path):
+    """Build the endpoint URL to reach `plane`'s Ingress, from its grain IP."""
+    if plane not in PLANE_GRAINS:
+        raise NotImplementedError
+
+    ip = utils.get_grain(host, PLANE_GRAINS[plane])
+    return _format_endpoint(protocol, ip, port, path)
+
+
+def _ingress_debug(host):
+    """Collect live cluster-side ingress diagnostics.
+
+    The sosreport is collected after the whole step finishes and may miss the
+    transient state (a controller still rolling, missing endpoints, calico not
+    ready, ...) that caused a request to fail, so we dump the relevant cluster
+    state at failure time to complement it. Best-effort: never raises.
+    """
+    kubectl = "kubectl --kubeconfig=/etc/kubernetes/admin.conf"
+    commands = (
+        ("ingress-nginx pods", f"{kubectl} -n metalk8s-ingress get pods -o wide"),
+        (
+            "ingress-nginx daemonsets",
+            f"{kubectl} -n metalk8s-ingress get daemonset -o wide",
+        ),
+        ("ingress-nginx services", f"{kubectl} -n metalk8s-ingress get svc -o wide"),
+        ("ingress-nginx endpoints", f"{kubectl} -n metalk8s-ingress get endpoints"),
+        (
+            "calico-node daemonset",
+            f"{kubectl} -n kube-system get daemonset calico-node -o wide",
+        ),
+        (
+            "recent ingress events",
+            f"{kubectl} -n metalk8s-ingress get events --sort-by=.lastTimestamp",
+        ),
+    )
+    sections = []
+    try:
+        with host.sudo():
+            for title, cmd in commands:
+                result = host.run(cmd)
+                sections.append(
+                    "--- {} ---\n{}".format(
+                        title, (result.stdout or result.stderr).strip()
+                    )
+                )
+    except Exception as exc:  # pylint: disable=broad-except
+        sections.append(f"--- failed to collect ingress debug ---\n{exc}")
+    return "\n\n".join(sections)
+
+
+def _assert_request_returns(host, context, endpoint, status_code, reason):
+    """GET `endpoint` and assert status/reason, retrying while it is not serving
+    yet. On final failure, append live cluster ingress diagnostics."""
+
+    def _check():
+        try:
+            context["response"] = requests.get(endpoint, verify=False)
+        except requests.exceptions.RequestException as exc:
+            raise AssertionError(f"Unable to reach ingress on '{endpoint}': {exc}")
+        server_returns(host, context, status_code, reason)
+        return context["response"]
+
+    try:
+        # Retry budget when polling an ingress endpoint that may not be serving yet
+        # (e.g. right after a node-by-node upgrade rolls the ingress-nginx DaemonSet).
+        # 24 * 5s = 2 minutes, matching the budget used elsewhere in this module.
+        return utils.retry(_check, times=24, wait=5, name=f"request on '{endpoint}'")
+    except pytest.fail.Exception as exc:
+        pytest.fail(
+            f"{exc}\n\n"
+            f"=== Cluster ingress debug (endpoint '{endpoint}') ===\n"
+            f"{_ingress_debug(host)}"
+        )
+
 
 @pytest.fixture(autouse=True, scope="module")
 def restart_operator_after_ingress_tests(host):
@@ -259,23 +346,10 @@ def given_check_vips_spreading(host, ssh_config, context, ips):
     )
 )
 def perform_request(host, context, protocol, port, plane, path):
-    grains = {
-        "workload-plane": "metalk8s:workload_plane_ip",
-        "control-plane": "metalk8s:control_plane_ip",
-    }
-
-    if plane not in grains:
-        raise NotImplementedError
-
-    ip = utils.get_grain(host, grains[plane])
+    endpoint = _resolve_endpoint(host, protocol, port, plane, path)
 
     try:
-        context["response"] = requests.get(
-            "{proto}://{ip}:{port}/{path}".format(
-                proto=protocol.lower(), ip=ip, port=port, path=path or ""
-            ),
-            verify=False,
-        )
+        context["response"] = requests.get(endpoint, verify=False)
     except Exception as exc:
         context["exception"] = exc
 
@@ -590,9 +664,13 @@ def wait_cc_status(k8s_client, status):
 )
 def server_returns(host, context, status_code, reason):
     response = context.get("response")
-    assert response is not None
-    assert response.status_code == int(status_code)
-    assert response.reason == reason
+    assert response is not None, "no response was recorded"
+    assert (
+        response.status_code == status_code
+    ), f"expected status {status_code}, got {response.status_code}"
+    assert (
+        response.reason == reason
+    ), f"expected reason '{reason}', got '{response.reason}'"
 
 
 @then("the server should respond with shell-ui index")
@@ -626,10 +704,8 @@ def server_does_not_respond(host, context):
 def server_request_returns(
     host, context, protocol, port, plane, path, status_code, reason
 ):
-    perform_request(
-        host=host, context=context, protocol=protocol, port=port, plane=plane, path=path
-    )
-    server_returns(host=host, context=context, status_code=status_code, reason=reason)
+    endpoint = _resolve_endpoint(host, protocol, port, plane, path)
+    _assert_request_returns(host, context, endpoint, status_code, reason)
 
 
 @then(
@@ -654,25 +730,15 @@ def server_request_does_not_return(host, context, protocol, port, plane, path):
     converters=dict(status_code=int),
 )
 def server_request_returns_multiple_ips(
-    context, protocol, port, ips, path, status_code, reason
+    host, context, protocol, port, ips, path, status_code, reason
 ):
     ips = ips.format(**context).split(",")
 
     assert ips, "Error IPs list cannot be empty"
 
     for ip in ips:
-        endpoint = "{proto}://{ip}:{port}/{path}".format(
-            proto=protocol.lower(), ip=ip, port=port, path=path or ""
-        )
-        try:
-            response = requests.get(endpoint, verify=False)
-            context["response"] = response
-        except Exception as exc:
-            raise AssertionError(f"Unable to reach ingress on '{endpoint}': {exc}")
-
-        assert response is not None
-        assert response.status_code == status_code
-        assert response.reason == reason
+        endpoint = _format_endpoint(protocol, ip, port, path)
+        _assert_request_returns(host, context, endpoint, status_code, reason)
 
 
 @then(
@@ -687,12 +753,10 @@ def server_request_not_returns_multiple_ips(context, protocol, port, ips, path):
     assert ips, "Error IPs list cannot be empty"
 
     for ip in ips:
-        endpoint = "{proto}://{ip}:{port}/{path}".format(
-            proto=protocol.lower(), ip=ip, port=port, path=path or ""
-        )
+        endpoint = _format_endpoint(protocol, ip, port, path)
         try:
             response = requests.get(endpoint, verify=False)
-        except requests.exceptions.ConnectionError as exc:
+        except requests.exceptions.ConnectionError:
             return
         except Exception as exc:
             raise AssertionError(
