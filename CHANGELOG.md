@@ -58,6 +58,10 @@
 - Bump Alpine base image version to [3.24.1](https://github.com/alpinelinux/aports/releases/tag/v3.24.1)
   (PR[#4993](https://github.com/scality/metalk8s/pull/4993))
 
+- Bump the rocky base image used by `metalk8s-utils` image to
+  `rockylinux:9.8-minimal`
+  (PR[#4994](https://github.com/scality/metalk8s/pull/4994))
+
 ## Release 133.0.12 (in development)
 
 ## Release 133.0.11
