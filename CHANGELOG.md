@@ -55,6 +55,9 @@
 - Bump nginx image to [1.31.2-alpine](https://github.com/nginx/nginx/releases/tag/release-1.31.2)
   (PR[#4992](https://github.com/scality/metalk8s/pull/4992))
 
+- Bump Alpine base image version to [3.24.1](https://github.com/alpinelinux/aports/releases/tag/v3.24.1)
+  (PR[#4993](https://github.com/scality/metalk8s/pull/4993))
+
 ## Release 133.0.12 (in development)
 
 ## Release 133.0.11
