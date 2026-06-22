@@ -214,9 +214,16 @@ download_packages() {
                 ;;
         esac
 
-        yumdownloader --arch="x86_64,noarch" \
-                      --disablerepo="*" \
-                      --enablerepo="$repo" "${dependencies[@]}"
+        # Skip `yumdownloader` when no dependency resolved to this repo:
+        # invoking it without packages makes `dnf download` exit non-zero
+        # (`error: the following arguments are required: packages`), which
+        # would abort the whole loop under `set -e` and leave the remaining
+        # repos (e.g. saltstack) without their directory being created.
+        if [ "${#dependencies[@]}" -gt 0 ]; then
+            yumdownloader --arch="x86_64,noarch" \
+                          --disablerepo="*" \
+                          --enablerepo="$repo" "${dependencies[@]}"
+        fi
     done
 
     chown -R "$TARGET_UID:$TARGET_GID" "/repositories"
