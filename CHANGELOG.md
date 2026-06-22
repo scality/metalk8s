@@ -67,6 +67,10 @@
   `k8s.io/{api,apimachinery,client-go}` dependencies to v0.33.13
   (PR[#5000](https://github.com/scality/metalk8s/pull/5000))
 
+- Bump `kube-apiserver` `AuthenticationConfiguration` apiVersion to
+  `apiserver.config.k8s.io/v1` (GA in Kubernetes 1.34)
+  (PR[#5001](https://github.com/scality/metalk8s/pull/5001))
+
 ## Release 133.0.12 (in development)
 
 ## Release 133.0.11
