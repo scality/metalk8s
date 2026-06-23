@@ -4,6 +4,14 @@
 
 ### Enhancements
 
+- Make node monitoring and Pod eviction timeouts configurable through the
+  `BootstrapConfiguration`: `kube-apiserver`
+  `defaultNotReadyTolerationSeconds`/`defaultUnreachableTolerationSeconds`
+  (default `60`), `kube-controller-manager`
+  `nodeMonitorGracePeriod`/`nodeMonitorPeriod` (default `30s`/`5s`) and kubelet
+  `nodeStatusUpdateFrequency` (default `10s`). 
+  (PR[#4966](https://github.com/scality/metalk8s/pull/4966))
+
 - Bump Kubernetes version to [1.34.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.34.7)
   (PR[#4928](https://github.com/scality/metalk8s/pull/4928))
 
