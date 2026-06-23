@@ -280,7 +280,7 @@ defaults kubernetes configuration.
     network interruption, high CPU load delaying status reports) may trigger
     unnecessary evictions. The total time before eviction is roughly
     ``nodeStatusUpdateFrequency + nodeMonitorGracePeriod +
-    default*TolerationSeconds``.
+    default[NotReady/Unreachable]TolerationSeconds``.
 
 The ``salt`` field can be omitted if you do not have any specific salt settings
 to configure.
