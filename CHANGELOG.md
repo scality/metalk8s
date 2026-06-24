@@ -18,7 +18,9 @@
 - Bump etcd version to [3.6.11](https://github.com/etcd-io/etcd/releases/tag/v3.6.11)
   (PR[#4928](https://github.com/scality/metalk8s/pull/4928))
 
-## Release 133.0.10 (in development)
+## Release 133.0.11 (in development)
+
+## Release 133.0.10
 
 ### Enhancements
 
