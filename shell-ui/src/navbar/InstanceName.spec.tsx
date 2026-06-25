@@ -1,15 +1,15 @@
-import type { PropsWithChildren } from 'react';
-import { _InternalInstanceName } from './InstanceName';
-import { render, screen, waitFor, within } from '@testing-library/react';
 import { jest } from '@jest/globals';
-import userEvent from '@testing-library/user-event';
-import { QueryClient } from 'react-query';
 import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 import { ToastProvider } from '@scality/core-ui/dist/components/toast/ToastProvider';
 import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import type { PropsWithChildren } from 'react';
+import { QueryClient } from 'react-query';
 import type { UserData } from '../auth/AuthProvider';
 import type { RuntimeWebFinger } from '../initFederation/ConfigurationProviders';
 import { QueryClientProvider } from '../QueryClientProvider';
+import { _InternalInstanceName } from './InstanceName';
 
 jest.mock('../initFederation/ConfigurationProviders', () => ({
   useConfigRetriever: () => ({
@@ -61,6 +61,7 @@ const Wrapper = ({ children }: PropsWithChildren) => (
             defaultOptions: {
               queries: {
                 retry: false,
+                retryDelay: 0,
               },
             },
           })
@@ -148,6 +149,50 @@ describe('InstanceName', () => {
 
     expect(setInstanceName).not.toHaveBeenCalled();
     expect(getInstanceName).toHaveBeenCalled();
+  });
+
+  it('renders nothing when getInstanceName rejects with a 403 (forbidden) error — no pill, no warning icon', async () => {
+    const forbidden = Object.assign(new Error('Forbidden'), {
+      status: 403,
+      code: 'InstanceNameForbidden',
+    });
+    const getInstanceName = jest
+      .fn<
+        (userData: UserData | undefined, configuration: RuntimeWebFinger<Record<string, unknown>>) => Promise<string>
+      >()
+      .mockRejectedValue(forbidden);
+    const setInstanceName = jest
+      .fn<
+        (
+          userData: UserData | undefined,
+          name: string,
+          configuration: RuntimeWebFinger<Record<string, unknown>>,
+        ) => Promise<void>
+      >()
+      .mockResolvedValue(undefined);
+
+    render(
+      <_InternalInstanceName
+        moduleExports={{
+          './instanceNameAdapter': {
+            getInstanceName,
+            setInstanceName,
+          },
+        }}
+      />,
+      { wrapper: Wrapper },
+    );
+
+    await waitFor(() => expect(getInstanceName).toHaveBeenCalled());
+    await waitFor(() => {
+      expect(document.querySelector('.sc-loader')).not.toBeInTheDocument();
+    });
+
+    expect(document.querySelector('[data-icon="circle-exclamation"]')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(setInstanceName).not.toHaveBeenCalled();
+    // No retry on 403: getInstanceName must be called exactly once.
+    expect(getInstanceName).toHaveBeenCalledTimes(1);
   });
 
   it('loads deployment name then renames via EditableDeploymentName and calls setInstanceName', async () => {

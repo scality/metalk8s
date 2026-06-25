@@ -1,19 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
-import { Modal } from '@scality/core-ui/dist/components/modal/Modal.component';
-import { Text } from '@scality/core-ui/dist/components/text/Text.component';
-import { Stack } from '@scality/core-ui/dist/spacing';
-import { Tooltip } from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
-import { InfoMessage } from '@scality/core-ui/dist/components/infomessage/InfoMessage.component';
-import { SecondaryText } from '@scality/core-ui/dist/components/text/Text.component';
-import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
-import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
-import { Box } from '@scality/core-ui/dist/components/box/Box';
-
-import { spacing } from '@scality/core-ui/dist/spacing';
 import { Banner } from '@scality/core-ui/dist/components/banner/Banner.component';
-import { type InstanceNameAdapter, INSTANCE_NAME_QUERY_KEY } from './InstanceName';
+import { Box } from '@scality/core-ui/dist/components/box/Box';
+import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
+import { InfoMessage } from '@scality/core-ui/dist/components/infomessage/InfoMessage.component';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import { Modal } from '@scality/core-ui/dist/components/modal/Modal.component';
+import { SecondaryText, Text } from '@scality/core-ui/dist/components/text/Text.component';
+import { Tooltip } from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
+import { Stack, spacing } from '@scality/core-ui/dist/spacing';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
+import styled from 'styled-components';
+import { INSTANCE_NAME_QUERY_KEY, type InstanceNameAdapter } from './InstanceName';
 
 function renameMutationErrorMessage(error: unknown): string {
   if (error instanceof Error) {
@@ -64,6 +61,7 @@ const NameInput = styled.input`
   padding: ${spacing.r4} ${spacing.r8};
   outline: none;
   min-width: 180px;
+  max-width: 16rem;
 
   &:focus {
     border-color: ${(props) => props.theme.selectedActive};
@@ -78,7 +76,7 @@ const NameInput = styled.input`
 
 const KeyValueGrid = styled.dl`
   display: grid;
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: max-content minmax(0, 1fr);
   gap: ${spacing.r8} ${spacing.r16};
   margin: 0;
 `;
@@ -91,6 +89,7 @@ const KeyLabel = styled.dt`
 const KeyValue = styled.dd`
   color: ${(props) => props.theme.textPrimary};
   margin: 0;
+  overflow-wrap: anywhere;
 `;
 
 const NameTrigger = styled.span`
@@ -104,7 +103,8 @@ const NameTrigger = styled.span`
   font-size: 1rem;
   font-family: 'Lato';
   color: ${(props) => props.theme.textPrimary};
-  white-space: nowrap;
+  max-width: 16rem;
+  min-width: 0;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
 
@@ -116,6 +116,13 @@ const NameTrigger = styled.span`
     border-color: ${(props) => props.theme.infoPrimary};
     background: ${(props) => props.theme.highlight};
   }
+`;
+
+const NameTriggerLabel = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 `;
 
 export function EditableDeploymentName({
@@ -131,6 +138,7 @@ export function EditableDeploymentName({
   const [isEditing, setIsEditing] = useState(false);
   const [pendingName, setPendingName] = useState(name);
   const [modalOpen, setModalOpen] = useState(false);
+  const [currentName, setCurrentName] = useState(name);
   const inputRef = useRef<HTMLInputElement>(null);
   const [inputValidationError, setInputValidationError] = useState<string | undefined>(undefined);
 
@@ -176,6 +184,7 @@ export function EditableDeploymentName({
 
     if (trimmed && trimmed !== name) {
       setIsEditing(false);
+      setCurrentName(name);
       setModalOpen(true);
     } else {
       setIsEditing(false);
@@ -224,7 +233,7 @@ export function EditableDeploymentName({
           </ValidationInputWrapper>
         ) : (
           <Tooltip
-            overlay={isMutationLoading ? 'Cannot edit while propagating' : 'Edit deployment name'}
+            overlay={isMutationLoading ? 'Cannot edit while propagating' : modalOpen ? pendingName.trim() : name}
             placement="bottom"
           >
             <NameTrigger
@@ -234,7 +243,7 @@ export function EditableDeploymentName({
               tabIndex={isMutationLoading ? undefined : 0}
               onKeyDown={(e) => !isMutationLoading && e.key === 'Enter' && handleEditStart()}
             >
-              {modalOpen ? pendingName.trim() : name}
+              <NameTriggerLabel>{modalOpen ? pendingName.trim() : name}</NameTriggerLabel>
               {isMutationLoading && (
                 <InlineLoaderWrapper>
                   <Loader size="smaller" />
@@ -275,7 +284,7 @@ export function EditableDeploymentName({
           <Text>Are you sure you want to rename this deployment?</Text>
           <KeyValueGrid>
             <KeyLabel>Current name</KeyLabel>
-            <KeyValue>{name}</KeyValue>
+            <KeyValue>{currentName}</KeyValue>
             <KeyLabel>New name</KeyLabel>
             <KeyValue>{pendingName.trim()}</KeyValue>
           </KeyValueGrid>

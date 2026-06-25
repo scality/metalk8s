@@ -1,6 +1,70 @@
 # CHANGELOG
 
-## Release 133.0.2 (in development)
+## Release 133.0.11 (in development)
+
+### Bug Fixes
+
+- Avoid the Thanos Querier being OOMKilled on heavy queries (such as the
+  `sosreport` metrics collection): its CPU/memory requests and limits are now
+  configurable through the `metalk8s-thanos-config` Cluster and Service
+  ConfigMap, and the default memory limit is raised from 192Mi to 2Gi. The
+  Querier also now runs with two replicas for high availability.
+  (PR[#5008](https://github.com/scality/metalk8s/pull/5008))
+
+- Use the `EndpointSlice` service discovery role for Prometheus to stop the
+  deprecated `v1 Endpoints` API warnings logged on Kubernetes 1.33+
+  (PR[#5008](https://github.com/scality/metalk8s/pull/5008))
+
+## Release 133.0.10
+
+### Enhancements
+
+- Wait for the kube-apiserver to be ready before upgrading the apiservers, to
+  avoid a transient upgrade failure when etcd has just been restarted
+  (PR[#4974](https://github.com/scality/metalk8s/pull/4974))
+
+### Bug Fixes
+
+- upgrade script now waits for all minions to reconnect to new salt master before
+  flushing the mine
+  (PR[#4972](https://github.com/scality/metalk8s/pull/4972))
+
+## Release 133.0.9
+
+## Release 133.0.8
+
+## Release 133.0.7
+
+### Bug Fixes
+
+- Disable anonymous authentication on `kube-apiserver`, except for the kubelet
+  probe endpoints (`livez`, `readyz`, `healthz`)
+  (PR[#4900](https://github.com/scality/metalk8s/pull/4900))
+
+## Release 133.0.6
+
+## Release 133.0.5
+
+### Enhancements
+
+- Bump [disk-management-agent](https://github.com/scality/disk-management-agent) to version
+  [v0.0.1-beta.2](https://github.com/scality/disk-management-agent/releases/tag/v0.0.1-beta.2)
+  (PR[#4933](https://github.com/scality/metalk8s/pull/4933))
+
+### Bug Fixes
+
+- Fix a bug where the salt mine fails silently during upgrades due to a corrupted mine cache.
+  (PR[#4934](https://github.com/scality/metalk8s/pull/4934))
+
+- Fix a bug where the salt mine fails and prints many warnings when dex is disabled.
+  (PR[#4934](https://github.com/scality/metalk8s/pull/4934))
+
+
+## Release 133.0.4
+
+## Release 133.0.3
+
+## Release 133.0.2
 
 ## Release 133.0.1
 
@@ -23,6 +87,10 @@
   possible.
 
 ### Enhancements
+
+- Install [disk-management-agent](https://github.com/scality/disk-management-agent) version
+  [v0.0.1-beta.1](https://github.com/scality/disk-management-agent/releases/tag/v0.0.1-beta.1) by default
+  (PR[#4826](https://github.com/scality/metalk8s/pull/4826))
 
 - Bump Kubernetes version to [1.33.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.33.7)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))

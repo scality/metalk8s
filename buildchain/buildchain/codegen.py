@@ -277,6 +277,9 @@ def codegen_chart_thanos() -> types.TaskDict:
     cmd = (
         f"{constants.CHART_RENDER_CMD} thanos {value_file} {chart_dir} "
         "--namespace metalk8s-monitoring "
+        "--service-config thanos metalk8s-thanos-config "
+        "metalk8s/addons/prometheus-operator/config/thanos.yaml "
+        "metalk8s-monitoring "
         f"--output {target_sls}"
     )
 
@@ -378,6 +381,75 @@ def codegen_kustomize_crl_operator() -> types.TaskDict:
     return tpl_task_dict
 
 
+def task_get_codegen_kustomize_disk_management_agent() -> types.TaskDict:
+    """Generate the kustomize manifests output for the Disk Management Agent."""
+    kustomize_dir = constants.ROOT / "kustomizes/disk-management-agent"
+
+    cmd = f"kustomize build {kustomize_dir}"
+
+    return {
+        "doc": task_get_codegen_kustomize_disk_management_agent.__doc__,
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT, save_out="stdout")],
+        "file_dep": list(utils.git_ls(kustomize_dir)),
+        "task_dep": ["check_for:kustomize"],
+    }
+
+
+def task_transform_codegen_kustomize_disk_management_agent() -> types.TaskDict:
+    """Transform the kustomize manifests output for the Disk Management Agent."""
+
+    def _transform(stdout: str) -> Dict[str, str]:
+        """Transform the kustomize output."""
+        # Note: We have to replace the namespace 'disk-management-agent-system' by
+        # 'metalk8s-storage-management' as kustomize does not allow easily to patch
+        # every occurrence in "custom resources fields" like Certificate dnsNames.
+        return {
+            "output": stdout.strip()
+            .replace("disk-management-agent-system", "metalk8s-storage-management")
+            .replace(
+                "SERVICE_NAME.SERVICE_NAMESPACE",
+                "disk-management-agent-metrics-service.metalk8s-storage-management",
+            )
+        }
+
+    return {
+        "doc": task_transform_codegen_kustomize_disk_management_agent.__doc__,
+        "actions": [_transform],
+        "task_dep": ["get_codegen_kustomize_disk_management_agent"],
+        "getargs": {
+            "stdout": ("get_codegen_kustomize_disk_management_agent", "stdout"),
+        },
+    }
+
+
+def codegen_kustomize_disk_management_agent() -> types.TaskDict:
+    """Generate the SLS file for the Disk Management Agent."""
+    target_sls = (
+        constants.ROOT / "salt/metalk8s/addons/disk-management-agent/deployed/chart.sls"
+    )
+    template_file = constants.ROOT / "kustomizes/template.sls.in"
+
+    tpl_task = targets.TemplateFile(
+        task_name="kustomize_disk-management-agent",
+        source=template_file,
+        destination=target_sls,
+    )
+    tpl_task_dict = tpl_task.task
+    tpl_task_dict.update(
+        {
+            "title": utils.title_with_subtask_name("CODEGEN"),
+            "task_dep": ["transform_codegen_kustomize_disk_management_agent"],
+            "getargs": {
+                "Manifests": (
+                    "transform_codegen_kustomize_disk_management_agent",
+                    "output",
+                ),
+            },
+        }
+    )
+    return tpl_task_dict
+
+
 # List of available code generation tasks.
 CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_storage_operator,
@@ -391,6 +463,7 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_thanos,
     codegen_chart_cert_manager,
     codegen_kustomize_crl_operator,
+    codegen_kustomize_disk_management_agent,
 )
 
 

@@ -48,11 +48,17 @@ export type ShellJSONFileConfig = {
   themes: Themes;
   favicon?: string;
 
+  // Origin of the embedded Guardian AI assistant (scheme + host + port, no path
+  // or query). Used as the iframe src and as the postMessage target origin.
+  guardianOrigin?: string;
+  guardianSource?: string;
+
   // for IDP that does not support user groups (ie: Dex)
   userGroupsMapping?: UserGroupsMapping;
 
   canChangeTheme?: boolean;
   canChangeInstanceName?: boolean;
+  canUseGuardian?: boolean;
   // Not yet used and working
   canChangeLanguage?: boolean;
 };

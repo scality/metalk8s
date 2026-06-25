@@ -72,7 +72,11 @@ export const formatActiveAlerts = (alerts: Array<PrometheusAlert>): Alert[] => {
     return {
       id: alert.fingerprint,
       summary: (alert.annotations && alert.annotations.summary) || '',
-      description: alert.annotations.description || alert.annotations.message,
+      description:
+        alert.annotations.description ||
+        alert.annotations.message ||
+        alert.annotations.summary ||
+        alert.labels.alertname,
       startsAt: alert.startsAt,
       endsAt: alert.endsAt || new Date().toISOString(),
       severity: alert.labels.severity,
@@ -175,7 +179,11 @@ export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
         [`${alert.fingerprint}-${alert.startsAt}`]: {
           id: alert.fingerprint,
           summary: (alert.annotations && alert.annotations.summary) || '',
-          description: alert.annotations.description || alert.annotations.message,
+          description:
+            alert.annotations.description ||
+            alert.annotations.message ||
+            alert.annotations.summary ||
+            alert.labels.alertname,
           startsAt: alert.startsAt,
           endsAt: alert.status === 'firing' ? null : alert.endsAt,
           severity: alert.labels.severity,

@@ -23,7 +23,7 @@ jobs:
   prepare-version:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: ${{ vars.ACTIONS_APP_ID }}
@@ -179,7 +179,7 @@ jobs:
           git commit --amend --no-edit
           git push --set-upstream origin feature/merge-${{ env.RELEASE_TAG }}-tag
       - name: Create pull request
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const pr = await github.rest.pulls.create({

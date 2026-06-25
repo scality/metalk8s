@@ -2,8 +2,8 @@
 
 {%- from "metalk8s/map.jinja" import repo with context %}
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-
-
+{%- set thanos_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/thanos.yaml', saltenv=saltenv) %}
+{%- set thanos = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-thanos-config', thanos_defaults) %}
 
 {% raw %}
 
@@ -124,7 +124,7 @@ metadata:
   name: thanos-query
   namespace: metalk8s-monitoring
 spec:
-  replicas: 1
+  replicas: 2
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -203,13 +203,13 @@ spec:
           timeoutSeconds: 30
         resources:
           limits:
-            cpu: 150m
+            cpu: {% endraw -%}{{ thanos.spec.deployment.resources.limits.cpu }}{%- raw %}
             ephemeral-storage: 2Gi
-            memory: 192Mi
+            memory: {% endraw -%}{{ thanos.spec.deployment.resources.limits.memory }}{%- raw %}
           requests:
-            cpu: 100m
+            cpu: {% endraw -%}{{ thanos.spec.deployment.resources.requests.cpu }}{%- raw %}
             ephemeral-storage: 50Mi
-            memory: 128Mi
+            memory: {% endraw -%}{{ thanos.spec.deployment.resources.requests.memory }}{%- raw %}
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

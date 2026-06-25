@@ -106,6 +106,10 @@ prometheus:
     enabled: true
 
   prometheusSpec:
+    # Enforce EndpointSlice usage since default "Endpoints" are deprecated
+    # and cause warning in the prometheus logs
+    serviceDiscoveryRole: EndpointSlice
+
     thanos:
       image: '__full_image__(thanos)'
       objectStorageConfig: {}

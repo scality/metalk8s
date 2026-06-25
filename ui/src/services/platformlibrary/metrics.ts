@@ -147,7 +147,7 @@ export const getSystemLoadQuery = (instanceIP: string, timespanProps: TimeSpanPr
 };
 export const getNodesSystemLoadQuery = (timespanProps: TimeSpanProps) => {
   const { startingTimeISO, currentTimeISO, frequency } = timespanProps;
-  const systemLoadPrometheusQuery = `(avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service,prometheus) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode)) * 100`;
+  const systemLoadPrometheusQuery = `(avg(node_load1) by (instance) / on(instance) count(count(node_cpu_seconds_total{mode="idle"}) by (instance, cpu)) by (instance)) * 100`;
   return {
     queryKey: ['SystemLoad', startingTimeISO],
     queryFn: () => {
@@ -159,7 +159,7 @@ export const getNodesSystemLoadQuery = (timespanProps: TimeSpanProps) => {
 };
 export const getNodesSystemLoadQuantileQuery = (timespanProps: TimeSpanProps, quantile: number) => {
   const queryName = 'SystemLoadQuantile';
-  const systemLoadQuantilePromQL = `quantile(${quantile}, (avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service,prometheus) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode))) * 100`;
+  const systemLoadQuantilePromQL = `quantile(${quantile}, (avg(node_load1) by (instance) / on(instance) count(count(node_cpu_seconds_total{mode="idle"}) by (instance, cpu)) by (instance))) * 100`;
   const query = _getPromRangeMatrixQuery([queryName, `${quantile}`], systemLoadQuantilePromQL, timespanProps);
 
   return {
@@ -174,7 +174,7 @@ export const getNodesSystemLoadOutpassingThresholdQuery = (
   operator: '>' | '<',
   isOnHoverFetchingNeeded: boolean,
 ) => {
-  const nodesSystemLoadOutpassingThresholdPromQL = `(avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service,prometheus) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode)) * 100 ${operator}= ${threshold}`;
+  const nodesSystemLoadOutpassingThresholdPromQL = `(avg(node_load1) by (instance) / on(instance) count(count(node_cpu_seconds_total{mode="idle"}) by (instance, cpu)) by (instance)) * 100 ${operator}= ${threshold}`;
   return {
     ..._getInstantValueQuery(
       // @ts-expect-error - FIXME when you are working on it
