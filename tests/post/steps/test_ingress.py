@@ -1,3 +1,4 @@
+import contextlib
 import json
 import os
 import re
@@ -10,12 +11,68 @@ from pytest_bdd import given, parsers, scenario, then, when
 import testinfra
 
 from tests import utils
+from tests.conftest import wait_rollout_status
 
 
 MAIN_CC_NAME = "main"
 
 OPERATOR_DEPLOYMENT = "metalk8s-operator-controller-manager"
 OPERATOR_NAMESPACE = "kube-system"
+
+
+def _ingress_debug(host):
+    """Collect live cluster-side ingress diagnostics.
+
+    The sosreport is collected after the whole step finishes and may miss the
+    transient state (a controller still rolling, missing endpoints, calico not
+    ready, ...) that caused a request to fail, so we dump the relevant cluster
+    state at failure time to complement it. Best-effort: never raises.
+    """
+    kubectl = "kubectl --kubeconfig=/etc/kubernetes/admin.conf"
+    commands = (
+        ("ingress-nginx pods", f"{kubectl} -n metalk8s-ingress get pods -o wide"),
+        (
+            "ingress-nginx daemonsets",
+            f"{kubectl} -n metalk8s-ingress get daemonset -o wide",
+        ),
+        ("ingress-nginx services", f"{kubectl} -n metalk8s-ingress get svc -o wide"),
+        ("ingress-nginx endpoints", f"{kubectl} -n metalk8s-ingress get endpoints"),
+        (
+            "calico-node daemonset",
+            f"{kubectl} -n kube-system get daemonset calico-node -o wide",
+        ),
+        (
+            "recent ingress events",
+            f"{kubectl} -n metalk8s-ingress get events --sort-by=.lastTimestamp",
+        ),
+    )
+    sections = []
+    try:
+        with host.sudo():
+            for title, cmd in commands:
+                result = host.run(cmd)
+                sections.append(
+                    "--- {} ---\n{}".format(
+                        title, (result.stdout or result.stderr).strip()
+                    )
+                )
+    except Exception as exc:  # pylint: disable=broad-except
+        sections.append(f"--- failed to collect ingress debug ---\n{exc}")
+    return "\n\n".join(sections)
+
+
+@contextlib.contextmanager
+def _ingress_debug_on_failure(host, label):
+    """Append live cluster ingress diagnostics to any assertion failure raised
+    inside the block, to complement the (later, possibly-stale) sosreport."""
+    try:
+        yield
+    except AssertionError as exc:
+        raise AssertionError(
+            f"{exc}\n\n"
+            f"=== Cluster ingress debug ({label}) ===\n"
+            f"{_ingress_debug(host)}"
+        ) from exc
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -164,6 +221,21 @@ def teardown(context, host, ssh_config, version, k8s_client):
     if context.get("reconfigure_portmap"):
         re_configure_portmap(host, version, ssh_config)
 
+    # Ensure all pods are ready
+    def _wait_for_pods_ready():
+        with host.sudo():
+            result = host.run(
+                "kubectl --kubeconfig=/etc/kubernetes/admin.conf wait --for=condition=Ready "
+                "pods --all -n metalk8s-ingress --timeout=30s"
+            )
+        assert result.succeeded, (
+            f"All pods in metalk8s-ingress namespace are not ready:\n"
+            f"    stdout: {result.stdout}\n"
+            f"    stderr: {result.stderr}"
+        )
+
+    utils.retry(_wait_for_pods_ready, times=10, wait=5)
+
 
 @given("a VIP for Control Plane Ingress is available")
 def we_have_a_vip(context):
@@ -242,6 +314,7 @@ def wp_ingress_vip_setup(
     update_cc_pool(host, context, ssh_config, version, k8s_client, pool_name, ips)
     wait_cc_status(k8s_client, "Ready")
     rollout_restart(host, "daemonset/ingress-nginx-controller", "metalk8s-ingress")
+    wait_rollout_status(host, "daemonset/ingress-nginx-controller", "metalk8s-ingress")
 
 
 _SPREAD_IPS_PARSER = parsers.parse("the '{ips}' IPs are spread on nodes")
@@ -495,8 +568,11 @@ def update_portmap_cidr(host, context, ssh_config, version, plane):
     )
 )
 def rollout_restart(host, resource, namespace):
+    # Make sure any previous rollout is completed
+    wait_rollout_status(host, resource, namespace)
+
     with host.sudo():
-        result = host.run(
+        host.run_test(
             "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
             "rollout restart %s --namespace %s",
             resource,
@@ -589,10 +665,11 @@ def wait_cc_status(k8s_client, status):
     converters=dict(status_code=int),
 )
 def server_returns(host, context, status_code, reason):
-    response = context.get("response")
-    assert response is not None
-    assert response.status_code == int(status_code)
-    assert response.reason == reason
+    with _ingress_debug_on_failure(host, f"expecting {status_code} '{reason}'"):
+        response = context.get("response")
+        assert response is not None
+        assert response.status_code == int(status_code)
+        assert response.reason == reason
 
 
 @then("the server should respond with shell-ui index")
@@ -611,8 +688,9 @@ def shell_ui_not_returns(host, context):
 
 @then("the server should not respond")
 def server_does_not_respond(host, context):
-    assert "exception" in context
-    assert isinstance(context["exception"], requests.exceptions.ConnectionError)
+    with _ingress_debug_on_failure(host, "expecting no response"):
+        assert "exception" in context
+        assert isinstance(context["exception"], requests.exceptions.ConnectionError)
 
 
 @then(
@@ -654,7 +732,7 @@ def server_request_does_not_return(host, context, protocol, port, plane, path):
     converters=dict(status_code=int),
 )
 def server_request_returns_multiple_ips(
-    context, protocol, port, ips, path, status_code, reason
+    host, context, protocol, port, ips, path, status_code, reason
 ):
     ips = ips.format(**context).split(",")
 
@@ -664,15 +742,16 @@ def server_request_returns_multiple_ips(
         endpoint = "{proto}://{ip}:{port}/{path}".format(
             proto=protocol.lower(), ip=ip, port=port, path=path or ""
         )
-        try:
-            response = requests.get(endpoint, verify=False)
-            context["response"] = response
-        except Exception as exc:
-            raise AssertionError(f"Unable to reach ingress on '{endpoint}': {exc}")
+        with _ingress_debug_on_failure(host, f"request on '{endpoint}'"):
+            try:
+                response = requests.get(endpoint, verify=False)
+                context["response"] = response
+            except Exception as exc:
+                raise AssertionError(f"Unable to reach ingress on '{endpoint}': {exc}")
 
-        assert response is not None
-        assert response.status_code == status_code
-        assert response.reason == reason
+            assert response is not None
+            assert response.status_code == status_code
+            assert response.reason == reason
 
 
 @then(
@@ -681,7 +760,7 @@ def server_request_returns_multiple_ips(
         r"on port (?P<port>\d+) on '(?P<ips>.*)' IPs should not return"
     ),
 )
-def server_request_not_returns_multiple_ips(context, protocol, port, ips, path):
+def server_request_not_returns_multiple_ips(host, context, protocol, port, ips, path):
     ips = ips.format(**context).split(",")
 
     assert ips, "Error IPs list cannot be empty"
@@ -690,16 +769,17 @@ def server_request_not_returns_multiple_ips(context, protocol, port, ips, path):
         endpoint = "{proto}://{ip}:{port}/{path}".format(
             proto=protocol.lower(), ip=ip, port=port, path=path or ""
         )
-        try:
-            response = requests.get(endpoint, verify=False)
-        except requests.exceptions.ConnectionError as exc:
-            return
-        except Exception as exc:
-            raise AssertionError(
-                f"Error when trying to reach ingress on '{endpoint}': {exc}"
-            )
+        with _ingress_debug_on_failure(host, f"request on '{endpoint}'"):
+            try:
+                response = requests.get(endpoint, verify=False)
+            except requests.exceptions.ConnectionError:
+                return
+            except Exception as exc:
+                raise AssertionError(
+                    f"Error when trying to reach ingress on '{endpoint}': {exc}"
+                )
 
-        raise AssertionError(f"The server shouldn't answer but got '{response}'")
+            raise AssertionError(f"The server shouldn't answer but got '{response}'")
 
 
 @then(_SPREAD_IPS_PARSER)
