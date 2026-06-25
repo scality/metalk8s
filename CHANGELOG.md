@@ -11,6 +11,10 @@
   Querier also now runs with two replicas for high availability.
   (PR[#5008](https://github.com/scality/metalk8s/pull/5008))
 
+- Use the `EndpointSlice` service discovery role for Prometheus to stop the
+  deprecated `v1 Endpoints` API warnings logged on Kubernetes 1.33+
+  (PR[#5008](https://github.com/scality/metalk8s/pull/5008))
+
 ## Release 133.0.10
 
 ### Enhancements
