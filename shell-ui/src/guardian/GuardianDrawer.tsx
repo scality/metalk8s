@@ -22,8 +22,9 @@ export const GuardianDrawer = () => {
   // Strip any trailing slash so it matches `event.origin` (which never has one)
   // in useMcpCallHandler's origin check.
   const guardianOrigin = (config.guardianOrigin || GUARDIAN_ORIGIN_FALLBACK).replace(/\/+$/, '');
+  const guardianSource = (config.guardianSource || sourceForProduct(config.productName));
   // iframe src carries the source suffix; the origin passed to the hooks does not.
-  const iframeSrc = `${guardianOrigin}?source=${encodeURIComponent(sourceForProduct(config.productName))}`;
+  const iframeSrc = `${guardianOrigin}?source=${encodeURIComponent(guardianSource)}`;
 
   useDiscoveryEmitter(iframeRef, guardianOrigin);
   useMcpCallHandler(iframeRef, guardianOrigin);
