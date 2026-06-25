@@ -388,6 +388,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/prometheus-operator/config/alertmanager.yaml"),
     Path("salt/metalk8s/addons/prometheus-operator/config/grafana.yaml.j2"),
     Path("salt/metalk8s/addons/prometheus-operator/config/prometheus.yaml"),
+    Path("salt/metalk8s/addons/prometheus-operator/config/thanos.yaml"),
     Path(
         "salt/metalk8s/addons/prometheus-operator/deployed/",
         "alertmanager-configuration-secret.sls",

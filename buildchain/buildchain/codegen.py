@@ -277,6 +277,9 @@ def codegen_chart_thanos() -> types.TaskDict:
     cmd = (
         f"{constants.CHART_RENDER_CMD} thanos {value_file} {chart_dir} "
         "--namespace metalk8s-monitoring "
+        "--service-config thanos metalk8s-thanos-config "
+        "metalk8s/addons/prometheus-operator/config/thanos.yaml "
+        "metalk8s-monitoring "
         f"--output {target_sls}"
     )
 

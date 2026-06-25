@@ -25,6 +25,14 @@ include:
   )
 %}
 
+{%- set thanos_config = salt.metalk8s_kubernetes.get_object(
+        kind='ConfigMap',
+        apiVersion='v1',
+        namespace='metalk8s-monitoring',
+        name='metalk8s-thanos-config',
+  )
+%}
+
 {%- if grafana_config is none %}
 
 Create grafana-config ConfigMap:
@@ -90,6 +98,29 @@ Create alertmanager-config ConfigMap:
 {%- else %}
 
 metalk8s-alertmanager-config ConfigMap already exists:
+  test.succeed_without_changes: []
+
+{%- endif %}
+
+{%- if thanos_config is none %}
+
+Create thanos-config ConfigMap:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: metalk8s-thanos-config
+          namespace: metalk8s-monitoring
+        data:
+          config.yaml: |-
+            apiVersion: addons.metalk8s.scality.com
+            kind: ThanosConfig
+            spec: {}
+
+{%- else %}
+
+metalk8s-thanos-config ConfigMap already exists:
   test.succeed_without_changes: []
 
 {%- endif %}

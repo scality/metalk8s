@@ -73,6 +73,19 @@ The default configuration values for Prometheus are specified below:
    :lines: 3-
 
 
+Thanos Default Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Thanos provides a global, deduplicated query view over the (highly available)
+Prometheus instances.
+
+The default configuration values for Thanos are specified below:
+
+.. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/thanos.yaml
+   :language: yaml
+   :lines: 3-
+
+
 Loki Default Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -808,6 +821,61 @@ Applying configuration
 
 Any changes made to ``metalk8s-prometheus-config`` ConfigMap must then be
 applied with Salt.
+
+.. parsed-literal::
+
+   root\@bootstrap $ kubectl exec --kubeconfig /etc/kubernetes/admin.conf \\
+                      -n kube-system -c salt-master salt-master-bootstrap -- \\
+                      salt-run state.sls \\
+                      metalk8s.addons.prometheus-operator.deployed \\
+                      saltenv=metalk8s-|version|
+
+.. _csc-thanos-customization:
+
+Thanos Configuration Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Default configuration for Thanos can be overridden by editing its
+Cluster and Service ConfigMap ``metalk8s-thanos-config`` in namespace
+``metalk8s-monitoring`` under the key ``data.config.yaml``:
+
+.. code-block:: shell
+
+   root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                      edit configmap -n metalk8s-monitoring \
+                      metalk8s-thanos-config
+
+Adjust the Thanos Querier resources
+"""""""""""""""""""""""""""""""""""
+
+The Thanos Querier holds query results in memory, so a heavy query (e.g. the
+metrics collection performed by ``sosreport``) can exceed the default memory
+limit and get the Pod ``OOMKilled``. The CPU and memory requests and limits
+can be tuned:
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-thanos-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: ThanosConfig
+       spec:
+         deployment:
+           resources:
+             requests:
+               cpu: "500m"
+               memory: "512Mi"
+             limits:
+               cpu: "1"
+               memory: "4Gi"
+
+Then apply the configuration:
 
 .. parsed-literal::
 
