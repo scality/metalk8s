@@ -23,6 +23,7 @@ Generate Ingress CA certificate:
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
     - subjectKeyIdentifier: {{ preserved_ski("/etc/metalk8s/pki/nginx-ingress/ca.crt") }}
+    - days_remaining: {{ nginx_ingress.ca.cert.days_remaining }}
     - days_valid: {{ nginx_ingress.ca.cert.days_valid }}
     - user: root
     - group: root

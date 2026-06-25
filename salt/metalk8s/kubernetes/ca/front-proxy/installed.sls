@@ -23,6 +23,7 @@ Generate front proxy CA certificate:
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
     - subjectKeyIdentifier: {{ preserved_ski("/etc/kubernetes/pki/front-proxy-ca.crt") }}
+    - days_remaining: {{ front_proxy.ca.cert.days_remaining }}
     - days_valid: {{ front_proxy.ca.cert.days_valid }}
     - user: root
     - group: root

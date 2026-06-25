@@ -23,6 +23,7 @@ Generate etcd CA certificate:
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
     - subjectKeyIdentifier: {{ preserved_ski("/etc/kubernetes/pki/etcd/ca.crt") }}
+    - days_remaining: {{ etcd.ca.cert.days_remaining }}
     - days_valid: {{ etcd.ca.cert.days_valid }}
     - user: root
     - group: root

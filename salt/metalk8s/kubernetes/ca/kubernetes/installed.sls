@@ -23,6 +23,7 @@ Generate CA certificate:
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
     - subjectKeyIdentifier: {{ preserved_ski("/etc/kubernetes/pki/ca.crt") }}
+    - days_remaining: {{ ca.cert.days_remaining }}
     - days_valid: {{ ca.cert.days_valid }}
     - user: root
     - group: root

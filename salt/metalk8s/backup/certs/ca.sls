@@ -23,6 +23,7 @@ Generate backup server CA certificate:
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
     - subjectKeyIdentifier: {{ preserved_ski("/etc/metalk8s/pki/backup-server/ca.crt") }}
+    - days_remaining: {{ backup_server.ca.cert.days_remaining }}
     - days_valid: {{ backup_server.ca.cert.days_valid }}
     - user: root
     - group: root
