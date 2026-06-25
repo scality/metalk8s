@@ -84,3 +84,16 @@ query:
 
   nodeSelector:
     node-role.kubernetes.io/infra: ''
+
+  replicaCount: 2
+
+  # cpu/memory templated from CSC (metalk8s-thanos-config) so limits stay tunable
+  resources:
+    requests:
+      cpu: '__var__(thanos.spec.deployment.resources.requests.cpu)'
+      memory: '__var__(thanos.spec.deployment.resources.requests.memory)'
+      ephemeral-storage: 50Mi
+    limits:
+      cpu: '__var__(thanos.spec.deployment.resources.limits.cpu)'
+      memory: '__var__(thanos.spec.deployment.resources.limits.memory)'
+      ephemeral-storage: 2Gi

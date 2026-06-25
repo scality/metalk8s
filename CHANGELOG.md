@@ -2,6 +2,15 @@
 
 ## Release 133.0.11 (in development)
 
+### Bug Fixes
+
+- Avoid the Thanos Querier being OOMKilled on heavy queries (such as the
+  `sosreport` metrics collection): its CPU/memory requests and limits are now
+  configurable through the `metalk8s-thanos-config` Cluster and Service
+  ConfigMap, and the default memory limit is raised from 192Mi to 2Gi. The
+  Querier also now runs with two replicas for high availability.
+  (PR[#5008](https://github.com/scality/metalk8s/pull/5008))
+
 ## Release 133.0.10
 
 ### Enhancements
