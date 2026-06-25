@@ -1,6 +1,6 @@
 pytest ~= 9.0.3
 pytest-cov ~= 7.1.0
-salt == 3006.25
+salt == 3006.26
 mock ~= 5.2.0
 parameterized ~= 0.9.0
 etcd3gw ~= 2.6.0

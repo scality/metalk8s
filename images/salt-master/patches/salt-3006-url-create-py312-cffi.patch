@@ -1,5 +1,5 @@
 Backport of saltstack/salt#66899 ("Fix Python 3.13 compatibility regarding
-urllib.parse module") to salt 3006.25. Despite the upstream title naming
+urllib.parse module") to salt 3006. Despite the upstream title naming
 3.13, the same urllib.parse change was backported into recent Python 3.12
 point releases, so the bug also reproduces there (see saltstack/salt#68080,
 the downstream report on 3.12).
@@ -33,8 +33,8 @@ this patch when bumping salt past 3008.
 
  import re
  import sys
--from urllib.parse import urlparse, urlunparse
-+from urllib.parse import urlparse, urlunparse, urlunsplit
+-from urllib.parse import quote, urlparse, urlunparse
++from urllib.parse import quote, urlparse, urlunparse, urlunsplit
 
  import salt.utils.data
  import salt.utils.path
