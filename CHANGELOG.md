@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 133.0.11 (in development)
+## Release 133.0.11
 
 ### Bug Fixes
 
