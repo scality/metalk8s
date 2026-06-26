@@ -206,3 +206,4 @@ addons:
     enabled: True
   loki:
     enabled: True
+is_bootstrap: False

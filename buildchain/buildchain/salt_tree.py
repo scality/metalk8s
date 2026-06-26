@@ -618,6 +618,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/node/rocky-linux-grains.sls"),
     Path("salt/metalk8s/orchestrate/apiserver.sls"),
     Path("salt/metalk8s/orchestrate/deploy_node.sls"),
+    Path("salt/metalk8s/orchestrate/patch_kubesystem_namespace.sls"),
     Path("salt/metalk8s/orchestrate/etcd.sls"),
     Path("salt/metalk8s/orchestrate/register_etcd.sls"),
     Path("salt/metalk8s/orchestrate/backup/files/job.yaml.j2"),

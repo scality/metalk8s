@@ -127,6 +127,16 @@ Wait for API server to be available:
   - require:
     - salt: Bring bootstrap minion to highstate
 
+Deploy kubeconfig to bootstrap:
+  salt.state:
+  - tgt: {{ pillar.bootstrap_id }}
+  - sls :
+    - metalk8s.salt.master.kubeconfig
+  - saltenv: {{ saltenv }}
+  - pillar: {{ pillar_data | tojson }}
+  - require:
+    - http: Wait for API server to be available
+
 Configure bootstrap Node object:
   salt.runner:
   - name: state.orchestrate
@@ -135,7 +145,7 @@ Configure bootstrap Node object:
   - saltenv: {{ saltenv }}
   - pillar: {{ pillar_data | tojson }}
   - require:
-    - http: Wait for API server to be available
+    - salt: Deploy kubeconfig to bootstrap
 
 Update pillar on bootstrap minion after highstate:
   salt.function:
