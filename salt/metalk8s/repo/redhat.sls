@@ -99,7 +99,7 @@ Configure {{ repo_name }} repository:
       - file: Set metalk8s_osmajorrelease in yum vars
     - require_in:
       - test: Repositories configured
-    - watch_in:
+    - onchanges_in:
       - module: Check packages availability
 {%- endfor %}
 
@@ -114,7 +114,7 @@ Refresh yum cache:
       - cmd: Refresh yum cache
 
 Check packages availability:
-  module.wait:
+  module.run:
     - metalk8s_package_manager.check_pkg_availability:
       - pkgs_info: {{ repo.packages | tojson }}
       - exclude: {{ package_exclude_list | tojson }}

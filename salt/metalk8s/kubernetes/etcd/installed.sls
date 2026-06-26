@@ -99,10 +99,10 @@ Create local etcd Pod manifest:
 {%- if not pillar.get('metalk8s', {}).get('skip_etcd_healthcheck', False) %}
 
 Delay after etcd pod deployment:
-  module.wait:
+  module.run:
     - test.sleep:
       - length: 10
-    - watch:
+    - onchanges:
       - metalk8s: Create local etcd Pod manifest
 
 Waiting for etcd running:
