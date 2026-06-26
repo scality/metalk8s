@@ -80448,6 +80448,7 @@ spec:
     seccompProfile:
       type: RuntimeDefault
   serviceAccountName: prometheus-operator-prometheus
+  serviceDiscoveryRole: EndpointSlice
   serviceMonitorNamespaceSelector: {}
   serviceMonitorSelector:
     matchLabels:

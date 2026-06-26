@@ -1,5 +1,4 @@
 import kubernetes.client
-from kubernetes.client import AppsV1Api
 from kubernetes.client.rest import ApiException
 import pytest
 from pytest_bdd import scenario, then, parsers
@@ -201,42 +200,6 @@ def check_deployment(k8s_client, name, namespace):
         times=10,
         wait=3,
         name="wait for Deployment '{}/{}'".format(namespace, name),
-    )
-
-
-@then("the DaemonSet <name> in the <namespace> namespace has all desired Pods ready")
-@then(
-    parsers.parse(
-        "the DaemonSet '{name}' in the '{namespace}' namespace has all desired "
-        "Pods ready"
-    )
-)
-def check_daemonset(k8s_client, name, namespace):
-    def _wait_for_daemon_set():
-        try:
-            daemon_set = k8s_client.resources.get(
-                api_version="apps/v1", kind="DaemonSet"
-            ).get(name=name, namespace=namespace)
-        except ApiException as exc:
-            if exc.status == 404:
-                pytest.fail("DaemonSet '{}/{}' does not exist".format(namespace, name))
-            raise
-
-        desired = daemon_set.status.desired_number_scheduled
-        scheduled = daemon_set.status.current_number_scheduled
-        assert desired == scheduled, (
-            "DaemonSet is not ready yet (desired={}, scheduled={})"
-        ).format(desired, scheduled)
-        available = daemon_set.status.number_available
-        assert desired == available, (
-            "DaemonSet is not ready yet (desired={}, available={})"
-        ).format(desired, available)
-
-    utils.retry(
-        _wait_for_daemon_set,
-        times=10,
-        wait=3,
-        name="wait for DaemonSet '{}/{}'".format(namespace, name),
     )
 
 
