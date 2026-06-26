@@ -42,6 +42,11 @@ def test_deploy_solution(host):
     pass
 
 
+@scenario("../features/solutions.feature", "Upgrade Solution")
+def test_upgrade_solution(host):
+    pass
+
+
 # }}}
 
 
@@ -61,7 +66,7 @@ def is_absent_solution_environment(host, environment, k8s_client):
     solution_environment = get_environment(k8s_client, environment)
     assert (
         environment not in solution_environment
-    ), "Solution environment {} exists".format(environment)
+    ), f"Solution environment {environment} exists"
 
 
 @given(parsers.parse("the Solution Configuration file is absent"))
@@ -192,17 +197,19 @@ def is_imported_solution_archive(host, k8s_client, name):
 
 
 @then(parsers.parse("Solution '{name}' version '{solution_version}' is available"))
-def is_available_solution(host, request, name, solution_version):
+def is_available_solution(host, name, solution_version):
     available_solution = get_available_solution(host)
-    assert name in available_solution
-    for k, v in available_solution.items():
-        if k == name:
-            for item in v:
-                assert (
-                    item.get("version", None) == solution_version
-                ), "Expected solution version {}: got {}".format(
-                    solution_version, item.get("version", None)
-                )
+    assert solution_version
+    assert (
+        name in available_solution
+    ), f"Solution {name} not found in available solutions"
+
+    available_versions = [
+        item.get("version", None) for item in available_solution[name]
+    ]
+    assert (
+        solution_version in available_versions
+    ), f"Expected solution version {solution_version}: got {available_versions}"
 
 
 @then(parsers.parse("Solution '{name}' version '{solution_version}' is activated"))
@@ -244,9 +251,7 @@ def is_activated_solution(host, name, solution_version, k8s_client):
 def is_available_crds(request, host, name):
     with host.sudo():
         res = host.run(
-            ("kubectl --kubeconfig=/etc/kubernetes/admin.conf " "get crd {}").format(
-                name
-            )
+            f"kubectl --kubeconfig=/etc/kubernetes/admin.conf get crd {name}",
         )
         assert res.rc == 0, res.stdout
 
@@ -312,20 +317,20 @@ def get_configmap(k8s_client, name, namespace):
 def get_environment(k8s_client, name):
     try:
         response = k8s_client.resources.get(api_version="v1", kind="Namespace").get(
-            label_selector="{}={}".format(ENVIRONMENT_LABEL, name)
+            label_selector=f"{ENVIRONMENT_LABEL}={name}",
         )
     except (ApiException) as exc:
         if isinstance(exc, ApiException) and exc.status == 404:
             return None
         raise
-    return response.items
+    return [item["metadata"]["name"] for item in response.items]
 
 
 def get_available_solution(host):
     def _get_available_solutions_from_pillar():
         with host.sudo():
             output = host.check_output(
-                'salt-call --out=json pillar.get "{}"'.format(SOLUTION_PILLAR_KEY)
+                f'salt-call --out=json pillar.get "{SOLUTION_PILLAR_KEY}"'
             )
         data = json.loads(output)["local"]
         assert "_errors" not in data

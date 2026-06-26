@@ -475,6 +475,16 @@ metalk8s:
                     master-1:
                       skip_roles: [etcd]
 
+    patch_kubesystem_namespace.sls:
+      _cases:
+        "From upgrade":
+          <<: *orch_compact_arch
+          _subcases:
+            "Patch kube-system namespace cluster-version annotation":
+              pillar_overrides:
+                orchestrate:
+                  destination_version: 2.7.1
+
     etcd.sls:
       _cases: *orch_base_cases
 

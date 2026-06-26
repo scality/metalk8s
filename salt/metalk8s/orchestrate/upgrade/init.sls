@@ -95,6 +95,7 @@ Deploy node {{ node }}:
     - require:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
     - require_in:
+      - salt: Deploy core component objects
       - salt: Deploy Kubernetes service config objects
 
   {%- endif %}
