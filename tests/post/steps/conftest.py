@@ -2,12 +2,12 @@
 
 import json
 
-from kubernetes.client import CustomObjectsApi
-from kubernetes.client import StorageV1Api
+from kubernetes.client.rest import ApiException
 import pytest
 from pytest_bdd import given, parsers, then
 
 from tests import kube_utils, utils
+from tests.conftest import wait_rollout_status
 
 
 # Fixtures {{{
@@ -203,6 +203,77 @@ def then_check_pod_different_node(ssh_config, host, k8s_client, selector):
             pod.spec.nodeName not in nodes
         ), f"Node '{pod.spec.nodeName}' has several Pod with label '{selector}'"
         nodes.add(pod.spec.nodeName)
+
+
+@then("the DaemonSet <name> in the <namespace> namespace has all desired Pods ready")
+@then(
+    parsers.parse(
+        "the DaemonSet '{name}' in the '{namespace}' namespace has all desired "
+        "Pods ready"
+    )
+)
+def check_daemonset(host, k8s_client, name, namespace):
+    def _wait_for_daemon_set():
+        try:
+            daemon_set = k8s_client.resources.get(
+                api_version="apps/v1", kind="DaemonSet"
+            ).get(name=name, namespace=namespace)
+        except ApiException as exc:
+            if exc.status == 404:
+                pytest.fail(f"DaemonSet '{namespace}/{name}' does not exist")
+            raise
+
+        desired = daemon_set.status.desired_number_scheduled
+        scheduled = daemon_set.status.current_number_scheduled
+        assert (
+            desired == scheduled
+        ), f"DaemonSet is not ready yet (desired={desired}, scheduled={scheduled})"
+        available = daemon_set.status.number_available
+        assert (
+            desired == available
+        ), f"DaemonSet is not ready yet (desired={desired}, available={available})"
+
+        # The DaemonSet status counters do not account for pods being
+        # terminated: during a rolling update, the new pod is reported as
+        # available as soon as it is Ready, while the old one can still be
+        # in `Terminating` (long `terminationGracePeriodSeconds`, draining
+        # `preStop` hook, finalizers, ...).  Make sure no pod from a
+        # previous revision is still around before declaring the DaemonSet
+        # fully ready.
+        label_selector = ",".join(
+            f"{key}={value}"
+            for key, value in daemon_set.spec.selector.matchLabels.items()
+        )
+        pods = (
+            k8s_client.resources.get(api_version="v1", kind="Pod")
+            .get(namespace=namespace, label_selector=label_selector)
+            .items
+        )
+        terminating_pods = []
+        not_ready_pods = []
+        for pod in pods:
+            if pod.metadata.deletionTimestamp is not None:
+                terminating_pods.append(pod.metadata.name)
+            elif pod.status.conditions is not None:
+                for condition in pod.status.conditions:
+                    if condition.type == "Ready" and condition.status != "True":
+                        not_ready_pods.append(pod.metadata.name)
+
+        assert (
+            not terminating_pods
+        ), f"DaemonSet is not ready yet, some pods are still terminating: {', '.join(terminating_pods)}"
+        assert (
+            not not_ready_pods
+        ), f"DaemonSet is not ready yet, some pods are not ready: {', '.join(not_ready_pods)}"
+
+    utils.retry(
+        _wait_for_daemon_set,
+        times=60,
+        wait=3,
+        name=f"wait for DaemonSet '{namespace}/{name}'",
+    )
+
+    wait_rollout_status(host, f"daemonset/{name}", namespace)
 
 
 # }}}
