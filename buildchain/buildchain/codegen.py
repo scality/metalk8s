@@ -3,7 +3,6 @@
 
 """Tasks for code generation."""
 
-
 import shlex
 from typing import Callable, Iterator, Tuple, Dict
 

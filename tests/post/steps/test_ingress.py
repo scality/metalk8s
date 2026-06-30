@@ -13,7 +13,6 @@ import testinfra
 from tests import utils
 from tests.conftest import wait_rollout_status
 
-
 MAIN_CC_NAME = "main"
 
 OPERATOR_DEPLOYMENT = "metalk8s-operator-controller-manager"

@@ -2,7 +2,6 @@
 
 """Tasks to create build containers."""
 
-
 from pathlib import Path
 from typing import Any, Dict, Iterator, Tuple
 
@@ -57,7 +56,6 @@ RPM_BUILDER: Dict[str, LocalImage] = {
         ],
         build_args={
             # Used to template the repository definition
-            "SALT_VERSION": versions.SALT_VERSION,
             "K8S_SHORT_VERSION": versions.K8S_SHORT_VERSION,
         },
     ),

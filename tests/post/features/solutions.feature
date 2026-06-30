@@ -24,7 +24,7 @@ Feature: Solutions
         Then we have no Solution 'example-solution' archive mounted
         And we have no Solution Configuration file present
 
-    @solution-upgrade
+    @solution_upgrade
     Scenario: Upgrade Solution
         Given the Kubernetes API is available
         And no Solution 'example-solution' is imported

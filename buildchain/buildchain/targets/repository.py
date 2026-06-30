@@ -47,7 +47,6 @@ from . import image
 from . import package
 from . import directory
 
-
 MKDIR_ROOT_TASK_NAME = "mkdir_repo_root"
 MKDIR_ARCH_TASK_NAME = "mkdir_repo_arch"
 

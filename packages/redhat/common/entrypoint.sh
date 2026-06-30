@@ -124,7 +124,7 @@ download_repository_gpg_keys() {
 }
 
 add_dependencies(){
-    while read -r name dependency repo relpath; do
+    while read -r name dependency repo; do
         case $repo in
             epel)
                 if [ ${#EPEL_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${EPEL_DEPS[@]}"; then
@@ -142,10 +142,7 @@ add_dependencies(){
                 fi
                 ;;
             saltstack)
-                # We exclude all package from "base" directory of Saltstack since those
-                # packages are available in "base" CentOS/RHEL 7 repositories
-                if [[ $relpath != base/* ]] && \
-                   ([ ${#SALT_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${SALT_DEPS[@]}"); then
+                if [ ${#SALT_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${SALT_DEPS[@]}"; then
                     SALT_DEPS+=("$dependency")
                 fi
                 ;;
@@ -164,7 +161,7 @@ download_packages() {
     local query_format query_opts repo_dir
     local -a dependencies=()
 
-    query_format='%{name} %{name}-%{version} %{repoid} %{relativepath}'
+    query_format='%{name} %{name}-%{version} %{repoid}'
     query_opts=""
     if [[ "$releasever" == "8" ]]; then
         # On new repoquery version, if we do not specify the `latest-limit`
@@ -179,7 +176,7 @@ download_packages() {
         # version if not needed
         # (a package may require another version of this one)
         add_dependencies < <(
-            repoquery  $query_opts --queryformat="%{name} $package %{repoid} %{relativepath}" "$package"
+            repoquery  $query_opts --queryformat="%{name} $package %{repoid}" "$package"
         )
     done
     add_dependencies < <(

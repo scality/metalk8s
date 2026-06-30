@@ -6,13 +6,13 @@
 This module MUST be kept valid in a standalone context, since it is intended
 for use in tests and documentation as well.
 """
+
 import operator
 import json
 
 from collections import namedtuple
 from pathlib import Path
 from typing import Any, cast, Dict, Optional, Tuple
-
 
 Image = namedtuple("Image", ("name", "version", "digest"))
 
@@ -26,7 +26,7 @@ K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
 K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
 CALICO_VERSION: str = "3.32.0"
-SALT_VERSION: str = "3002.9"
+SALT_VERSION: str = "3006.26"
 CONTAINERD_VERSION: str = "2.2.5"
 
 SOSREPORT_RELEASE: str = "2"
@@ -417,10 +417,11 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="iptables"),
         PackageVersion(name="kubernetes-cni"),
         PackageVersion(name="lvm2"),
-        PackageVersion(name="m2crypto"),
-        PackageVersion(name="python36-psutil"),
-        PackageVersion(name="python36-pyOpenSSL"),
         PackageVersion(name="salt-minion", version=SALT_VERSION),
+        # NOTE: We pin also the salt package version since repository
+        # is not versioned and we want to ensure we use the same version as the
+        # salt-minion package
+        PackageVersion(name="salt", version=SALT_VERSION),
         PackageVersion(name="socat"),
         PackageVersion(name="tar"),
         PackageVersion(name="util-linux"),
@@ -437,10 +438,7 @@ PACKAGES: Dict[str, Any] = {
                 release=f"{SOSREPORT_RELEASE}.el8",
             ),
             PackageVersion(name="python3-boto3"),
-            PackageVersion(name="python3-m2crypto", override="m2crypto"),
             PackageVersion(name="python3-dnf-plugin-versionlock"),
-            PackageVersion(name="python3-psutil", override="python36-psutil"),
-            PackageVersion(name="python3-pyOpenSSL", override="python36-pyOpenSSL"),
         ),
     },
 }
@@ -457,7 +455,7 @@ def _list_pkgs_for_os_family(os_family: str) -> Dict[str, Tuple[PackageVersion, 
     os_pkgs = {}
 
     if os_family_pkgs is None:
-        raise Exception(f"No packages for OS family: {os_family}")
+        raise ValueError(f"No packages for OS family: {os_family}")
 
     for version, pkgs in os_family_pkgs.items():
         os_override_names = [pkg.override for pkg in pkgs if pkg.override is not None]
@@ -486,14 +484,11 @@ REDHAT_PACKAGES_MAP = {
 SALT_VERSIONS_JSON = {
     "kubernetes": {"version": K8S_VERSION},
     "packages": {
-        "centos": {
+        os: {
             version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
             for version, pkgs in REDHAT_PACKAGES.items()
-        },
-        "redhat": {
-            version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
-            for version, pkgs in REDHAT_PACKAGES.items()
-        },
+        }
+        for os in ["centos", "rocky", "redhat"]
     },
     "images": {img.name: {"version": img.version} for img in CONTAINER_IMAGES},
     "metalk8s": {"version": VERSION},

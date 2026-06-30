@@ -3,14 +3,12 @@
 
 """Useful global constants, used hither and yon."""
 
-
 from pathlib import Path
 import subprocess
 from typing import List, Optional, FrozenSet
 
 from buildchain import ROOT  # Re-export ROOT through this module.
 from buildchain import config, versions
-
 
 # Max length of a "command".
 # (used in task display, for a nice aligned output).

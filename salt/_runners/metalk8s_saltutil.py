@@ -22,7 +22,8 @@ def sync_auth(saltenv="base", extmod_whitelist=None, extmod_blacklist=None):
 def accept_minion(minion):
     """Salt state that accept a minion key
 
-    Using `key.accept` from wheel alone does not report if the minion actually get accepted"""
+    Using `key.accept` from wheel alone does not report if the minion actually get accepted
+    """
     if minion in __salt__["manage.up"]():
         # Minion key already accepted
         return True

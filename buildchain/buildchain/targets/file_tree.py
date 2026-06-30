@@ -27,7 +27,6 @@ Overview:
                    └─────────────────┘
 """
 
-
 import operator
 from pathlib import Path
 from typing import Any, List, Optional, Sequence, Set, Union
@@ -38,7 +37,6 @@ from buildchain import types
 from buildchain import utils
 
 from . import base
-
 
 MAKE_TASK_NAME: str = "make_tree"
 

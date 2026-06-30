@@ -3,7 +3,6 @@
 
 """Task to create the build root."""
 
-
 from buildchain import config
 from buildchain import targets
 from buildchain import types

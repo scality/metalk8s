@@ -61,9 +61,6 @@ SALT_CALL=${SALT_CALL:-salt-call}
 
 declare -a PACKAGES=(
     salt-minion-@@SALT_VERSION
-    # NOTE: `python3-psutil` will install `python36-psutil` on RHEL7 based and
-    # `python3-psutil` on RHEL8, as expected
-    python3-psutil
     genisoimage
 )
 
@@ -178,7 +175,8 @@ check_ca_minion() {
 main() {
     run "Determine the OS" determine_os
     if [ -z "${PYTHON:-}" ]; then
-        run "Installing Python3 package" install_packages python3
+        run "Installing Python3 package" install_packages python3.12
+        alternatives --set python3 /usr/bin/python3.12
         PYTHON=${PYTHON:-$(command -v python3)}
     fi
     run "Checking that BootstrapConfiguration is present" bootstrap_file_is_present

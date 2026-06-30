@@ -9,7 +9,6 @@ Then, they are tagged, saved on the disk and optionally compressed.
 All of these actions are done by a single task.
 """
 
-
 import abc
 import itertools
 import operator

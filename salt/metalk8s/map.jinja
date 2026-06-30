@@ -13,6 +13,15 @@
         },
       },
     },
+    'Rocky': {
+      8: {
+        'kubernetes': versions.kubernetes,
+        'repo': {
+          'packages': versions.packages.rocky['8'],
+          'images': versions.images,
+        },
+      },
+    },
     'RedHat': {
       8: {
         'kubernetes': versions.kubernetes,
@@ -30,10 +39,6 @@
   salt['grains.filter_by']({
     'RedHat': {
       8: {
-        'python36-psutil': 'python3-psutil',
-        'python36-pyOpenSSL': 'python3-pyOpenSSL',
-        'python36-rpm': 'python3-rpm',
-        'm2crypto': 'python3-m2crypto',
         'ebtables': 'iptables-ebtables',
         'yum-plugin-versionlock': 'python3-dnf-plugin-versionlock',
       }
@@ -59,16 +64,9 @@
   'default': {}
 }, merge=defaults.get('kubernetes')) %}
 
-{% set kubeadm_preflight = salt['grains.filter_by'](
-  salt['grains.filter_by']({
-    'RedHat': {
-      7: {
-        'kubeadm_preflight': {'mandatory': {'sysctl_values': {'net.ipv4.tcp_tw_recycle': 0}}}
-      }
-    }
-  }, grain='os_family'),
-  grain='osmajorrelease',
-  merge=defaults.get('kubeadm_preflight')) %}
+{% set kubeadm_preflight = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('kubeadm_preflight')) %}
 
 {% set repo = salt['grains.filter_by'](
   salt['grains.filter_by']({

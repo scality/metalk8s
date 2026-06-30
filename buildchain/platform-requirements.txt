@@ -1,3 +1,0 @@
-# Note: these come from 'buildchain/platform-requirements.txt'
-macfsevents==0.8.1; sys_platform=="darwin"  # via doit
-pyinotify==0.9.6; sys_platform=="linux"     # via doit

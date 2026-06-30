@@ -50,14 +50,14 @@ def ss_clusterissuer_exists(name, clusterissuer_client):
 # When {{{
 
 
-@when(parsers.parse("we create the following ClusterIssuer:\n{body}"))
-def create_clusterissuer(body, clusterissuer_client):
-    clusterissuer_client.create_from_yaml(body)
+@when("we create the following ClusterIssuer:")
+def create_clusterissuer(docstring, clusterissuer_client):
+    clusterissuer_client.create_from_yaml(docstring)
 
 
-@when(parsers.parse("we create the following Certificate:\n{body}"))
-def create_certificate(body, cert_client):
-    cert_client.create_from_yaml(body)
+@when("we create the following Certificate:")
+def create_certificate(docstring, cert_client):
+    cert_client.create_from_yaml(docstring)
 
 
 # }}}

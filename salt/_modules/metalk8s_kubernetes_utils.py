@@ -3,6 +3,7 @@
 This module is merged into the `metalk8s_kubernetes` execution module,
 by virtue of its `__virtualname__`.
 """
+
 from __future__ import absolute_import
 
 from salt.exceptions import CommandExecutionError

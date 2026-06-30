@@ -208,6 +208,9 @@ jobs:
 
   promoted-downgrade:
     uses: ./.github/workflows/downgrade-test.yaml
+    # NOTE: Downgrade is not supported from 134 to 133 (see CHANGELOG.md)
+    # Should be removed in `development/135.0`
+    if: ${{ ! startsWith(inputs.promoted-version, '133.') }}
     secrets: inherit
     with:
       from-artifacts-url: ${{ inputs.artifacts-url }}

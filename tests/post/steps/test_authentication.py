@@ -12,7 +12,6 @@ from kubernetes.client.rest import ApiException
 from tests import kube_utils
 from tests import utils
 
-
 # Scenarios {{{
 
 
@@ -47,7 +46,6 @@ def test_apiserver_rejects_anonymous(host):
 @scenario(
     "../features/authentication.feature",
     "kube-apiserver allows anonymous access to <path>",
-    example_converters={"path": str},
 )
 def test_apiserver_allows_anonymous_health(host):
     pass
@@ -56,7 +54,6 @@ def test_apiserver_allows_anonymous_health(host):
 @scenario(
     "../features/authentication.feature",
     "kube-apiserver accepts authenticated access to <path>",
-    example_converters={"path": str},
 )
 def test_apiserver_accepts_authenticated_health(host):
     pass
@@ -135,17 +132,12 @@ def perform_request(host, context, control_plane_ingress_ep, path):
         pytest.fail("Failed to access oidc url path with error: {}".format(exc))
 
 
-@when("we perform an anonymous request on the API server '<path>' endpoint")
+@when(
+    parsers.parse("we perform an anonymous request on the API server '{path}' endpoint")
+)
 def perform_anonymous_apiserver_request(context, control_plane_ip, path):
-    """Hit kube-apiserver directly on :6443 with no credentials.
-
-    Bypasses the control-plane Ingress so the path the apiserver sees is
-    exactly `/<path>`, with no rewrite ambiguity. `path` is the example
-    value (e.g. "livez") supplied by the Scenario Outline. We use the
-    literal-text decorator style here -- in pytest-bdd 3.2.1 only this
-    style substitutes `<placeholder>` references; parsers.parse(...) keeps
-    them literal.
-    """
+    """Hit kube-apiserver directly on :6443 with no credentials, bypassing
+    the control-plane Ingress so the path is exactly `/<path>`."""
     session = utils.requests_retry_session()
     try:
         context["response"] = session.get(
@@ -156,13 +148,14 @@ def perform_anonymous_apiserver_request(context, control_plane_ip, path):
         pytest.fail("Failed to access API server with error: {}".format(exc))
 
 
-@when("we perform an authenticated request on the API server '<path>' endpoint")
+@when(
+    parsers.parse(
+        "we perform an authenticated request on the API server '{path}' endpoint"
+    )
+)
 def perform_authenticated_request(context, control_plane_ip, k8s_client, path):
-    """Hit kube-apiserver directly on :6443 with the admin client cert.
-
-    Same notes as the anonymous variant on URL construction and on the
-    decorator style.
-    """
+    """Hit kube-apiserver directly on :6443 with the admin client cert,
+    bypassing the control-plane Ingress."""
     config = k8s_client.client.configuration
     session = utils.requests_retry_session()
     try:

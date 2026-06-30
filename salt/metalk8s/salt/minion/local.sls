@@ -22,11 +22,11 @@ Configure salt minion for local mode:
           {{ env }}:
             - {{ salt.file.join(info.path, 'pillar') }}
         {%- endfor %}
-        use_superseded:
-          - module.run
         ext_pillar_first: true
         ext_pillar:
           - metalk8s: /etc/metalk8s/bootstrap.yaml
         retry_dns_count: 3
         enable_fqdns_grains: false
         grains_cache: true
+        features:
+          x509_v2: true

@@ -24,7 +24,6 @@ from tests.unit import mixins
 from tests.unit.mocks import kubernetes as mock_kubernetes
 from tests.unit import utils
 
-
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "files", "test_metalk8s_drain.yaml"
 )

@@ -7,7 +7,6 @@ import hashlib
 import logging
 import argparse
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -104,10 +103,10 @@ def create_config(
         return
 
     images = {}
-    for (name, tag) in find_images(root):
+    for name, tag in find_images(root):
         images.setdefault(name, set()).add(tag)
 
-    for (name, tags) in sorted(images.items()):
+    for name, tags in sorted(images.items()):
         tag_list = {
             "name": name,
             "tags": sorted(tags),

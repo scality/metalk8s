@@ -24,38 +24,22 @@ def test_read_pod_logs(host):
     pass
 
 
-@scenario(
-    "../features/sanity.feature",
-    "Static Pod runs where expected",
-    example_converters={"namespace": str, "name": str, "role": str},
-)
+@scenario("../features/sanity.feature", "Static Pod runs where expected")
 def test_static_pod_running(host):
     pass
 
 
-@scenario(
-    "../features/sanity.feature",
-    "Deployment has available replicas",
-    example_converters={"namespace": str, "name": str},
-)
+@scenario("../features/sanity.feature", "Deployment has available replicas")
 def test_deployment_running(host):
     pass
 
 
-@scenario(
-    "../features/sanity.feature",
-    "DaemonSet has desired Pods ready",
-    example_converters={"namespace": str, "name": str},
-)
+@scenario("../features/sanity.feature", "DaemonSet has desired Pods ready")
 def test_daemonset_running(host):
     pass
 
 
-@scenario(
-    "../features/sanity.feature",
-    "StatefulSet has available replicas",
-    example_converters={"namespace": str, "name": str},
-)
+@scenario("../features/sanity.feature", "StatefulSet has available replicas")
 def test_statefulset_running(host):
     pass
 
@@ -144,7 +128,11 @@ def read_pod_logs(k8s_client, label, namespace):
         ).format(container.name, pod.metadata.name, pod.status.phase)
 
 
-@then("the static Pod <name> in the <namespace> namespace runs on <role> nodes")
+@then(
+    parsers.parse(
+        "the static Pod '{name}' in the '{namespace}' namespace runs on '{role}' nodes"
+    )
+)
 def check_static_pod(k8s_client, name, namespace, role):
     node_k8s_client = k8s_client.resources.get(api_version="v1", kind="Node")
     if role == "all":
@@ -168,10 +156,6 @@ def check_static_pod(k8s_client, name, namespace, role):
         )
 
 
-@then(
-    "the Deployment <name> in the <namespace> namespace has all desired "
-    "replicas available"
-)
 @then(
     parsers.parse(
         "the Deployment '{name}' in the '{namespace}' namespace has all desired "
@@ -203,10 +187,6 @@ def check_deployment(k8s_client, name, namespace):
     )
 
 
-@then(
-    "the StatefulSet <name> in the <namespace> namespace has all desired "
-    "replicas available"
-)
 @then(
     parsers.parse(
         "the StatefulSet '{name}' in the '{namespace}' namespace has all desired "

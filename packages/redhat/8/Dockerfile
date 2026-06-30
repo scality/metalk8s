@@ -6,21 +6,14 @@ FROM ${BUILD_IMAGE}@sha256:${BUILD_IMAGE_SHA256} as build
 
 RUN useradd -m build
 
-ARG SALT_VERSION
 ARG K8S_SHORT_VERSION
-ARG GO_VERSION=1.20.14
 
 ADD common/yum_repositories/*.repo /etc/yum.repos.d/
-RUN sed -i s/@SALT_VERSION@/$SALT_VERSION/ /etc/yum.repos.d/saltstack.repo
 RUN sed -i s/@K8S_SHORT_VERSION@/$K8S_SHORT_VERSION/ /etc/yum.repos.d/kubernetes.repo
-
-ENV GOPATH /go
-ENV GOROOT /usr/local/go
 
 RUN dnf install -y --setopt=skip_missing_names_on_install=False \
         createrepo \
         epel-release \
-        python36 \
         rpm-build \
         rpmdevtools \
         rpmlint \

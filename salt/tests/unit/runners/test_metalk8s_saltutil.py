@@ -11,7 +11,6 @@ from _runners import metalk8s_saltutil
 from tests.unit import mixins
 from tests.unit import utils
 
-
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "files", "test_metalk8s_saltutil.yaml"
 )
@@ -37,8 +36,9 @@ class Metalk8sSaltutilTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
             sync_mock.assert_called_once()
             assert "auth" in sync_mock.call_args[0]
-            self.assertDictContainsSubset(
-                {"saltenv": "my-salt-env"}, sync_mock.call_args[1]
+            self.assertEqual(
+                sync_mock.call_args[1],
+                sync_mock.call_args[1] | {"saltenv": "my-salt-env"},
             )
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["accept_minion"])

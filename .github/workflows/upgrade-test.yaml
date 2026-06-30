@@ -112,6 +112,9 @@ jobs:
         with:
           BRANCH: ${{ env.source_git_commit }}
       - name: Run ${{ env.source_version }} tests from Bastion
+        # NOTE: We skip this for now since tests dependencies are too different between 133 and 134
+        # Should be removed in `development/135.0`
+        if: ${{ ! startsWith(env.source_version, '133.') }}
         uses: ./.github/actions/bastion-tests
       # }}}
 

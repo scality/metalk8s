@@ -3,7 +3,6 @@
 from lib_alert_tree.models import DerivedAlert as Derived, Relationship
 from lib_alert_tree.kubernetes import deployment_alerts, daemonset_alerts
 
-
 AUTH_WARNING = Derived.warning(
     name="AuthenticationServiceDegraded",
     relationship=Relationship.ANY,

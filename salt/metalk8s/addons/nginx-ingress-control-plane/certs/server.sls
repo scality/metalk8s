@@ -4,21 +4,15 @@
 
 {%- set private_key_path = "/etc/metalk8s/pki/nginx-ingress/control-plane-server.key" %}
 
-include:
-  - metalk8s.internal.m2crypto
-
 Create Control-Plane Ingress server private key:
   x509.private_key_managed:
     - name: {{ private_key_path }}
-    - bits: 4096
-    - verbose: False
+    - keysize: 4096
     - user: root
     - group: root
     - mode: '0600'
     - makedirs: True
     - dir_mode: '0755'
-    - require:
-      - metalk8s_package_manager: Install m2crypto
     - unless:
       - test -f "{{ private_key_path }}"
 
@@ -40,7 +34,14 @@ Create Control-Plane Ingress server private key:
 Generate Control-Plane Ingress server certificate:
   x509.certificate_managed:
     - name: {{ certificates.server.files['control-plane-ingress'].path }}
+{%- if salt.salt_version.greater_than("Phosphorus") %}
+{#- NOTE: This if block is needed since during upgrade this state is called with
+    older salt version
+    This if block can be removed in `development/135` #}
+    - private_key: {{ private_key_path }}
+{%- else %}
     - public_key: {{ private_key_path }}
+{%- endif %}
     - ca_server: {{ pillar.metalk8s.ca.minion }}
     - signing_policy: {{ nginx_ingress.cert.server_signing_policy }}
     - CN: nginx-ingress-control-plane-server

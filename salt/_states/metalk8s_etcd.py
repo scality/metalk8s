@@ -42,10 +42,10 @@ def member_present(name, peer_urls):
     else:
         ret["result"] = True
         ret["changes"] = {
-            "id": member.id,
-            "name": member.name,
-            "peer_urls": str(", ".join(member.peer_urls)),
-            "client_urls": str(", ".join(member.client_urls)),
+            "id": member["id"],
+            "name": member["name"],
+            "peer_urls": ", ".join(member["peer_urls"]),
+            "client_urls": ", ".join(member["client_urls"]),
         }
         ret["comment"] = "Node added in etcd cluster"
 

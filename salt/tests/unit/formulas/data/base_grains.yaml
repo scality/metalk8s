@@ -237,8 +237,8 @@ locale_info:
   detectedencoding: UTF-8
   timezone: unknown
 localhost: ns631140750
-lsb_distrib_codename: CentOS Linux 8 (Core)
-lsb_distrib_id: CentOS Linux
+lsb_distrib_codename: Rocky Linux 8 (Core)
+lsb_distrib_id: Rocky Linux
 lvm: {}
 machine_id: afec8d2527c836686dd418bb601d4f4f
 manufacturer: Supermicro
@@ -252,12 +252,12 @@ metalk8s:
 nodename: ns631140750
 num_cpus: 32
 num_gpus: 1
-os: CentOS
+os: Rocky
 os_family: RedHat
 osarch: x86_64
-oscodename: CentOS Linux 8 (Core)
-osfinger: CentOS Linux-8
-osfullname: CentOS Linux
+oscodename: Rocky Linux 8 (Core)
+osfinger: Rocky Linux-8
+osfullname: Rocky Linux
 osmajorrelease: 8
 osrelease: 8.10
 osrelease_info:
