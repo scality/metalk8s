@@ -299,9 +299,7 @@ Feature: Volume management
         And the device '/dev/test-vg-12/test-volume12-lvmlv' exists
 
     Scenario: Test volume re-creation (lvmLogicalVolume force-lvcreate)
-        # Skip test on CentOS/RHEL 7, because lvm still creates when signatures are found
-        Given the grain 'osmajorrelease' is not 7
-        And the Kubernetes API is available
+        Given the Kubernetes API is available
         And a device exists
         And a LVM VG 'test-vg-13' exists
         And a LVM LV 'test-lv-13' in VG 'test-vg-13' was created, formatted, then removed

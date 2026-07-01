@@ -116,10 +116,8 @@ check_packages_presence() {
                 --assumeyes
                 --setopt 'tsflags=test'
                 --setopt 'skip_missing_names_on_install=False'
+                "--allowerasing"
             )
-            if [[ "$OSMAJORRELEASE" == "8" ]]; then
-                pkg_manager_opts+=("--allowerasing")
-            fi
             ;;
         *)
             die "OS $OS not supported"

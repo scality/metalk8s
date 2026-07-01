@@ -1,6 +1,6 @@
-# Equal to rockylinux:8.10
+# Equal to rockylinux:9.8
 # SHA256 digest of the base image
-ARG BUILD_IMAGE_SHA256=e8a49c5403b687db05d4d67333fa45808fbe74f36e683cec7abb1f7d0f2338c6
+ARG BUILD_IMAGE_SHA256=8101994123cf3d0a8fee517bee7f39e555c7d92bd2d9eb3303cc988a0eeed00f
 ARG BUILD_IMAGE=docker.io/rockylinux/rockylinux
 FROM ${BUILD_IMAGE}@sha256:${BUILD_IMAGE_SHA256} as build
 

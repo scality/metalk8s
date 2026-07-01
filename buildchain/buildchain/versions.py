@@ -70,10 +70,6 @@ SHELL_UI_VERSION: str = json.loads(shell_ui_package_contents)["version"]
 # Container images {{{
 
 ROCKY_BASE_IMAGE: str = "docker.io/rockylinux/rockylinux"
-ROCKY_BASE_IMAGE_8_SHA256: str = (
-    # rockylinux:8.10-minimal
-    "6d2ede107b4f005a638728711dae05d5fbbfd8abd521cecf5ab61196b361c965"
-)
 ROCKY_BASE_IMAGE_9_SHA256: str = (
     # rockylinux:9.8-minimal
     "e1d0a9f5ed99d52e7faf03afe7ee32e48b231c4dd9586808b3d1aedf894dff04"
@@ -405,18 +401,19 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="kubelet", version=K8S_VERSION),
         PackageVersion(name="containerd.io", version=CONTAINERD_VERSION),
         # Latest packages
+        PackageVersion(name="container-selinux"),
         PackageVersion(name="coreutils"),
         PackageVersion(name="cri-tools"),
         PackageVersion(name="e2fsprogs"),
-        PackageVersion(name="ebtables"),
-        PackageVersion(name="ethtool"),
+        PackageVersion(name="iptables-nft"),
         PackageVersion(name="gdisk"),
         PackageVersion(name="genisoimage"),
         PackageVersion(name="httpd-tools"),
         PackageVersion(name="iproute"),
-        PackageVersion(name="iptables"),
         PackageVersion(name="kubernetes-cni"),
         PackageVersion(name="lvm2"),
+        PackageVersion(name="python3-boto3"),
+        PackageVersion(name="python3-dnf-plugin-versionlock"),
         PackageVersion(name="salt-minion", version=SALT_VERSION),
         # NOTE: We pin also the salt package version since repository
         # is not versioned and we want to ensure we use the same version as the
@@ -430,15 +427,19 @@ PACKAGES: Dict[str, Any] = {
     ),
     "redhat": {
         "8": (
-            PackageVersion(name="container-selinux"),
-            PackageVersion(name="iptables-ebtables", override="ebtables"),
+            PackageVersion(name="iptables-ebtables", override="iptables-nft"),
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=NONSUFFIXED_VERSION,
                 release=f"{SOSREPORT_RELEASE}.el8",
             ),
-            PackageVersion(name="python3-boto3"),
-            PackageVersion(name="python3-dnf-plugin-versionlock"),
+        ),
+        "9": (
+            PackageVersion(
+                name="metalk8s-sosreport",
+                version=NONSUFFIXED_VERSION,
+                release=f"{SOSREPORT_RELEASE}.el9",
+            ),
         ),
     },
 }

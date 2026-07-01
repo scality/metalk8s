@@ -9,6 +9,10 @@
 
 ### Enhancements
 
+- Add support for RHEL/Rocky 9.
+  RHEL/Rocky 8 support will be dropped in a future release.
+  (PR[#5014](https://github.com/scality/metalk8s/pull/5014))
+
 - Make node monitoring and Pod eviction timeouts configurable through the
   `BootstrapConfiguration`: `kube-apiserver`
   `defaultNotReadyTolerationSeconds`/`defaultUnreachableTolerationSeconds`
@@ -69,6 +73,9 @@
 - Bump the rocky base image used by `metalk8s-utils` image to
   `rockylinux:9.8-minimal`
   (PR[#4994](https://github.com/scality/metalk8s/pull/4994))
+
+- Move `salt-master` image to Rocky 9 minimal
+  (PR[#5014](https://github.com/scality/metalk8s/pull/5014))
 
 - Bump operator-sdk to [v1.42.3](https://github.com/operator-framework/operator-sdk/releases/tag/v1.42.3)
   for the `metalk8s-operator` and `storage-operator`, and bump their
