@@ -177,7 +177,7 @@ Reconfigure salt-minion:
     # NOTE: This state may upgrade/downgrade salt-minion package and also
     # restart salt-minion service, so it may take time to answer salt-master
     # job query, so increase timeout for this specific state
-    - timeout: 200
+    - timeout: 300
     - require:
       - salt: Set grains
       - salt: Refresh the mine
