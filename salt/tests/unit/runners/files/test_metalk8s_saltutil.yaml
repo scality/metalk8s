@@ -160,3 +160,27 @@ wait_minions:
       - True
     result: >-
       All minions matching "*" responded and finished startup state: my-minion
+
+  # 14. Success: expected salt version matches (with a release suffix)
+  - expected_salt_version: "3006.27"
+    version_ret: "3006.27-0"
+    result: >-
+      All minions matching "*" responded and finished startup state: my-minion
+
+  # 15. Success: minion reaches the expected salt version after retries
+  # (detached salt-minion upgrade completing in the background: old version,
+  # then minion down while dnf runs, then exact new version)
+  - expected_salt_version: "3006.27"
+    version_ret:
+      - "3006.26-0"
+      - False
+      - "3006.27"
+    result: >-
+      All minions matching "*" responded and finished startup state: my-minion
+
+  # 16. Failure: minion never reaches the expected salt version
+  - expected_salt_version: "3006.27"
+    version_ret: "3006.26-0"
+    raises: True
+    result: >-
+      Minion failed to respond after 10 retries: my-minion

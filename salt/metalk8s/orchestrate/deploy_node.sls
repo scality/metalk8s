@@ -6,6 +6,7 @@
 {%- set node_name = pillar.orchestrate.node_name %}
 {%- set run_drain = not pillar.orchestrate.get('skip_draining', False) %}
 {%- set version = pillar.metalk8s.nodes[node_name].version %}
+{%- set salt_minion_version = repo.packages.get('salt-minion', {}).get('version') %}
 
 {%- set skip_roles = pillar.metalk8s.nodes[node_name].get('skip_roles', []) %}
 
@@ -174,9 +175,10 @@ Reconfigure salt-minion:
     - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.salt.minion.configured
-    # NOTE: This state may upgrade/downgrade salt-minion package and also
-    # restart salt-minion service, so it may take time to answer salt-master
-    # job query, so increase timeout for this specific state
+    # NOTE: This state may restart salt-minion service (config changes) and
+    # launch a detached salt-minion package upgrade/downgrade, so it may take
+    # time to answer salt-master job query, so increase timeout for this
+    # specific state
     - timeout: 300
     - require:
       - salt: Set grains
@@ -193,12 +195,18 @@ Wait minion available:
   salt.runner:
     - name: metalk8s_saltutil.wait_minions
     - tgt: {{ node_name }}
+    {%- if salt_minion_version %}
+    # Also wait for the detached salt-minion package upgrade (if any) launched
+    # by the state above to complete, by checking the installed version
+    - expected_salt_version: {{ salt_minion_version }}
+    {%- endif %}
     # After the restart the minion re-authenticates quickly but its
     # subscription to the salt-master publish channel can take a few minutes
     # to re-establish, during which it answers no jobs. Re-run the wait so a
-    # slow reconnect does not fail the whole deployment.
+    # slow reconnect does not fail the whole deployment. The detached
+    # salt-minion upgrade (if any) also completes within this window.
     - retry:
-        attempts: 3
+        attempts: 5
         interval: 30
     - require:
       - test: Wait minion available

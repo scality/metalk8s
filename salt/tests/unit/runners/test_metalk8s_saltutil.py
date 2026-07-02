@@ -77,7 +77,13 @@ class Metalk8sSaltutilTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["wait_minions"])
     def test_wait_minions(
-        self, result, ping_ret=True, is_running_ret=False, raises=False
+        self,
+        result,
+        ping_ret=True,
+        is_running_ret=False,
+        raises=False,
+        expected_salt_version=None,
+        version_ret=None,
     ):
         """
         Tests the return of `wait_minions` function
@@ -86,8 +92,10 @@ class Metalk8sSaltutilTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         def cmd_mock(_tgt, command, **_kwargs):
             ret = None
-            if command == "test.ping":
-                ret = ping_ret
+            if command == "pkg.version":
+                # `ping_ret` covers the plain responsiveness cases (any truthy
+                # return), `version_ret` the explicit version string ones
+                ret = version_ret if version_ret is not None else ping_ret
             elif command == "saltutil.is_running":
                 ret = is_running_ret
 
@@ -110,12 +118,20 @@ class Metalk8sSaltutilTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     CommandExecutionError,
                     result,
                     metalk8s_saltutil.wait_minions,
+                    expected_salt_version=expected_salt_version,
                 )
             else:
-                self.assertEqual(metalk8s_saltutil.wait_minions(), result)
+                self.assertEqual(
+                    metalk8s_saltutil.wait_minions(
+                        expected_salt_version=expected_salt_version
+                    ),
+                    result,
+                )
 
         # If we retry, check that we used all expected attempts
         if isinstance(ping_ret, list):
             self.assertEqual(len(ping_ret), 0)
+        if isinstance(version_ret, list):
+            self.assertEqual(len(version_ret), 0)
         if isinstance(is_running_ret, list):
             self.assertEqual(len(is_running_ret), 0)

@@ -532,6 +532,10 @@ register_basic("mount.swaps")(MagicMock(return_value={}))
 # Used in metalk8s.internal.preflight.mandatory to check ports are free.
 register_basic("network.connect")(MagicMock(return_value={"result": False}))
 
+# Used in metalk8s.salt.minion.installed to render the detached upgrade path
+# (an outdated salt-minion is installed)
+register_basic("pkg.version")(MagicMock(return_value="3006.0-0"))
+
 
 @register_basic("pkg.version_cmp")
 def pkg_version_cmp(left: str, right: str) -> int:

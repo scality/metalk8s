@@ -43,13 +43,23 @@ def accept_minion(minion):
     return True
 
 
-def wait_minions(tgt="*", retry=10):
+def wait_minions(tgt="*", retry=10, expected_salt_version=None):
     client = salt.client.get_local_client(__opts__["conf_file"])
 
     minions = None
 
+    def minion_ready(status):
+        if expected_salt_version is None:
+            return bool(status)
+        # `status` is the `salt-minion` package version (possibly with a
+        # release suffix), e.g. "3006.27-0" for an expected "3006.27"
+        return isinstance(status, str) and (
+            status == expected_salt_version
+            or status.startswith(f"{expected_salt_version}-")
+        )
+
     def condition_reached(minions):
-        if minions and all(status for status in minions.values()):
+        if minions and all(minion_ready(status) for status in minions.values()):
             return True
 
         # Either `minions` is empty, or not all succeeded
@@ -57,9 +67,13 @@ def wait_minions(tgt="*", retry=10):
 
     for attempts in range(1, retry + 1):
         try:
-            minions = client.cmd(tgt, "test.ping", timeout=2)
+            # `pkg.version` both checks that the minion responds and reports
+            # the installed salt-minion version, so that a detached salt-minion
+            # upgrade in progress (see `metalk8s.salt.minion.installed`) does
+            # not pass the check on the old, about-to-be-stopped minion
+            minions = client.cmd(tgt, "pkg.version", arg=["salt-minion"], timeout=2)
         except Exception as exc:  # pylint: disable=broad-except
-            log.exception('Unable to run "test.ping" on "%s": "%s"', tgt, exc)
+            log.exception('Unable to run "pkg.version" on "%s": "%s"', tgt, exc)
             minions = None
 
         if condition_reached(minions):
@@ -70,7 +84,9 @@ def wait_minions(tgt="*", retry=10):
             attempts,
             retry,
             ", ".join(
-                minion for minion, status in (minions or {}).items() if not status
+                minion
+                for minion, status in (minions or {}).items()
+                if not minion_ready(status)
             ),
         )
 
@@ -83,7 +99,7 @@ def wait_minions(tgt="*", retry=10):
             minions=", ".join(
                 minion
                 for minion, status in (minions or {tgt: False}).items()
-                if not status
+                if not minion_ready(status)
             ),
         )
         log.error(error_message)
