@@ -27,8 +27,8 @@
 - Bump etcd version to [3.6.11](https://github.com/etcd-io/etcd/releases/tag/v3.6.11)
   (PR[#4928](https://github.com/scality/metalk8s/pull/4928))
 
-- Bump Salt version to [3006.26](https://github.com/saltstack/salt/releases/tag/v3006.26)
-  (PR[#4898](https://github.com/scality/metalk8s/pull/4898))
+- Bump Salt version to [3006.27](https://github.com/saltstack/salt/releases/tag/v3006.27)
+  (PR[#5017](https://github.com/scality/metalk8s/pull/5017))
 
 - Bump dex chart to [0.24.1](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.1)
   (PR[#4977](https://github.com/scality/metalk8s/pull/4977))
