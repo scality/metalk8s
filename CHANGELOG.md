@@ -11,7 +11,7 @@
   probe, which returns "ok" before the default ClusterRoles are reconciled,
   leading to intermittent failures — a race amplified on Kubernetes 1.33+
   (kubeadm KEP-4471)
-  (PR[#XXXX](https://github.com/scality/metalk8s/pull/XXXX))
+  (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
 
 ### Enhancements
 
@@ -20,7 +20,7 @@
   hook has reconciled the default ClusterRoles (checked via the `cluster-admin`
   ClusterRole). This lets callers running RBAC-dependent operations right
   after the wait avoid a race that is amplified on Kubernetes 1.33+
-  (PR[#XXXX](https://github.com/scality/metalk8s/pull/XXXX))
+  (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
 
 ## Release 133.0.11
 
