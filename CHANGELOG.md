@@ -88,6 +88,26 @@
 
 ## Release 133.0.12 (in development)
 
+### Bug Fixes
+
+- Bootstrap and node deployment now wait for the apiserver RBAC bootstrap
+  (`poststarthook/rbac/bootstrap-roles`) to complete before running
+  RBAC-dependent steps (configuring the bootstrap Node object; uncordoning a
+  freshly deployed node). Previously these gated only on a `/healthz` liveness
+  probe, which returns "ok" before the default ClusterRoles are reconciled,
+  leading to intermittent failures — a race amplified on Kubernetes 1.33+
+  (kubeadm KEP-4471)
+  (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
+
+### Enhancements
+
+- `metalk8s.wait_apiserver` now accepts a `verify_rbac` option: when set, the
+  apiserver is only considered ready once the `rbac/bootstrap-roles` post-start
+  hook has reconciled the default ClusterRoles (checked via the `cluster-admin`
+  ClusterRole). This lets callers running RBAC-dependent operations right
+  after the wait avoid a race that is amplified on Kubernetes 1.33+
+  (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
+
 ## Release 133.0.11
 
 ### Bug Fixes

@@ -33,21 +33,90 @@ def __virtual__():
     return __virtualname__
 
 
-def wait_apiserver(retry=10, interval=1, **kwargs):
+def _rbac_bootstrap_complete(**kwargs):
+    """Return True once the apiserver RBAC bootstrap has reconciled the
+    default ClusterRoles.
+
+    The ``poststarthook/rbac/bootstrap-roles`` hook (re)creates the default
+    ClusterRoles right after the apiserver starts answering requests. We use
+    the presence of the ``cluster-admin`` ClusterRole as the practical
+    indicator that this hook has completed, mirroring
+    ``kubectl get clusterrole cluster-admin``.
+
+    Any error reaching the apiserver is treated as "not ready yet" so the
+    caller keeps retrying rather than aborting.
+    """
+    try:
+        return (
+            __salt__["metalk8s_kubernetes.get_object"](
+                kind="ClusterRole",
+                apiVersion="rbac.authorization.k8s.io/v1",
+                name="cluster-admin",
+                **kwargs,
+            )
+            is not None
+        )
+    except Exception as exc:  # pylint: disable=broad-except
+        # A transiently-unreachable apiserver can surface either as a
+        # CommandExecutionError or as a raw client/connection error (for
+        # instance during resource discovery, which `get_object` does not wrap);
+        # treat any of them as "not ready yet" so the caller keeps retrying
+        # instead of aborting.
+        log.debug("RBAC bootstrap check failed, treating as not ready: %s", exc)
+        return False
+
+
+def wait_apiserver(retry=10, interval=1, verify_rbac=False, **kwargs):
     """Wait for kube-apiserver to respond.
 
-    Simple "retry" wrapper around the kubernetes.ping Salt execution function.
+    Simple "retry" wrapper around the kubernetes.ping Salt execution function,
+    which only checks that the apiserver answers a basic (RBAC-independent)
+    ``/version`` probe.
+
+    When ``verify_rbac`` is ``True``, the apiserver is only considered ready
+    once the ``poststarthook/rbac/bootstrap-roles`` hook has finished
+    reconciling the default ClusterRoles (checked by retrieving the
+    ``cluster-admin`` ClusterRole). Consumers that run RBAC-dependent
+    operations immediately after this wait -- e.g. ``kubectl cordon``,
+    listing nodes -- should pass ``verify_rbac=True`` to avoid racing the
+    bootstrap-roles hook. That hook is notably slower to complete on
+    Kubernetes >= 1.33 (kubeadm KEP-4471 local-apiserver-first join), which
+    widens the race window.
+
+    A ``CommandExecutionError`` is raised if the apiserver is still not ready
+    after ``retry`` attempts (rather than returning ``False``): ``module.run``
+    only fails a state when the called function *raises* -- a ``False`` return
+    is recorded as a change with ``result: True`` on Salt 3002 -- so returning
+    ``False`` would let an orchestrate proceed as if the apiserver were ready.
+    Same pattern as ``metalk8s_etcd.check_etcd_health``.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt-call metalk8s.wait_apiserver retry=30 interval=5 verify_rbac=True
     """
-    status = __salt__["metalk8s_kubernetes.ping"](**kwargs)
+
+    def _ready():
+        if not __salt__["metalk8s_kubernetes.ping"](**kwargs):
+            return False
+        if verify_rbac:
+            return _rbac_bootstrap_complete(**kwargs)
+        return True
+
+    status = _ready()
     attempts = 1
 
     while not status and attempts < retry:
         time.sleep(interval)
-        status = __salt__["metalk8s_kubernetes.ping"](**kwargs)
+        status = _ready()
         attempts += 1
 
     if not status:
         log.error("Kubernetes apiserver failed to respond after %d attempts", retry)
+        raise CommandExecutionError(
+            f"Kubernetes apiserver not ready after {retry} attempts"
+        )
 
     return status
 
