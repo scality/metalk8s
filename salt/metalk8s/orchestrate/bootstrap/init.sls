@@ -117,6 +117,9 @@ Bring bootstrap minion to highstate:
     - salt: Refresh bootstrap minion grains
     - salt: Deploy CA role on bootstrap minion
 
+# `/healthz` (unauthenticated) rather than `wait_apiserver` here: `ping` needs
+# the salt-master kubeconfig, which only exists after the next step (it is
+# skipped during the bootstrap highstate -- see salt/master/init.sls).
 Wait for API server to be available:
   http.wait_for_successful_query:
   - name: https://127.0.0.1:7443/healthz
@@ -137,6 +140,15 @@ Deploy kubeconfig to bootstrap:
   - require:
     - http: Wait for API server to be available
 
+Wait for RBAC bootstrap to complete:
+  module.run:
+    - metalk8s.wait_apiserver:
+      - retry: 60
+      - interval: 5
+      - verify_rbac: true
+    - require:
+      - salt: Deploy kubeconfig to bootstrap
+
 Configure bootstrap Node object:
   salt.runner:
   - name: state.orchestrate
@@ -146,6 +158,7 @@ Configure bootstrap Node object:
   - pillar: {{ pillar_data | tojson }}
   - require:
     - salt: Deploy kubeconfig to bootstrap
+    - module: Wait for RBAC bootstrap to complete
 
 Update pillar on bootstrap minion after highstate:
   salt.function:

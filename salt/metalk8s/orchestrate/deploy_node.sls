@@ -313,19 +313,18 @@ Run the highstate:
       - salt: Check pillar before highstate
 
 Wait for API server to be available:
-  http.wait_for_successful_query:
-  - name: https://127.0.0.1:7443/healthz
-  - match: 'ok'
-  - status: 200
-  - verify_ssl: false
-  - request_interval: 1
+  module.run:
+    - metalk8s.wait_apiserver:
+      - retry: 60
+      - interval: 5
+      - verify_rbac: true
 
 Uncordon the node:
   metalk8s_cordon.node_uncordoned:
     - name: {{ node_name }}
     - require:
       - salt: Run the highstate
-      - http: Wait for API server to be available
+      - module: Wait for API server to be available
 
 {%- set master_minions = salt['metalk8s.minions_by_role']('master') %}
 

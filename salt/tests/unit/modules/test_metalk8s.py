@@ -60,17 +60,20 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @parameterized.expand(
         [
+            # `result=None` means the apiserver never responds within `retry`
+            # attempts and `wait_apiserver` must raise instead of returning
             (10, True, True),
-            (10, False, False),
+            (10, False, None),
             (1, [True, False], True),
-            (1, [False, True], False),
+            (1, [False, True], None),
             (2, [False, True], True),
             (10, [False, False, False, False, True, False], True),
         ]
     )
     def test_wait_apiserver(self, retry, status, result):
         """
-        Tests the return of `wait_apiserver` function
+        Tests `wait_apiserver`: returns True once the apiserver responds, and
+        raises `CommandExecutionError` if it never does within `retry` attempts.
         """
         kubernetes_ping_mock = MagicMock()
         if isinstance(status, list):
@@ -80,7 +83,97 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         patch_dict = {"metalk8s_kubernetes.ping": kubernetes_ping_mock}
         with patch.dict(metalk8s.__salt__, patch_dict):
-            self.assertEqual(metalk8s.wait_apiserver(retry=retry, interval=0), result)
+            if result is None:
+                self.assertRaises(
+                    CommandExecutionError,
+                    metalk8s.wait_apiserver,
+                    retry=retry,
+                    interval=0,
+                )
+            else:
+                self.assertEqual(
+                    metalk8s.wait_apiserver(retry=retry, interval=0), result
+                )
+
+    @parameterized.expand(
+        [
+            # `result=None` means "not ready" -> `wait_apiserver` must raise.
+            # apiserver up and cluster-admin present -> ready right away
+            param(
+                retry=10, ping=True, cluster_admin={"kind": "ClusterRole"}, result=True
+            ),
+            # apiserver up but cluster-admin never shows up -> raises
+            param(retry=3, ping=True, cluster_admin=None, result=None),
+            # apiserver up, cluster-admin appears on the 3rd check -> ready
+            param(
+                retry=5,
+                ping=True,
+                cluster_admin=[None, None, {"kind": "ClusterRole"}],
+                result=True,
+            ),
+            # apiserver never responds -> raises, RBAC never checked
+            param(retry=3, ping=False, cluster_admin=None, result=None),
+            # error while checking RBAC is treated as "not ready yet" -> raises
+            param(
+                retry=2,
+                ping=True,
+                cluster_admin=CommandExecutionError("boom"),
+                result=None,
+            ),
+            # a non-CommandExecutionError (e.g. raw connection error) is also
+            # swallowed and treated as "not ready yet" -> raises
+            param(
+                retry=2,
+                ping=True,
+                cluster_admin=RuntimeError("connection refused"),
+                result=None,
+            ),
+        ]
+    )
+    def test_wait_apiserver_verify_rbac(self, retry, ping, cluster_admin, result):
+        """
+        Tests `wait_apiserver` with `verify_rbac=True` (gates on the
+        `cluster-admin` ClusterRole being reconciled by the bootstrap-roles
+        hook).
+        """
+        kubernetes_ping_mock = MagicMock(return_value=ping)
+
+        get_object_mock = MagicMock()
+        if isinstance(cluster_admin, list):
+            get_object_mock.side_effect = cluster_admin
+        elif isinstance(cluster_admin, Exception):
+            get_object_mock.side_effect = cluster_admin
+        else:
+            get_object_mock.return_value = cluster_admin
+
+        patch_dict = {
+            "metalk8s_kubernetes.ping": kubernetes_ping_mock,
+            "metalk8s_kubernetes.get_object": get_object_mock,
+        }
+        with patch.dict(metalk8s.__salt__, patch_dict):
+            if result is None:
+                self.assertRaises(
+                    CommandExecutionError,
+                    metalk8s.wait_apiserver,
+                    retry=retry,
+                    interval=0,
+                    verify_rbac=True,
+                )
+            else:
+                self.assertEqual(
+                    metalk8s.wait_apiserver(retry=retry, interval=0, verify_rbac=True),
+                    result,
+                )
+
+        # RBAC is only ever checked once the apiserver itself responds
+        if not ping:
+            get_object_mock.assert_not_called()
+        else:
+            get_object_mock.assert_called_with(
+                kind="ClusterRole",
+                apiVersion="rbac.authorization.k8s.io/v1",
+                name="cluster-admin",
+            )
 
     @parameterized.expand(
         [
