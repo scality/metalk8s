@@ -196,6 +196,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:337ff1d356b68d39cef853e8c6345de11ce7556bb34cda8bd205bcf2ed30b565",
     ),
     Image(
+        name="node-problem-detector",
+        version="v1.35.1",
+        digest="sha256:c380751accc5e15973f7bf98a3725c3c30826b36ae407903c34297be47b73bc6",
+    ),
+    Image(
         name="oauth2-proxy",
         version="v7.14.3",
         digest="sha256:68336da945bdaff799262c8d14fb1d1aa9354df5e02b87e0955addc040344618",
