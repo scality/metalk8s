@@ -311,8 +311,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="disk-management-agent",
-        version="v0.0.1-beta.2",
-        digest="sha256:8a98623a20f30af4a8b0eb8abe284b15ed8603bd66e13905d32f50e37e6155ed",
+        version="v0.1.0",
+        digest="sha256:d63d4e20a089dcd3ac33f58d2210a66e48a1f9f08120494352b22cca94747769",
     ),
 )
 

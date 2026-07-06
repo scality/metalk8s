@@ -86,6 +86,10 @@
   `apiserver.config.k8s.io/v1` (GA in Kubernetes 1.34)
   (PR[#5001](https://github.com/scality/metalk8s/pull/5001))
 
+- Bump [disk-management-agent](https://github.com/scality/disk-management-agent) to version
+  [v0.1.0](https://github.com/scality/disk-management-agent/releases/tag/v0.1.0)
+  (PR[#5024](https://github.com/scality/metalk8s/pull/5024))
+
 ## Release 133.0.12 (in development)
 
 ## Release 133.0.11
