@@ -1,0 +1,25 @@
+annotations:
+  artifacthub.io/links: |
+    - name: Helm chart source
+      url: https://github.com/deliveryhero/helm-charts/tree/master/stable/node-problem-detector
+apiVersion: v2
+appVersion: v1.35.1
+description: 'This chart installs a [node-problem-detector](https://github.com/kubernetes/node-problem-detector)
+  daemonset. This tool aims to make various node problems visible to the upstream
+  layers in cluster management stack. It is a daemon which runs on each node, detects
+  node problems and reports them to apiserver. '
+home: https://github.com/kubernetes/node-problem-detector
+icon: https://github.com/kubernetes/kubernetes/raw/master/logo/logo.png
+keywords:
+- node
+- problem
+- detector
+- monitoring
+maintainers:
+- name: max-rocket-internet
+  url: https://github.com/max-rocket-internet
+name: node-problem-detector
+sources:
+- https://github.com/kubernetes/node-problem-detector
+- https://kubernetes.io/docs/concepts/architecture/nodes/#condition
+version: 2.4.1
