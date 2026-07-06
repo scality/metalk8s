@@ -370,3 +370,13 @@ Reconfigure Control Plane Ingress:
       - metalk8s_cordon: Uncordon the node
 
 {%- endif %}
+
+# Refresh the NPD peers map so existing probers learn about the new node
+Update NPD workload plane peers:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.addons.node-problem-detector.deployed.wp-monitor
+    - saltenv: {{ saltenv }}
+    - require:
+      - metalk8s_cordon: Uncordon the node
