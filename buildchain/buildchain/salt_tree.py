@@ -378,6 +378,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
         file_dep=[METALK8S_OPERATOR_MANIFESTS],
     ),
     Path("salt/metalk8s/addons/metalk8s-operator/deployed/init.sls"),
+    Path("salt/metalk8s/addons/node-problem-detector/deployed/chart.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/init.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/macros.j2"),
