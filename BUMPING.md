@@ -96,6 +96,16 @@ REPO_NAME=bitnami
 REPO_URL=https://charts.bitnami.com/bitnami
 ```
 
+### node-problem-detector
+
+```
+CHART_NAME=node-problem-detector
+CHART_REPOSITORY=oci://ghcr.io/deliveryhero/helm-charts
+```
+
+NB: this chart is fetched from an OCI registry instead of a classic helm repo:
+```helm pull $CHART_REPOSITORY/$CHART_NAME --version <version> -d charts --untar```
+
 ### General Outline
 
 All charts are in the `charts/` directory, they are usually represented
