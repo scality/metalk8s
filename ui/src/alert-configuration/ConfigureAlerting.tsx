@@ -106,11 +106,12 @@ export default function ConfigureAlerting() {
   const theme = useTheme();
   const navigate = useBasenameRelativeNavigate();
   const dispatch = useDispatch();
-  const { register, reset, handleSubmit, control, watch, getValues, formState } = useForm<AlertConfiguration>({
+  const { register, reset, handleSubmit, control, watch, trigger, getValues, formState } = useForm<AlertConfiguration>({
     mode: 'onChange',
     resolver: joiResolver(schema),
   });
   const credsType = watch('type');
+  const isEmailNotificationEnabled = watch('enabled');
 
   const { url: kubernetesApiUrl, url_salt: saltApiUrl, url_alertmanager: alertManagerUrl } = useConfig();
 
@@ -151,6 +152,12 @@ export default function ConfigureAlerting() {
     }
   }, [alertConfiguration.status]);
 
+  useEffect(() => {
+    if (isEmailNotificationEnabled) {
+      trigger();
+    }
+  }, [isEmailNotificationEnabled, trigger]);
+
   const { sendTestAlertMutation, logs: testAlertlogs } = useTestAlertConfiguration({
     alertConfigurationStore,
   });
@@ -168,7 +175,8 @@ export default function ConfigureAlerting() {
 
   const labelWidth = 270;
 
-  const disableFormButton = editAlertMutation.isLoading || sendTestAlertMutation.isLoading || !formState.isDirty;
+  const disableFormButton =
+    editAlertMutation.isLoading || sendTestAlertMutation.isLoading || !formState.isDirty || !formState.isValid;
 
   if (alertConfiguration.status === 'loading') {
     return <div>Loading...</div>;
@@ -204,7 +212,7 @@ export default function ConfigureAlerting() {
                         }
                       : undefined
                   }
-                  disabled={sendTestAlertMutation.isLoading || editAlertMutation.isLoading}
+                  disabled={sendTestAlertMutation.isLoading || editAlertMutation.isLoading || !formState.isValid}
                   label={
                     sendTestAlertMutation.isLoading ? (
                       <Text
