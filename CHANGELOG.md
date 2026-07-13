@@ -92,6 +92,15 @@
 
 ## Release 133.0.12 (in development)
 
+### Enhancements
+
+- Deploy [node-problem-detector](https://github.com/kubernetes/node-problem-detector)
+  v1.35.1 on every node, with a custom Workload Plane monitor exposing the
+  `WorkloadPlaneNetworkUnavailable` node condition when a node cannot reach the
+  majority of its peers over the Workload Plane, along with the standard
+  `KernelDeadlock` and `ReadonlyFilesystem` conditions
+  (PR[#5025](https://github.com/scality/metalk8s/pull/5025))
+
 ## Release 133.0.11
 
 ### Bug Fixes

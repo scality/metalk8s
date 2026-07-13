@@ -57,6 +57,7 @@ Feature: Cluster Sanity Checks
         | metalk8s-ingress            | ingress-nginx-controller                     |
         | metalk8s-ingress            | ingress-nginx-control-plane-controller       |
         | metalk8s-monitoring         | prometheus-operator-prometheus-node-exporter |
+        | metalk8s-monitoring         | node-problem-detector                        |
         | metalk8s-storage-management | disk-management-agent-controller-manager     |
 
     @volumes_provisioned

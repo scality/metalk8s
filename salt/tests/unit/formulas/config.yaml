@@ -86,6 +86,13 @@ metalk8s:
                           kind: LokiConfig
                           spec: {}
 
+    node-problem-detector:
+      deployed:
+        wp-monitor.sls:
+          _cases:
+            "Render from the master (orchestrate)":
+              mode: master
+
     prometheus-operator:
       post-cleanup.sls:
         _cases:
