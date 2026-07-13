@@ -239,6 +239,33 @@ def codegen_chart_loki() -> types.TaskDict:
     }
 
 
+def codegen_chart_node_problem_detector() -> types.TaskDict:
+    """Generate the SLS file for Node Problem Detector using the chart render script."""
+    target_sls = (
+        constants.ROOT / "salt/metalk8s/addons/node-problem-detector/deployed/chart.sls"
+    )
+    chart_dir = constants.CHART_ROOT / "node-problem-detector"
+    value_file = constants.CHART_ROOT / "node-problem-detector.yaml"
+    cmd = (
+        f"{constants.CHART_RENDER_CMD} node-problem-detector {value_file} {chart_dir} "
+        "--namespace metalk8s-monitoring "
+        f"--output {target_sls}"
+    )
+
+    file_dep = list(utils.git_ls(chart_dir))
+    file_dep.append(value_file)
+    file_dep.append(constants.CHART_RENDER_SCRIPT)
+
+    return {
+        "name": "chart_node-problem-detector",
+        "title": utils.title_with_subtask_name("CODEGEN"),
+        "doc": codegen_chart_node_problem_detector.__doc__,
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
+        "file_dep": file_dep,
+        "task_dep": ["check_for:tox", "check_for:helm"],
+    }
+
+
 def codegen_chart_prometheus_adapter() -> types.TaskDict:
     """Generate the SLS file for Prometheus Adapter using the chart render script."""
     target_sls = (
@@ -459,6 +486,7 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_ingress_nginx,
     codegen_chart_kube_prometheus_stack,
     codegen_chart_loki,
+    codegen_chart_node_problem_detector,
     codegen_chart_prometheus_adapter,
     codegen_chart_thanos,
     codegen_chart_cert_manager,
