@@ -127,6 +127,17 @@ metalk8s:
                         apiVersion: addons.metalk8s.scality.com
                         kind: PrometheusConfig
                         spec: {}
+        thanos-query-sd-files.sls:
+          _cases:
+            "ConfigMap does not exist (default)": {}
+            "ConfigMap already exists":
+              k8s_overrides:
+                add:
+                  - kind: ConfigMap
+                    apiVersion: v1
+                    metadata:
+                      name: thanos-query-sd-files
+                      namespace: metalk8s-monitoring
 
     solutions:
       deployed:
