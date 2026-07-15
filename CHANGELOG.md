@@ -11,6 +11,13 @@
   `KernelDeadlock` and `ReadonlyFilesystem` conditions
   (PR[#5025](https://github.com/scality/metalk8s/pull/5025))
 
+### Bug Fixes
+
+- Stop resetting the `thanos-query-sd-files` ConfigMap every time the Prometheus
+  operator state is applied: its service discovery content, managed by MetalK8s
+  users, was wiped on each re-apply, leaving Thanos Query with no store to reach
+  (PR[#5027](https://github.com/scality/metalk8s/pull/5027))
+
 ## Release 133.0.11
 
 ### Bug Fixes
