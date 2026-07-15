@@ -80699,7 +80699,7 @@ spec:
   alertmanagerConfigNamespaceSelector: {}
   alertmanagerConfigSelector: {}
   automountServiceAccountToken: true
-  externalUrl: http://prometheus-operator-alertmanager.metalk8s-monitoring:9093
+  externalUrl: {% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}{%- raw %}
   hostNetwork: false
   image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("alertmanager", False, False) }}{%- raw %}:v0.33.0
   imagePullPolicy: IfNotPresent
