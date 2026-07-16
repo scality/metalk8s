@@ -90,7 +90,9 @@
   [v0.1.0](https://github.com/scality/disk-management-agent/releases/tag/v0.1.0)
   (PR[#5024](https://github.com/scality/metalk8s/pull/5024))
 
-## Release 133.0.12 (in development)
+## Release 133.0.13 (in development)
+
+## Release 133.0.12
 
 ### Enhancements
 
