@@ -381,9 +381,17 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/node-problem-detector/deployed/chart.sls"),
     Path("salt/metalk8s/addons/node-problem-detector/deployed/init.sls"),
     Path("salt/metalk8s/addons/node-problem-detector/deployed/wp-monitor.sls"),
+    Path(
+        "salt/metalk8s/addons/node-problem-detector/deployed/",
+        "workload-plane-alerts-rules.sls",
+    ),
     Path("salt/metalk8s/addons/node-warden-operator/deployed/chart.sls"),
     Path("salt/metalk8s/addons/node-warden-operator/deployed/init.sls"),
     Path("salt/metalk8s/addons/node-warden-operator/deployed/policy.sls"),
+    Path(
+        "salt/metalk8s/addons/node-warden-operator/deployed/",
+        "workload-plane-alerts-rules.sls",
+    ),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/init.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/macros.j2"),

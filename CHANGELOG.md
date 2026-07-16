@@ -13,6 +13,12 @@
   Workload Plane connectivity recovers
   (PR[#5031](https://github.com/scality/metalk8s/pull/5031))
 
+- Add Prometheus alerts for Workload Plane isolation: `NodeWorkloadPlaneUnavailable`
+  (a node reports `WorkloadPlaneNetworkUnavailable`), `NodeWorkloadPlaneRemediated`
+  (a node carries the Workload Plane isolation taint) and `WorkloadPlaneOutage` (the
+  majority of nodes are affected, remediation suppressed by the guard)
+  (PR[#5031](https://github.com/scality/metalk8s/pull/5031))
+
 ## Release 133.0.12
 
 ### Enhancements

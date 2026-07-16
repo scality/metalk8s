@@ -2,6 +2,7 @@ include:
   - metalk8s.addons.prometheus-operator.deployed.namespace
   - .chart
   - .policy
+  - .workload-plane-alerts-rules
 
 Ensure namespace is created before deploying node-warden-operator:
   test.succeed_without_changes:

@@ -1,5 +1,17 @@
 [
     {
+        "message": "Fluent Bit pod {{ $labels.pod }} input {{ $labels.name }} has been paused due to back pressure for more than 5 minutes. Log ingestion is halted until the output pipeline catches up.",
+        "name": "FluentBitBackPressure",
+        "query": "fluentbit_input_ingestion_paused == 1 or fluentbit_input_storage_overlimit == 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Fluent Bit pod {{ $labels.pod }} output {{ $labels.name }} has been failing retries and dropping log records for more than 15 minutes. Check the destination and network connectivity.",
+        "name": "FluentBitOutputRetryLimit",
+        "query": "rate(fluentbit_output_retries_failed_total[5m]) > 0",
+        "severity": "critical"
+    },
+    {
         "message": "The alerting service is at risk.",
         "name": "AlertingServiceAtRisk",
         "query": "sum(ALERTS{alertname=\"AlertmanagerClusterCrashlooping\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"AlertmanagerClusterDown\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"AlertmanagerClusterFailedToSendAlerts\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"AlertmanagerConfigInconsistent\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"AlertmanagerMembersInconsistent\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"AlertmanagerFailedReload\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
@@ -8,7 +20,7 @@
     {
         "message": "The cluster is at risk.",
         "name": "ClusterAtRisk",
-        "query": "sum(ALERTS{alertname=\"NodeAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PlatformServicesAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"VolumeAtRisk\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
+        "query": "sum(ALERTS{alertname=\"NetworkOutage\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PlatformServicesAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"VolumeAtRisk\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
         "severity": "critical"
     },
     {
@@ -24,9 +36,21 @@
         "severity": "critical"
     },
     {
+        "message": "The logging service is at risk.",
+        "name": "LoggingServiceAtRisk",
+        "query": "sum(ALERTS{alertname=\"FluentBitOutputRetryLimit\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
+        "severity": "critical"
+    },
+    {
         "message": "The monitoring service is at risk.",
         "name": "MonitoringServiceAtRisk",
         "query": "sum(ALERTS{alertname=\"KubeStateMetricsShardingMismatch\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeStateMetricsShardsMissing\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusRuleFailures\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusRemoteWriteBehind\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusRemoteStorageFailures\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusErrorSendingAlertsToAnyAlertmanager\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusBadConfig\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusTargetSyncFailure\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
+        "severity": "critical"
+    },
+    {
+        "message": "The network has a critical outage.",
+        "name": "NetworkOutage",
+        "query": "sum(ALERTS{alertname=\"WorkloadPlaneOutage\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
         "severity": "critical"
     },
     {
@@ -134,7 +158,7 @@
     {
         "message": "The node {{ $labels.instance }} is degraded.",
         "name": "NodeDegraded",
-        "query": "sum by (instance) (ALERTS{alertname=\"KubeNodeNotReady\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeReadinessFlapping\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeUnreachable\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPlegDurationHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPodStartUpLatencyHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockNotSynchronising\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockSkewDetected\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeRAIDDiskFailure\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeTextFileCollectorScrapeError\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"SystemPartitionDegraded\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
+        "query": "sum by (instance) (ALERTS{alertname=\"KubeNodeNotReady\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeReadinessFlapping\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeUnreachable\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPlegDurationHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPodStartUpLatencyHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockNotSynchronising\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockSkewDetected\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeRAIDDiskFailure\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeTextFileCollectorScrapeError\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeWorkloadPlaneUnavailable\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeWorkloadPlaneRemediated\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"SystemPartitionDegraded\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
         "severity": "warning"
     },
     {
@@ -286,6 +310,24 @@
         "name": "NodeTextFileCollectorScrapeError",
         "query": "node_textfile_scrape_error{job=\"node-exporter\"} == 1",
         "severity": "warning"
+    },
+    {
+        "message": "Node has lost Workload Plane connectivity",
+        "name": "NodeWorkloadPlaneUnavailable",
+        "query": "kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"} == 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Node drained after Workload Plane isolation",
+        "name": "NodeWorkloadPlaneRemediated",
+        "query": "kube_node_spec_taint{key=\"node.scality.com/workload-plane-unreachable\"} == 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Workload Plane outage affecting the majority of nodes",
+        "name": "WorkloadPlaneOutage",
+        "query": "count(kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"} == 1) / count(kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"}) > 0.5",
+        "severity": "critical"
     },
     {
         "message": "Half or more of the Alertmanager instances within the same cluster are crashlooping.",
@@ -660,18 +702,6 @@
         "severity": "warning"
     },
     {
-        "message": "Kubernetes API server client is experiencing errors.",
-        "name": "KubeClientErrors",
-        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{job=\"apiserver\"}[5m]))) > 0.01",
-        "severity": "warning"
-    },
-    {
-        "message": "Different semantic versions of Kubernetes components running.",
-        "name": "KubeVersionMismatch",
-        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
-        "severity": "warning"
-    },
-    {
         "message": "Target disappeared from Prometheus target discovery.",
         "name": "KubeAPIDown",
         "query": "absent(up{job=\"apiserver\"})",
@@ -712,6 +742,18 @@
         "name": "KubeControllerManagerDown",
         "query": "absent(up{job=\"kube-controller-manager\"})",
         "severity": "critical"
+    },
+    {
+        "message": "Kubernetes API server client is experiencing errors.",
+        "name": "KubeClientErrors",
+        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{job=\"apiserver\"}[5m]))) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "Different semantic versions of Kubernetes components running.",
+        "name": "KubeVersionMismatch",
+        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
+        "severity": "warning"
     },
     {
         "message": "Target disappeared from Prometheus target discovery.",
@@ -1054,23 +1096,5 @@
         "name": "PrometheusOperatorWatchErrors",
         "query": "(sum by (cluster, controller, namespace) (rate(prometheus_operator_watch_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m])) / sum by (cluster, controller, namespace) (rate(prometheus_operator_watch_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.4",
         "severity": "warning"
-    },
-    {
-        "message": "Fluent Bit pod {{ $labels.pod }} input {{ $labels.name }} has been paused due to back pressure for more than 5 minutes. Log ingestion is halted until the output pipeline catches up.",
-        "name": "FluentBitBackPressure",
-        "query": "fluentbit_input_ingestion_paused == 1 or fluentbit_input_storage_overlimit == 1",
-        "severity": "warning"
-    },
-    {
-        "message": "Fluent Bit pod {{ $labels.pod }} output {{ $labels.name }} has been failing retries and dropping log records for more than 15 minutes. Check the destination and network connectivity.",
-        "name": "FluentBitOutputRetryLimit",
-        "query": "rate(fluentbit_output_retries_failed_total[5m]) > 0",
-        "severity": "critical"
-    },
-    {
-        "message": "The logging service is at risk.",
-        "name": "LoggingServiceAtRisk",
-        "query": "sum(ALERTS{alertname=\"FluentBitOutputRetryLimit\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
-        "severity": "critical"
     }
 ]
