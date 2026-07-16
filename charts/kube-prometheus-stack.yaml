@@ -288,6 +288,14 @@ prometheus-node-exporter:
     - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+|var/lib/containerd/.+)($|/)
     - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
 
+  # NoSchedule/Exists is the subchart default, re-declared here because Helm replaces the list; we only add the node-warden WP-isolation NoExecute taint
+  tolerations:
+    - effect: NoSchedule
+      operator: Exists
+    - key: node.scality.com/workload-plane-unreachable
+      effect: NoExecute
+      operator: Exists
+
 kubeEtcd:
   service:
     port: 2381

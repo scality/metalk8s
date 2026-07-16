@@ -1760,6 +1760,9 @@ spec:
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
         operator: Exists
+      - effect: NoExecute
+        key: node.scality.com/workload-plane-unreachable
+        operator: Exists
       volumes:
       - configMap:
           name: fluent-bit
