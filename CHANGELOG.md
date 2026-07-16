@@ -2,6 +2,17 @@
 
 ## Release 133.0.13 (in development)
 
+### Enhancements
+
+- Deploy [node-warden-operator](https://github.com/scality/node-warden-operator)
+  v1.0.0, a cluster-scoped operator that reacts to node conditions through
+  `NodeRemediationPolicy` custom resources. MetalK8s ships a default policy that,
+  when a Workload Plane node reports `WorkloadPlaneNetworkUnavailable`, applies a
+  reversible `node.scality.com/workload-plane-unreachable:NoExecute` taint to evict
+  its workloads and drop it from Service endpoints, and removes the taint once the
+  Workload Plane connectivity recovers
+  (PR[#5031](https://github.com/scality/metalk8s/pull/5031))
+
 ## Release 133.0.12
 
 ### Enhancements
