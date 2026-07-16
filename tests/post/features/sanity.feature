@@ -41,6 +41,7 @@ Feature: Cluster Sanity Checks
         | metalk8s-monitoring | prometheus-operator-kube-state-metrics |
         | metalk8s-monitoring | prometheus-operator-operator           |
         | metalk8s-monitoring | thanos-query                           |
+        | metalk8s-monitoring | node-warden-operator-controller-manager |
         | metalk8s-ui         | metalk8s-ui                            |
         | metalk8s-certs      | cert-manager                           |
         | metalk8s-certs      | cert-manager-cainjector                |

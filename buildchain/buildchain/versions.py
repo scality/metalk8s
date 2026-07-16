@@ -323,6 +323,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         version="v0.0.1-beta.2",
         digest="sha256:8a98623a20f30af4a8b0eb8abe284b15ed8603bd66e13905d32f50e37e6155ed",
     ),
+    Image(
+        name="node-warden-operator",
+        version="v1.0.0",
+        digest="sha256:9fafa55c92f07f1d48a9fd69b4a9e78b7918939a56fc3449d10f121c7cba633f",
+    ),
 )
 
 CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}
