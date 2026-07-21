@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 133.0.13 (in development)
+## Release 133.0.13
 
 ### Enhancements
 
