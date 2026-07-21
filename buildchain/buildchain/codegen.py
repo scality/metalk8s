@@ -476,6 +476,73 @@ def codegen_kustomize_disk_management_agent() -> types.TaskDict:
     return tpl_task_dict
 
 
+def task_get_codegen_kustomize_node_warden_operator() -> types.TaskDict:
+    """Generate the kustomize manifests output for the Node Warden Operator."""
+    kustomize_dir = constants.ROOT / "kustomizes/node-warden-operator"
+
+    cmd = f"kustomize build {kustomize_dir}"
+
+    return {
+        "doc": task_get_codegen_kustomize_node_warden_operator.__doc__,
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT, save_out="stdout")],
+        "file_dep": list(utils.git_ls(kustomize_dir)),
+        "task_dep": ["check_for:kustomize"],
+    }
+
+
+def task_transform_codegen_kustomize_node_warden_operator() -> types.TaskDict:
+    """Transform the kustomize manifests output for the Node Warden Operator."""
+
+    def _transform(stdout: str) -> Dict[str, str]:
+        """Transform the kustomize output."""
+        # Note: We have to replace the namespace 'node-warden-operator-system' by
+        # 'metalk8s-monitoring' and fill the metrics Certificate dnsNames placeholder
+        # as kustomize does not allow easily to patch every occurrence in "custom
+        # resources fields" like Certificate dnsNames.
+        return {
+            "output": stdout.strip().replace(
+                "node-warden-operator-system", "metalk8s-monitoring"
+            )
+        }
+
+    return {
+        "doc": task_transform_codegen_kustomize_node_warden_operator.__doc__,
+        "actions": [_transform],
+        "task_dep": ["get_codegen_kustomize_node_warden_operator"],
+        "getargs": {
+            "stdout": ("get_codegen_kustomize_node_warden_operator", "stdout"),
+        },
+    }
+
+
+def codegen_kustomize_node_warden_operator() -> types.TaskDict:
+    """Generate the SLS file for the Node Warden Operator."""
+    target_sls = (
+        constants.ROOT / "salt/metalk8s/addons/node-warden-operator/deployed/chart.sls"
+    )
+    template_file = constants.ROOT / "kustomizes/template.sls.in"
+
+    tpl_task = targets.TemplateFile(
+        task_name="kustomize_node-warden-operator",
+        source=template_file,
+        destination=target_sls,
+    )
+    tpl_task_dict = tpl_task.task
+    tpl_task_dict.update(
+        {
+            "title": utils.title_with_subtask_name("CODEGEN"),
+            "task_dep": ["transform_codegen_kustomize_node_warden_operator"],
+            "getargs": {
+                "Manifests": (
+                    "transform_codegen_kustomize_node_warden_operator",
+                    "output",
+                ),
+            },
+        }
+    )
+    return tpl_task_dict
+
+
 # List of available code generation tasks.
 CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_storage_operator,
@@ -491,6 +558,7 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_cert_manager,
     codegen_kustomize_crl_operator,
     codegen_kustomize_disk_management_agent,
+    codegen_kustomize_node_warden_operator,
 )
 
 

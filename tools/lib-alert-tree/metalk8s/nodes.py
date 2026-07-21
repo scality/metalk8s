@@ -44,6 +44,8 @@ NODE_WARNING, NODE_CRITICAL = severity_pair(
         Existing.warning("NodeClockSkewDetected"),
         Existing.warning("NodeRAIDDiskFailure"),
         Existing.warning("NodeTextFileCollectorScrapeError"),
+        Existing.warning("NodeWorkloadPlaneUnavailable"),
+        Existing.warning("NodeWorkloadPlaneRemediated"),
         SYSTEM_PARTITION_WARNING,
     ],
     critical_children=[

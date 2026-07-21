@@ -80186,6 +80186,9 @@ spec:
       tolerations:
       - effect: NoSchedule
         operator: Exists
+      - effect: NoExecute
+        key: node.scality.com/workload-plane-unreachable
+        operator: Exists
       volumes:
       - hostPath:
           path: /proc

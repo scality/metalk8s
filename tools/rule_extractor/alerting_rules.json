@@ -20,7 +20,7 @@
     {
         "message": "The cluster is at risk.",
         "name": "ClusterAtRisk",
-        "query": "sum(ALERTS{alertname=\"NodeAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PlatformServicesAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"VolumeAtRisk\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
+        "query": "sum(ALERTS{alertname=\"NetworkOutage\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PlatformServicesAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"VolumeAtRisk\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
         "severity": "critical"
     },
     {
@@ -45,6 +45,12 @@
         "message": "The monitoring service is at risk.",
         "name": "MonitoringServiceAtRisk",
         "query": "sum(ALERTS{alertname=\"KubeStateMetricsShardingMismatch\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeStateMetricsShardsMissing\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusRuleFailures\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusRemoteWriteBehind\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusRemoteStorageFailures\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusErrorSendingAlertsToAnyAlertmanager\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusBadConfig\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PrometheusTargetSyncFailure\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
+        "severity": "critical"
+    },
+    {
+        "message": "The network has a critical outage.",
+        "name": "NetworkOutage",
+        "query": "sum(ALERTS{alertname=\"WorkloadPlaneOutage\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
         "severity": "critical"
     },
     {
@@ -152,7 +158,7 @@
     {
         "message": "The node {{ $labels.instance }} is degraded.",
         "name": "NodeDegraded",
-        "query": "sum by (instance) (ALERTS{alertname=\"KubeNodeNotReady\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeReadinessFlapping\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeUnreachable\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPlegDurationHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPodStartUpLatencyHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockNotSynchronising\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockSkewDetected\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeRAIDDiskFailure\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeTextFileCollectorScrapeError\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"SystemPartitionDegraded\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
+        "query": "sum by (instance) (ALERTS{alertname=\"KubeNodeNotReady\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeReadinessFlapping\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeUnreachable\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPlegDurationHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPodStartUpLatencyHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockNotSynchronising\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockSkewDetected\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeRAIDDiskFailure\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeTextFileCollectorScrapeError\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeWorkloadPlaneUnavailable\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeWorkloadPlaneRemediated\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"SystemPartitionDegraded\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
         "severity": "warning"
     },
     {
@@ -304,6 +310,24 @@
         "name": "NodeTextFileCollectorScrapeError",
         "query": "node_textfile_scrape_error{job=\"node-exporter\"} == 1",
         "severity": "warning"
+    },
+    {
+        "message": "Node has lost Workload Plane connectivity",
+        "name": "NodeWorkloadPlaneUnavailable",
+        "query": "kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"} == 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Node drained after Workload Plane isolation",
+        "name": "NodeWorkloadPlaneRemediated",
+        "query": "kube_node_spec_taint{key=\"node.scality.com/workload-plane-unreachable\"} == 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Workload Plane outage affecting the majority of nodes",
+        "name": "WorkloadPlaneOutage",
+        "query": "count(kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"} == 1) / count(kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"}) > 0.5",
+        "severity": "critical"
     },
     {
         "message": "Half or more of the Alertmanager instances within the same cluster are crashlooping.",
