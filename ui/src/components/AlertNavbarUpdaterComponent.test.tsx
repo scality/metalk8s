@@ -75,6 +75,39 @@ describe('AlertNavbarUpdaterComponent', () => {
     },
     originalAlert: {},
   };
+  const PARENT_WARNING_ALERT = {
+    id: 'parentwarning0001',
+    summary: 'The node is degraded',
+    description: 'The node is degraded',
+    startsAt: '2023-08-11T06:03:55.000Z',
+    endsAt: '2023-08-11T14:13:51.065Z',
+    severity: 'warning',
+    documentationUrl: '',
+    labels: {
+      alertname: 'NodeDegraded',
+      severity: 'warning',
+      children: 'artesca-data-ops-alerting-s3utils-CountItemsJobTakingTooLong',
+      selectors: [],
+    },
+    originalAlert: {},
+  };
+  it('should not count parent (aggregation) alerts that have children, to match the Alerts page count', async () => {
+    //S
+    // @ts-ignore mock implementation
+    useAlerts.mockImplementation(() => ({
+      alerts: [WATCHDOG_ALERT, WARNING_ALERT, PARENT_WARNING_ALERT],
+    }));
+    const { publishNotification } = setupTest();
+    //V
+    // Only the leaf warning alert must be counted, not the parent NodeDegraded alert.
+    expect(publishNotification).toBeCalledWith(
+      expect.objectContaining({
+        id: 'WarningNotification',
+        description: 'There is 1 warning alert currently firing on the platform.',
+      }),
+    );
+    expect(publishNotification).toHaveBeenCalledTimes(1);
+  });
   it('should publish a critical notification if there is a minimum of one critical alert', async () => {
     //S
     // @ts-ignore mock implementation
