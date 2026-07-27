@@ -1,0 +1,322 @@
+---
+name: "create changelog"
+
+on:
+  issue_comment:
+    types: [created, edited, deleted]
+
+permissions:
+  pull-requests: write
+  contents: write
+  packages: write
+
+# Serialise runs for the same PR: quick edits, deletes, and follow-up
+# comments would otherwise race on the shared PR branch and produce push
+# conflicts. `cancel-in-progress: false` because we don't want to lose a
+# `deleted` event mid-flight.
+concurrency:
+  group: changie-add-changelog-pr-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  create-changelog:
+    runs-on: ubuntu-latest
+    # Fire when a /changie comment is created, when a comment is edited
+    # such that either the new OR previous body was /changie (so we can
+    # respectively create, update, or remove the entry), or when a
+    # /changie comment is deleted.
+    if: >-
+      github.event.issue.pull_request && (
+        startsWith(github.event.comment.body, '/changie') ||
+        startsWith(github.event.changes.body.from, '/changie')
+      )
+    env:
+      # First line MUST stay in sync with the marker in the cleanup step below.
+      # Shared with `changie-check-changelog.yaml` so both workflows leave at
+      # most one bot comment on the PR at any time.
+      COMMENT_BODY: |-
+        <!-- changie-workflow-comment -->
+        ❌ **`/changie` command failed**
+
+        Your `/changie` comment could not be applied to this PR. Common causes:
+
+        - **Invalid kind.** `<kind>` must be one of: `Enhanced`, `Breaking`, `Fix`, `Added`, `Removed`.
+        - **Malformed syntax.** The expected form is `/changie <kind> <body>`, where
+          `<body>` may span multiple lines: everything after `<kind>` (on the
+          same line and on subsequent lines) is captured as the changelog body.
+        - Merge conflict on `.changes/unreleased/*` or a transient GitHub API error.
+
+        Example (single-line):
+
+        ```
+        /changie Fix Corrected the deployment logic when running on ARM
+        ```
+
+        Example (multi-line):
+
+        ```
+        /changie Enhanced
+        Bump the Kubernetes version to 1.34.7.
+        - drops support for RHEL 8
+        - requires containerd 2.x
+        ```
+
+        Each `/changie` comment owns its changelog entry across its whole
+        lifecycle: **editing** the comment updates the entry, **deleting** it
+        removes the entry, and multiple `/changie` comments on the same PR
+        each produce their own entry.
+
+        See the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details, then edit the failing comment or post a new `/changie …` comment.
+    steps:
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          app-id: ${{ vars.ACTIONS_APP_ID }}
+          private-key: ${{ secrets.ACTIONS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - name: Like comment
+        # Nothing to react to on a deleted comment.
+        if: github.event.action != 'deleted'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const {owner, repo} = context.issue
+            github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id: context.payload.comment.id,
+              content: "+1",
+            });
+
+      # Wipe any stale bot comment (from a previous failed `/changie` or a
+      # previous `check changelog` run) before we do anything that could fail.
+      # A new comment will be posted at the end if this run also fails.
+      - name: Clean up stale changie bot comments
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const marker = '<!-- changie-workflow-comment -->';
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner, repo, issue_number, per_page: 100 }
+            );
+            for (const c of comments) {
+              if (c.body && c.body.includes(marker)) {
+                await github.rest.issues.deleteComment({
+                  owner, repo, comment_id: c.id,
+                });
+              }
+            }
+
+      - uses: actions/github-script@v9
+        id: get-pr
+        with:
+          script: |
+            const request = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            }
+            core.info(`Getting PR #${request.pull_number} from ${request.owner}/${request.repo}`)
+            try {
+              const result = await github.rest.pulls.get(request)
+              return result.data
+            } catch (err) {
+              core.setFailed(`Request failed with error ${err}`)
+            }
+
+      - name: Setup outputs
+        id: setup
+        env:
+          COMMENT: ${{ github.event.comment.body }}
+          ACTION: ${{ github.event.action }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          python3 <<'PY'
+          import os, re, sys, uuid
+
+          action = os.environ["ACTION"]
+          comment_id = os.environ["COMMENT_ID"]
+          # Normalise line endings so the parser is CRLF-agnostic.
+          comment = os.environ["COMMENT"].replace("\r\n", "\n").replace("\r", "\n")
+
+          # Try to parse a /changie body from the (current) comment. If
+          # missing OR if this is a delete event, this is a delete-only
+          # path (comment was deleted, or edited away from /changie). We
+          # emit no kind/body and the downstream "New changie change"
+          # step becomes a no-op.
+          first, _, rest = comment.partition("\n")
+          m = re.match(r"^/changie\s+(\S+)(?:\s+(.*))?$", first)
+          if not (m and action != "deleted"):
+              print(f"No /changie in comment body — "
+                    f"delete-only path for comment {comment_id} (action={action}).")
+              sys.exit(0)
+
+          kind = m.group(1)
+          inline = (m.group(2) or "").rstrip()
+          rest = rest.strip("\n")
+
+          if inline and rest:
+              body = inline + "\n" + rest
+          elif rest:
+              body = rest
+          else:
+              body = inline
+          body = body.strip()
+
+          if not body:
+              sys.exit("Body is empty; expected `/changie <kind> <body>`.")
+
+          print(f"Change action: {action} (comment {comment_id}); "
+                f"kind={kind}, body {body.count(chr(10)) + 1} line(s):")
+          for line in body.splitlines():
+              print(f"  | {line}")
+
+          # Random delimiter avoids heredoc-smuggling if the body contains a
+          # predictable marker string.
+          delim = f"CHANGIE_BODY_EOF_{uuid.uuid4().hex}"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"kind={kind}\n")
+              f.write(f"body<<{delim}\n{body}\n{delim}\n")
+          PY
+
+      - uses: actions/checkout@v6
+        with:
+          # Persist the app-token as an http.extraheader auth on the
+          # local git config. The push step below uses `--force-with-lease`
+          # when squashing into a prior workflow commit, and
+          # ad-m/github-push-action's force-with-lease code path issues
+          # `git push` with no explicit remote URL (it needs a tracking
+          # ref for the lease), so it relies on `origin` being pre-auth'd.
+          persist-credentials: true
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+          ref: ${{ fromJSON(steps.get-pr.outputs.result).head.ref }}
+
+      - name: Configure git repository
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      # Remove any existing change file that this comment previously
+      # produced. Workflow-added entries carry `custom.CommentId: "<id>"`;
+      # manually authored entries (e.g. via `changie new -e`) never have
+      # this field, so they can never be accidentally removed here. Runs
+      # unconditionally: for `created` this is a no-op; for `edited` and
+      # `deleted` it removes the entry so the create step below (if any)
+      # can regenerate a fresh one.
+      - name: Remove existing entry for this comment
+        env:
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          shopt -s nullglob
+          removed=0
+          for f in .changes/unreleased/*.yaml; do
+            if grep -Eq "^[[:space:]]+CommentId:[[:space:]]*\"${COMMENT_ID}\"[[:space:]]*$" "$f"; then
+              echo "Removing existing entry for comment ${COMMENT_ID}: $f"
+              rm "$f"
+              removed=$((removed + 1))
+            fi
+          done
+          echo "Removed ${removed} existing entr(y|ies) for comment ${COMMENT_ID}."
+
+      - name: Install changie
+        uses: miniscruff/changie-action@v3
+        with:
+          version: latest
+
+      # Only invoke changie when the (current) comment body actually
+      # contains a /changie command. For delete-only paths (comment
+      # deleted, or edited away from /changie) the setup step leaves
+      # kind empty and this step becomes a no-op.
+      - name: New changie change
+        if: steps.setup.outputs.kind != ''
+        env:
+          KIND: ${{ steps.setup.outputs.kind }}
+          BODY: ${{ steps.setup.outputs.body }}
+          ISSUE: ${{ github.event.issue.number }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          changie new \
+            --kind="$KIND" \
+            --body="$BODY" \
+            --custom Pull="$ISSUE" \
+            --custom CommentId="$COMMENT_ID"
+      - name: Commit changes
+        id: commit
+        env:
+          KIND: ${{ steps.setup.outputs.kind }}
+          BODY: ${{ steps.setup.outputs.body }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --local user.name "${{ github.actor }}"
+
+          # Squash into the previous commit if HEAD is itself a prior
+          # changie-workflow commit (identified by the trailer we set
+          # below). This keeps the PR history from ballooning across
+          # many /changie iterations, without ever rewriting a human
+          # commit. `git reset --mixed` moves HEAD back one commit and
+          # clears the index; the working tree already reflects the
+          # final desired state (remove + optional create steps ran
+          # before this step), so `git add` below re-stages it from a
+          # clean baseline.
+          should_amend=false
+          if git rev-parse --verify HEAD~1 >/dev/null 2>&1 && \
+             [ "$(git log -1 --format='%(trailers:key=Auto-generated-by,valueonly=true)' | tr -d '[:space:]')" = "changie-add-changelog" ]; then
+            should_amend=true
+            git reset --mixed HEAD~1
+          fi
+
+          git add -A .changes/unreleased
+
+          if git diff --cached --quiet; then
+            if $should_amend; then
+              # Net effect vs. HEAD~1 is zero (e.g. add-then-delete of
+              # the same entry). Force-with-lease push the reset HEAD
+              # to drop the prior changelog commit from the remote.
+              echo "Squashed to empty state — force-pushing to drop the prior changelog commit."
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              echo "force=true"   >> "$GITHUB_OUTPUT"
+            else
+              # No-op edit (e.g. whitespace-only body change that
+              # yielded identical yaml). Skip the commit and push.
+              echo "No changes to commit — nothing to push."
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              echo "force=false"   >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
+
+          if [ -n "$KIND" ]; then
+            # created or edited (kept /changie): subject = first body line.
+            TITLE=$(printf '%s\n' "$BODY" | head -n1)
+            MSG="changelog: $TITLE"
+          else
+            # deleted or edited-away-from-/changie.
+            MSG="changelog: remove entry for comment $COMMENT_ID"
+          fi
+
+          git commit -m "$MSG" -m "Auto-generated-by: changie-add-changelog"
+
+          echo "changed=true"        >> "$GITHUB_OUTPUT"
+          echo "force=$should_amend" >> "$GITHUB_OUTPUT"
+      - name: Push changes
+        if: steps.commit.outputs.changed == 'true'
+        uses: ad-m/github-push-action@v0.8.0
+        with:
+          github_token: ${{ steps.app-token.outputs.token }}
+          branch: ${{ fromJSON(steps.get-pr.outputs.result).head.ref }}
+          force_with_lease: ${{ steps.commit.outputs.force }}
+
+      - name: Post failure comment
+        if: failure()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: process.env.COMMENT_BODY,
+            });

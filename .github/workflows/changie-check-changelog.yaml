@@ -1,0 +1,163 @@
+---
+name: "check changelog"
+
+on:
+  pull_request:
+    types:
+      # On by default if you specify no types.
+      - "opened"
+      - "reopened"
+      - "synchronize"
+      # For `skip-label` only.
+      - "labeled"
+      - "unlabeled"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-changelog:
+    runs-on: ubuntu-latest
+    # Skip if the PR is labelled `skip changelog`
+    if: >-
+      !contains(github.event.pull_request.labels.*.name, 'skip changelog')
+    env:
+      # First line MUST stay in sync with the marker in the cleanup step below.
+      COMMENT_BODY: |-
+        <!-- changie-workflow-comment -->
+        ❌ **Changelog check failed**
+
+        This PR does not add a `.changes/unreleased/*.yaml` file and does not
+        modify `CHANGELOG.md`. Please add a changelog entry by commenting on
+        this PR:
+
+        ```
+        /changie <kind> <body>
+        ```
+
+        `<kind>` must be one of: `Enhanced`, `Breaking`, `Fix`, `Added`, `Removed`.
+
+        Example:
+
+        ```
+        /changie Fix Corrected the deployment logic when running on ARM
+        ```
+
+        If a changelog entry is not appropriate for this PR (e.g. CI-only or
+        docs-only change), apply the `skip changelog` label instead.
+    steps:
+      - name: "Clone repository"
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files in the docs folder
+        id: changelogs
+        uses: tj-actions/changed-files@v47
+        with:
+          files: |
+            .changes/unreleased/*.yaml
+            CHANGELOG.md
+
+      # Always run: removes any check-comment (success OR failure) from
+      # a previous run of this workflow, so the visible check-comment
+      # always reflects the current state of the PR. The success and
+      # failure branches below re-post as appropriate.
+      - name: Clean up stale check-comments
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const marker = '<!-- changie-workflow-comment -->';
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner, repo, issue_number, per_page: 100 }
+            );
+            for (const c of comments) {
+              if (c.body && c.body.includes(marker)) {
+                await github.rest.issues.deleteComment({
+                  owner, repo, comment_id: c.id,
+                });
+              }
+            }
+
+      - name: Post check-comment on failure
+        if: steps.changelogs.outputs.any_changed == 'false'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: process.env.COMMENT_BODY,
+            });
+
+      - name: Fail as the changelog is missing
+        if: steps.changelogs.outputs.any_changed == 'false'
+        run: exit 1
+
+      # ---- Success path ---------------------------------------------
+      # When the check passes, post a comment that shows what this PR
+      # actually contributes to the next release (rendered via changie's
+      # own template). The comment carries the same marker as the failure
+      # comment, so the "Clean up stale check-comments" step above wipes
+      # it on the next workflow run and posts a fresh one — the visible
+      # comment always reflects the current state of this PR's entries.
+      - name: Install changie
+        if: steps.changelogs.outputs.any_changed == 'true'
+        uses: miniscruff/changie-action@v3
+        with:
+          version: latest
+
+      - name: Render preview of this PR's changelog entries
+        id: preview
+        if: steps.changelogs.outputs.any_changed == 'true'
+        env:
+          PR_NUM: ${{ github.event.pull_request.number }}
+        run: |
+          # Delete any unreleased/*.yaml whose Pull value isn't this PR's
+          # number so the render only shows what this PR contributes, then
+          # `git checkout` the directory to restore the working tree.
+          shopt -s nullglob
+          for f in .changes/unreleased/*.yaml; do
+            if ! grep -Eq "^[[:space:]]+Pull:[[:space:]]*\"${PR_NUM}\"[[:space:]]*\$" "$f"; then
+              rm "$f"
+            fi
+          done
+
+          PREVIEW=$(changie batch 0.0.0 --dry-run 2>&1 || true)
+
+          git checkout -- .changes/unreleased/
+
+          # Strip the synthetic "## Release 0.0.0" header and any leading
+          # blank lines, so the code box focuses on the kinds + entries.
+          PREVIEW=$(printf '%s\n' "$PREVIEW" | awk '/^### / {p=1} p')
+
+          DELIM="PREVIEW_EOF_$(date +%s%N)"
+          {
+            echo "body<<$DELIM"
+            printf '%s\n' "$PREVIEW"
+            echo "$DELIM"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post success comment
+        if: steps.changelogs.outputs.any_changed == 'true'
+        uses: actions/github-script@v9
+        env:
+          PREVIEW: ${{ steps.preview.outputs.body }}
+        with:
+          script: |
+            const marker = '<!-- changie-workflow-comment -->';
+            const preview = (process.env.PREVIEW || '').trim();
+            const body = preview
+              ? `${marker}\n✅ **Changelog check passed** — this PR contributes the following entries to the next release:\n\n\`\`\`markdown\n${preview}\n\`\`\``
+              : `${marker}\n✅ **Changelog check passed.**`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
