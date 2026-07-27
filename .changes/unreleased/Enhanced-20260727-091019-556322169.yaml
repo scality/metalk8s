@@ -1,0 +1,7 @@
+kind: Enhanced
+body: |
+  Bump nginx image to [1.31.2-alpine](https://github.com/nginx/nginx/releases/tag/release-1.31.2)
+time: 2026-07-27T09:10:19.556322169Z
+custom:
+  Pull: 4992
+  CommentId: backfill

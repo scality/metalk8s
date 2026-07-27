@@ -1,0 +1,48 @@
+changesDir: .changes
+unreleasedDir: unreleased
+headerPath: header.tpl.md
+changelogPath: CHANGELOG.md
+versionExt: md
+versionFormat: '## Release {{.Version}}'
+kindFormat: '### {{.Kind}}'
+changeFormat: |-
+    - {{ .Body | trim | indent 2 | trimPrefix "  " }}
+      (PR[#{{.Custom.Pull}}](https://github.com/scality/metalk8s/pull/{{.Custom.Pull}}))
+kinds:
+    - label: Enhanced
+      format: "### Enhancements"
+    - label: Breaking
+      format: "### Breaking Changes"
+    - label: Fix
+      format: "### Bug Fixes"
+    - label: Added
+      format: "### Additions"
+    - label: Removed
+      format: "### Removals"
+body:
+    block: true
+newlines:
+    afterChangelogHeader: 1
+    beforeChangelogVersion: 1
+    endOfVersion: 1
+    afterChange: 1
+    afterKind: 1
+    afterVersion: 1
+custom:
+    - key: Pull
+      type: int
+      minInt: 1
+    - key: CommentId
+      # `optional: true` is buggy in changie v1.24/1.25 — a missing value
+      # errors out even when the field is optional. So the field is de
+      # facto required. Interactive CLI users get an extra prompt for
+      # it; scripted CLI users must pass `--custom CommentId=cli`; the
+      # workflow always passes the numeric issue-comment id.
+      type: string
+# Default second-resolution timestamps can collide when the workflow
+# rapidly deletes then re-creates a fragment (edit cycle) or when two
+# /changie comments arrive close together. Include the nanosecond part
+# of the timestamp to guarantee unique filenames. The `.yaml` extension
+# is appended by changie automatically — don't include it here.
+fragmentFileFormat: '{{.Kind}}-{{.Time.Format "20060102-150405"}}-{{.Time.Nanosecond}}'
+envPrefix: CHANGIE_

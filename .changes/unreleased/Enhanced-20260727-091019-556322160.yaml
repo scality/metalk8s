@@ -1,0 +1,7 @@
+kind: Enhanced
+body: |
+  Bump etcd version to [3.6.11](https://github.com/etcd-io/etcd/releases/tag/v3.6.11)
+time: 2026-07-27T09:10:19.556322160Z
+custom:
+  Pull: 4928
+  CommentId: backfill

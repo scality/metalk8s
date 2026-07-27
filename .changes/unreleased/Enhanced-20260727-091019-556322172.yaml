@@ -1,0 +1,7 @@
+kind: Enhanced
+body: |
+  Move `salt-master` image to Rocky 9 minimal
+time: 2026-07-27T09:10:19.556322172Z
+custom:
+  Pull: 5014
+  CommentId: backfill
