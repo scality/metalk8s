@@ -31,24 +31,27 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
       ?.filter((alert) => alertSeverity.includes(alert.severity)) ?? [];
   const columns = [
     {
-      Header: 'Name',
-      accessor: 'name',
-      cellStyle: {
-        flex: 1,
-        width: 'unset',
-      },
-    },
-    {
       Header: 'Severity',
       accessor: 'severity',
       cellStyle: {
         flex: 0.5,
         textAlign: 'center',
         width: 'unset',
+        paddingRight: spacing.r16,
       },
       Cell: ({ value }) => {
         return <CircleStatus name="Circle-health" status={value} />;
       },
+    },
+    {
+      Header: 'Name',
+      accessor: 'name',
+      cellStyle: {
+        flex: 1,
+        width: 'unset',
+        minWidth: 0,
+      },
+      Cell: ({ value }) => <ConstrainedText lineClamp={2} text={value} />,
     },
     {
       Header: 'Description',
