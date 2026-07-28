@@ -98,9 +98,12 @@ export const AlertNavbarUpdaterComponentInternal = ({
     return new Date(b.startsAt) > new Date(a.startsAt) ? 1 : -1;
   });
   const { ui_base_path } = useConfig();
-  const watchdogAlert = alerts?.find((alert: Alert) => alert.labels.alertname === WATCHDOG_ALERT_NAME);
-  const criticalAlerts = alerts?.filter((alert: Alert) => alert.severity === 'critical') ?? [];
-  const warningAlerts = alerts?.filter((alert: Alert) => alert.severity === 'warning') ?? [];
+  // Exclude parent/aggregation alerts (those exposing `children`) so the notification
+  // center counts the same leaf alerts as the Alerts page (see AlertPage.tsx).
+  const leafAlerts = alerts?.filter((alert: Alert) => !alert.labels.children) ?? [];
+  const watchdogAlert = leafAlerts.find((alert: Alert) => alert.labels.alertname === WATCHDOG_ALERT_NAME);
+  const criticalAlerts = leafAlerts.filter((alert: Alert) => alert.severity === 'critical');
+  const warningAlerts = leafAlerts.filter((alert: Alert) => alert.severity === 'warning');
 
   useEffect(() => {
     // We have initialData when loading alerts, so we should check if the query is fetching or not.
@@ -112,7 +115,7 @@ export const AlertNavbarUpdaterComponentInternal = ({
     // we need to check if there is any new alert raised, if yes, we need to publish the notification.
     const alertsIdArray = alertsId ? alertsId.split(',') : [];
     // check if all the criticalAlerts item belongs to part of the alertsIdArray
-    const newlyRaisedAlertNum = alerts?.filter((alert) => {
+    const newlyRaisedAlertNum = leafAlerts.filter((alert) => {
       if (!alertsIdArray.includes(alert.id)) {
         return alert.id;
       }
@@ -151,7 +154,7 @@ export const AlertNavbarUpdaterComponentInternal = ({
     }
 
     // Update the alerts Id in the localstorage
-    localStorage.setItem(LOCAL_STORAGE_ALL_ALERTS_ID, `${alerts?.map((alert) => alert.id).join(',')}`);
+    localStorage.setItem(LOCAL_STORAGE_ALL_ALERTS_ID, `${leafAlerts.map((alert) => alert.id).join(',')}`);
   }, [criticalAlerts.length, warningAlerts.length, watchdogAlert === undefined, status, isFetching]);
 
   return <></>;
