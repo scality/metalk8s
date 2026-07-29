@@ -34,6 +34,12 @@ CERT_MANAGER_REPOSITORY: str = "quay.io/jetstack"
 OAUTH2_PROXY_REPOSITORY: str = "quay.io/oauth2-proxy"
 SCALITY_REPOSITORY: str = "ghcr.io/scality"
 
+# Registry endpoint the nodes resolve through their containerd mirror
+# configuration: kept in sync with `repo:registry_endpoint` in
+# salt/metalk8s/defaults.yaml. An image archive cached on a node is imported
+# as-is, so it must already carry the name the kubelet asks for.
+NODE_REGISTRY_ENDPOINT: str = "metalk8s-registry-from-config.invalid"
+
 # Paths {{{
 
 # Root of the generated ISO.
@@ -48,6 +54,9 @@ ISO_IMAGE_ROOT: Path = ISO_ROOT / "images"
 ISO_DOCS_ROOT: Path = ISO_ROOT / "documentation"
 # Root for the documentation build.
 DOCS_BUILD_ROOT: Path = config.BUILD_ROOT / "docs"
+# Root of the boot cache build contexts: build-only, never on the ISO (only
+# the resulting boot cache images are shipped).
+BOOT_CACHE_ROOT: Path = config.BUILD_ROOT / "boot-cache"
 # Root for the packages that we build ourselves.
 PKG_ROOT: Path = config.BUILD_ROOT / "packages"
 # Root for the RedHat packages that we build ourselves.

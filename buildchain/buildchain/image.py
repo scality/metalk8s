@@ -29,11 +29,13 @@ Overview:
 """
 
 import datetime
+from pathlib import Path
 from typing import Any, Dict, Iterator, List, Tuple
 
 from buildchain import builder
 from buildchain import config
 from buildchain import constants
+from buildchain import coreutils
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
@@ -47,6 +49,7 @@ def task_images() -> types.TaskDict:
         "task_dep": [
             "_image_mkdir_root",
             "_image_pull",
+            "_image_boot_cache_context",
             "_image_build",
             "_image_dedup_layers",
         ],
@@ -70,6 +73,24 @@ def task__image_build() -> Iterator[types.TaskDict]:
     """Build the container images."""
     for image in TO_BUILD:
         yield image.task
+
+
+def task__image_boot_cache_mkdir_root() -> types.TaskDict:
+    """Create the root of the boot cache build contexts.
+
+    Owning the directory here is what lets `doit clean` remove it: the
+    per-variant tasks only clean the directory of their own variant, and a
+    leftover empty root keeps the build root from being removed.
+    """
+    return targets.Mkdir(
+        directory=constants.BOOT_CACHE_ROOT, task_dep=["_build_root"]
+    ).task
+
+
+def task__image_boot_cache_context() -> Iterator[types.TaskDict]:
+    """Assemble the build context of each boot cache image."""
+    for variant in BOOT_CACHE_VARIANTS:
+        yield _boot_cache_context_task(variant)
 
 
 def task__image_calc_build_deps() -> Iterator[types.TaskDict]:
@@ -129,6 +150,84 @@ def _remote_image(name: str, repository: str, **overrides: Any) -> targets.Remot
         kwargs["remote_name"] = REMOTE_NAMES[name]
 
     return targets.RemoteImage(**kwargs)
+
+
+def _node_image_fullname(name: str, version: str) -> str:
+    """Return the name under which an image is known on a node.
+
+    A cached archive is imported as-is (no re-tagging), so it must already
+    carry the name the kubelet asks for: the one served by the cluster
+    registry.
+    """
+    prefix = f"{config.PROJECT_NAME.lower()}-{versions.VERSION}"
+    return f"{constants.NODE_REGISTRY_ENDPOINT}/{prefix}/{name}:{version}"
+
+
+def _boot_cache_context(variant: str) -> Path:
+    """Return the build context directory of a boot cache variant."""
+    return constants.BOOT_CACHE_ROOT / variant
+
+
+def _boot_cache_context_task(variant: str) -> types.TaskDict:
+    """Fill the build context of a boot cache variant with its archives.
+
+    The archives are converted from the image layers already pulled for the
+    ISO, so no image is downloaded twice, and they stay under the build root:
+    only the boot cache images themselves are shipped.
+    """
+    try:
+        members = [TO_PULL[name] for name in BOOT_CACHE_VARIANTS[variant]]
+    except KeyError as exc:
+        raise ValueError(
+            f'Boot cache variant "{variant}" lists {exc} which is not a '
+            "pulled image: add it to `TO_PULL` or fix `BOOT_CACHE_VARIANTS`"
+        ) from exc
+    images_dir = _boot_cache_context(variant) / "images"
+    archives = [images_dir / f"{img.name}-{img.version}.tar" for img in members]
+
+    def prepare() -> None:
+        # Start from an empty directory: the whole of it ends up in the boot
+        # cache image, so an archive left over from a previous version bump
+        # would be shipped (and `docker-archive` refuses to overwrite anyway).
+        coreutils.rm_rf(images_dir)
+        images_dir.mkdir(parents=True)
+
+    actions: List[types.Action] = [prepare]
+    for image, archive in zip(members, archives, strict=True):
+        cmd = list(constants.SKOPEO_COPY_DEFAULT_ARGS)
+        cmd.append(f"dir:{image.dirname}")
+        cmd.append(
+            f"docker-archive:{archive}:"
+            f"{_node_image_fullname(image.name, image.version)}"
+        )
+        actions.append(cmd)
+
+    task = targets.Target(
+        targets=archives,
+        file_dep=[image.dirname / "manifest.json" for image in members],
+        task_dep=["_image_boot_cache_mkdir_root"],
+        task_name=variant,
+    ).basic_task
+    task["title"] = lambda _: f"{'BOOT CACHE': <{constants.CMD_WIDTH}} {variant}"
+    task["doc"] = f"Assemble the {variant} boot cache build context."
+    task["actions"] = actions
+    task["clean"] = [(coreutils.rm_rf, [_boot_cache_context(variant)], {})]
+    return task
+
+
+def _boot_cache_image(variant: str) -> targets.LocalImage:
+    """Build a boot cache image from the context assembled for its variant."""
+    name = f"metalk8s-boot-cache-{variant}"
+    return _local_image(
+        name=name,
+        dockerfile=constants.ROOT / "images" / "metalk8s-boot-cache" / "Dockerfile",
+        build_context=_boot_cache_context(variant),
+        # Nodes import the image from this archive before any registry is
+        # reachable, and pull it from the registry afterwards: it is shipped
+        # both ways, like `pause` and `nginx`.
+        archive_reference=_node_image_fullname(name, versions.VERSION),
+        task_dep=[f"_image_boot_cache_context:{variant}"],
+    )
 
 
 def _local_image(name: str, **kwargs: Any) -> targets.LocalImage:
@@ -226,6 +325,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "ui-operator",
         "crl-operator",
         "disk-management-agent",
+        "file-reflector",
         "node-warden-operator",
     ],
 }
@@ -248,6 +348,44 @@ for repo, images in IMGS_PER_REPOSITORY.items():
 
 # }}}
 # Container images to build {{{
+
+# Images cached on the nodes, per node role: the boot cache image of a variant
+# carries an archive of each image listed here, so that a node can restore them
+# into containerd without reaching the registry.
+#
+# This is the authoritative list; keep it in sync with what a node of that role
+# needs to boot. A name that is not pulled fails the build immediately.
+BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
+    "control-plane": [
+        # Pinned as the containerd sandbox image: without it the kubelet
+        # creates no sandbox, so not even the static pods below would start.
+        "pause",
+        "etcd",
+        "kube-apiserver",
+        "kube-controller-manager",
+        "kube-scheduler",
+        "coredns",
+        "kube-proxy",
+        "calico-cni",
+        "calico-node",
+        "calico-kube-controllers",
+    ],
+    "worker": [
+        "pause",
+        # The agent the registry operator runs to write the containerd mirror
+        # configuration on every node: a worker that has both the sandbox image
+        # and this one can boot and reach a registry.
+        "file-reflector",
+    ],
+    # The registry variant waits on images the buildchain does not carry yet:
+    #
+    # "registry": ["registry-operator", "registry-server",
+    #              "registry-node-agent"],
+    #
+    # Uncomment a variant once its images are pulled or built here: everything
+    # else (context, image, archive) follows from this listing.
+}
+
 TO_BUILD: Tuple[targets.LocalImage, ...] = (
     _local_image(
         name="metalk8s-alert-logger",
@@ -339,7 +477,7 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
             "VERSION": versions.VERSION,
         },
     ),
-)
+) + tuple(_boot_cache_image(variant) for variant in BOOT_CACHE_VARIANTS)
 # }}}
 
 
