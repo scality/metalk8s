@@ -8,9 +8,9 @@ import styled from 'styled-components';
 import { useTypedSelector } from '../hooks';
 import { useURLQuery } from '../services/utils';
 import CircleStatus from './CircleStatus';
-const StatusText = styled.div`
+const StatusText = styled.div<{ $color?: string }>`
   color: ${(props) => {
-    return props.color;
+    return props.$color;
   }};
 `;
 
@@ -96,7 +96,7 @@ const NodeListTable = ({ nodeTableData }) => {
           const { statusTextColor, computedStatus } = cellProps.value;
           return computedStatus.map((status) => {
             return (
-              <StatusText key={status} color={statusTextColor}>
+              <StatusText key={status} $color={statusTextColor}>
                 {intl.formatMessage({
                   id: `${status}`,
                 })}
