@@ -88,7 +88,7 @@ UI_OPERATOR_VERSION: str = "1.1.0"
 # installed in the image needs to be updated.
 # This should be reset to 1 when the service exposed by the container changes
 # version.
-SALT_MASTER_BUILD_ID = 1
+SALT_MASTER_BUILD_ID = 2
 
 
 def _version_prefix(version: str, prefix: str = "v") -> str:
