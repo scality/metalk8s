@@ -95,60 +95,73 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     metalk8s.wait_apiserver(retry=retry, interval=0), result
                 )
 
+    # What `/readyz?verbose` answers, per stage of the apiserver's startup.
+    READYZ_RECONCILED = {
+        "status": 200,
+        "body": "[+]etcd ok\n[+]poststarthook/rbac/bootstrap-roles ok\nreadyz check passed\n",
+    }
+    # The hook has not completed: the endpoint is a 500, and the marker is
+    # absent. This is the race the gate exists for.
+    READYZ_PENDING = {
+        "status": 500,
+        "body": "[+]etcd ok\n[-]poststarthook/rbac/bootstrap-roles failed: not finished\n",
+    }
+    # An unrelated check is failing, but the RBAC hook is done: the gate must
+    # open, which is why the marker is matched instead of the HTTP status.
+    READYZ_OTHER_CHECK_FAILING = {
+        "status": 500,
+        "body": "[+]poststarthook/rbac/bootstrap-roles ok\n[-]informer-sync failed\n",
+    }
+    # Apiserver not listening: `http.query` reports it through `error`.
+    READYZ_UNREACHABLE = {"error": "Connection refused"}
+    # Path not allowed or unknown: polling will not fix it, so this is logged
+    # louder, but still counts as "not ready" for the caller.
+    READYZ_FORBIDDEN = {"status": 403, "body": "forbidden"}
+
     @parameterized.expand(
         [
             # `result=None` means "not ready" -> `wait_apiserver` must raise.
-            # apiserver up and cluster-admin present -> ready right away
-            param(
-                retry=10, ping=True, cluster_admin={"kind": "ClusterRole"}, result=True
-            ),
-            # apiserver up but cluster-admin never shows up -> raises
-            param(retry=3, ping=True, cluster_admin=None, result=None),
-            # apiserver up, cluster-admin appears on the 3rd check -> ready
+            # hook already reported ok -> ready right away
+            param(retry=10, ping=True, readyz=READYZ_RECONCILED, result=True),
+            # hook never completes -> raises
+            param(retry=3, ping=True, readyz=READYZ_PENDING, result=None),
+            # hook completes on the 3rd probe -> ready
             param(
                 retry=5,
                 ping=True,
-                cluster_admin=[None, None, {"kind": "ClusterRole"}],
+                readyz=[READYZ_PENDING, READYZ_PENDING, READYZ_RECONCILED],
                 result=True,
             ),
-            # apiserver never responds -> raises, RBAC never checked
-            param(retry=3, ping=False, cluster_admin=None, result=None),
-            # error while checking RBAC is treated as "not ready yet" -> raises
-            param(
-                retry=2,
-                ping=True,
-                cluster_admin=CommandExecutionError("boom"),
-                result=None,
-            ),
-            # a non-CommandExecutionError (e.g. raw connection error) is also
-            # swallowed and treated as "not ready yet" -> raises
-            param(
-                retry=2,
-                ping=True,
-                cluster_admin=RuntimeError("connection refused"),
-                result=None,
-            ),
+            # the aggregated endpoint is a 500 because of an unrelated check,
+            # but the RBAC hook is done -> ready, not held back
+            param(retry=3, ping=True, readyz=READYZ_OTHER_CHECK_FAILING, result=True),
+            # apiserver never responds -> raises, RBAC never probed
+            param(retry=3, ping=False, readyz=READYZ_RECONCILED, result=None),
+            # apiserver not listening for the probe -> "not ready yet" -> raises
+            param(retry=2, ping=True, readyz=READYZ_UNREACHABLE, result=None),
+            # a 403/404 is not the race, but still not ready -> raises
+            param(retry=2, ping=True, readyz=READYZ_FORBIDDEN, result=None),
+            # a raw error from `http.query` is swallowed as "not ready yet"
+            param(retry=2, ping=True, readyz=RuntimeError("boom"), result=None),
         ]
     )
-    def test_wait_apiserver_verify_rbac(self, retry, ping, cluster_admin, result):
+    def test_wait_apiserver_verify_rbac(self, retry, ping, readyz, result):
         """
-        Tests `wait_apiserver` with `verify_rbac=True` (gates on the
-        `cluster-admin` ClusterRole being reconciled by the bootstrap-roles
-        hook).
+        Tests `wait_apiserver` with `verify_rbac=True`, which gates on the
+        `poststarthook/rbac/bootstrap-roles` line of `/readyz?verbose` rather
+        than on the endpoint's aggregated status.
         """
         kubernetes_ping_mock = MagicMock(return_value=ping)
 
-        get_object_mock = MagicMock()
-        if isinstance(cluster_admin, list):
-            get_object_mock.side_effect = cluster_admin
-        elif isinstance(cluster_admin, Exception):
-            get_object_mock.side_effect = cluster_admin
+        http_query_mock = MagicMock()
+        if isinstance(readyz, (list, Exception)):
+            http_query_mock.side_effect = readyz
         else:
-            get_object_mock.return_value = cluster_admin
+            http_query_mock.return_value = readyz
 
         patch_dict = {
             "metalk8s_kubernetes.ping": kubernetes_ping_mock,
-            "metalk8s_kubernetes.get_object": get_object_mock,
+            "http.query": http_query_mock,
         }
         with patch.dict(metalk8s.__salt__, patch_dict):
             if result is None:
@@ -165,15 +178,31 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     result,
                 )
 
-        # RBAC is only ever checked once the apiserver itself responds
+        # RBAC is only ever probed once the apiserver itself responds, and
+        # always unauthenticated on the apiserver-proxy.
         if not ping:
-            get_object_mock.assert_not_called()
+            http_query_mock.assert_not_called()
         else:
-            get_object_mock.assert_called_with(
-                kind="ClusterRole",
-                apiVersion="rbac.authorization.k8s.io/v1",
-                name="cluster-admin",
+            http_query_mock.assert_called_with(
+                "https://127.0.0.1:7443/readyz?verbose",
+                verify_ssl=False,
+                status=True,
             )
+
+    def test_wait_apiserver_rbac_failure_message(self):
+        """
+        A timeout on the RBAC probe must not be reported as "apiserver failed to
+        respond": the apiserver did respond, its ClusterRoles are not in place.
+        """
+        patch_dict = {
+            "metalk8s_kubernetes.ping": MagicMock(return_value=True),
+            "http.query": MagicMock(return_value=self.READYZ_PENDING),
+        }
+        with patch.dict(metalk8s.__salt__, patch_dict):
+            with self.assertRaisesRegex(
+                CommandExecutionError, "RBAC bootstrap.*did not complete after 2"
+            ):
+                metalk8s.wait_apiserver(retry=2, interval=0, verify_rbac=True)
 
     @parameterized.expand(
         [

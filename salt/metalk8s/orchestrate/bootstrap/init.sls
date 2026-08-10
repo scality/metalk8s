@@ -117,14 +117,19 @@ Bring bootstrap minion to highstate:
     - salt: Refresh bootstrap minion grains
     - salt: Deploy CA role on bootstrap minion
 
-# `/healthz` (unauthenticated) rather than `wait_apiserver` here: `ping` needs
-# the salt-master kubeconfig, which only exists after the next step (it is
-# skipped during the bootstrap highstate -- see salt/master/init.sls).
+# `/readyz?verbose` rather than `/healthz`: "Configure bootstrap Node object"
+# below is RBAC-dependent, and the apiserver answers `/healthz` before its
+# `bootstrap-roles` post-start hook has reconciled the default ClusterRoles. We
+# match the hook's own line rather than requiring HTTP 200 on the whole
+# endpoint, so an unrelated readiness check cannot hold the bootstrap back.
+# Both endpoints are unauthenticated (`/readyz` is in
+# --authorization-always-allow-paths), so this still runs before the
+# salt-master kubeconfig exists -- it is skipped during the bootstrap highstate,
+# see salt/master/init.sls -- and needs no separate gate further down.
 Wait for API server to be available:
   http.wait_for_successful_query:
-  - name: https://127.0.0.1:7443/healthz
-  - match: 'ok'
-  - status: 200
+  - name: https://127.0.0.1:7443/readyz?verbose
+  - match: 'poststarthook/rbac/bootstrap-roles ok'
   - verify_ssl: false
   - request_interval: 1
   - require:
@@ -140,15 +145,6 @@ Deploy kubeconfig to bootstrap:
   - require:
     - http: Wait for API server to be available
 
-Wait for RBAC bootstrap to complete:
-  module.run:
-    - metalk8s.wait_apiserver:
-      - retry: 60
-      - interval: 5
-      - verify_rbac: true
-    - require:
-      - salt: Deploy kubeconfig to bootstrap
-
 Configure bootstrap Node object:
   salt.runner:
   - name: state.orchestrate
@@ -158,7 +154,6 @@ Configure bootstrap Node object:
   - pillar: {{ pillar_data | tojson }}
   - require:
     - salt: Deploy kubeconfig to bootstrap
-    - module: Wait for RBAC bootstrap to complete
 
 Update pillar on bootstrap minion after highstate:
   salt.function:
