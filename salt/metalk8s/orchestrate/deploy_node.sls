@@ -308,19 +308,25 @@ Run the highstate:
       - metalk8s_cordon: Cordon the node
       - salt: Check pillar before highstate
 
+# `/readyz?verbose` rather than `/healthz`: the uncordon below is
+# RBAC-dependent, and the apiserver answers `/healthz` before its
+# `bootstrap-roles` post-start hook has reconciled the default ClusterRoles. We
+# match the hook's own line rather than requiring HTTP 200 on the whole
+# endpoint, so an unrelated readiness check cannot hold the uncordon back.
+# Unauthenticated, as `/readyz` is in --authorization-always-allow-paths.
 Wait for API server to be available:
-  module.run:
-    - metalk8s.wait_apiserver:
-      - retry: 60
-      - interval: 5
-      - verify_rbac: true
+  http.wait_for_successful_query:
+  - name: https://127.0.0.1:7443/readyz?verbose
+  - match: 'poststarthook/rbac/bootstrap-roles ok'
+  - verify_ssl: false
+  - request_interval: 5
 
 Uncordon the node:
   metalk8s_cordon.node_uncordoned:
     - name: {{ node_name }}
     - require:
       - salt: Run the highstate
-      - module: Wait for API server to be available
+      - http: Wait for API server to be available
 
 {%- set master_minions = salt['metalk8s.minions_by_role']('master') %}
 
@@ -365,3 +371,13 @@ Reconfigure Control Plane Ingress:
       - metalk8s_cordon: Uncordon the node
 
 {%- endif %}
+
+# Refresh the NPD peers map so existing probers learn about the new node
+Update NPD workload plane peers:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.addons.node-problem-detector.deployed.wp-monitor
+    - saltenv: {{ saltenv }}
+    - require:
+      - metalk8s_cordon: Uncordon the node

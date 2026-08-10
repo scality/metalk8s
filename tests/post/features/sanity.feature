@@ -41,6 +41,7 @@ Feature: Cluster Sanity Checks
         | metalk8s-monitoring | prometheus-operator-kube-state-metrics |
         | metalk8s-monitoring | prometheus-operator-operator           |
         | metalk8s-monitoring | thanos-query                           |
+        | metalk8s-monitoring | node-warden-operator-controller-manager |
         | metalk8s-ui         | metalk8s-ui                            |
         | metalk8s-certs      | cert-manager                           |
         | metalk8s-certs      | cert-manager-cainjector                |
@@ -57,6 +58,7 @@ Feature: Cluster Sanity Checks
         | metalk8s-ingress            | ingress-nginx-controller                     |
         | metalk8s-ingress            | ingress-nginx-control-plane-controller       |
         | metalk8s-monitoring         | prometheus-operator-prometheus-node-exporter |
+        | metalk8s-monitoring         | node-problem-detector                        |
         | metalk8s-storage-management | disk-management-agent-controller-manager     |
 
     @volumes_provisioned

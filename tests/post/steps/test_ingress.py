@@ -11,7 +11,7 @@ from pytest_bdd import given, parsers, scenario, then, when
 import testinfra
 
 from tests import utils
-from tests.conftest import wait_rollout_status
+from tests.conftest import rollout_restart, wait_rollout_status
 
 MAIN_CC_NAME = "main"
 
@@ -559,24 +559,6 @@ def update_portmap_cidr(host, context, ssh_config, version, plane):
 
     utils.patch_bootstrap_config(context, host, bootstrap_patch)
     re_configure_portmap(host, version, ssh_config, context=context)
-
-
-@when(
-    parsers.parse(
-        "we trigger a rollout restart of '{resource}' in namespace '{namespace}'"
-    )
-)
-def rollout_restart(host, resource, namespace):
-    # Make sure any previous rollout is completed
-    wait_rollout_status(host, resource, namespace)
-
-    with host.sudo():
-        host.run_test(
-            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
-            "rollout restart %s --namespace %s",
-            resource,
-            namespace,
-        )
 
 
 @when(

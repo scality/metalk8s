@@ -18,3 +18,13 @@ NETWORK_WARNING = Derived.warning(
     summary="The network is degraded.",
     duration="1m",
 )
+
+NETWORK_CRITICAL = Derived.critical(
+    name="NetworkOutage",
+    relationship=Relationship.ANY,
+    children=[
+        Existing.critical("WorkloadPlaneOutage"),
+    ],
+    summary="The network has a critical outage.",
+    duration="1m",
+)

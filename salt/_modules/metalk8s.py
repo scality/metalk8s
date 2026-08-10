@@ -28,45 +28,99 @@ __virtualname__ = "metalk8s"
 
 BOOTSTRAP_CONFIG = "/etc/metalk8s/bootstrap.yaml"
 
+# The apiserver-proxy, reachable on every node, as used by the orchestrate
+# states that poll the apiserver's health endpoints.
+APISERVER_PROXY_URL = "https://127.0.0.1:7443"
+
+# The line `/readyz?verbose` prints for the post-start hook that reconciles the
+# default ClusterRoles, once it has completed.
+RBAC_BOOTSTRAP_MARKER = "poststarthook/rbac/bootstrap-roles ok"
+
 
 def __virtual__():
     return __virtualname__
 
 
-def _rbac_bootstrap_complete(**kwargs):
+def _rbac_bootstrap_complete(apiserver_url=APISERVER_PROXY_URL):
     """Return True once the apiserver RBAC bootstrap has reconciled the
     default ClusterRoles.
 
     The ``poststarthook/rbac/bootstrap-roles`` hook (re)creates the default
-    ClusterRoles right after the apiserver starts answering requests. We use
-    the presence of the ``cluster-admin`` ClusterRole as the practical
-    indicator that this hook has completed, mirroring
-    ``kubectl get clusterrole cluster-admin``.
+    ClusterRoles right after the apiserver starts answering requests. Until it
+    completes, every RBAC-dependent call answers ``Forbidden: RBAC: clusterrole
+    ... "cluster-admin" not found``.
+
+    We read the hook's own line out of ``/readyz?verbose``, and deliberately
+    *not* the aggregated status of that endpoint: an RBAC-dependent step must
+    not be held back by an unrelated readiness check (say ``informer-sync``)
+    that has nothing to do with the ClusterRoles being in place.
+
+    Two properties this has and an object check does not (see MK8S-263):
+
+    - It is *credential-independent*. Checking that the ``cluster-admin``
+      ClusterRole can be retrieved is authorized before RBAC is consulted when
+      run as ``system:masters``, so it cannot observe the condition that makes
+      another identity fail. ``/readyz`` reports the hook itself, whoever asks.
+    - It is *per-instance and reports completion*. ``cluster-admin`` persists in
+      etcd, so its presence proves nothing about a freshly started apiserver
+      still reconciling RBAC -- and it is the first entry in
+      ``bootstrappolicy.ClusterRoles()``, so even on a first bootstrap it only
+      proves the hook started.
+
+    ``/readyz`` is in the apiserver's ``--authorization-always-allow-paths``, so
+    this needs no kubeconfig and no Kubernetes client. Note that the per-check
+    endpoint ``/readyz/poststarthook/rbac/bootstrap-roles`` is *not* in that
+    list, hence the ``?verbose`` form here rather than the narrower path.
 
     Any error reaching the apiserver is treated as "not ready yet" so the
     caller keeps retrying rather than aborting.
     """
+    url = "{}/readyz?verbose".format(apiserver_url.rstrip("/"))
     try:
-        return (
-            __salt__["metalk8s_kubernetes.get_object"](
-                kind="ClusterRole",
-                apiVersion="rbac.authorization.k8s.io/v1",
-                name="cluster-admin",
-                **kwargs,
-            )
-            is not None
-        )
+        result = __salt__["http.query"](url, verify_ssl=False, status=True)
     except Exception as exc:  # pylint: disable=broad-except
-        # A transiently-unreachable apiserver can surface either as a
-        # CommandExecutionError or as a raw client/connection error (for
-        # instance during resource discovery, which `get_object` does not wrap);
-        # treat any of them as "not ready yet" so the caller keeps retrying
-        # instead of aborting.
         log.debug("RBAC bootstrap check failed, treating as not ready: %s", exc)
         return False
 
+    if result.get("error"):
+        # Expected while the apiserver is not listening yet (mid-restart, or
+        # still starting): keep polling.
+        log.debug(
+            "RBAC bootstrap check could not reach %s, treating as not ready: %s",
+            url,
+            result["error"],
+        )
+        return False
 
-def wait_apiserver(retry=10, interval=1, verify_rbac=False, **kwargs):
+    body = result.get("body") or ""
+    if RBAC_BOOTSTRAP_MARKER in body:
+        return True
+
+    if result.get("status") in (401, 403, 404):
+        # Not the race: the endpoint is unreachable for a reason polling will
+        # not fix (unexpected apiserver flags, or a version without the hook).
+        # Warn rather than silently burning the whole retry budget.
+        log.warning(
+            "RBAC bootstrap check got HTTP %s from %s; expected `%s` in the "
+            "response body. Check the apiserver's "
+            "--authorization-always-allow-paths and --anonymous-auth flags.",
+            result["status"],
+            url,
+            RBAC_BOOTSTRAP_MARKER,
+        )
+        return False
+
+    log.debug("RBAC bootstrap not reported complete yet by %s", url)
+    return False
+
+
+def wait_apiserver(
+    retry=10,
+    interval=1,
+    verify_rbac=False,
+    apiserver_url=APISERVER_PROXY_URL,
+    **kwargs,
+):
     """Wait for kube-apiserver to respond.
 
     Simple "retry" wrapper around the kubernetes.ping Salt execution function,
@@ -75,13 +129,20 @@ def wait_apiserver(retry=10, interval=1, verify_rbac=False, **kwargs):
 
     When ``verify_rbac`` is ``True``, the apiserver is only considered ready
     once the ``poststarthook/rbac/bootstrap-roles`` hook has finished
-    reconciling the default ClusterRoles (checked by retrieving the
-    ``cluster-admin`` ClusterRole). Consumers that run RBAC-dependent
-    operations immediately after this wait -- e.g. ``kubectl cordon``,
-    listing nodes -- should pass ``verify_rbac=True`` to avoid racing the
-    bootstrap-roles hook. That hook is notably slower to complete on
-    Kubernetes >= 1.33 (kubeadm KEP-4471 local-apiserver-first join), which
-    widens the race window.
+    reconciling the default ClusterRoles, read from ``/readyz?verbose``.
+    Consumers that run RBAC-dependent operations immediately after this wait
+    -- e.g. ``kubectl cordon``, listing nodes -- should pass
+    ``verify_rbac=True`` to avoid racing the bootstrap-roles hook. That hook is
+    notably slower to complete on Kubernetes >= 1.33 (kubeadm KEP-4471
+    local-apiserver-first join), which widens the race window.
+
+    The two checks are complementary, not redundant: ``ping`` proves the
+    *authenticated* path works for this minion's kubeconfig, while the RBAC
+    probe is unauthenticated and reports the apiserver's own view of the hook.
+    Note that ``metalk8s_kubernetes.get_client`` retries client construction
+    internally (up to 7 attempts, 5s apart), so against a flapping apiserver a
+    single iteration of the ``ping`` can take considerably longer than
+    ``interval``, and the total wait can exceed ``retry * interval``.
 
     A ``CommandExecutionError`` is raised if the apiserver is still not ready
     after ``retry`` attempts (rather than returning ``False``): ``module.run``
@@ -98,25 +159,33 @@ def wait_apiserver(retry=10, interval=1, verify_rbac=False, **kwargs):
     """
 
     def _ready():
-        if not __salt__["metalk8s_kubernetes.ping"](**kwargs):
-            return False
-        if verify_rbac:
-            return _rbac_bootstrap_complete(**kwargs)
-        return True
+        """Return ``(ready, reason)``, where ``reason`` names the failing stage.
 
-    status = _ready()
+        Distinguishing the two matters for the error an operator sees: "the
+        apiserver never answered" and "the apiserver answered but RBAC is not
+        reconciled" point at very different things.
+        """
+        if not __salt__["metalk8s_kubernetes.ping"](**kwargs):
+            return False, "Kubernetes apiserver failed to respond"
+        if verify_rbac and not _rbac_bootstrap_complete(apiserver_url=apiserver_url):
+            return False, (
+                "Kubernetes apiserver responded but its RBAC bootstrap "
+                "(poststarthook/rbac/bootstrap-roles) did not complete"
+            )
+        return True, None
+
+    status, reason = _ready()
     attempts = 1
 
     while not status and attempts < retry:
         time.sleep(interval)
-        status = _ready()
+        status, reason = _ready()
         attempts += 1
 
     if not status:
-        log.error("Kubernetes apiserver failed to respond after %d attempts", retry)
-        raise CommandExecutionError(
-            f"Kubernetes apiserver not ready after {retry} attempts"
-        )
+        message = "{} after {} attempts".format(reason, retry)
+        log.error(message)
+        raise CommandExecutionError(message)
 
     return status
 

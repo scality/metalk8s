@@ -88,7 +88,7 @@ UI_OPERATOR_VERSION: str = "1.1.0"
 # installed in the image needs to be updated.
 # This should be reset to 1 when the service exposed by the container changes
 # version.
-SALT_MASTER_BUILD_ID = 1
+SALT_MASTER_BUILD_ID = 2
 
 
 def _version_prefix(version: str, prefix: str = "v") -> str:
@@ -190,6 +190,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         name="node-exporter",
         version="v1.11.1-distroless",
         digest="sha256:6112664fd761bb964d8a2d3d0119d6c8402618a89edbb3a43c8f7b4090fb53c9",
+    ),
+    Image(
+        name="node-problem-detector",
+        version="v1.35.1",
+        digest="sha256:c380751accc5e15973f7bf98a3725c3c30826b36ae407903c34297be47b73bc6",
     ),
     Image(
         name="oauth2-proxy",
@@ -311,8 +316,13 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="disk-management-agent",
-        version="v0.0.1-beta.2",
-        digest="sha256:8a98623a20f30af4a8b0eb8abe284b15ed8603bd66e13905d32f50e37e6155ed",
+        version="v0.1.0",
+        digest="sha256:d63d4e20a089dcd3ac33f58d2210a66e48a1f9f08120494352b22cca94747769",
+    ),
+    Image(
+        name="node-warden-operator",
+        version="v1.0.0",
+        digest="sha256:9fafa55c92f07f1d48a9fd69b4a9e78b7918939a56fc3449d10f121c7cba633f",
     ),
 )
 

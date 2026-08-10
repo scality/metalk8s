@@ -221,7 +221,7 @@ describe('<ConfigureAlerting />', () => {
     expect(selectors.recipient()).toHaveValue('');
     expect(selectors.receiveResolved()).not.toBeChecked();
 
-    expect(selectors.sendTestingEmailButton()).toBeEnabled();
+    expect(selectors.sendTestingEmailButton()).toBeDisabled();
     expect(selectors.cancelButton()).toBeEnabled();
     expect(selectors.saveButton()).toBeDisabled();
 
@@ -342,7 +342,7 @@ describe('<ConfigureAlerting />', () => {
     expect(selectors.receiveResolved()).toBeChecked();
   });
 
-  it('show errors on submit with not all required field', async () => {
+  it('surfaces required-field errors and keeps Save disabled when the config is enabled but incomplete', async () => {
     await commonSetup();
 
     await waitFor(() => {
@@ -352,23 +352,19 @@ describe('<ConfigureAlerting />', () => {
       await userEvent.click(selectors.enableConfiguration());
     });
 
-    await waitFor(() => {
-      expect(selectors.saveButton()).toBeInTheDocument();
-    });
-
-    await act(async () => {
-      await userEvent.click(selectors.saveButton());
-    });
-
     const errors = [
       /"smtp host" is not allowed to be empty/i,
       /"Sender Email Address" is not allowed to be empty/i,
       /"Recipient Email Addresses" is not allowed to be empty/i,
     ];
 
-    errors.forEach((error) => {
-      expect(screen.getByText(error)).toBeInTheDocument();
+    await waitFor(() => {
+      errors.forEach((error) => {
+        expect(screen.getByText(error)).toBeInTheDocument();
+      });
     });
+
+    expect(selectors.saveButton()).toBeDisabled();
   });
 
   it('should redirect to alerts page when you click on cancel button', async () => {
@@ -789,9 +785,9 @@ spec:
       await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
 
       await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
-
-      await userEvent.click(selectors.sendTestingEmailButton());
     });
+
+    await userEvent.click(selectors.sendTestingEmailButton());
 
     expect(selectors.sendTestingEmailButton()).toBeDisabled();
 
@@ -982,20 +978,21 @@ spec:
       await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
 
       await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
-      server.use(
-        rest.get(
-          `http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/pods/alertmanager-prometheus-operator-alertmanager-0/log`,
-          (req, res, ctx) => {
-            const logs = `
+    });
+    server.use(
+      rest.get(
+        `http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/pods/alertmanager-prometheus-operator-alertmanager-0/log`,
+        (req, res, ctx) => {
+          const logs = `
     ts=2023-06-27T12:00:00.000Z caller=dispatch.go:352 level=error component=dispatcher msg="Notify for alerts failed" num_alerts=1 err="test-receiver-config-from-ui/email[0]: notify retry canceled after 7 attempts: establish connection to server: dial tcp: lookup smtp4dev.default.svc.cluster.local1 on 10.0.0.0: no such host"
     ts=2023-06-27T12:00:00.000Z caller=notify.go:732 level=warn component=dispatcher receiver=test-receiver-config-from-ui integration=email[0] msg="Notify attempt failed, will retry later" attempts=1 err="establish connection to server: dial tcp: lookup smtp4dev.default.svc.cluster.local1 on 10.0.0.0: no such host"
             `;
-            return res(ctx.text(logs));
-          },
-        ),
-      );
-      await userEvent.click(selectors.sendTestingEmailButton());
-    });
+          return res(ctx.text(logs));
+        },
+      ),
+    );
+    await userEvent.click(selectors.sendTestingEmailButton());
+
     expect(selectors.sendTestingEmailButton()).toBeDisabled();
     await waitForElementToBeRemoved(() => {
       return screen.getByText(/Sending.../);
@@ -1055,5 +1052,31 @@ spec:
     });
     expect(screen.getByText(/The email address is invalid/i)).toBeInTheDocument();
     expect(screen.getByText(/The email addresses are invalid/i)).toBeInTheDocument();
+  });
+
+  it('keeps "Send a test email" disabled until all required SMTP fields are valid', async () => {
+    await commonSetup();
+
+    await waitFor(() => {
+      expect(selectors.sendTestingEmailButton()).toBeDisabled();
+    });
+
+    await act(async () => {
+      await userEvent.type(selectors.recipient(), 'user@example.com');
+    });
+    expect(selectors.sendTestingEmailButton()).toBeDisabled();
+
+    await act(async () => {
+      await userEvent.type(selectors.sender(), 'admin@example.com');
+    });
+    expect(selectors.sendTestingEmailButton()).toBeDisabled();
+
+    await act(async () => {
+      await userEvent.type(selectors.host(), 'smtp.example.com');
+    });
+
+    await waitFor(() => {
+      expect(selectors.sendTestingEmailButton()).toBeEnabled();
+    });
   });
 });

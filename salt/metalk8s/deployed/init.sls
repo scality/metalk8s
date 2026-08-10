@@ -12,6 +12,8 @@ include:
   - metalk8s.addons.ui.deployed
   - metalk8s.addons.dex.deployed
   - metalk8s.addons.prometheus-adapter.deployed
+  - metalk8s.addons.node-problem-detector.deployed
+  - metalk8s.addons.node-warden-operator.deployed
   - metalk8s.addons.logging.deployed
   - metalk8s.addons.alert-tree.deployed
   - metalk8s.addons.crl-operator.deployed

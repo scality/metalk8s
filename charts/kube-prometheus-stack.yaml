@@ -19,6 +19,12 @@ customRules:
 
 alertmanager:
   alertmanagerSpec:
+    # Set the externalUrl to the control plane ingress endpoint so alert
+    # notifications and the Alertmanager UI reference a routable address
+    # instead of the in-cluster service URL. The actual endpoint is resolved
+    # at deploy time via the salt helper.
+    externalUrl: '__var__(salt.metalk8s_network.get_control_plane_ingress_endpoint())'
+
     image:
       registry: '__var__(repo.registry_endpoint)'
       repository: '__image_no_reg__(alertmanager)'
@@ -281,6 +287,14 @@ prometheus-node-exporter:
     - --collector.diskstats.ignored-devices=^(ram|fd)\\d+$
     - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+|var/lib/containerd/.+)($|/)
     - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
+
+  # NoSchedule/Exists is the subchart default, re-declared here because Helm replaces the list; we only add the node-warden WP-isolation NoExecute taint
+  tolerations:
+    - effect: NoSchedule
+      operator: Exists
+    - key: node.scality.com/workload-plane-unreachable
+      effect: NoExecute
+      operator: Exists
 
 kubeEtcd:
   service:

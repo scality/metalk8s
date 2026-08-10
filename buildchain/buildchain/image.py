@@ -195,6 +195,9 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.KUBE_STATE_METRICS_REPOSITORY: [
         "kube-state-metrics",
     ],
+    constants.NODE_PROBLEM_DETECTOR_REPOSITORY: [
+        "node-problem-detector",
+    ],
     constants.PROMETHEUS_ADAPTER_REPOSITORY: [
         "prometheus-adapter",
     ],
@@ -223,6 +226,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "ui-operator",
         "crl-operator",
         "disk-management-agent",
+        "node-warden-operator",
     ],
 }
 

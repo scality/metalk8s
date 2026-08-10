@@ -86,26 +86,79 @@
   `apiserver.config.k8s.io/v1` (GA in Kubernetes 1.34)
   (PR[#5001](https://github.com/scality/metalk8s/pull/5001))
 
-## Release 133.0.12 (in development)
+- Bump [disk-management-agent](https://github.com/scality/disk-management-agent) to version
+  [v0.1.0](https://github.com/scality/disk-management-agent/releases/tag/v0.1.0)
+  (PR[#5024](https://github.com/scality/metalk8s/pull/5024))
+
+## Release 133.0.14 (in development)
+
+## Release 133.0.13
+
+### Enhancements
+
+- Deploy [node-warden-operator](https://github.com/scality/node-warden-operator)
+  v1.0.0, a cluster-scoped operator that reacts to node conditions through
+  `NodeRemediationPolicy` custom resources. MetalK8s ships a default policy that,
+  when a Workload Plane node reports `WorkloadPlaneNetworkUnavailable`, applies a
+  reversible `node.scality.com/workload-plane-unreachable:NoExecute` taint to evict
+  its workloads and drop it from Service endpoints, and removes the taint once the
+  Workload Plane connectivity recovers
+  (PR[#5031](https://github.com/scality/metalk8s/pull/5031))
+
+- Add Prometheus alerts for Workload Plane isolation: `NodeWorkloadPlaneUnavailable`
+  (a node reports `WorkloadPlaneNetworkUnavailable`), `NodeWorkloadPlaneRemediated`
+  (a node carries the Workload Plane isolation taint) and `WorkloadPlaneOutage` (the
+  majority of nodes are affected, remediation suppressed by the guard)
+  (PR[#5031](https://github.com/scality/metalk8s/pull/5031))
+
+## Release 133.0.12
+
+### Enhancements
+
+- Deploy [node-problem-detector](https://github.com/kubernetes/node-problem-detector)
+  v1.35.1 on every node, with a custom Workload Plane monitor exposing the
+  `WorkloadPlaneNetworkUnavailable` node condition when a node cannot reach the
+  majority of its peers over the Workload Plane, along with the standard
+  `KernelDeadlock` and `ReadonlyFilesystem` conditions
+  (PR[#5025](https://github.com/scality/metalk8s/pull/5025))
 
 ### Bug Fixes
 
-- Bootstrap and node deployment now wait for the apiserver RBAC bootstrap
-  (`poststarthook/rbac/bootstrap-roles`) to complete before running
-  RBAC-dependent steps (configuring the bootstrap Node object; uncordoning a
-  freshly deployed node). Previously these gated only on a `/healthz` liveness
-  probe, which returns "ok" before the default ClusterRoles are reconciled,
-  leading to intermittent failures — a race amplified on Kubernetes 1.33+
-  (kubeadm KEP-4471)
+- Stop resetting the `thanos-query-sd-files` ConfigMap every time the Prometheus
+  operator state is applied: its service discovery content, managed by MetalK8s
+  users, was wiped on each re-apply, leaving Thanos Query with no store to reach
+  (PR[#5027](https://github.com/scality/metalk8s/pull/5027))
+
+### Bug Fixes
+
+- `metalk8s.wait_apiserver` now raises instead of returning `False` when the
+  apiserver is still not ready after the last attempt. On Salt 3002 a `False`
+  return from `module.run` is recorded as a change with `result: True`, so every
+  caller using it as a gate carried on as if the apiserver were ready once the
+  wait timed out. Note this changes the contract for any caller testing the
+  boolean return
   (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
 
 ### Enhancements
 
-- `metalk8s.wait_apiserver` now accepts a `verify_rbac` option: when set, the
-  apiserver is only considered ready once the `rbac/bootstrap-roles` post-start
-  hook has reconciled the default ClusterRoles (checked via the `cluster-admin`
-  ClusterRole). This lets callers running RBAC-dependent operations right
-  after the wait avoid a race that is amplified on Kubernetes 1.33+
+- Bootstrap and node deployment now gate their RBAC-dependent steps
+  (configuring the bootstrap Node object; uncordoning a freshly deployed node)
+  on the apiserver's `poststarthook/rbac/bootstrap-roles` hook having completed,
+  read from `/readyz?verbose`, rather than on a `/healthz` liveness probe that
+  answers "ok" before the default ClusterRoles are reconciled. This is
+  preventive hardening rather than a fix for observed failures: both steps
+  authenticate as `system:masters`, which is authorized before RBAC is
+  consulted, and MetalK8s nightlies show no such failure signature — the
+  observed failures of this race are on the consumer side (ARTESCA move-cluster,
+  ARTESCA-17600)
+  (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
+
+- `metalk8s.wait_apiserver` accepts a `verify_rbac` option applying the same
+  check, for callers that run RBAC-dependent operations immediately after the
+  wait. The probe is unauthenticated, so unlike a check on the `cluster-admin`
+  ClusterRole it is credential-independent, and it reports the hook itself
+  rather than the presence of an object that persists in etcd across apiserver
+  restarts
   (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
 
 ## Release 133.0.11

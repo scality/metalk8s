@@ -26,8 +26,9 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       cellStyle: {
         textAlign: 'center',
         width: 'unset',
-        minWidth: '3rem',
-        maxWidth: '4rem',
+        minWidth: '4rem',
+        maxWidth: '5.5rem',
+        paddingRight: spacing.r16,
         flex: 0.5,
       },
       Cell: ({ value }) => {
@@ -48,7 +49,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       Header: 'Usage',
       accessor: 'usage',
       cellStyle: {
-        textAlign: 'center',
+        textAlign: 'left',
         width: 'unset',
         flex: 0.5,
       },
@@ -74,6 +75,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
         width: 'unset',
         marginRight: spacing.r16,
       },
+      Cell: ({ value }) => value,
     },
   ];
   const alertList = useAlerts({

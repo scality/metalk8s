@@ -23,6 +23,10 @@ tolerations:
 - key: node-role.kubernetes.io/master
   effect: NoSchedule
   operator: Exists
+# Keep shipping logs from WP-isolated nodes tainted by node-warden
+- key: node.scality.com/workload-plane-unreachable
+  effect: NoExecute
+  operator: Exists
 
 # Extra volumes to scrape logs from
 daemonSetVolumes:
