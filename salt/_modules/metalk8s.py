@@ -74,7 +74,7 @@ def _rbac_bootstrap_complete(apiserver_url=APISERVER_PROXY_URL):
     Any error reaching the apiserver is treated as "not ready yet" so the
     caller keeps retrying rather than aborting.
     """
-    url = "{}/readyz?verbose".format(apiserver_url.rstrip("/"))
+    url = f"{apiserver_url.rstrip('/')}/readyz?verbose"
     try:
         result = __salt__["http.query"](url, verify_ssl=False, status=True)
     except Exception as exc:  # pylint: disable=broad-except
@@ -182,7 +182,7 @@ def wait_apiserver(
         attempts += 1
 
     if not status:
-        message = "{} after {} attempts".format(reason, retry)
+        message = f"{reason} after {retry} attempts"
         log.error(message)
         raise CommandExecutionError(message)
 
