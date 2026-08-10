@@ -25,7 +25,6 @@ const TimespanSelector = () => {
   // Dropdown items
   const metricsTimeSpanItems = [LAST_SEVEN_DAYS, LAST_TWENTY_FOUR_HOURS, LAST_ONE_HOUR].map((option) => ({
     label: option,
-    'data-cy': option,
     onClick: () => {
       writeUrlTimeSpan(option);
     },
