@@ -15,15 +15,15 @@ import { useNotificationCenter } from '../useNotificationCenter';
 import { ConstrainedText } from '@scality/core-ui/dist/components/constrainedtext/Constrainedtext.component';
 
 const NotificationMenu = styled.ul<{
-  buttonBoundingRect: DOMRect;
+  $buttonBoundingRect: DOMRect;
 }>`
   position: absolute;
   width: 25vw;
-  // TO MAKE SURE THE LIST IS CENTERED ON THE BELL BUTTON
+  /* TO MAKE SURE THE LIST IS CENTERED ON THE BELL BUTTON */
   left: ${(props) => {
     const notificationCenterWidth = 0.25 * window.innerWidth;
-    const leftRelativeToButton = -notificationCenterWidth / 2 + props.buttonBoundingRect.width / 2;
-    const absoluteNotificationCenterX = props.buttonBoundingRect.x + leftRelativeToButton;
+    const leftRelativeToButton = -notificationCenterWidth / 2 + props.$buttonBoundingRect.width / 2;
+    const absoluteNotificationCenterX = props.$buttonBoundingRect.x + leftRelativeToButton;
     if (absoluteNotificationCenterX + notificationCenterWidth > window.innerWidth) {
       // |<------------------window.innerWidth------------------------------------>|<--offset-->|
       // |<------------------button x------------------------------>|buttonwidth|---------------|
@@ -45,8 +45,8 @@ const NotificationMenu = styled.ul<{
   box-shadow: 0px 4px 10px 4px #000;
 `;
 const NotificationItem = styled.li<{
-  isHighlighted: boolean;
-  isRead: boolean;
+  $isHighlighted: boolean;
+  $isRead: boolean;
 }>`
   display: flex;
   align-items: center;
@@ -59,9 +59,9 @@ const NotificationItem = styled.li<{
     border-bottom: 1px solid ${(props) => props.theme.border};
   }
   background-color: ${(props) =>
-    props.isHighlighted
+    props.$isHighlighted
       ? props.theme.highlight
-      : props.isRead
+      : props.$isRead
         ? props.theme.backgroundLevel4
         : props.theme.backgroundLevel3};
 `;
@@ -146,7 +146,7 @@ const NotificationCenter = () => {
       />
       <div {...getMenuProps()}>
         {isOpen && (
-          <NotificationMenu buttonBoundingRect={buttonBoundingRect}>
+          <NotificationMenu $buttonBoundingRect={buttonBoundingRect}>
             <NotificationCenterHeader>
               <Wrap alignItems="baseline">
                 <Text color="textSecondary" isEmphazed variant="Large">
@@ -168,8 +168,8 @@ const NotificationCenter = () => {
             {notifications.map((notification, index) => (
               <NotificationItem
                 key={notification.id}
-                isHighlighted={highlightedIndex === index}
-                isRead={!!notification.readOn}
+                $isHighlighted={highlightedIndex === index}
+                $isRead={!!notification.readOn}
                 {...getItemProps({
                   item: notification,
                   index,
