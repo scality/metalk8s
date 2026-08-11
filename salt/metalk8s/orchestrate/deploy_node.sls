@@ -310,14 +310,18 @@ Run the highstate:
 
 # `/readyz?verbose` rather than `/healthz`: the uncordon below is
 # RBAC-dependent, and the apiserver answers `/healthz` before its
-# `bootstrap-roles` post-start hook has reconciled the default ClusterRoles. We
-# match the hook's own line rather than requiring HTTP 200 on the whole
-# endpoint, so an unrelated readiness check cannot hold the uncordon back.
+# `bootstrap-roles` post-start hook has reconciled the default ClusterRoles.
+# Both conditions are required: `status: 200` for overall readiness, which the
+# `/healthz` gate this replaces already waited for, and the `match` for that one
+# hook on top of it. Matching the line alone would let the orchestrate proceed
+# while other readiness checks are still failing, which is weaker than what was
+# here before.
 # Unauthenticated, as `/readyz` is in --authorization-always-allow-paths.
 Wait for API server to be available:
   http.wait_for_successful_query:
   - name: https://127.0.0.1:7443/readyz?verbose
   - match: 'poststarthook/rbac/bootstrap-roles ok'
+  - status: 200
   - verify_ssl: false
   - request_interval: 5
 
