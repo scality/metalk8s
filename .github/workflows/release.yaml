@@ -159,3 +159,10 @@ jobs:
                 {"name": "skip changelog"},
               ],
             });
+
+            await github.rest.issues.createComment({
+              issue_number: pr.data.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '/approve'
+            });
