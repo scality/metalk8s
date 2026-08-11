@@ -29,7 +29,8 @@ const VolumeListTable = React.memo((props) => {
           textAlign: 'center',
           width: 'unset',
           flex: 0.5,
-          maxWidth: '4rem',
+          minWidth: '4rem',
+          maxWidth: '5.5rem',
         },
         Cell: (cellProps) => {
           return <CircleStatus status={cellProps.value} />;
@@ -70,7 +71,7 @@ const VolumeListTable = React.memo((props) => {
         Header: 'Usage',
         accessor: 'usage',
         cellStyle: {
-          textAlign: 'center',
+          textAlign: 'left',
           width: 'unset',
           minWidth: '4rem',
           flex: 1,
@@ -91,7 +92,7 @@ const VolumeListTable = React.memo((props) => {
         Header: 'Size',
         accessor: 'storageCapacity',
         cellStyle: {
-          textAlign: 'right',
+          textAlign: 'left',
           width: 'unset',
           minWidth: '3rem',
           flex: 0.75,
