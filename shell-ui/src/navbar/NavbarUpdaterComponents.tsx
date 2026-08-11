@@ -63,6 +63,9 @@ export const NavbarUpdaterComponents = () => {
                   shellHooks,
                   shellAlerts,
                 }}
+                // Headless updaters — they publish links/notifications and render
+                // nothing in place. Must be <></>, not null: see MCPRegistrar.
+                renderOnLoading={<></>}
               />
             </ErrorBoundary>
           </Fragment>

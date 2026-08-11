@@ -162,6 +162,9 @@ export const InstanceName = () => {
       componentWithInjectedImports={_InternalInstanceName}
       componentProps={{}}
       renderOnError={<ErrorPage500 />}
+      // Matches what _InternalInstanceName renders while its own query loads, so the
+      // navbar tab keeps a stable width across both loading phases.
+      renderOnLoading={<Loader size="smaller" />}
       federatedImports={[instanceNameAdapter]}
     />
   );
