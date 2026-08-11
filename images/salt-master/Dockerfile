@@ -19,7 +19,11 @@ RUN curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/d
       openssh-clients procps-ng \
       dnf \
       glibc-all-langpacks langpacks-en \
- && salt-pip install --no-cache-dir --upgrade pip \
+ # No `pip install --upgrade pip` here: the pip bundled in the Salt onedir is
+ # patched by relenv, and replacing it breaks every later `salt-pip install`
+ # as soon as upstream pip changes the internals that patch relies on (pip
+ # 26.2 did, and broke this build). The bundled pip installs the packages
+ # below just fine.
  && salt-pip install --no-cache-dir "etcd3gw ~= 2.6.0" "kubernetes ~= 33.1.0" \
  && microdnf clean all
 
