@@ -106,8 +106,10 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
         "status": 500,
         "body": "[+]etcd ok\n[-]poststarthook/rbac/bootstrap-roles failed: not finished\n",
     }
-    # An unrelated check is failing, but the RBAC hook is done: the gate must
-    # open, which is why the marker is matched instead of the HTTP status.
+    # The RBAC hook is done but an unrelated check is still failing, so the
+    # endpoint is a 500. Not ready: the `/healthz` polls this replaces already
+    # waited for overall readiness, and matching only the hook's line would be a
+    # weaker guarantee than what callers had before.
     READYZ_OTHER_CHECK_FAILING = {
         "status": 500,
         "body": "[+]poststarthook/rbac/bootstrap-roles ok\n[-]informer-sync failed\n",
@@ -132,9 +134,16 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 readyz=[READYZ_PENDING, READYZ_PENDING, READYZ_RECONCILED],
                 result=True,
             ),
-            # the aggregated endpoint is a 500 because of an unrelated check,
-            # but the RBAC hook is done -> ready, not held back
-            param(retry=3, ping=True, readyz=READYZ_OTHER_CHECK_FAILING, result=True),
+            # RBAC hook done but the endpoint is a 500 on an unrelated check ->
+            # not ready, overall readiness is required too
+            param(retry=3, ping=True, readyz=READYZ_OTHER_CHECK_FAILING, result=None),
+            # hook done and overall readiness reached only on the 2nd probe
+            param(
+                retry=5,
+                ping=True,
+                readyz=[READYZ_OTHER_CHECK_FAILING, READYZ_RECONCILED],
+                result=True,
+            ),
             # apiserver never responds -> raises, RBAC never probed
             param(retry=3, ping=False, readyz=READYZ_RECONCILED, result=None),
             # apiserver not listening for the probe -> "not ready yet" -> raises

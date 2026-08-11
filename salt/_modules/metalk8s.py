@@ -49,10 +49,11 @@ def _rbac_bootstrap_complete(apiserver_url=APISERVER_PROXY_URL):
     completes, every RBAC-dependent call answers ``Forbidden: RBAC: clusterrole
     ... "cluster-admin" not found``.
 
-    We read the hook's own line out of ``/readyz?verbose``, and deliberately
-    *not* the aggregated status of that endpoint: an RBAC-dependent step must
-    not be held back by an unrelated readiness check (say ``informer-sync``)
-    that has nothing to do with the ClusterRoles being in place.
+    Requires *both* that ``/readyz`` reports overall readiness (HTTP 200) and
+    that its verbose output shows this hook complete. Matching only the hook's
+    line would return ready while other readiness checks are still failing,
+    which is a weaker guarantee than the ``/healthz`` polls this replaces
+    already gave, so the aggregated status is kept and the hook checked on top.
 
     Two properties this has and an object check does not (see MK8S-263):
 
@@ -92,10 +93,11 @@ def _rbac_bootstrap_complete(apiserver_url=APISERVER_PROXY_URL):
         return False
 
     body = result.get("body") or ""
-    if RBAC_BOOTSTRAP_MARKER in body:
+    status = result.get("status")
+    if status == 200 and RBAC_BOOTSTRAP_MARKER in body:
         return True
 
-    if result.get("status") in (401, 403, 404):
+    if status in (401, 403, 404):
         # Not the race: the endpoint is unreachable for a reason polling will
         # not fix (unexpected apiserver flags, or a version without the hook).
         # Warn rather than silently burning the whole retry budget.
@@ -103,13 +105,18 @@ def _rbac_bootstrap_complete(apiserver_url=APISERVER_PROXY_URL):
             "RBAC bootstrap check got HTTP %s from %s; expected `%s` in the "
             "response body. Check the apiserver's "
             "--authorization-always-allow-paths and --anonymous-auth flags.",
-            result["status"],
+            status,
             url,
             RBAC_BOOTSTRAP_MARKER,
         )
         return False
 
-    log.debug("RBAC bootstrap not reported complete yet by %s", url)
+    log.debug(
+        "%s reports HTTP %s, and the RBAC bootstrap hook %s: not ready yet",
+        url,
+        status,
+        "complete" if RBAC_BOOTSTRAP_MARKER in body else "incomplete",
+    )
     return False
 
 
