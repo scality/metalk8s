@@ -9,7 +9,7 @@
   an on-disk discovery cache with no expiry, so on any node where an earlier call
   had succeeded the probe returned `True` without reaching the apiserver at all —
   including while it was down, which is precisely when it is asked
-  (PR[#5027](https://github.com/scality/metalk8s/pull/5027))
+  (PR[#5082](https://github.com/scality/metalk8s/pull/5082))
 
 - `metalk8s.wait_apiserver` now raises instead of returning `False` when the
   apiserver is still not ready after the last attempt. On Salt 3002 a `False`
