@@ -98,9 +98,12 @@ def ping(**kwargs):
     CLI Example:
         salt '*' metalk8s_kubernetes.ping
     """
+    kubeconfig, context = get_kubeconfig(**kwargs)
+
     try:
-        get_version_info(**kwargs)
-    except CommandExecutionError:
+        client = __utils__["metalk8s_kubernetes.get_client"](kubeconfig, context)
+        client.request("get", "/version")
+    except (ApiException, HTTPError):
         return False
     return True
 
