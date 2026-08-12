@@ -192,6 +192,11 @@ const AppMCPRegistrar = ({
         componentWithInjectedImports={_InternalMCPRegistrar}
         componentProps={{ mcpToolsModuleInfo, selfConfiguration, navigate }}
         renderOnError={null}
+        // Headless registrar — it must never occupy layout. Has to be <></> rather than
+        // null: the library resolves `renderOnLoading ?? <>Loading...</>`, so null and
+        // undefined are swallowed by ?? and still render a bare "Loading..." text node,
+        // which becomes a flex item above the navbar and shifts it on first load.
+        renderOnLoading={<></>}
         federatedImports={[{ ...mcpToolsModuleInfo, remoteEntryUrl }]}
       />
     </ErrorBoundary>

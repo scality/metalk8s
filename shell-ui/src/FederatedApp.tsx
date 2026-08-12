@@ -88,6 +88,7 @@ function FederatedRoute({ scope, module, app }: FederatedRouteProps) {
         props={federatedAppProps}
         scope={scope}
         app={app}
+        renderOnLoading={<Loader size="massive" centered={true} aria-label="loading" />}
       />
     </ErrorBoundary>
   );

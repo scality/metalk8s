@@ -105,9 +105,11 @@ def wait_apiserver(
 ):
     """Wait for kube-apiserver to respond.
 
-    Simple "retry" wrapper around the kubernetes.ping Salt execution function,
-    which only checks that the apiserver answers a basic (RBAC-independent)
-    ``/version`` probe.
+    Simple "retry" wrapper around the ``metalk8s_kubernetes.ping`` Salt
+    execution function: with ``verify_rbac`` false, this is limited to reading
+    the apiserver version (RBAC-independent).
+
+    TODO: MK8S-386 - ping can be satisfied from the discovery cache.
 
     When ``verify_rbac`` is ``True``, the apiserver is only considered ready
     once the ``poststarthook/rbac/bootstrap-roles`` hook has finished
