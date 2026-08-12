@@ -41,36 +41,16 @@ def __virtual__():
 
 
 def _rbac_bootstrap_complete(apiserver_url=APISERVER_PROXY_URL):
-    """Return True once the apiserver RBAC bootstrap has reconciled the
-    default ClusterRoles.
+    """Return True once ``/readyz`` reports overall readiness *and* its verbose
+    output shows the ``poststarthook/rbac/bootstrap-roles`` hook complete.
 
-    The ``poststarthook/rbac/bootstrap-roles`` hook (re)creates the default
-    ClusterRoles right after the apiserver starts answering requests. Until it
-    completes, every RBAC-dependent call answers ``Forbidden: RBAC: clusterrole
-    ... "cluster-admin" not found``.
-
-    Requires *both* that ``/readyz`` reports overall readiness (HTTP 200) and
-    that its verbose output shows this hook complete. Matching only the hook's
-    line would return ready while other readiness checks are still failing,
-    which is a weaker guarantee than the ``/healthz`` polls this replaces
-    already gave, so the aggregated status is kept and the hook checked on top.
-
-    Two properties this has and an object check does not (see MK8S-263):
-
-    - It is *credential-independent*. Checking that the ``cluster-admin``
-      ClusterRole can be retrieved is authorized before RBAC is consulted when
-      run as ``system:masters``, so it cannot observe the condition that makes
-      another identity fail. ``/readyz`` reports the hook itself, whoever asks.
-    - It is *per-instance and reports completion*. ``cluster-admin`` persists in
-      etcd, so its presence proves nothing about a freshly started apiserver
-      still reconciling RBAC -- and it is the first entry in
-      ``bootstrappolicy.ClusterRoles()``, so even on a first bootstrap it only
-      proves the hook started.
+    Until that hook completes, every RBAC-dependent call answers ``Forbidden:
+    RBAC: clusterrole ... "cluster-admin" not found``.
 
     ``/readyz`` is in the apiserver's ``--authorization-always-allow-paths``, so
-    this needs no kubeconfig and no Kubernetes client. Note that the per-check
-    endpoint ``/readyz/poststarthook/rbac/bootstrap-roles`` is *not* in that
-    list, hence the ``?verbose`` form here rather than the narrower path.
+    this needs no kubeconfig and no Kubernetes client. The per-check endpoint
+    ``/readyz/poststarthook/rbac/bootstrap-roles`` is *not* in that list, hence
+    the ``?verbose`` form rather than the narrower path.
 
     Any error reaching the apiserver is treated as "not ready yet" so the
     caller keeps retrying rather than aborting.
@@ -83,8 +63,6 @@ def _rbac_bootstrap_complete(apiserver_url=APISERVER_PROXY_URL):
         return False
 
     if result.get("error"):
-        # Expected while the apiserver is not listening yet (mid-restart, or
-        # still starting): keep polling.
         log.debug(
             "RBAC bootstrap check could not reach %s, treating as not ready: %s",
             url,
@@ -98,9 +76,6 @@ def _rbac_bootstrap_complete(apiserver_url=APISERVER_PROXY_URL):
         return True
 
     if status in (401, 403, 404):
-        # Not the race: the endpoint is unreachable for a reason polling will
-        # not fix (unexpected apiserver flags, or a version without the hook).
-        # Warn rather than silently burning the whole retry budget.
         log.warning(
             "RBAC bootstrap check got HTTP %s from %s; expected `%s` in the "
             "response body. Check the apiserver's "
@@ -142,13 +117,11 @@ def wait_apiserver(
     notably slower to complete on Kubernetes >= 1.33 (kubeadm KEP-4471
     local-apiserver-first join), which widens the race window.
 
-    The two checks are complementary, not redundant: ``ping`` proves the
-    *authenticated* path works for this minion's kubeconfig, while the RBAC
-    probe is unauthenticated and reports the apiserver's own view of the hook.
-    Note that ``metalk8s_kubernetes.get_client`` retries client construction
-    internally (up to 7 attempts, 5s apart), so against a flapping apiserver a
-    single iteration of the ``ping`` can take considerably longer than
-    ``interval``, and the total wait can exceed ``retry * interval``.
+    ``ping`` checks the authenticated path; the RBAC probe is unauthenticated.
+    ``metalk8s_kubernetes.get_client`` retries client construction internally
+    (up to 7 attempts, 5s apart), so against a flapping apiserver one iteration
+    can take much longer than ``interval`` and the total wait can exceed
+    ``retry * interval``.
 
     A ``CommandExecutionError`` is raised if the apiserver is still not ready
     after ``retry`` attempts (rather than returning ``False``): ``module.run``
@@ -165,12 +138,7 @@ def wait_apiserver(
     """
 
     def _ready():
-        """Return ``(ready, reason)``, where ``reason`` names the failing stage.
-
-        Distinguishing the two matters for the error an operator sees: "the
-        apiserver never answered" and "the apiserver answered but RBAC is not
-        reconciled" point at very different things.
-        """
+        """Return ``(ready, reason)``, where ``reason`` names the failing stage."""
         if not __salt__["metalk8s_kubernetes.ping"](**kwargs):
             return False, "Kubernetes apiserver failed to respond"
         if verify_rbac and not _rbac_bootstrap_complete(apiserver_url=apiserver_url):

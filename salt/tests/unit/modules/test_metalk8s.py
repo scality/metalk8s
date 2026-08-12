@@ -106,18 +106,14 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
         "status": 500,
         "body": "[+]etcd ok\n[-]poststarthook/rbac/bootstrap-roles failed: not finished\n",
     }
-    # The RBAC hook is done but an unrelated check is still failing, so the
-    # endpoint is a 500. Not ready: the `/healthz` polls this replaces already
-    # waited for overall readiness, and matching only the hook's line would be a
-    # weaker guarantee than what callers had before.
+    # RBAC hook done, but the endpoint is a 500 on an unrelated check.
     READYZ_OTHER_CHECK_FAILING = {
         "status": 500,
         "body": "[+]poststarthook/rbac/bootstrap-roles ok\n[-]informer-sync failed\n",
     }
     # Apiserver not listening: `http.query` reports it through `error`.
     READYZ_UNREACHABLE = {"error": "Connection refused"}
-    # Path not allowed or unknown: polling will not fix it, so this is logged
-    # louder, but still counts as "not ready" for the caller.
+    # Path not allowed or unknown: warned about, still "not ready".
     READYZ_FORBIDDEN = {"status": 403, "body": "forbidden"}
 
     @parameterized.expand(
@@ -156,9 +152,9 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
     )
     def test_wait_apiserver_verify_rbac(self, retry, ping, readyz, result):
         """
-        Tests `wait_apiserver` with `verify_rbac=True`, which gates on the
-        `poststarthook/rbac/bootstrap-roles` line of `/readyz?verbose` rather
-        than on the endpoint's aggregated status.
+        Tests `wait_apiserver` with `verify_rbac=True`, which requires both a
+        ready `/readyz` and the `poststarthook/rbac/bootstrap-roles` line in its
+        verbose output.
         """
         kubernetes_ping_mock = MagicMock(return_value=ping)
 
