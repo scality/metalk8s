@@ -320,6 +320,7 @@ Wait for API server to be available:
   - status: 200
   - verify_ssl: false
   - request_interval: 5
+  - wait_for: 300
 
 Uncordon the node:
   metalk8s_cordon.node_uncordoned:
