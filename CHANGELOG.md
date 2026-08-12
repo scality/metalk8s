@@ -145,7 +145,8 @@
   (configuring the bootstrap Node object; uncordoning a freshly deployed node)
   on the apiserver's `poststarthook/rbac/bootstrap-roles` hook having completed,
   read from `/readyz?verbose`, rather than on a `/healthz` liveness probe that
-  answers "ok" before the default ClusterRoles are reconciled. 
+  answers "ok" before the default ClusterRoles are reconciled. Preventive: both
+  steps run as `system:masters` and cannot hit this race themselves
   (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
 
 - `metalk8s.wait_apiserver` accepts a `verify_rbac` option applying the same
