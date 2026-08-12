@@ -312,7 +312,6 @@ Run the highstate:
       - metalk8s_cordon: Cordon the node
       - salt: Check pillar before highstate
 
-# `/readyz` is unauthenticated, being in --authorization-always-allow-paths.
 Wait for API server to be available:
   http.wait_for_successful_query:
   - name: https://127.0.0.1:7443/readyz?verbose

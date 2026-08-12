@@ -18,12 +18,7 @@
   (configuring the bootstrap Node object; uncordoning a freshly deployed node)
   on the apiserver's `poststarthook/rbac/bootstrap-roles` hook having completed,
   read from `/readyz?verbose`, rather than on a `/healthz` liveness probe that
-  answers "ok" before the default ClusterRoles are reconciled. This is
-  preventive hardening rather than a fix for observed failures: both steps
-  authenticate as `system:masters`, which is authorized before RBAC is
-  consulted, and MetalK8s nightlies show no such failure signature — the
-  observed failures of this race are on the consumer side (ARTESCA move-cluster,
-  ARTESCA-17600)
+  answers "ok" before the default ClusterRoles are reconciled. 
   (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
 
 - `metalk8s.wait_apiserver` accepts a `verify_rbac` option applying the same
