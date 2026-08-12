@@ -117,9 +117,6 @@ Bring bootstrap minion to highstate:
     - salt: Refresh bootstrap minion grains
     - salt: Deploy CA role on bootstrap minion
 
-# `/readyz` is unauthenticated (it is in --authorization-always-allow-paths), so
-# this runs before the salt-master kubeconfig exists -- that is skipped during
-# the bootstrap highstate, see salt/master/init.sls.
 Wait for API server to be available:
   http.wait_for_successful_query:
   - name: https://127.0.0.1:7443/readyz?verbose
