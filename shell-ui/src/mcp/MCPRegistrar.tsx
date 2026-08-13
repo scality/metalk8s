@@ -10,6 +10,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
+import { useGuardianNotify } from '../guardian/GuardianContext';
 import {
   type FederatedModuleInfo,
   useConfigRetriever,
@@ -49,6 +50,9 @@ export const _InternalMCPRegistrar = ({
 }) => {
   const { getToken, userData } = useAuth();
   const queryClient = useQueryClient();
+  // Lets a tool report the outcome of BACKGROUND work into the chat, after its
+  // execute() has already returned. Stable identity — safe as an effect dep.
+  const notify = useGuardianNotify();
 
   // Keep auth refs current so tool execute() always reads fresh credentials
   // without causing the registration effect to re-run on every render.
@@ -72,6 +76,7 @@ export const _InternalMCPRegistrar = ({
       get userData() { return userDataRef.current; },
       selfConfiguration,
       queryClient,
+      notify,
     };
     // Prefer the new createTools factory (supports navigate + dynamic context);
     // fall back to the legacy static tools array for modules not yet migrated.
@@ -128,7 +133,7 @@ export const _InternalMCPRegistrar = ({
     }
 
     return () => controller.abort();
-  }, [moduleExports, mcpToolsModuleInfo, selfConfiguration, navigate, queryClient]);
+  }, [moduleExports, mcpToolsModuleInfo, selfConfiguration, navigate, queryClient, notify]);
 
   return null;
 };
