@@ -92,6 +92,14 @@
 
 ## Release 133.0.14 (in development)
 
+### Enhancements
+
+- The `metalk8s` sosreport plugin now collects `/var/log/salt`, capped at 50 MB and
+  tail-truncated. Salt logs to file rather than to the journal, so sosreports
+  previously carried its configuration and systemd entries but none of its logging,
+  leaving minion-side state failures undiagnosable
+  (PR[#5084](https://github.com/scality/metalk8s/pull/5084))
+
 ## Release 133.0.13
 
 ### Enhancements
