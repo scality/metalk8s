@@ -125,6 +125,7 @@ class MetalK8s(Plugin, RedHatPlugin):
         self.add_copy_spec("/etc/salt")
         self.add_forbidden_path("/etc/salt/pki")
         self.add_copy_spec("/var/log/metalk8s")
+        self.add_copy_spec("/var/log/salt", sizelimit=50)
 
         services = [
             "kubelet",
