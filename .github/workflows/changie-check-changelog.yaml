@@ -123,7 +123,7 @@ jobs:
           # `git checkout` the directory to restore the working tree.
           shopt -s nullglob
           for f in .changes/unreleased/*.yaml; do
-            if ! grep -Eq "^[[:space:]]+Pull:[[:space:]]*\"${PR_NUM}\"[[:space:]]*\$" "$f"; then
+            if ! grep -Eq "^[[:space:]]+Pull:[[:space:]]*${PR_NUM}[[:space:]]*\$" "$f"; then
               rm "$f"
             fi
           done

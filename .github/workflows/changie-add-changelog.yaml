@@ -8,7 +8,6 @@ on:
 permissions:
   pull-requests: write
   contents: write
-  packages: write
 
 # Serialise runs for the same PR: quick edits, deletes, and follow-up
 # comments would otherwise race on the shared PR branch and produce push
@@ -81,7 +80,7 @@ jobs:
         with:
           script: |
             const {owner, repo} = context.issue
-            github.rest.reactions.createForIssueComment({
+            await github.rest.reactions.createForIssueComment({
               owner,
               repo,
               comment_id: context.payload.comment.id,

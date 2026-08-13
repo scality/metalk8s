@@ -119,7 +119,7 @@ jobs:
           {
             echo 'COMMENT<<EOF'
             echo "# Mentions of ${{ env.RELEASE_TAG }} in ${{ github.ref_name }}"
-            git grep -rHn "${{ env.RELEASE_TAG }}" | sed -E "s;(.*):([0-9]+):.*;$link\1#L\2;"
+            git grep -rHn "${{ env.RELEASE_TAG }}" | sed -E "s;(.*):([0-9]+):.*;$link\1#L\2;" || true
             echo EOF
           } >> "$GITHUB_ENV"
 
@@ -134,21 +134,25 @@ jobs:
       # ─── Open the release-merge pull request ───
       - name: Create pull request
         uses: actions/github-script@v9
+        env:
+          COMMENT: ${{ env.COMMENT }}
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+          SHORT_VERSION: ${{ env.SHORT_VERSION }}
         with:
           script: |
             const pr = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head: "feature/merge-${{ env.RELEASE_TAG }}-tag",
-              base: "development/${{ env.SHORT_VERSION }}",
-              title: "Merge release tag for ${{ env.RELEASE_TAG }}"
+              head: `feature/merge-${process.env.RELEASE_TAG}-tag`,
+              base: `development/${process.env.SHORT_VERSION}`,
+              title: `Merge release tag for ${process.env.RELEASE_TAG}`
             });
 
             await github.rest.issues.createComment({
               issue_number: pr.data.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `${{ env.COMMENT }}`
+              body: process.env.COMMENT
             });
 
             await github.rest.issues.addLabels({
