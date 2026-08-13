@@ -98,7 +98,7 @@ for target in $higher_branches; do
   fi
 
   git commit -m "Merge branch '$prev_branch' into $integration_branch"
-  git push --set-upstream origin "$integration_branch"
+  git push --force-with-lease --set-upstream origin "$integration_branch"
 
   prev_branch="$integration_branch"
 done
