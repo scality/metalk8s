@@ -57,7 +57,10 @@ runs:
       if: inputs.ARTIFACTS_URL
       shell: bash
       run: |
-        sudo apt-get -o DPkg::Lock::Timeout=600 update
+        # Wait for apt/dpkg locks to be released (e.g. unattended-upgrades at startup).
+        # DPkg::Lock::Timeout makes apt retry internally instead of failing immediately,
+        # which avoids the TOCTOU race of checking locks externally then calling apt-get.
+        sudo apt-get -o DPkg::Lock::Timeout=600 update && \
         sudo apt-get -o DPkg::Lock::Timeout=600 install -y unzip
     - name: Install node
       if: inputs.ARTIFACTS_URL
