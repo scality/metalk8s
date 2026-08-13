@@ -90,7 +90,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Install deps
-        run: sudo apt-get update && sudo apt-get install -y isomd5sum
+        run: |
+          # Wait for apt/dpkg locks to be released (e.g. unattended-upgrades at startup).
+          # DPkg::Lock::Timeout makes apt retry internally instead of failing immediately,
+          # which avoids the TOCTOU race of checking locks externally then calling apt-get.
+          sudo apt-get -o DPkg::Lock::Timeout=600 update && \
+          sudo apt-get -o DPkg::Lock::Timeout=600 install -y isomd5sum
       - name: Retrieve product.txt from artifacts
         run: >
           curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
