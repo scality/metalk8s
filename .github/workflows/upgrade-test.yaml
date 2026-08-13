@@ -38,7 +38,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Install deps
-        run: sudo apt-get update && sudo apt-get install -y isomd5sum
+        run: sudo apt-get -o DPkg::Lock::Timeout=300 update && sudo apt-get -o DPkg::Lock::Timeout=300 install -y isomd5sum
 
      ## Spawn {{{
       - name: Export environment variables for accessing the cloud
