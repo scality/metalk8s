@@ -22,6 +22,7 @@ Configure salt master:
         saltenv: "{{ saltenv }}"
         worker_threads: {{ salt.pillar.get("salt:master:worker_threads", default=12) }}
         timeout: {{ salt.pillar.get("salt:master:timeout", default=20) }}
+        gather_job_timeout: {{ salt.pillar.get("salt:master:gather_job_timeout", default=300) }}
 
 Configure salt master roots paths:
   file.serialize:

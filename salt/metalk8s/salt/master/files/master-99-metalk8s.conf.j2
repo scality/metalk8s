@@ -3,6 +3,7 @@ interface: {{ salt_ip }}
 log_level: {{ 'debug' if debug else 'info' }}
 
 timeout: {{ timeout }}
+gather_job_timeout: {{ gather_job_timeout }}
 sock_pool_size: 15
 worker_threads: {{ worker_threads}}
 

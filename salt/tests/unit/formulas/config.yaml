@@ -1023,6 +1023,7 @@ metalk8s:
                 saltenv: metalk8s-2.7.1
                 worker_threads: 58
                 timeout: 42
+                gather_job_timeout: 84
 
         salt-master-manifest.yaml.j2:
           _cases:
