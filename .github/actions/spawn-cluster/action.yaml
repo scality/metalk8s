@@ -94,7 +94,9 @@ runs:
     - name: Install tools
       if: inputs.skip-prepare == 'false'
       shell: bash
-      run: sudo apt-get -o DPkg::Lock::Timeout=300 update && sudo apt-get -o DPkg::Lock::Timeout=300 install -y unzip
+      run: |
+        sudo apt-get -o DPkg::Lock::Timeout=600 update
+        sudo apt-get -o DPkg::Lock::Timeout=600 install -y unzip
     - name: Install node
       if: inputs.skip-prepare == 'false'
       uses: actions/setup-node@v6

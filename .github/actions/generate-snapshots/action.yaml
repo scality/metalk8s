@@ -30,7 +30,8 @@ runs:
     - name: Install dependencies for Openstack
       if: contains('ovh', inputs.cloud)
       run: |
-        sudo apt-get -o DPkg::Lock::Timeout=300 update && sudo apt-get -o DPkg::Lock::Timeout=300 install -y python3-pip jq
+        sudo apt-get -o DPkg::Lock::Timeout=600 update
+        sudo apt-get -o DPkg::Lock::Timeout=600 install -y python3-pip jq
         pip3 install --user --upgrade pip
         pip3 install --user python-openstackclient~=5.8.0 openstacksdk~=1.4.0
       shell: bash
