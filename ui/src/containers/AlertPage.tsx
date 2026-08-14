@@ -57,7 +57,7 @@ const TertiaryTitle = styled.div`
   color: ${(props) => props.theme.textPrimary};
 `;
 const SeperationLine = styled.div`
-  width: 250px; // the same width as the container
+  width: 250px; /* the same width as the container */
   height: 37px;
   border-right: 2px solid ${(props) => props.theme.backgroundLevel1};
   position: absolute;

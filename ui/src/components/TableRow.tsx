@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Tooltip, ConstrainedText, Icon, spacing } from '@scality/core-ui';
 import { fontWeight } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
-const TableRowStyle = styled.div`
+const TableRowStyle = styled.div<{ $isSelected?: boolean }>`
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.highlight};
@@ -16,13 +16,10 @@ const TableRowStyle = styled.div`
   }
   box-sizing: border-box;
   border-right: 4px solid
-    ${(props) =>
-      // @ts-expect-error - FIXME when you are working on it
-      props.isSelected ? props.theme.selectedActive : props.theme.backgroundLevel2};
+    ${(props) => (props.$isSelected ? props.theme.selectedActive : props.theme.backgroundLevel2)};
 
   background-color: ${(props) =>
-    // @ts-expect-error - FIXME when you are working on it
-    props.isSelected ? props.theme.highlight : props.theme.backgroundLevel2};
+    props.$isSelected ? props.theme.highlight : props.theme.backgroundLevel2};
 `;
 export const TooltipContent = styled.div`
   color: ${(props) => props.theme.textSecondary};
@@ -55,8 +52,7 @@ const TableRow = (props) => {
         // Otherwise when we scroll down, the next rows are flashing because they are re-rendered in loop.
         style: { ...style },
       })}
-      isSelected={isSelected}
-      row={row}
+      $isSelected={isSelected}
     >
       {row.cells.map((cell) => {
         let cellProps = cell.getCellProps({

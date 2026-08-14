@@ -4,6 +4,8 @@ import { debug } from 'jest-preview';
 import type { PropsWithChildren } from 'react';
 import { QueryClient } from 'react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
+import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
 import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
 import NotificationCenterProvider, {
   type InternalNotification,
@@ -25,22 +27,24 @@ const notificationCenterSelectors = {
 describe('NotificationCenter', () => {
   const wrapper = ({ children }: PropsWithChildren<Record<string, never>>) => {
     return (
-      <QueryClientProvider client={new QueryClient()}>
-        <MemoryRouter>
-          <ShellHistoryProvider>
-            <NotificationCenterProvider>
-              <NotificationCenter />
-              <div>{children}</div>
-              <Routes>
-                <Route path="/" element={<>Home page</>} />
-                <Route path="/alerts" element={<>Alert page</>} />
-                <Route path="/license" element={<>License page</>} />
-                <Route path="/new-version" element={<>New version page</>} />
-              </Routes>
-            </NotificationCenterProvider>
-          </ShellHistoryProvider>
-        </MemoryRouter>
-      </QueryClientProvider>
+      <CoreUiThemeProvider theme={coreUIAvailableThemes.darkRebrand}>
+        <QueryClientProvider client={new QueryClient()}>
+          <MemoryRouter>
+            <ShellHistoryProvider>
+              <NotificationCenterProvider>
+                <NotificationCenter />
+                <div>{children}</div>
+                <Routes>
+                  <Route path="/" element={<>Home page</>} />
+                  <Route path="/alerts" element={<>Alert page</>} />
+                  <Route path="/license" element={<>License page</>} />
+                  <Route path="/new-version" element={<>New version page</>} />
+                </Routes>
+              </NotificationCenterProvider>
+            </ShellHistoryProvider>
+          </MemoryRouter>
+        </QueryClientProvider>
+      </CoreUiThemeProvider>
     );
   };
 

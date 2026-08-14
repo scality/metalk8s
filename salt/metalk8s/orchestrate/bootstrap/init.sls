@@ -123,8 +123,9 @@ Wait for API server to be available:
   - match: 'poststarthook/rbac/bootstrap-roles ok'
   - status: 200
   - verify_ssl: false
-  - request_interval: 1
+  - request_interval: 5
   - wait_for: 420
+  - timeout: 10
   - require:
     - salt: Bring bootstrap minion to highstate
 

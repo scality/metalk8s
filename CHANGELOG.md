@@ -92,6 +92,14 @@
 
 ## Release 133.0.14 (in development)
 
+### Enhancements
+
+- The `metalk8s` sosreport plugin now collects `/var/log/salt`, capped at 50 MB and
+  tail-truncated. Salt logs to file rather than to the journal, so sosreports
+  previously carried its configuration and systemd entries but none of its logging,
+  leaving minion-side state failures undiagnosable
+  (PR[#5084](https://github.com/scality/metalk8s/pull/5084))
+
 ## Release 133.0.13
 
 ### Enhancements
@@ -143,18 +151,16 @@
 
 - Bootstrap and node deployment now gate their RBAC-dependent steps
   (configuring the bootstrap Node object; uncordoning a freshly deployed node)
-  on the apiserver's `poststarthook/rbac/bootstrap-roles` hook having completed,
-  read from `/readyz?verbose`, rather than on a `/healthz` liveness probe that
-  answers "ok" before the default ClusterRoles are reconciled. Preventive: both
+  on `/readyz` rather than `/healthz`.  Waiting for the infromers to sync,
+  as `informer-sync` protects a freshly started apiserver. Preventive: both
   steps run as `system:masters` and cannot hit this race themselves
   (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
 
 - `metalk8s.wait_apiserver` accepts a `verify_rbac` option applying the same
   check, for callers that run RBAC-dependent operations immediately after the
   wait. The probe is unauthenticated, so unlike a check on the `cluster-admin`
-  ClusterRole it is credential-independent, and it reports the hook itself
-  rather than the presence of an object that persists in etcd across apiserver
-  restarts
+  ClusterRole it is credential-independent, and it requires the aggregate
+  `/readyz` rather than one hook's own endpoint, which would skip `informer-sync`
   (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
 
 ## Release 133.0.11
