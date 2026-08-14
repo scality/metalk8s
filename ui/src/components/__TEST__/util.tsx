@@ -7,7 +7,8 @@ import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
 import { applyMiddleware, compose, createStore } from 'redux';
 import createSagaMiddleware from 'redux-saga';
-import { StyleSheetManager, StylisPlugin, ThemeProvider } from 'styled-components';
+import { StyleSheetManager, ThemeProvider } from 'styled-components';
+import type { Middleware } from 'stylis';
 import AlertProvider from '../../containers/AlertProvider';
 
 import { ToastProvider } from '@scality/core-ui';
@@ -37,14 +38,13 @@ export const waitForLoadingToFinish = () =>
  * you use `getByRole` of react testing library.
  */
 const ALLOWED_RULES = ['display', 'visibility', 'pointer-events'];
-const simplifiedStylesPlugin: StylisPlugin = (context, content) => {
-  if (context === 1) {
-    if (!ALLOWED_RULES.some((rule) => content.toString().startsWith(`${rule}:`))) {
-      return '';
+const simplifiedStylesPlugin: Middleware = (element) => {
+  if (element.type === 'decl') {
+    const value = String(element.value);
+    if (!ALLOWED_RULES.some((rule) => value.startsWith(`${rule}:`))) {
+      element.return = '';
     }
   }
-
-  return undefined;
 };
 
 export const metalK8sConfig = {
@@ -96,7 +96,7 @@ export const AllTheProviders = (initialPath: string = '/') => {
     }
 
     return (
-      <StyleSheetManager stylisPlugins={[simplifiedStylesPlugin]} disableVendorPrefixes>
+      <StyleSheetManager stylisPlugins={[simplifiedStylesPlugin]}>
         <MemoryRouter>
           <IntlProvider locale="en" messages={translations_en}>
             <ToastProvider>

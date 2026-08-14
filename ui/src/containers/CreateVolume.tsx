@@ -845,7 +845,7 @@ const CreateVolume = (props) => {
                 />
               </CheckboxContainer>
             </FormSection>
-            <FormSection>
+            <FormSection forceLabelWidth={convertRemToPixels(10)}>
               {values.multiVolumeCreation && (
                 <MultiCreationFormContainer>
                   <FieldArray

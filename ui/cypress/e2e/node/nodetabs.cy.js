@@ -65,19 +65,25 @@ describe('Node page metrics tab', () => {
     },
   ];
 
+  // The Dropdown menu items are selected by their visible label: core-ui no
+  // longer spreads arbitrary Item fields onto the <li>, so the `data-cy` key
+  // passed alongside `label`/`onClick` never reaches the DOM.
+  const selectTimeSpan = (value) => {
+    cy.get('[data-cy="metrics_timespan_selection"]').click();
+    cy.contains('.menu-item-label', value).click();
+  };
+
   queryTimeSpansCodes.map((timeSpan) => {
     it(`brings me to the metrics of ${timeSpan.value}`, () => {
       cy.stubHistory();
-      cy.get('[data-cy="metrics_timespan_selection"]').click();
-      cy.get(`[data-cy="${timeSpan.value}"]`).click();
+      selectTimeSpan(timeSpan.value);
       cy.url().should('include', `from=${timeSpan.label}`);
     });
   });
   it(`brings me to the metrics of ${LAST_TWENTY_FOUR_HOURS}`, () => {
     cy.visit('/nodes/master-0/metrics?from=now-1h');
     cy.stubHistory();
-    cy.get('[data-cy="metrics_timespan_selection"]').click();
-    cy.get(`[data-cy="${LAST_TWENTY_FOUR_HOURS}"]`).click();
+    selectTimeSpan(LAST_TWENTY_FOUR_HOURS);
     cy.url().should('include', `from=now-24h`);
   });
 });

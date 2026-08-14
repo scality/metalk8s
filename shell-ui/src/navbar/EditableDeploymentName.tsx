@@ -271,7 +271,7 @@ export function EditableDeploymentName({
           </Stack>
         }
       >
-        <Stack direction="vertical" gap="r24" style={{ width: '500px' }}>
+        <Stack direction="vertical" gap="r24">
           {mutation.isError && mutation.error != null && (
             <Banner variant="danger" title="Error renaming deployment">
               {renameMutationErrorMessage(mutation.error)}

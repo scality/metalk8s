@@ -27,9 +27,9 @@ const NodeNameContainer = styled.div`
   justify-content: space-between;
   padding: 0 0 ${spacing.r24} 0;
 `;
-const StatusText = styled.span<{ textColor }>`
+const StatusText = styled.span<{ $textColor }>`
   color: ${(props) => {
-    return props.textColor;
+    return props.$textColor;
   }};
 `;
 const Detail = styled.div`
@@ -236,7 +236,7 @@ const NodePageOverviewTab = (props) => {
               <OverviewInformationValue>
                 {currentNode?.status?.computedStatus?.map((cond) => {
                   return (
-                    <StatusText key={cond} textColor={currentNode?.status?.statusColor}>
+                    <StatusText key={cond} $textColor={currentNode?.status?.statusColor}>
                       {intl.formatMessage({
                         id: `${cond}`,
                       })}
