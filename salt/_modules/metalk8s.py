@@ -57,7 +57,9 @@ def _rbac_bootstrap_complete(apiserver_url=APISERVER_PROXY_URL):
     """
     url = f"{apiserver_url.rstrip('/')}/readyz?verbose"
     try:
-        result = __salt__["http.query"](url, verify_ssl=False, status=True)
+        result = __salt__["http.query"](
+            url, verify_ssl=False, status=True, raise_error=False, timeout=10
+        )
     except Exception as exc:  # pylint: disable=broad-except
         log.debug("RBAC bootstrap check failed, treating as not ready: %s", exc)
         return False

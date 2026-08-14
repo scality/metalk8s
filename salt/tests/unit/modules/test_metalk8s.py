@@ -100,20 +100,19 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
         "status": 200,
         "body": "[+]etcd ok\n[+]poststarthook/rbac/bootstrap-roles ok\nreadyz check passed\n",
     }
-    # The hook has not completed: the endpoint is a 500, and the marker is
-    # absent. This is the race the gate exists for.
+    # Hook not complete: 500, marker absent.
     READYZ_PENDING = {
         "status": 500,
         "body": "[+]etcd ok\n[-]poststarthook/rbac/bootstrap-roles failed: not finished\n",
     }
-    # RBAC hook done, but the endpoint is a 500 on an unrelated check.
+    # Hook complete, 500 on an unrelated check.
     READYZ_OTHER_CHECK_FAILING = {
         "status": 500,
         "body": "[+]poststarthook/rbac/bootstrap-roles ok\n[-]informer-sync failed\n",
     }
-    # Apiserver not listening: `http.query` reports it through `error`.
+    # Apiserver not listening: reported through `error`.
     READYZ_UNREACHABLE = {"error": "Connection refused"}
-    # Path not allowed or unknown: warned about, still "not ready".
+    # Path not allowed or unknown.
     READYZ_FORBIDDEN = {"status": 403, "body": "forbidden"}
 
     @parameterized.expand(
@@ -183,8 +182,7 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     result,
                 )
 
-        # RBAC is only ever probed once the apiserver itself responds, and
-        # always unauthenticated on the apiserver-proxy.
+        # RBAC is only probed once the apiserver itself responds.
         if not ping:
             http_query_mock.assert_not_called()
         else:
@@ -192,6 +190,8 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 "https://127.0.0.1:7443/readyz?verbose",
                 verify_ssl=False,
                 status=True,
+                raise_error=False,
+                timeout=10,
             )
 
     def test_wait_apiserver_rbac_failure_message(self):
