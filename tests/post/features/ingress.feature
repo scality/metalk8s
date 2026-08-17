@@ -96,6 +96,7 @@ Feature: Ingress
         And the '{wp_ingress_first_pool}' IPs are spread on nodes
         When we update the ClusterConfig to add 'test-vip-3-pool-2' Workload Plane pool with IPs '{wp_ingress_second_pool}'
         And we wait for the ClusterConfig to be 'Ready'
+        And we wait for the rollout of 'daemonset/calico-node' in namespace 'kube-system' to complete
         And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
         Then the DaemonSet 'ingress-nginx-controller' in the 'metalk8s-ingress' namespace has all desired Pods ready
