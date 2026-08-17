@@ -16,7 +16,7 @@
 
 - Bootstrap and node deployment now gate their RBAC-dependent steps
   (configuring the bootstrap Node object; uncordoning a freshly deployed node)
-  on `/readyz` rather than `/healthz`.  Waiting for the infromers to sync,
+  on `/readyz` rather than `/healthz`.  Waiting for the informers to sync,
   as `informer-sync` protects a freshly started apiserver. Preventive: both
   steps run as `system:masters` and cannot hit this race themselves
   (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
