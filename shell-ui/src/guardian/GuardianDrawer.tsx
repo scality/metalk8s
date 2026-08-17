@@ -10,8 +10,8 @@ const DRAWER_WIDTH = 500;
 const sourceForProduct = (productName: string): string => `${productName.toLowerCase()}_ui`;
 
 export const GuardianDrawer = () => {
-  // iframeRef and guardianOrigin live in the context: notify() (see
-  // GuardianContext) posts to the iframe from outside this component.
+  // iframeRef and guardianOrigin live in the context so they can be reached from
+  // outside this component (e.g. the MCP relay hooks below, and MCPRegistrar).
   const { isOpen, iframeRef, guardianOrigin } = useGuardianDrawer();
   const { config } = useShellConfig();
 

@@ -30,16 +30,4 @@ export type ToolContext = {
    * `refetchQueries` — picking the strategy that fits the operation.
    */
   queryClient: QueryClient;
-  /**
-   * Pushes a one-off message into the embedding chat (Guardian).
-   *
-   * WebMCP is strictly request/response: a tool CANNOT write into the chat once
-   * its `execute()` has returned. A tool whose work finishes in the BACKGROUND
-   * (an async download, a long install) calls `notify` to report the outcome —
-   * shell-ui relays it to Guardian, which appends it as an assistant message.
-   *
-   * Fire-and-forget: it never throws and returns nothing. No-op when Guardian
-   * is not mounted (`canUseGuardian: false`, or unit tests).
-   */
-  notify: (message: string) => void;
 };

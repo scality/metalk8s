@@ -10,7 +10,6 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
-import { useGuardianNotify } from '../guardian/GuardianContext';
 import {
   type FederatedModuleInfo,
   useConfigRetriever,
@@ -20,20 +19,46 @@ import type { ToolContext } from './types';
 
 declare const __webpack_public_path__: string;
 
+// ── Background tasks (host-side aggregator) ────────────────────────────────────
+// Follows the MCP ext-tasks shape. A tool opts in by returning a { taskId } from its
+// execute() AND exposing an arg-less getTaskStatus() on its descriptor. Every app's
+// tasks land in this ONE module-level list, and the single host `getTaskStatus` tool
+// (registered once, see useHostGetTaskStatusTool) routes a polled taskId to the owning
+// tool and stamps the id back on. Module-level so it is shared across every app's
+// registrar instance.
+type TaskStatus = 'working' | 'input_required' | 'completed' | 'failed' | 'cancelled';
+type Task = {
+  taskId: string;
+  status: TaskStatus;
+  statusMessage?: string;
+  createdAt: string;
+  lastUpdatedAt: string;
+  ttlMs: number | null;
+  pollIntervalMs?: number;
+};
+// What a tool's arg-less getTaskStatus() reports (shell-ui stamps the taskId).
+type TaskStatusReport = Omit<Task, 'taskId'> & { result?: unknown; error?: unknown };
+type HostTask = { taskId: string; createdAt: string; getStatus: () => Promise<TaskStatusReport> };
+const hostTasks: HostTask[] = []; // ordered — task 1 stays before task 2
+
+interface MCPToolDescriptor extends ToolDescriptor {
+  getTaskStatus?: () => Promise<TaskStatusReport>;
+}
+
 type MCPToolsModule =
   | {
-      /** New factory-based export — preferred. */
-      createTools: (
-        context: ToolContext,
-        navigate: (path: string) => void,
-      ) => ToolDescriptor[];
-      tools?: never;
-    }
+    /** New factory-based export — preferred. */
+    createTools: (
+      context: ToolContext,
+      navigate: (path: string) => void,
+    ) => MCPToolDescriptor[];
+    tools?: never;
+  }
   | {
-      /** Legacy static-array export — kept for backward compatibility. */
-      tools: ToolDescriptor[];
-      createTools?: never;
-    };
+    /** Legacy static-array export — kept for backward compatibility. */
+    tools: MCPToolDescriptor[];
+    createTools?: never;
+  };
 
 // Do not use directly - exported for testing purposes
 export const _InternalMCPRegistrar = ({
@@ -50,9 +75,6 @@ export const _InternalMCPRegistrar = ({
 }) => {
   const { getToken, userData } = useAuth();
   const queryClient = useQueryClient();
-  // Lets a tool report the outcome of BACKGROUND work into the chat, after its
-  // execute() has already returned. Stable identity — safe as an effect dep.
-  const notify = useGuardianNotify();
 
   // Keep auth refs current so tool execute() always reads fresh credentials
   // without causing the registration effect to re-run on every render.
@@ -76,7 +98,6 @@ export const _InternalMCPRegistrar = ({
       get userData() { return userDataRef.current; },
       selfConfiguration,
       queryClient,
-      notify,
     };
     // Prefer the new createTools factory (supports navigate + dynamic context);
     // fall back to the legacy static tools array for modules not yet migrated.
@@ -115,13 +136,27 @@ export const _InternalMCPRegistrar = ({
             // tool's execute closure. For legacy tools, inject context here.
             const injectedContext = mod?.createTools ? undefined : context;
 
-            return tool.execute(
+            // await → `ret` is the resolved result, not a Promise, so the taskId
+            // check below inspects the actual value.
+            const ret = await tool.execute(
               {
                 ...(params as Record<string, unknown>),
                 ...(injectedContext && { context: injectedContext }),
               },
               client,
             );
+
+            // A background op just started: it returned a taskId AND this tool can
+            // report its status. Register it in the shared host list (dedupe by id,
+            // preserve order) so the single host `getTaskStatus` tool can route to it.
+            if (ret instanceof Object && 'taskId' in ret && tool.getTaskStatus) {
+              const { taskId, createdAt } = ret as Task;
+              if (!hostTasks.some((h) => h.taskId === taskId)) {
+                hostTasks.push({ taskId, createdAt, getStatus: () => tool.getTaskStatus!() });
+              }
+            }
+
+            return ret;
           },
         },
         { signal: controller.signal },
@@ -133,10 +168,71 @@ export const _InternalMCPRegistrar = ({
     }
 
     return () => controller.abort();
-  }, [moduleExports, mcpToolsModuleInfo, selfConfiguration, navigate, queryClient, notify]);
+  }, [moduleExports, mcpToolsModuleInfo, selfConfiguration, navigate, queryClient]);
 
   return null;
 };
+
+// The ONE host tool Guardian polls. Registered ONCE (globally, on the shell's lifetime
+// — not per micro-app) so it never gets unregistered while an app is still mounted.
+// It routes the polled taskId to whichever tool owns it (via the shared hostTasks
+// list), stamps the id back onto the result, and evicts a settled task after its ttlMs.
+function useHostGetTaskStatusTool() {
+  useEffect(() => {
+    const modelContext = document.modelContext || navigator.modelContext;
+    if (!modelContext) return;
+
+    // Idempotent across StrictMode/HMR remounts — reuse the duplicate-name skip.
+    const existingNames = new Set(
+      (modelContext as ModelContextWithExtensions).listTools?.().map((t) => t.name) ?? [],
+    );
+    if (existingNames.has('getTaskStatus')) return;
+
+    const controller = new AbortController();
+    modelContext.registerTool(
+      {
+        name: 'getTaskStatus',
+        description:
+          'Read-only. Poll a background task by its taskId to see whether it is still working, or has ' +
+          'completed/failed. Works across every app. Returns an MCP task: status is "working" until it ' +
+          'settles, then "completed" (with result) or "failed" (with error). An unknown taskId → "cancelled".',
+        inputSchema: {
+          type: 'object',
+          properties: { taskId: { type: 'string' } },
+          required: ['taskId'],
+        },
+        annotations: { readOnlyHint: true }, // silent, safe to poll
+        execute: async (params: unknown) => {
+          const { taskId } = (params as { taskId: string }) ?? { taskId: '' };
+          const now = new Date().toISOString();
+          const entry = hostTasks.find((h) => h.taskId === taskId);
+          if (!entry) {
+            return {
+              taskId,
+              status: 'cancelled' as TaskStatus,
+              statusMessage: 'No such task (it may have finished and been evicted).',
+              createdAt: now,
+              lastUpdatedAt: now,
+              ttlMs: 0,
+            };
+          }
+          const task: Task = { taskId, ...(await entry.getStatus()) };
+          if (task.status !== 'working' && task.status !== 'input_required') {
+            // settled → evict after its ttl so a late poll returns cancelled, not stale data
+            setTimeout(() => {
+              const i = hostTasks.findIndex((h) => h.taskId === taskId);
+              if (i >= 0) hostTasks.splice(i, 1);
+            }, task.ttlMs ?? 60_000);
+          }
+          return task;
+        },
+      },
+      { signal: controller.signal },
+    );
+
+    return () => controller.abort();
+  }, []);
+}
 
 // Inject the local-relay embed script once — must be a <script> tag (not an ES module import)
 // so that document.currentScript.src is set, allowing widget.html to resolve locally
@@ -210,6 +306,7 @@ const AppMCPRegistrar = ({
 
 export const MCPRegistrar = () => {
   useRelayEmbed();
+  useHostGetTaskStatusTool();
   const deployedApps = useDeployedApps();
   const navigate = useNavigate();
 
