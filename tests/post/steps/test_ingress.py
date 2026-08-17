@@ -20,13 +20,15 @@ OPERATOR_DEPLOYMENT = "metalk8s-operator-controller-manager"
 OPERATOR_NAMESPACE = "kube-system"
 
 
-def _ingress_debug(host):
+def _ingress_debug(host, ssh_config=None, ips=None):
     """Collect live cluster-side ingress diagnostics.
 
     The sosreport is collected after the whole step finishes and may miss the
     transient state (a controller still rolling, missing endpoints, calico not
     ready, ...) that caused a request to fail, so we dump the relevant cluster
     state at failure time to complement it. Best-effort: never raises.
+
+    When `ssh_config` and `ips` are given, also report which node holds each VIP.
     """
     kubectl = "kubectl --kubeconfig=/etc/kubernetes/admin.conf"
     commands = (
@@ -42,8 +44,16 @@ def _ingress_debug(host):
             f"{kubectl} -n kube-system get daemonset calico-node -o wide",
         ),
         (
+            "calico-node pods",
+            f"{kubectl} -n kube-system get pods -l k8s-app=calico-node -o wide",
+        ),
+        (
             "recent ingress events",
             f"{kubectl} -n metalk8s-ingress get events --sort-by=.lastTimestamp",
+        ),
+        (
+            "recent kube-system events",
+            f"{kubectl} -n kube-system get events --sort-by=.lastTimestamp | tail -30",
         ),
     )
     sections = []
@@ -58,21 +68,98 @@ def _ingress_debug(host):
                 )
     except Exception as exc:  # pylint: disable=broad-except
         sections.append(f"--- failed to collect ingress debug ---\n{exc}")
+
+    if ssh_config and ips:
+        try:
+            sections.append(f"--- VIP owners ---\n{_vip_owners(host, ssh_config, ips)}")
+        except Exception as exc:  # pylint: disable=broad-except
+            sections.append(f"--- failed to collect VIP owners ---\n{exc}")
+
     return "\n\n".join(sections)
 
 
+def _vip_owners(host, ssh_config, ips):
+    """Report, for each VIP, the node holding it and that node's WP ingress pod."""
+    kubectl = "kubectl --kubeconfig=/etc/kubernetes/admin.conf"
+    node_ips = get_node_ips(host, ssh_config)
+
+    lines = []
+    for ip in ips:
+        owner = next((name for name, own in node_ips.items() if ip in own), None)
+        if owner is None:
+            lines.append(f"{ip}: not assigned to any node")
+            continue
+        with host.sudo():
+            pods = host.run(
+                f"{kubectl} -n metalk8s-ingress get pods -o wide --no-headers "
+                f"--field-selector spec.nodeName={owner} "
+                "-l app.kubernetes.io/instance=ingress-nginx"
+            )
+        lines.append(f"{ip}: {owner}\n{(pods.stdout or pods.stderr).strip()}")
+
+    return "\n".join(lines)
+
+
 @contextlib.contextmanager
-def _ingress_debug_on_failure(host, label):
+def _ingress_debug_on_failure(host, label, ssh_config=None, ips=None):
     """Append live cluster ingress diagnostics to any assertion failure raised
-    inside the block, to complement the (later, possibly-stale) sosreport."""
+    inside the block, to complement the (later, possibly-stale) sosreport.
+
+    `utils.retry` reports an exhausted budget through `pytest.fail`, so catch
+    that too.
+    """
     try:
         yield
-    except AssertionError as exc:
+    except (AssertionError, pytest.fail.Exception) as exc:
         raise AssertionError(
             f"{exc}\n\n"
             f"=== Cluster ingress debug ({label}) ===\n"
-            f"{_ingress_debug(host)}"
+            f"{_ingress_debug(host, ssh_config=ssh_config, ips=ips)}"
         ) from exc
+
+
+def _wait_cni_available(host):
+    """Wait for every calico-node pod to be available."""
+    kubectl = "kubectl --kubeconfig=/etc/kubernetes/admin.conf"
+
+    def _cni_available():
+        with host.sudo():
+            status = json.loads(
+                host.check_output(
+                    f"{kubectl} -n kube-system get daemonset calico-node -o json"
+                )
+            )["status"]
+
+        desired = status.get("desiredNumberScheduled", 0)
+        available = status.get("numberAvailable", 0)
+        assert desired > 0, "calico-node has no desired pod"
+        assert (
+            available == desired
+        ), f"calico-node: {available}/{desired} pods available"
+
+    utils.retry(
+        _cni_available,
+        times=24,
+        wait=5,
+        name="wait for the CNI to be available",
+    )
+
+
+def _wait_endpoint_accepts_connections(host, endpoint):
+    """Wait until `endpoint` accepts a connection, without asserting the response."""
+
+    def _accepts_connections():
+        try:
+            requests.get(endpoint, verify=False)
+        except requests.exceptions.ConnectionError as exc:
+            raise AssertionError(f"'{endpoint}' does not accept connections: {exc}")
+
+    utils.retry(
+        _accepts_connections,
+        times=12,
+        wait=5,
+        name=f"wait for '{endpoint}' to accept connections",
+    )
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -714,17 +801,26 @@ def server_request_does_not_return(host, context, protocol, port, plane, path):
     converters=dict(status_code=int),
 )
 def server_request_returns_multiple_ips(
-    host, context, protocol, port, ips, path, status_code, reason
+    host, ssh_config, context, protocol, port, ips, path, status_code, reason
 ):
     ips = ips.format(**context).split(",")
 
     assert ips, "Error IPs list cannot be empty"
 
+    with _ingress_debug_on_failure(
+        host, "waiting for the CNI", ssh_config=ssh_config, ips=ips
+    ):
+        _wait_cni_available(host)
+
     for ip in ips:
         endpoint = "{proto}://{ip}:{port}/{path}".format(
             proto=protocol.lower(), ip=ip, port=port, path=path or ""
         )
-        with _ingress_debug_on_failure(host, f"request on '{endpoint}'"):
+        with _ingress_debug_on_failure(
+            host, f"request on '{endpoint}'", ssh_config=ssh_config, ips=ips
+        ):
+            _wait_endpoint_accepts_connections(host, endpoint)
+
             try:
                 response = requests.get(endpoint, verify=False)
                 context["response"] = response
@@ -742,16 +838,25 @@ def server_request_returns_multiple_ips(
         r"on port (?P<port>\d+) on '(?P<ips>.*)' IPs should not return"
     ),
 )
-def server_request_not_returns_multiple_ips(host, context, protocol, port, ips, path):
+def server_request_not_returns_multiple_ips(
+    host, ssh_config, context, protocol, port, ips, path
+):
     ips = ips.format(**context).split(",")
 
     assert ips, "Error IPs list cannot be empty"
+
+    with _ingress_debug_on_failure(
+        host, "waiting for the CNI", ssh_config=ssh_config, ips=ips
+    ):
+        _wait_cni_available(host)
 
     for ip in ips:
         endpoint = "{proto}://{ip}:{port}/{path}".format(
             proto=protocol.lower(), ip=ip, port=port, path=path or ""
         )
-        with _ingress_debug_on_failure(host, f"request on '{endpoint}'"):
+        with _ingress_debug_on_failure(
+            host, f"request on '{endpoint}'", ssh_config=ssh_config, ips=ips
+        ):
             try:
                 response = requests.get(endpoint, verify=False)
             except requests.exceptions.ConnectionError:
