@@ -38,7 +38,14 @@ type Task = {
 };
 // What a tool's arg-less getTaskStatus() reports (shell-ui stamps the taskId).
 type TaskStatusReport = Omit<Task, 'taskId'> & { result?: unknown; error?: unknown };
-type HostTask = { taskId: string; createdAt: string; getStatus: () => Promise<TaskStatusReport> };
+type HostTask = {
+  taskId: string;
+  createdAt: string;
+  getStatus: () => Promise<TaskStatusReport>;
+  // Set once the eviction timer is armed, so repeated polls of a settled task
+  // don't queue one redundant timer per poll.
+  evicting?: boolean;
+};
 const hostTasks: HostTask[] = []; // ordered — task 1 stays before task 2
 
 interface MCPToolDescriptor extends ToolDescriptor {
@@ -217,8 +224,13 @@ function useHostGetTaskStatusTool() {
             };
           }
           const task: Task = { taskId, ...(await entry.getStatus()) };
-          if (task.status !== 'working' && task.status !== 'input_required') {
+          if (
+            task.status !== 'working' &&
+            task.status !== 'input_required' &&
+            !entry.evicting
+          ) {
             // settled → evict after its ttl so a late poll returns cancelled, not stale data
+            entry.evicting = true;
             setTimeout(() => {
               const i = hostTasks.findIndex((h) => h.taskId === taskId);
               if (i >= 0) hostTasks.splice(i, 1);
