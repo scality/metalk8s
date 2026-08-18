@@ -47,6 +47,32 @@
   users, was wiped on each re-apply, leaving Thanos Query with no store to reach
   (PR[#5027](https://github.com/scality/metalk8s/pull/5027))
 
+### Bug Fixes
+
+- `metalk8s.wait_apiserver` now raises instead of returning `False` when the
+  apiserver is still not ready after the last attempt. On Salt 3002 a `False`
+  return from `module.run` is recorded as a change with `result: True`, so every
+  caller using it as a gate carried on as if the apiserver were ready once the
+  wait timed out. Note this changes the contract for any caller testing the
+  boolean return
+  (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
+
+### Enhancements
+
+- Bootstrap and node deployment now gate their RBAC-dependent steps
+  (configuring the bootstrap Node object; uncordoning a freshly deployed node)
+  on `/readyz` rather than `/healthz`.  Waiting for the informers to sync,
+  as `informer-sync` protects a freshly started apiserver. Preventive: both
+  steps run as `system:masters` and cannot hit this race themselves
+  (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
+
+- `metalk8s.wait_apiserver` accepts a `verify_rbac` option applying the same
+  check, for callers that run RBAC-dependent operations immediately after the
+  wait. The probe is unauthenticated, so unlike a check on the `cluster-admin`
+  ClusterRole it is credential-independent, and it requires the aggregate
+  `/readyz` rather than one hook's own endpoint, which would skip `informer-sync`
+  (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
+
 ## Release 133.0.11
 
 ### Bug Fixes

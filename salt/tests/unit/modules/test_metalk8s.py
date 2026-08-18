@@ -60,17 +60,20 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @parameterized.expand(
         [
+            # `result=None` means the apiserver never responds within `retry`
+            # attempts and `wait_apiserver` must raise instead of returning
             (10, True, True),
-            (10, False, False),
+            (10, False, None),
             (1, [True, False], True),
-            (1, [False, True], False),
+            (1, [False, True], None),
             (2, [False, True], True),
             (10, [False, False, False, False, True, False], True),
         ]
     )
     def test_wait_apiserver(self, retry, status, result):
         """
-        Tests the return of `wait_apiserver` function
+        Tests `wait_apiserver`: returns True once the apiserver responds, and
+        raises `CommandExecutionError` if it never does within `retry` attempts.
         """
         kubernetes_ping_mock = MagicMock()
         if isinstance(status, list):
@@ -80,7 +83,131 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         patch_dict = {"metalk8s_kubernetes.ping": kubernetes_ping_mock}
         with patch.dict(metalk8s.__salt__, patch_dict):
-            self.assertEqual(metalk8s.wait_apiserver(retry=retry, interval=0), result)
+            if result is None:
+                self.assertRaises(
+                    CommandExecutionError,
+                    metalk8s.wait_apiserver,
+                    retry=retry,
+                    interval=0,
+                )
+            else:
+                self.assertEqual(
+                    metalk8s.wait_apiserver(retry=retry, interval=0), result
+                )
+
+    # What `/readyz?verbose` answers, per stage of the apiserver's startup.
+    READYZ_RECONCILED = {
+        "status": 200,
+        "body": "[+]etcd ok\n[+]poststarthook/rbac/bootstrap-roles ok\nreadyz check passed\n",
+    }
+    # Hook not complete: 500, marker absent.
+    READYZ_PENDING = {
+        "status": 500,
+        "body": "[+]etcd ok\n[-]poststarthook/rbac/bootstrap-roles failed: not finished\n",
+    }
+    # Hook complete, 500 on an unrelated check.
+    READYZ_OTHER_CHECK_FAILING = {
+        "status": 500,
+        "body": "[+]poststarthook/rbac/bootstrap-roles ok\n[-]informer-sync failed\n",
+    }
+    # Apiserver not listening: reported through `error`.
+    READYZ_UNREACHABLE = {"error": "Connection refused"}
+    # Path not allowed or unknown.
+    READYZ_FORBIDDEN = {"status": 403, "body": "forbidden"}
+
+    @parameterized.expand(
+        [
+            # `result=None` means "not ready" -> `wait_apiserver` must raise.
+            # hook already reported ok -> ready right away
+            param(retry=10, ping=True, readyz=READYZ_RECONCILED, result=True),
+            # hook never completes -> raises
+            param(retry=3, ping=True, readyz=READYZ_PENDING, result=None),
+            # hook completes on the 3rd probe -> ready
+            param(
+                retry=5,
+                ping=True,
+                readyz=[READYZ_PENDING, READYZ_PENDING, READYZ_RECONCILED],
+                result=True,
+            ),
+            # RBAC hook done but the endpoint is a 500 on an unrelated check ->
+            # not ready, overall readiness is required too
+            param(retry=3, ping=True, readyz=READYZ_OTHER_CHECK_FAILING, result=None),
+            # hook done and overall readiness reached only on the 2nd probe
+            param(
+                retry=5,
+                ping=True,
+                readyz=[READYZ_OTHER_CHECK_FAILING, READYZ_RECONCILED],
+                result=True,
+            ),
+            # apiserver never responds -> raises, RBAC never probed
+            param(retry=3, ping=False, readyz=READYZ_RECONCILED, result=None),
+            # apiserver not listening for the probe -> "not ready yet" -> raises
+            param(retry=2, ping=True, readyz=READYZ_UNREACHABLE, result=None),
+            # a 403/404 is not the race, but still not ready -> raises
+            param(retry=2, ping=True, readyz=READYZ_FORBIDDEN, result=None),
+            # a raw error from `http.query` is swallowed as "not ready yet"
+            param(retry=2, ping=True, readyz=RuntimeError("boom"), result=None),
+        ]
+    )
+    def test_wait_apiserver_verify_rbac(self, retry, ping, readyz, result):
+        """
+        Tests `wait_apiserver` with `verify_rbac=True`, which requires both a
+        ready `/readyz` and the `poststarthook/rbac/bootstrap-roles` line in its
+        verbose output.
+        """
+        kubernetes_ping_mock = MagicMock(return_value=ping)
+
+        http_query_mock = MagicMock()
+        if isinstance(readyz, (list, Exception)):
+            http_query_mock.side_effect = readyz
+        else:
+            http_query_mock.return_value = readyz
+
+        patch_dict = {
+            "metalk8s_kubernetes.ping": kubernetes_ping_mock,
+            "http.query": http_query_mock,
+        }
+        with patch.dict(metalk8s.__salt__, patch_dict):
+            if result is None:
+                self.assertRaises(
+                    CommandExecutionError,
+                    metalk8s.wait_apiserver,
+                    retry=retry,
+                    interval=0,
+                    verify_rbac=True,
+                )
+            else:
+                self.assertEqual(
+                    metalk8s.wait_apiserver(retry=retry, interval=0, verify_rbac=True),
+                    result,
+                )
+
+        # RBAC is only probed once the apiserver itself responds.
+        if not ping:
+            http_query_mock.assert_not_called()
+        else:
+            http_query_mock.assert_called_with(
+                "https://127.0.0.1:7443/readyz?verbose",
+                verify_ssl=False,
+                status=True,
+                raise_error=False,
+                timeout=10,
+            )
+
+    def test_wait_apiserver_rbac_failure_message(self):
+        """
+        A timeout on the RBAC probe must not be reported as "apiserver failed to
+        respond": the apiserver did respond, its ClusterRoles are not in place.
+        """
+        patch_dict = {
+            "metalk8s_kubernetes.ping": MagicMock(return_value=True),
+            "http.query": MagicMock(return_value=self.READYZ_PENDING),
+        }
+        with patch.dict(metalk8s.__salt__, patch_dict):
+            with self.assertRaisesRegex(
+                CommandExecutionError, "RBAC bootstrap.*did not complete after 2"
+            ):
+                metalk8s.wait_apiserver(retry=2, interval=0, verify_rbac=True)
 
     @parameterized.expand(
         [

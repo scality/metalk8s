@@ -314,11 +314,15 @@ Run the highstate:
 
 Wait for API server to be available:
   http.wait_for_successful_query:
-  - name: https://127.0.0.1:7443/healthz
-  - match: 'ok'
+  - name: https://127.0.0.1:7443/readyz?verbose
+  - match: 'poststarthook/rbac/bootstrap-roles ok'
   - status: 200
   - verify_ssl: false
-  - request_interval: 1
+  - request_interval: 5
+  - wait_for: 420
+  - timeout: 10
+  - require:
+    - salt: Run the highstate
 
 Uncordon the node:
   metalk8s_cordon.node_uncordoned:
