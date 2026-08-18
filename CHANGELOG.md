@@ -8,7 +8,9 @@
   reading the dynamic client's `version` property. That property is answered from
   an on-disk discovery cache with no expiry, so on any node where an earlier call
   had succeeded the probe returned `True` without reaching the apiserver at all —
-  including while it was down, which is precisely when it is asked
+  including while it was down, which is precisely when it is asked. The request
+  discards the response body and times out after 10s, so an unresponsive
+  apiserver now yields `False` rather than blocking the caller indefinitely
   (PR[#5082](https://github.com/scality/metalk8s/pull/5082))
 
 - `metalk8s.wait_apiserver` now raises instead of returning `False` when the
