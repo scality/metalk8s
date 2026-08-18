@@ -24,6 +24,8 @@ except ImportError:
 
 __virtualname__ = "metalk8s_kubernetes"
 
+PING_REQUEST_TIMEOUT = 10
+
 
 def __virtual__():
     if MISSING_DEPS:
@@ -95,6 +97,9 @@ def ping(**kwargs):
 
     Returns True if a request could be made, False otherwise.
 
+    The response body is discarded: this is a liveness check, not a version
+    read.
+
     CLI Example:
         salt '*' metalk8s_kubernetes.ping
     """
@@ -102,7 +107,12 @@ def ping(**kwargs):
 
     try:
         client = __utils__["metalk8s_kubernetes.get_client"](kubeconfig, context)
-        client.request("get", "/version")
+        client.request(
+            "get",
+            "/version",
+            serialize=False,
+            _request_timeout=PING_REQUEST_TIMEOUT,
+        )
     except (ApiException, HTTPError):
         return False
     return True
