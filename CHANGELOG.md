@@ -100,6 +100,15 @@
   leaving minion-side state failures undiagnosable
   (PR[#5084](https://github.com/scality/metalk8s/pull/5084))
 
+### Bug fixes
+
+- `/etc/containerd/config.toml` is now written only once the container engine package of
+  the running version is installed. It used to be rewritten even when that install had
+  failed, or could not be attempted because the repositories were unusable, which left a
+  `version = 2` configuration on a node running containerd 2.x, so the next containerd
+  restart broke every image pull
+  (PR[#5091](https://github.com/scality/metalk8s/pull/5091))
+
 ## Release 133.0.13
 
 ### Enhancements
