@@ -180,9 +180,10 @@ initContainers:
       - name: NAMESPACE
         value: "{{ tpl (. | join ",") $root }}"
       {{- end }}
-      {{- with .Values.sidecar.alerts.skipTlsVerify }}
+      {{- $skipTlsVerify := ternary .Values.sidecar.alerts.skipTlsVerify .Values.sidecar.skipTlsVerify (kindIs "bool" .Values.sidecar.alerts.skipTlsVerify) }}
+      {{- if $skipTlsVerify }}
       - name: SKIP_TLS_VERIFY
-        value: {{ quote . }}
+        value: "true"
       {{- end }}
       {{- with .Values.sidecar.alerts.script }}
       - name: SCRIPT
@@ -271,9 +272,10 @@ initContainers:
       - name: NAMESPACE
         value: "{{ tpl (. | join ",") $root }}"
       {{- end }}
-      {{- if .Values.sidecar.skipTlsVerify }}
+      {{- $skipTlsVerify := ternary .Values.sidecar.datasources.skipTlsVerify .Values.sidecar.skipTlsVerify (kindIs "bool" .Values.sidecar.datasources.skipTlsVerify) }}
+      {{- if $skipTlsVerify }}
       - name: SKIP_TLS_VERIFY
-        value: "{{ .Values.sidecar.skipTlsVerify }}"
+        value: "true"
       {{- end }}
       {{- with .Values.sidecar.datasources.script }}
       - name: SCRIPT
@@ -412,9 +414,10 @@ initContainers:
       - name: NAMESPACE
         value: "{{ tpl (. | join ",") $root }}"
       {{- end }}
-      {{- with .Values.sidecar.skipTlsVerify }}
+      {{- $skipTlsVerify := ternary .Values.sidecar.notifiers.skipTlsVerify .Values.sidecar.skipTlsVerify (kindIs "bool" .Values.sidecar.notifiers.skipTlsVerify) }}
+      {{- if $skipTlsVerify }}
       - name: SKIP_TLS_VERIFY
-        value: "{{ . }}"
+        value: "true"
       {{- end }}
       {{- with .Values.sidecar.notifiers.script }}
       - name: SCRIPT
@@ -503,9 +506,10 @@ initContainers:
       - name: NAMESPACE
         value: "{{ tpl (. | join ",") $root }}"
       {{- end }}
-      {{- with .Values.sidecar.skipTlsVerify }}
+      {{- $skipTlsVerify := ternary .Values.sidecar.dashboards.skipTlsVerify .Values.sidecar.skipTlsVerify (kindIs "bool" .Values.sidecar.dashboards.skipTlsVerify) }}
+      {{- if $skipTlsVerify }}
       - name: SKIP_TLS_VERIFY
-        value: "{{ . }}"
+        value: "true"
       {{- end }}
       {{- with .Values.sidecar.dashboards.folderAnnotation }}
       - name: FOLDER_ANNOTATION
@@ -650,9 +654,10 @@ containers:
       - name: NAMESPACE
         value: "{{ tpl (. | join ",") $root }}"
       {{- end }}
-      {{- with .Values.sidecar.alerts.skipTlsVerify }}
+      {{- $skipTlsVerify := ternary .Values.sidecar.alerts.skipTlsVerify .Values.sidecar.skipTlsVerify (kindIs "bool" .Values.sidecar.alerts.skipTlsVerify) }}
+      {{- if $skipTlsVerify }}
       - name: SKIP_TLS_VERIFY
-        value: {{ quote . }}
+        value: "true"
       {{- end }}
       {{- with .Values.sidecar.alerts.script }}
       - name: SCRIPT
@@ -778,9 +783,10 @@ containers:
       - name: NAMESPACE
         value: "{{ tpl (. | join ",") $root }}"
       {{- end }}
-      {{- with .Values.sidecar.skipTlsVerify }}
+      {{- $skipTlsVerify := ternary .Values.sidecar.dashboards.skipTlsVerify .Values.sidecar.skipTlsVerify (kindIs "bool" .Values.sidecar.dashboards.skipTlsVerify) }}
+      {{- if $skipTlsVerify }}
       - name: SKIP_TLS_VERIFY
-        value: "{{ . }}"
+        value: "true"
       {{- end }}
       {{- with .Values.sidecar.dashboards.folderAnnotation }}
       - name: FOLDER_ANNOTATION
@@ -910,9 +916,10 @@ containers:
       - name: NAMESPACE
         value: "{{ tpl (. | join ",") $root }}"
       {{- end }}
-      {{- if .Values.sidecar.skipTlsVerify }}
+      {{- $skipTlsVerify := ternary .Values.sidecar.datasources.skipTlsVerify .Values.sidecar.skipTlsVerify (kindIs "bool" .Values.sidecar.datasources.skipTlsVerify) }}
+      {{- if $skipTlsVerify }}
       - name: SKIP_TLS_VERIFY
-        value: "{{ .Values.sidecar.skipTlsVerify }}"
+        value: "true"
       {{- end }}
       {{- with .Values.sidecar.datasources.script }}
       - name: SCRIPT
@@ -1033,9 +1040,10 @@ containers:
       - name: NAMESPACE
         value: "{{ tpl (. | join ",") $root }}"
       {{- end }}
-      {{- with .Values.sidecar.skipTlsVerify }}
+      {{- $skipTlsVerify := ternary .Values.sidecar.notifiers.skipTlsVerify .Values.sidecar.skipTlsVerify (kindIs "bool" .Values.sidecar.notifiers.skipTlsVerify) }}
+      {{- if $skipTlsVerify }}
       - name: SKIP_TLS_VERIFY
-        value: "{{ . }}"
+        value: "true"
       {{- end }}
       {{- with .Values.sidecar.notifiers.script }}
       - name: SCRIPT
@@ -1160,9 +1168,10 @@ containers:
       - name: SCRIPT
         value: {{ quote . }}
       {{- end }}
-      {{- with .Values.sidecar.skipTlsVerify }}
+      {{- $skipTlsVerify := ternary .Values.sidecar.plugins.skipTlsVerify .Values.sidecar.skipTlsVerify (kindIs "bool" .Values.sidecar.plugins.skipTlsVerify) }}
+      {{- if $skipTlsVerify }}
       - name: SKIP_TLS_VERIFY
-        value: "{{ . }}"
+        value: "true"
       {{- end }}
       {{- if and (not .Values.env.GF_SECURITY_ADMIN_USER) (not .Values.env.GF_SECURITY_ADMIN_USER__FILE) (not .Values.env.GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION) }}
       - name: REQ_USERNAME
@@ -1386,6 +1395,10 @@ containers:
       - name: {{ .name }}
         mountPath: {{ .mountPath }}
       {{- end }}
+      {{- if .Values.shadowBundledPlugins }}
+      - name: shadow-bundled-plugins
+        mountPath: /usr/share/grafana/data/plugins-bundled
+      {{- end }}
     ports:
       - name: {{ .Values.podPortName }}
         containerPort: {{ .Values.service.targetPort }}
@@ -1450,6 +1463,11 @@ containers:
         {{- else }}
         value: {{ .Values.imageRenderer.grafanaProtocol }}://{{ include "grafana.fullname" . }}.{{ include "grafana.namespace" . }}:{{ .Values.service.port }}/{{ .Values.imageRenderer.grafanaSubPath }}
         {{- end }}
+      - name: GF_RENDERING_RENDERER_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: {{ .Values.imageRenderer.existingSecret | default (printf "%s-image-renderer" (include "grafana.imageRenderer.fullname" .)) }}
+            key: token
       {{- end }}
       - name: GF_PATHS_DATA
         value: {{ (get .Values "grafana.ini").paths.data }}
@@ -1474,8 +1492,8 @@ containers:
           {{- tpl (toYaml $value) $ | nindent 10 }}
       {{- end }}
       {{- range $key, $value := .Values.env }}
-      - name: "{{ tpl $key $ }}"
-        value: "{{ tpl (print $value) $ }}"
+      - name: {{ tpl $key $ | quote }}
+        value: {{ tpl (print $value) $ | quote }}
       {{- end }}
     {{- if or .Values.envFromSecret (or .Values.envRenderSecret .Values.envFromSecrets) .Values.envFromConfigMaps }}
     envFrom:
@@ -1713,6 +1731,10 @@ volumes:
   {{- end }}
   {{- range .Values.extraEmptyDirMounts }}
   - name: {{ .name }}
+    emptyDir: {}
+  {{- end }}
+  {{- if .Values.shadowBundledPlugins }}
+  - name: shadow-bundled-plugins
     emptyDir: {}
   {{- end }}
   {{- with .Values.extraContainerVolumes }}

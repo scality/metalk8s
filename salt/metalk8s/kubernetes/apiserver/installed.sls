@@ -107,6 +107,8 @@ Create kube-apiserver Pod manifest:
           - --bind-address={{ host }}
           - --encryption-provider-config={{ encryption_k8s_path }}
           - --cors-allowed-origins=^.*$
+          - --default-not-ready-toleration-seconds={{ pillar.kubernetes.apiServer.config.defaultNotReadyTolerationSeconds }}
+          - --default-unreachable-toleration-seconds={{ pillar.kubernetes.apiServer.config.defaultUnreachableTolerationSeconds }}
           - --v={{ 2 if metalk8s.debug else 0 }}
           - --authentication-config={{ authn_config_path }}
           {% if feature_gates %}

@@ -2,13 +2,11 @@
 
 import copy
 import logging
-import time
 import traceback
 import re
+import six
 
 from salt.exceptions import CommandExecutionError
-from salt.ext import six
-
 
 __virtualname__ = "metalk8s"
 log = logging.getLogger(__name__)
@@ -132,25 +130,6 @@ def static_pod_managed(
             return _error(ret, f"Unable to manage file: {exc}")
 
 
-def module_run(name, attempts=1, sleep_time=10, **kwargs):
-    """Classic module.run with a retry logic as it's buggy in salt version
-    https://github.com/saltstack/salt/issues/44639
-    """
-    retry = attempts
-    ret = {"name": name, "changes": {}, "result": False, "comment": ""}
-    while retry > 0 and not ret["result"]:
-        try:
-            ret = __states__["module.run"](name, **kwargs)
-        except Exception as exc:  # pylint: disable=broad-except
-            ret["comment"] = str(exc)
-
-        retry = retry - 1
-        if retry and not ret["result"]:
-            time.sleep(sleep_time)
-
-    return ret
-
-
 def saltutil_cmd(name, **kwargs):
     """Simple `saltutil.cmd` state as `salt.function` do not support roster and
     raw ssh, https://github.com/saltstack/salt/issues/58662"""
@@ -199,9 +178,9 @@ def saltutil_cmd(name, **kwargs):
     else:
         if fail:
             ret["result"] = False
-            ret[
-                "comment"
-            ] = f"Running function {name} failed on minions: {', '.join(fail)}"
+            ret["comment"] = (
+                f"Running function {name} failed on minions: {', '.join(fail)}"
+            )
         else:
             ret["comment"] = "Function ran successfully"
 

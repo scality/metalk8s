@@ -12,46 +12,56 @@ metadata:
   namespace: "kube-system"
 spec:
   containers:
-    - name: {{ name }}
-      image: {{ image_name }}
-      imagePullPolicy: IfNotPresent
-      command:
-      {%- for part in command %}
-        - {{ part }}
+  - command:
+    {%- for part in command %}
+      - {{ part }}
+    {%- endfor %}
+    image: {{ image_name }}
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: 127.0.0.1
+        path: /livez
+        port: http-metrics
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 15
+    name: {{ name }}
+    ports:
+    - containerPort: 2381
+      name: http-metrics
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        host: 127.0.0.1
+        path: /readyz
+        port: http-metrics
+        scheme: HTTP
+      periodSeconds: 1
+      timeoutSeconds: 15
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    startupProbe:
+      failureThreshold: 24
+      httpGet:
+        host: 127.0.0.1
+        path: /readyz
+        port: http-metrics
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 15
+    volumeMounts:
+      {%- for volume in volumes %}
+      - mountPath: {{ volume.path }}
+        name: {{ volume.name }}
+        readOnly: {{ volume.get("readOnly", false) }}
       {%- endfor %}
-      livenessProbe:
-        failureThreshold: 8
-        httpGet:
-          host: 127.0.0.1
-          path: /health?exclude=NOSPACE&serializable=true
-          port: http-metrics
-          scheme: HTTP
-        initialDelaySeconds: 10
-        periodSeconds: 10
-        timeoutSeconds: 15
-      startupProbe:
-        failureThreshold: 24
-        httpGet:
-          host: 127.0.0.1
-          path: /health?serializable=false
-          port: http-metrics
-          scheme: HTTP
-        initialDelaySeconds: 10
-        periodSeconds: 10
-        timeoutSeconds: 15
-      ports:
-        - name: http-metrics
-          containerPort: 2381
-      resources:
-        requests:
-          cpu: 100m
-          memory: 100Mi
-      volumeMounts:
-        {%- for volume in volumes %}
-        - mountPath: {{ volume.path }}
-          name: {{ volume.name }}
-          readOnly: {{ volume.get("readOnly", false) }}
-        {%- endfor %}
   hostNetwork: true
   priority: 2000001000
   priorityClassName: "system-node-critical"

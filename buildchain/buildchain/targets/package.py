@@ -9,7 +9,7 @@ This modules provides several services:
 - download the source files
 - build a SRPM from the source files
 
-Note that for now, it only works for CentOS 7 x86_64.
+Note that for now, it only works for Rocky/RedHat 8 and 9 x86_64.
 
             self.make_package_directory(),
             self.generate_meta(),
@@ -22,7 +22,6 @@ Overview;
 │mkdir│────>│ generate .meta│────>│ download source│────>│ build SRPM │
 └─────┘     └───────────────┘     └────────────────┘     └────────────┘
 """
-
 
 import os
 import operator
@@ -83,7 +82,7 @@ class Package(base.CompositeTarget):
 
 
 class RPMPackage(Package):
-    """A RPM software package for CentOS."""
+    """A RPM software package for Rocky/RedHat."""
 
     SOURCE_URL_PATTERN = re.compile(r"^(Source|Patch)\d+:\s+(?P<url>.+)$")
 
@@ -309,7 +308,9 @@ class RPMPackage(Package):
                     sourcefiles.remove(filename)
                     urls[self.srcdir / filename] = url
         if sourcefiles:
-            raise Exception(f"URL not found for source files: {', '.join(sourcefiles)}")
+            raise ValueError(
+                f"URL not found for source files: {', '.join(sourcefiles)}"
+            )
         return urls
 
     def _get_buildsrpm_mounts(self, srpm_dir: Path) -> List[types.Mount]:

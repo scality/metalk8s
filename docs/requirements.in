@@ -1,17 +1,17 @@
 # Required by Sphinx on Windows
 # Added here because `pip-compile` doesn't work cross-platform.
-colorama >= 0.3.9
-plantuml >= 0.2
+colorama ~= 0.4.6
+plantuml ~= 0.3.0
 PyYAML ~= 6.0
-Sphinx >= 3.0.4
-sphinx_rtd_theme ~= 0.5
-sphinxcontrib_github_alt >= 1.0
-sphinxcontrib-plantuml >= 0.16.1
-sphinxcontrib-spelling >= 4.1
-sphinx-autobuild >= 0.7.1
-sphinx-jinja ~= 1.1
--e git+https://github.com/scality/sphinx-tools.git@v3.0#egg=sphinx_scality
+Sphinx ~= 8.1.3
+sphinx_rtd_theme ~= 3.1.0
+sphinxcontrib_github_alt ~= 1.2
+sphinxcontrib-plantuml ~= 0.31
+sphinxcontrib-spelling ~= 8.0.2
+sphinx-autobuild ~= 2024.10.3
+sphinx-jinja ~= 2.0.2
+-e git+https://github.com/scality/sphinx-tools.git@v5.6.2#egg=sphinx_scality
 
-doc8 >= 0.8.0
+doc8 ~= 2.0.0
 
 -r ../tools/lib-alert-tree/requirements.txt

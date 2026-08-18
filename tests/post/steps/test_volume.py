@@ -137,7 +137,7 @@ def test_volume_recreation_lvm_force(host, teardown):
 # Given {{{
 
 
-@given("a device exists")
+@given("a device exists", target_fixture="device_exists")
 def device_exists(context, host):
     context["device_size"] = "20Gi"
 
@@ -241,9 +241,9 @@ def lvm_lv_was_used(host, name, vg_name):
 # When {{{
 
 
-@when(parsers.parse("I create the following Volume:\n{body}"))
-def create_volume(context, body, volume_client):
-    volume_client.create_from_yaml(body.format(**context))
+@when("I create the following Volume:")
+def create_volume(context, docstring, volume_client):
+    volume_client.create_from_yaml(docstring.format(**context))
 
 
 @when(parsers.parse("I delete the Volume '{name}'"))
@@ -273,9 +273,9 @@ def create_pod_for_volume(volume_name, command, pod_client):
     pod_client.create_with_volume(volume_name, command)
 
 
-@when(parsers.parse("I create the following StorageClass:\n{body}"))
-def create_storage_class(body, sc_client):
-    sc_client.create_from_yaml(body)
+@when("I create the following StorageClass:")
+def create_storage_class(docstring, sc_client):
+    sc_client.create_from_yaml(docstring)
 
 
 @when(parsers.parse("I delete the StorageClass '{name}'"))
@@ -292,7 +292,7 @@ def check_storage_class(name, sc_client):
     assert sc_client.get(name) is not None, "StorageClass {} not found".format(name)
 
 
-@then(parsers.parse("the Volume '{name}' is '{status}'"))
+@then(parsers.re(r"the Volume '(?P<name>[^']+)' is '(?P<status>[^']+)'"))
 def check_volume_status(context, name, status, volume_client):
     volume = volume_client.wait_for_status(name, status)
     context[name] = volume

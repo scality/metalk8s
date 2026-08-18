@@ -6,7 +6,7 @@
 A repository is either built from an existing repository (e.g. epel) or build
 from locally built packages (e.g. scality).
 
-Note that, for now, we only generate CentOS 7 repository for x86_64
+Note that, for now, we only generate Rocky/RedHat 8 and 9 repository for x86_64
 architecture.
 
 Overview:
@@ -46,7 +46,6 @@ from . import base
 from . import image
 from . import package
 from . import directory
-
 
 MKDIR_ROOT_TASK_NAME = "mkdir_repo_root"
 MKDIR_ARCH_TASK_NAME = "mkdir_repo_arch"
@@ -139,7 +138,7 @@ class Repository(base.CompositeTarget):
 
 
 class RPMRepository(Repository):
-    """A software repository for CentOS x86_64."""
+    """A software repository for RHEL/Rocky x86_64."""
 
     ARCH = "x86_64"
 

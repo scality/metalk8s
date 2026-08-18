@@ -2,18 +2,19 @@
 """
 Module for handling MetalK8s specific calls.
 """
+
 import functools
 import itertools
 import logging
 import os.path
 import re
+import six
 import socket
 import tempfile
 import textwrap
 import time
 
 from salt.pillar import get_pillar
-from salt.ext import six
 from salt.exceptions import CommandExecutionError
 import salt.loader
 import salt.template
@@ -436,7 +437,7 @@ def check_pillar_keys(keys, refresh=True, pillar=None, raise_error=True):
         # See https://github.com/saltstack/salt/issues/20590
         pillar = get_pillar(
             __opts__,
-            __grains__,
+            dict(__grains__),
             __grains__["id"],
             saltenv=__opts__.get("saltenv"),
             pillarenv=__opts__.get("pillarenv"),
@@ -784,14 +785,10 @@ def get_from_map(value, saltenv=None):
         else:
             saltenv = f"metalk8s-{current_version}"
 
-    tmplstr = textwrap.dedent(
-        """\
+    tmplstr = textwrap.dedent("""\
         {{% from "{path}" import {value} with context %}}
         {{{{ {value} | tojson }}}}
-        """.format(  # pylint: disable=consider-using-f-string
-            path=path, value=value
-        )
-    )
+        """.format(path=path, value=value))  # pylint: disable=consider-using-f-string
     return salt.template.compile_template(
         ":string:",
         salt.loader.render(__opts__, __salt__),

@@ -7,7 +7,6 @@ import ctypes
 import ctypes.util
 import functools
 
-
 __virtualname__ = "metalk8s_volumes"
 
 

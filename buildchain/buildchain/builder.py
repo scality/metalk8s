@@ -2,7 +2,6 @@
 
 """Tasks to create build containers."""
 
-
 from pathlib import Path
 from typing import Any, Dict, Iterator, Tuple
 
@@ -57,7 +56,20 @@ RPM_BUILDER: Dict[str, LocalImage] = {
         ],
         build_args={
             # Used to template the repository definition
-            "SALT_VERSION": versions.SALT_VERSION,
+            "K8S_SHORT_VERSION": versions.K8S_SHORT_VERSION,
+        },
+    ),
+    "9": _builder_image(
+        name="redhat-9-rpm",
+        dockerfile=constants.ROOT / "packages/redhat/9/Dockerfile",
+        build_context=constants.ROOT / "packages/redhat",
+        file_dep=[
+            REDHAT_REPOS_ROOT / "kubernetes.repo",
+            REDHAT_REPOS_ROOT / "saltstack.repo",
+            REDHAT_REPOS_ROOT / "docker-ce.repo",
+        ],
+        build_args={
+            # Used to template the repository definition
             "K8S_SHORT_VERSION": versions.K8S_SHORT_VERSION,
         },
     ),

@@ -28,7 +28,6 @@ Overview:
                  └────────┘
 """
 
-
 import datetime
 from typing import Any, Dict, Iterator, List, Tuple
 
@@ -273,7 +272,7 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
         name="salt-master",
         build_args={
             "BASE_IMAGE": versions.ROCKY_BASE_IMAGE,
-            "BASE_IMAGE_SHA256": versions.ROCKY_BASE_IMAGE_8_SHA256,
+            "BASE_IMAGE_SHA256": versions.ROCKY_BASE_IMAGE_9_SHA256,
             "SALT_VERSION": versions.SALT_VERSION,
         },
     ),

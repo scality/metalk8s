@@ -15,8 +15,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
-    operator.prometheus.io/version: 0.89.0
+    controller-gen.kubebuilder.io/version: v0.20.1
+    operator.prometheus.io/version: 0.91.0
   name: alertmanagerconfigs.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -1085,6 +1085,14 @@ spec:
                               This is used for SMTP AUTH when the server requires authentication.
                             minLength: 1
                             type: string
+                          forceImplicitTLS:
+                            description: |-
+                              forceImplicitTLS defines whether to force use of implicit TLS (direct TLS connection) for better security.
+                              true: force use of implicit TLS (direct TLS connection on any port)
+                              false: force disable implicit TLS (use explicit TLS/STARTTLS if required)
+                              nil (default): auto-detect based on port (465=implicit, other=explicit) for backward compatibility
+                              It requires Alertmanager >= v0.31.0.
+                            type: boolean
                           from:
                             description: |-
                               from defines the sender address for email notifications.
@@ -1147,6 +1155,22 @@ spec:
                               This provides a fallback for email clients that don't support HTML.
                             minLength: 1
                             type: string
+                          threading:
+                            description: |-
+                              threading defines the threading configuration for email receiver.
+                              It requires Alertmanager >= v0.30.0.
+                            properties:
+                              threadByDate:
+                                description: |-
+                                  threadByDate defines what granularity of current date to thread by. Accepted values: Daily, None.
+                                  (None means group by alert group key, no date).
+                                enum:
+                                - Daily
+                                - None
+                                type: string
+                            required:
+                            - threadByDate
+                            type: object
                           tlsConfig:
                             description: |-
                               tlsConfig defines the TLS configuration for SMTP connections.
@@ -7206,6 +7230,13 @@ spec:
                               linkNames enables automatic linking of channel names and usernames in the message.
                               When true, @channel and @username will be converted to clickable links.
                             type: boolean
+                          messageText:
+                            description: |-
+                              messageText defines text content of the Slack message.
+                              If set, this is sent as the top-level 'text' field in the Slack payload.
+                              It requires Alertmanager >= v0.31.0.
+                            minLength: 1
+                            type: string
                           mrkdwnIn:
                             description: |-
                               mrkdwnIn defines which fields should be parsed as Slack markdown.
@@ -8023,6 +8054,12 @@ spec:
                                 - key
                                 type: object
                                 x-kubernetes-map-type: atomic
+                              externalId:
+                                description: |-
+                                  externalId defines the external ID used when assuming an AWS role. Can only be used with roleArn.
+                                  It requires Prometheus >= v3.11.0 or Alertmanager >= v0.33.0. Currently not supported by Thanos.
+                                minLength: 1
+                                type: string
                               profile:
                                 description: profile defines the named AWS profile
                                   used to authenticate.
@@ -8067,6 +8104,10 @@ spec:
                                   It requires Prometheus >= v2.54.0.
                                 type: boolean
                             type: object
+                            x-kubernetes-validations:
+                            - message: externalId can only be used when roleArn is
+                                specified
+                              rule: '!has(self.externalId) || has(self.roleArn)'
                           subject:
                             description: |-
                               subject defines the subject line when the message is delivered to email endpoints.
@@ -12163,8 +12204,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
-    operator.prometheus.io/version: 0.89.0
+    controller-gen.kubebuilder.io/version: v0.20.1
+    operator.prometheus.io/version: 0.91.0
   name: alertmanagers.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -13998,6 +14039,36 @@ spec:
                             pattern: ^(http|https)://.+$
                             type: string
                         type: object
+                      mattermost:
+                        description: mattermost defines the default Mattermost Config
+                        properties:
+                          webhookURL:
+                            description: |-
+                              webhookURL defines the default Mattermost Webhook URL.
+                              It requires Alertmanager >= v0.32.0.
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                default: ''
+                                description: |-
+                                  Name of the referent.
+                                  This field is effectively required, but due to backwards compatibility is
+                                  allowed to be empty. Instances of this type with an empty value here are
+                                  almost certainly wrong.
+                                  More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                            x-kubernetes-map-type: atomic
+                        type: object
                       opsGenieApiKey:
                         description: opsGenieApiKey defines the default OpsGenie API
                           Key.
@@ -14206,6 +14277,14 @@ spec:
                               LOGIN and PLAIN. If empty, Alertmanager doesn't authenticate
                               to the SMTP server.
                             type: string
+                          forceImplicitTLS:
+                            description: |-
+                              forceImplicitTLS defines whether to force use of implicit TLS (direct TLS connection) for better security.
+                              true: force use of implicit TLS (direct TLS connection on any port)
+                              false: force disable implicit TLS (use explicit TLS/STARTTLS if required)
+                              nil (default): auto-detect based on port (465=implicit, other=explicit) for backward compatibility
+                              It requires Alertmanager >= v0.31.0.
+                            type: boolean
                           from:
                             description: from defines the default SMTP From header
                               field.
@@ -15000,14 +15079,18 @@ spec:
                 type: string
               containers:
                 description: |-
-                  containers allows injecting additional containers. This is meant to
-                  allow adding an authentication proxy to an Alertmanager pod.
-                  Containers described here modify an operator generated container if they
-                  share the same name and modifications are done via a strategic merge
-                  patch. The current container names are: `alertmanager` and
-                  `config-reloader`. Overriding containers is entirely outside the scope
-                  of what the maintainers will support and by doing so, you accept that
-                  this behaviour may break at any time without notice.
+                  containers allows injecting additional containers or modifying operator
+                  generated containers. This can be used to allow adding an authentication
+                  proxy to the Pods or to change the behavior of an operator generated
+                  container. Containers described here modify an operator generated
+                  container if they share the same name and modifications are done via a
+                  strategic merge patch.
+                  The names of containers managed by the operator are:
+                  * `alertmanager`
+                  * `config-reloader`
+                  * `thanos-sidecar`
+                  Overriding containers which are managed by the operator require careful
+                  testing, especially when upgrading to a new version of the operator.
                 items:
                   description: A single application container that you want to run
                     within a pod.
@@ -15872,7 +15955,9 @@ spec:
                           type: integer
                       type: object
                     resizePolicy:
-                      description: Resources resize policy for the container.
+                      description: |-
+                        Resources resize policy for the container.
+                        This field cannot be set on ephemeral containers.
                       items:
                         description: ContainerResizePolicy represents resource resize
                           policy for the container.
@@ -16675,15 +16760,19 @@ spec:
                 type: array
               initContainers:
                 description: |-
-                  initContainers allows adding initContainers to the pod definition. Those can be used to e.g.
-                  fetch secrets for injection into the Alertmanager configuration from external sources. Any
-                  errors during the execution of an initContainer will lead to a restart of the Pod. More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
-                  InitContainers described here modify an operator
-                  generated init containers if they share the same name and modifications are
-                  done via a strategic merge patch. The current init container name is:
-                  `init-config-reloader`. Overriding init containers is entirely outside the
-                  scope of what the maintainers will support and by doing so, you accept that
-                  this behaviour may break at any time without notice.
+                  initContainers allows injecting initContainers to the Pod definition. Those
+                  can be used to e.g.  fetch secrets for injection into the Prometheus
+                  configuration from external sources. Any errors during the execution of
+                  an initContainer will lead to a restart of the Pod. More info:
+                  https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+                  InitContainers described here modify an operator generated init
+                  containers if they share the same name and modifications are done via a
+                  strategic merge patch.
+                  The names of init container name managed by the operator are:
+                  * `init-config-reloader`.
+                  Overriding init containers which are managed by the operator require
+                  careful testing, especially when upgrading to a new version of the
+                  operator.
                 items:
                   description: A single application container that you want to run
                     within a pod.
@@ -17548,7 +17637,9 @@ spec:
                           type: integer
                       type: object
                     resizePolicy:
-                      description: Resources resize policy for the container.
+                      description: |-
+                        Resources resize policy for the container.
+                        This field cannot be set on ephemeral containers.
                       items:
                         description: ContainerResizePolicy represents resource resize
                           policy for the container.
@@ -18423,6 +18514,11 @@ spec:
                   and the actual ExternalURL is still true, but the server serves requests
                   under a different route prefix. For example for use with `kubectl proxy`.
                 type: string
+              schedulerName:
+                description: schedulerName defines the scheduler to use for Pod scheduling.
+                  If not specified, the default scheduler is used.
+                minLength: 1
+                type: string
               secrets:
                 description: |-
                   secrets is a list of Secrets in the same namespace as the Alertmanager
@@ -18847,7 +18943,7 @@ spec:
                               resources:
                                 description: |-
                                   resources represents the minimum resources the volume should have.
-                                  If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                  Users are allowed to specify resource requirements
                                   that are lower than previous value but must still be higher than capacity recorded in the
                                   status field of the claim.
                                   More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -19102,7 +19198,7 @@ spec:
                           resources:
                             description: |-
                               resources represents the minimum resources the volume should have.
-                              If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                              Users are allowed to specify resource requirements
                               that are lower than previous value but must still be higher than capacity recorded in the
                               status field of the claim.
                               More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -19261,8 +19357,7 @@ spec:
                               \ For example - a controller that\nonly is responsible\
                               \ for resizing capacity of the volume, should ignore\
                               \ PVC updates that change other valid\nresources associated\
-                              \ with PVC.\nThis is an alpha field and requires enabling\
-                              \ RecoverVolumeExpansionFailure feature."
+                              \ with PVC."
                             type: object
                             x-kubernetes-map-type: granular
                           allocatedResources:
@@ -19296,8 +19391,7 @@ spec:
                               \ For example - a controller that\nonly is responsible\
                               \ for resizing capacity of the volume, should ignore\
                               \ PVC updates that change other valid\nresources associated\
-                              \ with PVC.\nThis is an alpha field and requires enabling\
-                              \ RecoverVolumeExpansionFailure feature."
+                              \ with PVC."
                             type: object
                           capacity:
                             additionalProperties:
@@ -19430,9 +19524,10 @@ spec:
                     operator:
                       description: |-
                         Operator represents a key's relationship to the value.
-                        Valid operators are Exists and Equal. Defaults to Equal.
+                        Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
                         Exists is equivalent to wildcard for value, so that a pod can
                         tolerate all taints of a particular category.
+                        Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
                       type: string
                     tolerationSeconds:
                       description: |-
@@ -20307,7 +20402,7 @@ spec:
                                 resources:
                                   description: |-
                                     resources represents the minimum resources the volume should have.
-                                    If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                    Users are allowed to specify resource requirements
                                     that are lower than previous value but must still be higher than capacity recorded in the
                                     status field of the claim.
                                     More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -21166,6 +21261,21 @@ spec:
                                     description: Kubelet's generated CSRs will be
                                       addressed to this signer.
                                     type: string
+                                  userAnnotations:
+                                    additionalProperties:
+                                      type: string
+                                    description: |-
+                                      userAnnotations allow pod authors to pass additional information to
+                                      the signer implementation.  Kubernetes does not restrict or validate this
+                                      metadata in any way.
+                                      These values are copied verbatim into the `spec.unverifiedUserAnnotations` field of
+                                      the PodCertificateRequest objects that Kubelet creates.
+                                      Entries are subject to the same validation as object metadata annotations,
+                                      with the addition that all keys must be domain-prefixed. No restrictions
+                                      are placed on values, except an overall size limitation on the entire field.
+                                      Signers should document the keys and values they support. Signers should
+                                      deny requests that contain keys they do not recognize.
+                                    type: object
                                 required:
                                 - keyType
                                 - signerName
@@ -21959,8 +22069,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
-    operator.prometheus.io/version: 0.89.0
+    controller-gen.kubebuilder.io/version: v0.20.1
+    operator.prometheus.io/version: 0.91.0
   name: podmonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -23294,8 +23404,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
-    operator.prometheus.io/version: 0.89.0
+    controller-gen.kubebuilder.io/version: v0.20.1
+    operator.prometheus.io/version: 0.91.0
   name: probes.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -24662,8 +24772,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
-    operator.prometheus.io/version: 0.89.0
+    controller-gen.kubebuilder.io/version: v0.20.1
+    operator.prometheus.io/version: 0.91.0
   name: prometheusagents.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -26119,9 +26229,8 @@ spec:
                   * `prometheus`
                   * `config-reloader`
                   * `thanos-sidecar`
-                  Overriding containers is entirely outside the scope of what the
-                  maintainers will support and by doing so, you accept that this behaviour
-                  may break at any time without notice.
+                  Overriding containers which are managed by the operator require careful
+                  testing, especially when upgrading to a new version of the operator.
                 items:
                   description: A single application container that you want to run
                     within a pod.
@@ -26986,7 +27095,9 @@ spec:
                           type: integer
                       type: object
                     resizePolicy:
-                      description: Resources resize policy for the container.
+                      description: |-
+                        Resources resize policy for the container.
+                        This field cannot be set on ephemeral containers.
                       items:
                         description: ContainerResizePolicy represents resource resize
                           policy for the container.
@@ -27985,7 +28096,7 @@ spec:
               initContainers:
                 description: |-
                   initContainers allows injecting initContainers to the Pod definition. Those
-                  can be used to e.g.  fetch secrets for injection into the Prometheus
+                  can be used to e.g. fetch secrets for injection into the Prometheus
                   configuration from external sources. Any errors during the execution of
                   an initContainer will lead to a restart of the Pod. More info:
                   https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
@@ -27994,9 +28105,9 @@ spec:
                   strategic merge patch.
                   The names of init container name managed by the operator are:
                   * `init-config-reloader`.
-                  Overriding init containers is entirely outside the scope of what the
-                  maintainers will support and by doing so, you accept that this behaviour
-                  may break at any time without notice.
+                  Overriding init containers which are managed by the operator require
+                  careful testing, especially when upgrading to a new version of the
+                  operator.
                 items:
                   description: A single application container that you want to run
                     within a pod.
@@ -28861,7 +28972,9 @@ spec:
                           type: integer
                       type: object
                     resizePolicy:
-                      description: Resources resize policy for the container.
+                      description: |-
+                        Resources resize policy for the container.
+                        This field cannot be set on ephemeral containers.
                       items:
                         description: ContainerResizePolicy represents resource resize
                           policy for the container.
@@ -30790,6 +30903,12 @@ spec:
                           - key
                           type: object
                           x-kubernetes-map-type: atomic
+                        externalId:
+                          description: |-
+                            externalId defines the external ID used when assuming an AWS role. Can only be used with roleArn.
+                            It requires Prometheus >= v3.11.0 or Alertmanager >= v0.33.0. Currently not supported by Thanos.
+                          minLength: 1
+                          type: string
                         profile:
                           description: profile defines the named AWS profile used
                             to authenticate.
@@ -30834,6 +30953,9 @@ spec:
                             It requires Prometheus >= v2.54.0.
                           type: boolean
                       type: object
+                      x-kubernetes-validations:
+                      - message: externalId can only be used when roleArn is specified
+                        rule: '!has(self.externalId) || has(self.roleArn)'
                     tlsConfig:
                       description: tlsConfig to use for the URL.
                       properties:
@@ -31012,9 +31134,10 @@ spec:
                           type: string
                       type: object
                     url:
-                      description: url defines the URL of the endpoint to send samples
-                        to.
-                      minLength: 1
+                      description: |-
+                        url defines the URL of the endpoint to send samples to.
+                        It must use the HTTP or HTTPS scheme.
+                      pattern: ^(http|https)://.+$
                       type: string
                     writeRelabelConfigs:
                       description: writeRelabelConfigs defines the list of remote
@@ -31215,6 +31338,11 @@ spec:
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedSampleLimit.
                 format: int64
                 type: integer
+              schedulerName:
+                description: schedulerName defines the scheduler to use for Pod scheduling.
+                  If not specified, the default scheduler is used.
+                minLength: 1
+                type: string
               scrapeClasses:
                 description: |-
                   scrapeClasses defines the list of scrape classes to expose to scraping objects such as
@@ -31670,7 +31798,8 @@ spec:
                   scrapeConfigNamespaceSelector defines the namespaces to match for ScrapeConfig discovery. An empty label selector
                   matches all namespaces. A null label selector matches the current
                   namespace only.
-                  Note that the ScrapeConfig custom resource definition is currently at Alpha level.
+                  Note that the ScrapeConfig custom resource definition is currently at Alpha level
+                  and will be graduated to Beta in a future release.
                 properties:
                   matchExpressions:
                     description: matchExpressions is a list of label selector requirements.
@@ -31727,7 +31856,8 @@ spec:
                   This behavior is *deprecated* and will be removed in the next major version
                   of the custom resource definition. It is recommended to use
                   `spec.additionalScrapeConfigs` instead.
-                  Note that the ScrapeConfig custom resource definition is currently at Alpha level.
+                  Note that the ScrapeConfig custom resource definition is currently at Alpha level
+                  and will be graduated to Beta in a future release.
                 properties:
                   matchExpressions:
                     description: matchExpressions is a list of label selector requirements.
@@ -32192,6 +32322,51 @@ spec:
                   See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#stable-network-id for more details.
                 minLength: 1
                 type: string
+              shardingStrategy:
+                description: |-
+                  shardingStrategy defines the sharding strategy for distributing scraped targets across Prometheus shards.
+                  When not defined, the operator defaults to the 'Address' mode which distributes
+                  targets based on a hash of the target address.
+                properties:
+                  mode:
+                    description: |-
+                      mode defines the sharding mode. Can be 'Address' or 'Topology'.
+                      'Address' is the default mode and distributes targets across shards
+                      based on a hash of the target address.
+                      'Topology' enables zone-aware sharding where each shard is assigned to a
+                      specific topology zone and only scrapes targets in that zone.
+                      (Alpha) Using the 'Topology' mode requires the `PrometheusTopologySharding`
+                      feature gate to be enabled.
+                    enum:
+                    - Address
+                    - Topology
+                    type: string
+                  topology:
+                    description: |-
+                      topology defines the configuration for topology-aware sharding.
+                      This field is only valid when mode is set to 'Topology'.
+                    properties:
+                      externalLabelName:
+                        description: |-
+                          externalLabelName defines the name of the Prometheus external label used
+                          to communicate the topology zone assigned to the Prometheus instance.
+                          If not defined, it defaults to "zone".
+                          If set to the empty string, no external label is added to the Prometheus configuration.
+                        type: string
+                      values:
+                        description: |-
+                          values defines the list of topology values (e.g. zone names) to be used
+                          for sharding. The configured number of shards must be greater than or
+                          equal to the number of values.
+                        items:
+                          type: string
+                        type: array
+                        x-kubernetes-list-type: atomic
+                    type: object
+                type: object
+                x-kubernetes-validations:
+                - message: topology can only be defined when mode is set to 'Topology'
+                  rule: '!has(self.topology) || (has(self.mode) && self.mode == ''Topology'')'
               shards:
                 description: |-
                   shards defines the number of shards to distribute the scraped targets onto.
@@ -32382,7 +32557,7 @@ spec:
                               resources:
                                 description: |-
                                   resources represents the minimum resources the volume should have.
-                                  If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                  Users are allowed to specify resource requirements
                                   that are lower than previous value but must still be higher than capacity recorded in the
                                   status field of the claim.
                                   More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -32637,7 +32812,7 @@ spec:
                           resources:
                             description: |-
                               resources represents the minimum resources the volume should have.
-                              If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                              Users are allowed to specify resource requirements
                               that are lower than previous value but must still be higher than capacity recorded in the
                               status field of the claim.
                               More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -32796,8 +32971,7 @@ spec:
                               \ For example - a controller that\nonly is responsible\
                               \ for resizing capacity of the volume, should ignore\
                               \ PVC updates that change other valid\nresources associated\
-                              \ with PVC.\nThis is an alpha field and requires enabling\
-                              \ RecoverVolumeExpansionFailure feature."
+                              \ with PVC."
                             type: object
                             x-kubernetes-map-type: granular
                           allocatedResources:
@@ -32831,8 +33005,7 @@ spec:
                               \ For example - a controller that\nonly is responsible\
                               \ for resizing capacity of the volume, should ignore\
                               \ PVC updates that change other valid\nresources associated\
-                              \ with PVC.\nThis is an alpha field and requires enabling\
-                              \ RecoverVolumeExpansionFailure feature."
+                              \ with PVC."
                             type: object
                           capacity:
                             additionalProperties:
@@ -32967,9 +33140,10 @@ spec:
                     operator:
                       description: |-
                         Operator represents a key's relationship to the value.
-                        Valid operators are Exists and Equal. Defaults to Equal.
+                        Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
                         Exists is equivalent to wildcard for value, so that a pod can
                         tolerate all taints of a particular category.
+                        Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
                       type: string
                     tolerationSeconds:
                       description: |-
@@ -34102,7 +34276,7 @@ spec:
                                 resources:
                                   description: |-
                                     resources represents the minimum resources the volume should have.
-                                    If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                    Users are allowed to specify resource requirements
                                     that are lower than previous value but must still be higher than capacity recorded in the
                                     status field of the claim.
                                     More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -34961,6 +35135,21 @@ spec:
                                     description: Kubelet's generated CSRs will be
                                       addressed to this signer.
                                     type: string
+                                  userAnnotations:
+                                    additionalProperties:
+                                      type: string
+                                    description: |-
+                                      userAnnotations allow pod authors to pass additional information to
+                                      the signer implementation.  Kubernetes does not restrict or validate this
+                                      metadata in any way.
+                                      These values are copied verbatim into the `spec.unverifiedUserAnnotations` field of
+                                      the PodCertificateRequest objects that Kubelet creates.
+                                      Entries are subject to the same validation as object metadata annotations,
+                                      with the addition that all keys must be domain-prefixed. No restrictions
+                                      are placed on values, except an overall size limitation on the entire field.
+                                      Signers should document the keys and values they support. Signers should
+                                      deny requests that contain keys they do not recognize.
+                                    type: object
                                 required:
                                 - keyType
                                 - signerName
@@ -35682,6 +35871,14 @@ spec:
               rule: '!(has(self.mode) && self.mode == ''DaemonSet'' && has(self.serviceMonitorNamespaceSelector))'
             - message: additionalScrapeConfigs cannot be set when mode is DaemonSet
               rule: '!(has(self.mode) && self.mode == ''DaemonSet'' && has(self.additionalScrapeConfigs))'
+            - message: shardingStrategy cannot be set when mode is DaemonSet
+              rule: '!(has(self.mode) && self.mode == ''DaemonSet'' && has(self.shardingStrategy))'
+            - message: shards must be greater than or equal to the number of topology
+                values when sharding strategy mode is Topology
+              rule: '!has(self.shardingStrategy) || !has(self.shardingStrategy.mode)
+                || self.shardingStrategy.mode != ''Topology'' || !has(self.shardingStrategy.topology)
+                || !has(self.shardingStrategy.topology.values) || self.shardingStrategy.topology.values.size()
+                == 0 || (has(self.shards) ? self.shards : 1) >= self.shardingStrategy.topology.values.size()'
           status:
             description: |-
               status defines the most recent observed status of the Prometheus cluster. Read-only.
@@ -35828,8 +36025,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
-    operator.prometheus.io/version: 0.89.0
+    controller-gen.kubebuilder.io/version: v0.20.1
+    operator.prometheus.io/version: 0.91.0
   name: prometheuses.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -37344,6 +37541,12 @@ spec:
                               - key
                               type: object
                               x-kubernetes-map-type: atomic
+                            externalId:
+                              description: |-
+                                externalId defines the external ID used when assuming an AWS role. Can only be used with roleArn.
+                                It requires Prometheus >= v3.11.0 or Alertmanager >= v0.33.0. Currently not supported by Thanos.
+                              minLength: 1
+                              type: string
                             profile:
                               description: profile defines the named AWS profile used
                                 to authenticate.
@@ -37388,6 +37591,9 @@ spec:
                                 It requires Prometheus >= v2.54.0.
                               type: boolean
                           type: object
+                          x-kubernetes-validations:
+                          - message: externalId can only be used when roleArn is specified
+                            rule: '!has(self.externalId) || has(self.roleArn)'
                         timeout:
                           description: timeout defines a per-target Alertmanager timeout
                             when pushing alerts.
@@ -37999,9 +38205,8 @@ spec:
                   * `prometheus`
                   * `config-reloader`
                   * `thanos-sidecar`
-                  Overriding containers is entirely outside the scope of what the
-                  maintainers will support and by doing so, you accept that this behaviour
-                  may break at any time without notice.
+                  Overriding containers which are managed by the operator require careful
+                  testing, especially when upgrading to a new version of the operator.
                 items:
                   description: A single application container that you want to run
                     within a pod.
@@ -38866,7 +39071,9 @@ spec:
                           type: integer
                       type: object
                     resizePolicy:
-                      description: Resources resize policy for the container.
+                      description: |-
+                        Resources resize policy for the container.
+                        This field cannot be set on ephemeral containers.
                       items:
                         description: ContainerResizePolicy represents resource resize
                           policy for the container.
@@ -39903,7 +40110,7 @@ spec:
               initContainers:
                 description: |-
                   initContainers allows injecting initContainers to the Pod definition. Those
-                  can be used to e.g.  fetch secrets for injection into the Prometheus
+                  can be used to e.g. fetch secrets for injection into the Prometheus
                   configuration from external sources. Any errors during the execution of
                   an initContainer will lead to a restart of the Pod. More info:
                   https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
@@ -39912,9 +40119,9 @@ spec:
                   strategic merge patch.
                   The names of init container name managed by the operator are:
                   * `init-config-reloader`.
-                  Overriding init containers is entirely outside the scope of what the
-                  maintainers will support and by doing so, you accept that this behaviour
-                  may break at any time without notice.
+                  Overriding init containers which are managed by the operator require
+                  careful testing, especially when upgrading to a new version of the
+                  operator.
                 items:
                   description: A single application container that you want to run
                     within a pod.
@@ -40779,7 +40986,9 @@ spec:
                           type: integer
                       type: object
                     resizePolicy:
-                      description: Resources resize policy for the container.
+                      description: |-
+                        Resources resize policy for the container.
+                        This field cannot be set on ephemeral containers.
                       items:
                         description: ContainerResizePolicy represents resource resize
                           policy for the container.
@@ -43484,6 +43693,12 @@ spec:
                           - key
                           type: object
                           x-kubernetes-map-type: atomic
+                        externalId:
+                          description: |-
+                            externalId defines the external ID used when assuming an AWS role. Can only be used with roleArn.
+                            It requires Prometheus >= v3.11.0 or Alertmanager >= v0.33.0. Currently not supported by Thanos.
+                          minLength: 1
+                          type: string
                         profile:
                           description: profile defines the named AWS profile used
                             to authenticate.
@@ -43528,6 +43743,9 @@ spec:
                             It requires Prometheus >= v2.54.0.
                           type: boolean
                       type: object
+                      x-kubernetes-validations:
+                      - message: externalId can only be used when roleArn is specified
+                        rule: '!has(self.externalId) || has(self.roleArn)'
                     tlsConfig:
                       description: tlsConfig to use for the URL.
                       properties:
@@ -43706,9 +43924,10 @@ spec:
                           type: string
                       type: object
                     url:
-                      description: url defines the URL of the endpoint to send samples
-                        to.
-                      minLength: 1
+                      description: |-
+                        url defines the URL of the endpoint to send samples to.
+                        It must use the HTTP or HTTPS scheme.
+                      pattern: ^(http|https)://.+$
                       type: string
                     writeRelabelConfigs:
                       description: writeRelabelConfigs defines the list of remote
@@ -44051,6 +44270,11 @@ spec:
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedSampleLimit.
                 format: int64
                 type: integer
+              schedulerName:
+                description: schedulerName defines the scheduler to use for Pod scheduling.
+                  If not specified, the default scheduler is used.
+                minLength: 1
+                type: string
               scrapeClasses:
                 description: |-
                   scrapeClasses defines the list of scrape classes to expose to scraping objects such as
@@ -44506,7 +44730,8 @@ spec:
                   scrapeConfigNamespaceSelector defines the namespaces to match for ScrapeConfig discovery. An empty label selector
                   matches all namespaces. A null label selector matches the current
                   namespace only.
-                  Note that the ScrapeConfig custom resource definition is currently at Alpha level.
+                  Note that the ScrapeConfig custom resource definition is currently at Alpha level
+                  and will be graduated to Beta in a future release.
                 properties:
                   matchExpressions:
                     description: matchExpressions is a list of label selector requirements.
@@ -44563,7 +44788,8 @@ spec:
                   This behavior is *deprecated* and will be removed in the next major version
                   of the custom resource definition. It is recommended to use
                   `spec.additionalScrapeConfigs` instead.
-                  Note that the ScrapeConfig custom resource definition is currently at Alpha level.
+                  Note that the ScrapeConfig custom resource definition is currently at Alpha level
+                  and will be graduated to Beta in a future release.
                 properties:
                   matchExpressions:
                     description: matchExpressions is a list of label selector requirements.
@@ -45042,12 +45268,16 @@ spec:
                 properties:
                   retain:
                     description: |-
-                      retain defines the config for retention when the retention policy is set to `Retain`.
-                      This field is ineffective as of now.
+                      retain defines the config for retention when the retention policy is set
+                      to `Retain`.
+                      If not defined, the operator will use the retention duration configured
+                      for the Prometheus data. If the resource uses size-based retention, the
+                      shard(s) are kept forever (unless manually deleted).
                     properties:
                       retentionPeriod:
-                        description: retentionPeriod defines the retentionPeriod for
-                          shard retention policy.
+                        description: |-
+                          retentionPeriod defines how long the scaled-down shard(s) need to be
+                          kept before being deleted.
                         pattern: ^(0|(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
                         type: string
                     required:
@@ -45064,6 +45294,51 @@ spec:
                     - Delete
                     type: string
                 type: object
+              shardingStrategy:
+                description: |-
+                  shardingStrategy defines the sharding strategy for distributing scraped targets across Prometheus shards.
+                  When not defined, the operator defaults to the 'Address' mode which distributes
+                  targets based on a hash of the target address.
+                properties:
+                  mode:
+                    description: |-
+                      mode defines the sharding mode. Can be 'Address' or 'Topology'.
+                      'Address' is the default mode and distributes targets across shards
+                      based on a hash of the target address.
+                      'Topology' enables zone-aware sharding where each shard is assigned to a
+                      specific topology zone and only scrapes targets in that zone.
+                      (Alpha) Using the 'Topology' mode requires the `PrometheusTopologySharding`
+                      feature gate to be enabled.
+                    enum:
+                    - Address
+                    - Topology
+                    type: string
+                  topology:
+                    description: |-
+                      topology defines the configuration for topology-aware sharding.
+                      This field is only valid when mode is set to 'Topology'.
+                    properties:
+                      externalLabelName:
+                        description: |-
+                          externalLabelName defines the name of the Prometheus external label used
+                          to communicate the topology zone assigned to the Prometheus instance.
+                          If not defined, it defaults to "zone".
+                          If set to the empty string, no external label is added to the Prometheus configuration.
+                        type: string
+                      values:
+                        description: |-
+                          values defines the list of topology values (e.g. zone names) to be used
+                          for sharding. The configured number of shards must be greater than or
+                          equal to the number of values.
+                        items:
+                          type: string
+                        type: array
+                        x-kubernetes-list-type: atomic
+                    type: object
+                type: object
+                x-kubernetes-validations:
+                - message: topology can only be defined when mode is set to 'Topology'
+                  rule: '!has(self.topology) || (has(self.mode) && self.mode == ''Topology'')'
               shards:
                 description: |-
                   shards defines the number of shards to distribute the scraped targets onto.
@@ -45254,7 +45529,7 @@ spec:
                               resources:
                                 description: |-
                                   resources represents the minimum resources the volume should have.
-                                  If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                  Users are allowed to specify resource requirements
                                   that are lower than previous value but must still be higher than capacity recorded in the
                                   status field of the claim.
                                   More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -45509,7 +45784,7 @@ spec:
                           resources:
                             description: |-
                               resources represents the minimum resources the volume should have.
-                              If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                              Users are allowed to specify resource requirements
                               that are lower than previous value but must still be higher than capacity recorded in the
                               status field of the claim.
                               More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -45668,8 +45943,7 @@ spec:
                               \ For example - a controller that\nonly is responsible\
                               \ for resizing capacity of the volume, should ignore\
                               \ PVC updates that change other valid\nresources associated\
-                              \ with PVC.\nThis is an alpha field and requires enabling\
-                              \ RecoverVolumeExpansionFailure feature."
+                              \ with PVC."
                             type: object
                             x-kubernetes-map-type: granular
                           allocatedResources:
@@ -45703,8 +45977,7 @@ spec:
                               \ For example - a controller that\nonly is responsible\
                               \ for resizing capacity of the volume, should ignore\
                               \ PVC updates that change other valid\nresources associated\
-                              \ with PVC.\nThis is an alpha field and requires enabling\
-                              \ RecoverVolumeExpansionFailure feature."
+                              \ with PVC."
                             type: object
                           capacity:
                             additionalProperties:
@@ -45884,7 +46157,7 @@ spec:
                   grpcServerTlsConfig:
                     description: |-
                       grpcServerTlsConfig defines the TLS parameters for the gRPC server providing the StoreAPI.
-                      Note: Currently only the `caFile`, `certFile`, and `keyFile` fields are supported.
+                      Note: Currently only the `minVersion`, `caFile`, `certFile`, `keyFile`, `cipherSuites` and `curves` fields are supported.
                     properties:
                       ca:
                         description: ca defines the Certificate authority used when
@@ -46002,6 +46275,34 @@ spec:
                         description: certFile defines the path to the client cert
                           file in the Prometheus container for the targets.
                         type: string
+                      cipherSuites:
+                        description: |-
+                          cipherSuites defines the list of supported cipher suites for TLS
+                          versions up to TLS 1.2.
+                          If not defined, the Go default cipher suites are used.
+                          Available cipher suites are documented in the Go documentation:
+                          https://golang.org/pkg/crypto/tls/#pkg-constants
+                          It requires Thanos >= v0.42.0. Note that the operator doesn't verify if
+                          the Thanos version supports the provided values.
+                        items:
+                          type: string
+                        minItems: 1
+                        type: array
+                        x-kubernetes-list-type: set
+                      curves:
+                        description: |-
+                          curves defines the list of preferred elliptic curves for
+                          TLS handshakes.
+                          If not defined, the Go default curves are used.
+                          Available curves are documented in the Go documentation:
+                          https://golang.org/pkg/crypto/tls/#CurveID
+                          It requires Thanos >= v0.42.0. Note that the operator doesn't verify if
+                          the Thanos version supports the provided values.
+                        items:
+                          type: string
+                        minItems: 1
+                        type: array
+                        x-kubernetes-list-type: set
                       insecureSkipVerify:
                         description: insecureSkipVerify defines how to disable target
                           certificate validation.
@@ -46338,9 +46639,10 @@ spec:
                     operator:
                       description: |-
                         Operator represents a key's relationship to the value.
-                        Valid operators are Exists and Equal. Defaults to Equal.
+                        Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
                         Exists is equivalent to wildcard for value, so that a pod can
                         tolerate all taints of a particular category.
+                        Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
                       type: string
                     tolerationSeconds:
                       description: |-
@@ -47473,7 +47775,7 @@ spec:
                                 resources:
                                   description: |-
                                     resources represents the minimum resources the volume should have.
-                                    If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                    Users are allowed to specify resource requirements
                                     that are lower than previous value but must still be higher than capacity recorded in the
                                     status field of the claim.
                                     More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -48332,6 +48634,21 @@ spec:
                                     description: Kubelet's generated CSRs will be
                                       addressed to this signer.
                                     type: string
+                                  userAnnotations:
+                                    additionalProperties:
+                                      type: string
+                                    description: |-
+                                      userAnnotations allow pod authors to pass additional information to
+                                      the signer implementation.  Kubernetes does not restrict or validate this
+                                      metadata in any way.
+                                      These values are copied verbatim into the `spec.unverifiedUserAnnotations` field of
+                                      the PodCertificateRequest objects that Kubelet creates.
+                                      Entries are subject to the same validation as object metadata annotations,
+                                      with the addition that all keys must be domain-prefixed. No restrictions
+                                      are placed on values, except an overall size limitation on the entire field.
+                                      Signers should document the keys and values they support. Signers should
+                                      deny requests that contain keys they do not recognize.
+                                    type: object
                                 required:
                                 - keyType
                                 - signerName
@@ -49027,6 +49344,13 @@ spec:
                     type: object
                 type: object
             type: object
+            x-kubernetes-validations:
+            - message: shards must be greater than or equal to the number of topology
+                values when sharding strategy mode is Topology
+              rule: '!has(self.shardingStrategy) || !has(self.shardingStrategy.mode)
+                || self.shardingStrategy.mode != ''Topology'' || !has(self.shardingStrategy.topology)
+                || !has(self.shardingStrategy.topology.values) || self.shardingStrategy.topology.values.size()
+                == 0 || (has(self.shards) ? self.shards : 1) >= self.shardingStrategy.topology.values.size()'
           status:
             description: |-
               status defines the most recent observed status of the Prometheus cluster. Read-only.
@@ -49173,8 +49497,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
-    operator.prometheus.io/version: 0.89.0
+    controller-gen.kubebuilder.io/version: v0.20.1
+    operator.prometheus.io/version: 0.91.0
   name: prometheusrules.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -49436,8 +49760,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
-    operator.prometheus.io/version: 0.89.0
+    controller-gen.kubebuilder.io/version: v0.20.1
+    operator.prometheus.io/version: 0.91.0
   name: scrapeconfigs.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -49534,6 +49858,7 @@ spec:
                       - OAuth
                       - ManagedIdentity
                       - SDK
+                      - WorkloadIdentity
                       type: string
                     authorization:
                       description: |-
@@ -50076,7 +50401,7 @@ spec:
                       minLength: 1
                       type: string
                     tlsConfig:
-                      description: tlsConfig defies the TLS configuration applying
+                      description: tlsConfig defines the TLS configuration applying
                         to the target HTTP endpoint.
                       properties:
                         ca:
@@ -50430,7 +50755,7 @@ spec:
                     filter:
                       description: |-
                         filter defines the filter expression used to filter the catalog results.
-                        See https://www.consul.io/api-docs/catalog#list-services
+                        See https://developer.hashicorp.com/consul/api-docs/catalog#filtering
                         It requires Prometheus >= 3.0.0.
                       minLength: 1
                       type: string
@@ -50438,6 +50763,13 @@ spec:
                       description: followRedirects defines whether HTTP requests follow
                         HTTP 3xx redirects.
                       type: boolean
+                    healthFilter:
+                      description: |-
+                        healthFilter defines the filter expression used to filter the health results.
+                        See https://developer.hashicorp.com/consul/api-docs/health#filtering
+                        It requires Prometheus >= 3.11.2.
+                      minLength: 1
+                      type: string
                     namespace:
                       description: |-
                         namespace are only supported in Consul Enterprise.
@@ -51089,7 +51421,7 @@ spec:
                   properties:
                     authorization:
                       description: |-
-                        authorization defines the  header configuration to authenticate against the DigitalOcean API.
+                        authorization defines the header configuration to authenticate against the DigitalOcean API.
                         Cannot be set at the same time as `oauth2`.
                       properties:
                         credentials:
@@ -51519,7 +51851,7 @@ spec:
                       type: string
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the DigitalOcean API.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -51745,7 +52077,7 @@ spec:
                   properties:
                     authorization:
                       description: |-
-                        authorization defines the  header configuration to authenticate against the DigitalOcean API.
+                        authorization defines the header configuration to authenticate against the Docker daemon.
                         Cannot be set at the same time as `oauth2`.
                       properties:
                         credentials:
@@ -51849,6 +52181,7 @@ spec:
                         properties:
                           name:
                             description: name of the Filter.
+                            minLength: 1
                             type: string
                           values:
                             description: values defines values to filter on.
@@ -51871,8 +52204,9 @@ spec:
                         HTTP 3xx redirects.
                       type: boolean
                     host:
-                      description: host defines the address of the docker daemon
+                      description: host defines the address of the docker daemon.
                       minLength: 1
+                      pattern: ^[a-zA-Z][a-zA-Z0-9+.-]*://.+$
                       type: string
                     hostNetworkingHost:
                       description: hostNetworkingHost defines the host to use if the
@@ -52273,7 +52607,7 @@ spec:
                       type: string
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the Docker daemon.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -52451,7 +52785,7 @@ spec:
                   properties:
                     authorization:
                       description: |-
-                        authorization defines the  header configuration to authenticate against the DigitalOcean API.
+                        authorization defines the header configuration to authenticate against the Docker Swarm API.
                         Cannot be set at the same time as `oauth2`.
                       properties:
                         credentials:
@@ -52560,6 +52894,7 @@ spec:
                         properties:
                           name:
                             description: name of the Filter.
+                            minLength: 1
                             type: string
                           values:
                             description: values defines values to filter on.
@@ -52983,7 +53318,7 @@ spec:
                       type: string
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the Docker Swarm daemon.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -53206,6 +53541,7 @@ spec:
                         properties:
                           name:
                             description: name of the Filter.
+                            minLength: 1
                             type: string
                           values:
                             description: values defines values to filter on.
@@ -53326,7 +53662,7 @@ spec:
                       x-kubernetes-map-type: atomic
                     tlsConfig:
                       description: |-
-                        tlsConfig defines the TLS configuration to connect to the Consul API.
+                        tlsConfig defines the TLS configuration to connect to the EC2 API.
                         It requires Prometheus >= v2.41.0
                       properties:
                         ca:
@@ -53513,7 +53849,7 @@ spec:
                   properties:
                     authorization:
                       description: |-
-                        authorization defines the  header configuration to authenticate against the DigitalOcean API.
+                        authorization defines the header configuration to authenticate against the Eureka server.
                         Cannot be set at the same time as `oauth2`.
                       properties:
                         credentials:
@@ -53994,12 +54330,11 @@ spec:
                     server:
                       description: server defines the URL to connect to the Eureka
                         server.
-                      minLength: 1
-                      pattern: ^http(s)?://.+$
+                      pattern: ^https?://.+$
                       type: string
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the Eureka server.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -54277,7 +54612,7 @@ spec:
                   properties:
                     authorization:
                       description: |-
-                        authorization defines the  header configuration to authenticate against the DigitalOcean API.
+                        authorization defines the header configuration to authenticate against the Hetzner API.
                         Cannot be set at the same time as `oauth2`.
                       properties:
                         credentials:
@@ -54779,7 +55114,7 @@ spec:
                       type: string
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the Hetzner API.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -55617,8 +55952,7 @@ spec:
                     url:
                       description: url defines the URL from which the targets are
                         fetched.
-                      minLength: 1
-                      pattern: ^http(s)?://.+$
+                      pattern: ^https?://.+$
                       type: string
                   required:
                   - url
@@ -55634,7 +55968,7 @@ spec:
                   properties:
                     authorization:
                       description: |-
-                        authorization defines the  header configuration to authenticate against the IONOS.
+                        authorization defines the header configuration to authenticate against the IONOS API.
                         Cannot be set at the same time as `oauth2`.
                       properties:
                         credentials:
@@ -56069,7 +56403,7 @@ spec:
                       type: string
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the IONOS API.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -57007,7 +57341,7 @@ spec:
                   properties:
                     authorization:
                       description: |-
-                        authorization defines the  header configuration to authenticate against the DigitalOcean API.
+                        authorization defines the header configuration to authenticate against the Kuma control plane.
                         Cannot be set at the same time as `oauth2`.
                       properties:
                         credentials:
@@ -57503,7 +57837,7 @@ spec:
                       type: string
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the Kuma control plane.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -57723,7 +58057,7 @@ spec:
                       x-kubernetes-map-type: atomic
                     authorization:
                       description: |-
-                        authorization defines the  header configuration to authenticate against the DigitalOcean API.
+                        authorization defines the header configuration to authenticate against the Lightsail API.
                         Cannot be set at the same time as `oauth2`.
                       properties:
                         credentials:
@@ -58221,6 +58555,7 @@ spec:
                     roleARN:
                       description: roleARN defines the AWS Role ARN, an alternative
                         to using AWS API keys.
+                      minLength: 1
                       type: string
                     secretKey:
                       description: secretKey defines the AWS API secret.
@@ -58248,7 +58583,7 @@ spec:
                       x-kubernetes-map-type: atomic
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the Lightsail API.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -58424,7 +58759,7 @@ spec:
                   properties:
                     authorization:
                       description: |-
-                        authorization defines the  header configuration to authenticate against the DigitalOcean API.
+                        authorization defines the header configuration to authenticate against the Linode API.
                         Cannot be set at the same time as `oauth2`.
                       properties:
                         credentials:
@@ -58864,7 +59199,7 @@ spec:
                       type: string
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the Linode API.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -59174,7 +59509,7 @@ spec:
                       type: boolean
                     authorization:
                       description: |-
-                        authorization defines the  header configuration to authenticate against the DigitalOcean API.
+                        authorization defines the header configuration to authenticate against the Nomad API.
                         Cannot be set at the same time as `oauth2`.
                       properties:
                         credentials:
@@ -59277,6 +59612,7 @@ spec:
                       description: |-
                         namespace defines the Nomad namespace to query for service discovery.
                         When specified, only resources within this namespace will be discovered.
+                      minLength: 1
                       type: string
                     noProxy:
                       description: |-
@@ -59661,21 +59997,23 @@ spec:
                       description: |-
                         region defines the Nomad region to query for service discovery.
                         When specified, only resources within this region will be discovered.
+                      minLength: 1
                       type: string
                     server:
                       description: |-
                         server defines the Nomad server address to connect to for service discovery.
                         This should be the full URL including protocol (e.g., "https://nomad.example.com:4646").
-                      minLength: 1
+                      pattern: ^https?://.+$
                       type: string
                     tagSeparator:
                       description: |-
                         tagSeparator defines the separator used to join multiple tags.
                         This determines how Nomad service tags are concatenated into Prometheus labels.
+                      minLength: 1
                       type: string
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the Nomad API.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -60181,6 +60519,7 @@ spec:
                       type: boolean
                     applicationCredentialId:
                       description: applicationCredentialId defines the OpenStack applicationCredentialId.
+                      minLength: 1
                       type: string
                     applicationCredentialName:
                       description: |-
@@ -60241,7 +60580,7 @@ spec:
                       description: |-
                         identityEndpoint defines the HTTP endpoint that is required to work with
                         the Identity API of the appropriate version.
-                      pattern: ^http(s)?:\/\/.+$
+                      pattern: ^https?://.+$
                       type: string
                     password:
                       description: |-
@@ -60644,7 +60983,7 @@ spec:
                   properties:
                     authorization:
                       description: |-
-                        authorization defines the  header configuration to authenticate against the DigitalOcean API.
+                        authorization defines the header configuration to authenticate against the PuppetDB API.
                         Cannot be set at the same time as `oauth2`.
                       properties:
                         credentials:
@@ -61145,7 +61484,7 @@ spec:
                       type: string
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the PuppetDB server.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -61312,8 +61651,7 @@ spec:
                     url:
                       description: url defines the URL of the PuppetDB root query
                         endpoint.
-                      minLength: 1
-                      pattern: ^http(s)?://.+$
+                      pattern: ^https?://.+$
                       type: string
                   required:
                   - query
@@ -61417,6 +61755,8 @@ spec:
                   description: |-
                     ScalewaySDConfig configurations allow retrieving scrape targets from Scaleway instances and baremetal services.
                     See https://prometheus.io/docs/prometheus/latest/configuration/configuration/#scaleway_sd_config
+                    Note: The `_file` variants of credential fields (e.g. `secret_key_file`)
+                    from the Prometheus configuration are not supported. Use Kubernetes secrets via `secretKey` instead.
                   properties:
                     accessKey:
                       description: accessKey defines the access key to use. https://console.scaleway.com/project/credentials
@@ -61425,7 +61765,7 @@ spec:
                     apiURL:
                       description: apiURL defines the API URL to use when doing the
                         server listing requests.
-                      pattern: ^http(s)?://.+$
+                      pattern: ^https?://.+$
                       type: string
                     enableHTTP2:
                       description: enableHTTP2 defines whether to enable HTTP2.
@@ -61549,7 +61889,7 @@ spec:
                       x-kubernetes-list-type: set
                     tlsConfig:
                       description: tlsConfig defines the TLS configuration to connect
-                        to the Consul API.
+                        to the Scaleway API.
                       properties:
                         ca:
                           description: ca defines the Certificate authority used when
@@ -61803,9 +62143,9 @@ spec:
                       description: targets defines the list of targets for this static
                         configuration.
                       items:
-                        description: |-
-                          Target represents a target for Prometheus to scrape
-                          kubebuilder:validation:MinLength:=1
+                        description: Target represents a target for Prometheus to
+                          scrape
+                        minLength: 1
                         type: string
                       minItems: 1
                       type: array
@@ -61993,6 +62333,10 @@ spec:
                   It requires Prometheus >= v2.48.0.
                 type: boolean
             type: object
+            x-kubernetes-validations:
+            - message: at most one of basicAuth, authorization, or oauth2 can be configured
+              rule: '[has(self.basicAuth), has(self.authorization), has(self.oauth2)].filter(x,
+                x).size() <= 1'
           status:
             description: |-
               status defines the status subresource. It is under active development and is updated only when the
@@ -62107,8 +62451,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
-    operator.prometheus.io/version: 0.89.0
+    controller-gen.kubebuilder.io/version: v0.20.1
+    operator.prometheus.io/version: 0.91.0
   name: servicemonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -63460,8 +63804,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
-    operator.prometheus.io/version: 0.89.0
+    controller-gen.kubebuilder.io/version: v0.20.1
+    operator.prometheus.io/version: 0.91.0
   name: thanosrulers.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -64562,13 +64906,17 @@ spec:
                 type: array
               containers:
                 description: |-
-                  containers allows injecting additional containers or modifying operator generated
-                  containers. This can be used to allow adding an authentication proxy to a ThanosRuler pod or
-                  to change the behavior of an operator generated container. Containers described here modify
-                  an operator generated container if they share the same name and modifications are done via a
-                  strategic merge patch. The current container names are: `thanos-ruler` and `config-reloader`.
-                  Overriding containers is entirely outside the scope of what the maintainers will support and by doing
-                  so, you accept that this behaviour may break at any time without notice.
+                  containers allows injecting additional containers or modifying operator
+                  generated containers. This can be used to allow adding an authentication
+                  proxy to the Pods or to change the behavior of an operator generated
+                  container. Containers described here modify an operator generated
+                  container if they share the same name and modifications are done via a
+                  strategic merge patch.
+                  The names of containers managed by the operator are:
+                  * `thanos-ruler`
+                  * `config-reloader`
+                  Overriding containers which are managed by the operator require careful
+                  testing, especially when upgrading to a new version of the operator.
                 items:
                   description: A single application container that you want to run
                     within a pod.
@@ -65433,7 +65781,9 @@ spec:
                           type: integer
                       type: object
                     resizePolicy:
-                      description: Resources resize policy for the container.
+                      description: |-
+                        Resources resize policy for the container.
+                        This field cannot be set on ephemeral containers.
                       items:
                         description: ContainerResizePolicy represents resource resize
                           policy for the container.
@@ -66211,8 +66561,7 @@ spec:
                 description: |-
                   grpcServerTlsConfig defines the gRPC server from which Thanos Querier reads
                   recorded rule data.
-                  Note: Currently only the CAFile, CertFile, and KeyFile fields are supported.
-                  Maps to the '--grpc-server-tls-*' CLI args.
+                  Note: Currently only the `minVersion`, `caFile`, `certFile`, `keyFile`, `cipherSuites` and `curves` fields are supported.
                 properties:
                   ca:
                     description: ca defines the Certificate authority used when verifying
@@ -66330,6 +66679,34 @@ spec:
                     description: certFile defines the path to the client cert file
                       in the Prometheus container for the targets.
                     type: string
+                  cipherSuites:
+                    description: |-
+                      cipherSuites defines the list of supported cipher suites for TLS
+                      versions up to TLS 1.2.
+                      If not defined, the Go default cipher suites are used.
+                      Available cipher suites are documented in the Go documentation:
+                      https://golang.org/pkg/crypto/tls/#pkg-constants
+                      It requires Thanos >= v0.42.0. Note that the operator doesn't verify if
+                      the Thanos version supports the provided values.
+                    items:
+                      type: string
+                    minItems: 1
+                    type: array
+                    x-kubernetes-list-type: set
+                  curves:
+                    description: |-
+                      curves defines the list of preferred elliptic curves for
+                      TLS handshakes.
+                      If not defined, the Go default curves are used.
+                      Available curves are documented in the Go documentation:
+                      https://golang.org/pkg/crypto/tls/#CurveID
+                      It requires Thanos >= v0.42.0. Note that the operator doesn't verify if
+                      the Thanos version supports the provided values.
+                    items:
+                      type: string
+                    minItems: 1
+                    type: array
+                    x-kubernetes-list-type: set
                   insecureSkipVerify:
                     description: insecureSkipVerify defines how to disable target
                       certificate validation.
@@ -66455,13 +66832,11 @@ spec:
                 type: array
               initContainers:
                 description: |-
-                  initContainers allows adding initContainers to the pod definition. Those can be used to e.g.
-                  fetch secrets for injection into the ThanosRuler configuration from external sources. Any
-                  errors during the execution of an initContainer will lead to a restart of the Pod.
-                  More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
-                  Using initContainers for any use case other then secret fetching is entirely outside the scope
-                  of what the maintainers will support and by doing so, you accept that this behaviour may break
-                  at any time without notice.
+                  initContainers allows injecting initContainers to the Pod definition.
+                  Those can be used to e.g. fetch secrets for injection into the
+                  configuration from external sources. Any errors during the execution of
+                  an initContainer will lead to a restart of the Pod. More info:
+                  https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
                 items:
                   description: A single application container that you want to run
                     within a pod.
@@ -67326,7 +67701,9 @@ spec:
                           type: integer
                       type: object
                     resizePolicy:
-                      description: Resources resize policy for the container.
+                      description: |-
+                        Resources resize policy for the container.
+                        This field cannot be set on ephemeral containers.
                       items:
                         description: ContainerResizePolicy represents resource resize
                           policy for the container.
@@ -68960,6 +69337,12 @@ spec:
                           - key
                           type: object
                           x-kubernetes-map-type: atomic
+                        externalId:
+                          description: |-
+                            externalId defines the external ID used when assuming an AWS role. Can only be used with roleArn.
+                            It requires Prometheus >= v3.11.0 or Alertmanager >= v0.33.0. Currently not supported by Thanos.
+                          minLength: 1
+                          type: string
                         profile:
                           description: profile defines the named AWS profile used
                             to authenticate.
@@ -69004,6 +69387,9 @@ spec:
                             It requires Prometheus >= v2.54.0.
                           type: boolean
                       type: object
+                      x-kubernetes-validations:
+                      - message: externalId can only be used when roleArn is specified
+                        rule: '!has(self.externalId) || has(self.roleArn)'
                     tlsConfig:
                       description: tlsConfig to use for the URL.
                       properties:
@@ -69182,9 +69568,10 @@ spec:
                           type: string
                       type: object
                     url:
-                      description: url defines the URL of the endpoint to send samples
-                        to.
-                      minLength: 1
+                      description: |-
+                        url defines the URL of the endpoint to send samples to.
+                        It must use the HTTP or HTTPS scheme.
+                      pattern: ^(http|https)://.+$
                       type: string
                     writeRelabelConfigs:
                       description: writeRelabelConfigs defines the list of remote
@@ -69477,6 +69864,11 @@ spec:
                     type: object
                 type: object
                 x-kubernetes-map-type: atomic
+              schedulerName:
+                description: schedulerName defines the scheduler to use for Pod scheduling.
+                  If not specified, the default scheduler is used.
+                minLength: 1
+                type: string
               securityContext:
                 description: |-
                   securityContext defines the pod-level security attributes and common container settings.
@@ -69884,7 +70276,7 @@ spec:
                               resources:
                                 description: |-
                                   resources represents the minimum resources the volume should have.
-                                  If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                  Users are allowed to specify resource requirements
                                   that are lower than previous value but must still be higher than capacity recorded in the
                                   status field of the claim.
                                   More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -70139,7 +70531,7 @@ spec:
                           resources:
                             description: |-
                               resources represents the minimum resources the volume should have.
-                              If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                              Users are allowed to specify resource requirements
                               that are lower than previous value but must still be higher than capacity recorded in the
                               status field of the claim.
                               More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -70298,8 +70690,7 @@ spec:
                               \ For example - a controller that\nonly is responsible\
                               \ for resizing capacity of the volume, should ignore\
                               \ PVC updates that change other valid\nresources associated\
-                              \ with PVC.\nThis is an alpha field and requires enabling\
-                              \ RecoverVolumeExpansionFailure feature."
+                              \ with PVC."
                             type: object
                             x-kubernetes-map-type: granular
                           allocatedResources:
@@ -70333,8 +70724,7 @@ spec:
                               \ For example - a controller that\nonly is responsible\
                               \ for resizing capacity of the volume, should ignore\
                               \ PVC updates that change other valid\nresources associated\
-                              \ with PVC.\nThis is an alpha field and requires enabling\
-                              \ RecoverVolumeExpansionFailure feature."
+                              \ with PVC."
                             type: object
                           capacity:
                             additionalProperties:
@@ -70461,9 +70851,10 @@ spec:
                     operator:
                       description: |-
                         Operator represents a key's relationship to the value.
-                        Valid operators are Exists and Equal. Defaults to Equal.
+                        Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
                         Exists is equivalent to wildcard for value, so that a pod can
                         tolerate all taints of a particular category.
+                        Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
                       type: string
                     tolerationSeconds:
                       description: |-
@@ -71375,7 +71766,7 @@ spec:
                                 resources:
                                   description: |-
                                     resources represents the minimum resources the volume should have.
-                                    If RecoverVolumeExpansionFailure feature is enabled users are allowed to specify resource requirements
+                                    Users are allowed to specify resource requirements
                                     that are lower than previous value but must still be higher than capacity recorded in the
                                     status field of the claim.
                                     More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
@@ -72234,6 +72625,21 @@ spec:
                                     description: Kubelet's generated CSRs will be
                                       addressed to this signer.
                                     type: string
+                                  userAnnotations:
+                                    additionalProperties:
+                                      type: string
+                                    description: |-
+                                      userAnnotations allow pod authors to pass additional information to
+                                      the signer implementation.  Kubernetes does not restrict or validate this
+                                      metadata in any way.
+                                      These values are copied verbatim into the `spec.unverifiedUserAnnotations` field of
+                                      the PodCertificateRequest objects that Kubelet creates.
+                                      Entries are subject to the same validation as object metadata annotations,
+                                      with the addition that all keys must be domain-prefixed. No restrictions
+                                      are placed on values, except an overall size limitation on the entire field.
+                                      Signers should document the keys and values they support. Signers should
+                                      deny requests that contain keys they do not recognize.
+                                    type: object
                                 required:
                                 - keyType
                                 - signerName
@@ -73010,8 +73416,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 12.4.2
-    helm.sh/chart: grafana-11.3.6
+    app.kubernetes.io/version: 13.0.2
+    helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 ---
@@ -73025,8 +73431,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.18.0
-    helm.sh/chart: kube-state-metrics-7.2.2
+    app.kubernetes.io/version: 2.19.1
+    helm.sh/chart: kube-state-metrics-7.5.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -73042,8 +73448,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.10.2
-    helm.sh/chart: prometheus-node-exporter-4.52.2
+    app.kubernetes.io/version: 1.11.1
+    helm.sh/chart: prometheus-node-exporter-4.55.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-node-exporter
@@ -73060,8 +73466,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -73079,8 +73485,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -73098,8 +73504,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -73117,8 +73523,8 @@ metadata:
     app.kubernetes.io/component: admin-secret
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 12.4.2
-    helm.sh/chart: grafana-11.3.6
+    app.kubernetes.io/version: 13.0.2
+    helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 type: Opaque
@@ -73142,8 +73548,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 12.4.2
-    helm.sh/chart: grafana-11.3.6
+    app.kubernetes.io/version: 13.0.2
+    helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana-config-dashboards
   namespace: metalk8s-monitoring
 ---
@@ -73168,8 +73574,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_datasource: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -73214,8 +73620,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -73233,10 +73639,10 @@ data:
     Mixed --"},"description":"How many percent of requests (both read and write) in
     30 days have been answered successfully and fast enough?","fieldConfig":{"defaults":{"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":8,"x":0,"y":2},"id":2,"interval":"1m","pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"apiserver_request:availability30d{verb=\"all\",
     cluster=\"$cluster\"}"}],"title":"Availability (30d) > 99.000%","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"description":"How much error budget is left looking at our 0.990%
-    availability guarantees?","fieldConfig":{"defaults":{"custom":{"fillOpacity":100},"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":16,"x":8,"y":2},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"100
-    * (apiserver_request:availability30d{verb=\"all\", cluster=\"$cluster\"} - 0.990000)","legendFormat":"errorbudget"}],"title":"ErrorBudget
-    (30d) > 99.000%","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
+    Mixed --"},"description":"How much error budget is left looking at our 99.000%
+    availability guarantee?","fieldConfig":{"defaults":{"custom":{"fillOpacity":100},"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":16,"x":8,"y":2},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"100
+    * (apiserver_request:availability30d{verb=\"all\", cluster=\"$cluster\"} - 0.990000)","legendFormat":"error
+    budget"}],"title":"Error Budget (30d) > 99.000%","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"description":"How many percent of read requests (LIST,GET) in 30 days
     have been answered successfully and fast enough?","fieldConfig":{"defaults":{"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":6,"x":0,"y":9},"id":4,"interval":"1m","pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"apiserver_request:availability30d{verb=\"read\",
     cluster=\"$cluster\"}"}],"title":"Read Availability (30d)","type":"stat"},{"datasource":{"type":"datasource","uid":"--
@@ -73300,8 +73706,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -73323,7 +73729,7 @@ data:
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Transmitted","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bits/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Namespace"},"properties":[{"id":"links","value":[{"title":"Drill
-    down","url":"/d/8b7a8b326d7a6f1f04244066368c67af/kubernetes-networking-namespace-pods?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    down","url":"/d/8b7a8b326d7a6f1f04244066368c67af?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (namespace) (\n    (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
@@ -73416,8 +73822,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -73476,8 +73882,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74039,8 +74445,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74082,8 +74488,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74191,8 +74597,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74224,7 +74630,7 @@ data:
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\"}))
     by (namespace)","legendFormat":"__auto"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Namespace"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":12},"id":8,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_owner{job=\"kube-state-metrics\",
+    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":12},"id":8,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_owner{job=\"kube-state-metrics\",
     cluster=\"$cluster\"}) by (namespace)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"count(avg(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\"})
     by (workload, namespace)) by (namespace)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\"}))
@@ -74251,7 +74657,7 @@ data:
     Usage"},"properties":[{"id":"unit","value":"bytes"}]},{"matcher":{"id":"byName","options":"Memory
     Requests"},"properties":[{"id":"unit","value":"bytes"}]},{"matcher":{"id":"byName","options":"Memory
     Limits"},"properties":[{"id":"unit","value":"bytes"}]},{"matcher":{"id":"byName","options":"Namespace"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":24},"id":10,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_owner{job=\"kube-state-metrics\",
+    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":24},"id":10,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_owner{job=\"kube-state-metrics\",
     cluster=\"$cluster\"}) by (namespace)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"count(avg(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\"})
     by (workload, namespace)) by (namespace)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_rss{job=\"kubelet\",
@@ -74275,7 +74681,7 @@ data:
     #C":"Memory Usage","Value #D":"Memory Requests","Value #E":"Memory Requests %","Value
     #F":"Memory Limits","Value #G":"Memory Limits %","namespace":"Namespace"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bandwidth/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Namespace"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":30},"id":11,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":30},"id":11,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
@@ -74335,7 +74741,7 @@ data:
     cluster=\"$cluster\", namespace!=\"\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\", namespace!=\"\"}[$__rate_interval]))","legendFormat":"__auto"}],"title":"ThroughPut(Read+Write)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/IOPS/"},"properties":[{"id":"unit","value":"iops"}]},{"matcher":{"id":"byRegexp","options":"/Throughput/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byName","options":"Namespace"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":96},"id":22,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":96},"id":22,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by(namespace) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     container!=\"\", cluster=\"$cluster\", namespace!=\"\"}[$__rate_interval]))","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
@@ -74377,8 +74783,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74410,7 +74816,7 @@ data:
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m))
     by (cluster)","legendFormat":"__auto"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Cluster"},"properties":[{"id":"links","value":[{"title":"Drill
-    down","url":"/d/efa86fd1d0c121a26444b636a3f509a8/kubernetes-compute-resources-cluster?${datasource:queryparam}&var-cluster=${__data.fields.Cluster}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":2},"id":8,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down","url":"/d/efa86fd1d0c121a26444b636a3f509a8?${datasource:queryparam}&var-cluster=${__data.fields.Cluster}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":2},"id":8,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m))
     by (cluster)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     resource=\"cpu\"}) by (cluster)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
@@ -74432,7 +74838,7 @@ data:
     metrics_path=\"/metrics/cadvisor\", container!=\"\"})) by (cluster)","legendFormat":"__auto"}],"title":"Memory
     Usage (w/o cache)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Cluster"},"properties":[{"id":"links","value":[{"title":"Drill
-    down","url":"/d/efa86fd1d0c121a26444b636a3f509a8/kubernetes-compute-resources-cluster?${datasource:queryparam}&var-cluster=${__data.fields.Cluster}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":4},"id":10,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down","url":"/d/efa86fd1d0c121a26444b636a3f509a8?${datasource:queryparam}&var-cluster=${__data.fields.Cluster}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":4},"id":10,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_rss{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", container!=\"\"})) by (cluster)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     resource=\"memory\"}) by (cluster)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
@@ -74460,8 +74866,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74502,7 +74908,7 @@ data:
     namespace=\"$namespace\", type=\"hard\",resource=\"limits.cpu\"}))","legendFormat":"quota
     - limits"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":6,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":6,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     namespace=\"$namespace\"})) by (pod)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\",
@@ -74530,7 +74936,7 @@ data:
     namespace=\"$namespace\", type=\"hard\",resource=\"limits.memory\"}))","legendFormat":"quota
     - limits"}],"title":"Memory Usage (w/o cache)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":8,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":8,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
     container!=\"\", image!=\"\"})) by (pod)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
@@ -74563,7 +74969,7 @@ data:
     #D":"Memory Limits","Value #E":"Memory Limits %","Value #F":"Memory Usage (RSS)","Value
     #G":"Memory Usage (Cache)","Value #H":"Memory Usage (Swap)","pod":"Pod"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bandwidth/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":35},"id":9,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":35},"id":9,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))) by (pod)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
@@ -74612,7 +75018,7 @@ data:
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))","legendFormat":"__auto"}],"title":"ThroughPut(Read+Write)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/IOPS/"},"properties":[{"id":"unit","value":"iops"}]},{"matcher":{"id":"byRegexp","options":"/Throughput/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":70},"id":18,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":70},"id":18,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by(pod) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
@@ -74657,8 +75063,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74679,7 +75085,7 @@ data:
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     node=~\"$node\"})) by (pod)","legendFormat":"{{pod}}"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":6},"id":2,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":6},"id":2,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     node=~\"$node\"})) by (pod)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\",
@@ -74716,7 +75122,7 @@ data:
     node=~\"$node\", container!=\"\"})) by (pod)","legendFormat":"{{pod}}"}],"title":"Memory
     Usage (w/o cache)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":24},"id":5,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":24},"id":5,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_memory_working_set_bytes{cluster=\"$cluster\",
     node=~\"$node\",container!=\"\"})) by (pod)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\",
@@ -74756,8 +75162,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74940,8 +75346,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74959,7 +75365,7 @@ data:
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}\n)
     by (pod)\n","legendFormat":"__auto"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":2,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":2,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     namespace=\"$namespace\"})\n  * on(cluster, namespace, pod)\n    group_left(workload,
     workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -75005,7 +75411,7 @@ data:
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}\n)
     by (pod)\n","legendFormat":"__auto"}],"title":"Memory Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":4,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":4,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{cluster=\"$cluster\",
     namespace=\"$namespace\", container!=\"\", image!=\"\"})\n  * on(cluster, namespace,
     pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -75045,7 +75451,7 @@ data:
     Usage","Value #B":"Memory Requests","Value #C":"Memory Requests %","Value #D":"Memory
     Limits","Value #E":"Memory Limits %","pod":"Pod"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bandwidth/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":5,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":5,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -75140,8 +75546,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -75163,7 +75569,7 @@ data:
     namespace=\"$namespace\", type=\"hard\",resource=~\"limits.cpu\"}))","legendFormat":"quota
     - limits"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Workload"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to workloads","url":"/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]},{"matcher":{"id":"byName","options":"Running
+    down to workloads","url":"/d/a164a7f0339f99e89cea5cb47e9be617?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]},{"matcher":{"id":"byName","options":"Running
     Pods"},"properties":[{"id":"unit","value":"none"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":2,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"count(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload_type=~\"$type\"}) by (workload, workload_type)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n  max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
@@ -75216,7 +75622,7 @@ data:
     namespace=\"$namespace\", type=\"hard\",resource=~\"limits.memory\"}))","legendFormat":"quota
     - limits"}],"title":"Memory Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Workload"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to workloads","url":"/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]},{"matcher":{"id":"byName","options":"Running
+    down to workloads","url":"/d/a164a7f0339f99e89cea5cb47e9be617?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]},{"matcher":{"id":"byName","options":"Running
     Pods"},"properties":[{"id":"unit","value":"none"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":4,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"count(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload_type=~\"$type\"}) by (workload, workload_type)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{job=\"kubelet\",
@@ -75261,7 +75667,7 @@ data:
     Requests %","Value #E":"Memory Limits","Value #F":"Memory Limits %","workload":"Workload","workload_type
     1":"Type"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"-- Mixed
     --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bandwidth/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Workload"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to workloads","url":"/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":5,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
+    down to workloads","url":"/d/a164a7f0339f99e89cea5cb47e9be617?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":5,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -75348,8 +75754,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -75365,7 +75771,7 @@ data:
     Kubelets","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":4,"y":0},"id":2,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kubelet_running_pods{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"})","instant":true}],"title":"Running
     Pods","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":8,"y":0},"id":3,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kubelet_running_containers{cluster=\"$cluster\",
-    job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"})","instant":true}],"title":"Running
+    job=\"kubelet\", metrics_path=\"/metrics\", container_state=\"running\", instance=~\"$instance\"})","instant":true}],"title":"Running
     Containers","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed
     --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":12,"y":0},"id":4,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(volume_manager_total_volumes{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\", state=\"actual_state_of_world\"})","instant":true}],"title":"Actual
@@ -75465,8 +75871,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -75488,7 +75894,7 @@ data:
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Transmitted","type":"gauge"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bandwidth/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down","url":"/d/7a18067ce943a40ae25454675c19ff5c/kubernetes-networking-pod?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${namespace}&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    down","url":"/d/7a18067ce943a40ae25454675c19ff5c?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${namespace}&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (pod) (\n    (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n)\n","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
@@ -75558,8 +75964,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -75585,37 +75991,45 @@ data:
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Transmitted","type":"bargauge"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bits/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Workload"},"properties":[{"id":"links","value":[{"title":"Drill
-    down","url":"/d/728bf77cc1166d2f3133bf25846876cc/kubernetes-networking-workload?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${namespace}&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(\n  sum
-    by (workload, workload_type) (\n    (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
-    on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    *
+    down","url":"/d/728bf77cc1166d2f3133bf25846876cc?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${namespace}&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(\n  sum
+    by (workload, workload_type) (\n    sum by (cluster, namespace, pod) (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
+    on (cluster, namespace, pod)\n    topk by (cluster, namespace, pod) (\n      1,\n      max
+    by (cluster, namespace, pod) (kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"})\n    )\n    *
     on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(\n  sum
-    by (workload, workload_type) (\n    (8 * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
-    on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    *
+    by (workload, workload_type) (\n    sum by (cluster, namespace, pod) (8 * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
+    on (cluster, namespace, pod)\n    topk by (cluster, namespace, pod) (\n      1,\n      max
+    by (cluster, namespace, pod) (kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"})\n    )\n    *
     on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(\n  avg
-    by (workload, workload_type) (\n    (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
-    on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    *
+    by (workload, workload_type) (\n    sum by (cluster, namespace, pod) (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
+    on (cluster, namespace, pod)\n    topk by (cluster, namespace, pod) (\n      1,\n      max
+    by (cluster, namespace, pod) (kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"})\n    )\n    *
     on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(\n  avg
-    by (workload, workload_type) (\n    (8 * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
-    on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    *
+    by (workload, workload_type) (\n    sum by (cluster, namespace, pod) (8 * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
+    on (cluster, namespace, pod)\n    topk by (cluster, namespace, pod) (\n      1,\n      max
+    by (cluster, namespace, pod) (kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"})\n    )\n    *
     on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(\n  sum
-    by (workload, workload_type) (\n    (1 * rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
-    on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    *
+    by (workload, workload_type) (\n    sum by (cluster, namespace, pod) (1 * rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
+    on (cluster, namespace, pod)\n    topk by (cluster, namespace, pod) (\n      1,\n      max
+    by (cluster, namespace, pod) (kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"})\n    )\n    *
     on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(\n  sum
-    by (workload, workload_type) (\n    (1 * rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
-    on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    *
+    by (workload, workload_type) (\n    sum by (cluster, namespace, pod) (1 * rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
+    on (cluster, namespace, pod)\n    topk by (cluster, namespace, pod) (\n      1,\n      max
+    by (cluster, namespace, pod) (kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"})\n    )\n    *
     on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(\n  sum
-    by (workload, workload_type) (\n    (1 * rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
-    on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    *
+    by (workload, workload_type) (\n    sum by (cluster, namespace, pod) (1 * rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
+    on (cluster, namespace, pod)\n    topk by (cluster, namespace, pod) (\n      1,\n      max
+    by (cluster, namespace, pod) (kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"})\n    )\n    *
     on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(\n  sum
-    by (workload, workload_type) (\n    (1 * rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
-    on (cluster, namespace, pod) group_left\n    kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"}\n    *
+    by (workload, workload_type) (\n    sum by (cluster, namespace, pod) (1 * rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
+    on (cluster, namespace, pod)\n    topk by (cluster, namespace, pod) (\n      1,\n      max
+    by (cluster, namespace, pod) (kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"})\n    )\n    *
     on (cluster, namespace, pod) group_left (workload, workload_type)\n    namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}\n  )\n)\n","format":"table","instant":true}],"title":"Current
     Status","transformations":[{"id":"joinByField","options":{"byField":"workload","mode":"outer"}},{"id":"organize","options":{"excludeByName":{"Time":true,"Time
@@ -75696,8 +76110,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -76289,8 +76703,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -76893,8 +77307,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -77629,8 +78043,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -77686,8 +78100,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -77740,8 +78154,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -78579,8 +78993,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -78641,8 +79055,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -78713,8 +79127,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -78796,8 +79210,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -78811,8 +79225,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 12.4.2
-    helm.sh/chart: grafana-11.3.6
+    app.kubernetes.io/version: 13.0.2
+    helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana-clusterrole
   namespace: metalk8s-monitoring
 rules:
@@ -78835,8 +79249,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.18.0
-    helm.sh/chart: kube-state-metrics-7.2.2
+    app.kubernetes.io/version: 2.19.1
+    helm.sh/chart: kube-state-metrics-7.5.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -79049,8 +79463,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79174,8 +79588,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79222,8 +79636,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 12.4.2
-    helm.sh/chart: grafana-11.3.6
+    app.kubernetes.io/version: 13.0.2
+    helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana-clusterrolebinding
   namespace: metalk8s-monitoring
 roleRef:
@@ -79244,8 +79658,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.18.0
-    helm.sh/chart: kube-state-metrics-7.2.2
+    app.kubernetes.io/version: 2.19.1
+    helm.sh/chart: kube-state-metrics-7.5.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -79269,8 +79683,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79294,8 +79708,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79310,45 +79724,14 @@ subjects:
   name: prometheus-operator-prometheus
   namespace: metalk8s-monitoring
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 12.4.2
-    helm.sh/chart: grafana-11.3.6
-  name: prometheus-operator-grafana
-  namespace: metalk8s-monitoring
-rules: []
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 12.4.2
-    helm.sh/chart: grafana-11.3.6
-  name: prometheus-operator-grafana
-  namespace: metalk8s-monitoring
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: prometheus-operator-grafana
-subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-grafana
-  namespace: metalk8s-monitoring
----
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 12.4.2
-    helm.sh/chart: grafana-11.3.6
+    app.kubernetes.io/version: 13.0.2
+    helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 spec:
@@ -79372,8 +79755,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.18.0
-    helm.sh/chart: kube-state-metrics-7.2.2
+    app.kubernetes.io/version: 2.19.1
+    helm.sh/chart: kube-state-metrics-7.5.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -79400,8 +79783,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.10.2
-    helm.sh/chart: prometheus-node-exporter-4.52.2
+    app.kubernetes.io/version: 1.11.1
+    helm.sh/chart: prometheus-node-exporter-4.55.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -79427,8 +79810,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79460,8 +79843,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     jobLabel: coredns
     metalk8s.scality.com/monitor: ''
@@ -79487,8 +79870,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     jobLabel: kube-controller-manager
     metalk8s.scality.com/monitor: ''
@@ -79515,8 +79898,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     jobLabel: kube-etcd
     metalk8s.scality.com/monitor: ''
@@ -79543,8 +79926,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     jobLabel: kube-proxy
     metalk8s.scality.com/monitor: ''
@@ -79571,8 +79954,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     jobLabel: kube-scheduler
     metalk8s.scality.com/monitor: ''
@@ -79600,8 +79983,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79626,8 +80009,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79659,8 +80042,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-thanos-discovery
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79689,8 +80072,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.10.2
-    helm.sh/chart: prometheus-node-exporter-4.52.2
+    app.kubernetes.io/version: 1.11.1
+    helm.sh/chart: prometheus-node-exporter-4.55.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-node-exporter
@@ -79711,8 +80094,8 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-node-exporter
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 1.10.2
-        helm.sh/chart: prometheus-node-exporter-4.52.2
+        app.kubernetes.io/version: 1.11.1
+        helm.sh/chart: prometheus-node-exporter-4.55.0
         heritage: metalk8s
         jobLabel: node-exporter
         release: prometheus-operator
@@ -79747,7 +80130,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: status.hostIP
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("node-exporter", False, False) }}{%- raw %}:v1.10.2
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("node-exporter", False, False) }}{%- raw %}:v1.11.1-distroless
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -79827,8 +80210,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 12.4.2
-    helm.sh/chart: grafana-11.3.6
+    app.kubernetes.io/version: 13.0.2
+    helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 spec:
@@ -79852,8 +80235,8 @@ spec:
       labels:
         app.kubernetes.io/instance: prometheus-operator
         app.kubernetes.io/name: grafana
-        app.kubernetes.io/version: 12.4.2
-        helm.sh/chart: grafana-11.3.6
+        app.kubernetes.io/version: 13.0.2
+        helm.sh/chart: grafana-12.4.8
     spec:
       automountServiceAccountToken: true
       containers:
@@ -79886,7 +80269,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/dashboards/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:2.5.0
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:2.7.3
         imagePullPolicy: IfNotPresent
         name: grafana-sc-dashboard
         securityContext:
@@ -79924,7 +80307,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/datasources/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:2.5.0
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:2.7.3
         imagePullPolicy: IfNotPresent
         name: grafana-sc-datasources
         securityContext:
@@ -79962,7 +80345,7 @@ spec:
           value: /etc/grafana/provisioning
         - name: GF_UNIFIED_STORAGE_INDEX_PATH
           value: /var/lib/grafana-search/bleve
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:12.4.2
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:13.0.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -80054,8 +80437,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.18.0
-    helm.sh/chart: kube-state-metrics-7.2.2
+    app.kubernetes.io/version: 2.19.1
+    helm.sh/chart: kube-state-metrics-7.5.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -80077,8 +80460,8 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: kube-state-metrics
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 2.18.0
-        helm.sh/chart: kube-state-metrics-7.2.2
+        app.kubernetes.io/version: 2.19.1
+        helm.sh/chart: kube-state-metrics-7.5.1
         heritage: metalk8s
         release: prometheus-operator
     spec:
@@ -80088,7 +80471,7 @@ spec:
         - --port=8080
         - --resources=certificatesigningrequests,configmaps,cronjobs,daemonsets,deployments,endpointslices,horizontalpodautoscalers,ingresses,jobs,leases,limitranges,mutatingwebhookconfigurations,namespaces,networkpolicies,nodes,persistentvolumeclaims,persistentvolumes,poddisruptionbudgets,pods,replicasets,replicationcontrollers,resourcequotas,secrets,services,statefulsets,storageclasses,validatingwebhookconfigurations,volumeattachments
         - --metric-labels-allowlist=persistentvolumeclaims=[excluded-from-alerts]
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("kube-state-metrics", False, False) }}{%- raw %}:v2.18.0
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("kube-state-metrics", False, False) }}{%- raw %}:v2.19.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -80155,8 +80538,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80178,8 +80561,8 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-operator-operator
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 82.15.1
-        chart: kube-prometheus-stack-82.15.1
+        app.kubernetes.io/version: 86.3.1
+        chart: kube-prometheus-stack-86.3.1
         heritage: metalk8s
         metalk8s.scality.com/monitor: ''
         release: prometheus-operator
@@ -80191,7 +80574,7 @@ spec:
         - --kubelet-endpoints=true
         - --kubelet-endpointslice=false
         - --localhost=127.0.0.1
-        - --prometheus-config-reloader={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-config-reloader", False, False) }}{%- raw %}:v0.89.0
+        - --prometheus-config-reloader={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-config-reloader", False, False) }}{%- raw %}:v0.91.0
         - --config-reloader-cpu-request=0
         - --config-reloader-cpu-limit=0
         - --config-reloader-memory-request=0
@@ -80203,7 +80586,7 @@ spec:
         env:
         - name: GOGC
           value: '30'
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-operator", False, False) }}{%- raw %}:v0.89.0
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-operator", False, False) }}{%- raw %}:v0.91.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -80265,8 +80648,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 12.4.2
-    helm.sh/chart: grafana-11.3.6
+    app.kubernetes.io/version: 13.0.2
+    helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 spec:
@@ -80292,8 +80675,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80321,7 +80704,7 @@ spec:
   automountServiceAccountToken: true
   externalUrl: {% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}{%- raw %}
   hostNetwork: false
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("alertmanager", False, False) }}{%- raw %}:v0.31.1
+  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("alertmanager", False, False) }}{%- raw %}:v0.33.0
   imagePullPolicy: IfNotPresent
   listenLocal: false
   logFormat: logfmt
@@ -80367,7 +80750,7 @@ spec:
   - effect: NoSchedule
     key: node-role.kubernetes.io/infra
     operator: Exists
-  version: v0.31.1
+  version: v0.33.0
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
@@ -80378,8 +80761,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80414,7 +80797,7 @@ spec:
   enableOTLPReceiver: false
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
   hostNetwork: false
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v3.10.0
+  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v3.12.0-distroless
   imagePullPolicy: IfNotPresent
   listenLocal: false
   logFormat: logfmt
@@ -80480,7 +80863,7 @@ spec:
     operator: Exists
   tsdb:
     outOfOrderTimeWindow: 0s
-  version: v3.10.0
+  version: v3.12.0-distroless
   walCompression: true
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -80492,8 +80875,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80653,8 +81036,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80686,8 +81069,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80874,8 +81257,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80936,8 +81319,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80971,8 +81354,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80998,8 +81381,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81025,8 +81408,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81052,8 +81435,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81079,8 +81462,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81168,8 +81551,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81314,8 +81697,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81438,8 +81821,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81760,8 +82143,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81793,8 +82176,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81806,10 +82189,10 @@ spec:
     rules:
     - alert: KubeAPIErrorBudgetBurn
       annotations:
-        description: The API server is burning too much error budget on cluster {{
-          $labels.cluster }}.
+        description: The Kube API server is burning too much error budget on cluster
+          {{ $labels.cluster }}.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn
-        summary: The API server is burning too much error budget.
+        summary: The Kube API server is burning too much error budget.
       expr: |-
         sum by (cluster) (apiserver_request:burnrate1h) > (14.40 * 0.01000)
         and on (cluster)
@@ -81821,10 +82204,10 @@ spec:
         short: 5m
     - alert: KubeAPIErrorBudgetBurn
       annotations:
-        description: The API server is burning too much error budget on cluster {{
-          $labels.cluster }}.
+        description: The Kube API server is burning too much error budget on cluster
+          {{ $labels.cluster }}.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn
-        summary: The API server is burning too much error budget.
+        summary: The Kube API server is burning too much error budget.
       expr: |-
         sum by (cluster) (apiserver_request:burnrate6h) > (6.00 * 0.01000)
         and on (cluster)
@@ -81836,10 +82219,10 @@ spec:
         short: 30m
     - alert: KubeAPIErrorBudgetBurn
       annotations:
-        description: The API server is burning too much error budget on cluster {{
-          $labels.cluster }}.
+        description: The Kube API server is burning too much error budget on cluster
+          {{ $labels.cluster }}.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn
-        summary: The API server is burning too much error budget.
+        summary: The Kube API server is burning too much error budget.
       expr: |-
         sum by (cluster) (apiserver_request:burnrate1d) > (3.00 * 0.01000)
         and on (cluster)
@@ -81851,10 +82234,10 @@ spec:
         short: 2h
     - alert: KubeAPIErrorBudgetBurn
       annotations:
-        description: The API server is burning too much error budget on cluster {{
-          $labels.cluster }}.
+        description: The Kube API server is burning too much error budget on cluster
+          {{ $labels.cluster }}.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn
-        summary: The API server is burning too much error budget.
+        summary: The Kube API server is burning too much error budget.
       expr: |-
         sum by (cluster) (apiserver_request:burnrate3d) > (1.00 * 0.01000)
         and on (cluster)
@@ -81874,8 +82257,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81899,8 +82282,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81936,8 +82319,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82002,8 +82385,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82079,8 +82462,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82130,8 +82513,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82163,7 +82546,13 @@ spec:
         sum by (namespace, pod, job, cluster) (
           max by (namespace, pod, job, cluster) (
             kube_pod_status_phase{job="kube-state-metrics", namespace=~".*", phase=~"Pending|Unknown"}
-          ) * on (namespace, pod, cluster) group_left(owner_kind) topk by (namespace, pod, cluster) (
+            or
+            (
+              kube_pod_status_phase{job="kube-state-metrics", namespace=~".*", phase="Running"} == 1
+              and on (namespace, pod, cluster)
+              kube_pod_status_ready{job="kube-state-metrics", namespace=~".*", condition="true"} == 0
+            )
+          ) * on (namespace, pod, cluster) group_left() topk by (namespace, pod, cluster) (
             1, max by (namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!="Job"})
           )
         ) > 0
@@ -82386,7 +82775,7 @@ spec:
             ==
           kube_horizontalpodautoscaler_spec_max_replicas{job="kube-state-metrics", namespace=~".*"}
         )
-        and on (namespace, horizontalpodautoscaler) (
+        and on (namespace, horizontalpodautoscaler, cluster) (
           kube_horizontalpodautoscaler_spec_max_replicas{job="kube-state-metrics", namespace=~".*"}
             !=
           kube_horizontalpodautoscaler_spec_min_replicas{job="kube-state-metrics", namespace=~".*"}
@@ -82421,8 +82810,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82543,11 +82932,13 @@ spec:
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubequotaalmostfull
         summary: Namespace quota is going to be full.
       expr: |-
-        max without (instance, job, type) (
-          kube_resourcequota{job="kube-state-metrics", type="used"}
+        topk by (cluster, namespace, resource, resourcequota) (1,
+          max without (instance, job, type) (
+            kube_resourcequota{job="kube-state-metrics", type="used"}
+          )
         )
         / on (cluster, namespace, resource, resourcequota) group_left()
-        (
+        topk by (cluster, namespace, resource, resourcequota) (1,
           max without (instance, job, type) (
             kube_resourcequota{job="kube-state-metrics", type="hard"}
           ) > 0
@@ -82563,11 +82954,13 @@ spec:
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubequotafullyused
         summary: Namespace quota is fully used.
       expr: |-
-        max without (instance, job, type) (
-          kube_resourcequota{job="kube-state-metrics", type="used"}
+        topk by (cluster, namespace, resource, resourcequota) (1,
+          max without (instance, job, type) (
+            kube_resourcequota{job="kube-state-metrics", type="used"}
+          )
         )
         / on (cluster, namespace, resource, resourcequota) group_left()
-        (
+        topk by (cluster, namespace, resource, resourcequota) (1,
           max without (instance, job, type) (
             kube_resourcequota{job="kube-state-metrics", type="hard"}
           ) > 0
@@ -82583,11 +82976,13 @@ spec:
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubequotaexceeded
         summary: Namespace quota has exceeded the limits.
       expr: |-
-        max without (instance, job, type) (
-          kube_resourcequota{job="kube-state-metrics", type="used"}
+        topk by (cluster, namespace, resource, resourcequota) (1,
+          max without (instance, job, type) (
+            kube_resourcequota{job="kube-state-metrics", type="used"}
+          )
         )
         / on (cluster, namespace, resource, resourcequota) group_left()
-        (
+        topk by (cluster, namespace, resource, resourcequota) (1,
           max without (instance, job, type) (
             kube_resourcequota{job="kube-state-metrics", type="hard"}
           ) > 0
@@ -82632,8 +83027,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82760,8 +83155,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82830,6 +83225,15 @@ spec:
       for: 15m
       labels:
         severity: critical
+    - alert: KubeAPIInstanceUnreachable
+      annotations:
+        description: A KubeAPI instance has been unreachable for more than 15 minutes.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapiinstanceunreachable
+        summary: KubeAPI instance is unreachable.
+      expr: up{job="apiserver"} == 0
+      for: 15m
+      labels:
+        severity: warning
     - alert: KubeAPITerminatedRequests
       annotations:
         description: The kubernetes apiserver has terminated {{ $value | humanizePercentage
@@ -82854,8 +83258,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82875,6 +83279,16 @@ spec:
       for: 15m
       labels:
         severity: critical
+    - alert: KubeControllerManagerInstanceUnreachable
+      annotations:
+        description: A KubeControllerManager instance has been unreachable for more
+          than 15 minutes.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubecontrollermanagerinstanceunreachable
+        summary: KubeControllerManager instance is unreachable.
+      expr: up{job="kube-controller-manager"} == 0
+      for: 15m
+      labels:
+        severity: warning
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -82885,8 +83299,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82905,6 +83319,15 @@ spec:
       for: 15m
       labels:
         severity: critical
+    - alert: KubeProxyInstanceUnreachable
+      annotations:
+        description: A KubeProxy instance has been unreachable for more than 15 minutes.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeproxyinstanceunreachable
+        summary: KubeProxy instance is unreachable.
+      expr: up{job="kube-proxy"} == 0
+      for: 15m
+      labels:
+        severity: warning
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -82915,8 +83338,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83112,6 +83535,15 @@ spec:
       for: 15m
       labels:
         severity: warning
+    - alert: KubeletInstanceUnreachable
+      annotations:
+        description: A Kubelet instance has been unreachable for more than 15 minutes.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeletinstanceunreachable
+        summary: Kubelet instance is unreachable.
+      expr: up{job="kubelet", metrics_path="/metrics"} == 0
+      for: 15m
+      labels:
+        severity: warning
     - alert: KubeletDown
       annotations:
         description: Kubelet has disappeared from Prometheus target discovery on cluster
@@ -83135,8 +83567,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83155,6 +83587,16 @@ spec:
       for: 15m
       labels:
         severity: critical
+    - alert: KubeSchedulerInstanceUnreachable
+      annotations:
+        description: A KubeScheduler instance has been unreachable for more than 15
+          minutes.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeschedulerinstanceunreachable
+        summary: KubeScheduler instance is unreachable.
+      expr: up{job="kube-scheduler"} == 0
+      for: 15m
+      labels:
+        severity: warning
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -83165,8 +83607,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83212,8 +83654,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83315,8 +83757,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83427,8 +83869,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83458,8 +83900,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83515,8 +83957,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83631,8 +84073,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83973,8 +84415,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 12.4.2
-    helm.sh/chart: grafana-11.3.6
+    app.kubernetes.io/version: 13.0.2
+    helm.sh/chart: grafana-12.4.8
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-grafana
@@ -83985,7 +84427,6 @@ spec:
     path: /metrics
     port: http-web
     scheme: http
-    scrapeTimeout: 30s
   jobLabel: prometheus-operator
   namespaceSelector:
     matchNames:
@@ -84004,8 +84445,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.18.0
-    helm.sh/chart: kube-state-metrics-7.2.2
+    app.kubernetes.io/version: 2.19.1
+    helm.sh/chart: kube-state-metrics-7.5.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84030,8 +84471,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.10.2
-    helm.sh/chart: prometheus-node-exporter-4.52.2
+    app.kubernetes.io/version: 1.11.1
+    helm.sh/chart: prometheus-node-exporter-4.55.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84058,8 +84499,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84090,8 +84531,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84119,8 +84560,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-apiserver
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84159,8 +84600,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84192,8 +84633,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84221,8 +84662,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84250,8 +84691,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84283,8 +84724,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kubelet
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84386,8 +84827,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84414,8 +84855,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 82.15.1
-    chart: kube-prometheus-stack-82.15.1
+    app.kubernetes.io/version: 86.3.1
+    chart: kube-prometheus-stack-86.3.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator

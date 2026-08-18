@@ -9,7 +9,6 @@ from pytest_bdd import given, parsers, then
 from tests import kube_utils, utils
 from tests.conftest import wait_rollout_status
 
-
 # Fixtures {{{
 
 
@@ -115,7 +114,10 @@ def check_all_pods_status(request, host, k8s_client, expected_status):
     _check_pods_status(k8s_client, expected_status, ssh_config)
 
 
-@given(parsers.parse("a test Volume '{name}' exists"))
+@given(
+    parsers.parse("a test Volume '{name}' exists"),
+    target_fixture="test_volume",
+)
 def test_volume(volume_client, name):
     """Get or create a Volume by name and return it as a fixture.
 
@@ -205,7 +207,6 @@ def then_check_pod_different_node(ssh_config, host, k8s_client, selector):
         nodes.add(pod.spec.nodeName)
 
 
-@then("the DaemonSet <name> in the <namespace> namespace has all desired Pods ready")
 @then(
     parsers.parse(
         "the DaemonSet '{name}' in the '{namespace}' namespace has all desired "

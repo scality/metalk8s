@@ -10,7 +10,6 @@ from _modules import metalk8s_service_configuration
 
 from tests.unit import mixins, utils
 
-
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "files",

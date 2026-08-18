@@ -3,7 +3,6 @@ import logging
 
 from salt.exceptions import CommandExecutionError
 
-
 VERSION_LABEL = "metalk8s.scality.com/version"
 ROLE_LABEL_PREFIX = "node-role.kubernetes.io/"
 

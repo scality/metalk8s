@@ -4,7 +4,6 @@ from __future__ import absolute_import
 
 import logging
 
-
 log = logging.getLogger(__name__)
 
 
@@ -48,15 +47,10 @@ def installed(name, version=None, fromrepo=None, pkgs_info=None, **kwargs):
             name=name, pkgs=pkgs, fromrepo=fromrepo, **kwargs
         )
 
-    if (
-        ret["result"]
-        and not __opts__["test"]
-        and __grains__["os_family"] == "RedHat"
-        and __grains__["osmajorrelease"] == 8
-    ):
-        # With Salt on RHEL based 8 OS, even if we run a `pkg.installed` the package is not
-        # marked as "installed by the user" if the package get installed earlier as
-        # a dependencies
+    if ret["result"] and not __opts__["test"] and __grains__["os_family"] == "RedHat":
+        # With Salt on RHEL based OS starting from RHEL 8, even if we run a `pkg.installed`
+        # the package is not marked as "installed by the user" if the package get installed
+        # earlier as a dependencies
         # See: https://github.com/saltstack/salt/issues/62441
         # So, if we are in this specific case and install succeeded, we explicitly mark the
         # package as "installed by the user" using `dnf mark install`

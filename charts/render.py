@@ -43,7 +43,6 @@ import yaml
 from yaml.dumper import SafeDumper
 from yaml.representer import SafeRepresenter
 
-
 # Needed to load some yaml value
 # ```
 # import yaml

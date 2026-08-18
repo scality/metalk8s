@@ -9,7 +9,7 @@ This modules provides several services:
 - building local packages from sources
 - building local repositories from local packages
 
-Note that for now, it only works for CentOS/RedHat 8 x86_64.
+Note that for now, it only works for Rocky/RedHat 8 and 9 x86_64.
 
 Overview;
 
@@ -25,7 +25,6 @@ Overview;
                         (e.g.: sosreport)     (e.g.: scality)
 """
 
-
 from pathlib import Path
 from typing import Dict, FrozenSet, Iterator, List, Mapping, Optional, Sequence, Tuple
 
@@ -40,12 +39,11 @@ from buildchain import types
 from buildchain import utils
 from buildchain import versions
 
-
 # Utilities {{{
 
 
 def _list_packages_to_build(
-    pkg_cats: Mapping[str, Mapping[str, Tuple[targets.Package, ...]]]
+    pkg_cats: Mapping[str, Mapping[str, Tuple[targets.Package, ...]]],
 ) -> Dict[str, List[str]]:
     return {
         version: [pkg.name for pkg in pkg_list]
@@ -90,6 +88,7 @@ def task__build_packages() -> types.TaskDict:
         "actions": None,
         "task_dep": [
             "_build_redhat_8_packages",
+            "_build_redhat_9_packages",
         ],
     }
 
@@ -100,6 +99,7 @@ def task__download_packages() -> types.TaskDict:
         "actions": None,
         "task_dep": [
             "_download_redhat_8_packages",
+            "_download_redhat_9_packages",
         ],
     }
 
@@ -110,6 +110,7 @@ def task__build_repositories() -> types.TaskDict:
         "actions": None,
         "task_dep": [
             "_build_redhat_8_repositories",
+            "_build_redhat_9_repositories",
         ],
     }
 
@@ -140,6 +141,11 @@ def task__package_mkdir_redhat_8_root() -> types.TaskDict:
     return _package_mkdir_redhat_release_root("8")
 
 
+def task__package_mkdir_redhat_9_root() -> types.TaskDict:
+    """Create the RedHat 9 packages root directory."""
+    return _package_mkdir_redhat_release_root("9")
+
+
 def task__package_mkdir_iso_root() -> types.TaskDict:
     """Create the packages root directory on the ISO."""
     return targets.Mkdir(
@@ -168,6 +174,11 @@ def _package_mkdir_redhat_release_iso_root(releasever: str) -> types.TaskDict:
 def task__package_mkdir_redhat_8_iso_root() -> types.TaskDict:
     """Create the RedHat 8 packages root directory on the ISO."""
     return _package_mkdir_redhat_release_iso_root("8")
+
+
+def task__package_mkdir_redhat_9_iso_root() -> types.TaskDict:
+    """Create the RedHat 9 packages root directory on the ISO."""
+    return _package_mkdir_redhat_release_iso_root("9")
 
 
 def _download_rpm_packages(releasever: str) -> types.TaskDict:
@@ -237,6 +248,11 @@ def task__download_redhat_8_packages() -> types.TaskDict:
     return _download_rpm_packages("8")
 
 
+def task__download_redhat_9_packages() -> types.TaskDict:
+    """Download RedHat 9 packages locally."""
+    return _download_rpm_packages("9")
+
+
 def _build_rpm_packages(releasever: str) -> Iterator[types.TaskDict]:
     """Build RPM packages."""
     for repo_pkgs in RPM_TO_BUILD.values():
@@ -247,6 +263,11 @@ def _build_rpm_packages(releasever: str) -> Iterator[types.TaskDict]:
 def task__build_redhat_8_packages() -> Iterator[types.TaskDict]:
     """Build RPM packages for RedHat 8."""
     return _build_rpm_packages("8")
+
+
+def task__build_redhat_9_packages() -> Iterator[types.TaskDict]:
+    """Build RPM packages for RedHat 9."""
+    return _build_rpm_packages("9")
 
 
 def _build_redhat_repositories(releasever: str) -> Iterator[types.TaskDict]:
@@ -260,8 +281,14 @@ def task__build_redhat_8_repositories() -> Iterator[types.TaskDict]:
     return _build_redhat_repositories("8")
 
 
+def task__build_redhat_9_repositories() -> Iterator[types.TaskDict]:
+    """Build RedHat 9 repositories."""
+    return _build_redhat_repositories("9")
+
+
 # }}}
 # RPM packages and repository {{{
+
 
 # Packages to build, per repository.
 def _rpm_package(name: str, releasever: str, sources: List[Path]) -> targets.RPMPackage:
@@ -326,6 +353,7 @@ def _rpm_package_metalk8s_sosreport(releasever: str) -> targets.RPMPackage:
 RPM_TO_BUILD: Dict[str, Dict[str, Tuple[targets.RPMPackage, ...]]] = {
     "scality": {
         "8": (_rpm_package_metalk8s_sosreport("8"),),
+        "9": (_rpm_package_metalk8s_sosreport("9"),),
     },
 }
 
@@ -345,16 +373,19 @@ REDHAT_PACKAGES_TO_DOWNLOAD: Dict[str, FrozenSet[str]] = {
 
 
 # Store these versions in a dict to use with doit.tools.config_changed
-_TO_DOWNLOAD_RPM_CONFIG: Dict[
-    str, Dict[str, Optional[str]]
-] = _list_packages_to_download(
-    versions.REDHAT_PACKAGES,
-    _RPM_TO_BUILD_PKG_NAMES,
+_TO_DOWNLOAD_RPM_CONFIG: Dict[str, Dict[str, Optional[str]]] = (
+    _list_packages_to_download(
+        versions.REDHAT_PACKAGES,
+        _RPM_TO_BUILD_PKG_NAMES,
+    )
 )
 
 
 SCALITY_REDHAT_8_REPOSITORY: targets.RPMRepository = _rpm_repository(
     name="scality", packages=RPM_TO_BUILD["scality"]["8"], releasever="8"
+)
+SCALITY_REDHAT_9_REPOSITORY: targets.RPMRepository = _rpm_repository(
+    name="scality", packages=RPM_TO_BUILD["scality"]["9"], releasever="9"
 )
 
 
@@ -365,6 +396,13 @@ REDHAT_REPOSITORIES: Dict[str, Tuple[targets.RPMRepository, ...]] = {
         _rpm_repository(name="kubernetes", releasever="8"),
         _rpm_repository(name="saltstack", releasever="8"),
         _rpm_repository(name="docker-ce", releasever="8"),
+    ),
+    "9": (
+        SCALITY_REDHAT_9_REPOSITORY,
+        _rpm_repository(name="epel", releasever="9"),
+        _rpm_repository(name="kubernetes", releasever="9"),
+        _rpm_repository(name="saltstack", releasever="9"),
+        _rpm_repository(name="docker-ce", releasever="9"),
     ),
 }
 

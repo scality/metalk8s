@@ -13,7 +13,7 @@ on:
         description: "The OS to use"
         required: false
         type: string
-        default: "rocky-8"
+        default: "rocky-9"
 
       # Steps to run
       install-solution:
@@ -231,7 +231,7 @@ jobs:
         if: inputs.test-solution
         uses: ./.github/actions/bastion-tests
         with:
-          PYTEST_FILTERS: "solution-upgrade"
+          PYTEST_FILTERS: "solution_upgrade"
       - name: Run tests from Bastion
         uses: ./.github/actions/bastion-tests
         with:

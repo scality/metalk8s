@@ -1,12 +1,12 @@
 namespace: metalk8s-storage-management
 
 resources:
-  - github.com/scality/disk-management-agent.git/config/default?ref=v0.0.1-beta.2
+  - github.com/scality/disk-management-agent.git/config/default?ref=v0.1.0
 
 images:
   - name: controller
     newName: '{% endraw -%}{{ build_image_name("disk-management-agent", False) }}{%- raw %}'
-    newTag: v0.0.1-beta.2
+    newTag: v0.1.0
 
 patches:
   - path: deploy_patch.yaml

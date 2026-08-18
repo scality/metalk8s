@@ -63,11 +63,7 @@ Create kube-apiserver authentication configuration:
     - group: root
     - makedirs: True
     - dataset:
-        {#- TODO(MK8S-258): bump apiVersion to apiserver.config.k8s.io/v1 once metalk8s
-        pins Kubernetes >= 1.34. AuthenticationConfiguration is registered in
-        v1beta1 in 1.32/1.33 and promotes to v1 (GA) in 1.34.
-        it will also continue to be supported in v1beta1 until 1.36 #}
-        apiVersion: apiserver.config.k8s.io/v1beta1
+        apiVersion: apiserver.config.k8s.io/v1
         kind: AuthenticationConfiguration
         anonymous:
           enabled: true

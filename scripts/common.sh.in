@@ -31,8 +31,7 @@ determine_os() {
         OS=$ID
         OS_VERSION=$VERSION_ID
         [[ $OS = rhel ]] && OS=redhat
-        [[ $OS = rocky ]] && OS=centos
-        if [[ $OS =~ ^(redhat|centos)$ ]]; then
+        if [[ $OS =~ ^(redhat|rocky|centos)$ ]]; then
             OS_FAMILY=redhat
         fi
         OSMAJORRELEASE=${OS_VERSION%%.*}
@@ -117,10 +116,8 @@ check_packages_presence() {
                 --assumeyes
                 --setopt 'tsflags=test'
                 --setopt 'skip_missing_names_on_install=False'
+                "--allowerasing"
             )
-            if [[ "$OSMAJORRELEASE" == "8" ]]; then
-                pkg_manager_opts+=("--allowerasing")
-            fi
             ;;
         *)
             die "OS $OS not supported"
@@ -260,6 +257,10 @@ check_dist_centos() {
     check_package_manager_yum
 }
 
+check_dist_rocky() {
+    check_package_manager_yum
+}
+
 check_dist_redhat() {
     check_package_manager_yum
     command -v subscription-manager || die "subscription-manager not found"
@@ -315,10 +316,6 @@ configure_salt_minion_local_mode() {
         --local --retcode-passthrough saltutil.sync_all saltenv=base
     "$SALT_CALL" --file-root="$file_root" \
         --local --retcode-passthrough saltutil.refresh_grains
-    # Workaround waiting for Rocky Linux support in Salt
-    "$SALT_CALL" --file-root="$file_root" \
-        --local --retcode-passthrough state.sls \
-        metalk8s.node.rocky-linux-grains saltenv=base
     "$SALT_CALL" --file-root="$file_root" \
         --local --retcode-passthrough state.sls metalk8s.salt.minion.local \
         pillar="{'metalk8s': {'archives': '$BASE_DIR'}}" saltenv=base

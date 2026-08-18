@@ -14,7 +14,6 @@ from tests.unit.log_utils import capture_logs, check_captured_logs
 from tests.unit import mixins
 from tests.unit import utils
 
-
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "files", "test_cri.yaml"
 )

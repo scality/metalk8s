@@ -1,5 +1,4 @@
-"""Utility methods for MetalK8s Kubernetes modules.
-"""
+"""Utility methods for MetalK8s Kubernetes modules."""
 
 import time
 

@@ -30,7 +30,6 @@ WORKLOAD_NAMESPACE = "wp-test"
 @scenario(
     "../features/workload_plane_isolation.feature",
     "An isolated node is drained and recovers (<mode>)",
-    example_converters={"mode": str},
 )
 def test_isolated_node_drained_and_recovers(host, teardown):
     pass
@@ -165,7 +164,11 @@ def deploy_test_workload(context, k8s_client, utils_image):
 # When {{{
 
 
-@when("we cut the Workload Plane network on a workload-plane node using '<mode>'")
+@when(
+    parsers.parse(
+        "we cut the Workload Plane network on a workload-plane node using '{mode}'"
+    )
+)
 def cut_wp_single(host, context, k8s_client, ssh_config, mode):
     node_name = _pick_wp_node(k8s_client, ssh_config)
     context["isolated"] = node_name

@@ -65,8 +65,7 @@ Create local etcd Pod manifest:
           - --cert-file={{ certificates.server.files.etcd.path }}
           - --client-cert-auth=true
           - --data-dir=/var/lib/etcd
-          - --experimental-initial-corrupt-check=true
-          - --experimental-watch-progress-notify-interval=5s
+          - --feature-gates=InitialCorruptCheck=true
           - --initial-advertise-peer-urls=https://{{ node_ip }}:2380
           - --initial-cluster={{ etcd_initial_cluster| sort | join(',') }}
           - --key-file=/etc/kubernetes/pki/etcd/server.key
@@ -80,6 +79,7 @@ Create local etcd Pod manifest:
           - --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
           - --snapshot-count=10000
           - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+          - --watch-progress-notify-interval=5s
         # }
           - --initial-cluster-state={{ state }}
         volumes:

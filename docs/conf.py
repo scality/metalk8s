@@ -33,7 +33,6 @@ sys.path.insert(0, str(_lib_alert_tree_path.resolve()))
 import metalk8s as metalk8s_alert_tree
 import lib_alert_tree.models
 
-
 # -- Environment toggles -----------------------------------------------------
 
 ON_RTD = os.environ.get("READTHEDOCS") == "True"
@@ -120,8 +119,8 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinxcontrib.spelling",
     "sphinxcontrib.plantuml",
-    "sphinxcontrib.jinja",
     "sphinxcontrib_github_alt",
+    "sphinx_jinja",
 ]
 
 if ON_RTD:
@@ -203,6 +202,10 @@ html_context = {
     "css_files": [
         "_static/theme-overrides.css",
     ],
+    # The `sphinx_scality` theme (v5.6.2) still references the legacy `style`
+    # template variable in its `layout.html`, but Sphinx removed it in 7.2.
+    # We provide it back here so the theme's main stylesheet keeps loading.
+    "style": "css/theme.css",
 }
 
 html_show_sourcelink = False

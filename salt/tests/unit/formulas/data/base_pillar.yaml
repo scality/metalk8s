@@ -180,9 +180,18 @@ certificates:
       workload-plane-ingress:
         watched: true
 kubernetes:
+  apiServer:
+    config:
+      defaultNotReadyTolerationSeconds: 60
+      defaultUnreachableTolerationSeconds: 60
   controllerManager:
     config:
       terminatedPodGCThreshold: 500
+      nodeMonitorGracePeriod: 30s
+      nodeMonitorPeriod: 5s
+  kubelet:
+    config:
+      nodeStatusUpdateFrequency: 10s
   coreDNS:
     hostForward: true
     replicas: 2

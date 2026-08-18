@@ -25,7 +25,6 @@ Overview:
                   └─────────────────┘
 """
 
-
 import abc
 import importlib
 import urllib.request
@@ -536,12 +535,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/deployed/core.sls"),
     Path("salt/metalk8s/deployed/init.sls"),
     Path("salt/metalk8s/internal/bootstrap/post-upgrade.sls"),
-    Path("salt/metalk8s/internal/m2crypto/absent.sls"),
-    Path("salt/metalk8s/internal/m2crypto/init.sls"),
-    Path("salt/metalk8s/internal/m2crypto/installed.sls"),
     Path("salt/metalk8s/internal/preflight/init.sls"),
     Path("salt/metalk8s/internal/preflight/mandatory.sls"),
-    Path("salt/metalk8s/internal/preflight/recommended.sls"),
     Path("salt/metalk8s/sreport/init.sls"),
     Path("salt/metalk8s/sreport/installed.sls"),
     Path("salt/metalk8s/kubectl/configured.sls"),
@@ -628,8 +623,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/kubernetes/scheduler/kubeconfig.sls"),
     Path("salt/metalk8s/macro.sls"),
     Path("salt/metalk8s/map.jinja"),
+    Path("salt/metalk8s/node/cleanup-rocky-grains.sls"),
     Path("salt/metalk8s/node/grains.sls"),
-    Path("salt/metalk8s/node/rocky-linux-grains.sls"),
     Path("salt/metalk8s/orchestrate/apiserver.sls"),
     Path("salt/metalk8s/orchestrate/deploy_node.sls"),
     Path("salt/metalk8s/orchestrate/patch_kubesystem_namespace.sls"),
@@ -714,6 +709,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/salt/master/deployed.sls"),
     Path("salt/metalk8s/salt/master/files/master-99-metalk8s.conf.j2"),
     Path("salt/metalk8s/salt/master/files/salt-master-manifest.yaml.j2"),
+    Path("salt/metalk8s/salt/master/files/ssh-preflight.sh"),
     Path("salt/metalk8s/salt/master/init.sls"),
     Path("salt/metalk8s/salt/master/installed.sls"),
     Path("salt/metalk8s/salt/master/kubeconfig.sls"),
@@ -721,7 +717,6 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/salt/master/certs/init.sls"),
     Path("salt/metalk8s/salt/master/certs/salt-api.sls"),
     Path("salt/metalk8s/salt/minion/configured.sls"),
-    Path("salt/metalk8s/salt/minion/dependencies.sls"),
     Path("salt/metalk8s/salt/minion/files/minion-99-metalk8s.conf.j2"),
     Path("salt/metalk8s/salt/minion/init.sls"),
     Path("salt/metalk8s/salt/minion/installed.sls"),

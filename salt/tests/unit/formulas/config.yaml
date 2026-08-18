@@ -3,7 +3,7 @@
 # Please be mindful of the number of cases generated, as these will apply to
 # many formulas.
 default_case:
-  os: CentOS/8
+  os: Rocky/9
   saltenv: metalk8s-2.8.0
   minion_state: ready
   architecture: single-node
@@ -18,8 +18,14 @@ metalk8s:
     _cases:
       "CentOS 8":
         os: CentOS/8
+      "Rocky 8":
+        os: Rocky/8
       "RHEL 8":
         os: RedHat/8
+      "Rocky 9":
+        os: Rocky/9
+      "RHEL 9":
+        os: RedHat/9
 
   addons:
     dex:
@@ -395,9 +401,6 @@ metalk8s:
             "From metalk8s.kubernetes.kubelet.standalone":
               extra_context:
                 options:
-                  container-runtime: remote
-                  container-runtime-endpoint: >-
-                    unix:///run/containerd/containerd.sock
                   node-ip: "10.0.0.1"
                   hostname-override: bootstrap
                   v: 0
@@ -998,8 +1001,14 @@ metalk8s:
       _cases:
         "CentOS 8":
           os: CentOS/8
+        "Rocky 8":
+          os: Rocky/8
         "RHEL 8":
           os: RedHat/8
+        "Rocky 9":
+          os: Rocky/9
+        "RHEL 9":
+          os: RedHat/9
 
   salt:
     master:
@@ -1112,7 +1121,7 @@ metalk8s:
       installed.sls:
         _cases:
           "RedHat family":
-            os: CentOS/8
+            os: Rocky/9
 
   volumes:
     unprepared.sls:

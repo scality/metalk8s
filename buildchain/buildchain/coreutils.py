@@ -3,7 +3,6 @@
 
 """Pure Python implementation of some core utilities."""
 
-
 import gzip as gzip_module
 import functools
 import hashlib
@@ -11,7 +10,6 @@ import os
 import shutil
 from pathlib import Path
 from typing import Iterator, Sequence
-
 
 # Buffer size (8 Mio).
 BUFSIZE: int = 8 * (1024 * 1024)

@@ -200,19 +200,14 @@ class TestDerivedAlert:
         )
 
         tree = root.build_tree()
-        assert (
-            tree.show(stdout=False)
-            == textwrap.dedent(
-                """
+        assert tree.show(stdout=False) == textwrap.dedent("""
                 Root{severity='warning'}
                 ├── Child1{severity='warning'}
                 ├── Child2{severity='critical'}
                 └── Parent1{severity='warning'}
                     ├── Child3{severity='warning'}
                     └── Child4{severity='warning'}
-                """
-            ).lstrip()
-        )
+                """).lstrip()
         assert tree.get_node(tree.root).data is root
 
     @staticmethod
@@ -261,15 +256,10 @@ def test_severity_pair():
         annotations={"someannotation": "othervalue"},
     )
 
-    assert (
-        test_warning.build_tree().show(stdout=False)
-        == textwrap.dedent(
-            """
+    assert test_warning.build_tree().show(stdout=False) == textwrap.dedent("""
             TestDegraded{severity='warning', somelabel=~'somevalue'}
             └── Child1{severity='warning'}
-            """
-        ).lstrip()
-    )
+            """).lstrip()
     assert test_warning.alert_rule.name == "TestDegraded"
     assert test_warning.alert_rule.labels == {
         "somelabel": "somevalue",
@@ -283,15 +273,10 @@ def test_severity_pair():
         "summary": "The test object is degraded.",
     }
 
-    assert (
-        test_critical.build_tree().show(stdout=False)
-        == textwrap.dedent(
-            """
+    assert test_critical.build_tree().show(stdout=False) == textwrap.dedent("""
             TestAtRisk{severity='critical', somelabel=~'somevalue'}
             └── Child2{severity='critical'}
-            """
-        ).lstrip()
-    )
+            """).lstrip()
     assert test_critical.alert_rule.name == "TestAtRisk"
     assert test_critical.alert_rule.labels == {
         "somelabel": "somevalue",

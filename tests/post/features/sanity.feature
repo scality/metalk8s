@@ -15,7 +15,7 @@ Feature: Cluster Sanity Checks
         Then we can read logs from all containers in a pod labeled 'app=salt-master' in the 'kube-system' namespace
 
     Scenario Outline: Static Pod runs where expected
-        Then the static Pod <name> in the <namespace> namespace runs on <role> nodes
+        Then the static Pod '<name>' in the '<namespace>' namespace runs on '<role>' nodes
 
         Examples:
         | namespace   | name                    | role      |
@@ -28,7 +28,7 @@ Feature: Cluster Sanity Checks
         | kube-system | apiserver-proxy         | all       |
 
     Scenario Outline: Deployment has available replicas
-        Then the Deployment <name> in the <namespace> namespace has all desired replicas available
+        Then the Deployment '<name>' in the '<namespace>' namespace has all desired replicas available
 
         Examples:
         | namespace           | name                                   |
@@ -49,7 +49,7 @@ Feature: Cluster Sanity Checks
         | metalk8s-certs      | crl-operator-controller-manager        |
 
     Scenario Outline: DaemonSet has desired Pods ready
-        Then the DaemonSet <name> in the <namespace> namespace has all desired Pods ready
+        Then the DaemonSet '<name>' in the '<namespace>' namespace has all desired Pods ready
 
         Examples:
         | namespace                   | name                                         |
@@ -63,7 +63,7 @@ Feature: Cluster Sanity Checks
 
     @volumes_provisioned
     Scenario Outline: StatefulSet has available replicas
-        Then the StatefulSet <name> in the <namespace> namespace has all desired replicas available
+        Then the StatefulSet '<name>' in the '<namespace>' namespace has all desired replicas available
 
         Examples:
         | namespace           | name                                          |

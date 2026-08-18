@@ -1,6 +1,5 @@
 """Dependency checker for skopeo, vagrant, git, mkisofs and hard-link."""
 
-
 from pathlib import Path
 from typing import Optional, Iterator
 import shutil

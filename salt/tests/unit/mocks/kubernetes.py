@@ -4,6 +4,7 @@ Aims to provide a simple yet configurable implementation of CRUD methods,
 allowing to keep track of actions in an in-memory "database" or trigger
 arbitrary problems for specific test needs.
 """
+
 import contextlib
 import copy
 from unittest.mock import MagicMock, patch

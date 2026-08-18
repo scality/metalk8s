@@ -80,14 +80,14 @@ def object_absent(name, manifest=None, wait=None, **kwargs):
             time.sleep(wait["sleep"])
             attempts += 1
         if attempts > wait["attempts"]:
-            ret[
-                "comment"
-            ] = f"The object is still present after {wait['attempts']} check attempts"
+            ret["comment"] = (
+                f"The object is still present after {wait['attempts']} check attempts"
+            )
             ret["result"] = False
             return ret
-        ret[
-            "comment"
-        ] = f"The object was deleted and not present after {attempts} check attempts"
+        ret["comment"] = (
+            f"The object was deleted and not present after {attempts} check attempts"
+        )
     else:
         ret["comment"] = "The object was deleted"
 
@@ -141,9 +141,9 @@ def object_present(name, manifest=None, **kwargs):
 
         if __opts__["test"]:
             ret["result"] = None
-            ret[
-                "comment"
-            ] = f"The object is going to be {'created' if obj is None else 'replaced'}"
+            ret["comment"] = (
+                f"The object is going to be {'created' if obj is None else 'replaced'}"
+            )
             return ret
 
         if obj is None:
@@ -275,9 +275,9 @@ def labels_exist(name, labels, **kwargs):
 
     if __opts__["test"]:
         ret["result"] = None
-        ret[
-            "comment"
-        ] = f"Labels {', '.join(labels_to_add)} will be added to object {name}"
+        ret["comment"] = (
+            f"Labels {', '.join(labels_to_add)} will be added to object {name}"
+        )
         return ret
 
     __salt__["metalk8s_kubernetes.update_object"](

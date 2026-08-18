@@ -1,5 +1,95 @@
 # CHANGELOG
 
+## Release 134.0.0 (in development)
+
+### Breaking changes
+
+- Due to the major bump of Salt and Python version, downgrading from
+  134 to 133 will not be possible.
+
+### Enhancements
+
+- Add support for RHEL/Rocky 9.
+  RHEL/Rocky 8 support will be dropped in a future release.
+  (PR[#5014](https://github.com/scality/metalk8s/pull/5014))
+
+- Make node monitoring and Pod eviction timeouts configurable through the
+  `BootstrapConfiguration`: `kube-apiserver`
+  `defaultNotReadyTolerationSeconds`/`defaultUnreachableTolerationSeconds`
+  (default `60`), `kube-controller-manager`
+  `nodeMonitorGracePeriod`/`nodeMonitorPeriod` (default `30s`/`5s`) and kubelet
+  `nodeStatusUpdateFrequency` (default `10s`).
+  (PR[#4966](https://github.com/scality/metalk8s/pull/4966))
+
+- Bump Kubernetes version to [1.34.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.34.7)
+  (PR[#4928](https://github.com/scality/metalk8s/pull/4928))
+
+- Bump etcd version to [3.6.11](https://github.com/etcd-io/etcd/releases/tag/v3.6.11)
+  (PR[#4928](https://github.com/scality/metalk8s/pull/4928))
+
+- Bump Salt version to [3006.27](https://github.com/saltstack/salt/releases/tag/v3006.27)
+  (PR[#5017](https://github.com/scality/metalk8s/pull/5017))
+
+- Bump dex chart to [0.24.1](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.1)
+  (PR[#4977](https://github.com/scality/metalk8s/pull/4977))
+
+- Bump fluent-bit chart to [0.57.7](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.57.7)
+  and Fluent Bit image to [v5.0.7](https://github.com/fluent/fluent-bit/releases/tag/v5.0.7)
+  (PR[#4978](https://github.com/scality/metalk8s/pull/4978))
+
+- Bump loki chart to [7.0.0](https://github.com/grafana/helm-charts/releases/tag/helm-loki-7.0.0)
+  and Loki image to [v3.6.7](https://github.com/grafana/loki/releases/tag/v3.6.7)
+  (PR[#4979](https://github.com/scality/metalk8s/pull/4979))
+
+- Bump ingress-nginx chart to [4.15.1](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.15.1)
+  and nginx ingress controller to [v1.15.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.15.1)
+  (PR[#4980](https://github.com/scality/metalk8s/pull/4980))
+
+- Bump kube-prometheus-stack chart version to [86.3.1](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-86.3.1)
+  The following images have also been bumped accordingly:
+  - alertmanager to [v0.33.0](https://github.com/prometheus/alertmanager/releases/tag/v0.33.0)
+  - grafana to [13.0.2](https://github.com/grafana/grafana/releases/tag/v13.0.2)
+  - k8s-sidecar to [2.7.3](https://github.com/kiwigrid/k8s-sidecar/releases/tag/2.7.3)
+  - kube-state-metrics to [v2.19.1](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.19.1)
+  - node-exporter to [v1.11.1](https://github.com/prometheus/node_exporter/releases/tag/v1.11.1)
+  - prometheus to [v3.12.0](https://github.com/prometheus/prometheus/releases/tag/v3.12.0)
+  - prometheus-config-reloader to [v0.91.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.91.0)
+  - prometheus-operator to [v0.91.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.91.0)
+  (PR[#4981](https://github.com/scality/metalk8s/pull/4981))
+
+- Bump Calico version to [3.32.0](https://github.com/projectcalico/calico/releases/tag/v3.32.0)
+  (PR[#4985](https://github.com/scality/metalk8s/pull/4985))
+
+- Bump containerd to [2.2.5](https://github.com/containerd/containerd/releases/tag/v2.2.5)
+  The pause image has been bumped to 3.10.1
+  (PR[#4991](https://github.com/scality/metalk8s/pull/4991))
+
+- Bump nginx image to [1.31.2-alpine](https://github.com/nginx/nginx/releases/tag/release-1.31.2)
+  (PR[#4992](https://github.com/scality/metalk8s/pull/4992))
+
+- Bump Alpine base image version to [3.24.1](https://github.com/alpinelinux/aports/releases/tag/v3.24.1)
+  (PR[#4993](https://github.com/scality/metalk8s/pull/4993))
+
+- Bump the rocky base image used by `metalk8s-utils` image to
+  `rockylinux:9.8-minimal`
+  (PR[#4994](https://github.com/scality/metalk8s/pull/4994))
+
+- Move `salt-master` image to Rocky 9 minimal
+  (PR[#5014](https://github.com/scality/metalk8s/pull/5014))
+
+- Bump operator-sdk to [v1.42.3](https://github.com/operator-framework/operator-sdk/releases/tag/v1.42.3)
+  for the `metalk8s-operator` and `storage-operator`, and bump their
+  `k8s.io/{api,apimachinery,client-go}` dependencies to v0.33.13
+  (PR[#5012](https://github.com/scality/metalk8s/pull/5012))
+
+- Bump `kube-apiserver` `AuthenticationConfiguration` apiVersion to
+  `apiserver.config.k8s.io/v1` (GA in Kubernetes 1.34)
+  (PR[#5001](https://github.com/scality/metalk8s/pull/5001))
+
+- Bump [disk-management-agent](https://github.com/scality/disk-management-agent) to version
+  [v0.1.0](https://github.com/scality/disk-management-agent/releases/tag/v0.1.0)
+  (PR[#5024](https://github.com/scality/metalk8s/pull/5024))
+
 ## Release 133.0.14 (in development)
 
 ### Enhancements

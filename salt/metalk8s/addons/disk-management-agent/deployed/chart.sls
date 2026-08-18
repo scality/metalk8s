@@ -416,10 +416,14 @@ spec:
           value: /host/libexec/MegaRAID/storcli/storcli64
         - name: PERCCLI_PATH
           value: /host/libexec/MegaRAID/perccli/perccli64
+        - name: STORCLI2_PATH
+          value: /host/libexec/MegaRAID/storcli2/storcli2
+        - name: PERCCLI2_PATH
+          value: /host/libexec/MegaRAID/perccli2/perccli2
         - name: SSACLI_PATH
           value: /host/libexec/ssacli
         image: '{% endraw -%}{{ build_image_name("disk-management-agent", False) }}{%-
-          raw %}:v0.0.1-beta.2'
+          raw %}:v0.1.0'
         livenessProbe:
           httpGet:
             path: /healthz

@@ -2,7 +2,6 @@ Prerequisites
 =============
 
 .. _MetalK8s: https://github.com/scality/metalk8s
-.. _CentOS: https://www.centos.org
 .. _RHEL: https://access.redhat.com/products/red-hat-enterprise-linux
 .. _Rocky: https://rockylinux.org
 .. _RHSM register: https://access.redhat.com/solutions/253273
@@ -12,7 +11,7 @@ Prerequisites
 .. _SaltStack: https://www.saltstack.com
 .. _Puppet: https://puppet.com
 
-MetalK8s_ clusters require machines running CentOS_\/RHEL_/Rocky_ 8 as
+MetalK8s_ clusters require machines running RHEL_/Rocky_ 8 or 9 as
 their operating system. These machines may be virtual or physical, with no
 difference in setup procedure. The number of machines to set up depends on the
 architecture you chose in :ref:`installation-intro-architecture`.
@@ -57,7 +56,7 @@ Repositories
 Each machine must have properly configured repositories with access to basic
 repository packages (depending on the operating system).
 
-CentOS/Rocky:
+Rocky:
 
     - appstream
     - baseos
@@ -67,6 +66,11 @@ RHEL 8:
 
     - rhel-8-for-x86_64-baseos-rpms
     - rhel-8-for-x86_64-appstream-rpms
+
+RHEL 9:
+
+    - rhel-9-for-x86_64-baseos-rpms
+    - rhel-9-for-x86_64-appstream-rpms
 
     .. note::
 
@@ -79,7 +83,7 @@ RHEL 8:
 
 To enable an existing repository:
 
-  CentOS/Rocky:
+  Rocky:
 
     .. code-block:: shell
 

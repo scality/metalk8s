@@ -125,7 +125,7 @@ class MetalK8s(Plugin, RedHatPlugin):
         self.add_copy_spec("/etc/salt")
         self.add_forbidden_path("/etc/salt/pki")
         self.add_copy_spec("/var/log/metalk8s")
-        self.add_copy_spec("/var/log/salt", sizelimit=50)
+        self.add_copy_spec("/var/log/salt")
 
         services = [
             "kubelet",
@@ -395,7 +395,9 @@ class MetalK8s(Plugin, RedHatPlugin):
         # and can cause the API to be unavailable.
         # We retrieve metrics one by one to avoid this issue.
         try:
-            metrics_res = requests.get(f"{prom_endpoint}/api/v1/label/__name__/values")
+            metrics_res = requests.get(
+                f"{prom_endpoint}/api/v1/label/__name__/values", timeout=10
+            )
         except requests.exceptions.ConnectionError as exc:
             self._log_error(f"Unable to connect to Prometheus API: {exc}")
             return
@@ -419,6 +421,7 @@ class MetalK8s(Plugin, RedHatPlugin):
                 res = requests.get(
                     f"{prom_endpoint}/api/v1/query",
                     params={"query": f"{metric}[{query_range}]"},
+                    timeout=10,
                 )
             except requests.exceptions.ConnectionError as exc:
                 self._log_error(
@@ -471,7 +474,7 @@ class MetalK8s(Plugin, RedHatPlugin):
         # or in case of error:
         # {"status":"error","errorType":"unavailable","error":"admin APIs disabled"}
         prom_snapshot_url = f"http://{prom_endpoint}/api/v1/admin/tsdb/snapshot"
-        res = requests.post(prom_snapshot_url)
+        res = requests.post(prom_snapshot_url, timeout=60)
         try:
             res.raise_for_status()
         except requests.exceptions.HTTPError as exc:
