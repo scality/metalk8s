@@ -48,6 +48,12 @@ Deploy apiserver {{ node }} to {{ dest_version }}:
       - metalk8s.kubernetes.apiserver
       - metalk8s.kubernetes.apiserver-proxy
     - saltenv: metalk8s-{{ dest_version }}
+    {#- This state restarts the apiserver-proxy on the very node the salt-master
+        polls with `saltutil.find_job`, so that node can miss a keepalive while
+        still running the state. `timeout` sets the per-minion deadline, re-armed
+        on every answered probe, so this tolerates up to 300s of silence from a
+        node that is still working #}
+    - timeout: 300
     - require:
       - salt: Check pillar on {{ node }}
   {%- if loop.previtem is defined %}
