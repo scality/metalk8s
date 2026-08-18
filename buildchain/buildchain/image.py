@@ -227,6 +227,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "crl-operator",
         "disk-management-agent",
         "node-warden-operator",
+        "metalk8s-registry-operator",
     ],
 }
 
