@@ -328,6 +328,9 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "file-reflector",
         "image-cache-agent",
         "node-warden-operator",
+        "metalk8s-registry-operator",
+        "metalk8s-registry-node-agent",
+        "static-oci-registry",
     ],
 }
 
@@ -391,13 +394,11 @@ BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
         # not in the host network, so it needs the CNI above.
         "file-reflector",
     ],
-    # The registry variant waits on images the buildchain does not carry yet:
-    #
-    # "registry": ["registry-operator", "registry-server",
-    #              "registry-node-agent"],
-    #
-    # Uncomment a variant once its images are pulled or built here: everything
-    # else (context, image, archive) follows from this listing.
+    "registry": [
+        "metalk8s-registry-operator",
+        "static-oci-registry",
+        "metalk8s-registry-node-agent",
+    ],
 }
 
 TO_BUILD: Tuple[targets.LocalImage, ...] = (
