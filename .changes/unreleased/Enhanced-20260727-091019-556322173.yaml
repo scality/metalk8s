@@ -1,0 +1,9 @@
+kind: Enhanced
+body: |
+  Bump operator-sdk to [v1.42.3](https://github.com/operator-framework/operator-sdk/releases/tag/v1.42.3)
+  for the `metalk8s-operator` and `storage-operator`, and bump their
+  `k8s.io/{api,apimachinery,client-go}` dependencies to v0.33.13
+time: 2026-07-27T09:10:19.556322173Z
+custom:
+  Pull: 5012
+  CommentId: backfill

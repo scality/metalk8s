@@ -1,0 +1,8 @@
+kind: Enhanced
+body: |
+  Bump [disk-management-agent](https://github.com/scality/disk-management-agent) to version
+  [v0.1.0](https://github.com/scality/disk-management-agent/releases/tag/v0.1.0)
+time: 2026-07-27T09:10:19.556322175Z
+custom:
+  Pull: 5024
+  CommentId: backfill

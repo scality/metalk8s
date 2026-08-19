@@ -1,0 +1,7 @@
+kind: Enhanced
+body: |
+  Bump Kubernetes version to [1.34.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.34.7)
+time: 2026-07-27T09:10:19.556322159Z
+custom:
+  Pull: 4928
+  CommentId: backfill

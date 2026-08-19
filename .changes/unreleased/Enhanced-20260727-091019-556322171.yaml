@@ -1,0 +1,8 @@
+kind: Enhanced
+body: |
+  Bump the rocky base image used by `metalk8s-utils` image to
+  `rockylinux:9.8-minimal`
+time: 2026-07-27T09:10:19.556322171Z
+custom:
+  Pull: 4994
+  CommentId: backfill
