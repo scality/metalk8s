@@ -90,6 +90,13 @@ Install and configure cri-tools:
       - test: Ensure containerd is ready
 
 Configure containerd:
+  # NOTE: This configuration is specific to the containerd version we ship, so it must
+  # only be written once we know that version is the one installed on the node. Written
+  # unconditionally, a run at another version rewrites the configuration of a running
+  # node to a schema its containerd does not support (see MK8S-371). We require the
+  # package state rather than `Repositories configured`, since the availability check
+  # behind that gate only runs `onchanges` of the repository definitions, so it is
+  # skipped, and reported as a success, on a second run of the same command.
   file.managed:
     - name: /etc/containerd/config.toml
     - makedirs: true
@@ -107,6 +114,8 @@ Configure containerd:
 
         [debug]
           level = "{{ 'debug' if metalk8s.debug else 'info' }}"
+    - require:
+      - metalk8s_package_manager: Install containerd
     - watch_in:
       - service: Ensure containerd running
 
