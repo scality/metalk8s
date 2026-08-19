@@ -1,8 +1,10 @@
 from importlib import reload
+import json
 import os.path
 from unittest import TestCase
 from unittest.mock import MagicMock, mock_open, patch
 
+import kubernetes.dynamic
 from parameterized import param, parameterized
 from salt.exceptions import CommandExecutionError
 from urllib3.exceptions import HTTPError
@@ -132,28 +134,87 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
         [
             (True,),
             (False, True),
+            (False, False, True),
         ]
     )
     def test_ping(
         self,
         result,
-        get_version_info_error=False,
+        k8s_connection_raise=False,
+        get_client_raise=False,
     ):
         """
         Tests the return of `ping` function
         """
-        version_info_mock = MagicMock()
-        if get_version_info_error:
-            version_info_mock.side_effect = CommandExecutionError(
-                "Failed to get version info"
-            )
+        kubeconfig_mock = MagicMock(return_value=("my_kubeconfig.conf", "my_context"))
+
+        dynamic_client_mock = MagicMock()
+        if k8s_connection_raise:
+            dynamic_client_mock.request.side_effect = HTTPError("Failed to connect")
+
+        get_client_mock = MagicMock(return_value=dynamic_client_mock)
+        if get_client_raise:
+            get_client_mock.side_effect = HTTPError("Failed to connect")
+
         with patch.object(
-            metalk8s_kubernetes_utils, "get_version_info", version_info_mock
+            metalk8s_kubernetes_utils, "get_kubeconfig", kubeconfig_mock
+        ), patch.dict(
+            metalk8s_kubernetes_utils.__utils__,
+            {"metalk8s_kubernetes.get_client": get_client_mock},
         ):
             self.assertEqual(
                 result,
                 metalk8s_kubernetes_utils.ping(),
             )
+
+        if get_client_raise:
+            dynamic_client_mock.request.assert_not_called()
+        else:
+            dynamic_client_mock.request.assert_called_once_with(
+                "get",
+                "/version",
+                serialize=False,
+                _request_timeout=metalk8s_kubernetes_utils.PING_REQUEST_TIMEOUT,
+            )
+
+        self.assertEqual(dynamic_client_mock.version.mock_calls, [])
+
+    def test_ping_does_not_deserialize_the_response(self):
+        """
+        Tests that `ping` does not deserialize the `/version` response
+
+        Driven against a real `DynamicClient` rather than a mock: `/version`
+        carries no `kind`, which the default `ResourceInstance` serializer
+        requires, so deserializing a successful response raises `KeyError`.
+        """
+        version_body = json.dumps(
+            {"major": "1", "minor": "33", "gitVersion": "v1.33.7"}
+        ).encode("utf8")
+
+        api_client_mock = MagicMock()
+        api_client_mock.call_api.return_value = MagicMock(data=version_body)
+
+        # Bypass discovery.
+        client = kubernetes.dynamic.DynamicClient(
+            api_client_mock, discoverer=lambda _client, _cache_file: MagicMock()
+        )
+
+        kubeconfig_mock = MagicMock(return_value=("my_kubeconfig.conf", "my_context"))
+        get_client_mock = MagicMock(return_value=client)
+
+        with patch.object(
+            metalk8s_kubernetes_utils, "get_kubeconfig", kubeconfig_mock
+        ), patch.dict(
+            metalk8s_kubernetes_utils.__utils__,
+            {"metalk8s_kubernetes.get_client": get_client_mock},
+        ):
+            self.assertTrue(metalk8s_kubernetes_utils.ping())
+
+        api_client_mock.call_api.assert_called_once()
+        self.assertEqual(
+            api_client_mock.call_api.call_args[1]["_request_timeout"],
+            metalk8s_kubernetes_utils.PING_REQUEST_TIMEOUT,
+        )
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["read_and_render_yaml_file"])
     def test_read_and_render_yaml_file(

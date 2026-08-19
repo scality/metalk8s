@@ -110,8 +110,6 @@ def wait_apiserver(
     execution function: with ``verify_rbac`` false, this is limited to reading
     the apiserver version (RBAC-independent).
 
-    TODO: MK8S-386 - ping can be satisfied from the discovery cache.
-
     When ``verify_rbac`` is ``True``, the apiserver is only considered ready
     once the ``poststarthook/rbac/bootstrap-roles`` hook has finished
     reconciling the default ClusterRoles, read from ``/readyz?verbose``.
