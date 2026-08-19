@@ -98,10 +98,6 @@ jobs:
           VERSION_PATCH=0
           VERSION_SUFFIX=-dev
           EOF
-      # edit CHANGELOG
-      - name: add new entry to changelog
-        run: |
-          sed -i "s/# CHANGELOG/# CHANGELOG\n\n## Release ${{ env.NEW_SHORT_VERSION }}.0 (in development)/" CHANGELOG.md
       # edit cron jobs
       - name: bump version in cron jobs
         run: |
@@ -113,7 +109,6 @@ jobs:
       - name: push to init branch
         run: |
           git add VERSION
-          git add CHANGELOG.md
           git add .github/workflows/crons.yaml
           git commit -m "Update version to ${{ env.NEW_SHORT_VERSION }}"
           git push --set-upstream origin ${{ env.INIT_BRANCH_NAME }}

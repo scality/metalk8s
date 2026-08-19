@@ -23,71 +23,39 @@ jobs:
   prepare-version:
     runs-on: ubuntu-24.04
     steps:
+      # ─── Setup: authentication & fail-fast on user inputs ───
       - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: ${{ vars.ACTIONS_APP_ID }}
           private-key: ${{ secrets.ACTIONS_APP_PRIVATE_KEY }}
+
       - name: Validate what's new
         run: |
           # We just check if handle this input using jq will not fail.
           # If it does, the workflow will fail in a inconsistent way.
           echo '${{ inputs.what-is-new }}' | jq -r '.[]'
+
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
-      - name: Install buildchain dependencies
-        run: |
-          python3 -m pip install -r buildchain/requirements.txt
+
+      # ─── Compose & validate release parameters (fail fast) ───
       - name: Install semver tool
         run: |
           curl --fail -LO https://raw.githubusercontent.com/fsaintjacques/semver-tool/3.4.0/src/semver
           chmod +x ./semver
+
       - name: Compose release tag
-        run: |
-          source VERSION
+        env:
+          VERSION_TYPE: ${{ inputs.version-type }}
+        run: .github/scripts/release-compose-tag.sh
 
-          SHORT_VERSION="$VERSION_MAJOR.$VERSION_MINOR"
-          BASE_VERSION="$SHORT_VERSION.$VERSION_PATCH"
-          TAG="$BASE_VERSION"
-
-          if [ "${{ inputs.version-type }}" == "alpha" ] || [ "${{ inputs.version-type }}" == "beta" ] ; then
-            TAG="$TAG-${{ inputs.version-type }}"
-            TAG_QUERY="$TAG*"
-          elif [ "${{ inputs.version-type }}" == "GA" ]; then
-            TAG_QUERY="$TAG"
-          else
-            echo "Invalid release type: ${{ inputs.version-type }}"
-            exit 1
-          fi
-
-          LAST_MATCH_TAG=$(git tag -l --sort=-v:refname "$TAG_QUERY" | head -n 1)
-
-          if [ "${{ inputs.version-type }}" == "GA" ] && [ "$LAST_MATCH_TAG" != "" ]; then
-            echo "Release $LAST_MATCH_TAG already exists"
-            exit 1
-          fi
-
-          if [ "${{ inputs.version-type }}" == "alpha" ] || [ "${{ inputs.version-type }}" == "beta" ] ; then
-            SUFFIX_NUMBER="1"
-
-            if [ "$LAST_MATCH_TAG" != "" ]; then
-              SUFFIX_NUMBER=$(./semver get prerel $LAST_MATCH_TAG | cut -d'.' -f2)
-              SUFFIX_NUMBER=$((SUFFIX_NUMBER + 1))
-            fi
-
-            TAG="$TAG.$SUFFIX_NUMBER"
-          fi
-
-          echo "SHORT_VERSION=$SHORT_VERSION" >> $GITHUB_ENV
-          echo "PATCH_VERSION=$VERSION_PATCH" >> $GITHUB_ENV
-          echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
-          echo "RELEASE_TAG=$TAG" >> $GITHUB_ENV
-          echo "RELEASE_BRANCH=release/$TAG" >> $GITHUB_ENV
       - name: Validate ${{ env.RELEASE_TAG }} tag
         run: ./semver validate ${{ env.RELEASE_TAG }}
+
       - name: Check if version ${{ env.BASE_VERSION }} is on the right branch
         run: |
           GIT_REMOTE=$(git remote)
@@ -96,98 +64,104 @@ jobs:
             echo "Version commit is not included in base branch ${BASE_BRANCH}"
             exit 1
           fi
+
+      # ─── Install the tools needed to produce the release ───
+      - name: install changie
+        uses: miniscruff/changie-action@v3
+        with:
+          version: latest
+
+      - name: Install buildchain dependencies
+        run: |
+          python3 -m pip install -r buildchain/requirements.txt
+
+      # ─── Create the release branch, commit, and push ───
       - name: Prepare branch
         run: git checkout -b ${{ env.RELEASE_BRANCH }}
+
       - name: Set the new version
-        run: |
-          if [ "${{ inputs.version-type }}" == "GA" ]; then
-            sed -i "s/## Release ${{ env.BASE_VERSION }} (in development)/## Release ${{ env.BASE_VERSION }}/" CHANGELOG.md
-            git add CHANGELOG.md
-          fi
+        env:
+          VERSION_TYPE: ${{ inputs.version-type }}
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+        run: .github/scripts/release-set-new-version.sh
 
-          if [ -z "${NEW_VERSION_SUFFIX}" ]; then
-            NEW_VERSION_SUFFIX=$(./semver get prerel ${{ env.RELEASE_TAG }})
-            [ -n "$NEW_VERSION_SUFFIX" ] && NEW_VERSION_SUFFIX="-$NEW_VERSION_SUFFIX"
-          fi
-
-          sed -i "s/VERSION_SUFFIX=.*/VERSION_SUFFIX=$NEW_VERSION_SUFFIX/" VERSION
-
-          git add VERSION
       - name: Commit with requested version and push
         run: |
           git fsck
           git gc
-          
           git config --global user.email ${{ github.actor }}@scality.com
           git config --global user.name ${{ github.actor }}
           git commit -m "Release ${{ env.RELEASE_TAG }}"
           git push --set-upstream origin ${{ env.RELEASE_BRANCH }}
+
+      # ─── Create the annotated release tag ───
       - name: Create and push `${{ env.RELEASE_TAG }}` tag
-        run: |
-          BODY=$(mktemp)
+        env:
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+          PATCH_VERSION: ${{ env.PATCH_VERSION }}
+          SHORT_VERSION: ${{ env.SHORT_VERSION }}
+          WHAT_IS_NEW: ${{ inputs.what-is-new }}
+        run: .github/scripts/release-create-tag.sh
 
-          K8S_VERSION=$(python3 -c 'from buildchain.buildchain import versions; print(versions.K8S_VERSION)')
-
-          PATCH_MSG="MetalK8s ${{ env.RELEASE_TAG }} embeds Kubernetes $K8S_VERSION."
-          if [ "${{ env.PATCH_VERSION }}" != "0" ]; then
-            PATCH_MSG="MetalK8s ${{ env.RELEASE_TAG }} is a patch release (see [the main release ${{ env.SHORT_VERSION }}.0](https://github.com/scality/metalk8s/releases/${{ env.SHORT_VERSION }}.0))."
-          fi
-
-          cat > $BODY <<- EOM
-          MetalK8s ${{ env.RELEASE_TAG }}
-          ===
-
-          $PATCH_MSG
-
-          Useful links
-          ---
-
-          - [Documentation](https://metal-k8s.readthedocs.io/en/${{ env.RELEASE_TAG }})
-          - [Upgrade notes](https://metal-k8s.readthedocs.io/en/${{ env.RELEASE_TAG }}/operation/upgrade.html)
-          - [Changelog](https://github.com/scality/metalk8s/blob/${{ env.RELEASE_TAG }}/CHANGELOG.md)
-
-          EOM
-
-          if [ '${{ inputs.what-is-new }}' != '[]' ]; then
-            echo "What's new" >> $BODY
-            echo "===" >> $BODY
-            echo "" >> $BODY
-            while IFS= read -r line; do
-              echo "- $line" >> $BODY
-            done <<< $(echo '${{ inputs.what-is-new }}' | jq -r '.[]')
-          fi
-
-          git tag -a "${{ env.RELEASE_TAG }}" -F $BODY
-          git push origin ${{ env.RELEASE_TAG }}
+      # ─── Prepare the release-merge branch (destined to be waterfall'd back) ───
       - name: Prepare branch to merge ${{ env.RELEASE_TAG }} tag
+        env:
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+          PATCH_VERSION: ${{ env.PATCH_VERSION }}
+          SHORT_VERSION: ${{ env.SHORT_VERSION }}
+          VERSION_TYPE: ${{ inputs.version-type }}
+        run: .github/scripts/release-prepare-merge-branch.sh
+
+      - name: Look for important messages
+        id: warn_user
         run: |
-          git checkout -b feature/merge-${{ env.RELEASE_TAG }}-tag origin/development/${{ env.SHORT_VERSION }}
-          git merge ${{ env.RELEASE_TAG }} --no-ff
+          link="https://github.com/${{ github.repository }}/blob/${{ env.RELEASE_TAG }}/"
+          {
+            echo 'COMMENT<<EOF'
+            echo "# Mentions of ${{ env.RELEASE_TAG }} in ${{ github.ref_name }}"
+            git grep -rHn "${{ env.RELEASE_TAG }}" | sed -E "s;(.*):([0-9]+):.*;$link\1#L\2;" || true
+            echo EOF
+          } >> "$GITHUB_ENV"
 
-          VERSION_PATCH=${{ env.PATCH_VERSION }}
-          if [ "${{ inputs.version-type }}" == "GA" ]; then
-            VERSION_PATCH=$((VERSION_PATCH + 1))
-            sed -i "s/## Release ${{ env.BASE_VERSION }}/## Release ${{ env.SHORT_VERSION }}.$VERSION_PATCH (in development)\n\n## Release ${{ env.BASE_VERSION }}/" CHANGELOG.md
-            git add CHANGELOG.md
+      # ─── GA-only: pre-create integration branches so Bert-E doesn't race ───
+      - name: Prepare waterfall integration branches
+        if: inputs.version-type == 'GA'
+        env:
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+          SHORT_VERSION: ${{ env.SHORT_VERSION }}
+        run: .github/scripts/release-prepare-waterfall-branches.sh
 
-            sed -i "s/VERSION_PATCH=.*/VERSION_PATCH=$VERSION_PATCH/" VERSION
-          fi
-
-          sed -i "s/VERSION_SUFFIX=.*/VERSION_SUFFIX=-dev/" VERSION
-
-          git add VERSION
-          git commit --amend --no-edit
-          git push --set-upstream origin feature/merge-${{ env.RELEASE_TAG }}-tag
+      # ─── Open the release-merge pull request ───
       - name: Create pull request
         uses: actions/github-script@v9
+        env:
+          COMMENT: ${{ env.COMMENT }}
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+          SHORT_VERSION: ${{ env.SHORT_VERSION }}
         with:
           script: |
             const pr = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head: "feature/merge-${{ env.RELEASE_TAG }}-tag",
-              base: "development/${{ env.SHORT_VERSION }}",
-              title: "Merge release tag for ${{ env.RELEASE_TAG }}"
+              head: `feature/merge-${process.env.RELEASE_TAG}-tag`,
+              base: `development/${process.env.SHORT_VERSION}`,
+              title: `Merge release tag for ${process.env.RELEASE_TAG}`
+            });
+
+            await github.rest.issues.createComment({
+              issue_number: pr.data.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: process.env.COMMENT
+            });
+
+            await github.rest.issues.addLabels({
+              issue_number: pr.data.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: [
+                {"name": "skip changelog"},
+              ],
             });
 
             await github.rest.issues.createComment({
@@ -195,4 +169,4 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: '/approve'
-            })
+            });
