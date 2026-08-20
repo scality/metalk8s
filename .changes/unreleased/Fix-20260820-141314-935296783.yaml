@@ -1,0 +1,14 @@
+kind: Fix
+body: |-
+    Upgrading the apiservers and deploying a node no longer abort when the node
+    being reconfigured misses a single Salt keepalive. Both states replace
+    components on the very node the salt-master polls with `saltutil.find_job` —
+    the apiserver-proxy in one case, the kubelet, containerd and the control plane
+    static pods in the other — and a probe left unanswered for `gather_job_timeout`
+    (10s by default) made Salt give up on a state that was still running, reporting
+    `Run failed on minions: <node>`. Both now tolerate up to 300s of silence from a
+    node that is still working
+time: 2026-08-20T14:13:14.935296783Z
+custom:
+    CommentId: "5357080827"
+    Pull: "5092"
