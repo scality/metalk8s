@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Add debug information on ingress test failures and make the test more tolerant by waiting in calico readyness
+time: 2026-08-20T10:03:11.4150515Z
+custom:
+    CommentId: "5354398477"
+    Pull: "5093"
