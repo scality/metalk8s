@@ -81,9 +81,9 @@ Wait for apiserver {{ node }} to be serving:
       only weights the local one, so it fails over to another apiserver and
       would report ready while this node is still starting. `match` and
       `status` are both checked, so this requires overall readiness and the
-      RBAC bootstrap hook, as the gates added by MK8S-263 do. `wait_for` is
-      stated because it otherwise defaults to 300s: on the upgrade recorded in
-      MK8S-383 the static pod was only swapped ~2.5min into the deploy #}
+      RBAC bootstrap hook.
+      `wait_for` is set to 420s instead of default 300s: on some upgrades
+      the static pod may be only swapped ~2.5min into the deploy #}
   - name: https://{{ node_ip }}:6443/readyz?verbose
   - match: 'poststarthook/rbac/bootstrap-roles ok'
   - status: 200
