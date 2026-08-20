@@ -1,0 +1,17 @@
+kind: Enhanced
+body: |-
+    Ship boot cache images on the ISO, each carrying an archive of the container images
+    a node of that role needs to boot: `metalk8s-boot-cache-control-plane` (`pause`,
+    etcd, `kube-apiserver`, `kube-controller-manager`, `kube-scheduler`, CoreDNS,
+    `kube-proxy` and Calico) and `metalk8s-boot-cache-worker` (`pause` and
+    `file-reflector`). Both carry `pause`, which containerd pins as its sandbox image:
+    without it the kubelet starts no Pod at all, not even a static one. A node can
+    restore them into containerd without reaching the registry, which breaks the
+    circular dependency between a node and the registry running on the cluster it
+    belongs to. Each archive is named after the image the kubelet asks for, so it is
+    imported as is, with no re-tagging. Both images are available as layers, for the
+    registry, and as an archive, for a node with no registry yet.
+time: 2026-08-20T14:04:10.488064253Z
+custom:
+    CommentId: "5356968643"
+    Pull: "5068"
