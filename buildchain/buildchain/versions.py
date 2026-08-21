@@ -240,6 +240,16 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
+        name="metalk8s-boot-cache-control-plane",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
+        name="metalk8s-boot-cache-worker",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
         name="metalk8s-keepalived",
         version=VERSION,
         digest=None,
@@ -318,6 +328,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         name="disk-management-agent",
         version="v0.1.0",
         digest="sha256:d63d4e20a089dcd3ac33f58d2210a66e48a1f9f08120494352b22cca94747769",
+    ),
+    Image(
+        name="file-reflector",
+        version="v0.2.0",
+        digest="sha256:97f14f857ebef1b421ad2799e6fba77c9b0cebcfc19f0b726344e322a4f7ead5",
     ),
     Image(
         name="node-warden-operator",

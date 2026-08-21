@@ -1,0 +1,10 @@
+kind: Enhanced
+body: |-
+    Pull the [file-reflector](https://github.com/scality/file-reflector) image
+    ([v0.2.0](https://github.com/scality/file-reflector/releases/tag/v0.2.0)), the agent
+    that writes containerd's mirror configuration on each node, so it can be cached on
+    workers.
+time: 2026-08-20T14:04:34.010652025Z
+custom:
+    CommentId: "5356969664"
+    Pull: "5068"
