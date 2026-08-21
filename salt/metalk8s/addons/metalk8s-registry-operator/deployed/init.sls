@@ -16,6 +16,7 @@ Wait for Registry Operator to be Ready:
     - retry:
         attempts: 30
     - require:
+      - sls: metalk8s.addons.cert-manager.deployed
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.namespace
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.chart
     - require_in:
