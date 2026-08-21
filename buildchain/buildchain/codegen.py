@@ -348,6 +348,49 @@ def codegen_chart_cert_manager() -> types.TaskDict:
     }
 
 
+def task_get_codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
+    """Generate the kustomize manifests output for the Registry Operator."""
+    kustomize_dir = constants.ROOT / "kustomizes/metalk8s-registry-operator"
+
+    cmd = f"kustomize build {kustomize_dir}"
+
+    return {
+        "doc": task_get_codegen_kustomize_metalk8s_registry_operator.__doc__,
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT, save_out="stdout")],
+        "file_dep": list(utils.git_ls(kustomize_dir)),
+        "task_dep": ["check_for:kustomize"],
+    }
+
+
+def codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
+    """Generate the SLS file for the Registry Operator."""
+    target_sls = (
+        constants.ROOT
+        / "salt/metalk8s/addons/metalk8s-registry-operator/deployed/chart.sls"
+    )
+    template_file = constants.ROOT / "kustomizes/template.sls.in"
+
+    tpl_task = targets.TemplateFile(
+        task_name="kustomize_metalk8s-registry-operator",
+        source=template_file,
+        destination=target_sls,
+    )
+    tpl_task_dict = tpl_task.task
+    tpl_task_dict.update(
+        {
+            "title": utils.title_with_subtask_name("CODEGEN"),
+            "task_dep": ["get_codegen_kustomize_metalk8s_registry_operator"],
+            "getargs": {
+                "Manifests": (
+                    "get_codegen_kustomize_metalk8s_registry_operator",
+                    "stdout"
+                ),
+            },
+        }
+    )
+    return tpl_task_dict
+
+
 def task_get_codegen_kustomize_crl_operator() -> types.TaskDict:
     """Generate the kustomize manifests output for the CRL Operator."""
     kustomize_dir = constants.ROOT / "kustomizes/crl-operator"
@@ -557,6 +600,7 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_thanos,
     codegen_chart_cert_manager,
     codegen_kustomize_crl_operator,
+    codegen_kustomize_metalk8s_registry_operator,
     codegen_kustomize_disk_management_agent,
     codegen_kustomize_node_warden_operator,
 )
