@@ -67,3 +67,27 @@ Upgrade
 
       The version prefix metalk8s-**X.Y.Z** must be the *new* MetalK8s version
       you want to upgrade to.
+
+Resuming an Interrupted Upgrade
+*******************************
+
+Nodes are upgraded one at a time, and each one carries the
+``metalk8s.scality.com/version-in-progress`` annotation for as long as its
+deployment runs. A node that fails mid-upgrade keeps that annotation, and
+the last version it completed stays recorded in
+``metalk8s.scality.com/version-applied``.
+
+To resume, run ``upgrade.sh`` again with the same version. Only the nodes
+that need it are deployed again: those still carrying the in-progress
+annotation, and those that never recorded the destination version. A node
+whose ``metalk8s.scality.com/version-applied`` already reads the destination
+is left alone. For as long as a node carries the in-progress annotation, the
+upgrade prechecks refuse any other destination, since moving that node to
+another version would mean downgrading it.
+
+.. important::
+
+   Do not point ``upgrade.sh`` at a version older than the one the cluster
+   runs. A node that completed a newer version is skipped, not moved back.
+   Use ``downgrade.sh`` to go back to an older version, as described in
+   :doc:`/operation/downgrade`.
