@@ -1,4 +1,5 @@
 include:
+  - metalk8s.addons.cert-manager.deployed
   - .bootstrap
   - .server
   - .agent
