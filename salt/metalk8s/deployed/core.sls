@@ -3,6 +3,7 @@ include:
   - metalk8s.kubernetes.cni.calico.deployed
   - metalk8s.kubernetes.coredns.deployed
   - metalk8s.addons.cert-manager.deployed
+  - metalk8s.addons.registry-operator.deployed
   - metalk8s.kubernetes.admin.deployed
   - metalk8s.repo.deployed
   - metalk8s.salt.master.deployed
