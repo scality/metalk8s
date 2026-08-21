@@ -31,22 +31,23 @@ Feature: Cluster Sanity Checks
         Then the Deployment '<name>' in the '<namespace>' namespace has all desired replicas available
 
         Examples:
-        | namespace           | name                                   |
-        | kube-system         | calico-kube-controllers                |
-        | kube-system         | coredns                                |
-        | kube-system         | metalk8s-operator-controller-manager   |
-        | kube-system         | storage-operator-controller-manager    |
-        | metalk8s-monitoring | prometheus-adapter                     |
-        | metalk8s-monitoring | prometheus-operator-grafana            |
-        | metalk8s-monitoring | prometheus-operator-kube-state-metrics |
-        | metalk8s-monitoring | prometheus-operator-operator           |
-        | metalk8s-monitoring | thanos-query                           |
-        | metalk8s-monitoring | node-warden-operator-controller-manager |
-        | metalk8s-ui         | metalk8s-ui                            |
-        | metalk8s-certs      | cert-manager                           |
-        | metalk8s-certs      | cert-manager-cainjector                |
-        | metalk8s-certs      | cert-manager-webhook                   |
-        | metalk8s-certs      | crl-operator-controller-manager        |
+        | namespace                | name                                   |
+        | kube-system              | calico-kube-controllers                |
+        | kube-system              | coredns                                |
+        | kube-system              | metalk8s-operator-controller-manager   |
+        | kube-system              | storage-operator-controller-manager    |
+        | metalk8s-monitoring      | prometheus-adapter                     |
+        | metalk8s-monitoring      | prometheus-operator-grafana            |
+        | metalk8s-monitoring      | prometheus-operator-kube-state-metrics |
+        | metalk8s-monitoring      | prometheus-operator-operator           |
+        | metalk8s-monitoring      | thanos-query                           |
+        | metalk8s-monitoring      | node-warden-operator-controller-manager |
+        | metalk8s-ui              | metalk8s-ui                            |
+        | metalk8s-certs           | cert-manager                           |
+        | metalk8s-certs           | cert-manager-cainjector                |
+        | metalk8s-certs           | cert-manager-webhook                   |
+        | metalk8s-certs           | crl-operator-controller-manager        |
+        | metalk8s-registry-system | metalk8s-registry-operator-controller-manager |
 
     Scenario Outline: DaemonSet has desired Pods ready
         Then the DaemonSet '<name>' in the '<namespace>' namespace has all desired Pods ready
