@@ -146,6 +146,18 @@ Cordon the node:
 
 {%- if run_drain %}
 
+{#- The drain talks to the API server for every pod it evicts, and an upgrade
+    restarts etcd and the API servers, so a whole drain can fail on a transient
+    error. Retry instead of aborting the node deployment, and split the drain
+    budget across the attempts: a drain that can never succeed (an unsatisfiable
+    disruption budget) then still gives up in about the time a single drain used
+    to take. Budgets of a few seconds round up to one second per attempt, since a
+    zero timeout would silently mean the 3600 second default of the `metalk8s_drain`
+    module, which is also where the 3600 below comes from. #}
+{%- set drain_attempts = 4 %}
+{%- set drain_budget = pillar.orchestrate.get("drain_timeout") | int or 3600 %}
+{%- set drain_attempt_timeout = [(drain_budget / drain_attempts) | int, 1] | max %}
+
 Drain the node:
   metalk8s_drain.node_drained:
     - name: {{ node_name }}
@@ -153,9 +165,11 @@ Drain the node:
     - ignore_pending: True
     - delete_local_data: True
     - force: True
-    {%- if pillar.orchestrate.get("drain_timeout") %}
-    - timeout: {{ pillar.orchestrate.drain_timeout }}
-    {%- endif %}
+    - timeout: {{ drain_attempt_timeout }}
+    - retry:
+        attempts: {{ drain_attempts }}
+        interval: 30
+        splay: 10
     - require:
       - metalk8s_cordon: Cordon the node
     - require_in:
