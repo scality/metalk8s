@@ -1,0 +1,13 @@
+kind: Fix
+body: |-
+    A node drain no longer aborts the upgrade on a transient API server or etcd error.
+    An eviction rejected with a 5xx status, typically `etcdserver: request timed out`
+    while the upgrade restarts etcd and the API servers, is now retried for about a
+    minute per pod, and the drain state is retried too, its budget split across the
+    attempts so a drain that can never succeed still gives up in about the time it
+    used to take. A pod that keeps failing still fails the drain, naming the pod and
+    the API error.
+time: 2026-08-21T13:44:31.902974699Z
+custom:
+    CommentId: "5370554667"
+    Pull: "5090"

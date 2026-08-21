@@ -1,0 +1,16 @@
+kind: Fix
+body: |-
+    A node that fails during an upgrade or a downgrade no longer advertises the
+    destination version as if it were running it. The version label is still set
+    before the deployment, since it selects the saltenv, but the node now also
+    carries a `metalk8s.scality.com/version-in-progress` annotation until that
+    deployment succeeds, plus a `metalk8s.scality.com/version-applied`
+    annotation recording the last version it completed. Both orchestrates select
+    nodes on that recorded version rather than on the label, so resuming an
+    interrupted upgrade only deploys the nodes that need it, and the upgrade
+    prechecks refuse a destination other than the one an interrupted upgrade was
+    heading to.
+time: 2026-08-21T13:44:54.081105426Z
+custom:
+    CommentId: "5370556592"
+    Pull: "5090"
