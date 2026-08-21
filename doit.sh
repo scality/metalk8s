@@ -10,8 +10,8 @@ BUILDCHAIN=buildchain
 BUILDENV="${BUILDCHAIN}/.venv"
 # requirements.txt for the buildchain.
 REQUIREMENTS="${BUILDCHAIN}/requirements.txt"
-# Dummy file to keep track of when the virtual environment was installed.
-WITNESS_FILE="${BUILDENV}/installed.tstamp"
+# Marker file defined by PEP 405 to keep track of when the venv was created.
+MARKER_FILE="${BUILDENV}/pyvenv.cfg"
 # File containing environment variables.
 DOTENV=./.env
 
@@ -30,6 +30,7 @@ then
     exit 1
 fi
 
+# Get unix timestamp (seconds since epoch)
 if [ "$OSTYPE" = "Darwin" ]
 then
     GET_FILE_STAMP='stat -f %m'
@@ -39,15 +40,14 @@ fi
 
 # Can't use `[ file1 -nt file2 ]` directly because it's not POSIX :'(
 REQ_TSTAMP=$($GET_FILE_STAMP "${REQUIREMENTS}")
-WIT_TSTAMP=$($GET_FILE_STAMP "${WITNESS_FILE}" 2> /dev/null || echo '0')
+MKR_TSTAMP=$($GET_FILE_STAMP "${MARKER_FILE}" 2> /dev/null || echo '0')
 
 # Install/reinstall the virtual environment only if it either doesn't exist or
 # the requirements have changed since its creation.
-if [ "${REQ_TSTAMP}" -gt "${WIT_TSTAMP}" ]
+if [ "${REQ_TSTAMP}" -gt "${MKR_TSTAMP}" ]
 then
     "${PYTHON_SYS}" -m venv --clear "${BUILDENV}"
     "${BUILDENV}/bin/pip" install -r "${REQUIREMENTS}"
-    touch "${WITNESS_FILE}"
 fi
 
 # Load customized environment variables from dotenv file, if exists.
@@ -57,4 +57,5 @@ then
     . "${DOTENV}"
 fi
 
+# Run doit and pass all arguments to it.
 exec "${BUILDENV}/bin/python" -m doit "$@"

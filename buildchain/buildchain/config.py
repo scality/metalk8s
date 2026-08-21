@@ -17,7 +17,7 @@ from pathlib import Path
 from buildchain import ROOT
 
 
-# /!\ All the global defined here must be documented in BUILDING.md /!\
+# /!\ All the global defined here must be documented in docs/developer/building/configuration.rst /!\
 
 
 # Project name.
@@ -58,14 +58,11 @@ class ExtCommand(enum.Enum):
     GIT = os.getenv("GIT_BIN", "git")
     GOFMT = os.getenv("GOFMT_BIN", "gofmt")
     HARDLINK = os.getenv("HARDLINK_BIN", "hardlink")
-    HELM = os.getenv("HELM_BIN", "helm")
     IMPLANTISOMD5 = os.getenv("IMPLANTISOMD5_BIN", "implantisomd5")
     MAKE = os.getenv("MAKE_BIN", "make")
     MKISOFS = os.getenv("MKISOFS_BIN", "mkisofs")
     SKOPEO = os.getenv("SKOPEO_BIN", "skopeo")
-    TOX = os.getenv("TOX_BIN", "tox")
     VAGRANT = os.getenv("VAGRANT_BIN", "vagrant")
-    KUSTOMIZE = os.getenv("KUSTOMIZE_BIN", "kustomize")
 
     @property
     def command_name(self) -> str:
