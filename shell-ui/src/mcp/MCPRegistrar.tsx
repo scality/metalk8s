@@ -48,6 +48,12 @@ type HostTask = {
 };
 const hostTasks: HostTask[] = []; // ordered — task 1 stays before task 2
 
+// Do not use directly - exported for testing purposes (the list is module-level,
+// so tests must drop leftovers between cases).
+export const _resetHostTasks = () => {
+  hostTasks.length = 0;
+};
+
 interface MCPToolDescriptor extends ToolDescriptor {
   getTaskStatus?: () => Promise<TaskStatusReport>;
 }
@@ -184,7 +190,8 @@ export const _InternalMCPRegistrar = ({
 // — not per micro-app) so it never gets unregistered while an app is still mounted.
 // It routes the polled taskId to whichever tool owns it (via the shared hostTasks
 // list), stamps the id back onto the result, and evicts a settled task after its ttlMs.
-function useHostGetTaskStatusTool() {
+// Exported (as well as used by MCPRegistrar below) so tests can mount it standalone.
+export function useHostGetTaskStatusTool() {
   useEffect(() => {
     const modelContext = document.modelContext || navigator.modelContext;
     if (!modelContext) return;
