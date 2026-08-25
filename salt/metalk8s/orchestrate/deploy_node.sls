@@ -297,12 +297,15 @@ Run the highstate:
     - tgt: {{ node_name }}
     - highstate: True
     - saltenv: metalk8s-{{ version }}
-    {#- On a master or bootstrap node this replaces the kubelet, containerd and
-        the control plane static pods on the very node the salt-master polls with
-        `saltutil.find_job`, so that node can miss a keepalive while still
-        running the state. `timeout` sets the per-minion deadline, re-armed on
-        every answered probe, so this tolerates up to 300s of silence from a node
-        that is still working #}
+    {#- Increase the timeout to 300s instead of the default 20s, to let the
+        highstate run to completion, because it replaces the kubelet and
+        containerd on every node, plus the control plane static pods on a
+        master or bootstrap node, on the very node the salt-master polls with
+        `saltutil.find_job`, and a full highstate needs minutes. Once a probe
+        goes unanswered no further probe is sent, so this is the grace left for
+        the state to return. This prevents Salt reporting `Run failed on
+        minions: <node>` and aborting the deployment with the node left
+        cordoned #}
     - timeout: 300
     {#- Add ability to skip node roles to not apply all the highstate
         e.g.: Skipping etcd when downgrading #}
