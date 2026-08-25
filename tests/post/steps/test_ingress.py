@@ -194,11 +194,11 @@ def _vip_debug(host, ssh_config, vip):
         ),
     )
     for title, command in probes:
-        sections.append(
-            _section(
-                f"'{owner}': {title}", _salt_cmd_run(host, ssh_config, owner, command)
-            )
-        )
+        try:
+            output = _salt_cmd_run(host, ssh_config, owner, command)
+        except Exception as exc:  # pylint: disable=broad-except
+            output = f"failed to collect: {exc}"
+        sections.append(_section(f"'{owner}': {title}", output))
 
     return sections
 
@@ -1066,16 +1066,23 @@ def re_configure_portmap(host, version, ssh_config, context=None):
 
     utils.run_salt_command(host, command, ssh_config)
 
-    # The state above rewrites the portmap `conditionsV4` of the calico CNI
-    # configuration, which reaches a node only when its `calico-node` Pod
-    # restarts and its `install-cni` container rewrites
-    # `/etc/cni/net.d/10-calico.conflist`. The hostPort DNAT rules of an
-    # `ingress-nginx-controller` Pod are programmed by the portmap plugin at
-    # sandbox creation, baking in the conditions of the conflist present at
-    # that instant: a Pod recreated before its node caught up keeps DNAT rules
-    # that do not cover the new VIPs, and the VIP is then assigned by
-    # keepalived but refuses connections. Wait here rather than in each caller,
-    # so no scenario can restart the Ingress over a stale conflist.
+    # Wait for the `calico-node` rollout to complete, i.e. for every node to
+    # have rewritten its conflist with the new portmap conditions. Here
+    # rather than in each caller, so no caller can restart the Ingress over a
+    # conflist still holding the previous ones.
+    #
+    # The state above rewrites the portmap `conditionsV4` in the
+    # `calico-config` ConfigMap; `calico-node` carries a `checksum/config`
+    # annotation built from that ConfigMap, so the rewrite changes the Pod
+    # template and rolls the DaemonSet. A Pod turns Ready only once its
+    # `install-cni` init container has exited, and that container is what
+    # writes the conditions to the node's `10-calico.conflist` -- which is
+    # why a completed rollout is the signal we need.
+    #
+    # It matters because portmap bakes the hostPort DNAT rules of an
+    # `ingress-nginx-controller` Pod from the conflist present at sandbox
+    # creation: a Pod recreated too early keeps rules missing the new VIPs,
+    # and keepalived then hands the node a VIP it refuses connections on.
     wait_rollout_status(host, "daemonset/calico-node", "kube-system")
 
     command = [
