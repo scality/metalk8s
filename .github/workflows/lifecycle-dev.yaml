@@ -30,7 +30,7 @@ jobs:
       artifacts-url: ${{ steps.artifacts.outputs.link }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.dev-branch }}
       - name: Retrieve artifacts url

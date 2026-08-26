@@ -87,7 +87,7 @@ jobs:
       NODES_COUNT: ${{ inputs.nodes-count }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Install deps
         run: |
           # Wait for apt/dpkg locks to be released (e.g. unattended-upgrades at startup).
@@ -385,7 +385,7 @@ jobs:
     if: always()
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Get artifacts URL
         uses: scality/action-artifacts@v4
         id: artifacts
