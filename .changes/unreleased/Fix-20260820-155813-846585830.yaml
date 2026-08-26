@@ -1,12 +1,10 @@
 kind: Fix
 body: |-
-    Upgrading the apiservers now waits for each master's apiserver to be serving
-    again before replacing the next one. The orchestrate serialised the masters but
-    checked nothing after a node's deploy returned, so on a multi-master cluster it
-    could start replacing the next apiserver while the previous one was still
-    starting, reducing control plane availability more than intended. Transient
-    "No minions responded" on the grain sync and refresh steps is now retried
-    rather than failing the upgrade outright
+    Upgrading the apiservers now waits, from the salt-master, for each master's
+    apiserver to answer `/readyz` on its own control plane IP before replacing the
+    next one, on top of the local `/healthz` check the deploy already runs.
+    Transient "No minions responded" on the grain sync and refresh steps is now
+    retried rather than failing the upgrade outright
 time: 2026-08-20T15:58:13.84658583Z
 custom:
     CommentId: "5358426857"

@@ -87,7 +87,8 @@ Wait for apiserver {{ node }} to be serving:
   - name: https://{{ node_ip }}:6443/readyz?verbose
   - match: 'poststarthook/rbac/bootstrap-roles ok'
   - status: 200
-  - verify_ssl: false
+  - verify_ssl: true
+  - ca_bundle: /etc/kubernetes/pki/ca.crt
   - request_interval: 5
   - wait_for: 420
   - timeout: 10
