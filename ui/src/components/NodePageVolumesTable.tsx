@@ -69,6 +69,7 @@ const VolumeListTable = React.memo((props) => {
       },
       {
         Header: 'Usage',
+        dropAt: 420,
         accessor: 'usage',
         cellStyle: {
           textAlign: 'left',
@@ -90,6 +91,7 @@ const VolumeListTable = React.memo((props) => {
       },
       {
         Header: 'Size',
+        dropAt: 480,
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'left',
@@ -109,6 +111,7 @@ const VolumeListTable = React.memo((props) => {
       },
       {
         Header: 'Status',
+        dropAt: 380,
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
@@ -177,6 +180,7 @@ const VolumeListTable = React.memo((props) => {
       },
       {
         Header: 'Latency',
+        dropAt: 560,
         accessor: 'latency',
         cellStyle: {
           textAlign: 'right',
@@ -192,6 +196,7 @@ const VolumeListTable = React.memo((props) => {
   }, [volumeListData, theme, navigate, nodeName]);
   return (
     <Table
+      revealDroppedColumns
       columns={columns}
       data={volumeListData}
       defaultSortingKey="health"

@@ -191,6 +191,7 @@ const ActiveAlertTab = React.memo(
     const DEFAULT_SORTING_KEY = 'severity';
     return (
       <Table
+        revealDroppedColumns
         columns={columns}
         data={data}
         defaultSortingKey={DEFAULT_SORTING_KEY}
@@ -259,6 +260,7 @@ export default function AlertPage() {
       {
         Header: 'Description',
         cellStyle: {
+          minWidth: '10rem',
           flex: 12,
         },
         accessor: (row) => row.description || row.summary,
@@ -266,8 +268,10 @@ export default function AlertPage() {
       },
       {
         Header: 'Active since',
+        dropAt: 620,
         accessor: 'startsAt',
         cellStyle: {
+          minWidth: '9rem',
           flex: 2,
           textAlign: 'right',
           marginRight: spacing.r12,

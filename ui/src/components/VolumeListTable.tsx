@@ -42,6 +42,7 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Node',
+        dropAt: 340,
         accessor: 'node',
         cellStyle: {
           textAlign: 'left',
@@ -52,6 +53,7 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Usage',
+        dropAt: 420,
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
@@ -71,6 +73,7 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Size',
+        dropAt: 480,
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'right',
@@ -79,6 +82,7 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Status',
+        dropAt: 380,
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
@@ -138,6 +142,7 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Latency',
+        dropAt: 560,
         accessor: 'latency',
         cellStyle: {
           textAlign: 'right',

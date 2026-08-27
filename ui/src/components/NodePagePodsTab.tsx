@@ -55,8 +55,10 @@ const NodePagePodsTab = React.memo((props) => {
       },
       {
         Header: 'Status',
+        dropAt: 340,
         accessor: 'status',
         cellStyle: {
+          minWidth: '4rem',
           width: 'unset',
           maxWidth: '7rem',
           marginRight: spacing.r8,
@@ -86,8 +88,10 @@ const NodePagePodsTab = React.memo((props) => {
       },
       {
         Header: 'Age',
+        dropAt: 420,
         accessor: 'age',
         cellStyle: {
+          minWidth: '3rem',
           width: 'unset',
           maxWidth: '5rem',
           marginRight: spacing.r8,
@@ -99,6 +103,7 @@ const NodePagePodsTab = React.memo((props) => {
       },
       {
         Header: 'Namespace',
+        dropAt: 460,
         accessor: 'namespace',
         cellStyle: {
           width: 'unset',
@@ -146,6 +151,7 @@ const NodePagePodsTab = React.memo((props) => {
   return (
     <NodeTab>
       <Table
+        revealDroppedColumns
         columns={columns}
         data={pods}
         defaultSortingKey={'status'}
