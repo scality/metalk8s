@@ -31,6 +31,7 @@ const NodeListTable = ({ nodeTableData }) => {
         Header: 'Health',
         accessor: 'health',
         cellStyle: {
+          minWidth: '3rem',
           textAlign: 'center',
           width: 'unset',
           flex: 0.5,
@@ -78,13 +79,16 @@ const NodeListTable = ({ nodeTableData }) => {
       },
       {
         Header: 'Roles',
+        dropAt: 440,
         accessor: 'roles',
         cellStyle: {
+          minWidth: '4rem',
           flex: 1,
         },
       },
       {
         Header: 'Status',
+        dropAt: 360,
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
