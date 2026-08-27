@@ -28,39 +28,50 @@ const AlertPageHeaderContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* The three summary segments and the button together need more room than a
+     768px content box has, so let the button drop to its own line instead of
+     pushing the page into horizontal scroll. */
+  flex-wrap: wrap;
+  gap: ${spacing.r8};
   background: ${(props) => props.theme.backgroundLevel2};
 `;
 
-const Title = styled.div`
+/* The three segments were each pinned at 250px -- 750px of the header before the
+   button. They divide the available width equally instead, and draw their own
+   divider: the previous SeperationLine was a 250px absolutely-positioned box
+   whose right border happened to land at the segment's edge, which only worked
+   while the segment was exactly that wide. */
+const HeaderSegment = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+  color: ${(props) => props.theme.textPrimary};
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 37px;
+    border-right: 2px solid ${(props) => props.theme.backgroundLevel1};
+  }
+`;
+
+const Title = styled(HeaderSegment)`
   justify-content: space-around;
-  width: 250px;
   font-size: ${fontSize.larger};
   font-weight: bold;
-  color: ${(props) => props.theme.textPrimary};
 `;
-const SecondaryTitle = styled.div`
-  display: flex;
-  align-items: center;
+const SecondaryTitle = styled(HeaderSegment)`
   justify-content: center;
   font-size: ${fontSize.base};
-  width: 250px;
-  color: ${(props) => props.theme.textPrimary};
 `;
-const TertiaryTitle = styled.div`
-  display: flex;
-  align-items: center;
+const TertiaryTitle = styled(HeaderSegment)`
   justify-content: space-around;
   font-size: ${fontSize.base};
-  width: 250px;
-  color: ${(props) => props.theme.textPrimary};
-`;
-const SeperationLine = styled.div`
-  width: 250px; /* the same width as the container */
-  height: 37px;
-  border-right: 2px solid ${(props) => props.theme.backgroundLevel1};
-  position: absolute;
 `;
 const AlertStatusIcon = styled.div`
   font-size: 2rem;
@@ -107,7 +118,7 @@ function AlertPageHeader({
 
   return (
     <AlertPageHeaderContainer>
-      <Stack>
+      <Stack style={{ flex: '1 1 auto', minWidth: 0 }}>
         <Title>
           <AlertStatusIcon>
             <StatusWrapper status={alertStatus}>
@@ -119,7 +130,6 @@ function AlertPageHeader({
               id: 'alerts',
             })}
           </>
-          <SeperationLine />
         </Title>
 
         <SecondaryTitle>
@@ -129,7 +139,6 @@ function AlertPageHeader({
             })}
           </>
           <TextBadge variant="infoPrimary" text={activeAlerts + ''} />
-          <SeperationLine />
         </SecondaryTitle>
 
         <TertiaryTitle>

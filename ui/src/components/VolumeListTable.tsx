@@ -192,6 +192,7 @@ const VolumeListTable = (props) => {
           label={intl.formatMessage({
             id: 'create_new_volume',
           })}
+          iconOnly={480}
           icon={<Icon name="Create-add" />}
           onClick={() => {
             navigate(appHistoryBasePath + '/volumes/createVolume');

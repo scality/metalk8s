@@ -133,6 +133,11 @@ export const OverviewInformationSpan = styled.div`
   padding-bottom: ${spacing.r20};
   padding-left: ${spacing.r20};
   display: flex;
+  /* The label holds a 10.714rem floor to keep the rows aligned. In the ~370px
+     right panel that leaves too little for the value, so let the value drop
+     onto its own line rather than being squeezed to a few characters. */
+  flex-wrap: wrap;
+  min-width: 0;
 `;
 export const OverviewInformationWrapper = styled.div`
   padding-left: 0.313rem;
@@ -141,6 +146,7 @@ export const OverviewInformationValue = styled.span`
   color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
   word-wrap: break-word;
+  min-width: 0;
   max-width: 20rem;
 `;
 export const OverviewClickableInformationValue = styled.span`
