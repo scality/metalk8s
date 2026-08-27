@@ -50,6 +50,7 @@ const VolumePageContent = (props) => {
     <AppContainer.MainContent hasTopMargin>
       <TwoPanelLayout
         panelsRatio="50-50"
+        container="both"
         leftPanel={{
           children: (
             <LeftSideInstanceList>
