@@ -156,6 +156,7 @@ const NodeListTable = ({ nodeTableData, loading }) => {
           label={intl.formatMessage({
             id: 'create_new_node',
           })}
+          iconOnly={480}
           icon={<Icon name="Create-add" />}
           onClick={() => {
             navigate(basename + '/nodes/create');
