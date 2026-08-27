@@ -4,11 +4,12 @@ import type { ReactElement } from 'react';
 import { QueryClient } from 'react-query';
 import { QueryClientProvider } from '../QueryClientProvider';
 import type { FederatedModuleInfo } from '../initFederation/ConfigurationProviders';
+import { _InternalMCPRegistrar } from './MCPRegistrar';
 import {
-  _InternalMCPRegistrar,
   _resetHostTasks,
+  type TaskStatusReport,
   useHostGetTaskStatusTool,
-} from './MCPRegistrar';
+} from './tasks';
 import type { ToolContext } from './types';
 
 const renderWithQueryClient = (ui: ReactElement) => {
@@ -110,18 +111,6 @@ function makeTool(overrides?: Partial<ToolDescriptor>): ToolDescriptor {
     ...overrides,
   };
 }
-
-// What a tool's arg-less getTaskStatus() reports — shell-ui stamps the taskId on top.
-type TaskStatusReport = {
-  status: 'working' | 'input_required' | 'completed' | 'failed' | 'cancelled';
-  statusMessage?: string;
-  createdAt: string;
-  lastUpdatedAt: string;
-  ttlMs: number | null;
-  pollIntervalMs?: number;
-  result?: unknown;
-  error?: unknown;
-};
 
 type TaskToolDescriptor = ToolDescriptor & {
   getTaskStatus?: () => Promise<TaskStatusReport>;
@@ -613,6 +602,25 @@ describe('background tasks (host getTaskStatus aggregator)', () => {
     });
 
     await expect(pollTask('task-1')).resolves.toMatchObject({ status: 'cancelled' });
+  });
+
+  it.each([
+    ['a plain result with no taskId', { result: 'ok' }],
+    ['a non-string taskId', { taskId: 42, createdAt: CREATED_AT }],
+    ['a null result', null],
+  ])('does not track %s', async (_label, ret) => {
+    const getTaskStatus = jest.fn().mockResolvedValue(makeReport());
+    mountWithTasks([
+      {
+        ...makeTool({ name: 'startOdd', execute: jest.fn().mockResolvedValue(ret) }),
+        getTaskStatus,
+      },
+    ]);
+
+    await startTask('startOdd');
+
+    expect(getTaskStatus).not.toHaveBeenCalled();
+    await expect(pollTask('42')).resolves.toMatchObject({ status: 'cancelled' });
   });
 
   it('dedupes by taskId — the first owner keeps the task', async () => {

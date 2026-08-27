@@ -15,44 +15,15 @@ import {
   useConfigRetriever,
 } from '../initFederation/ConfigurationProviders';
 import { useDeployedApps } from '../initFederation/UIListProvider';
+import {
+  isTaskHandle,
+  registerHostTask,
+  type TaskStatusReport,
+  useHostGetTaskStatusTool,
+} from './tasks';
 import type { ToolContext } from './types';
 
 declare const __webpack_public_path__: string;
-
-// ── Background tasks (host-side aggregator) ────────────────────────────────────
-// Follows the MCP ext-tasks shape. A tool opts in by returning a { taskId } from its
-// execute() AND exposing an arg-less getTaskStatus() on its descriptor. Every app's
-// tasks land in this ONE module-level list, and the single host `getTaskStatus` tool
-// (registered once, see useHostGetTaskStatusTool) routes a polled taskId to the owning
-// tool and stamps the id back on. Module-level so it is shared across every app's
-// registrar instance.
-type TaskStatus = 'working' | 'input_required' | 'completed' | 'failed' | 'cancelled';
-type Task = {
-  taskId: string;
-  status: TaskStatus;
-  statusMessage?: string;
-  createdAt: string;
-  lastUpdatedAt: string;
-  ttlMs: number | null;
-  pollIntervalMs?: number;
-};
-// What a tool's arg-less getTaskStatus() reports (shell-ui stamps the taskId).
-type TaskStatusReport = Omit<Task, 'taskId'> & { result?: unknown; error?: unknown };
-type HostTask = {
-  taskId: string;
-  createdAt: string;
-  getStatus: () => Promise<TaskStatusReport>;
-  // Set once the eviction timer is armed, so repeated polls of a settled task
-  // don't queue one redundant timer per poll.
-  evicting?: boolean;
-};
-const hostTasks: HostTask[] = []; // ordered — task 1 stays before task 2
-
-// Do not use directly - exported for testing purposes (the list is module-level,
-// so tests must drop leftovers between cases).
-export const _resetHostTasks = () => {
-  hostTasks.length = 0;
-};
 
 interface MCPToolDescriptor extends ToolDescriptor {
   getTaskStatus?: () => Promise<TaskStatusReport>;
@@ -159,14 +130,12 @@ export const _InternalMCPRegistrar = ({
               client,
             );
 
-            // A background op just started: it returned a taskId AND this tool can
-            // report its status. Register it in the shared host list (dedupe by id,
-            // preserve order) so the single host `getTaskStatus` tool can route to it.
-            if (ret instanceof Object && 'taskId' in ret && tool.getTaskStatus) {
-              const { taskId, createdAt } = ret as Task;
-              if (!hostTasks.some((h) => h.taskId === taskId)) {
-                hostTasks.push({ taskId, createdAt, getStatus: () => tool.getTaskStatus!() });
-              }
+            // A background op just started: it handed back a task handle AND this
+            // tool can report its status. Enrol it so the single host `getTaskStatus`
+            // tool can route a poll back here. The arrow keeps `this` bound to the
+            // descriptor for method-style getTaskStatus implementations.
+            if (tool.getTaskStatus && isTaskHandle(ret)) {
+              registerHostTask(ret, () => tool.getTaskStatus!());
             }
 
             return ret;
@@ -185,73 +154,6 @@ export const _InternalMCPRegistrar = ({
 
   return null;
 };
-
-// The ONE host tool Guardian polls. Registered ONCE (globally, on the shell's lifetime
-// — not per micro-app) so it never gets unregistered while an app is still mounted.
-// It routes the polled taskId to whichever tool owns it (via the shared hostTasks
-// list), stamps the id back onto the result, and evicts a settled task after its ttlMs.
-// Exported (as well as used by MCPRegistrar below) so tests can mount it standalone.
-export function useHostGetTaskStatusTool() {
-  useEffect(() => {
-    const modelContext = document.modelContext || navigator.modelContext;
-    if (!modelContext) return;
-
-    // Idempotent across StrictMode/HMR remounts — reuse the duplicate-name skip.
-    const existingNames = new Set(
-      (modelContext as ModelContextWithExtensions).listTools?.().map((t) => t.name) ?? [],
-    );
-    if (existingNames.has('getTaskStatus')) return;
-
-    const controller = new AbortController();
-    modelContext.registerTool(
-      {
-        name: 'getTaskStatus',
-        description:
-          'Read-only. Poll a background task by its taskId to see whether it is still working, or has ' +
-          'completed/failed. Works across every app. Returns an MCP task: status is "working" until it ' +
-          'settles, then "completed" (with result) or "failed" (with error). An unknown taskId → "cancelled".',
-        inputSchema: {
-          type: 'object',
-          properties: { taskId: { type: 'string' } },
-          required: ['taskId'],
-        },
-        annotations: { readOnlyHint: true }, // silent, safe to poll
-        execute: async (params: unknown) => {
-          const { taskId } = (params as { taskId: string }) ?? { taskId: '' };
-          const now = new Date().toISOString();
-          const entry = hostTasks.find((h) => h.taskId === taskId);
-          if (!entry) {
-            return {
-              taskId,
-              status: 'cancelled' as TaskStatus,
-              statusMessage: 'No such task (it may have finished and been evicted).',
-              createdAt: now,
-              lastUpdatedAt: now,
-              ttlMs: 0,
-            };
-          }
-          const task: Task = { taskId, ...(await entry.getStatus()) };
-          if (
-            task.status !== 'working' &&
-            task.status !== 'input_required' &&
-            !entry.evicting
-          ) {
-            // settled → evict after its ttl so a late poll returns cancelled, not stale data
-            entry.evicting = true;
-            setTimeout(() => {
-              const i = hostTasks.findIndex((h) => h.taskId === taskId);
-              if (i >= 0) hostTasks.splice(i, 1);
-            }, task.ttlMs ?? 60_000);
-          }
-          return task;
-        },
-      },
-      { signal: controller.signal },
-    );
-
-    return () => controller.abort();
-  }, []);
-}
 
 // Inject the local-relay embed script once — must be a <script> tag (not an ES module import)
 // so that document.currentScript.src is set, allowing widget.html to resolve locally
