@@ -171,7 +171,13 @@ function InternalApp() {
                 <>
                   <MCPRegistrar />
                   <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    {/* Layout containment makes this column the containing block
+                        for its fixed-position descendants. The drawer beside it
+                        takes width from this column without the viewport
+                        changing, so a federated UI's fixed elements would
+                        otherwise stay anchored to the browser's edge and end up
+                        over the drawer. */}
+                    <div style={{ flex: 1, minWidth: 0, contain: 'layout' }}>
                       <SolutionsNavbar>
                         <InternalRouter />
                       </SolutionsNavbar>
