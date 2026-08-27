@@ -9,6 +9,9 @@ export const CenteredPageContainer = styled.div`
 `;
 export const LeftSideInstanceList = styled.div`
   flex: 1;
+  /* Without this the panel refuses to shrink below the table's content width,
+     so the list pushes the layout wider instead of letting the table adapt. */
+  min-width: 0;
   background-color: ${(props) => props.theme.backgroundLevel2};
 `;
 export const RightSidePanel = styled.div`
