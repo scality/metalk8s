@@ -48,7 +48,16 @@ export const ChartContainer = styled.div`
 export const GraphGrid = styled.div`
   display: grid;
   gap: 8px;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, ...) rather than a bare 1fr: a bare fr track floors at the
+     content's min-content width, which self-sizing charts push past. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+  /* Two charts side by side in the ~370px right panel are ~180px each. Resolves
+     against the panel container declared on TwoPanelLayout; 560 sits between the
+     panel's drawer-open (~370px) and drawer-closed (~620px) widths. */
+  @container responsive (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 `;
 const MetricsToggleWrapper = styled.div`
   display: flex;

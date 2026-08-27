@@ -9,6 +9,20 @@ import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
 import TimespanSelector from './TimespanSelector';
 import DashboardNetwork from '../components/DashboardNetwork';
 
+/* Declares the query container the grid below resolves against. The dashboard is
+   not inside a TwoPanelLayout, so nothing above it opts in. width: 100% is
+   load-bearing: container-type: inline-size implies contain: inline-size, so a
+   content-sized box would resolve to 0px wide -- the inline size has to come
+   from the parent. */
+const DashboardContainer = styled.div`
+  container-type: inline-size;
+  container-name: responsive;
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+`;
+
 const DashboardGrid = styled.div`
   display: grid;
   gap: ${AppContainer.sectionDistance};
@@ -17,6 +31,7 @@ const DashboardGrid = styled.div`
     / 1fr 1fr 1fr 1fr 1fr;
   overflow: hidden;
   flex: 1;
+  min-width: 0;
   > div {
     background-color: ${(props) => {
       return props.theme.backgroundLevel3;
@@ -48,6 +63,31 @@ const DashboardGrid = styled.div`
     min-width: 0;
     min-height: 0;
   }
+
+  /* One row of five equal columns leaves the inventory ~150px and each chart
+     group ~300px once the Guardian drawer narrows the content box, all of it
+     silently clipped by the overflow: hidden above. Restack in two steps.
+
+     The rows carry an explicit minimum because .network and .metrics are
+     min-height: 0 flex columns holding self-sizing charts: on a plain auto row
+     they collapse to nothing. And the grid has to start scrolling vertically
+     once it is more than one row, or the extra rows are clipped instead. */
+  @container responsive (max-width: 1100px) {
+    grid-template:
+      'inventory network network' minmax(20rem, auto)
+      'metrics metrics metrics' minmax(22rem, auto)
+      / minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    overflow: hidden auto;
+  }
+
+  @container responsive (max-width: 700px) {
+    grid-template:
+      'inventory' minmax(18rem, auto)
+      'network' minmax(18rem, auto)
+      'metrics' minmax(22rem, auto)
+      / minmax(0, 1fr);
+    overflow: hidden auto;
+  }
 `;
 export const DashboardScrollableArea = styled.div`
   overflow-y: auto;
@@ -77,20 +117,22 @@ const DashboardPage = () => {
         <DashboardGlobalHealth />
       </AppContainer.OverallSummary>
       <AppContainer.MainContent background="backgroundLevel1">
-        <DashboardGrid>
-          <DashboardScrollableArea className="inventory">
-            <DashboardInventory />
-            <DashboardServices />
-          </DashboardScrollableArea>
+        <DashboardContainer>
+          <DashboardGrid>
+            <DashboardScrollableArea className="inventory">
+              <DashboardInventory />
+              <DashboardServices />
+            </DashboardScrollableArea>
 
-          <DashboardScrollableArea className="network">
-            <DashboardNetwork />
-          </DashboardScrollableArea>
+            <DashboardScrollableArea className="network">
+              <DashboardNetwork />
+            </DashboardScrollableArea>
 
-          <div className="metrics">
-            <DashboardMetrics />
-          </div>
-        </DashboardGrid>
+            <div className="metrics">
+              <DashboardMetrics />
+            </div>
+          </DashboardGrid>
+        </DashboardContainer>
       </AppContainer.MainContent>
     </>
   );
