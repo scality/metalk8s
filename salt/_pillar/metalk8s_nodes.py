@@ -5,6 +5,13 @@ from salt.exceptions import CommandExecutionError
 
 VERSION_LABEL = "metalk8s.scality.com/version"
 ROLE_LABEL_PREFIX = "node-role.kubernetes.io/"
+# Set on a node before it gets deployed to a new version, removed once that
+# deployment succeeded. A node carrying it advertises a version it does not run
+# yet (the version label drives the saltenv, so it has to be set upfront).
+IN_PROGRESS_ANNOTATION = "metalk8s.scality.com/version-in-progress"
+# Last version a node actually completed, written once its deployment succeeded.
+# Unlike the version label, this one never runs ahead of the node.
+APPLIED_ANNOTATION = "metalk8s.scality.com/version-applied"
 
 
 log = logging.getLogger(__name__)
@@ -23,6 +30,8 @@ def node_info(node, ca_minion, pillar):
     result = {
         "roles": [],
         "version": None,
+        "version_in_progress": None,
+        "version_applied": None,
     }
 
     node_name = node["metadata"]["name"]
@@ -30,6 +39,12 @@ def node_info(node, ca_minion, pillar):
 
     if VERSION_LABEL in node["metadata"]["labels"]:
         result["version"] = node["metadata"]["labels"][VERSION_LABEL]
+
+    annotations = node["metadata"].get("annotations") or {}
+    if IN_PROGRESS_ANNOTATION in annotations:
+        result["version_in_progress"] = annotations[IN_PROGRESS_ANNOTATION]
+    if APPLIED_ANNOTATION in annotations:
+        result["version_applied"] = annotations[APPLIED_ANNOTATION]
 
     for label in node["metadata"]["labels"].keys():
         if label.startswith(ROLE_LABEL_PREFIX):

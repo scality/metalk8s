@@ -58,6 +58,15 @@ class DrainTimeoutException(DrainException):
     """Timeout-specific drain exception."""
 
 
+class EvictionTransientError(DrainException):
+    """Eviction failed on a server-side error worth retrying.
+
+    Raised for the HTTP statuses listed in `RETRIABLE_EVICTION_STATUSES`,
+    typically an `etcdserver: request timed out` while etcd or the API servers
+    are restarting.
+    """
+
+
 def _mirrorpod_filter(pod):
     """Check if a pod contains the mirror K8s annotation.
 
@@ -105,6 +114,21 @@ def _get_controller_of(pod):
     return None
 
 
+def _api_error_message(exc):
+    """Extract the message from a Kubernetes API error.
+
+    Args:
+      - exc: an ApiException raised by the Kubernetes client
+    Returns: the `message` field of the API `Status` body, or a short fallback
+             when the body is missing or is not a `Status` object (which
+             happens on server-side errors)
+    """
+    try:
+        return json.loads(exc.body)["message"]
+    except (AttributeError, KeyError, TypeError, ValueError):
+        return f"HTTP {exc.status}"
+
+
 def _message_from_pods_dict(errors_dict):
     """Form a message string from a 'pod kind': [pod name...] dict.
 
@@ -122,6 +146,11 @@ POD_STATUS_SUCCEEDED = "Succeeded"
 POD_STATUS_FAILED = "Failed"
 POD_STATUS_PENDING = "Pending"
 
+# HTTP statuses for which a rejected eviction means "retry later" rather than
+# "give up": the API server or etcd is momentarily unavailable. This is common
+# during an upgrade, since the upgrade itself restarts both.
+RETRIABLE_EVICTION_STATUSES = (500, 502, 503, 504)
+
 
 class Drain(object):
     """The drain object class.
@@ -132,6 +161,13 @@ class Drain(object):
 
     # According to `kubectl` code, this value should be 1 second by default
     KUBECTL_INTERVAL = 1
+    # Delay between two eviction attempts for the same pod, `kubectl` waits 5
+    # seconds
+    EVICTION_INTERVAL = 5
+    # How many consecutive server-side errors we accept on a single pod before
+    # failing the drain. With the interval above this leaves a minute of
+    # retries, while the etcd timeouts seen in the field last a few seconds.
+    MAX_EVICTION_TRANSIENT_ERRORS = 12
     WARNING_MSG = {
         "daemonset": "Ignoring DaemonSet-managed pods",
         "localStorage": "Deleting pods with local storage",
@@ -398,19 +434,29 @@ class Drain(object):
         log.debug("Starting eviction of pods: %s", pods_to_evict)
         try:
             self.evict_pods(pods)
-        except DrainTimeoutException as exc:
-            remaining_pods = self.get_pods_for_eviction()
-            raise CommandExecutionError(  # pylint: disable=raise-missing-from
+        except (DrainTimeoutException, CommandExecutionError) as exc:
+            remaining_pods = self.remaining_pod_names()
+            if remaining_pods is None:
+                raise CommandExecutionError(exc.message) from exc
+            raise CommandExecutionError(
                 f"{exc.message} List of remaining pods to follow",
-                [pod["metadata"]["name"] for pod in remaining_pods],
-            )
-        except CommandExecutionError as exc:
-            remaining_pods = self.get_pods_for_eviction()
-            raise CommandExecutionError(  # pylint: disable=raise-missing-from
-                f"{exc.message} List of remaining pods to follow",
-                [pod["metadata"]["name"] for pod in remaining_pods],
-            )
+                remaining_pods,
+            ) from exc
         return "Eviction complete."
+
+    def remaining_pod_names(self):
+        """List the pods left to evict, to report them along with a failure.
+
+        Returns: the list of pod names, or None when they cannot be listed. This runs
+                 right after a failed eviction, and that failure is often the API
+                 server itself, so listing can fail too. Losing the list is better
+                 than losing the reason of the original failure.
+        """
+        try:
+            return [pod["metadata"]["name"] for pod in self.get_pods_for_eviction()]
+        except (CommandExecutionError, DrainException):
+            log.warning("Cannot list the pods left to evict on %s", self.node_name)
+            return None
 
     def evict_pods(self, pods):
         """Trigger the eviction process for all pods passed.
@@ -420,24 +466,43 @@ class Drain(object):
         Returns: None
         Raises: DrainTimeoutException if the eviction process is not complete
                 after the specified timeout value
+                CommandExecutionError if a pod keeps failing to be evicted on
+                server-side errors
         """
         self.start_timer()
         evicted_pods = []
         for pod in pods:
+            transient_errors = 0
             while self.check_timer():
-                evicted = evict_pod(
-                    name=pod["metadata"]["name"],
-                    namespace=pod["metadata"]["namespace"],
-                    grace_period=self.grace_period,
-                    **self._kwargs,
-                )
+                try:
+                    evicted = evict_pod(
+                        name=pod["metadata"]["name"],
+                        namespace=pod["metadata"]["namespace"],
+                        grace_period=self.grace_period,
+                        **self._kwargs,
+                    )
+                except EvictionTransientError as exc:
+                    transient_errors += 1
+                    if self._best_effort:
+                        log.warning("%s, not retrying (best effort)", exc.message)
+                        break
+                    if transient_errors >= self.MAX_EVICTION_TRANSIENT_ERRORS:
+                        raise CommandExecutionError(
+                            f"{exc.message} (gave up after {transient_errors} "
+                            "consecutive server errors)"
+                        ) from exc
+                    log.info("%s, retrying", exc.message)
+                    time.sleep(self.EVICTION_INTERVAL)
+                    continue
+
+                transient_errors = 0
                 if evicted:
                     evicted_pods.append(pod)
                     break
 
                 if self._best_effort:
                     break
-                time.sleep(5)  # kubectl waits 5 seconds
+                time.sleep(self.EVICTION_INTERVAL)
 
         self.wait_for_eviction(evicted_pods)
 
@@ -507,7 +572,9 @@ def evict_pod(name, namespace="default", grace_period=1, **kwargs):
         - namespace     : the namespace of the pod to evict
         - grace_period  : the time to wait before killing the pod
     Returns: whether the eviction was successfully created or not
-    Raises: CommandExecutionError in case of API error
+    Raises: EvictionTransientError on a server-side error, which the caller is
+            expected to retry
+            CommandExecutionError on any other API error
     """
     delete_options = kubernetes.client.V1DeleteOptions()
     if grace_period >= 0:
@@ -546,14 +613,20 @@ def evict_pod(name, namespace="default", grace_period=1, **kwargs):
             if exc.status == 429:
                 # Too Many Requests: the eviction is rejected, but indicates
                 # we should retry later (probably due to a disruption budget)
-                status = json.loads(exc.body)
                 log.info(
                     "Cannot evict %s at the moment: %s",
                     name,
-                    status["message"],
+                    _api_error_message(exc),
                 )
                 # When implemented by Kubernetes, read the `Retry-After` advice
                 return False
+
+            if exc.status in RETRIABLE_EVICTION_STATUSES:
+                # Server-side failure, the caller decides how long to retry
+                raise EvictionTransientError(
+                    f'Failed to evict pod "{name}" in namespace "{namespace}": '
+                    f"{_api_error_message(exc)}"
+                ) from exc
 
         raise CommandExecutionError(
             f'Failed to evict pod "{name}" in namespace "{namespace}"'

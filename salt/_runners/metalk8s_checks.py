@@ -139,6 +139,25 @@ def upgrade(dest_version, saltenv, raises=True):
             f"Invalid saltenv '{saltenv}' consider using 'metalk8s-{dest_version}'"
         )
 
+    # A node whose deployment did not complete can only be recovered by resuming the
+    # same upgrade: bringing it to another version would mean downgrading it, which
+    # this orchestrate cannot do. Refuse any other destination instead of leaving the
+    # cluster with nodes stuck in the version of the interrupted upgrade.
+    interrupted = {}
+    for node_name, node_info in metalk8s_pillar["nodes"].items():
+        in_progress = node_info.get("version_in_progress")
+        if in_progress and in_progress != dest_version:
+            interrupted.setdefault(in_progress, []).append(node_name)
+
+    for version, node_names in sorted(interrupted.items()):
+        errors.append(
+            f"A version change to {version} did not complete on "
+            f"{', '.join(sorted(node_names))}. Resume it rather than upgrading to "
+            f"{dest_version}, since moving those nodes to {dest_version} would be a "
+            f"downgrade. If {version} is not an option, clear their "
+            "metalk8s.scality.com/version-in-progress annotation first"
+        )
+
     # Check that all nodes are in a supported upgrade path
     # We only support upgrade from one major version
     dest = dest_version.split(".")
