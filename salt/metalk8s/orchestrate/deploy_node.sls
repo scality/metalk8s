@@ -11,6 +11,21 @@
 
 {%- set roles = pillar.get('metalk8s', {}).get('nodes', {}).get(node_name, {}).get('roles', []) %}
 
+{#- Every deployment of a node goes through here, so this is where the two version
+    annotations are maintained. The version label is set by whoever asked for this
+    deployment, since it selects the saltenv, and it says what the node was asked to
+    run. These say what it actually runs (MK8S-370). #}
+Mark node {{ node_name }} as being deployed in {{ version }}:
+  metalk8s_kubernetes.object_updated:
+    - name: {{ node_name }}
+    - kind: Node
+    - apiVersion: v1
+    - patch:
+        metadata:
+          annotations:
+            metalk8s.scality.com/version-in-progress: "{{ version }}"
+    - order: 1
+
 {%- if node_name not in salt.saltutil.runner('manage.up') %}
 # Salt-ssh need python3 to be installed on the destination host, so install it
 # manually using raw ssh
@@ -146,6 +161,18 @@ Cordon the node:
 
 {%- if run_drain %}
 
+{#- The drain talks to the API server for every pod it evicts, and an upgrade
+    restarts etcd and the API servers, so a whole drain can fail on a transient
+    error. Retry instead of aborting the node deployment, and split the drain
+    budget across the attempts: a drain that can never succeed (an unsatisfiable
+    disruption budget) then still gives up in about the time a single drain used
+    to take. Budgets of a few seconds round up to one second per attempt, since a
+    zero timeout would silently mean the 3600 second default of the `metalk8s_drain`
+    module, which is also where the 3600 below comes from. #}
+{%- set drain_attempts = 4 %}
+{%- set drain_budget = pillar.orchestrate.get("drain_timeout") | int or 3600 %}
+{%- set drain_attempt_timeout = [(drain_budget / drain_attempts) | int, 1] | max %}
+
 Drain the node:
   metalk8s_drain.node_drained:
     - name: {{ node_name }}
@@ -153,9 +180,11 @@ Drain the node:
     - ignore_pending: True
     - delete_local_data: True
     - force: True
-    {%- if pillar.orchestrate.get("drain_timeout") %}
-    - timeout: {{ pillar.orchestrate.drain_timeout }}
-    {%- endif %}
+    - timeout: {{ drain_attempt_timeout }}
+    - retry:
+        attempts: {{ drain_attempts }}
+        interval: 30
+        splay: 10
     - require:
       - metalk8s_cordon: Cordon the node
     - require_in:
@@ -384,3 +413,62 @@ Update NPD workload plane peers:
     - saltenv: {{ saltenv }}
     - require:
       - metalk8s_cordon: Uncordon the node
+
+{#- Every state this orchestrate ends on, so the node is only recorded as running
+    this version once all of them succeeded. Kept in one place, since the state
+    below and the one explaining its failure must wait on the very same set. #}
+{%- set deployment_done = [
+    "salt: Update NPD workload plane peers",
+    "salt: Kill kube-controller-manager on all master nodes",
+] %}
+{%- if 'infra' in roles and 'infra' not in skip_roles %}
+  {%- do deployment_done.append("module: Restart CoreDNS pods") %}
+{%- endif %}
+{%- if 'master' in roles and 'master' not in skip_roles %}
+  {%- do deployment_done.append("salt: Reconfigure Control Plane Ingress") %}
+{%- endif %}
+
+Mark node {{ node_name }} as running {{ version }}:
+  metalk8s_kubernetes.object_updated:
+    - name: {{ node_name }}
+    - kind: Node
+    - apiVersion: v1
+    - patch:
+        metadata:
+          annotations:
+            metalk8s.scality.com/version-in-progress: null
+            metalk8s.scality.com/version-applied: "{{ version }}"
+    {#- This deployment just restarted the API server on this node, so give this
+        write a few tries before it fails the whole thing #}
+    - retry:
+        attempts: 5
+        interval: 30
+    - require:
+      {%- for state_id in deployment_done %}
+      - {{ state_id }}
+      {%- endfor %}
+
+{#- Clearing the marker is the last step, and it is the only one that can fail on
+    a node that is otherwise deployed. Say so, rather than leaving the operator with
+    a bare API error on the very last state. The `require` matters: without it this
+    state also fires when the deployment itself failed, and would then claim a broken
+    node is fine. #}
+Explain the stale marker on {{ node_name }}:
+  test.configurable_test_state:
+    - name: {{ node_name }}
+    - changes: False
+    - result: True
+    - comment: >-
+        Node {{ node_name }} was deployed in {{ version }}, only the
+        metalk8s.scality.com/version-in-progress annotation could not be cleared.
+        The node itself is fine. Deploy it again to record the version, or record
+        it by hand with "kubectl annotate node {{ node_name }}
+        metalk8s.scality.com/version-in-progress-
+        metalk8s.scality.com/version-applied={{ version }} --overwrite". Until one
+        of those, an upgrade to another version is refused.
+    - onfail:
+      - metalk8s_kubernetes: Mark node {{ node_name }} as running {{ version }}
+    - require:
+      {%- for state_id in deployment_done %}
+      - {{ state_id }}
+      {%- endfor %}

@@ -126,8 +126,15 @@ class Metalk8sDrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
             metalk8s_drain.log, logging.DEBUG
         ) as captured:
             if raises:
+                # `raises` is either `True` for a `CommandExecutionError`, or the
+                # name of the expected exception class from the module
+                exc_class = (
+                    CommandExecutionError
+                    if raises is True
+                    else getattr(metalk8s_drain, raises)
+                )
                 self.assertRaisesRegex(
-                    CommandExecutionError, result, metalk8s_drain.evict_pod, **kwargs
+                    exc_class, result, metalk8s_drain.evict_pod, **kwargs
                 )
             else:
                 self.assertEqual(metalk8s_drain.evict_pod(**kwargs), result)
@@ -223,6 +230,14 @@ class DrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
             if eviction_mock is not None:
                 if eviction_mock.get("raises", False):
                     raise CommandExecutionError("Failed to evict pod")
+
+                if eviction_mock.get("server_error", False):
+                    raise metalk8s_drain.EvictionTransientError(
+                        (
+                            'Failed to evict pod "{}" in namespace "{}": '
+                            "etcdserver: request timed out"
+                        ).format(name, namespace)
+                    )
 
                 return not eviction_mock.get("locked", False)
 
@@ -353,6 +368,23 @@ class DrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 drainer.run_drain,
             )
 
+    @utils.parameterized_from_cases(
+        YAML_TESTS_CASES["drain"]["transient-eviction-error"]
+    )
+    def test_transient_eviction_error(
+        self, node_name, dataset, raise_msg, events=None, **kwargs
+    ):
+        """Check that server-side eviction errors are retried, then give up."""
+        self.seed_api_mock(dataset, events)
+        drainer = metalk8s_drain.Drain(node_name, **kwargs)
+
+        with self.time_mock.patch():
+            self.assertRaisesRegex(
+                CommandExecutionError,
+                raise_msg,
+                drainer.run_drain,
+            )
+
     @utils.parameterized_from_cases(YAML_TESTS_CASES["drain"]["eviction-error"])
     def test_eviction_error(self, node_name, dataset, **kwargs):
         """Check that errors when evicting are stopping the drain process."""
@@ -365,3 +397,25 @@ class DrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 "Failed to evict pod",
                 drainer.run_drain,
             )
+
+    def test_eviction_error_without_pod_list(self):
+        """Check that a failure keeps its reason when the pods cannot be listed.
+
+        Listing the remaining pods runs right after a failed eviction, so the API
+        that just failed can fail again. The reason of the first failure matters
+        more than the list.
+        """
+        self.seed_api_mock("broken-eviction")
+        drainer = metalk8s_drain.Drain("my-node")
+        pods = drainer.get_pods_for_eviction()
+
+        with patch.object(
+            drainer,
+            "get_pods_for_eviction",
+            side_effect=[pods, CommandExecutionError("Cannot list pods")],
+        ), self.time_mock.patch():
+            with self.assertRaises(CommandExecutionError) as context:
+                drainer.run_drain()
+
+        self.assertIn("Failed to evict pod", str(context.exception))
+        self.assertNotIn("List of remaining pods", str(context.exception))

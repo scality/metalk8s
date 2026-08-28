@@ -33,12 +33,39 @@ evict_pod:
     - level: INFO
       contains: "Cannot evict busy-pod at the moment: this pod is meditating"
 
-  ## ERROR CASES
+  ## TRANSIENT SERVER-SIDE FAILURES (retried by the caller)
 
-  # Unknown API error
+  # etcd or the API server is momentarily unavailable
   - name: my-pod
     create_raises: ApiException
     create_error_status: 500
+    create_error_body:
+      message: 'etcdserver: request timed out'
+    result: >-
+      Failed to evict pod "my-pod" in namespace "default":
+      etcdserver: request timed out
+    raises: EvictionTransientError
+
+  # Same, with a body we cannot read
+  - name: my-pod
+    create_raises: ApiException
+    create_error_status: 503
+    result: 'Failed to evict pod "my-pod" in namespace "default": HTTP 503'
+    raises: EvictionTransientError
+
+  ## ERROR CASES
+
+  # Eviction forbidden, retrying will not help
+  - name: my-pod
+    create_raises: ApiException
+    create_error_status: 403
+    result: 'Failed to evict pod "my-pod" in namespace "default"'
+    raises: True
+
+  # Malformed request, retrying will not help
+  - name: my-pod
+    create_raises: ApiException
+    create_error_status: 422
     result: 'Failed to evict pod "my-pod" in namespace "default"'
     raises: True
 
@@ -356,6 +383,31 @@ drain:
       eviction_attempts: 1
       best_effort: True
 
+    # Retry until the API server stops returning server-side errors
+    - node_name: my-node
+      dataset: server-error-eviction
+      events: &server_error_eviction_events
+        # evict_pods sleeps 5 seconds between each eviction attempt, so we will
+        # try to evict twice with an error, and third attempt will work
+        8:
+          - resource: evictionmocks
+            verb: delete
+            pod: my-namespace/my-replicaset-pod
+        # we delete the pod 2 second after success when creating the eviction
+        10:
+          - resource: pods
+            verb: delete
+            name: my-replicaset-pod
+            namespace: my-namespace
+      eviction_attempts: 3
+
+    # Best effort do not retry server-side errors either
+    - node_name: my-node
+      dataset: server-error-eviction
+      events: *server_error_eviction_events
+      eviction_attempts: 1
+      best_effort: True
+
   waiting-for-eviction:
     # Instantaneous
     - node_name: my-node
@@ -403,6 +455,17 @@ drain:
     # Eviction creation succeeds, but the pod is never removed
     - node_name: my-node
       dataset: single-replicaset
+
+  transient-eviction-error:
+    # Server-side errors are retried, and the failure names the pod at fault
+    - node_name: my-node
+      dataset: server-error-eviction
+      # 12 attempts, 5 seconds apart, so the drain timeout must be larger
+      timeout: 300
+      raise_msg: >-
+        Failed to evict pod "my-replicaset-pod" in namespace "my-namespace":
+        etcdserver: request timed out \(gave up after 12 consecutive server
+        errors\)
 
   eviction-error:
     - node_name: my-node
@@ -646,3 +709,11 @@ datasets:
         apiVersion: __tests__
         pod: my-namespace/my-replicaset-pod
         raises: true
+
+  server-error-eviction:
+    <<: *single_replicaset_dataset
+    evictionmocks:
+      - kind: EvictionMock
+        apiVersion: __tests__
+        pod: my-namespace/my-replicaset-pod
+        server_error: true
