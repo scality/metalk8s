@@ -14,16 +14,20 @@ const AlertsContainer = styled.div`
 `;
 const BadgesContainer = styled.div`
   display: flex;
-  & > div {
-    margin-right: ${spacing.r16};
-  }
+  gap: ${spacing.r16};
+`;
+/* The counts and the link are one group, laid out next to each other. Anchoring
+   the link to the right edge instead pushed it as far from the section it
+   belongs to as the summary bar happened to be wide. */
+const CountsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.r16};
 `;
 const Link = styled.div`
   color: ${(props) => props.theme.textLink};
   cursor: pointer;
-  margin-left: auto;
   text-decoration: none;
-  text-align: right;
   &:hover {
     text-decoration: underline;
   }
@@ -87,27 +91,29 @@ const DashboardAlerts = () => {
       </Box>
       {totalAlerts === 0 ? null : (
         <Box pr={24}>
-          <BadgesContainer>
-            <div>
-              <Text>Critical</Text>
-              <TextBadge variant="statusCritical" data-testid="critical-alert-badge" text={criticalAlerts.length} />
-            </div>
-            <div>
-              <Text>Warning</Text>
-              <TextBadge variant="statusWarning" data-testid="warning-alert-badge" text={warningAlerts.length} />
-            </div>
-          </BadgesContainer>
-          <Link
-            onClick={() => {
-              openLink(alertView);
-              navigate('/alerts', { replace: true });
-            }}
-            data-testid="view-all-link"
-          >
-            {intl.formatMessage({
-              id: 'view_all',
-            })}
-          </Link>
+          <CountsRow>
+            <BadgesContainer>
+              <div>
+                <Text>Critical</Text>
+                <TextBadge variant="statusCritical" data-testid="critical-alert-badge" text={criticalAlerts.length} />
+              </div>
+              <div>
+                <Text>Warning</Text>
+                <TextBadge variant="statusWarning" data-testid="warning-alert-badge" text={warningAlerts.length} />
+              </div>
+            </BadgesContainer>
+            <Link
+              onClick={() => {
+                openLink(alertView);
+                navigate('/alerts', { replace: true });
+              }}
+              data-testid="view-all-link"
+            >
+              {intl.formatMessage({
+                id: 'view_all',
+              })}
+            </Link>
+          </CountsRow>
         </Box>
       )}
     </AlertsContainer>
