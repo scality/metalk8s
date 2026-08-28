@@ -167,6 +167,22 @@ const config: Configuration = {
           eager: true,
           requiredVersion: deps['styled-components'],
         },
+        /**
+         * core-ui's ScrollbarWrapper is a createGlobalStyle, and every copy of it
+         * hashes to the same componentId, so they all write to one sheet group
+         * while each only tracks its own mounts. styled-components rebuilds a
+         * group by clearing it and re-inserting just the instances it knows
+         * about, so a Select unmounting inside a remote wiped the group the
+         * shell's root ScrollbarWrapper had filled - custom scrollbars reverted
+         * to browser defaults until the next full reload. The shell has to
+         * consume the same instance the remotes do, which also means importing
+         * it from the package root rather than a deep path.
+         */
+        '@scality/core-ui': {
+          singleton: true,
+          eager: true,
+          requiredVersion: deps['@scality/core-ui'],
+        },
         'react-dom': {
           singleton: true,
           eager: true,
