@@ -22,6 +22,12 @@ const CardsWrapper = styled.div`
   justify-content: space-around;
   font-size: ${fontSize.base};
   margin: ${spacing.r4} 0px;
+  /* The cards are sized in % of the inventory column, which becomes a
+     full-height sidebar once the dashboard restacks. Cap them so they stay
+     card-shaped instead of stretching with the column. */
+  > * {
+    max-width: 16rem;
+  }
 `;
 const InventoryIcon = styled.i`
   font-size: ${fontSize.larger};

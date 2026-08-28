@@ -44,6 +44,12 @@ export const ChartContainer = styled.div`
   height: calc(100% - 3rem);
   padding-left: ${spacing.r12};
   overflow: hidden auto;
+
+  /* The header takes a second line at this width (see MetricsToggleWrapper), so
+     the subtraction above no longer matches its height. */
+  @container responsive (max-width: 560px) {
+    height: calc(100% - 6rem);
+  }
 `;
 export const GraphGrid = styled.div`
   display: grid;
@@ -63,6 +69,12 @@ const MetricsToggleWrapper = styled.div`
   display: flex;
   align-items: center;
   flex: 1;
+  min-width: 0;
+
+  /* Own line, so the label is never truncated to fit beside the actions. */
+  @container responsive (max-width: 560px) {
+    flex: 1 0 100%;
+  }
 
   .sc-toggle {
     margin-right: ${spacing.r8};
@@ -158,6 +170,7 @@ const NodePageMetricsTab = ({
                 id: 'advanced_metrics',
               })}
               variant={'secondary'}
+              iconOnly={480}
               icon={<Icon name="External-link" />}
               disabled={instanceIP === ''}
             />

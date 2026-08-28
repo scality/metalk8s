@@ -33,6 +33,7 @@ const MetricsTab = (props) => {
                     id: 'advanced_metrics',
                   })}
                   variant={'secondary'}
+                  iconOnly={480}
                   icon={<Icon name="External-link" />}
                 />
               </a>
