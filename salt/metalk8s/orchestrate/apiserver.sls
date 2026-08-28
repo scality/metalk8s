@@ -77,20 +77,22 @@ Deploy apiserver {{ node }} to {{ dest_version }}:
 Wait for apiserver {{ node }} to be serving:
   http.wait_for_successful_query:
   {#- Query this node's apiserver directly rather than through
+  {#- Query this node's apiserver directly rather than through
       `127.0.0.1:7443`: the apiserver-proxy upstream lists every master and
       only weights the local one, so it fails over to another apiserver and
-      would report ready while this node is still starting. `match` and
-      `status` are both checked, so this requires overall readiness and the
-      RBAC bootstrap hook.
-      `wait_for` is set to 420s instead of default 300s: on some upgrades
-      the static pod may be only swapped ~2.5min into the deploy #}
+      would report ready while this node is still starting.
+      `/readyz` rather than `/healthz` for its `informer-sync` check: the
+      apiserver only reports ready once its caches are loaded, so the next
+      RBAC call does not race it. The deploy already waits for `/healthz`
+      from the node itself (`kubernetes/apiserver/installed.sls:179`); what
+      this gate adds is a check run from the salt-master, and one after the
+      last master too. #}
   - name: https://{{ node_ip }}:6443/readyz?verbose
   - match: 'poststarthook/rbac/bootstrap-roles ok'
   - status: 200
   - verify_ssl: true
   - ca_bundle: /etc/kubernetes/pki/ca.crt
   - request_interval: 5
-  - wait_for: 420
   - timeout: 10
   - require:
     - salt: Deploy apiserver {{ node }} to {{ dest_version }}
