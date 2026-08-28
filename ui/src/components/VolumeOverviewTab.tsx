@@ -73,6 +73,14 @@ const LabelValue = styled.span`
   font-size: ${fontSize.small};
   color: ${(props) => props.theme.textPrimary};
 `;
+/* One label per line: the pairs are unrelated to each other, so letting them
+   share a line makes the name of one read as the value of another. */
+const LabelList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.r4};
+  min-width: 0;
+`;
 
 const VolumeDetailCard = (props) => {
   const {
@@ -282,14 +290,16 @@ const VolumeDetailCard = (props) => {
               })}
             </OverviewInformationLabel>
             <OverviewInformationValue>
-              {labels?.map((label) => {
-                return (
-                  <div key={label.name}>
-                    <LabelName data-cy="volume_label_name">{label.name}</LabelName>
-                    <LabelValue data-cy="volume_label_value">{label.value}</LabelValue>
-                  </div>
-                );
-              })}
+              <LabelList>
+                {labels?.map((label) => {
+                  return (
+                    <div key={label.name}>
+                      <LabelName data-cy="volume_label_name">{label.name}</LabelName>
+                      <LabelValue data-cy="volume_label_value">{label.value}</LabelValue>
+                    </div>
+                  );
+                })}
+              </LabelList>
             </OverviewInformationValue>
           </OverviewInformationSpan>
         </div>
