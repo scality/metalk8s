@@ -107,6 +107,22 @@ const unknownTask = (taskId: string): HostTaskStatus => {
 const isSettled = (status: TaskStatus) =>
   status !== 'working' && status !== 'input_required';
 
+// The owning tool threw while reporting its status. Surface that as a failed task
+// rather than letting the rejection escape: Guardian polls the host tool every 5s,
+// and an untyped rejection would break that loop for every task, not just this one.
+// ttlMs 0 lets the normal settle path evict the broken entry straight away.
+const failedReport = (entry: HostTask, error: unknown): TaskStatusReport => {
+  const message = error instanceof Error ? error.message : String(error);
+  return {
+    status: 'failed',
+    statusMessage: `Task status could not be read: ${message}`,
+    createdAt: entry.createdAt,
+    lastUpdatedAt: new Date().toISOString(),
+    ttlMs: 0,
+    error: message,
+  };
+};
+
 /**
  * The ONE host tool Guardian polls. Registered ONCE (globally, on the shell's lifetime
  * — not per micro-app) so it never gets unregistered while an app is still mounted.
@@ -144,7 +160,10 @@ export function useHostGetTaskStatusTool() {
           const entry = hostTasks.find((h) => h.taskId === taskId);
           if (!entry) return unknownTask(taskId);
 
-          const task: HostTaskStatus = { taskId, ...(await entry.getStatus()) };
+          const report = await entry
+            .getStatus()
+            .catch((error) => failedReport(entry, error));
+          const task: HostTaskStatus = { taskId, ...report };
           if (isSettled(task.status) && !entry.evicting) {
             // settled → evict after its ttl so a late poll returns cancelled, not stale data
             entry.evicting = true;

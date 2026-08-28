@@ -641,6 +641,49 @@ describe('background tasks (host getTaskStatus aggregator)', () => {
     expect(secondStatus).not.toHaveBeenCalled();
   });
 
+  it('reports a throwing getTaskStatus as a failed task instead of rejecting', async () => {
+    // Guardian polls the host tool every 5s — an escaping rejection would break
+    // that loop for every task, not just the broken one.
+    const boom = jest.fn().mockRejectedValue(new Error('backend unreachable'));
+    const healthy = jest.fn().mockResolvedValue(makeReport({ statusMessage: 'alive' }));
+    mountWithTasks([
+      makeTaskTool('startBroken', 'task-boom', boom),
+      makeTaskTool('startHealthy', 'task-ok', healthy),
+    ]);
+
+    await startTask('startBroken');
+    await startTask('startHealthy');
+
+    await expect(pollTask('task-boom')).resolves.toMatchObject({
+      taskId: 'task-boom',
+      status: 'failed',
+      statusMessage: expect.stringContaining('backend unreachable'),
+      error: 'backend unreachable',
+      ttlMs: 0,
+    });
+
+    // The sibling task is unaffected.
+    await expect(pollTask('task-ok')).resolves.toMatchObject({
+      taskId: 'task-ok',
+      status: 'working',
+      statusMessage: 'alive',
+    });
+  });
+
+  it('evicts a task whose getTaskStatus threw, so it stops being retried', async () => {
+    jest.useFakeTimers();
+    const boom = jest.fn().mockRejectedValue(new Error('backend unreachable'));
+    mountWithTasks([makeTaskTool('startBroken', 'task-boom', boom)]);
+
+    await startTask('startBroken');
+    await expect(pollTask('task-boom')).resolves.toMatchObject({ status: 'failed' });
+
+    // ttlMs 0 → the failed entry is dropped on the next tick.
+    jest.advanceTimersByTime(0);
+    await expect(pollTask('task-boom')).resolves.toMatchObject({ status: 'cancelled' });
+    expect(boom).toHaveBeenCalledTimes(1);
+  });
+
   it('reports an unknown taskId as cancelled', async () => {
     mountWithTasks([]);
 
