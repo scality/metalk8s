@@ -1,0 +1,6 @@
+kind: Added
+body: Support background tasks for long-running WebMCP tool operations, pollable from any UI through a single host-wide getTaskStatus tool.
+time: 2026-08-27T15:39:44.651764427Z
+custom:
+    CommentId: "5441523828"
+    Pull: "5086"
