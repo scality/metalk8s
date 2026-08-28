@@ -58,7 +58,7 @@ const NodePagePodsTab = React.memo((props) => {
         dropAt: 340,
         accessor: 'status',
         cellStyle: {
-          minWidth: '4rem',
+          minWidth: '4.5rem',
           width: 'unset',
           maxWidth: '7rem',
           marginRight: spacing.r8,
@@ -91,7 +91,7 @@ const NodePagePodsTab = React.memo((props) => {
         dropAt: 420,
         accessor: 'age',
         cellStyle: {
-          minWidth: '3rem',
+          minWidth: '3.5rem',
           width: 'unset',
           maxWidth: '5rem',
           marginRight: spacing.r8,
@@ -107,7 +107,7 @@ const NodePagePodsTab = React.memo((props) => {
         accessor: 'namespace',
         cellStyle: {
           width: 'unset',
-          minWidth: '4rem',
+          minWidth: '7.5rem',
           flex: 1,
           marginRight: spacing.r8,
         },
