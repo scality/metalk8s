@@ -127,6 +127,12 @@ Deploy node {{ node }}:
     - require_in:
       - salt: Downgrade etcd cluster
 
+{#- During a downgrade, `deploy_node` comes from the destination version, which is
+    older than this one. That older `deploy_node` does not write these annotations,
+    so the two states below write them here instead. The upgrade orchestrate has no
+    such need: it always runs the newer `deploy_node`. Delete these two states once
+    every version we can downgrade to writes the annotations itself, so from the next
+    minor on. #}
 Mark node {{ node }} as running {{ dest_version }}:
   metalk8s_kubernetes.object_updated:
     - name: {{ node }}

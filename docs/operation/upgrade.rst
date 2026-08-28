@@ -75,7 +75,9 @@ Nodes are upgraded one at a time, and each one carries the
 ``metalk8s.scality.com/version-in-progress`` annotation for as long as its
 deployment runs. A node that fails mid-upgrade keeps that annotation, and
 the last version it completed stays recorded in
-``metalk8s.scality.com/version-applied``.
+``metalk8s.scality.com/version-applied``. Both are maintained by the node
+deployment itself, so they also follow a node added through
+:doc:`/installation/expansion`.
 
 To resume, run ``upgrade.sh`` again with the same version. Only the nodes
 that need it are deployed again: those still carrying the in-progress

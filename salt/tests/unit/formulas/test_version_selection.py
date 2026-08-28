@@ -14,6 +14,7 @@ from tests.unit.formulas.fixtures.rendered import RenderedStates
 
 UPGRADE = Path("metalk8s/orchestrate/upgrade/init.sls")
 DOWNGRADE = Path("metalk8s/orchestrate/downgrade/init.sls")
+DEPLOY_NODE = Path("metalk8s/orchestrate/deploy_node.sls")
 
 # The node the test cases give a version history to.
 NODE = "master-1"
@@ -114,7 +115,9 @@ def test_selection_follows_the_applied_version(
 
 
 @pytest.mark.formulas
-@pytest.mark.parametrize("template_path", [UPGRADE, DOWNGRADE], indirect=True)
+@pytest.mark.parametrize(
+    "template_path", [UPGRADE, DOWNGRADE, DEPLOY_NODE], indirect=True
+)
 def test_no_requisite_on_a_missing_state(rendered_states: RenderedStates) -> None:
     """Check that no state waits on a state the orchestrate did not declare.
 
@@ -132,3 +135,40 @@ def test_no_requisite_on_a_missing_state(rendered_states: RenderedStates) -> Non
                     f"'{state_id}' waits on '{target}', which this orchestrate does"
                     f" not declare ({case_id})"
                 )
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [DEPLOY_NODE], indirect=True)
+def test_the_deployment_maintains_both_annotations(
+    rendered_states: RenderedStates,
+) -> None:
+    """Check that deploying a node is what records the version it runs.
+
+    Every path that deploys a node goes through this orchestrate, an expansion and a
+    renamed node included, so both annotations are maintained here rather than in
+    the orchestrate that happens to have asked for the deployment.
+    """
+    for case_id, states in rendered_states:
+        marker = [
+            state_id
+            for state_id in states
+            if state_id.startswith("Mark node ")
+            and " as being deployed in " in state_id
+        ]
+        applied = [
+            state_id
+            for state_id in states
+            if state_id.startswith("Mark node ") and " as running " in state_id
+        ]
+
+        assert marker, f"nothing sets the in-progress annotation ({case_id})"
+        assert applied, f"nothing records the version the node runs ({case_id})"
+
+        patch = states[applied[0]]["metalk8s_kubernetes.object_updated"]
+        annotations = next(
+            arg["patch"]["metadata"]["annotations"]
+            for arg in patch
+            if isinstance(arg, dict) and "patch" in arg
+        )
+        in_progress = annotations["metalk8s.scality.com/version-in-progress"]
+        assert in_progress is None, f"marker still set ({case_id})"

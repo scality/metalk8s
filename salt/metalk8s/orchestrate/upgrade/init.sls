@@ -107,8 +107,10 @@ Wait for API server to be available on {{ node }}:
     - salt: Install apiserver-proxy on {{ node }}
 
 {#- The version label selects the saltenv used to deploy the node, so it has to
-    be set before the deployment. The annotation records that the node does not
-    run this version yet, and is removed once the deployment succeeded. #}
+    be set before the deployment. The marker goes with it, so a run interrupted
+    between here and the deployment still leaves the node flagged. `deploy_node`
+    maintains both annotations from there, and clears the marker once it is
+    through. #}
 Set node {{ node }} version to {{ dest_version }}:
   metalk8s_kubernetes.object_updated:
     - name: {{ node }}
@@ -142,47 +144,6 @@ Deploy node {{ node }}:
     - require_in:
       - salt: Deploy core component objects
       - salt: Deploy Kubernetes service config objects
-
-Mark node {{ node }} as running {{ dest_version }}:
-  metalk8s_kubernetes.object_updated:
-    - name: {{ node }}
-    - kind: Node
-    - apiVersion: v1
-    - patch:
-        metadata:
-          annotations:
-            metalk8s.scality.com/version-in-progress: null
-            metalk8s.scality.com/version-applied: "{{ dest_version }}"
-    {#- The node deployment just restarted the API server on this node, so give this
-        write a few tries before it fails the upgrade #}
-    - retry:
-        attempts: 5
-        interval: 30
-    - require:
-      - salt: Deploy node {{ node }}
-
-{#- Clearing the marker is the last step, and it is the only one that can fail on
-    a node that is otherwise upgraded. Say so, rather than leaving the operator with
-    a bare API error on the very last state. The `require` matters: without it this
-    state also fires when the node deployment itself failed, and would then claim a
-    broken node is fine. #}
-Explain the stale marker on {{ node }}:
-  test.configurable_test_state:
-    - name: {{ node }}
-    - changes: False
-    - result: True
-    - comment: >-
-        Node {{ node }} was upgraded to {{ dest_version }}, only the
-        metalk8s.scality.com/version-in-progress annotation could not be cleared.
-        The node itself is fine. Run upgrade.sh again to redeploy it and record
-        the version, or record it by hand with "kubectl annotate node
-        {{ node }} metalk8s.scality.com/version-in-progress-
-        metalk8s.scality.com/version-applied={{ dest_version }} --overwrite". Until
-        one of those, an upgrade to another version is refused.
-    - onfail:
-      - metalk8s_kubernetes: Mark node {{ node }} as running {{ dest_version }}
-    - require:
-      - salt: Deploy node {{ node }}
 
     {%- set deployed.previous = node %}
   {%- endif %}
