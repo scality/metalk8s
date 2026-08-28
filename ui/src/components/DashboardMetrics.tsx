@@ -1,17 +1,16 @@
 import React from 'react';
-import { Box, Button, ChartLegend, ChartLegendWrapper } from '@scality/core-ui/dist/next';
+import { Box, ChartLegend, ChartLegendWrapper } from '@scality/core-ui/dist/next';
 
 import { useIntl } from 'react-intl';
-import { GRAFANA_DASHBOARDS } from '../constants';
 import { createColorSet } from '../services/graphUtils';
 import { PageSubtitle, GraphsWrapper } from '../components/style/CommonLayoutStyle';
 import DashboardChartCpuUsage from './DashboardChartCpuUsage';
 import DashboardChartThroughput from './DashboardChartThroughput';
 import DashboardChartSystemLoad from './DashboardChartSystemLoad';
 import DashboardChartMemory from './DashboardChartMemory';
-import { useShowQuantileChart, useTypedSelector } from '../hooks';
+import { useShowQuantileChart } from '../hooks';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
-import { Icon, SmallerText, Stack, IconHelp, spacing } from '@scality/core-ui';
+import { SmallerText, Stack, IconHelp, spacing } from '@scality/core-ui';
 import { DashboardSectionContainer, PanelActions } from './DashboardNetwork';
 
 export const QuantileHelpTooltip = () => {
@@ -37,8 +36,6 @@ export const QuantileHelpTooltip = () => {
 
 const DashboardMetrics = () => {
   const intl = useIntl();
-  // App config, used to generated Advanced metrics button link
-  const { url_grafana } = useTypedSelector((state) => state.config.api);
   const { isShowQuantileChart } = useShowQuantileChart();
 
   return (
@@ -52,23 +49,6 @@ const DashboardMetrics = () => {
           </Box>
           {isShowQuantileChart && <QuantileHelpTooltip />}
         </PageSubtitle>
-
-        {url_grafana && (
-          <a
-            href={`${url_grafana}/d/${GRAFANA_DASHBOARDS.nodes}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-cy="advanced_metrics_node_detailed"
-          >
-            <Button
-              label={intl.formatMessage({
-                id: 'advanced_metrics',
-              })}
-              variant={'secondary'}
-              icon={<Icon name="External-link" />}
-            />
-          </a>
-        )}
       </PanelActions>
       <DashboardScrollableArea>
         <GraphsWrapper>

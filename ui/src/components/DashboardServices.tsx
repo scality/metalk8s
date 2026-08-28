@@ -1,14 +1,30 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useIntl } from 'react-intl';
-import { spacing } from '@scality/core-ui/dist/style/theme';
+import { spacing } from '@scality/core-ui';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 import { useAlertLibrary, useHighestSeverityAlerts, highestAlertToStatus } from '../containers/AlertProvider';
 import HealthItem from './HealthItem';
 const ServiceItems = styled.div`
   display: flex;
   flex-direction: column;
-  padding: ${spacing.sp4};
+  padding: ${spacing.r4};
+`;
+/* Fully restacked, the inventory cell spans the whole content box while the two
+   chart panels below it compete for what height is left. Lay the three service
+   groups side by side there so the cell stays short instead of stacking eight
+   items down the page. */
+const ServiceGroups = styled.div`
+  display: flex;
+  flex-direction: column;
+  @container responsive (max-width: 700px) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: ${spacing.r16};
+    > * {
+      flex: 1 1 11rem;
+    }
+  }
 `;
 
 const DashboardServices = () => {
@@ -46,8 +62,9 @@ const DashboardServices = () => {
         })}
       </PageSubtitle>
 
-      <ServiceItems>
-        <PageSubtitle aria-label="core">
+      <ServiceGroups>
+        <ServiceItems>
+          <PageSubtitle aria-label="core">
           {intl.formatMessage({
             id: 'core',
           })}
@@ -81,6 +98,7 @@ const DashboardServices = () => {
           alerts={authenticationHighestSeverityAlert}
         />
       </ServiceItems>
+      </ServiceGroups>
     </div>
   );
 };
