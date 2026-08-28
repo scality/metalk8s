@@ -26,7 +26,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       cellStyle: {
         textAlign: 'center',
         width: 'unset',
-        minWidth: '4rem',
+        minWidth: '5.5rem',
         maxWidth: '5.5rem',
         paddingRight: spacing.r16,
         flex: 0.5,
@@ -50,7 +50,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       dropAt: 400,
       accessor: 'usage',
       cellStyle: {
-        minWidth: '4rem',
+        minWidth: '4.5rem',
         textAlign: 'left',
         width: 'unset',
         flex: 0.5,
