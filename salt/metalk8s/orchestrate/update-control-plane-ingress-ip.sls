@@ -49,6 +49,13 @@ Reconfigure apiserver on {{ node }}:
     - sls:
       - metalk8s.kubernetes.apiserver
     - saltenv: {{ saltenv }}
+    {#- Increase the timeout to 300s instead of the default 20s, to let this
+        state run to completion, because it writes the kube-apiserver static
+        pod manifest on the very node the salt-master polls with
+        `saltutil.find_job`, once per master in sequence. This prevents Salt
+        reporting `Run failed on minions: <node>` and aborting the control
+        plane Ingress reconfiguration with the remaining masters untouched #}
+    - timeout: 300
     - require:
       - salt: Reconfigure Control Plane components
     {%- if loop.previtem is defined %}
