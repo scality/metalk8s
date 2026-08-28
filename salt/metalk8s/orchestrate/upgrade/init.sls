@@ -93,6 +93,14 @@ Install apiserver-proxy on {{ node }}:
     - sls:
       - metalk8s.kubernetes.apiserver-proxy
     - saltenv: {{ saltenv }}
+    {#- Increase the timeout to 300s instead of the default 20s, to let this
+        state run to completion, because it writes the apiserver-proxy static
+        pod manifest on the very node the salt-master polls with
+        `saltutil.find_job`, and the kubelet replaces that pod while the state
+        is still being polled. This prevents Salt reporting `Run failed on
+        minions: <node>` and aborting the upgrade before any node is
+        deployed #}
+    - timeout: 300
     - require:
       - salt: Check pillar on {{ node }} before installing apiserver-proxy
 
