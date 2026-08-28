@@ -77,7 +77,6 @@ Deploy apiserver {{ node }} to {{ dest_version }}:
 Wait for apiserver {{ node }} to be serving:
   http.wait_for_successful_query:
   {#- Query this node's apiserver directly rather than through
-  {#- Query this node's apiserver directly rather than through
       `127.0.0.1:7443`: the apiserver-proxy upstream lists every master and
       only weights the local one, so it fails over to another apiserver and
       would report ready while this node is still starting.
