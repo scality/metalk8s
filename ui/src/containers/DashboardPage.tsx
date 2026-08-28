@@ -21,6 +21,10 @@ const DashboardContainer = styled.div`
   flex: 1;
   width: 100%;
   min-height: 0;
+  /* One scroll owner for the whole dashboard. The grid and the cards inside it
+     used to scroll as well, which stacked up to three nested scrollbars for a
+     single list once the layout restacked. */
+  overflow: hidden auto;
 `;
 
 const DashboardGrid = styled.div`
@@ -75,14 +79,15 @@ const DashboardGrid = styled.div`
 
      The rows carry an explicit minimum because .network and .metrics are
      min-height: 0 flex columns holding self-sizing charts: on a plain auto row
-     they collapse to nothing. And the grid has to start scrolling vertically
-     once it is more than one row, or the extra rows are clipped instead. */
+     they collapse to nothing. Each step also releases the grid from the
+     wrapper's height so the wrapper is the only thing that scrolls. */
   @container responsive (max-width: 1100px) {
     grid-template:
       'inventory network' minmax(20rem, auto)
       'inventory metrics' minmax(22rem, auto)
       / minmax(0, 1fr) minmax(0, 2fr);
-    overflow: hidden auto;
+    overflow: visible;
+    align-self: start;
   }
 
   @container responsive (max-width: 700px) {
@@ -91,12 +96,18 @@ const DashboardGrid = styled.div`
       'network' minmax(18rem, auto)
       'metrics' minmax(22rem, auto)
       / minmax(0, 1fr);
-    overflow: hidden auto;
+    overflow: visible;
+    align-self: start;
   }
 `;
 export const DashboardScrollableArea = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
+  /* Both axes, because overflow-y: visible computes back to auto whenever the
+     other axis is not visible - which would leave the inner scrollbar in place. */
+  @container responsive (max-width: 1100px) {
+    overflow: visible;
+  }
 `;
 
 const SelectorPositioning = styled.div`
