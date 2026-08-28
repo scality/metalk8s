@@ -14,16 +14,56 @@ Execute the upgrade prechecks:
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
 
+{#- Nodes are deployed one by one, each waiting on the previous one. A skipped node
+    declares no state, so the chain must remember the last node actually deployed,
+    otherwise the next one waits on a state that does not exist and Salt fails it
+    with "The following requisites were not found". #}
+{%- set deployed = namespace(previous=None) %}
+
 {%- for node in cp_nodes + other_nodes %}
 
-  {%- set node_version = pillar.metalk8s.nodes[node].version|string %}
+  {#- The version label is set before a node is deployed, since it selects the
+      saltenv, so it says what the node was asked to run, not what it runs. The
+      `version-applied` annotation records the last version a node completed, and
+      that is what decides whether it still needs this one. #}
+  {%- set node_label = pillar.metalk8s.nodes[node].version|string %}
+  {%- set node_applied = pillar.metalk8s.nodes[node].get('version_applied') %}
+  {%- set node_in_progress = pillar.metalk8s.nodes[node].get('version_in_progress') %}
+  {#- Of a node that did finish its last deployment, keep the lower of the annotation
+      and the label. Every version of this orchestrate maintains the label, only the
+      ones that know about the annotation maintain it, so the two can disagree. An
+      upgrade must not skip a node that might still run the older of the two. #}
+  {%- if node_applied
+      and salt.pkg.version_cmp(node_applied|string, node_label) in (-1, 0) %}
+    {%- set node_version = node_applied|string %}
+  {%- else %}
+    {%- set node_version = node_label %}
+  {%- endif %}
   {%- set version_cmp = salt.pkg.version_cmp(dest_version, node_version) %}
+  {#- A node that completed the destination is left alone, so resuming an
+      interrupted upgrade only works the nodes that need it. This leans on the
+      annotation: `node_version` only equals `node_applied` when that annotation
+      is the one we trust, and the label alone never proved that a node ran the
+      version it advertises (MK8S-370). #}
+  {%- set completed_dest = node_applied is not none
+                           and node_version == node_applied|string
+                           and node_version == dest_version %}
   {#- If dest_version = 2.1.0-dev and node_version = 2.1.0, version_cmp = 0
       but we should not upgrade this node #}
-  {%- if version_cmp == -1
-      or (version_cmp == 0 and dest_version != node_version and '-' not in node_version) %}
+  {#- A node still carrying the in-progress marker is another matter: its
+      deployment never finished, so neither its label nor its recorded version
+      says what it runs, and it gets deployed rather than trusted. #}
+  {%- if node_in_progress is none
+      and (version_cmp == -1
+           or completed_dest
+           or (version_cmp == 0 and dest_version != node_version and '-' not in node_version)) %}
 
-Skip node {{ node }}, already in {{ node_version }} newer than {{ dest_version }}:
+  {%- if completed_dest %}
+    {%- set skip_reason = "already completed " ~ dest_version %}
+  {%- else %}
+    {%- set skip_reason = "already in " ~ node_version ~ " newer than " ~ dest_version %}
+  {%- endif %}
+Skip node {{ node }}, {{ skip_reason }}:
   test.succeed_without_changes
 
   {%- else %}
@@ -43,8 +83,8 @@ Check pillar on {{ node }} before installing apiserver-proxy:
         attempts: 5
     - require:
       - salt: Execute the upgrade prechecks
-    {%- if loop.previtem is defined %}
-      - salt: Deploy node {{ loop.previtem }}
+    {%- if deployed.previous %}
+      - salt: Deploy node {{ deployed.previous }}
     {%- endif %}
 
 Install apiserver-proxy on {{ node }}:
@@ -66,6 +106,11 @@ Wait for API server to be available on {{ node }}:
   - require:
     - salt: Install apiserver-proxy on {{ node }}
 
+{#- The version label selects the saltenv used to deploy the node, so it has to
+    be set before the deployment. The marker goes with it, so a run interrupted
+    between here and the deployment still leaves the node flagged. `deploy_node`
+    maintains both annotations from there, and clears the marker once it is
+    through. #}
 Set node {{ node }} version to {{ dest_version }}:
   metalk8s_kubernetes.object_updated:
     - name: {{ node }}
@@ -75,6 +120,8 @@ Set node {{ node }} version to {{ dest_version }}:
         metadata:
           labels:
             metalk8s.scality.com/version: "{{ dest_version }}"
+          annotations:
+            metalk8s.scality.com/version-in-progress: "{{ dest_version }}"
     - require:
       - http: Wait for API server to be available on {{ node }}
 
@@ -98,6 +145,7 @@ Deploy node {{ node }}:
       - salt: Deploy core component objects
       - salt: Deploy Kubernetes service config objects
 
+    {%- set deployed.previous = node %}
   {%- endif %}
 
 {%- endfor %}

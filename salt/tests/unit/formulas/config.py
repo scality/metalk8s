@@ -469,10 +469,16 @@ def get_cases(template: Path) -> List[TestCase]:
 
 def _generate_test_cases(cases: Dict[str, Any]) -> Iterator[Tuple[str, Dict[str, Any]]]:
     for case_id, case_options in cases.items():
-        sub_cases = case_options.pop("_subcases", None)
+        # NOTE: Read the sub-cases, never pop them. They come from the parsed
+        # configuration, which is shared, so popping means the second test to ask for
+        # the cases of a template gets the parent cases only, silently.
+        sub_cases = case_options.get("_subcases")
         if sub_cases is not None:
+            parent_options = {
+                key: value for key, value in case_options.items() if key != "_subcases"
+            }
             for sub_id, sub_options in _generate_test_cases(sub_cases):
-                yield f"{case_id} - {sub_id}", dict(case_options, **sub_options)
+                yield f"{case_id} - {sub_id}", dict(parent_options, **sub_options)
         else:
             yield case_id, case_options
 
