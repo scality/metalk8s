@@ -8,6 +8,7 @@ import DashboardServices from '../components/DashboardServices';
 import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
 import TimespanSelector from './TimespanSelector';
 import DashboardNetwork from '../components/DashboardNetwork';
+import AdvancedMetricsButton from '../components/AdvancedMetricsButton';
 
 /* Declares the query container the grid below resolves against. The dashboard is
    not inside a TwoPanelLayout, so nothing above it opts in. width: 100% is
@@ -90,14 +91,20 @@ const DashboardGrid = styled.div`
     align-self: start;
   }
 
+  /* Fully restacked, the three cells are the whole page, so letting them size to
+     their content turns the dashboard into one long scroll you have to travel
+     past the inventory to reach a chart. Give the two chart panels a share of
+     the container height instead and let them scroll internally: the inventory
+     keeps its content height, the panels take the rest, and the page only
+     scrolls if their minimums no longer fit. */
   @container responsive (max-width: 700px) {
     grid-template:
-      'inventory' minmax(18rem, auto)
-      'network' minmax(18rem, auto)
-      'metrics' minmax(22rem, auto)
+      'inventory' auto
+      'network' minmax(16rem, 1fr)
+      'metrics' minmax(20rem, 1fr)
       / minmax(0, 1fr);
-    overflow: visible;
-    align-self: start;
+    overflow: hidden;
+    align-self: stretch;
   }
 `;
 export const DashboardScrollableArea = styled.div`
@@ -108,13 +115,21 @@ export const DashboardScrollableArea = styled.div`
   @container responsive (max-width: 1100px) {
     overflow: visible;
   }
+  /* Restored once the panels have definite heights again. */
+  @container responsive (max-width: 700px) {
+    overflow: hidden auto;
+  }
 `;
 
-const SelectorPositioning = styled.div`
-  .sc-dropdown {
-    position: absolute;
-    right: 1rem;
-  }
+/* Both controls act on the Network and the Metrics panels rather than on either
+   one of them, so they live in the page's context bar. The dropdown used to be
+   positioned absolutely against the viewport, which put it under the Guardian
+   drawer as soon as the drawer opened. */
+const ContextActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.r8};
+  padding-right: ${spacing.r16};
 `;
 
 const DashboardPage = () => {
@@ -123,9 +138,10 @@ const DashboardPage = () => {
       <AppContainer.ContextContainer>
         <Wrap>
           <p></p>
-          <SelectorPositioning>
+          <ContextActions>
             <TimespanSelector />
-          </SelectorPositioning>
+            <AdvancedMetricsButton />
+          </ContextActions>
         </Wrap>
       </AppContainer.ContextContainer>
 
