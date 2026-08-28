@@ -68,15 +68,20 @@ const DashboardGrid = styled.div`
      group ~300px once the Guardian drawer narrows the content box, all of it
      silently clipped by the overflow: hidden above. Restack in two steps.
 
+     The first step keeps the inventory as a full-height left column and moves
+     the metrics under the network, since the inventory reads as a sidebar
+     rather than a peer of the two chart groups. Only the second step stacks
+     all three.
+
      The rows carry an explicit minimum because .network and .metrics are
      min-height: 0 flex columns holding self-sizing charts: on a plain auto row
      they collapse to nothing. And the grid has to start scrolling vertically
      once it is more than one row, or the extra rows are clipped instead. */
   @container responsive (max-width: 1100px) {
     grid-template:
-      'inventory network network' minmax(20rem, auto)
-      'metrics metrics metrics' minmax(22rem, auto)
-      / minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+      'inventory network' minmax(20rem, auto)
+      'inventory metrics' minmax(22rem, auto)
+      / minmax(0, 1fr) minmax(0, 2fr);
     overflow: hidden auto;
   }
 
