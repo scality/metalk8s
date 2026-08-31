@@ -19,16 +19,23 @@ runs:
       run: |
         export HOSTS_LIST=""
         echo "HOSTS_LIST=bootstrap$(seq -s '' --format ' node-%g' 1 ${{ inputs.NODES_COUNT }})" >> $GITHUB_ENV
+    ## A host may legitimately be gone: the bootstrap-restore scenario destroys
+    ## the Bootstrap node on purpose, and this action runs with `if: always()`,
+    ## so it also runs when the cluster is broken. Never let one unreachable
+    ## host abort the loop, or we lose the logs of every surviving node, which
+    ## are exactly the ones worth having.
     - name: generate sosreport on each node
       shell: bash
       run: |
         for host in ${HOSTS_LIST}; do
-          ssh -F ssh_config ${host} \
+          if ! ssh -F ssh_config -o ConnectTimeout=15 ${host} \
           "sudo sos report --all-logs \
           -o metalk8s -kmetalk8s.k8s-resources -kmetalk8s.pod-logs -k metalk8s.describe -k metalk8s.metrics \
           -o metalk8s_containerd -kmetalk8s_containerd.all -kmetalk8s_containerd.logs \
           --batch --tmp-dir /var/tmp && \
-          sudo chown 1000:1000 /var/tmp/sosreport*"
+          sudo chown 1000:1000 /var/tmp/sosreport*"; then
+            echo "::warning title=sosreport::Could not generate a sosreport on '${host}', skipping this host"
+          fi
         done
     - name: collect sosreport on each node
       shell: bash
@@ -36,7 +43,12 @@ runs:
         export DEST_DIR="artifacts/sosreport/${{ github.job }}"
         mkdir -p ${DEST_DIR}
         for host in ${HOSTS_LIST}; do
-          scp -F ssh_config \
+          if ! scp -F ssh_config -o ConnectTimeout=15 \
           "${host}:/var/tmp/sosreport-*" \
-          "${DEST_DIR}/"
+          "${DEST_DIR}/"; then
+            echo "::warning title=sosreport::Could not collect the sosreport of '${host}'"
+          fi
         done
+        if [ -z "$(ls -A ${DEST_DIR})" ]; then
+          echo "::warning title=sosreport::No sosreport could be collected from any host"
+        fi
