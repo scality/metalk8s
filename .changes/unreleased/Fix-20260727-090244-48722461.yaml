@@ -1,8 +1,0 @@
-kind: Fix
-body: |
-  Fix a bug where Salt master process may report an error about `VerboseLogger`
-  not having attributes `trace`
-time: 2026-07-27T09:02:44.048722461Z
-custom:
-  Pull: 4831
-  CommentId: backfill
