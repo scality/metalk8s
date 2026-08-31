@@ -275,6 +275,23 @@ jobs:
       - name: Copy the new SSH config to current directory
         if: inputs.bootstrap-restore
         run: cp terraform-snapshot/terraform/ssh_config ./
+      ## The initial Bootstrap node got its Salt minion ID pinned to
+      ## "bootstrap" by the generate-bootstrap action, and that is the name its
+      ## Kubernetes Node object carries. The node we just re-created is a fresh
+      ## machine with no /etc/salt/minion_id, so Salt would fall back to its
+      ## hostname, and `restore.sh` deploys the node under `grains.get id` --
+      ## the restored Bootstrap would come back as
+      ## "metalk8s-<...>-bootstrap" instead of "bootstrap", next to the
+      ## "bootstrap" Node object the backup restores. Pin the ID again so the
+      ## restored cluster matches the one that was backed up, the way it does
+      ## on a real platform where the hostname never changed.
+      - name: Enforce the Bootstrap node name before restoring
+        if: inputs.bootstrap-restore
+        uses: ./.github/actions/run-command-ssh
+        with:
+          COMMAND: |
+            sudo mkdir -p /etc/salt
+            echo 'bootstrap' | sudo tee /etc/salt/minion_id
       - name: Copy the backup archive to the new Bootstrap node
         if: inputs.bootstrap-restore
         uses: ./.github/actions/copy-file-ssh
