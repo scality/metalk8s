@@ -3,9 +3,20 @@
 Runner module handling MetalK8s cluster checks.
 """
 
+import logging
+import time
+
 from salt.exceptions import CheckError
 
+log = logging.getLogger(__name__)
+
 __virtualname__ = "metalk8s_checks"
+
+# A salt-master container replacement leaves the minions re-authenticating for
+# a while, tolerate roughly two minutes of that before declaring one down.
+MINIONS_PING_TIMEOUT = 10
+MINIONS_PING_ATTEMPTS = 6
+MINIONS_PING_INTERVAL = 10
 
 
 def __virtual__():
@@ -71,12 +82,27 @@ def nodes(node_list=None, raises=True):
     return _handle_errors(errors, raises)
 
 
-def minions(minion_list=None, raises=True):
+def minions(
+    minion_list=None,
+    raises=True,
+    timeout=MINIONS_PING_TIMEOUT,
+    attempts=MINIONS_PING_ATTEMPTS,
+    interval=MINIONS_PING_INTERVAL,
+):
     """Check that all Salt minions are Ready
+
+    A minion may legitimately miss a `test.ping` while it re-authenticates
+    against a salt-master that has just been replaced, so a single unanswered
+    probe is not enough to declare it down. Ping again, every `interval`
+    seconds and up to `attempts` times, targeting only the minions we have yet
+    to hear from.
 
     Args:
         minion_list (list, optional): List of Salt minion to check. Defaults to `pillar.metalk8s.nodes`.
         raises (bool, optional): Whether or not this function should raise. Defaults to True.
+        timeout (int, optional): Timeout, in seconds, of a single `test.ping`. Defaults to 10.
+        attempts (int, optional): How many times to ping the minions we did not hear from. Defaults to 6.
+        interval (int, optional): Seconds to wait between two attempts. Defaults to 10.
 
     Raises:
         CheckError: If 'raises' is True and some Salt minions are not ready
@@ -89,18 +115,39 @@ def minions(minion_list=None, raises=True):
     if minion_list is None:
         minion_list = __pillar__["metalk8s"]["nodes"].keys()
 
-    ret = __salt__["salt.execute"](
-        ",".join(minion_list), "test.ping", tgt_type="list", timeout=10
-    )
+    attempts = max(attempts, 1)
+    pending = list(minion_list)
+    not_ready = []
+    no_answer = []
 
-    not_ready_minions = {
-        "are not ready": [
+    for attempt in range(1, attempts + 1):
+        if attempt > 1:
+            time.sleep(interval)
+
+        ret = __salt__["salt.execute"](
+            ",".join(pending), "test.ping", tgt_type="list", timeout=timeout
+        )
+
+        not_ready = [
             minion for minion, minion_ret in ret.items() if minion_ret is not True
-        ],
-        "did not answered": list(set(minion_list) - set(ret.keys())),
-    }
+        ]
+        no_answer = sorted(set(pending) - set(ret.keys()))
 
-    for reason, minions_names in not_ready_minions.items():
+        pending = not_ready + no_answer
+        if not pending:
+            break
+
+        log.warning(
+            "Salt minions '%s' did not answer 'test.ping' (attempt %d/%d)",
+            "', '".join(pending),
+            attempt,
+            attempts,
+        )
+
+    for reason, minions_names in [
+        ("are not ready", not_ready),
+        ("did not answered", no_answer),
+    ]:
         if minions_names:
             errors.append(
                 "Salt minions '{}' {}".format(  # pylint: disable=consider-using-f-string
