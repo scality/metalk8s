@@ -1,22 +1,52 @@
 # CHANGELOG
 
 
-### Enhancements
+## Release 133.0.14
 
-- The `metalk8s` sosreport plugin now collects `/var/log/salt`, capped at 50 MB and
-  tail-truncated. Salt logs to file rather than to the journal, so sosreports
-  previously carried its configuration and systemd entries but none of its logging,
-  leaving minion-side state failures undiagnosable
-  (PR[#5084](https://github.com/scality/metalk8s/pull/5084))
+### Bug Fixes
 
-### Bug fixes
+- Fix a bug where Salt master process may report an error about `VerboseLogger`
+  not having attributes `trace`
+  (PR[#4831](https://github.com/scality/metalk8s/pull/4831))
 
-- `/etc/containerd/config.toml` is now written only once the container engine package of
-  the running version is installed. It used to be rewritten even when that install had
-  failed, or could not be attempted because the repositories were unusable, which left a
-  `version = 2` configuration on a node running containerd 2.x, so the next containerd
-  restart broke every image pull
-  (PR[#5091](https://github.com/scality/metalk8s/pull/5091))
+- Increase the Salt `timeout` to 300s, instead of the master's 20s default, on the
+  orchestrate states that reconfigure the very node the salt-master is polling
+  with `saltutil.find_job`: `Deploy apiserver <node>`, `Install apiserver-proxy on
+  <node>`, `Reconfigure apiserver on <node>` and `Run the highstate`. This gives
+  them time to finish when their node goes quiet for a moment, and prevents Salt
+  from giving up on a state that is still running and reporting `Run failed on
+  minions: <node>`, which aborted the bootstrap, the upgrade or a node deployment.
+  (PR[#5092](https://github.com/scality/metalk8s/pull/5092))
+
+- Upgrading the apiservers now waits, from the salt-master, for each master's
+  apiserver to answer `/readyz` on its own control plane IP before replacing the
+  next one, on top of the local `/healthz` check the deploy already runs.
+  Transient "No minions responded" on the grain sync and refresh steps is now
+  retried rather than failing the upgrade outright
+  (PR[#5096](https://github.com/scality/metalk8s/pull/5096))
+
+- A node drain no longer aborts the upgrade on a transient API server or etcd error.
+  An eviction rejected with a 5xx status, typically `etcdserver: request timed out`
+  while the upgrade restarts etcd and the API servers, is now retried for about a
+  minute per pod, and the drain state is retried too, its budget split across the
+  attempts so a drain that can never succeed still gives up in about the time it
+  used to take. A pod that keeps failing still fails the drain, naming the pod and
+  the API error.
+  (PR[#5090](https://github.com/scality/metalk8s/pull/5090))
+
+- A node that fails during an upgrade or a downgrade no longer advertises the
+  destination version as if it were running it. The version label is still set
+  before the deployment, since it selects the saltenv, but the node now also
+  carries a `metalk8s.scality.com/version-in-progress` annotation until that
+  deployment succeeds, plus a `metalk8s.scality.com/version-applied`
+  annotation recording the last version it completed. Both are written by the
+  node deployment, so they follow an expansion as well as an upgrade. Both
+  orchestrates select nodes on that recorded version rather than on the label,
+  so resuming an interrupted upgrade only deploys the nodes that need it, and
+  the upgrade prechecks refuse a destination other than the one an interrupted
+  upgrade was heading to.
+  (PR[#5090](https://github.com/scality/metalk8s/pull/5090))
+
 
 ## Release 133.0.13
 
@@ -54,41 +84,6 @@
   operator state is applied: its service discovery content, managed by MetalK8s
   users, was wiped on each re-apply, leaving Thanos Query with no store to reach
   (PR[#5027](https://github.com/scality/metalk8s/pull/5027))
-
-### Bug Fixes
-
-- `metalk8s_kubernetes.ping` now issues a real `GET /version` request instead of
-  reading the dynamic client's `version` property. That property is answered from
-  an on-disk discovery cache with no expiry, so on any node where an earlier call
-  had succeeded the probe returned `True` without reaching the apiserver at all —
-  including while it was down, which is precisely when it is asked. The request
-  discards the response body and times out after 10s, so an unresponsive
-  apiserver now yields `False` rather than blocking the caller indefinitely
-  (PR[#5082](https://github.com/scality/metalk8s/pull/5082))
-
-- `metalk8s.wait_apiserver` now raises instead of returning `False` when the
-  apiserver is still not ready after the last attempt. On Salt 3002 a `False`
-  return from `module.run` is recorded as a change with `result: True`, so every
-  caller using it as a gate carried on as if the apiserver were ready once the
-  wait timed out. Note this changes the contract for any caller testing the
-  boolean return
-  (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
-
-### Enhancements
-
-- Bootstrap and node deployment now gate their RBAC-dependent steps
-  (configuring the bootstrap Node object; uncordoning a freshly deployed node)
-  on `/readyz` rather than `/healthz`.  Waiting for the informers to sync,
-  as `informer-sync` protects a freshly started apiserver. Preventive: both
-  steps run as `system:masters` and cannot hit this race themselves
-  (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
-
-- `metalk8s.wait_apiserver` accepts a `verify_rbac` option applying the same
-  check, for callers that run RBAC-dependent operations immediately after the
-  wait. The probe is unauthenticated, so unlike a check on the `cluster-admin`
-  ClusterRole it is credential-independent, and it requires the aggregate
-  `/readyz` rather than one hook's own endpoint, which would skip `informer-sync`
-  (PR[#5022](https://github.com/scality/metalk8s/pull/5022))
 
 ## Release 133.0.11
 
