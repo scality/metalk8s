@@ -1,0 +1,6 @@
+kind: Fix
+body: Keep a UI's fixed-position elements — toasts and notifications — inside the content column instead of anchored to the browser viewport, so they no longer land over the drawer when it is open.
+time: 2026-08-27T10:12:47.165662701Z
+custom:
+    CommentId: "5437533581"
+    Pull: "5105"
