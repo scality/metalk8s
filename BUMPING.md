@@ -254,14 +254,17 @@ The version just needs to be updated in `buildchain/buildchain/versions.py`.
 
 The package comes from a release of
 [image-cache](https://github.com/scality/image-cache), which attaches one RPM
-per RedHat release to each of its tags. Bumping it means editing four values in
-`buildchain/buildchain/versions.py`, and they have to move together:
+per RedHat release to each of its tags. Bumping it means editing its entry in
+`PREBUILT_RPMS`, in `buildchain/buildchain/versions.py`:
 
-- `IMAGE_CACHE_TAG`, the tag of the release to fetch. The RPM version follows
-  from it, as `rpm/build.sh` in image-cache derives it.
-- `IMAGE_CACHE_RPM_RELEASE`, the release digit of the RPM, from the spec.
-- both entries of `IMAGE_CACHE_RPM_SHA256`, the digest of each package. Read
-  them off the release page, or run `sha256sum` on the downloaded packages.
+- `tag`, the release to fetch. The RPM version follows from it, as
+  `rpm/build.sh` in image-cache derives it, and so does the version pin every
+  node installs.
+- every entry of `sha256`, the digest of each package. Read them off the
+  release page, or run `sha256sum` on the downloaded packages.
+
+`release` and `arch` default to `1` and `noarch`, which is what the spec ships.
+Set them only if a package ever moves off those.
 
 The build stops if a digest is missing or does not match, and names the release
 it expected. A stale digest cannot ship the wrong package.

@@ -33,7 +33,6 @@ Overview;
 
 from pathlib import Path
 from typing import (
-    Callable,
     Dict,
     FrozenSet,
     Iterator,
@@ -373,53 +372,45 @@ def _rpm_repository_basename(releasever: str) -> str:
 
 
 def _prebuilt_rpm_package(
-    name: str,
-    releasever: str,
-    repo: str,
-    source: str,
-    tag: str,
-    digest: str,
-    arch: str,
+    prebuilt: versions.PrebuiltRPM, releasever: str
 ) -> targets.PrebuiltRPMPackage:
     """Return a prebuilt RPM package object.
 
     Arguments:
-        name:       package name
+        prebuilt:   declaration of the package, from `versions.py`
         releasever: RedHat release the package is built for
-        repo:       name of the repository the package lands in
-        source:     GitHub repository publishing the package
-        tag:        tag of the release carrying the package
-        digest:     expected SHA256 digest of the package
-        arch:       package architecture
     """
     try:
-        pkg_info = versions.REDHAT_PACKAGES_MAP[releasever][name]
+        digest = prebuilt.sha256[releasever]
     except KeyError as exc:
         raise ValueError(
-            f'Missing version for package "{name}" for release "{releasever}"'
+            f'Missing digest for package "{prebuilt.name}" '
+            f'for release "{releasever}"'
         ) from exc
 
+    pkg_info = prebuilt.package_version(releasever)
     if not pkg_info.full_version:
         raise ValueError(
-            f'Package "{name}" for release "{releasever}" needs a pinned version'
+            f'Package "{prebuilt.name}" for release "{releasever}" '
+            f"needs a pinned version"
         )
 
     return targets.PrebuiltRPMPackage(
         basename=f"_fetch_redhat_{releasever}_packages",
-        name=name,
+        name=prebuilt.name,
         full_version=pkg_info.full_version,
-        arch=arch,
-        repository=source,
-        tag=tag,
+        arch=prebuilt.arch,
+        repository=prebuilt.source,
+        tag=prebuilt.tag,
         digest=digest,
-        destination_dir=targets.rpm_package_dir(repo, releasever),
+        destination_dir=targets.rpm_package_dir(prebuilt.repo, releasever),
         # The package lands in a directory the repository creates. Waiting for
         # it also settles the order `doit clean` walks the two in: it cleans a
         # task before the tasks it depends on, so the package leaves before
         # anyone tries to remove the directory holding it.
         task_dep=[
             f"{_rpm_repository_basename(releasever)}:"
-            f"{repo}/{targets.MKDIR_ARCH_TASK_NAME}"
+            f"{prebuilt.repo}/{targets.MKDIR_ARCH_TASK_NAME}"
         ],
     )
 
@@ -473,55 +464,28 @@ RPM_TO_BUILD: Dict[str, Dict[str, Tuple[targets.RPMPackage, ...]]] = {
 }
 
 
-def _rpm_package_containerd_image_preload(
-    repo: str, releasever: str
-) -> targets.PrebuiltRPMPackage:
-    """`containerd-image-preload` RPM, from the image-cache release.
-
-    The package requires `containerd`, provided by the `containerd.io` package
-    the ISO already carries, so nothing else has to be downloaded for it. A
-    future version that needs more has to declare it in `versions.PACKAGES`:
-    the availability check the Salt states run on every node resolves the
-    dependencies of every declared package against the ISO repositories only.
-    """
-    try:
-        digest = versions.IMAGE_CACHE_RPM_SHA256[releasever]
-    except KeyError as exc:
-        raise ValueError(
-            f'Missing digest for the image-cache RPM for release "{releasever}"'
-        ) from exc
-
-    return _prebuilt_rpm_package(
-        name="containerd-image-preload",
-        releasever=releasever,
-        repo=repo,
-        source=versions.IMAGE_CACHE_REPOSITORY,
-        tag=versions.IMAGE_CACHE_TAG,
-        digest=digest,
-        arch="noarch",
-    )
-
-
 def _packages_to_fetch(
-    repo: str, *factories: Callable[[str, str], targets.PrebuiltRPMPackage]
+    prebuilts: Sequence[versions.PrebuiltRPM],
 ) -> Dict[str, Dict[str, Tuple[targets.PrebuiltRPMPackage, ...]]]:
-    """The packages one repository fetches, one entry per RedHat release.
+    """The prebuilt packages, grouped the way the repositories read them.
 
-    The repository is named once here: it is both the key the packages are
-    declared under and the directory they land in, and a package that lands
-    somewhere else than where it is declared never reaches the ISO.
+    A package is declared under the repository it lands in, since that is
+    where the repository metadata has to find it, and both come from the
+    `repo` of the declaration.
     """
-    return {
-        repo: {
-            releasever: tuple(factory(repo, releasever) for factory in factories)
-            for releasever in versions.REDHAT_PACKAGES
-        }
-    }
+    grouped: Dict[str, Dict[str, Tuple[targets.PrebuiltRPMPackage, ...]]] = {}
+    for prebuilt in prebuilts:
+        per_release = grouped.setdefault(prebuilt.repo, {})
+        for releasever in versions.REDHAT_PACKAGES:
+            per_release[releasever] = per_release.get(releasever, ()) + (
+                _prebuilt_rpm_package(prebuilt, releasever),
+            )
+    return grouped
 
 
 # Packages to fetch from a release instead of building them, per repository.
 RPM_TO_FETCH: Dict[str, Dict[str, Tuple[targets.PrebuiltRPMPackage, ...]]] = (
-    _packages_to_fetch("scality", _rpm_package_containerd_image_preload)
+    _packages_to_fetch(versions.PREBUILT_RPMS)
 )
 
 

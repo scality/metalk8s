@@ -43,6 +43,13 @@ def prebuilt_package(
     )
 
 
+def prebuilt_declaration(name: str = PACKAGE_NAME) -> versions.PrebuiltRPM:
+    """The declaration a prebuilt package is built from."""
+    return next(
+        prebuilt for prebuilt in versions.PREBUILT_RPMS if prebuilt.name == name
+    )
+
+
 def scality_repository(releasever: str) -> targets.RPMRepository:
     """The `scality` repository object for a given RedHat release."""
     return {
@@ -373,10 +380,20 @@ class TestContainerdImagePreload:
     def test_version_is_declared(self, releasever: str) -> None:
         # `pkg_installed` pins the version from this listing, so a package
         # missing from it cannot be installed by the Salt states.
+        prebuilt = prebuilt_declaration()
         pkg_info = versions.REDHAT_PACKAGES_MAP[releasever][PACKAGE_NAME]
         assert pkg_info.full_version == (
-            f"{versions.IMAGE_CACHE_RPM_VERSION}"
-            f"-{versions.IMAGE_CACHE_RPM_RELEASE}.el{releasever}"
+            f"{prebuilt.version}-{prebuilt.release}.el{releasever}"
+        )
+
+    @releasevers
+    def test_the_version_pin_is_generated(self, releasever: str) -> None:
+        # The pin is not written by hand next to the declaration: a bump moves
+        # the tag, and the version every node installs follows.
+        prebuilt = prebuilt_declaration()
+        assert (
+            prebuilt.package_version(releasever).full_version
+            == versions.REDHAT_PACKAGES_MAP[releasever][PACKAGE_NAME].full_version
         )
 
     @releasevers
@@ -439,12 +456,13 @@ class TestContainerdImagePreload:
         assert [task["name"] for task in tasks] == [PACKAGE_NAME]
 
     def test_digests_are_pinned(self) -> None:
-        # A bump moves the tag and both digests together: a half-done one
+        # A bump moves the tag and every digest together: a half-done one
         # leaves a digest empty, and the build would only find out on the
         # download.
-        for releasever in RELEASEVERS:
-            digest = versions.IMAGE_CACHE_RPM_SHA256[releasever]
-            assert re.fullmatch(r"[0-9a-f]{64}", digest)
+        for prebuilt in versions.PREBUILT_RPMS:
+            assert set(prebuilt.sha256) == set(RELEASEVERS)
+            for digest in prebuilt.sha256.values():
+                assert re.fullmatch(r"[0-9a-f]{64}", digest)
 
     @releasevers
     def test_its_dependency_ships_on_the_iso(self, releasever: str) -> None:
@@ -458,9 +476,10 @@ class TestContainerdImagePreload:
     def test_rpm_version_comes_from_the_tag(self) -> None:
         # `rpm/build.sh` in image-cache drops the leading "v" and replaces the
         # hyphen, which RPM forbids in a version, with a tilde.
-        assert not versions.IMAGE_CACHE_RPM_VERSION.startswith("v")
-        assert "-" not in versions.IMAGE_CACHE_RPM_VERSION
-        assert versions.IMAGE_CACHE_TAG.startswith("v")
+        prebuilt = prebuilt_declaration()
+        assert prebuilt.tag.startswith("v")
+        assert not prebuilt.version.startswith("v")
+        assert "-" not in prebuilt.version
 
 
 class TestPackageNames:
