@@ -8,14 +8,21 @@ from buildchain.targets.checksum import Sha256Sum
 from buildchain.targets.directory import Mkdir
 from buildchain.targets.file_tree import FileTree
 from buildchain.targets.local_image import LocalImage, ExplicitContext
-from buildchain.targets.package import Package, RPMPackage
+from buildchain.targets.package import Package, PrebuiltRPMPackage, RPMPackage
 from buildchain.targets.remote_image import (
     ImageSaveFormat,
     RemoteImage,
     SaveAsLayers,
     SaveAsTar,
 )
-from buildchain.targets.repository import Repository, RPMRepository
+from buildchain.targets.repository import (
+    MKDIR_ARCH_TASK_NAME,
+    Repository,
+    RPMRepository,
+    holds_local_packages,
+    rpm_package_dir,
+    rpm_repository_fullname,
+)
 from buildchain.targets.serialize import (
     Renderer,
     SerializedData,
@@ -35,13 +42,18 @@ __all__ = [
     "LocalImage",
     "ExplicitContext",
     "Package",
+    "PrebuiltRPMPackage",
     "RPMPackage",
     "ImageSaveFormat",
     "RemoteImage",
     "SaveAsLayers",
     "SaveAsTar",
+    "MKDIR_ARCH_TASK_NAME",
     "Repository",
     "RPMRepository",
+    "holds_local_packages",
+    "rpm_package_dir",
+    "rpm_repository_fullname",
     "Renderer",
     "SerializedData",
     "SaltState",

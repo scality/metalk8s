@@ -51,6 +51,18 @@ MKDIR_ROOT_TASK_NAME = "mkdir_repo_root"
 MKDIR_ARCH_TASK_NAME = "mkdir_repo_arch"
 
 
+def holds_local_packages(
+    packages: Optional[Sequence[package.Package]] = None,
+    prebuilt_packages: Optional[Sequence[package.PrebuiltRPMPackage]] = None,
+) -> bool:
+    """Whether a repository built from these holds packages of ours.
+
+    Callers decide what a repository depends on before they can build it, so
+    the answer has to be available without the repository object.
+    """
+    return bool(packages or prebuilt_packages)
+
+
 class Repository(base.CompositeTarget):
     """Base class to build a repository of software packages."""
 
@@ -62,15 +74,17 @@ class Repository(base.CompositeTarget):
         repo_root: Path,
         releasever: str,
         packages: Optional[Sequence[package.Package]] = None,
+        prebuilt_packages: Optional[Sequence[package.PrebuiltRPMPackage]] = None,
         **kwargs: Any,
     ):
         """Initialize the repository.
 
         Arguments:
-            basename: basename for the sub-tasks
-            name:     repository name
-            packages: list of locally built packages
-            builder:  docker image used to build the package
+            basename:          basename for the sub-tasks
+            name:              repository name
+            packages:          list of locally built packages
+            prebuilt_packages: list of packages downloaded from a release
+            builder:           docker image used to build the package
 
         Keyword Arguments:
             They are passed to `Target` init method.
@@ -78,6 +92,7 @@ class Repository(base.CompositeTarget):
         self._name = name
         self._builder = builder
         self._packages = packages or []
+        self._prebuilt_packages = prebuilt_packages or []
         self._repo_root = repo_root
         self._releasever = releasever
         super().__init__(basename=basename, **kwargs)
@@ -85,6 +100,12 @@ class Repository(base.CompositeTarget):
     name = property(operator.attrgetter("_name"))
     builder = property(operator.attrgetter("_builder"))
     packages = property(operator.attrgetter("_packages"))
+    prebuilt_packages = property(operator.attrgetter("_prebuilt_packages"))
+
+    @property
+    def has_local_packages(self) -> bool:
+        """Whether the repository holds packages produced by the build."""
+        return holds_local_packages(self._packages, self._prebuilt_packages)
 
     @property
     @abc.abstractmethod
@@ -99,7 +120,7 @@ class Repository(base.CompositeTarget):
     @property
     def execution_plan(self) -> List[types.TaskDict]:
         tasks = [self.build_repo()]
-        if self._packages:
+        if self.has_local_packages:
             tasks.extend(self.build_packages())
         return tasks
 
@@ -149,6 +170,7 @@ class RPMRepository(Repository):
         releasever: str,
         builder: image.ContainerImage,
         packages: Optional[Sequence[package.RPMPackage]] = None,
+        prebuilt_packages: Optional[Sequence[package.PrebuiltRPMPackage]] = None,
         **kwargs: Any,
     ):
         super().__init__(
@@ -158,18 +180,24 @@ class RPMRepository(Repository):
             constants.REPO_REDHAT_ROOT,
             releasever,
             packages,
+            prebuilt_packages,
             **kwargs,
         )
 
     @property
     def fullname(self) -> str:
         """Repository full name."""
-        return f"{config.PROJECT_NAME.lower()}-{self.name}-el{self._releasever}"
+        return rpm_repository_fullname(self.name, self._releasever)
 
     @property
     def repodata(self) -> Path:
         """Repository metadata directory."""
         return self.rootdir / "repodata"
+
+    @property
+    def package_dir(self) -> Path:
+        """Directory holding the packages of the repository."""
+        return self.rootdir / self.ARCH
 
     def build_repo(self) -> types.TaskDict:
         """Build the repository."""
@@ -198,11 +226,12 @@ class RPMRepository(Repository):
                 "verbosity": 0,
             }
         )
-        if self.packages:
+        if self.has_local_packages:
             task["task_dep"].append(
                 self._get_task_name(MKDIR_ROOT_TASK_NAME, with_basename=True)
             )
             task["file_dep"].extend([self.get_rpm_path(pkg) for pkg in self.packages])
+            task["file_dep"].extend([pkg.path for pkg in self.prebuilt_packages])
         return task
 
     def build_packages(self) -> List[types.TaskDict]:
@@ -249,7 +278,7 @@ class RPMRepository(Repository):
     def _mkdir_repo_arch(self) -> types.TaskDict:
         """Create the CPU architecture directory for the repository."""
         task = self.basic_task
-        mkdir = directory.Mkdir(directory=self.rootdir / self.ARCH).task
+        mkdir = directory.Mkdir(directory=self.package_dir).task
         task.update(
             {
                 "name": self._get_task_name(MKDIR_ARCH_TASK_NAME),
@@ -268,7 +297,7 @@ class RPMRepository(Repository):
     def get_rpm_path(self, pkg: package.RPMPackage) -> Path:
         """Return the path of the RPM of a given package."""
         filename = pkg.srpm.name.replace(".src.rpm", f".{self.ARCH}.rpm")
-        return self.rootdir / self.ARCH / filename
+        return self.package_dir / filename
 
     @staticmethod
     def _get_buildrpm_mounts(srpm_path: Path, rpm_dir: Path) -> List[types.Mount]:
@@ -304,3 +333,22 @@ class RPMRepository(Repository):
         )
 
         return buildrepo_callable
+
+
+def rpm_repository_fullname(name: str, releasever: str) -> str:
+    """Full name of a RPM repository, as it appears on the ISO."""
+    return f"{config.PROJECT_NAME.lower()}-{name}-el{releasever}"
+
+
+def rpm_package_dir(name: str, releasever: str) -> Path:
+    """Directory holding the packages of a RPM repository on the ISO.
+
+    Same directory as `RPMRepository.package_dir`, for the packages that have
+    to know where they land before the repository object exists.
+    """
+    return (
+        constants.REPO_REDHAT_ROOT
+        / releasever
+        / rpm_repository_fullname(name, releasever)
+        / RPMRepository.ARCH
+    )

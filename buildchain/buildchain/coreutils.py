@@ -15,6 +15,22 @@ from typing import Iterator, Sequence
 BUFSIZE: int = 8 * (1024 * 1024)
 
 
+def sha256_of(input_file: Path) -> str:
+    """Compute the SHA256 digest of a file, as `hexdigest` writes it.
+
+    The file is read by chunks, since a package or an ISO does not belong in
+    memory.
+
+    Arguments:
+        input_file: path to the file to hash
+    """
+    hasher = hashlib.sha256()
+    with input_file.open("rb", buffering=BUFSIZE) as fp_in:
+        for chunk in iter(functools.partial(fp_in.read, BUFSIZE), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
 def sha256sum(input_files: Sequence[Path], output_file: Path) -> None:
     """Compute the SHA256 digest of files.
 
@@ -26,13 +42,7 @@ def sha256sum(input_files: Sequence[Path], output_file: Path) -> None:
         input_files: path to the files to hash
         output_file: path to the file that will contain the checksums
     """
-    digests = []
-    for filepath in input_files:
-        hasher = hashlib.sha256()
-        with filepath.open("rb", buffering=BUFSIZE) as fp_in:
-            for chunk in iter(functools.partial(fp_in.read, BUFSIZE), b""):
-                hasher.update(chunk)
-        digests.append(hasher.hexdigest())
+    digests = [sha256_of(filepath) for filepath in input_files]
     with output_file.open("w", encoding="utf-8") as fp_out:
         for filepath, digest in zip(input_files, digests):
             fp_out.write(f"{digest}  {filepath.name}\n")

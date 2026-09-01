@@ -347,6 +347,26 @@ CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}
 
 # Packages {{{
 
+# The `containerd-image-preload` package is not built here: every release of
+# the image-cache repository attaches one RPM per RedHat release, and the build
+# only fetches the one matching the tag pinned below.
+IMAGE_CACHE_REPOSITORY: str = "scality/image-cache"
+IMAGE_CACHE_TAG: str = "v0.1.0-alpha.1"
+# `rpm/build.sh` in image-cache turns the tag into the RPM version: it drops
+# the leading "v" and replaces any hyphen with a tilde, which RPM accepts in a
+# version and sorts before the final release.
+IMAGE_CACHE_RPM_VERSION: str = IMAGE_CACHE_TAG.removeprefix("v").replace("-", "~")
+IMAGE_CACHE_RPM_RELEASE: str = "1"
+# Digest of each RPM attached to the release above, so that two builds of the
+# same MetalK8s version cannot ship two different packages. Refresh them along
+# with the tag, from the release page or by running `sha256sum` on the
+# downloaded packages. An empty digest stops the build, naming the release it
+# expected.
+IMAGE_CACHE_RPM_SHA256: Dict[str, str] = {
+    "8": "b374b74d78c2786c8143e1da2f20bfd46434bc007c42ebb458e87af22a527ad1",
+    "9": "bc205c2120970f5185bbd2808cb55219141acb311692707249692492b143d954",
+}
+
 
 class PackageVersion:
     """A package's authoritative version data.
@@ -458,12 +478,22 @@ PACKAGES: Dict[str, Any] = {
                 version=NONSUFFIXED_VERSION,
                 release=f"{SOSREPORT_RELEASE}.el8",
             ),
+            PackageVersion(
+                name="containerd-image-preload",
+                version=IMAGE_CACHE_RPM_VERSION,
+                release=f"{IMAGE_CACHE_RPM_RELEASE}.el8",
+            ),
         ),
         "9": (
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=NONSUFFIXED_VERSION,
                 release=f"{SOSREPORT_RELEASE}.el9",
+            ),
+            PackageVersion(
+                name="containerd-image-preload",
+                version=IMAGE_CACHE_RPM_VERSION,
+                release=f"{IMAGE_CACHE_RPM_RELEASE}.el9",
             ),
         ),
     },
