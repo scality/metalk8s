@@ -535,6 +535,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/defaults.yaml"),
     Path("salt/metalk8s/deployed/core.sls"),
     Path("salt/metalk8s/deployed/init.sls"),
+    Path("salt/metalk8s/image-cache/init.sls"),
+    Path("salt/metalk8s/image-cache/installed.sls"),
     Path("salt/metalk8s/internal/bootstrap/post-upgrade.sls"),
     Path("salt/metalk8s/internal/preflight/init.sls"),
     Path("salt/metalk8s/internal/preflight/mandatory.sls"),
