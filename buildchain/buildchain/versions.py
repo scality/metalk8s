@@ -325,6 +325,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:86b4198036c1f83f1d9363a1e2ae78015482ca4fe60cd706939b8730c179ac8a",
     ),
     Image(
+        name="metalk8s-registry-operator",
+        version="v0.0.1-alpha.4",
+        digest="sha256:c582c1593e6a92b29e62d06b7af7ee3bf10e4f7e34cb86deb08795dac23e6844",
+    ),
+    Image(
         name="disk-management-agent",
         version="v0.1.0",
         digest="sha256:d63d4e20a089dcd3ac33f58d2210a66e48a1f9f08120494352b22cca94747769",

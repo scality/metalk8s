@@ -327,6 +327,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "disk-management-agent",
         "file-reflector",
         "node-warden-operator",
+        "metalk8s-registry-operator",
     ],
 }
 
