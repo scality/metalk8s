@@ -54,13 +54,15 @@ runs:
     ## call issued right after is rejected with `rpc error: code = Unavailable
     ## desc = keepalive ping failed to receive ACK within timeout`. Wait for the
     ## apiserver to be ready again before deleting the node object, and retry
-    ## the deletion itself.
+    ## the deletion itself. `ConnectTimeout` bounds each attempt: without it a
+    ## node that stops answering on port 22 burns the full kernel SYN timeout
+    ## (~134s) per attempt, and neither loop would finish in any useful time.
     ## Here we cannot use the run-command-ssh action as we need a retry loop.
     - name: "Wait for the API server to recover from the etcd reconfiguration"
       shell: bash
       run: |
         for _ in $(seq 1 24); do
-          if ssh -F ssh_config -o ServerAliveInterval=15 ${{ inputs.from-node }} \
+          if ssh -F ssh_config -o ConnectTimeout=15 -o ServerAliveInterval=15 ${{ inputs.from-node }} \
           "sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf get --raw /readyz" \
           > /dev/null 2>&1; then
             exit 0
@@ -75,7 +77,7 @@ runs:
         ## `--ignore-not-found` keeps a retry idempotent, in case a previous
         ## attempt did delete the node but lost the answer.
         for attempt in $(seq 1 12); do
-          if ssh -F ssh_config -o ServerAliveInterval=15 ${{ inputs.from-node }} \
+          if ssh -F ssh_config -o ConnectTimeout=15 -o ServerAliveInterval=15 ${{ inputs.from-node }} \
           "sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf \
           delete node ${{ inputs.node-to-remove }} --ignore-not-found"; then
             exit 0

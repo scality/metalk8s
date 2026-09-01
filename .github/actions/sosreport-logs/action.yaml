@@ -49,6 +49,10 @@ runs:
             echo "::warning title=sosreport::Could not collect the sosreport of '${host}'"
           fi
         done
+        ## A per-host failure is tolerable -- the node may be gone on purpose --
+        ## but collecting nothing at all is the case that leaves a failing job
+        ## with no evidence, so it fails the step rather than warning.
         if [ -z "$(ls -A ${DEST_DIR})" ]; then
-          echo "::warning title=sosreport::No sosreport could be collected from any host"
+          echo "::error title=sosreport::No sosreport could be collected from any host"
+          exit 1
         fi
