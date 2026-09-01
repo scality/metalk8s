@@ -61,6 +61,20 @@ Feature: Cluster Sanity Checks
         | metalk8s-monitoring         | node-problem-detector                        |
         | metalk8s-storage-management | disk-management-agent-controller-manager     |
 
+    Scenario Outline: Package is installed on every node
+        Then the package '<name>' is installed on every node
+
+        Examples:
+        | name                     |
+        | containerd-image-preload |
+
+    Scenario Outline: Systemd unit is enabled and running on every node
+        Then the systemd unit '<name>' is enabled and running on every node
+
+        Examples:
+        | name                           |
+        | containerd-image-preload.timer |
+
     @volumes_provisioned
     Scenario Outline: StatefulSet has available replicas
         Then the StatefulSet '<name>' in the '<namespace>' namespace has all desired replicas available
