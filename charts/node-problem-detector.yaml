@@ -13,7 +13,7 @@ settings:
         "plugin": "custom",
         "pluginConfig": {
           "invoke_interval": "30s",
-          "timeout": "5s",
+          "timeout": "10s",
           "max_output_length": 120,
           "concurrency": 1,
           "skip_initial_status": true
@@ -22,18 +22,18 @@ settings:
         "metricsReporting": true,
         "conditions": [
           {
-            "type": "WorkloadPlaneNetworkUnavailable",
-            "reason": "WorkloadPlaneNetworkReady",
-            "message": "workload plane reachable"
+            "type": "PodNetworkUnavailable",
+            "reason": "PodNetworkReady",
+            "message": "pod network reachable"
           }
         ],
         "rules": [
           {
             "type": "permanent",
-            "condition": "WorkloadPlaneNetworkUnavailable",
-            "reason": "WorkloadPlaneNetworkUnreachable",
+            "condition": "PodNetworkUnavailable",
+            "reason": "PodNetworkUnreachable",
             "path": "/scripts/check-wp.sh",
-            "timeout": "5s"
+            "timeout": "10s"
           }
         ]
       }
@@ -45,22 +45,28 @@ settings:
 tolerations:
   - operator: Exists
 
+# Let the probe exclude itself from the peers resolved through the headless Service
+env:
+  - name: POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
+
 extraVolumes:
   - name: wp-scripts
     configMap:
       name: npd-wp-scripts
       defaultMode: 0755
-  - name: wp-peers
-    configMap:
-      name: npd-wp-peers
+  # Holds the last peer list the probe resolved, cluster DNS is not always reachable
+  - name: wp-state
+    emptyDir: {}
 
 extraVolumeMounts:
   - name: wp-scripts
     mountPath: /scripts
     readOnly: true
-  - name: wp-peers
-    mountPath: /config-wp
-    readOnly: true
+  - name: wp-state
+    mountPath: /run/wp-monitor
 
 metrics:
   enabled: true

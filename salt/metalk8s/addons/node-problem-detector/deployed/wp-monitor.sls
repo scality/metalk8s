@@ -1,27 +1,7 @@
 #!jinja | metalk8s_kubernetes
 
-{#- Mine can hold stale entries after node removal; keep only nodes still in the pillar #}
-{%- set wp_mine = salt.saltutil.runner('mine.get', tgt='*', fun='workload_plane_ip') %}
-{%- set peers = {} %}
-{%- for node in pillar.metalk8s.nodes.keys() | sort %}
-  {%- if node in wp_mine %}
-    {%- do peers.update({node: wp_mine[node]}) %}
-  {%- endif %}
-{%- endfor %}
-{#- An empty map is safe: the probe treats "no peers" as healthy #}
+{%- from "metalk8s/map.jinja" import coredns with context %}
 
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: npd-wp-peers
-  namespace: metalk8s-monitoring
-data:
-  peers: |
-    # nodeName   WP IP
-{%- for name, ip in peers | dictsort %}
-    {{ name }} {{ ip }}
-{%- endfor %}
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -32,29 +12,52 @@ data:
     #!/bin/bash
     set -u
 
-    PEERS_FILE="${WP_PEERS_FILE:-/config-wp/peers}"   # mounted ConfigMap (nodeName -> WP IP)
-    PORT="${WP_PORT:-179}"                            # Calico BGP port, already listening on the WP
+    # Peers are the other NPD pods, published by the headless Service
+    SERVICE="${WP_SERVICE:-node-problem-detector.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}.}"
+    PORT="${WP_PORT:-20257}"                          # NPD exporter port, a TCP connect there is inert
     CT="${WP_CONNECT_TIMEOUT:-2}"                     # per-peer TCP connect timeout (seconds)
-    SELF="${NODE_NAME:-}"                             # this node's name (Downward API)
+    SELF="${POD_IP:-}"                                # this pod's IP (Downward API)
+    CACHE="${WP_PEERS_CACHE:-/run/wp-monitor/peers}"  # last resolved peer list
+    # An attempt costs up to 2s plus 1s of backoff, raising it means raising the plugin timeout
+    ATTEMPTS="${WP_RESOLVE_ATTEMPTS:-2}"
+
+    # Keep resolution short, the script must own its timing to always control its exit code
+    export RES_OPTIONS="timeout:1 attempts:1"
 
     # Config sanity -> Unknown (exit 2): never risk a wrong verdict
-    [ -n "$SELF" ]       || { echo "NODE_NAME not set (cannot exclude self)"; exit 2; }
-    [ -r "$PEERS_FILE" ] || { echo "peers file $PEERS_FILE not readable";      exit 2; }
+    [ -n "$SELF" ] || { echo "POD_IP not set (cannot exclude self)"; exit 2; }
 
-    # Build the peer list: skip comments / blanks / malformed lines, exclude self
+    addrs=""
+    attempt=0
+    while [ -z "$addrs" ] && [ "$attempt" -lt "$ATTEMPTS" ]; do
+      attempt=$((attempt+1))
+      addrs=$(timeout 2 getent hosts "$SERVICE" | sed 's/[[:space:]].*//' | tr '\n' ' ')
+      [ -n "$addrs" ] || [ "$attempt" = "$ATTEMPTS" ] || sleep 1
+    done
+
+    if [ -z "$addrs" ]; then
+      # Cluster DNS runs on the pod network too, judge the peers we last knew rather
+      # than report a problem on every peer of the node hosting CoreDNS
+      addrs=$(cat "$CACHE" 2>/dev/null)
+      [ -n "$addrs" ] || { echo "cannot resolve $SERVICE and no known peers"; exit 2; }
+    fi
+
     peers=""
     checked=0
-    while read -r name ip _; do
-      [ -n "${name:-}" ] || continue
-      case "$name" in \#*) continue ;; esac
-      [ -n "${ip:-}" ]   || continue
-      [ "$name" = "$SELF" ] && continue
+    for ip in $addrs; do
+      [ "$ip" = "$SELF" ] && continue
       peers="$peers $ip"
       checked=$((checked+1))
-    done < "$PEERS_FILE"
+    done
 
-    # No peers (single-node cluster, or only self listed) -> nothing to judge -> healthy
-    [ "$checked" -gt 0 ] || { echo "WP ok: no peers to check"; exit 0; }
+    # Endpoints come back one pod at a time, caching an answer holding only ourselves
+    # would read as "no peers to check" for as long as DNS stays down
+    if [ "$checked" -gt 0 ]; then
+      { echo "$peers" > "$CACHE"; } 2>/dev/null || true
+    fi
+
+    # No peers (single-node cluster) -> nothing to judge -> healthy
+    [ "$checked" -gt 0 ] || { echo "pod network ok: no peers to check"; exit 0; }
 
     # Probe every peer in parallel (total time ~ one timeout, regardless of cluster size)
     pids=""
@@ -69,9 +72,9 @@ data:
 
     # Majority quorum: isolated if we reached fewer than half of the peers
     if [ $((reachable * 2)) -lt "$checked" ]; then
-      echo "WP unreachable: reached $reachable/$checked peers (< majority)"
+      echo "pod network unreachable: reached $reachable/$checked peers (< majority)"
       exit 1
     fi
 
-    echo "WP ok: reached $reachable/$checked peers"
+    echo "pod network ok: reached $reachable/$checked peers"
     exit 0
