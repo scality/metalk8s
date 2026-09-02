@@ -6,7 +6,6 @@ started, and the import it runs goes into a containerd that must already be up.
 """
 
 from pathlib import Path
-
 import pytest
 
 from tests.unit.formulas.fixtures.rendered import RenderedStates, required_states
@@ -28,10 +27,13 @@ NO_ENGINE_STATE = "No containerd to preload images into"
 # preload script needs, and the readiness check on the running engine.
 REQUIRED_GATES = [
     "Install containerd image preload",
+    "Configure containerd image preload",
     "Install containerd",
     "Ensure containerd is ready",
     "Repositories configured",
 ]
+
+CONFIG_STATE = "Configure containerd image preload"
 
 
 @pytest.mark.formulas
@@ -69,3 +71,43 @@ def test_preload_timer_requires_a_running_containerd(
     assert (
         checked
     ), "no rendering case installs the timer, the requisites went unchecked"
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [IMAGE_CACHE_INSTALLED], indirect=True)
+def test_preload_reads_the_configured_cache_directory(
+    rendered_states: RenderedStates,
+) -> None:
+    """Check the package configuration is written, and written before use.
+
+    The cache directory is a pillar value. Salt writes the states against
+    it, so it has to render the sysconfig the preload script reads from the
+    same value, or the two drift apart in silence.
+    """
+    checked = False
+
+    for case_id, states in rendered_states:
+        if CONFIG_STATE not in states:
+            assert (
+                NO_ENGINE_STATE in states
+            ), f"no '{NO_ENGINE_STATE}' state ({case_id})"
+            continue
+
+        config_state = states[CONFIG_STATE]["file.managed"]
+        contents = next(arg["contents"] for arg in config_state if "contents" in arg)
+        assert any(
+            line.startswith("IMAGE_CACHE_DIR=") for line in contents
+        ), f"the sysconfig does not set IMAGE_CACHE_DIR ({case_id})"
+
+        assert "Install containerd image preload" in required_states(
+            states, CONFIG_STATE
+        ), (
+            f"'{CONFIG_STATE}' does not require the package, it would write a"
+            f" file the package then owns ({case_id})"
+        )
+
+        checked = True
+
+    assert (
+        checked
+    ), "no rendering case configures the package, the requisites went unchecked"

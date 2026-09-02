@@ -112,6 +112,10 @@
   }
 }, grain='os_family', merge=defaults.get('kubelet')) %}
 
+{% set image_cache = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('image_cache')) %}
+
 {% set ca = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('ca')) %}
