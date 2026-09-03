@@ -27,7 +27,7 @@ data:
       "plugin": "custom",
       "pluginConfig": {
         "invoke_interval": "30s",
-        "timeout": "5s",
+        "timeout": "10s",
         "max_output_length": 120,
         "concurrency": 1,
         "skip_initial_status": true
@@ -36,18 +36,18 @@ data:
       "metricsReporting": true,
       "conditions": [
         {
-          "type": "WorkloadPlaneNetworkUnavailable",
-          "reason": "WorkloadPlaneNetworkReady",
-          "message": "workload plane reachable"
+          "type": "PodNetworkUnavailable",
+          "reason": "PodNetworkReady",
+          "message": "pod network reachable"
         }
       ],
       "rules": [
         {
           "type": "permanent",
-          "condition": "WorkloadPlaneNetworkUnavailable",
-          "reason": "WorkloadPlaneNetworkUnreachable",
+          "condition": "PodNetworkUnavailable",
+          "reason": "PodNetworkUnreachable",
           "path": "/scripts/check-wp.sh",
-          "timeout": "5s"
+          "timeout": "10s"
         }
       ]
     }
@@ -167,7 +167,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 198f8f79ab356a20e61db7b0b136ad0b797d6bad9018e3be82407afe00329b2d
+        checksum/config: f5483564dad34fe639a87c95b6161b46945292df64abbdc487b3268e32f51524
       labels:
         app: node-problem-detector
         app.kubernetes.io/instance: node-problem-detector
@@ -185,6 +185,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         image: {% endraw -%}{{ build_image_name("node-problem-detector", False) }}{%- raw %}:v1.35.1
         imagePullPolicy: IfNotPresent
         name: node-problem-detector
@@ -207,9 +211,8 @@ spec:
         - mountPath: /scripts
           name: wp-scripts
           readOnly: true
-        - mountPath: /config-wp
-          name: wp-peers
-          readOnly: true
+        - mountPath: /run/wp-monitor
+          name: wp-state
       dnsPolicy: ClusterFirst
       hostNetwork: false
       hostPID: false
@@ -235,9 +238,8 @@ spec:
           defaultMode: 493
           name: npd-wp-scripts
         name: wp-scripts
-      - configMap:
-          name: npd-wp-peers
-        name: wp-peers
+      - emptyDir: {}
+        name: wp-state
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 1

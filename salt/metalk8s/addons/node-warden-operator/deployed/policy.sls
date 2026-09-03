@@ -6,7 +6,7 @@ metadata:
   name: workload-plane-isolation
 spec:
   condition:
-    type: WorkloadPlaneNetworkUnavailable
+    type: PodNetworkUnavailable
     status: "True"
   remediations:
     taint:

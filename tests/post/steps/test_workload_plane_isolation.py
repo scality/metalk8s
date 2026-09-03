@@ -1,10 +1,10 @@
 # coding: utf-8
 """End-to-end validation of the Workload Plane isolation flow.
 
-Detection (node-problem-detector sets the WorkloadPlaneNetworkUnavailable
-condition) -> remediation (node-warden taints the node NoExecute) -> traffic
-drained (pods evicted, node out of the Service endpoints) -> recovery on
-restore, plus the false-positive and guard-suppression safeguards.
+Detection (node-problem-detector sets the PodNetworkUnavailable condition) ->
+remediation (node-warden taints the node NoExecute) -> traffic drained (pods
+evicted, node out of the Service endpoints) -> recovery on restore, plus the
+false-positive and guard-suppression safeguards.
 
 These scenarios require a segregated-network cluster (separate control plane
 and workload plane) with at least 3 nodes, so the majority quorum can tell a

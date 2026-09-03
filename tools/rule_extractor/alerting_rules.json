@@ -314,7 +314,7 @@
     {
         "message": "Node has lost Workload Plane connectivity",
         "name": "NodeWorkloadPlaneUnavailable",
-        "query": "kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"} == 1",
+        "query": "kube_node_status_condition{condition=\"PodNetworkUnavailable\",status=\"true\"} == 1",
         "severity": "warning"
     },
     {
@@ -326,7 +326,7 @@
     {
         "message": "Workload Plane outage affecting the majority of nodes",
         "name": "WorkloadPlaneOutage",
-        "query": "count(kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"} == 1) / count(kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"}) > 0.5",
+        "query": "count(kube_node_status_condition{condition=\"PodNetworkUnavailable\",status=\"true\"} == 1) / count(kube_node_status_condition{condition=\"PodNetworkUnavailable\",status=\"true\"}) > 0.5",
         "severity": "critical"
     },
     {

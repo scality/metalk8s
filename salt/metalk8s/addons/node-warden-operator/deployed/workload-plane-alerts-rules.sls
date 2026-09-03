@@ -28,14 +28,14 @@ spec:
     - alert: WorkloadPlaneOutage
       annotations:
         summary: Workload Plane outage affecting the majority of nodes
-        description: More than half of the nodes report WorkloadPlaneNetworkUnavailable=True.
+        description: More than half of the nodes report PodNetworkUnavailable=True.
           node-warden's guard suppresses remediation in this case (a cluster-wide Workload
           Plane failure rather than a single-node fault), so no node is tainted. Investigate
           the Workload Plane network fabric.
       expr: |-
-        count(kube_node_status_condition{condition="WorkloadPlaneNetworkUnavailable",status="true"} == 1)
+        count(kube_node_status_condition{condition="PodNetworkUnavailable",status="true"} == 1)
           /
-        count(kube_node_status_condition{condition="WorkloadPlaneNetworkUnavailable",status="true"}) > 0.5
+        count(kube_node_status_condition{condition="PodNetworkUnavailable",status="true"}) > 0.5
       for: 1m
       labels:
         severity: critical

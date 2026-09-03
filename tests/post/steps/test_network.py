@@ -1,10 +1,16 @@
+import calendar
 import json
+import time
 import requests
 
+import kubernetes.client
 import pytest
 from pytest_bdd import given, scenario, when, then, parsers
 
 from tests import utils, kube_utils
+
+# BIRD logs this when a BGP session goes down and starts over
+BGP_RESET_LOG = "State changed to start"
 
 
 @scenario("../features/network.feature", "All expected listening processes")
@@ -24,6 +30,11 @@ def test_access_nodeport_cp(host, teardown):
 
 @scenario("../features/network.feature", "Expose NodePort on Control Plane")
 def test_change_nodeport_cidrs(host, teardown):
+    pass
+
+
+@scenario("../features/network.feature", "Calico BGP sessions stay established")
+def test_bgp_sessions_stay_established(host):
     pass
 
 
@@ -252,6 +263,67 @@ def nodeport_service_request_does_not_respond(k8s_client, host, svc_name, plane)
         ), f"Server should not answer but got {response.status_code}: {response.reason}"
     except:
         pass
+
+
+@then(
+    parsers.parse(
+        "no BGP session is reset in the calico-node logs over the next "
+        "{minutes:d} minutes"
+    )
+)
+def no_bgp_session_reset(k8s_client, minutes):
+    window = minutes * 60
+
+    # Watched forward rather than looked back: an earlier scenario rolls
+    # calico-node, and BIRD logs this line when it opens a session as well as
+    # when it resets one, so a backward window would count those startups.
+    # Anything connecting to BIRD's port from a mesh peer makes it reset the
+    # session, which withdraws the peer routes and drops inter-node pod traffic
+    window_start = time.time()
+    time.sleep(window)
+
+    # NOTE: We use Kubernetes client instead of DynamicClient as it
+    # ease the retrieving of Pod logs
+    client = kubernetes.client.CoreV1Api(api_client=k8s_client.client)
+
+    resets = {}
+    restarted = []
+    observed = 0
+    for pod in kube_utils.get_pods(k8s_client, label="k8s-app=calico-node"):
+        started_at = _calico_node_started_at(pod)
+        if started_at is None or started_at > window_start:
+            restarted.append(pod.metadata.name)
+            continue
+        observed += 1
+        logs = client.read_namespaced_pod_log(
+            pod.metadata.name,
+            pod.metadata.namespace,
+            container="calico-node",
+            since_seconds=window,
+        )
+        count = logs.count(BGP_RESET_LOG)
+        if count:
+            resets[pod.metadata.name] = count
+
+    if not observed:
+        pytest.skip(
+            "every calico-node Pod restarted during the window: {}".format(restarted)
+        )
+
+    assert not resets, (
+        "BGP sessions reset over the last {} minutes: {} (restarted during the "
+        "window, not observed: {})".format(minutes, resets, restarted or "none")
+    )
+
+
+def _calico_node_started_at(pod):
+    """Epoch seconds at which the running calico-node container started."""
+    for status in pod.status.containerStatuses or []:
+        if status.name == "calico-node" and status.state.running:
+            return calendar.timegm(
+                time.strptime(status.state.running.startedAt, "%Y-%m-%dT%H:%M:%SZ")
+            )
+    return None
 
 
 def do_nodeport_service_request(k8s_client, host, plane, svc_name):

@@ -25,3 +25,8 @@ Feature: Network
         And we wait for the rollout of 'daemonset/kube-proxy' in namespace 'kube-system' to complete
         Then a request on the 'test-svc-3' NodePort on a control-plane IP returns 200
         And a request on the 'test-svc-3' NodePort on a workload-plane IP should not return
+
+    Scenario: Calico BGP sessions stay established
+        Given the Kubernetes API is available
+        And we are on a multi node cluster
+        Then no BGP session is reset in the calico-node logs over the next 2 minutes

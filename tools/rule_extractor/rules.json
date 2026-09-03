@@ -1157,7 +1157,7 @@
                     {
                         "alerts": [],
                         "annotations": {
-                            "description": "Node {{ $labels.node }} reports WorkloadPlaneNetworkUnavailable=True, it cannot reach the majority of its peers over the Workload Plane network. If the condition persists, node-warden taints the node NoExecute to drain its workloads. Check the Workload Plane network on this node.",
+                            "description": "Node {{ $labels.node }} reports PodNetworkUnavailable=True, it cannot reach the majority of its peers over the pod network. If the condition persists, node-warden taints the node NoExecute to drain its workloads. Check the Workload Plane network on this node.",
                             "summary": "Node has lost Workload Plane connectivity"
                         },
                         "duration": 120,
@@ -1170,7 +1170,7 @@
                         },
                         "lastEvaluation": "2026-07-17T09:19:47.196430431Z",
                         "name": "NodeWorkloadPlaneUnavailable",
-                        "query": "kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"} == 1",
+                        "query": "kube_node_status_condition{condition=\"PodNetworkUnavailable\",status=\"true\"} == 1",
                         "state": "inactive",
                         "type": "alerting"
                     }
@@ -1208,7 +1208,7 @@
                     {
                         "alerts": [],
                         "annotations": {
-                            "description": "More than half of the nodes report WorkloadPlaneNetworkUnavailable=True. node-warden's guard suppresses remediation in this case (a cluster-wide Workload Plane failure rather than a single-node fault), so no node is tainted. Investigate the Workload Plane network fabric.",
+                            "description": "More than half of the nodes report PodNetworkUnavailable=True. node-warden's guard suppresses remediation in this case (a cluster-wide Workload Plane failure rather than a single-node fault), so no node is tainted. Investigate the Workload Plane network fabric.",
                             "summary": "Workload Plane outage affecting the majority of nodes"
                         },
                         "duration": 60,
@@ -1221,7 +1221,7 @@
                         },
                         "lastEvaluation": "2026-07-17T09:19:53.072065202Z",
                         "name": "WorkloadPlaneOutage",
-                        "query": "count(kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"} == 1) / count(kube_node_status_condition{condition=\"WorkloadPlaneNetworkUnavailable\",status=\"true\"}) > 0.5",
+                        "query": "count(kube_node_status_condition{condition=\"PodNetworkUnavailable\",status=\"true\"} == 1) / count(kube_node_status_condition{condition=\"PodNetworkUnavailable\",status=\"true\"}) > 0.5",
                         "state": "inactive",
                         "type": "alerting"
                     }
