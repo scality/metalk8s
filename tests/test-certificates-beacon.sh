@@ -20,6 +20,14 @@ SALT_DEFAULTS=$ARCHIVE_MOUNTPOINT/salt/metalk8s/defaults.yaml
 OVERRIDE_ROOT_CONF=/etc/salt/master.d/90-metalk8s-root-override.conf
 OVERRIDE_PILLAR_DEST=/etc/salt/pillar-override
 WAIT_RENEWAL=${WAIT_RENEWAL:-120}
+# `override_pillar_conf` and `reset_pillar_conf` both restart the salt-master.
+# A beacon-triggered state job that was already running on a minion then blocks
+# on fileserver requests for as long as the master is away, holding that
+# minion's state lock; every `state.apply` issued meanwhile is rejected
+# instantly by the state system. Such a job has been observed holding the lock
+# for over 4 minutes, so the default `wait_minions` budget (10 retries, ~50s)
+# is far too short.
+WAIT_MINIONS_RETRIES=${WAIT_MINIONS_RETRIES:-60}
 
 # shellcheck disable=SC1090
 . "$ARCHIVE_PRODUCT_INFO"
@@ -101,6 +109,23 @@ apply_new_beacon_conf() {
     run_certificates_beacon_state "${pillar[*]}"
 }
 
+wait_minion_idle() {
+    local -r salt_container=$1 minion=$2
+    local output
+
+    # NOTE: `salt-run` exits 0 even when a runner raises, so the exit status
+    # tells us nothing and the output has to be inspected instead.
+    # See https://github.com/saltstack/salt/issues/61173
+    output=$(
+        crictl exec -i "$salt_container" \
+            salt-run metalk8s_saltutil.wait_minions \
+            tgt="$minion" retry="$WAIT_MINIONS_RETRIES" 2>&1
+    )
+    echo "$output"
+
+    [[ $output == *"responded and finished startup"* ]]
+}
+
 reset_beacon_conf() {
     local salt_container
 
@@ -109,9 +134,16 @@ reset_beacon_conf() {
     readarray -t minions < <(get_salt_minion_ids)
 
     for minion in "${minions[@]}"; do
-        crictl exec -i "$salt_container" \
-            salt-run metalk8s_saltutil.wait_minions tgt="$minion"
-        crictl exec -i "$salt_container" salt "$minion" beacons.disable
+        echo "Waiting for $minion to be idle..."
+        if ! wait_minion_idle "$salt_container" "$minion"; then
+            echo "ERROR: $minion is still running a state, its beacon" \
+                 "configuration cannot be reset." >&2
+            exit 1
+        fi
+        if ! crictl exec -i "$salt_container" salt "$minion" beacons.disable; then
+            echo "ERROR: Unable to disable beacons on $minion." >&2
+            exit 1
+        fi
     done
 
     run_certificates_beacon_state
