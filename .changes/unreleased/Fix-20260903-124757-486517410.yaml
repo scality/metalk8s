@@ -1,0 +1,6 @@
+kind: Fix
+body: The Nodes and Volumes pages no longer show "No nodes found" / "No volumes found" while the list is still loading
+time: 2026-09-03T12:47:57.48651741Z
+custom:
+    CommentId: "5525994634"
+    Pull: "5118"
