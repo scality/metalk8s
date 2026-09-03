@@ -58,22 +58,40 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["minions"])
     def test_minions(
-        self, result, pillar=None, expect_raise=False, ping_ret=None, **kwargs
+        self,
+        result,
+        pillar=None,
+        expect_raise=False,
+        ping_ret=None,
+        ping_rets=None,
+        expected_targets=None,
+        **kwargs
     ):
         """
         Tests the return of `minions` function
         """
-        salt_dict = {"salt.execute": MagicMock(return_value=ping_ret)}
+        if ping_rets is not None:
+            execute_mock = MagicMock(side_effect=ping_rets)
+        else:
+            execute_mock = MagicMock(return_value=ping_ret)
+
+        salt_dict = {"salt.execute": execute_mock}
 
         with patch.dict(metalk8s_checks.__pillar__, pillar or {}), patch.dict(
             metalk8s_checks.__salt__, salt_dict
-        ):
+        ), patch("time.sleep", MagicMock()):
             if expect_raise:
                 self.assertRaisesRegex(
                     CheckError, result, metalk8s_checks.minions, **kwargs
                 )
             else:
                 self.assertEqual(metalk8s_checks.minions(**kwargs), result)
+
+        if expected_targets is not None:
+            self.assertEqual(
+                [call[0][0] for call in execute_mock.call_args_list],
+                expected_targets,
+            )
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["upgrade"])
     def test_upgrade(

@@ -49,10 +49,41 @@ runs:
           --key=/etc/kubernetes/pki/etcd/server.key
           --cacert=/etc/kubernetes/pki/etcd/ca.crt
           member remove \"${{ steps.get-id.outputs.RESULT }}\"
+    ## Removing a member makes etcd reconfigure its raft cluster, and the local
+    ## apiserver's etcd client can be unavailable while that settles: an API
+    ## call issued right after is rejected with `rpc error: code = Unavailable
+    ## desc = keepalive ping failed to receive ACK within timeout`. Wait for the
+    ## apiserver to be ready again before deleting the node object, and retry
+    ## the deletion itself. `ConnectTimeout` bounds each attempt: without it a
+    ## node that stops answering on port 22 burns the full kernel SYN timeout
+    ## (~134s) per attempt, and neither loop would finish in any useful time.
+    ## Here we cannot use the run-command-ssh action as we need a retry loop.
+    - name: "Wait for the API server to recover from the etcd reconfiguration"
+      shell: bash
+      run: |
+        for _ in $(seq 1 24); do
+          if ssh -F ssh_config -o ConnectTimeout=15 -o ServerAliveInterval=15 ${{ inputs.from-node }} \
+          "sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf get --raw /readyz" \
+          > /dev/null 2>&1; then
+            exit 0
+          fi
+          sleep 5
+        done
+        echo "::error title=remove-node::API server on '${{ inputs.from-node }}' is still not ready after the removal of etcd member '${{ inputs.node-to-remove }}'"
+        exit 1
     - name: "Remove the node object"
-      uses: ./.github/actions/run-command-ssh
-      with:
-        NODE: ${{ inputs.from-node }}
-        COMMAND: >
-          sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf
-          delete node ${{ inputs.node-to-remove }}
+      shell: bash
+      run: |
+        ## `--ignore-not-found` keeps a retry idempotent, in case a previous
+        ## attempt did delete the node but lost the answer.
+        for attempt in $(seq 1 12); do
+          if ssh -F ssh_config -o ConnectTimeout=15 -o ServerAliveInterval=15 ${{ inputs.from-node }} \
+          "sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf \
+          delete node ${{ inputs.node-to-remove }} --ignore-not-found"; then
+            exit 0
+          fi
+          echo "::warning title=remove-node::Could not delete the node object '${{ inputs.node-to-remove }}' (attempt ${attempt}/12), retrying"
+          sleep 5
+        done
+        echo "::error title=remove-node::Could not delete the node object '${{ inputs.node-to-remove }}'"
+        exit 1

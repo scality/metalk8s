@@ -1,0 +1,12 @@
+kind: Fix
+body: |-
+    The upgrade and downgrade prechecks no longer abort on a single unanswered
+    `test.ping`. Adding an ISO to the cluster replaces the salt-master container just
+    before `upgrade.sh` runs its checks, and a minion still re-authenticating against
+    the new master could miss the one probe it was given, failing the upgrade before it
+    started with `Salt minions '<node>' are not ready`. The check now pings for up to
+    two minutes, targeting only the minions it has yet to hear from
+time: 2026-08-31T09:50:52.84017947Z
+custom:
+    CommentId: "5476655433"
+    Pull: "5108"
