@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## Release 133.0.15
+
+### Bug Fixes
+
+- The node-problem-detector workload plane check no longer resets every node's Calico
+  BGP sessions, which degraded inter-node pod traffic. The condition it reports is
+  renamed PodNetworkUnavailable.
+  (PR[#5114](https://github.com/scality/metalk8s/pull/5114))
+
+
 ## Release 133.0.14
 
 ### Bug Fixes
