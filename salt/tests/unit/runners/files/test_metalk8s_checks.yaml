@@ -224,6 +224,49 @@ minions:
         - Salt minions 'node-2' are not ready
         - Salt minions 'no-answer-minion' did not answered
 
+  # 7. Success: a minion is not ready on the first ping and answers on retry
+  - minion_list:
+      - node-1
+      - node-2
+    ping_rets:
+      - node-1: True
+        node-2: False
+      - node-2: True
+    # Only the minion we have yet to hear from is pinged again
+    expected_targets:
+      - node-1,node-2
+      - node-2
+    result: True
+
+  # 8. Success: a minion does not answer the first ping and answers on retry
+  - minion_list:
+      - node-1
+      - node-2
+    ping_rets:
+      - node-1: True
+      - node-2: True
+    expected_targets:
+      - node-1,node-2
+      - node-2
+    result: True
+
+  # 9. Failure: a minion never answers, every attempt is used
+  - minion_list:
+      - node-1
+      - node-2
+    ping_rets:
+      - node-1: True
+      - {}
+      - {}
+    attempts: 3
+    expect_raise: True
+    expected_targets:
+      - node-1,node-2
+      - node-2
+      - node-2
+    result: |-
+      Salt minions 'node-2' did not answered
+
 upgrade:
   # 1. Success: nominal (minor upgrade)
   - pillar:
