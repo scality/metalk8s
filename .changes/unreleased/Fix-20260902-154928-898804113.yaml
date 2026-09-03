@@ -1,9 +1,0 @@
-kind: Fix
-body: |-
-    The node-problem-detector workload plane check no longer resets every node's Calico
-    BGP sessions, which degraded inter-node pod traffic. The condition it reports is
-    renamed PodNetworkUnavailable.
-time: 2026-09-02T15:49:28.898804113Z
-custom:
-    CommentId: "5512321526"
-    Pull: "5114"
