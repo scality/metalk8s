@@ -53,7 +53,7 @@ const VolumePageContent = (props) => {
         leftPanel={{
           children: (
             <LeftSideInstanceList>
-              <VolumeListTable volumeListData={volumeListData} volumeName={currentVolumeName}></VolumeListTable>
+              <VolumeListTable volumeListData={volumeListData} loading={loading} volumeName={currentVolumeName}></VolumeListTable>
             </LeftSideInstanceList>
           ),
         }}

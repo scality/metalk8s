@@ -52,7 +52,7 @@ const NodePageContent = (props) => {
         leftPanel={{
           children: (
             <LeftSideInstanceList>
-              <NodeListTable nodeTableData={nodeTableData} />
+              <NodeListTable nodeTableData={nodeTableData} loading={loading} />
             </LeftSideInstanceList>
           ),
         }}

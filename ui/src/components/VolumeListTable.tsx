@@ -170,6 +170,7 @@ const VolumeListTable = (props) => {
     <Table
       columns={columns}
       data={volumeListData}
+      status={props.loading ? 'loading' : 'success'}
       defaultSortingKey={'health'}
       // @ts-expect-error - FIXME when you are working on it
       getRowId={(row) => row.name}

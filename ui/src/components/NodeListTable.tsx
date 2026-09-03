@@ -14,7 +14,7 @@ const StatusText = styled.div<{ $color?: string }>`
   }};
 `;
 
-const NodeListTable = ({ nodeTableData }) => {
+const NodeListTable = ({ nodeTableData, loading }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const query = useURLQuery();
@@ -134,6 +134,7 @@ const NodeListTable = ({ nodeTableData }) => {
     <Table
       columns={columns}
       data={nodeTableData}
+      status={loading ? 'loading' : 'success'}
       defaultSortingKey={'health'}
       entityName={{
         en: {
