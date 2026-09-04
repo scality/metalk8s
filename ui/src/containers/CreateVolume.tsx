@@ -603,6 +603,7 @@ const CreateVolume = (props) => {
 
         return (
           <Form
+            responsive
             onSubmit={handleSubmit}
             rightActions={
               <Stack gap="r16">

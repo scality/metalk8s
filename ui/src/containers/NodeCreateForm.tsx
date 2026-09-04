@@ -88,6 +88,7 @@ const NodeCreateForm = () => {
 
         return (
           <Form
+            responsive
             requireMode="partial"
             layout={{
               kind: 'page',
