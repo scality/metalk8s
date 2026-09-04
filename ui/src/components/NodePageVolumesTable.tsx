@@ -29,7 +29,7 @@ const VolumeListTable = React.memo((props) => {
           textAlign: 'center',
           width: 'unset',
           flex: 0.5,
-          minWidth: '4rem',
+          minWidth: '5.5rem',
           maxWidth: '5.5rem',
         },
         Cell: (cellProps) => {
@@ -69,11 +69,12 @@ const VolumeListTable = React.memo((props) => {
       },
       {
         Header: 'Usage',
+        dropAt: 520,
         accessor: 'usage',
         cellStyle: {
           textAlign: 'left',
           width: 'unset',
-          minWidth: '4rem',
+          minWidth: '4.5rem',
           flex: 1,
         },
         Cell: ({ value }) => {
@@ -90,11 +91,12 @@ const VolumeListTable = React.memo((props) => {
       },
       {
         Header: 'Size',
+        dropAt: 560,
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'left',
           width: 'unset',
-          minWidth: '3rem',
+          minWidth: '3.5rem',
           flex: 0.75,
         },
         sortType: (row1, row2) => {
@@ -109,10 +111,11 @@ const VolumeListTable = React.memo((props) => {
       },
       {
         Header: 'Status',
+        dropAt: 480,
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          minWidth: '3rem',
+          minWidth: '5.5rem',
           width: 'unset',
           flex: 0.5,
         },
@@ -177,12 +180,13 @@ const VolumeListTable = React.memo((props) => {
       },
       {
         Header: 'Latency',
+        dropAt: 640,
         accessor: 'latency',
         cellStyle: {
           textAlign: 'right',
           flex: 0.75,
           width: 'unset',
-          minWidth: '3rem',
+          minWidth: '5rem',
         },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? <Latency latencyInMicroSeconds={cellProps.value} /> : null;
@@ -192,6 +196,7 @@ const VolumeListTable = React.memo((props) => {
   }, [volumeListData, theme, navigate, nodeName]);
   return (
     <Table
+      revealDroppedColumns
       columns={columns}
       data={volumeListData}
       defaultSortingKey="health"

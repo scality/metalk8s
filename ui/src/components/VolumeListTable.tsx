@@ -24,7 +24,7 @@ const VolumeListTable = (props) => {
         accessor: 'health',
         cellStyle: {
           textAlign: 'center',
-          width: '3rem',
+          width: '5.5rem',
         },
         Cell: (cellProps) => {
           return <CircleStatus name="Circle-health" status={cellProps.value} />;
@@ -42,6 +42,7 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Node',
+        dropAt: 460,
         accessor: 'node',
         cellStyle: {
           textAlign: 'left',
@@ -52,10 +53,11 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Usage',
+        dropAt: 520,
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
-          width: '4.5rem',
+          width: '5.5rem',
         },
         Cell: ({ value }) => {
           return (
@@ -71,6 +73,7 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Size',
+        dropAt: 560,
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'right',
@@ -79,10 +82,11 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Status',
+        dropAt: 480,
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          width: '3rem',
+          width: '5.5rem',
         },
         Cell: (cellProps) => {
           const volume = volumeListData?.find((vol) => vol.name === cellProps.cell.row.values.name);
@@ -138,10 +142,11 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Latency',
+        dropAt: 640,
         accessor: 'latency',
         cellStyle: {
           textAlign: 'right',
-          width: '3.5rem',
+          width: '5rem',
         },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? <Latency latencyInMicroSeconds={cellProps.value} /> : null;
@@ -168,6 +173,7 @@ const VolumeListTable = (props) => {
 
   return (
     <Table
+      revealDroppedColumns
       columns={columns}
       data={volumeListData}
       defaultSortingKey={'health'}
@@ -187,6 +193,7 @@ const VolumeListTable = (props) => {
           label={intl.formatMessage({
             id: 'create_new_volume',
           })}
+          iconOnly={480}
           icon={<Icon name="Create-add" />}
           onClick={() => {
             navigate(appHistoryBasePath + '/volumes/createVolume');

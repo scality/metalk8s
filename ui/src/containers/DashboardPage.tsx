@@ -8,6 +8,25 @@ import DashboardServices from '../components/DashboardServices';
 import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
 import TimespanSelector from './TimespanSelector';
 import DashboardNetwork from '../components/DashboardNetwork';
+import AdvancedMetricsButton from '../components/AdvancedMetricsButton';
+
+/* Declares the query container the grid below resolves against. The dashboard is
+   not inside a TwoPanelLayout, so nothing above it opts in. width: 100% is
+   load-bearing: container-type: inline-size implies contain: inline-size, so a
+   content-sized box would resolve to 0px wide -- the inline size has to come
+   from the parent. */
+const DashboardContainer = styled.div`
+  container-type: inline-size;
+  container-name: responsive;
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  /* One scroll owner for the whole dashboard. The grid and the cards inside it
+     used to scroll as well, which stacked up to three nested scrollbars for a
+     single list once the layout restacked. */
+  overflow: hidden auto;
+`;
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -17,6 +36,7 @@ const DashboardGrid = styled.div`
     / 1fr 1fr 1fr 1fr 1fr;
   overflow: hidden;
   flex: 1;
+  min-width: 0;
   > div {
     background-color: ${(props) => {
       return props.theme.backgroundLevel3;
@@ -48,17 +68,68 @@ const DashboardGrid = styled.div`
     min-width: 0;
     min-height: 0;
   }
+
+  /* One row of five equal columns leaves the inventory ~150px and each chart
+     group ~300px once the Guardian drawer narrows the content box, all of it
+     silently clipped by the overflow: hidden above. Restack in two steps.
+
+     The first step keeps the inventory as a full-height left column and moves
+     the metrics under the network, since the inventory reads as a sidebar
+     rather than a peer of the two chart groups. Only the second step stacks
+     all three.
+
+     The rows carry an explicit minimum because .network and .metrics are
+     min-height: 0 flex columns holding self-sizing charts: on a plain auto row
+     they collapse to nothing. Each step also releases the grid from the
+     wrapper's height so the wrapper is the only thing that scrolls. */
+  @container responsive (max-width: 1100px) {
+    grid-template:
+      'inventory network' minmax(20rem, auto)
+      'inventory metrics' minmax(22rem, auto)
+      / minmax(0, 1fr) minmax(0, 2fr);
+    overflow: visible;
+    align-self: start;
+  }
+
+  /* Fully restacked, the three cells are the whole page, so letting them size to
+     their content turns the dashboard into one long scroll you have to travel
+     past the inventory to reach a chart. Give the two chart panels a share of
+     the container height instead and let them scroll internally: the inventory
+     keeps its content height, the panels take the rest, and the page only
+     scrolls if their minimums no longer fit. */
+  @container responsive (max-width: 700px) {
+    grid-template:
+      'inventory' auto
+      'network' minmax(16rem, 1fr)
+      'metrics' minmax(20rem, 1fr)
+      / minmax(0, 1fr);
+    overflow: hidden;
+    align-self: stretch;
+  }
 `;
 export const DashboardScrollableArea = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
+  /* Both axes, because overflow-y: visible computes back to auto whenever the
+     other axis is not visible - which would leave the inner scrollbar in place. */
+  @container responsive (max-width: 1100px) {
+    overflow: visible;
+  }
+  /* Restored once the panels have definite heights again. */
+  @container responsive (max-width: 700px) {
+    overflow: hidden auto;
+  }
 `;
 
-const SelectorPositioning = styled.div`
-  .sc-dropdown {
-    position: absolute;
-    right: 1rem;
-  }
+/* Both controls act on the Network and the Metrics panels rather than on either
+   one of them, so they live in the page's context bar. The dropdown used to be
+   positioned absolutely against the viewport, which put it under the Guardian
+   drawer as soon as the drawer opened. */
+const ContextActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.r8};
+  padding-right: ${spacing.r16};
 `;
 
 const DashboardPage = () => {
@@ -67,9 +138,10 @@ const DashboardPage = () => {
       <AppContainer.ContextContainer>
         <Wrap>
           <p></p>
-          <SelectorPositioning>
+          <ContextActions>
             <TimespanSelector />
-          </SelectorPositioning>
+            <AdvancedMetricsButton />
+          </ContextActions>
         </Wrap>
       </AppContainer.ContextContainer>
 
@@ -77,20 +149,22 @@ const DashboardPage = () => {
         <DashboardGlobalHealth />
       </AppContainer.OverallSummary>
       <AppContainer.MainContent background="backgroundLevel1">
-        <DashboardGrid>
-          <DashboardScrollableArea className="inventory">
-            <DashboardInventory />
-            <DashboardServices />
-          </DashboardScrollableArea>
+        <DashboardContainer>
+          <DashboardGrid>
+            <DashboardScrollableArea className="inventory">
+              <DashboardInventory />
+              <DashboardServices />
+            </DashboardScrollableArea>
 
-          <DashboardScrollableArea className="network">
-            <DashboardNetwork />
-          </DashboardScrollableArea>
+            <DashboardScrollableArea className="network">
+              <DashboardNetwork />
+            </DashboardScrollableArea>
 
-          <div className="metrics">
-            <DashboardMetrics />
-          </div>
-        </DashboardGrid>
+            <div className="metrics">
+              <DashboardMetrics />
+            </div>
+          </DashboardGrid>
+        </DashboardContainer>
       </AppContainer.MainContent>
     </>
   );

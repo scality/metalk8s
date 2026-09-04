@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { useSelect } from 'downshift';
 import styled, { useTheme } from 'styled-components';
@@ -14,26 +14,16 @@ import { SleepingNotificationBell } from './SleepingNotificationBell';
 import { useNotificationCenter } from '../useNotificationCenter';
 import { ConstrainedText } from '@scality/core-ui/dist/components/constrainedtext/Constrainedtext.component';
 
-const NotificationMenu = styled.ul<{
-  $buttonBoundingRect: DOMRect;
-}>`
+/* Anchored to the bell's right edge rather than positioned against the viewport.
+   The navbar lives inside the flex-1 content column, which the Guardian drawer
+   narrows without changing window.innerWidth — so any viewport-derived offset
+   lets this menu extend underneath the drawer. Anchoring right keeps it inside
+   the column at any width, and needs no measurement to stay correct when the
+   drawer opens (which resizes the column live, without a reload). */
+const NotificationMenu = styled.ul`
   position: absolute;
-  width: 25vw;
-  /* TO MAKE SURE THE LIST IS CENTERED ON THE BELL BUTTON */
-  left: ${(props) => {
-    const notificationCenterWidth = 0.25 * window.innerWidth;
-    const leftRelativeToButton = -notificationCenterWidth / 2 + props.$buttonBoundingRect.width / 2;
-    const absoluteNotificationCenterX = props.$buttonBoundingRect.x + leftRelativeToButton;
-    if (absoluteNotificationCenterX + notificationCenterWidth > window.innerWidth) {
-      // |<------------------window.innerWidth------------------------------------>|<--offset-->|
-      // |<------------------button x------------------------------>|buttonwidth|---------------|
-      // |---------------------------------|<-LeftRelativeToButton->|---------------------------|
-      // |<--absoluteNotificationCenterX-->|<--notificationCenterWidth------------------------->|
-      const offset = absoluteNotificationCenterX + notificationCenterWidth - window.innerWidth;
-      return leftRelativeToButton - offset;
-    }
-    return leftRelativeToButton;
-  }}px;
+  right: 0;
+  width: 25rem;
   overflow: auto;
   list-style: none;
   padding: 0;
@@ -74,7 +64,6 @@ const NotificationCenterHeader = styled.div`
 
 const NotificationCenter = () => {
   const { notifications, readAllNotifications } = useNotificationCenter();
-  const [buttonBoundingRect, setButtonBoundingRect] = useState<DOMRect>(new DOMRect());
   const theme = useTheme();
   const { isOpen, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps } = useSelect({
     items: notifications,
@@ -98,11 +87,6 @@ const NotificationCenter = () => {
       style={{ position: 'relative'}}
       {...getToggleButtonProps({
         'aria-label': 'Notification Center',
-        ref: (e: HTMLDivElement) => {
-          if (e && (buttonBoundingRect.x === 0 || buttonBoundingRect.width === 0)) {
-            setButtonBoundingRect(e.getBoundingClientRect());
-          }
-        },
       })}
     >
       <Button
@@ -146,7 +130,7 @@ const NotificationCenter = () => {
       />
       <div {...getMenuProps()}>
         {isOpen && (
-          <NotificationMenu $buttonBoundingRect={buttonBoundingRect}>
+          <NotificationMenu>
             <NotificationCenterHeader>
               <Wrap alignItems="baseline">
                 <Text color="textSecondary" isEmphazed variant="Large">
@@ -197,14 +181,14 @@ const NotificationCenter = () => {
                   flex={1}
                   // @ts-expect-error - FIXME when you are working on it
                   gap="0.1rem"
-                  style={{
-                    width: `calc(25vw - 5.75rem)`,
-                  }}
+                  // min-width: 0 is what lets the title and description ellipsize
+                  // instead of pushing the unread mark out of the row.
+                  style={{ minWidth: 0 }}
                 >
                   <Wrap
                     style={{
                       alignItems: 'center',
-                      justifyConent: 'space-between',
+                      justifyContent: 'space-between',
                     }}
                   >
                     <Text color="textPrimary" isEmphazed={!notification.readOn}>

@@ -31,6 +31,7 @@ const NodeListTable = ({ nodeTableData }) => {
         Header: 'Health',
         accessor: 'health',
         cellStyle: {
+          minWidth: '5.5rem',
           textAlign: 'center',
           width: 'unset',
           flex: 0.5,
@@ -78,17 +79,20 @@ const NodeListTable = ({ nodeTableData }) => {
       },
       {
         Header: 'Roles',
+        dropAt: 440,
         accessor: 'roles',
         cellStyle: {
+          minWidth: '4rem',
           flex: 1,
         },
       },
       {
         Header: 'Status',
+        dropAt: 360,
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          minWidth: '4rem',
+          minWidth: '5.5rem',
           width: 'unset',
           flex: 0.5,
         },
@@ -132,6 +136,7 @@ const NodeListTable = ({ nodeTableData }) => {
   );
   return (
     <Table
+      revealDroppedColumns
       columns={columns}
       data={nodeTableData}
       defaultSortingKey={'health'}
@@ -151,6 +156,7 @@ const NodeListTable = ({ nodeTableData }) => {
           label={intl.formatMessage({
             id: 'create_new_node',
           })}
+          iconOnly={480}
           icon={<Icon name="Create-add" />}
           onClick={() => {
             navigate(basename + '/nodes/create');
