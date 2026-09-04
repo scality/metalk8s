@@ -250,6 +250,31 @@ See [BUMPING_CALICO.md](BUMPING_CALICO.md) for the full Calico bump guide.
 
 The version just needs to be updated in `buildchain/buildchain/versions.py`.
 
+## containerd-image-preload
+
+The package comes from a release of
+[image-cache](https://github.com/scality/image-cache), which attaches one RPM
+per RedHat release to each of its tags. Bumping it means editing its entry in
+`PREBUILT_RPMS`, in `buildchain/buildchain/versions.py`:
+
+- `tag`, the release to fetch. The RPM version follows from it, as
+  `rpm/build.sh` in image-cache derives it, and so does the version pin every
+  node installs.
+- every entry of `sha256`, the digest of each package. Read them off the
+  release page, or run `sha256sum` on the downloaded packages.
+
+`release` and `arch` default to `1` and `noarch`, which is what the spec ships.
+Set them only if a package ever moves off those.
+
+The build stops if a digest is missing or does not match, and names the release
+it expected. A stale digest cannot ship the wrong package.
+
+The asset name is derived from the tag, the way `rpm/build.sh` in image-cache
+derives the RPM version. A prerelease tag such as `v0.2.0-rc1` builds
+`0.2.0~rc1`, and GitHub replaces the tilde with a dot in the name it serves the
+asset under, which the download accounts for. The package keeps the name RPM
+gave it once on disk, tilde included.
+
 ## Update the sls state
 
  - git add changes because codegen need to list them.

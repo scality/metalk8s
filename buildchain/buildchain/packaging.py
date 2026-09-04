@@ -6,6 +6,7 @@
 This modules provides several services:
 - build a unique container image for all the build tasks
 - downloading packages and repositories
+- downloading prebuilt packages attached to a GitHub release
 - building local packages from sources
 - building local repositories from local packages
 
@@ -21,12 +22,27 @@ Overview;
                   │       ┌──────────┐       ┌──────────────┐
 ┌─────────┐       │──────>│  build   │──────>│    build     │
 │  mkdir  │──────>│       │ packages │       │ repositories │
-└─────────┘               └──────────┘       └──────────────┘
-                        (e.g.: sosreport)     (e.g.: scality)
+└─────────┘       │       └──────────┘       └──────────────┘
+                  │     (e.g.: sosreport)     (e.g.: scality)
+                  │       ┌──────────┐       ┌──────────────┐
+                  │──────>│  fetch   │──────>│    build     │
+                          │ packages │       │ repositories │
+                          └──────────┘       └──────────────┘
+              (e.g.: containerd-image-preload) (e.g.: scality)
 """
 
 from pathlib import Path
-from typing import Dict, FrozenSet, Iterator, List, Mapping, Optional, Sequence, Tuple
+from typing import (
+    Dict,
+    FrozenSet,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
 
 import doit  # type: ignore
 
@@ -42,25 +58,29 @@ from buildchain import versions
 # Utilities {{{
 
 
-def _list_packages_to_build(
-    pkg_cats: Mapping[str, Mapping[str, Tuple[targets.Package, ...]]],
+PackageTarget = Union[targets.Package, targets.PrebuiltRPMPackage]
+
+
+def _list_package_names(
+    *pkg_cats: Mapping[str, Mapping[str, Tuple[PackageTarget, ...]]],
 ) -> Dict[str, List[str]]:
-    return {
-        version: [pkg.name for pkg in pkg_list]
-        for pkg_versions in pkg_cats.values()
-        for version, pkg_list in pkg_versions.items()
-    }
+    names: Dict[str, List[str]] = {}
+    for pkg_cat in pkg_cats:
+        for pkg_versions in pkg_cat.values():
+            for version, pkg_list in pkg_versions.items():
+                names.setdefault(version, []).extend(pkg.name for pkg in pkg_list)
+    return names
 
 
 def _list_packages_to_download(
     package_versions: Dict[str, Tuple[versions.PackageVersion, ...]],
-    packages_to_build: Dict[str, List[str]],
+    local_packages: Dict[str, List[str]],
 ) -> Dict[str, Dict[str, Optional[str]]]:
     return {
         version: {
             pkg.name: pkg.full_version
             for pkg in pkgs
-            if pkg.name not in packages_to_build[version]
+            if pkg.name not in local_packages[version]
         }
         for version, pkgs in package_versions.items()
     }
@@ -76,6 +96,7 @@ def task_packaging() -> types.TaskDict:
         "actions": None,
         "task_dep": [
             "_download_packages",
+            "_fetch_packages",
             "_build_packages",
             "_build_repositories",
         ],
@@ -100,6 +121,17 @@ def task__download_packages() -> types.TaskDict:
         "task_dep": [
             "_download_redhat_8_packages",
             "_download_redhat_9_packages",
+        ],
+    }
+
+
+def task__fetch_packages() -> types.TaskDict:
+    """Fetch the prebuilt packages for all the distribution releases."""
+    return {
+        "actions": None,
+        "task_dep": [
+            "_fetch_redhat_8_packages",
+            "_fetch_redhat_9_packages",
         ],
     }
 
@@ -191,7 +223,7 @@ def _download_rpm_packages(releasever: str) -> types.TaskDict:
             # Repository with an explicit list of packages are created by a
             # dedicated task that will also handle their cleaning, so we skip
             # them here.
-            if repository.packages:
+            if repository.has_local_packages:
                 continue
             coreutils.rm_rf(repository.rootdir)
 
@@ -251,6 +283,23 @@ def task__download_redhat_8_packages() -> types.TaskDict:
 def task__download_redhat_9_packages() -> types.TaskDict:
     """Download RedHat 9 packages locally."""
     return _download_rpm_packages("9")
+
+
+def _fetch_rpm_packages(releasever: str) -> Iterator[types.TaskDict]:
+    """Download the prebuilt RPM packages."""
+    for repo_pkgs in RPM_TO_FETCH.values():
+        for package in repo_pkgs[releasever]:
+            yield package.task
+
+
+def task__fetch_redhat_8_packages() -> Iterator[types.TaskDict]:
+    """Download prebuilt RPM packages for RedHat 8."""
+    return _fetch_rpm_packages("8")
+
+
+def task__fetch_redhat_9_packages() -> Iterator[types.TaskDict]:
+    """Download prebuilt RPM packages for RedHat 9."""
+    return _fetch_rpm_packages("9")
 
 
 def _build_rpm_packages(releasever: str) -> Iterator[types.TaskDict]:
@@ -317,24 +366,81 @@ def _rpm_package(name: str, releasever: str, sources: List[Path]) -> targets.RPM
     )
 
 
+def _rpm_repository_basename(releasever: str) -> str:
+    """Basename of the tasks building the repositories of a RedHat release."""
+    return f"_build_redhat_{releasever}_repositories"
+
+
+def _prebuilt_rpm_package(
+    prebuilt: versions.PrebuiltRPM, releasever: str
+) -> targets.PrebuiltRPMPackage:
+    """Return a prebuilt RPM package object.
+
+    Arguments:
+        prebuilt:   declaration of the package, from `versions.py`
+        releasever: RedHat release the package is built for
+    """
+    try:
+        digest = prebuilt.sha256[releasever]
+    except KeyError as exc:
+        raise ValueError(
+            f'Missing digest for package "{prebuilt.name}" '
+            f'for release "{releasever}"'
+        ) from exc
+
+    pkg_info = prebuilt.package_version(releasever)
+    if not pkg_info.full_version:
+        raise ValueError(
+            f'Package "{prebuilt.name}" for release "{releasever}" '
+            f"needs a pinned version"
+        )
+
+    return targets.PrebuiltRPMPackage(
+        basename=f"_fetch_redhat_{releasever}_packages",
+        name=prebuilt.name,
+        full_version=pkg_info.full_version,
+        arch=prebuilt.arch,
+        repository=prebuilt.source,
+        tag=prebuilt.tag,
+        digest=digest,
+        destination_dir=targets.rpm_package_dir(prebuilt.repo, releasever),
+        # The package lands in a directory the repository creates. Waiting for
+        # it also settles the order `doit clean` walks the two in: it cleans a
+        # task before the tasks it depends on, so the package leaves before
+        # anyone tries to remove the directory holding it.
+        task_dep=[
+            f"{_rpm_repository_basename(releasever)}:"
+            f"{prebuilt.repo}/{targets.MKDIR_ARCH_TASK_NAME}"
+        ],
+    )
+
+
 def _rpm_repository(
-    name: str, releasever: str, packages: Optional[Sequence[targets.RPMPackage]] = None
+    name: str,
+    releasever: str,
+    packages: Optional[Sequence[targets.RPMPackage]] = None,
+    prebuilt_packages: Optional[Sequence[targets.PrebuiltRPMPackage]] = None,
 ) -> targets.RPMRepository:
     """Return a RPM repository object.
 
     Arguments:
-        name:     repository name
-        packages: list of locally built packages
+        name:              repository name
+        packages:          list of locally built packages
+        prebuilt_packages: list of packages downloaded from a release
     """
     mkdir_task = f"_package_mkdir_redhat_{releasever}_iso_root"
     download_task = f"_download_redhat_{releasever}_packages"
+    # A repository that holds packages of ours creates its own directories,
+    # and waits for nothing else. The others come from the download task.
+    local = targets.holds_local_packages(packages, prebuilt_packages)
     return targets.RPMRepository(
-        basename=f"_build_redhat_{releasever}_repositories",
+        basename=_rpm_repository_basename(releasever),
         name=name,
         releasever=releasever,
         builder=builder.RPM_BUILDER[releasever],
         packages=packages,
-        task_dep=[download_task if packages is None else mkdir_task],
+        prebuilt_packages=prebuilt_packages,
+        task_dep=[mkdir_task if local else download_task],
     )
 
 
@@ -358,15 +464,44 @@ RPM_TO_BUILD: Dict[str, Dict[str, Tuple[targets.RPMPackage, ...]]] = {
 }
 
 
-_RPM_TO_BUILD_PKG_NAMES: Dict[str, List[str]] = _list_packages_to_build(RPM_TO_BUILD)
+def _packages_to_fetch(
+    prebuilts: Sequence[versions.PrebuiltRPM],
+) -> Dict[str, Dict[str, Tuple[targets.PrebuiltRPMPackage, ...]]]:
+    """The prebuilt packages, grouped the way the repositories read them.
 
-# All packages not referenced in `RPM_TO_BUILD` but listed in
-# `versions.REDHAT_PACKAGES` are supposed to be downloaded.
+    A package is declared under the repository it lands in, since that is
+    where the repository metadata has to find it, and both come from the
+    `repo` of the declaration.
+    """
+    grouped: Dict[str, Dict[str, Tuple[targets.PrebuiltRPMPackage, ...]]] = {}
+    for prebuilt in prebuilts:
+        per_release = grouped.setdefault(prebuilt.repo, {})
+        for releasever in versions.REDHAT_PACKAGES:
+            per_release[releasever] = per_release.get(releasever, ()) + (
+                _prebuilt_rpm_package(prebuilt, releasever),
+            )
+    return grouped
+
+
+# Packages to fetch from a release instead of building them, per repository.
+RPM_TO_FETCH: Dict[str, Dict[str, Tuple[targets.PrebuiltRPMPackage, ...]]] = (
+    _packages_to_fetch(versions.PREBUILT_RPMS)
+)
+
+
+# Packages the build provides on its own, whether it builds them or downloads
+# them from a release: `dnf` must not try to get them from a repository.
+_LOCAL_RPM_PKG_NAMES: Dict[str, List[str]] = _list_package_names(
+    RPM_TO_BUILD, RPM_TO_FETCH
+)
+
+# All packages not referenced in `RPM_TO_BUILD` nor in `RPM_TO_FETCH` but listed
+# in `versions.REDHAT_PACKAGES` are supposed to be downloaded.
 REDHAT_PACKAGES_TO_DOWNLOAD: Dict[str, FrozenSet[str]] = {
     version: frozenset(
         package.rpm_full_name
         for package in pkgs
-        if package.name not in _RPM_TO_BUILD_PKG_NAMES[version]
+        if package.name not in _LOCAL_RPM_PKG_NAMES[version]
     )
     for version, pkgs in versions.REDHAT_PACKAGES.items()
 }
@@ -376,16 +511,22 @@ REDHAT_PACKAGES_TO_DOWNLOAD: Dict[str, FrozenSet[str]] = {
 _TO_DOWNLOAD_RPM_CONFIG: Dict[str, Dict[str, Optional[str]]] = (
     _list_packages_to_download(
         versions.REDHAT_PACKAGES,
-        _RPM_TO_BUILD_PKG_NAMES,
+        _LOCAL_RPM_PKG_NAMES,
     )
 )
 
 
 SCALITY_REDHAT_8_REPOSITORY: targets.RPMRepository = _rpm_repository(
-    name="scality", packages=RPM_TO_BUILD["scality"]["8"], releasever="8"
+    name="scality",
+    packages=RPM_TO_BUILD["scality"]["8"],
+    prebuilt_packages=RPM_TO_FETCH["scality"]["8"],
+    releasever="8",
 )
 SCALITY_REDHAT_9_REPOSITORY: targets.RPMRepository = _rpm_repository(
-    name="scality", packages=RPM_TO_BUILD["scality"]["9"], releasever="9"
+    name="scality",
+    packages=RPM_TO_BUILD["scality"]["9"],
+    prebuilt_packages=RPM_TO_FETCH["scality"]["9"],
+    releasever="9",
 )
 
 

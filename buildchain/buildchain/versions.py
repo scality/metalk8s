@@ -12,7 +12,7 @@ import json
 
 from collections import namedtuple
 from pathlib import Path
-from typing import Any, cast, Dict, Optional, Tuple
+from typing import Any, cast, Dict, NamedTuple, Optional, Tuple
 
 Image = namedtuple("Image", ("name", "version", "digest"))
 
@@ -413,6 +413,74 @@ class PackageVersion:
 #   * kubelet and kubectl which _make_ the K8s version of the cluster
 #   * salt-minion which _makes_ the Salt version of the cluster
 #
+class PrebuiltRPM(NamedTuple):
+    """A RPM fetched from a GitHub release instead of being built here.
+
+    One declaration serves both sides: the build reads the release and the
+    digest to fetch the package, and the version pin the Salt states use is
+    derived from the same tag, so the two cannot drift.
+    """
+
+    name: str
+    # Repository of the ISO the package lands in.
+    repo: str
+    # GitHub repository publishing the package.
+    source: str
+    tag: str
+    # Digest of the RPM attached to the release, per RedHat release. Refresh
+    # them along with the tag, from the release page or by running `sha256sum`
+    # on the downloaded packages. An empty digest stops the build, naming the
+    # release it expected.
+    sha256: Dict[str, str]
+    # A bump moves the tag, and the spec keeps its release digit at 1.
+    release: str = "1"
+    arch: str = "noarch"
+
+    @property
+    def version(self) -> str:
+        """Version of the RPM, as the source repository derives it.
+
+        `rpm/build.sh` in image-cache drops the leading "v" and replaces any
+        hyphen with a tilde, which RPM accepts in a version and sorts before
+        the final release.
+        """
+        return self.tag.removeprefix("v").replace("-", "~")
+
+    def package_version(self, releasever: str) -> PackageVersion:
+        """Version pin of the package, for one RedHat release."""
+        return PackageVersion(
+            name=self.name,
+            version=self.version,
+            release=f"{self.release}.el{releasever}",
+        )
+
+
+PREBUILT_RPMS: Tuple[PrebuiltRPM, ...] = (
+    # The package requires `containerd`, provided by the `containerd.io`
+    # package the ISO already carries, so nothing else has to be downloaded
+    # for it. A future version that needs more has to be declared in
+    # `PACKAGES`: the availability check the Salt states run on every node
+    # resolves the dependencies of every declared package against the ISO
+    # repositories alone.
+    #
+    # A package we build gets its dependencies from the spec it owns. A
+    # finished RPM has no spec: declaring them by name here would have `dnf`
+    # download an unpinned copy, and reading them off the package makes the
+    # download list depend on a file we have yet to fetch. Worth solving on
+    # the second prebuilt package, not for one dependency already on the ISO.
+    PrebuiltRPM(
+        name="containerd-image-preload",
+        repo="scality",
+        source="scality/image-cache",
+        tag="v0.1.0-alpha.1",
+        sha256={
+            "8": "b374b74d78c2786c8143e1da2f20bfd46434bc007c42ebb458e87af22a527ad1",
+            "9": "bc205c2120970f5185bbd2808cb55219141acb311692707249692492b143d954",
+        },
+    ),
+)
+
+
 # These common packages may be overridden by OS-specific packages if package
 # names or version conventions diverge.
 #
@@ -468,6 +536,17 @@ PACKAGES: Dict[str, Any] = {
         ),
     },
 }
+
+# The prebuilt packages are declared once, in `PREBUILT_RPMS`, and their
+# version pin follows from the release they are fetched from. `pkg_installed`
+# reads the version of a package from this listing, and `dnf` skips a package
+# that is in it instead of looking for it in a repository that does not carry
+# it. The loop variable is not called `version` or `releasever`: both shadow
+# something else in this file.
+for rh_release in PACKAGES["redhat"]:
+    PACKAGES["redhat"][rh_release] += tuple(
+        prebuilt.package_version(rh_release) for prebuilt in PREBUILT_RPMS
+    )
 
 
 def _list_pkgs_for_os_family(os_family: str) -> Dict[str, Tuple[PackageVersion, ...]]:
