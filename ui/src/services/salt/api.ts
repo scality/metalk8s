@@ -90,29 +90,38 @@ export async function printJob(jid: string) {
     return result;
   }
 }
-export type IPInterfaces = {
-  'metalk8s:control_plane_ip': string;
-  'metalk8s:workload_plane_ip': string;
-  ip_interfaces: Record<string, string[]>;
+export type PlanesInterfaces = {
+  control_plane: {
+    ip: string | null;
+    interface: string | null;
+  };
+  workload_plane: {
+    ip: string | null;
+    interface: string | null;
+  };
 };
 
 /*
-We may get error message instead of IPInterfaces Object
+`metalk8s_network.get_planes_interfaces` resolves the interface holding each
+plane IP live, on the minion. We deliberately do NOT read the `ip_interfaces`
+grain here: grains are only computed when the minion daemon starts, which may
+happen before the interface holding the IP exists (bond, VLAN, ...), and they
+are not refreshed automatically afterwards -- so the grain can permanently
+disagree with the running system.
+
+An `interface` is null when no interface holds the plane IP. We may also get an
+error message instead of a PlanesInterfaces object.
 {
   "return": [
     {
       "bootstrap": {
-        "metalk8s:control_plane_ip": "10.200.6.201",
-        "metalk8s:workload_plane_ip": "10.200.6.201",
-        "ip_interfaces": {
-          "lo": [
-            "127.0.0.1",
-            "::1"
-          ],
-          "eth0": [
-            "10.200.6.201",
-            "fe80::f816:3eff:fec3:b710"
-          ]
+        "control_plane": {
+          "ip": "10.200.6.201",
+          "interface": "eth0"
+        },
+        "workload_plane": {
+          "ip": "10.200.6.201",
+          "interface": "eth0"
         }
       },
       "nodename": "Minion did not return. [No response]\nThe minions may not have all finished running and any remaining minions will return upon completion. To look up the return data for this job later, run the following command:\n\nsalt-run jobs.lookup_jid 20210429184803777520"
@@ -121,7 +130,7 @@ We may get error message instead of IPInterfaces Object
 }
 */
 export async function getNodesIPsInterfaces(nodeNames: string[]): Promise<{
-  return: [Record<string, boolean | IPInterfaces | string>];
+  return: [Record<string, boolean | PlanesInterfaces | string>];
 }> {
   if (!saltApiClient) {
     throw new Error('Salt api client should be defined.');
@@ -131,8 +140,7 @@ export async function getNodesIPsInterfaces(nodeNames: string[]): Promise<{
     client: 'local',
     tgt: nodeNames.join(','),
     tgt_type: 'list',
-    fun: 'grains.item',
-    arg: ['metalk8s:control_plane_ip', 'metalk8s:workload_plane_ip', 'ip_interfaces'],
+    fun: 'metalk8s_network.get_planes_interfaces',
   });
 
   if (result.error) {
