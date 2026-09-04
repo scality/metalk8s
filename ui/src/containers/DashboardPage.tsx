@@ -91,20 +91,29 @@ const DashboardGrid = styled.div`
     align-self: start;
   }
 
-  /* Fully restacked, the three cells are the whole page, so letting them size to
-     their content turns the dashboard into one long scroll you have to travel
-     past the inventory to reach a chart. Give the two chart panels a share of
-     the container height instead and let them scroll internally: the inventory
-     keeps its content height, the panels take the rest, and the page only
-     scrolls if their minimums no longer fit. */
+  /* Fully restacked, the three cells are the whole page: sized to their content
+     they become one long scroll you have to travel past the inventory to reach a
+     chart. The inventory keeps its content height, the two chart panels split
+     what is left and scroll internally.
+
+     Neither chart row carries a minimum. The grid is stretched to the container's
+     height and clips, so a minimum the height cannot honour is not a floor - it
+     is content cut off with no way to scroll to it. */
   @container responsive (max-width: 700px) {
     grid-template:
       'inventory' auto
-      'network' minmax(16rem, 1fr)
-      'metrics' minmax(20rem, 1fr)
+      'network' minmax(0, 1fr)
+      'metrics' minmax(0, 1fr)
       / minmax(0, 1fr);
     overflow: hidden;
     align-self: stretch;
+
+    /* Not a scroll container here: a scroll container's min-content height is 0,
+       so the grid would squeeze this row to nothing and scroll the cell instead of
+       sizing it to its content. */
+    .inventory {
+      overflow: visible;
+    }
   }
 `;
 export const DashboardScrollableArea = styled.div`
