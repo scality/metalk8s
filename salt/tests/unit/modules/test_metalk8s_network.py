@@ -240,6 +240,90 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     result, metalk8s_network.get_mtu_from_ip("10.200.0.42")
                 )
 
+    @parameterized.expand(
+        [
+            # A dedicated interface for each plane
+            (
+                {
+                    "metalk8s": {
+                        "control_plane_ip": "10.200.0.42",
+                        "workload_plane_ip": "10.100.0.42",
+                    }
+                },
+                {"10.200.0.42": ["eth1"], "10.100.0.42": ["eth3"]},
+                {
+                    "control_plane": {"ip": "10.200.0.42", "interface": "eth1"},
+                    "workload_plane": {"ip": "10.100.0.42", "interface": "eth3"},
+                },
+            ),
+            # A single interface carrying both planes
+            (
+                {
+                    "metalk8s": {
+                        "control_plane_ip": "10.200.0.42",
+                        "workload_plane_ip": "10.200.0.42",
+                    }
+                },
+                {"10.200.0.42": ["eth0"]},
+                {
+                    "control_plane": {"ip": "10.200.0.42", "interface": "eth0"},
+                    "workload_plane": {"ip": "10.200.0.42", "interface": "eth0"},
+                },
+            ),
+            # No interface carries the plane IP, the interface stays unresolved
+            (
+                {
+                    "metalk8s": {
+                        "control_plane_ip": "10.200.0.42",
+                        "workload_plane_ip": "10.100.0.42",
+                    }
+                },
+                {},
+                {
+                    "control_plane": {"ip": "10.200.0.42", "interface": None},
+                    "workload_plane": {"ip": "10.100.0.42", "interface": None},
+                },
+            ),
+            # Several interfaces match, the first one is used
+            (
+                {
+                    "metalk8s": {
+                        "control_plane_ip": "10.200.0.42",
+                        "workload_plane_ip": "10.100.0.42",
+                    }
+                },
+                {"10.200.0.42": ["bond0", "vlan-cp"], "10.100.0.42": ["vlan-wp"]},
+                {
+                    "control_plane": {"ip": "10.200.0.42", "interface": "bond0"},
+                    "workload_plane": {"ip": "10.100.0.42", "interface": "vlan-wp"},
+                },
+            ),
+            # Plane IPs missing from the grains
+            (
+                {},
+                {},
+                {
+                    "control_plane": {"ip": None, "interface": None},
+                    "workload_plane": {"ip": None, "interface": None},
+                },
+            ),
+        ]
+    )
+    def test_get_planes_interfaces(self, grains, ifaces, result):
+        """
+        Tests the return of `get_planes_interfaces` function
+        """
+        salt_dict = {
+            "network.ifacestartswith": MagicMock(
+                side_effect=lambda ip: ifaces.get(ip, [])
+            ),
+        }
+
+        with patch.dict(metalk8s_network.__salt__, salt_dict), patch.dict(
+            metalk8s_network.__grains__, grains
+        ):
+            self.assertEqual(result, metalk8s_network.get_planes_interfaces())
+
     @utils.parameterized_from_cases(YAML_TESTS_CASES["get_listening_processes"])
     def test_get_listening_processes(
         self, result, net_conns_ret=None, process_ret=None
