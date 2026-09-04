@@ -31,7 +31,7 @@ const NodeListTable = ({ nodeTableData, loading }) => {
         Header: 'Health',
         accessor: 'health',
         cellStyle: {
-          minWidth: '5.5rem',
+          minWidth: '4.25rem',
           textAlign: 'center',
           width: 'unset',
           flex: 0.5,
@@ -92,7 +92,7 @@ const NodeListTable = ({ nodeTableData, loading }) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          minWidth: '5.5rem',
+          minWidth: '4.25rem',
           width: 'unset',
           flex: 0.5,
         },
