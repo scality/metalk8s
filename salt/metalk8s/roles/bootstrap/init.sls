@@ -4,3 +4,4 @@ include:
   - metalk8s.salt.master
   - metalk8s.utils
   - metalk8s.backup.configured
+  - metalk8s.image-cache
