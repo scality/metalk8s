@@ -187,6 +187,7 @@ export default function ConfigureAlerting() {
       <AppContainer.MainContent background="backgroundLevel1">
         <Box margin="0 auto" background={theme.backgroundLevel4} flex="1">
           <Form
+            responsive
             onSubmit={handleSubmit((data) => {
               editAlertMutation.mutate(data);
             })}
