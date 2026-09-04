@@ -24,7 +24,7 @@ const VolumeListTable = (props) => {
         accessor: 'health',
         cellStyle: {
           textAlign: 'center',
-          width: '5.5rem',
+          width: '4.25rem',
         },
         Cell: (cellProps) => {
           return <CircleStatus name="Circle-health" status={cellProps.value} />;
@@ -57,7 +57,7 @@ const VolumeListTable = (props) => {
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
-          width: '5.5rem',
+          width: '4.5rem',
         },
         Cell: ({ value }) => {
           return (
@@ -86,7 +86,7 @@ const VolumeListTable = (props) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          width: '5.5rem',
+          width: '4.25rem',
         },
         Cell: (cellProps) => {
           const volume = volumeListData?.find((vol) => vol.name === cellProps.cell.row.values.name);
