@@ -236,28 +236,42 @@ def check_statefulset(k8s_client, name, namespace):
 
 @then(parsers.parse("the package '{name}' is installed on every node"))
 def check_package_installed(host, ssh_config, k8s_client, name):
-    versions = _salt_on_every_node(host, ssh_config, k8s_client, "pkg.version", name)
+    def _check_package():
+        versions = _salt_on_every_node(
+            host, ssh_config, k8s_client, "pkg.version", name
+        )
 
-    # An absent package gives an empty string, and a minion that failed to run the
-    # function gives its error message, so only take a version number for an answer.
-    missing = sorted(
-        node
-        for node, version in versions.items()
-        if not isinstance(version, str) or not version[:1].isdigit()
-    )
-    assert not missing, f"'{name}' is not installed on {', '.join(missing)}"
+        # An absent package answers with an empty string, and a minion that failed
+        # to run the function answers with its error message, so only take a version
+        # number for an answer, and quote what came back instead.
+        missing = {
+            node: version
+            for node, version in versions.items()
+            if not isinstance(version, str) or not version[:1].isdigit()
+        }
+        answers = ", ".join(
+            f"{node} ({version!r})" for node, version in sorted(missing.items())
+        )
+        assert not missing, f"'{name}' is not installed on {answers}"
+
+    utils.retry(_check_package, times=3, wait=5, name=f"check package '{name}'")
 
 
 @then(parsers.parse("the systemd unit '{name}' is enabled and running on every node"))
 def check_systemd_unit_running(host, ssh_config, k8s_client, name):
-    for description, function in [
-        ("enabled", "service.enabled"),
-        ("running", "service.status"),
-    ]:
-        results = _salt_on_every_node(host, ssh_config, k8s_client, function, name)
+    def _check_unit():
+        for description, function in [
+            ("enabled", "service.enabled"),
+            ("running", "service.status"),
+        ]:
+            results = _salt_on_every_node(host, ssh_config, k8s_client, function, name)
 
-        failed = sorted(node for node, result in results.items() if result is not True)
-        assert not failed, f"'{name}' is not {description} on {', '.join(failed)}"
+            failed = sorted(
+                node for node, result in results.items() if result is not True
+            )
+            assert not failed, f"'{name}' is not {description} on {', '.join(failed)}"
+
+    utils.retry(_check_unit, times=3, wait=5, name=f"check systemd unit '{name}'")
 
 
 def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
