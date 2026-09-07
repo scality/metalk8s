@@ -4,9 +4,7 @@
 {%- if kubelet.container_engine == 'containerd' %}
 
 include:
-  - metalk8s.repo
   - metalk8s.container-engine.containerd.installed
-  - metalk8s.container-engine.containerd.running
 
 Install containerd image preload:
   {{ pkg_installed('containerd-image-preload') }}

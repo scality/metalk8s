@@ -13,12 +13,11 @@ from tests.unit.formulas.fixtures.rendered import RenderedStates, required_state
 
 IMAGE_CACHE_INSTALLED = Path("metalk8s/image-cache/installed.sls")
 
-# Formulas defining the states we depend on, they must stay in the `include` block.
-REQUIRED_FORMULAS = [
-    "metalk8s.repo",
-    "metalk8s.container-engine.containerd.installed",
-    "metalk8s.container-engine.containerd.running",
-]
+# The formula that transitively brings in every state we require, so it must stay
+# in the `include` block. It defines `Install containerd`, and it includes both
+# `metalk8s.repo`, for `Repositories configured`, and the containerd `running`
+# state, for `Ensure containerd is ready`.
+REQUIRED_FORMULA = "metalk8s.container-engine.containerd.installed"
 
 TIMER_STATE = "Ensure containerd image preload timer running"
 
@@ -53,10 +52,9 @@ def test_preload_timer_requires_a_running_containerd(
             continue
 
         includes = states.get("include", [])
-        for formula in REQUIRED_FORMULAS:
-            assert (
-                formula in includes
-            ), f"'{formula}' is not included, the gates cannot resolve ({case_id})"
+        assert (
+            REQUIRED_FORMULA in includes
+        ), f"'{REQUIRED_FORMULA}' is not included, the gates cannot resolve ({case_id})"
 
         gates = required_states(states, TIMER_STATE)
         for gate in REQUIRED_GATES:
