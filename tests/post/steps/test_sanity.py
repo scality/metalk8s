@@ -245,7 +245,7 @@ def check_package_installed(host, ssh_config, k8s_client, name):
         for node, version in versions.items()
         if not isinstance(version, str) or not version[:1].isdigit()
     )
-    assert not missing, "'{}' is not installed on {}".format(name, ", ".join(missing))
+    assert not missing, f"'{name}' is not installed on {', '.join(missing)}"
 
 
 @then(parsers.parse("the systemd unit '{name}' is enabled and running on every node"))
@@ -257,9 +257,7 @@ def check_systemd_unit_running(host, ssh_config, k8s_client, name):
         results = _salt_on_every_node(host, ssh_config, k8s_client, function, name)
 
         failed = sorted(node for node, result in results.items() if result is not True)
-        assert not failed, "'{}' is not {} on {}".format(
-            name, description, ", ".join(failed)
-        )
+        assert not failed, f"'{name}' is not {description} on {', '.join(failed)}"
 
 
 def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
@@ -278,7 +276,7 @@ def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
     results = json.loads(utils.run_salt_command(host, command, ssh_config).stdout)
 
     silent = sorted(set(nodes) - set(results))
-    assert not silent, "no answer from {}".format(", ".join(silent))
+    assert not silent, f"no answer from {', '.join(silent)}"
 
     return results
 
