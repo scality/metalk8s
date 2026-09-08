@@ -1,0 +1,6 @@
+kind: Added
+body: Every node now installs the `containerd-image-preload` package and runs its timer. The timer imports the image archives found under `/var/lib/image-cache` into containerd, once at boot and then every 10 minutes, so a node that lost images from its content store gets them back without reaching a registry. Nothing fills that directory yet, so the timer is a no-op on a fresh cluster until the cache provisioning lands.
+time: 2026-09-01T13:55:39.931914026Z
+custom:
+    CommentId: "5495059961"
+    Pull: "5109"

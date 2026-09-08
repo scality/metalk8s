@@ -1,3 +1,5 @@
+import json
+
 import kubernetes.client
 from kubernetes.client.rest import ApiException
 import pytest
@@ -36,6 +38,18 @@ def test_deployment_running(host):
 
 @scenario("../features/sanity.feature", "DaemonSet has desired Pods ready")
 def test_daemonset_running(host):
+    pass
+
+
+@scenario("../features/sanity.feature", "Package is installed on every node")
+def test_package_installed(host):
+    pass
+
+
+@scenario(
+    "../features/sanity.feature", "Systemd unit is enabled and running on every node"
+)
+def test_systemd_unit_running(host):
     pass
 
 
@@ -218,6 +232,67 @@ def check_statefulset(k8s_client, name, namespace):
         wait=3,
         name="wait for StatefulSet '{}/{}'".format(namespace, name),
     )
+
+
+@then(parsers.parse("the package '{name}' is installed on every node"))
+def check_package_installed(host, ssh_config, k8s_client, name):
+    def _check_package():
+        versions = _salt_on_every_node(
+            host, ssh_config, k8s_client, "pkg.version", name
+        )
+
+        # An absent package answers with an empty string, and a minion that failed
+        # to run the function answers with its error message, so only take a version
+        # number for an answer, and quote what came back instead.
+        missing = {
+            node: version
+            for node, version in versions.items()
+            if not isinstance(version, str) or not version[:1].isdigit()
+        }
+        answers = ", ".join(
+            f"{node} ({version!r})" for node, version in sorted(missing.items())
+        )
+        assert not missing, f"'{name}' is not installed on {answers}"
+
+    utils.retry(_check_package, times=3, wait=5, name=f"check package '{name}'")
+
+
+@then(parsers.parse("the systemd unit '{name}' is enabled and running on every node"))
+def check_systemd_unit_running(host, ssh_config, k8s_client, name):
+    def _check_unit():
+        for description, function in [
+            ("enabled", "service.enabled"),
+            ("running", "service.status"),
+        ]:
+            results = _salt_on_every_node(host, ssh_config, k8s_client, function, name)
+
+            failed = sorted(
+                node for node, result in results.items() if result is not True
+            )
+            assert not failed, f"'{name}' is not {description} on {', '.join(failed)}"
+
+    utils.retry(_check_unit, times=3, wait=5, name=f"check systemd unit '{name}'")
+
+
+def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
+    """Run a Salt execution function on every node, return the result per node.
+
+    Target the Kubernetes nodes by name rather than every minion, so that a node
+    staying silent fails the check instead of dropping out of the results.
+    """
+    nodes = sorted(
+        node.metadata.name
+        for node in k8s_client.resources.get(api_version="v1", kind="Node").get().items
+    )
+    assert nodes, "no Kubernetes node to check"
+
+    command = ["salt", "--static", "--out=json", "-L", ",".join(nodes), function, *args]
+    results = json.loads(utils.run_salt_command(host, command, ssh_config).stdout)
+
+    silent = sorted(set(nodes) - set(results))
+    assert not silent, f"no answer from {', '.join(silent)}"
+
+    return results
 
 
 # }}}

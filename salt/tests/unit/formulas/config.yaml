@@ -252,6 +252,15 @@ metalk8s:
                   HTTP_PROXY: http://my-proxy.local
                   HTTPS_PROXY: https://my-proxy.local
 
+  image-cache:
+    installed.sls:
+      _cases:
+        "Containerd (default)": {}
+        "Without any container engine":
+          pillar_overrides:
+            kubelet:
+              container_engine: ""
+
   kubernetes:
     apiserver:
       files:
