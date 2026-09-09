@@ -34,7 +34,7 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
       Header: 'Severity',
       accessor: 'severity',
       cellStyle: {
-        minWidth: '5.25rem',
+        minWidth: '6rem',
         flex: 0.5,
         textAlign: 'center',
         width: 'unset',
