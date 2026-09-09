@@ -138,7 +138,6 @@ const ContextActions = styled.div`
   display: flex;
   align-items: center;
   gap: ${spacing.r8};
-  padding-right: ${spacing.r16};
 `;
 
 const DashboardPage = () => {
