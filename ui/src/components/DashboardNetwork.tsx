@@ -18,6 +18,14 @@ export const DashboardSectionContainer = styled.div`
   max-height: 100%;
   gap: ${spacing.r16};
   padding-bottom: ${spacing.r16};
+
+  /* Stacked, the two panels share whatever height the inventory leaves, so the
+     desktop breathing room between the title and the charts is height taken
+     straight out of the charts. */
+  @container responsive (max-width: 700px) {
+    gap: ${spacing.r8};
+    padding-bottom: ${spacing.r4};
+  }
 `;
 export const PanelActions = styled.div`
   display: flex;
@@ -25,6 +33,10 @@ export const PanelActions = styled.div`
   padding-bottom: ${spacing.r16};
   align-items: center;
   justify-content: space-between;
+
+  @container responsive (max-width: 700px) {
+    padding-bottom: ${spacing.r4};
+  }
 `;
 
 const DashboardNetwork = () => {

@@ -5,26 +5,39 @@ import { spacing } from '@scality/core-ui';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 import { useAlertLibrary, useHighestSeverityAlerts, highestAlertToStatus } from '../containers/AlertProvider';
 import HealthItem from './HealthItem';
+/* Fully restacked, the inventory cell spans the whole content box while the two
+   chart panels below it compete for what height is left, so every line the
+   services keep is a line the charts lose. Each group turns into a single row -
+   its heading inline, its items flowing after it - which is three lines instead
+   of a heading line plus the tallest group's four items. */
 const ServiceItems = styled.div`
   display: flex;
   flex-direction: column;
   padding: ${spacing.r4};
-`;
-/* Fully restacked, the inventory cell spans the whole content box while the two
-   chart panels below it compete for what height is left. Lay the three service
-   groups side by side there so the cell stays short instead of stacking eight
-   items down the page. */
-const ServiceGroups = styled.div`
-  display: flex;
-  flex-direction: column;
+
   @container responsive (max-width: 700px) {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: ${spacing.r16};
-    > * {
-      flex: 1 1 11rem;
+    align-items: center;
+    column-gap: ${spacing.r16};
+    padding-block: 0;
+
+    ${PageSubtitle} {
+      flex: 0 0 7rem;
+      margin: 0;
+    }
+
+    /* An item with an active alert renders a width: 100% root, which in a row
+       would put every one of them on its own line. */
+    > div {
+      flex: none;
+      width: auto;
     }
   }
+`;
+const ServiceGroups = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
 const DashboardServices = () => {
@@ -65,39 +78,39 @@ const DashboardServices = () => {
       <ServiceGroups>
         <ServiceItems>
           <PageSubtitle aria-label="core">
-          {intl.formatMessage({
-            id: 'core',
-          })}
-        </PageSubtitle>
-        <HealthItem label={'K8s master'} status={k8sStatus} alerts={k8sHighestSeverityAlert} />
-        <HealthItem label={'Bootstrap'} status={bootstrapStatus} alerts={bootstrapHighestSeverityAlert} />
-      </ServiceItems>
-      <ServiceItems>
-        <PageSubtitle aria-label="observability">
-          {intl.formatMessage({
-            id: 'observability',
-          })}
-        </PageSubtitle>
-        <HealthItem label={'Monitoring'} status={monitoringStatus} alerts={monitoringHighestSeverityAlert} />
-        <HealthItem label={'Alerting'} status={alertingStatus} alerts={alertingHighestSeverityAlert} />
-        <HealthItem label={'Logging'} status={loggingStatus} alerts={loggingHighestSeverityAlert} />
-        <HealthItem label={'Dashboarding'} status={dashboardingStatus} alerts={dashboardingHighestSeverityAlert} />
-      </ServiceItems>
-      <ServiceItems>
-        <PageSubtitle aria-label="access">
-          {intl.formatMessage({
-            id: 'access',
-          })}
-        </PageSubtitle>
-        <HealthItem label={'Ingress Controller'} status={ingressStatus} alerts={ingressHighestSeverityAlert} />
-        <HealthItem
-          label={intl.formatMessage({
-            id: 'authentication',
-          })}
-          status={authenticationStatus}
-          alerts={authenticationHighestSeverityAlert}
-        />
-      </ServiceItems>
+            {intl.formatMessage({
+              id: 'core',
+            })}
+          </PageSubtitle>
+          <HealthItem label={'K8s master'} status={k8sStatus} alerts={k8sHighestSeverityAlert} />
+          <HealthItem label={'Bootstrap'} status={bootstrapStatus} alerts={bootstrapHighestSeverityAlert} />
+        </ServiceItems>
+        <ServiceItems>
+          <PageSubtitle aria-label="observability">
+            {intl.formatMessage({
+              id: 'observability',
+            })}
+          </PageSubtitle>
+          <HealthItem label={'Monitoring'} status={monitoringStatus} alerts={monitoringHighestSeverityAlert} />
+          <HealthItem label={'Alerting'} status={alertingStatus} alerts={alertingHighestSeverityAlert} />
+          <HealthItem label={'Logging'} status={loggingStatus} alerts={loggingHighestSeverityAlert} />
+          <HealthItem label={'Dashboarding'} status={dashboardingStatus} alerts={dashboardingHighestSeverityAlert} />
+        </ServiceItems>
+        <ServiceItems>
+          <PageSubtitle aria-label="access">
+            {intl.formatMessage({
+              id: 'access',
+            })}
+          </PageSubtitle>
+          <HealthItem label={'Ingress Controller'} status={ingressStatus} alerts={ingressHighestSeverityAlert} />
+          <HealthItem
+            label={intl.formatMessage({
+              id: 'authentication',
+            })}
+            status={authenticationStatus}
+            alerts={authenticationHighestSeverityAlert}
+          />
+        </ServiceItems>
       </ServiceGroups>
     </div>
   );
