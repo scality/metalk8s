@@ -71,9 +71,12 @@ const MetricsToggleWrapper = styled.div`
   flex: 1;
   min-width: 0;
 
-  /* Own line, so the label is never truncated to fit beside the actions. */
+  /* Own line, so the label is never truncated to fit beside the actions. Ordered
+     last so the actions keep the first line: they are what the tab is for, and a
+     toggle above them reads as a page header. */
   @container responsive (max-width: 560px) {
     flex: 1 0 100%;
+    order: 1;
   }
 
   .sc-toggle {
