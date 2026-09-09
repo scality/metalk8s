@@ -98,6 +98,26 @@ spec:
 # And https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions
 MAP_STATUS = {"True": "Ready", "False": "NotReady", "Unknown": "Unknown"}
 
+# HTTP statuses for which an API error means the API server or etcd is momentarily
+# unavailable, rather than the request being wrong. Polling should spend one of its
+# attempts on those instead of giving up on the first one. Mirrors
+# `RETRIABLE_EVICTION_STATUSES` in `salt/_modules/metalk8s_drain.py`, which covers
+# the same blips on the product side.
+TRANSIENT_API_STATUSES = (500, 502, 503, 504)
+
+
+def is_transient_api_error(exc):
+    """Whether `exc` is an API error worth another polling attempt.
+
+    Meant to be passed as `retry_on` to `tests.utils.retry`. Only server-side
+    statuses qualify: a 403 or a 422 is not going to fix itself, and a 404 never
+    reaches here since `Client.get` turns it into `None`.
+
+    NOTE: a connection dropped mid-request raises a urllib3 `HTTPError` rather
+    than an `ApiException`, and stays fatal. Widen this if the nightly shows it.
+    """
+    return isinstance(exc, ApiException) and exc.status in TRANSIENT_API_STATUSES
+
 
 def get_pods(
     k8s_client, ssh_config=None, label=None, node=None, namespace=None, state="Running"
@@ -218,6 +238,7 @@ class Client(abc.ABC):
             times=self._count,
             wait=self._delay,
             name="checking the absence of {} {}".format(self._kind, name),
+            retry_on=is_transient_api_error,
         )
 
     def check_deletion_marker(self, name):
@@ -234,6 +255,7 @@ class Client(abc.ABC):
             times=self._count,
             wait=self._delay,
             name="checking that {} {} is marked for deletion".format(self._kind, name),
+            retry_on=is_transient_api_error,
         )
 
     def wait_for_status(self, name, status, wait_for_key=None):
@@ -261,6 +283,7 @@ class Client(abc.ABC):
             times=48,
             wait=5,  # wait for 4mn
             name=f"waiting for {self._kind} {name} to become {status}",
+            retry_on=is_transient_api_error,
         )
 
     @staticmethod
@@ -387,6 +410,7 @@ class PodClient(Client):
             times=self._count,
             wait=self._delay,
             name="wait for pod {}".format(pod_name),
+            retry_on=is_transient_api_error,
         )
 
     def _delete(self, name):

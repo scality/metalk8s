@@ -174,10 +174,20 @@ def admin_sa(k8s_client):
             raise
 
     # Wait for ClusterRoleBinding to exists
-    utils.retry(_check_crb_exists, times=20, wait=3)
+    utils.retry(
+        _check_crb_exists,
+        times=20,
+        wait=3,
+        retry_on=kube_utils.is_transient_api_error,
+    )
 
     # Wait for ServiceAccount to exists
-    utils.retry(_check_sa_exists, times=20, wait=3)
+    utils.retry(
+        _check_sa_exists,
+        times=20,
+        wait=3,
+        retry_on=kube_utils.is_transient_api_error,
+    )
 
     yield (sa_name, sa_namespace)
 
@@ -255,6 +265,7 @@ def utils_pod(k8s_client, utils_manifest):
         times=10,
         wait=12,
         name="wait for Pod '{}'".format(pod_name),
+        retry_on=kube_utils.is_transient_api_error,
     )
 
     yield pod_name
@@ -307,7 +318,13 @@ def count_running_pods(request, k8s_client, pods_count, label, namespace, node):
     if node:
         error_msg += "on node '{node}'".format(node=node)
 
-    utils.retry(_check_pods_count, times=40, wait=3, error_msg=error_msg)
+    utils.retry(
+        _check_pods_count,
+        times=40,
+        wait=3,
+        error_msg=error_msg,
+        retry_on=kube_utils.is_transient_api_error,
+    )
 
 
 _COUNT_RUNNING_PODS_PARSER = parsers.re(
