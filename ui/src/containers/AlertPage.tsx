@@ -252,7 +252,7 @@ export default function AlertPage() {
         cellStyle: {
           textAlign: 'center',
           flex: 1,
-          minWidth: '5.25rem',
+          minWidth: '6rem',
         },
         sortType: 'severity',
         Cell: (cell) => <CircleStatus status={cell.value} />,

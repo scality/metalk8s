@@ -29,7 +29,7 @@ const VolumeListTable = React.memo((props) => {
           textAlign: 'center',
           width: 'unset',
           flex: 0.5,
-          minWidth: '4.25rem',
+          minWidth: '5rem',
           maxWidth: '5.5rem',
         },
         Cell: (cellProps) => {
@@ -115,7 +115,7 @@ const VolumeListTable = React.memo((props) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          minWidth: '4.25rem',
+          minWidth: '5rem',
           width: 'unset',
           flex: 0.5,
         },

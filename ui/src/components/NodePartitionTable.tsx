@@ -26,7 +26,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       cellStyle: {
         textAlign: 'center',
         width: 'unset',
-        minWidth: '4.25rem',
+        minWidth: '5rem',
         maxWidth: '5.5rem',
         paddingRight: spacing.r16,
         flex: 0.5,

@@ -31,7 +31,7 @@ const NodeListTable = ({ nodeTableData, loading }) => {
         Header: 'Health',
         accessor: 'health',
         cellStyle: {
-          minWidth: '4.25rem',
+          minWidth: '5rem',
           textAlign: 'center',
           width: 'unset',
           flex: 0.5,
@@ -92,7 +92,7 @@ const NodeListTable = ({ nodeTableData, loading }) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          minWidth: '4.25rem',
+          minWidth: '5rem',
           width: 'unset',
           flex: 0.5,
         },
@@ -150,7 +150,7 @@ const NodeListTable = ({ nodeTableData, loading }) => {
       // @ts-expect-error - FIXME when you are working on it
       getRowId={(row) => row.name.name}
     >
-      <Wrap padding={spacing.r16}>
+      <Wrap padding={spacing.r16} gap={spacing.r16}>
         <Table.SearchWithQueryParams />
         <Button
           variant="primary"
