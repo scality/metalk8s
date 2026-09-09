@@ -1,4 +1,4 @@
-import { ErrorPage500, Loader, ToastProvider } from '@scality/core-ui';
+import { ErrorPage500, Loader, ScrollbarWrapper, ToastProvider } from '@scality/core-ui';
 import { useCurrentApp } from '@scality/module-federation';
 import { PropsWithChildren, ReactNode, useEffect, useMemo } from 'react';
 import { Provider, useDispatch } from 'react-redux';
@@ -117,17 +117,22 @@ export const AppConfigProvider = ({
 export default function FederableApp(props: FederatedAppProps) {
   return (
     <ShellHooksProvider shellHooks={props.shellHooks} shellAlerts={props.shellAlerts}>
-      <Provider store={store}>
-        <AppConfigProvider>
-          <PrometheusAuthProvider>
-            <ToastProvider>
-              <RouterWithBaseName>
-                <App />
-              </RouterWithBaseName>
-            </ToastProvider>
-          </PrometheusAuthProvider>
-        </AppConfigProvider>
-      </Provider>
+      {/* The scrollbar styling is a global stylesheet, and it is dropped when any
+          app that mounted it unmounts. Mounting our own means this app carries
+          the styling itself rather than depending on the host still having it. */}
+      <ScrollbarWrapper>
+        <Provider store={store}>
+          <AppConfigProvider>
+            <PrometheusAuthProvider>
+              <ToastProvider>
+                <RouterWithBaseName>
+                  <App />
+                </RouterWithBaseName>
+              </ToastProvider>
+            </PrometheusAuthProvider>
+          </AppConfigProvider>
+        </Provider>
+      </ScrollbarWrapper>
     </ShellHooksProvider>
   );
 }
