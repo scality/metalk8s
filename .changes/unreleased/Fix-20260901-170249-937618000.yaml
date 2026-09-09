@@ -1,0 +1,16 @@
+kind: Fix
+body: |-
+    The salt-master no longer resolves the `fqdns` grain, which reverse-resolved
+    every address of the host each time the master grain cache expired, every 300
+    seconds. On a platform whose DNS servers do not answer PTR queries promptly
+    those lookups blocked past the salt-master readiness probe timeout, so the pod
+    flapped NotReady for about a minute in every six and a half. While it was
+    NotReady the Salt API ingress upstream could not be resolved, and the UI
+    reported `An error occurred when authenticating on salt API` with cluster
+    expansion and node IP display unavailable, even though authentication itself
+    was working. Nothing in MetalK8s reads the grain; it was already disabled on
+    the minions.
+time: 2026-09-01T17:02:49.937618000Z
+custom:
+    CommentId: "cli"
+    Pull: "5110"
