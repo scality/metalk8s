@@ -147,7 +147,7 @@ export function useHostGetTaskStatusTool() {
         name: 'getTaskStatus',
         description:
           'Read-only. Poll a background task by its taskId to see whether it is still working, or has ' +
-          'completed/failed. Works across every app. Returns an MCP task: status is "working" until it ' +
+          'completed/failed. Returns an MCP task: status is "working" until it ' +
           'settles, then "completed" (with result) or "failed" (with error). An unknown taskId → "cancelled".',
         inputSchema: {
           type: 'object',
