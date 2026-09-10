@@ -1,4 +1,11 @@
-import { ErrorPage500, Loader, ScrollbarWrapper, ToastProvider } from '@scality/core-ui';
+import { ErrorPage500, Loader, ToastProvider } from '@scality/core-ui';
+/* Deliberately not the bare '@scality/core-ui': that specifier is federation-shared and
+   resolves to the host's copy, while Select and Form - which mount this same global
+   style themselves - come from subpaths and so from this app's own copy.
+   styled-components keys a global style group by a hash of its CSS and rebuilds the
+   whole group from the mounting copy's own instances on every mount and unmount, so
+   unmounting a Select wipes the rules unless this permanent mount is in that copy. */
+import { ScrollbarWrapper } from '@scality/core-ui/dist/index';
 import { useCurrentApp } from '@scality/module-federation';
 import { PropsWithChildren, ReactNode, useEffect, useMemo } from 'react';
 import { Provider, useDispatch } from 'react-redux';
@@ -117,9 +124,6 @@ export const AppConfigProvider = ({
 export default function FederableApp(props: FederatedAppProps) {
   return (
     <ShellHooksProvider shellHooks={props.shellHooks} shellAlerts={props.shellAlerts}>
-      {/* The scrollbar styling is a global stylesheet, and it is dropped when any
-          app that mounted it unmounts. Mounting our own means this app carries
-          the styling itself rather than depending on the host still having it. */}
       <ScrollbarWrapper>
         <Provider store={store}>
           <AppConfigProvider>
