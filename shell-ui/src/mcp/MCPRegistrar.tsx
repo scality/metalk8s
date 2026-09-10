@@ -15,24 +15,34 @@ import {
   useConfigRetriever,
 } from '../initFederation/ConfigurationProviders';
 import { useDeployedApps } from '../initFederation/UIListProvider';
+import {
+  isTaskHandle,
+  registerHostTask,
+  type TaskStatusReport,
+  useHostGetTaskStatusTool,
+} from './tasks';
 import type { ToolContext } from './types';
 
 declare const __webpack_public_path__: string;
 
+interface MCPToolDescriptor extends ToolDescriptor {
+  getTaskStatus?: () => Promise<TaskStatusReport>;
+}
+
 type MCPToolsModule =
   | {
-      /** New factory-based export — preferred. */
-      createTools: (
-        context: ToolContext,
-        navigate: (path: string) => void,
-      ) => ToolDescriptor[];
-      tools?: never;
-    }
+    /** New factory-based export — preferred. */
+    createTools: (
+      context: ToolContext,
+      navigate: (path: string) => void,
+    ) => MCPToolDescriptor[];
+    tools?: never;
+  }
   | {
-      /** Legacy static-array export — kept for backward compatibility. */
-      tools: ToolDescriptor[];
-      createTools?: never;
-    };
+    /** Legacy static-array export — kept for backward compatibility. */
+    tools: MCPToolDescriptor[];
+    createTools?: never;
+  };
 
 // Do not use directly - exported for testing purposes
 export const _InternalMCPRegistrar = ({
@@ -110,13 +120,25 @@ export const _InternalMCPRegistrar = ({
             // tool's execute closure. For legacy tools, inject context here.
             const injectedContext = mod?.createTools ? undefined : context;
 
-            return tool.execute(
+            // await → `ret` is the resolved result, not a Promise, so the taskId
+            // check below inspects the actual value.
+            const ret = await tool.execute(
               {
                 ...(params as Record<string, unknown>),
                 ...(injectedContext && { context: injectedContext }),
               },
               client,
             );
+
+            // A background op just started: it handed back a task handle AND this
+            // tool can report its status. Enrol it so the single host `getTaskStatus`
+            // tool can route a poll back here. The arrow keeps `this` bound to the
+            // descriptor for method-style getTaskStatus implementations.
+            if (tool.getTaskStatus && isTaskHandle(ret)) {
+              registerHostTask(ret, () => tool.getTaskStatus!());
+            }
+
+            return ret;
           },
         },
         { signal: controller.signal },
@@ -205,6 +227,7 @@ const AppMCPRegistrar = ({
 
 export const MCPRegistrar = () => {
   useRelayEmbed();
+  useHostGetTaskStatusTool();
   const deployedApps = useDeployedApps();
   const navigate = useNavigate();
 
