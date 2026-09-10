@@ -86,6 +86,7 @@ sls
 sosreport
 srv
 stdlib
+sysconfig
 Thanos
 timestamp
 tmp

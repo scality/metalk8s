@@ -34,14 +34,25 @@ def fixture_rendered_states(
     ]
 
 
-def _iter_required_ids(state_body: Dict[str, Any]) -> Iterator[str]:
-    """Yield the state IDs listed in the `require` requisites of a single state."""
+def _iter_requisite_ids(state_body: Dict[str, Any], requisite: str) -> Iterator[str]:
+    """Yield the state IDs listed in one requisite of a single state."""
     for state_args in state_body.values():
         # A state declared without any argument renders as `None`.
         for state_arg in state_args or []:
             if isinstance(state_arg, dict):
-                for requisite in state_arg.get("require", []):
-                    yield from requisite.values()
+                for entry in state_arg.get(requisite, []):
+                    yield from entry.values()
+
+
+def requisite_states(
+    states: Dict[str, Any], state_id: str, requisite: str = "require"
+) -> Set[str]:
+    """List the state IDs one requisite of a state names, one hop only.
+
+    Use it for the requisites declared the other way round, such as
+    `require_in` or `onchanges`, which name a state that runs later.
+    """
+    return set(_iter_requisite_ids(states.get(state_id, {}), requisite))
 
 
 def required_states(states: Dict[str, Any], state_id: str) -> Set[str]:
@@ -50,7 +61,9 @@ def required_states(states: Dict[str, Any], state_id: str) -> Set[str]:
     to_visit: List[str] = [state_id]
 
     while to_visit:
-        for required_id in _iter_required_ids(states.get(to_visit.pop(), {})):
+        for required_id in _iter_requisite_ids(
+            states.get(to_visit.pop(), {}), "require"
+        ):
             if required_id not in required:
                 required.add(required_id)
                 to_visit.append(required_id)

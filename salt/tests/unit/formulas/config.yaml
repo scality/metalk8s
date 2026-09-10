@@ -261,6 +261,14 @@ metalk8s:
             kubelet:
               container_engine: ""
 
+    provisioned.sls:
+      _cases:
+        "Containerd (default)": {}
+        "Without any container engine":
+          pillar_overrides:
+            kubelet:
+              container_engine: ""
+
   kubernetes:
     apiserver:
       files:
