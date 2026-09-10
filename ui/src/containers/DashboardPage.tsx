@@ -22,9 +22,11 @@ const DashboardContainer = styled.div`
   flex: 1;
   width: 100%;
   min-height: 0;
-  /* One scroll owner for the whole dashboard. The grid and the cards inside it
-     used to scroll as well, which stacked up to three nested scrollbars for a
-     single list once the layout restacked. */
+  /* Scroll owner for the one-row layout, where the grid is sized by its content.
+     Once the grid restacks it is stretched to this box and each cell scrolls
+     itself, so nothing reaches here - that is deliberate: the grid and the cards
+     inside it used to scroll too, which stacked up to three nested scrollbars
+     for a single list. */
   overflow: hidden auto;
 `;
 
@@ -78,35 +80,27 @@ const DashboardGrid = styled.div`
      rather than a peer of the two chart groups. Only the second step stacks
      all three.
 
-     The rows carry an explicit minimum because .network and .metrics are
-     min-height: 0 flex columns holding self-sizing charts: on a plain auto row
-     they collapse to nothing. Each step also releases the grid from the
-     wrapper's height so the wrapper is the only thing that scrolls. */
+     Both steps keep the grid stretched to the container and clipping, and every
+     cell scrolls itself: the two chart rows split the available height evenly, so
+     the page never grows a scrollbar of its own and neither panel can push the
+     other off screen. Neither chart row carries a minimum - the grid clips, so a
+     minimum the height cannot honour is not a floor, it is content cut off with
+     no way to scroll to it. */
   @container responsive (max-width: 1100px) {
     grid-template:
-      'inventory network' minmax(20rem, auto)
-      'inventory metrics' minmax(22rem, auto)
+      'inventory network' minmax(0, 1fr)
+      'inventory metrics' minmax(0, 1fr)
       / minmax(0, 1fr) minmax(0, 2fr);
-    overflow: visible;
-    align-self: start;
   }
 
-  /* Fully restacked, the three cells are the whole page: sized to their content
-     they become one long scroll you have to travel past the inventory to reach a
-     chart. The inventory keeps its content height, the two chart panels split
-     what is left and scroll internally.
-
-     Neither chart row carries a minimum. The grid is stretched to the container's
-     height and clips, so a minimum the height cannot honour is not a floor - it
-     is content cut off with no way to scroll to it. */
+  /* Fully restacked, the inventory keeps its content height and the two chart
+     panels split what is left of it. */
   @container responsive (max-width: 700px) {
     grid-template:
       'inventory' auto
       'network' minmax(0, 1fr)
       'metrics' minmax(0, 1fr)
       / minmax(0, 1fr);
-    overflow: hidden;
-    align-self: stretch;
 
     /* Not a scroll container here: a scroll container's min-content height is 0,
        so the grid would squeeze this row to nothing and scroll the cell instead of
@@ -119,15 +113,6 @@ const DashboardGrid = styled.div`
 export const DashboardScrollableArea = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
-  /* Both axes, because overflow-y: visible computes back to auto whenever the
-     other axis is not visible - which would leave the inner scrollbar in place. */
-  @container responsive (max-width: 1100px) {
-    overflow: visible;
-  }
-  /* Restored once the panels have definite heights again. */
-  @container responsive (max-width: 700px) {
-    overflow: hidden auto;
-  }
 `;
 
 /* Both controls act on the Network and the Metrics panels rather than on either
