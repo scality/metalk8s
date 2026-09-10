@@ -1,10 +1,10 @@
-import { Icon, ProgressBar, Tooltip, Wrap, spacing } from '@scality/core-ui';
+import { Icon, Tooltip, Wrap, spacing } from '@scality/core-ui';
 import { Button, Table } from '@scality/core-ui/dist/next';
 import React from 'react';
 import { useIntl } from 'react-intl';
 import { useNavigate, useLocation } from 'react-router';
-import { useTheme } from 'styled-components';
 import CircleStatus from './CircleStatus';
+import { UsageProgressBar } from './UsageProgressBar';
 import { Latency } from './Latency';
 import { TooltipContent, UnknownIcon } from './TableRow';
 import { useCurrentApp } from '@scality/module-federation';
@@ -14,7 +14,6 @@ const VolumeListTable = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const intl = useIntl();
-  const theme = useTheme();
   const { appHistoryBasePath } = useCurrentApp();
 
   const columns = React.useMemo(() => {
@@ -60,15 +59,7 @@ const VolumeListTable = (props) => {
           width: '4.5rem',
         },
         Cell: ({ value }) => {
-          return (
-            <ProgressBar
-              size="large"
-              percentage={value}
-              buildinLabel={`${value}%`}
-              color={theme.infoSecondary}
-              backgroundColor={theme.buttonSecondary}
-            />
-          );
+          return <UsageProgressBar percentage={value} />;
         },
       },
       {
@@ -153,7 +144,7 @@ const VolumeListTable = (props) => {
         },
       },
     ]; // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [volumeListData, theme]);
+  }, [volumeListData]);
 
   // handle the row selection by updating the URL
   const onClickRow = (row) => {

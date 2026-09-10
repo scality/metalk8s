@@ -1,12 +1,12 @@
-import { ConstrainedText, Icon, Link, ProgressBar, Tooltip, Wrap, spacing } from '@scality/core-ui';
+import { ConstrainedText, Icon, Link, Tooltip, Wrap, spacing } from '@scality/core-ui';
 import { Button, Table } from '@scality/core-ui/dist/next';
 import isEqual from 'lodash.isequal';
 import React from 'react';
 import { useIntl } from 'react-intl';
-import { useTheme } from 'styled-components';
 import { VOLUME_CONDITION_EXCLAMATION, VOLUME_CONDITION_LINK, VOLUME_CONDITION_UNLINK } from '../constants';
 import { formatSizeForDisplay } from '../services/utils';
 import CircleStatus from './CircleStatus';
+import { UsageProgressBar } from './UsageProgressBar';
 import { Latency } from './Latency';
 import { TooltipContent, UnknownIcon } from './TableRow';
 import { useBasenameRelativeNavigate } from '@scality/module-federation';
@@ -14,7 +14,6 @@ const VolumeListTable = React.memo((props) => {
   // @ts-expect-error - FIXME when you are working on it
   const { nodeName, volumeListData } = props;
   const navigate = useBasenameRelativeNavigate();
-  const theme = useTheme();
   const intl = useIntl();
   const columns = React.useMemo(() => {
     const onClickCell = (name) => {
@@ -78,15 +77,7 @@ const VolumeListTable = React.memo((props) => {
           flex: 1,
         },
         Cell: ({ value }) => {
-          return (
-            <ProgressBar
-              size="large"
-              percentage={value}
-              buildinLabel={`${value}%`}
-              color={theme.infoSecondary}
-              backgroundColor={theme.buttonSecondary}
-            />
-          );
+          return <UsageProgressBar percentage={value} />;
         },
       },
       {
@@ -193,7 +184,7 @@ const VolumeListTable = React.memo((props) => {
         },
       },
     ]; // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [volumeListData, theme, navigate, nodeName]);
+  }, [volumeListData, navigate, nodeName]);
   return (
     <Table
       revealDroppedColumns
