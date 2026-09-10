@@ -658,6 +658,22 @@ list_objects:
     api_status_code: 0
     raises: True
     result: 'Failed to list resources "v1/Node"'
+  # A dropped connection is retried, and the listing succeeds once the API
+  # server answers again
+  - apiVersion: v1
+    kind: Node
+    namespaced: False
+    transport_errors: 3
+    calls: 4
+    result: *list_object_result
+  # ... and still fails, naming the resource, when it never comes back
+  - apiVersion: v1
+    kind: Node
+    namespaced: False
+    transport_errors: 99
+    calls: 12
+    raises: True
+    result: 'Failed to list resources "v1/Node"'
 
 get_object_digest:
   # Simple full object digest

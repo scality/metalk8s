@@ -13,6 +13,7 @@ from datetime import datetime
 import json
 import logging
 import re
+import time
 
 from salt.exceptions import CommandExecutionError
 from salt.utils import yaml
@@ -36,6 +37,12 @@ log = logging.getLogger(__name__)
 
 __virtualname__ = "metalk8s_kubernetes"
 
+# A dropped connection means the API server is not answering at all, usually
+# because it is restarting. After an etcd restart it may do so more than once,
+# so the window has to cover a few of those.
+TRANSPORT_RETRY_ATTEMPTS = 12
+TRANSPORT_RETRY_INTERVAL = 5
+
 
 def __virtual__():
     if MISSING_DEPS:
@@ -43,6 +50,28 @@ def __virtual__():
         return False, error_msg
 
     return __virtualname__
+
+
+def _call_api(func, **kwargs):
+    """Call a Kubernetes API method, retrying a dropped connection."""
+    attempt = 0
+
+    while True:
+        attempt += 1
+        try:
+            return func(**kwargs)
+        except HTTPError as exc:
+            if attempt >= TRANSPORT_RETRY_ATTEMPTS:
+                raise
+
+            log.warning(
+                "Kubernetes API call failed (attempt %d/%d), retrying in %ds: %s",
+                attempt,
+                TRANSPORT_RETRY_ATTEMPTS,
+                TRANSPORT_RETRY_INTERVAL,
+                exc,
+            )
+            time.sleep(TRANSPORT_RETRY_INTERVAL)
 
 
 def _handle_error(exception, action):
@@ -400,7 +429,7 @@ def list_objects(
         call_kwargs["label_selector"] = label_selector
 
     try:
-        result = api.get(**call_kwargs)
+        result = _call_api(api.get, **call_kwargs)
     except (ApiException, HTTPError) as exc:
         base_msg = f'Failed to list resources "{apiVersion}/{kind}"'
         if "namespace" in call_kwargs:
