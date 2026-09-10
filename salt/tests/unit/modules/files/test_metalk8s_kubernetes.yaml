@@ -136,6 +136,41 @@ create_object:
     raises: True
     result: Failed to create object
 
+  # A transient server-side error is retried, and the create succeeds once
+  # etcd has settled
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    api_status_code: 500
+    errors: 2
+    calls: 3
+    result: *simple_node_create_result
+
+  # ... and still fails once the attempts are spent
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    api_status_code: 500
+    calls: 5
+    raises: True
+    result: Failed to create object
+
+  # A dropped connection is NOT retried on a write: we cannot tell whether the
+  # object was created
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    transport_error: True
+    calls: 1
+    raises: True
+    result: Failed to create object
+
 delete_object:
   # Simple Pod deletion (using manifest) - No namespace
   - manifest:
