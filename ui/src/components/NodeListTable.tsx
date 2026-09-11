@@ -31,6 +31,7 @@ const NodeListTable = ({ nodeTableData, loading }) => {
         Header: 'Health',
         accessor: 'health',
         cellStyle: {
+          minWidth: '5rem',
           textAlign: 'center',
           width: 'unset',
           flex: 0.5,
@@ -78,17 +79,20 @@ const NodeListTable = ({ nodeTableData, loading }) => {
       },
       {
         Header: 'Roles',
+        dropAt: 440,
         accessor: 'roles',
         cellStyle: {
+          minWidth: '4rem',
           flex: 1,
         },
       },
       {
         Header: 'Status',
+        dropAt: 360,
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          minWidth: '4rem',
+          minWidth: '5rem',
           width: 'unset',
           flex: 0.5,
         },
@@ -132,6 +136,7 @@ const NodeListTable = ({ nodeTableData, loading }) => {
   );
   return (
     <Table
+      revealDroppedColumns
       columns={columns}
       data={nodeTableData}
       status={loading ? 'loading' : 'success'}
@@ -145,13 +150,14 @@ const NodeListTable = ({ nodeTableData, loading }) => {
       // @ts-expect-error - FIXME when you are working on it
       getRowId={(row) => row.name.name}
     >
-      <Wrap padding={spacing.r16}>
+      <Wrap padding={spacing.r16} gap={spacing.r16}>
         <Table.SearchWithQueryParams />
         <Button
           variant="primary"
           label={intl.formatMessage({
             id: 'create_new_node',
           })}
+          iconOnly={480}
           icon={<Icon name="Create-add" />}
           onClick={() => {
             navigate(basename + '/nodes/create');

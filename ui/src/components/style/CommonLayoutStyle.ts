@@ -9,6 +9,9 @@ export const CenteredPageContainer = styled.div`
 `;
 export const LeftSideInstanceList = styled.div`
   flex: 1;
+  /* Without this the panel refuses to shrink below the table's content width,
+     so the list pushes the layout wider instead of letting the table adapt. */
+  min-width: 0;
   background-color: ${(props) => props.theme.backgroundLevel2};
 `;
 export const RightSidePanel = styled.div`
@@ -67,6 +70,12 @@ export const TableHeader = styled.div`
 export const MetricsActionContainer = styled.div`
   display: flex;
   flex-direction: row;
+  /* The toggle, the Grafana link and the timespan selector cannot share a
+     ~370px panel on one line. Wrapping keeps each control at its natural size
+     instead of compressing all three. */
+  flex-wrap: wrap;
+  align-items: center;
+  gap: ${spacing.r8};
   justify-content: flex-end;
   padding-bottom: ${spacing.r16};
   position: sticky;
@@ -125,11 +134,23 @@ export const OverviewInformationLabel = styled.span`
   display: inline-block;
   min-width: 10.714rem;
   color: ${(props) => props.theme.textSecondary};
+  /* The floor only exists to align values across rows; once the rows stack it
+     just adds dead space before the value. */
+  @container responsive (max-width: 420px) {
+    min-width: 0;
+  }
 `;
 export const OverviewInformationSpan = styled.div`
   padding-bottom: ${spacing.r20};
   padding-left: ${spacing.r20};
   display: flex;
+  min-width: 0;
+  /* Every row switches to stacked at the same panel width. Letting each row
+     wrap on its own content instead makes neighbouring rows break at different
+     widths, which reads as a rendering glitch rather than a layout. */
+  @container responsive (max-width: 420px) {
+    flex-direction: column;
+  }
 `;
 export const OverviewInformationWrapper = styled.div`
   padding-left: 0.313rem;
@@ -138,6 +159,7 @@ export const OverviewInformationValue = styled.span`
   color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
   word-wrap: break-word;
+  min-width: 0;
   max-width: 20rem;
 `;
 export const OverviewClickableInformationValue = styled.span`

@@ -1,7 +1,7 @@
 import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
-import { ScrollbarWrapper } from '@scality/core-ui/dist/components/scrollbarwrapper/ScrollbarWrapper.component';
+import { ScrollbarWrapper } from '@scality/core-ui';
 import { ToastProvider } from '@scality/core-ui/dist/components/toast/ToastProvider';
 import { FederatedComponent, FederatedComponentProps, SolutionUI } from '@scality/module-federation';
 import React, { useEffect, useMemo } from 'react';
