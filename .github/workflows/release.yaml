@@ -37,7 +37,7 @@ jobs:
           echo '${{ inputs.what-is-new }}' | jq -r '.[]'
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
