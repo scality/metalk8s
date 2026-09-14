@@ -52,15 +52,16 @@ Deploy etcd {{ node }} to {{ dest_version }}:
       - salt: Check pillar on {{ node }}
       - module: Check etcd cluster health
   {%- if loop.previtem is defined %}
-      - metalk8s: Check etcd cluster health for {{ loop.previtem }}
+      - module: Check etcd cluster health for {{ loop.previtem }}
   {%- endif %}
 
 Check etcd cluster health for {{ node }}:
-  metalk8s.module_run:
+  module.run:
     - metalk8s_etcd.check_etcd_health: []
     # Wait at most (31 - 1) * 10s = 300s = 5mn
-    - attempts: 31
-    - sleep_time: 10
+    - retry:
+        attempts: 31
+        interval: 10
     - require:
       - salt: Deploy etcd {{ node }} to {{ dest_version }}
 

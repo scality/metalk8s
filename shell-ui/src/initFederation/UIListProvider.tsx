@@ -31,17 +31,12 @@ type ValidatedUIList = z.infer<typeof UIListSchema>;
 const UIListContext = createContext<{ uis: ValidatedUIList | undefined } | null>(null);
 
 export function useDeployedAppsRetriever(): {
-  retrieveDeployedApps: (selectors?: {
-    kind?: string;
-    name?: string;
-  }) => ValidatedUIData[];
+  retrieveDeployedApps: (selectors?: { kind?: string; name?: string }) => ValidatedUIData[];
 } {
   const uiListContext = useContext(UIListContext);
 
   if (!uiListContext) {
-    throw new Error(
-      "Can't use useDeployedAppsRetriever outside of UIListProvider",
-    );
+    throw new Error("Can't use useDeployedAppsRetriever outside of UIListProvider");
   }
 
   return {
@@ -49,8 +44,7 @@ export function useDeployedAppsRetriever(): {
       if (selectors && uiListContext.uis) {
         return uiListContext.uis.filter((ui) => {
           return (
-            ((selectors.kind && selectors.kind === ui.kind) ||
-              !selectors.kind) &&
+            ((selectors.kind && selectors.kind === ui.kind) || !selectors.kind) &&
             ((selectors.name && selectors.name === ui.name) || !selectors.name)
           );
         });
@@ -59,10 +53,7 @@ export function useDeployedAppsRetriever(): {
     },
   };
 }
-export const useDeployedApps = (selectors?: {
-  kind?: string;
-  name?: string;
-}): ValidatedUIData[] => {
+export const useDeployedApps = (selectors?: { kind?: string; name?: string }): ValidatedUIData[] => {
   const uiListContext = useContext(UIListContext);
 
   if (!uiListContext) {
@@ -72,13 +63,7 @@ export const useDeployedApps = (selectors?: {
   const { retrieveDeployedApps } = useDeployedAppsRetriever();
   return retrieveDeployedApps(selectors);
 };
-export const UIListProvider = ({
-  children,
-  discoveryURL,
-}: {
-  children: React.ReactNode;
-  discoveryURL: string;
-}) => {
+export const UIListProvider = ({ children, discoveryURL }: { children: React.ReactNode; discoveryURL: string }) => {
   const { status, data } = useQuery(
     'discoveredUIs',
     async () => {
@@ -89,7 +74,7 @@ export const UIListProvider = ({
           // Validate the response data with Zod
           const validatedData = UIListSchema.parse(rawData);
           // Apply transformations after validation to ensure type safety
-          const transformedData = validatedData.map(ui => ({
+          const transformedData = validatedData.map((ui) => ({
             ...ui,
             url: removeTrailingSlash(ui.url),
             appHistoryBasePath: removeTrailingSlash(ui.appHistoryBasePath),
@@ -119,9 +104,7 @@ export const UIListProvider = ({
         uis: data,
       }}
     >
-      {(status === 'loading' || status === 'idle') && (
-        <Loader size="massive" centered={true} aria-label="loading" />
-      )}
+      {(status === 'loading' || status === 'idle') && <Loader size="massive" centered={true} aria-label="loading" />}
       {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
       {status === 'success' && children}
     </UIListContext.Provider>

@@ -403,11 +403,13 @@ def ports(
                     " or ".join(process or "nothing" for process in processes),
                 ),
                 address,
-                "nothing listening"
-                if not error_process
-                else " and ".join(
-                    f"'{proc['name']}' (PID: {proc['pid']}) listens on {addr}"
-                    for addr, proc in error_process.items()
+                (
+                    "nothing listening"
+                    if not error_process
+                    else " and ".join(
+                        f"'{proc['name']}' (PID: {proc['pid']}) listens on {addr}"
+                        for addr, proc in error_process.items()
+                    )
                 ),
             )
 

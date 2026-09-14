@@ -3,6 +3,7 @@
 This module contains minion-local operations, see `metalk8s_solutions_k8s.py`
 for the K8s operations in the virtual `metalk8s_solutions` module.
 """
+
 import collections
 import errno
 import os

@@ -12,41 +12,27 @@ export const useFirstTimeLogin = (): {
   const contextValue = React.useContext(FirstTimeLoginContext);
 
   if (contextValue === null) {
-    throw new Error(
-      "Can't use useFirstTimeLogin outside FirstTimeLoginProvider",
-    );
+    throw new Error("Can't use useFirstTimeLogin outside FirstTimeLoginProvider");
   }
 
   return contextValue;
 };
 
-export function FirstTimeLoginProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [firstTimeLogin, setFirstTimeLogin] = useState<boolean | undefined>(
-    undefined,
-  );
+export function FirstTimeLoginProvider({ children }: { children: React.ReactNode }) {
+  const [firstTimeLogin, setFirstTimeLogin] = useState<boolean | undefined>(undefined);
 
   const { userData } = useAuth();
   const userID = userData?.id;
   const ALREADY_LOGGED_IN_USER_IDS = 'alreadyLoggedInUserIds';
 
   // Store the userID in the LocalStorage to maintain a record of all users who have logged in from this machine
-  const ids = useMemo(
-    () => localStorage.getItem(ALREADY_LOGGED_IN_USER_IDS)?.split(',') || [],
-    [],
-  );
+  const ids = useMemo(() => localStorage.getItem(ALREADY_LOGGED_IN_USER_IDS)?.split(',') || [], []);
 
   // Because of the way the OIDC library works there is a redirect to the login page, which causes the firstTimeLogin set to false when redirect to the UI.
   // So we have to check if it is in the process of signing in and if so, don't set the firstTimeLogin to false.
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const isSigningIn =
-    searchParams.has('code') &&
-    searchParams.has('state') &&
-    searchParams.has('session_state');
+  const isSigningIn = searchParams.has('code') && searchParams.has('state') && searchParams.has('session_state');
   useEffect(() => {
     if (isSigningIn) {
       return;

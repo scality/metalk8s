@@ -2,40 +2,23 @@
 {% import_json 'metalk8s/versions.json' as versions with context %}
 
 {# First merge the basic defaults with versions information #}
-{% set version_defaults = salt['grains.filter_by'](
-  salt['grains.filter_by']({
-    'CentOS': {
-      8: {
-        'kubernetes': versions.kubernetes,
-        'repo': {
-          'packages': versions.packages.centos['8'],
-          'images': versions.images,
-        },
-      },
-    },
-    'RedHat': {
-      8: {
-        'kubernetes': versions.kubernetes,
-        'repo': {
-          'packages': versions.packages.redhat['8'],
-          'images': versions.images,
-        },
-      },
-    },
-  }, grain='os'),
-  grain='osmajorrelease', merge=defaults.get('version_defaults'),
-) %}
+{% set version_defaults = salt['grains.filter_by']({
+  'default': {
+    'kubernetes': versions.kubernetes,
+    'repo': {
+      'packages': versions.packages.get(grains.os | lower, {}).get(grains.osmajorrelease | string, {}),
+      'images': versions.images,
+    }
+  },
+}, merge=defaults.get('version_defaults')) %}
 
 {% set packages = salt['grains.filter_by'](
   salt['grains.filter_by']({
+    'default': {},
     'RedHat': {
+      'default': {},
       8: {
-        'python36-psutil': 'python3-psutil',
-        'python36-pyOpenSSL': 'python3-pyOpenSSL',
-        'python36-rpm': 'python3-rpm',
-        'm2crypto': 'python3-m2crypto',
-        'ebtables': 'iptables-ebtables',
-        'yum-plugin-versionlock': 'python3-dnf-plugin-versionlock',
+        'iptables-nft': 'iptables-ebtables',
       }
     },
   }, grain='os_family'),
@@ -59,71 +42,59 @@
   'default': {}
 }, merge=defaults.get('kubernetes')) %}
 
-{% set kubeadm_preflight = salt['grains.filter_by'](
-  salt['grains.filter_by']({
-    'RedHat': {
-      7: {
-        'kubeadm_preflight': {'mandatory': {'sysctl_values': {'net.ipv4.tcp_tw_recycle': 0}}}
-      }
-    }
-  }, grain='os_family'),
-  grain='osmajorrelease',
-  merge=defaults.get('kubeadm_preflight')) %}
+{% set kubeadm_preflight = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('kubeadm_preflight')) %}
 
-{% set repo = salt['grains.filter_by'](
-  salt['grains.filter_by']({
-    'RedHat': {
-      8: {
-        'repositories': {
-          'metalk8s-epel': {
-            'humanname': 'EPEL',
-            'gpgcheck': 1,
-            'gpgkeys': [
-                'RPM-GPG-KEY-metalk8s-epel-8_1',
-            ],
-            'repo_gpg_check': 0,
-            'enabled': 1,
-          },
-          'metalk8s-kubernetes': {
-            'humanname': 'Kubernetes',
-            'gpgcheck': 1,
-            'gpgkeys': [
-                'RPM-GPG-KEY-metalk8s-kubernetes-8_1',
-            ],
-            'repo_gpg_check': 0,
-            'enabled': 1,
-          },
-          'metalk8s-docker-ce': {
-            'humanname': 'Docker CE',
-            'gpgcheck': 1,
-            'gpgkeys': [
-                'RPM-GPG-KEY-metalk8s-docker-ce-8_1',
-            ],
-            'repo_gpg_check': 0,
-            'enabled': 1,
-          },
-          'metalk8s-saltstack': {
-            'humanname': 'SaltStack',
-            'gpgcheck': 1,
-            'gpgkeys': [
-                'RPM-GPG-KEY-metalk8s-saltstack-8_1',
-            ],
-            'repo_gpg_check': 0,
-            'enabled': 1,
-          },
-          'metalk8s-scality': {
-            'humanname': 'Scality',
-            'gpgcheck': 0,
-            'gpgkeys': [],
-            'repo_gpg_check': 0,
-            'enabled': 1,
-          },
-        }
+{% set repo = salt['grains.filter_by']({
+  'default': {
+    'repositories': {
+      'metalk8s-epel': {
+        'humanname': 'EPEL',
+        'gpgcheck': 1,
+        'gpgkeys': [
+            'RPM-GPG-KEY-metalk8s-epel-' ~ grains.osmajorrelease ~ '_1',
+        ],
+        'repo_gpg_check': 0,
+        'enabled': 1,
+      },
+      'metalk8s-kubernetes': {
+        'humanname': 'Kubernetes',
+        'gpgcheck': 1,
+        'gpgkeys': [
+            'RPM-GPG-KEY-metalk8s-kubernetes-' ~ grains.osmajorrelease ~ '_1',
+        ],
+        'repo_gpg_check': 0,
+        'enabled': 1,
+      },
+      'metalk8s-docker-ce': {
+        'humanname': 'Docker CE',
+        'gpgcheck': 1,
+        'gpgkeys': [
+            'RPM-GPG-KEY-metalk8s-docker-ce-' ~ grains.osmajorrelease ~ '_1',
+        ],
+        'repo_gpg_check': 0,
+        'enabled': 1,
+      },
+      'metalk8s-saltstack': {
+        'humanname': 'SaltStack',
+        'gpgcheck': 1,
+        'gpgkeys': [
+            'RPM-GPG-KEY-metalk8s-saltstack-' ~ grains.osmajorrelease ~ '_1',
+        ],
+        'repo_gpg_check': 0,
+        'enabled': 1,
+      },
+      'metalk8s-scality': {
+        'humanname': 'Scality',
+        'gpgcheck': 0,
+        'gpgkeys': [],
+        'repo_gpg_check': 0,
+        'enabled': 1,
       },
     },
-  }, grain='os_family'),
-  grain='osmajorrelease', merge=defaults.get('repo')
-) %}
+  },
+}, merge=defaults.get('repo')) %}
 
 {% set networks = salt['grains.filter_by']({
   'default': {}

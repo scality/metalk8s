@@ -22,9 +22,7 @@ describe('useFirstTimeLogin hook', () => {
     //S+E
     const { result } = renderHook(() => useFirstTimeLogin());
     //V
-    expect(result.error).toEqual(
-      Error("Can't use useFirstTimeLogin outside FirstTimeLoginProvider"),
-    );
+    expect(result.error).toEqual(Error("Can't use useFirstTimeLogin outside FirstTimeLoginProvider"));
   });
 
   it('should return firstTimeLogin as true if the user is logging in for the first time', async () => {

@@ -17,7 +17,6 @@ import subprocess
 import sys
 import time
 
-
 # Utils {{{
 
 TRUTHY_VALUES = {"y", "yes", "t", "true", "on", "1"}

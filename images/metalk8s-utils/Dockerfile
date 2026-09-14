@@ -116,7 +116,7 @@ gpgkey=https://pkgs.k8s.io/core:/stable:/v%s/rpm/repodata/repomd.xml.key\n" \
         && \
     microdnf clean all
 
-# etcd is not packaged in RHEL/Rocky/CentOS 9 Extras repository, so we download/install
+# etcd is not packaged in RHEL/Rocky 9 Extras repository, so we download/install
 # it manually
 RUN mkdir /tmp/etcd-download && \
     curl -L https://github.com/etcd-io/etcd/releases/download/${ETCD_VERSION}/etcd-${ETCD_VERSION}-linux-amd64.tar.gz \

@@ -32,7 +32,7 @@ runs:
         ssh -F ssh_config ${{ inputs.SSH_OPTIONS }} ${{ inputs.NODE }} "${{ inputs.COMMAND }}" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
     - name: Set command output
-      uses: actions/github-script@v6
+      uses: actions/github-script@v9
       if: inputs.CAPTURE_RESULT != 'false'
       id: command
       with:

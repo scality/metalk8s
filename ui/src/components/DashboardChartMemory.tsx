@@ -1,16 +1,7 @@
-import {
-  LineTimeSerieChart,
-  useMetricsTimeSpan,
-  useChartId,
-} from '@scality/core-ui/dist/next';
+import { LineTimeSerieChart, useMetricsTimeSpan, useChartId } from '@scality/core-ui/dist/next';
 import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 import { useCallback } from 'react';
-import {
-  useNodes,
-  useNodeAddressesSelector,
-  useSingleChartSerie,
-  useShowQuantileChart,
-} from '../hooks';
+import { useNodes, useNodeAddressesSelector, useSingleChartSerie, useShowQuantileChart } from '../hooks';
 import {
   getNodesMemoryOutpassingThresholdQuery,
   getNodesMemoryQuantileQuery,
@@ -48,10 +39,7 @@ const DashboardChartMemoryWithoutQuantiles = () => {
     getQuery: (timeSpanProps) => getNodesMemoryQuery(timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) => {
-        const result = getMultiResourceSeriesForChart(
-          prometheusResult,
-          nodeAddresses,
-        );
+        const result = getMultiResourceSeriesForChart(prometheusResult, nodeAddresses);
         return result;
       },
       //Expect warning because of complex dependency

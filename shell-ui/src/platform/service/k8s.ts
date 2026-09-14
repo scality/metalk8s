@@ -28,8 +28,7 @@ export const useGetNodesCount = (
     };
 
     navbarElement.addEventListener(AUTHENTICATED_EVENT, onAuthenticated);
-    return () =>
-      navbarElement.removeEventListener(AUTHENTICATED_EVENT, onAuthenticated);
+    return () => navbarElement.removeEventListener(AUTHENTICATED_EVENT, onAuthenticated);
   }, []);
   const queryNodesResult = useQuery(getNodesCountQuery(k8sUrl, token));
   queryNodesResult.nodesCount = queryNodesResult.data;
@@ -63,18 +62,14 @@ export const useGetVolumesCount = (
     };
 
     navbarElement.addEventListener(AUTHENTICATED_EVENT, onAuthenticated);
-    return () =>
-      navbarElement.removeEventListener(AUTHENTICATED_EVENT, onAuthenticated);
+    return () => navbarElement.removeEventListener(AUTHENTICATED_EVENT, onAuthenticated);
   }, []);
   const queryVolumesResult = useQuery(getVolumesCountQuery(k8sUrl, token));
   queryVolumesResult.volumesCount = queryVolumesResult.data;
   delete queryVolumesResult.data;
   return queryVolumesResult;
 };
-export const getNodesCountQuery = (
-  k8sUrl: string,
-  token?: string | null,
-): typeof useQuery => {
+export const getNodesCountQuery = (k8sUrl: string, token?: string | null): typeof useQuery => {
   return {
     // @ts-expect-error - FIXME when you are working on it
     queryKey: 'countNodes',
@@ -96,10 +91,7 @@ export const getNodesCountQuery = (
     enabled: token ? true : false,
   };
 };
-export const getVolumesCountQuery = (
-  k8sUrl: string,
-  token?: string | null,
-): typeof useQuery => {
+export const getVolumesCountQuery = (k8sUrl: string, token?: string | null): typeof useQuery => {
   return {
     // @ts-expect-error - FIXME when you are working on it
     queryKey: 'countVolumes',

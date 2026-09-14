@@ -47,9 +47,7 @@ describe('the dashboard inventory panel', () => {
     // Render
     render(<DashboardServices />);
     // Verify
-    expect(
-      screen.getAllByLabelText(`status ${STATUS_HEALTH}`),
-    ).toHaveLength(8);
+    expect(screen.getAllByLabelText(`status ${STATUS_HEALTH}`)).toHaveLength(8);
   });
   test('displays the services panel and display all 8 warning statuses when warning alerts are present as well as link to the alerts page', async () => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()
@@ -57,9 +55,7 @@ describe('the dashboard inventory panel', () => {
     // Render
     render(<DashboardServices />);
     // Verify
-    expect(
-      screen.getAllByLabelText(`status ${STATUS_WARNING}`),
-    ).toHaveLength(8);
+    expect(screen.getAllByLabelText(`status ${STATUS_WARNING}`)).toHaveLength(8);
     expect(screen.getAllByTestId('alert-link')).toHaveLength(8);
   });
   test('displays the services panel and display all 8 critical statuses when warning alerts are present as well as link to the alerts page', async () => {
@@ -68,9 +64,7 @@ describe('the dashboard inventory panel', () => {
     // Render
     render(<DashboardServices />);
     // Verify
-    expect(
-      screen.getAllByLabelText(`status ${STATUS_CRITICAL}`),
-    ).toHaveLength(8);
+    expect(screen.getAllByLabelText(`status ${STATUS_CRITICAL}`)).toHaveLength(8);
     expect(screen.getAllByTestId('alert-link')).toHaveLength(8);
   });
 });

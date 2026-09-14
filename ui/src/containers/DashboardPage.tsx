@@ -43,8 +43,8 @@ const DashboardGrid = styled.div`
     display: flex;
     flex-direction: column;
 
-    // Needed to avoid dynamically sized charts to expand infinitely on refresh
-    // more info here: https://www.w3.org/TR/css3-grid-layout/#min-size-auto
+    /* Needed to avoid dynamically sized charts to expand infinitely on refresh */
+    /* more info here: https://www.w3.org/TR/css3-grid-layout/#min-size-auto */
     min-width: 0;
     min-height: 0;
   }

@@ -1,5 +1,4 @@
-"""Utiliy methods to interact with Kubernetes Cron Job in MetalK8s.
-"""
+"""Utiliy methods to interact with Kubernetes Cron Job in MetalK8s."""
 
 import time
 from salt.exceptions import CommandExecutionError

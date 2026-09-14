@@ -3,7 +3,6 @@
 
 """Tasks for code auto-formatting."""
 
-
 import shlex
 from typing import Callable, Iterator, Tuple
 

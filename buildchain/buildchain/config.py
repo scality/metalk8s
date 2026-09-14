@@ -6,7 +6,6 @@
 Those can be edited by the user to customize/configure the build system.
 """
 
-
 import os
 import shlex
 import enum
@@ -15,7 +14,6 @@ from typing import Tuple
 from pathlib import Path
 
 from buildchain import ROOT
-
 
 # /!\ All the global defined here must be documented in BUILDING.md /!\
 

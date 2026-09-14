@@ -1,0 +1,8 @@
+kind: Enhanced
+body: |
+  Bump `kube-apiserver` `AuthenticationConfiguration` apiVersion to
+  `apiserver.config.k8s.io/v1` (GA in Kubernetes 1.34)
+time: 2026-07-27T09:10:19.556322174Z
+custom:
+  Pull: 5001
+  CommentId: backfill

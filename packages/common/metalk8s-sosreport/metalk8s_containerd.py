@@ -20,7 +20,6 @@ except ImportError:
 
 
 class MetalK8sContainerd(Plugin, RedHatPlugin):
-
     """containerd engine"""
 
     plugin_name = "metalk8s_containerd"

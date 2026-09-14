@@ -1,0 +1,8 @@
+kind: Enhanced
+body: |
+  Bump containerd to [2.2.5](https://github.com/containerd/containerd/releases/tag/v2.2.5)
+  The pause image has been bumped to 3.10.1
+time: 2026-07-27T09:10:19.556322168Z
+custom:
+  Pull: 4991
+  CommentId: backfill

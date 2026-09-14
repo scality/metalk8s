@@ -78,9 +78,11 @@ class AlertRule(Serializable):
     def labels_to_json_path_filters(self, **updates):
         """Build JSON Path filters matching the labels."""
         return " && ".join(
-            f"@.labels.{key} === '{val}'"
-            if key in EXACT_MATCH_LABELS
-            else f"@.labels.{key}.match(new RegExp('^(?:{val})$'))"
+            (
+                f"@.labels.{key} === '{val}'"
+                if key in EXACT_MATCH_LABELS
+                else f"@.labels.{key}.match(new RegExp('^(?:{val})$'))"
+            )
             for key, val in sorted(
                 dict(self.labels, **updates).items(),
                 key=operator.itemgetter(0),

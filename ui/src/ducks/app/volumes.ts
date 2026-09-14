@@ -1,22 +1,7 @@
-import {
-  Effect,
-  takeLatest,
-  call,
-  put,
-  delay,
-  select,
-} from 'redux-saga/effects';
+import { Effect, takeLatest, call, put, delay, select } from 'redux-saga/effects';
 import type { RootState } from '../reducer';
-import {
-  addNotificationErrorAction,
-  addNotificationSuccessAction,
-} from './notifications';
-import {
-  SPARSE_LOOP_DEVICE,
-  RAW_BLOCK_DEVICE,
-  REFRESH_TIMEOUT,
-  LVM_LOGICAL_VOLUME,
-} from '../../constants';
+import { addNotificationErrorAction, addNotificationSuccessAction } from './notifications';
+import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE, REFRESH_TIMEOUT, LVM_LOGICAL_VOLUME } from '../../constants';
 import type { Metalk8sV1alpha1Volume } from '../../services/k8s/Metalk8sVolumeClient.generated';
 import {
   V1PersistentVolume,
@@ -44,8 +29,7 @@ const FETCH_PERSISTENT_VOLUME_CLAIMS = 'FETCH_PERSISTENT_VOLUME_CLAIMS';
 const SET_PERSISTENT_VOLUME_CLAIMS = 'SET_PERSISTENT_VOLUME_CLAIMS';
 const REFRESH_PERSISTENT_VOLUMES = 'REFRESH_PERSISTENT_VOLUMES';
 const STOP_REFRESH_PERSISTENT_VOLUMES = 'STOP_REFRESH_PERSISTENT_VOLUMES';
-const UPDATE_PERSISTENT_VOLUMES_REFRESHING =
-  'UPDATE_PERSISTENT_VOLUMES_REFRESHING';
+const UPDATE_PERSISTENT_VOLUMES_REFRESHING = 'UPDATE_PERSISTENT_VOLUMES_REFRESHING';
 const UPDATE_VOLUMES = 'UPDATE_VOLUMES';
 const FETCH_CURRENT_VOLUME_OBJECT = 'FETCH_CURRENT_VOLUME_OBJECT';
 const SET_CURRENT_VOLUME_OBJECT = 'SET_CURRENT_VOLUME_OBJECT';
@@ -76,10 +60,7 @@ export type VolumesState = {
     data: Metalk8sV1alpha1Volume | null | undefined;
   };
 };
-export default function reducer(
-  state: VolumesState = defaultState,
-  action: any = {},
-): VolumesState {
+export default function reducer(state: VolumesState = defaultState, action: any = {}): VolumesState {
   switch (action.type) {
     case SET_VOLUMES:
       return { ...state, list: action.payload };
@@ -149,9 +130,7 @@ export const fetchPersistentVolumeClaimAction = () => {
     type: FETCH_PERSISTENT_VOLUME_CLAIMS,
   };
 };
-export const setPersistentVolumeClaimAction = (
-  payload: V1PersistentVolumeClaim[],
-) => {
+export const setPersistentVolumeClaimAction = (payload: V1PersistentVolumeClaim[]) => {
   return {
     type: SET_PERSISTENT_VOLUME_CLAIMS,
     payload,
@@ -230,19 +209,15 @@ export const fetchCurrentVolumeObjectAction = (volumeName: string) => {
     volumeName,
   };
 };
-export const setCurrentVolumeObjectAction = (payload: {
-  data: Metalk8sV1alpha1Volume | null | undefined;
-}) => {
+export const setCurrentVolumeObjectAction = (payload: { data: Metalk8sV1alpha1Volume | null | undefined }) => {
   return {
     type: SET_CURRENT_VOLUME_OBJECT,
     payload,
   };
 };
 // Selectors
-export const volumesRefreshingSelector = (state: any): boolean =>
-  state.app.volumes.isRefreshing;
-export const persistentVolumesRefreshingSelector = (state: any): boolean =>
-  state.app.volumes.isPVRefreshing;
+export const volumesRefreshingSelector = (state: any): boolean => state.app.volumes.isRefreshing;
+export const persistentVolumesRefreshingSelector = (state: any): boolean => state.app.volumes.isPVRefreshing;
 
 const intlSelector = (state: RootState) => state.config.intl;
 
@@ -273,9 +248,7 @@ export function* fetchVolumes(): Generator<
       isLoading: true,
     }),
   );
-  const customObjectsApi = yield select(
-    (state: RootState) => state.config.customObjectsApi,
-  );
+  const customObjectsApi = yield select((state: RootState) => state.config.customObjectsApi);
 
   const result = yield call(() =>
     // @ts-expect-error - FIXME when you are working on it
@@ -312,9 +285,7 @@ export function* fetchPersistentVolumes(): Generator<
       body: null;
     }
 > {
-  const storageApi = yield select(
-    (state: RootState) => state.config.storageApi,
-  );
+  const storageApi = yield select((state: RootState) => state.config.storageApi);
   // @ts-expect-error - FIXME when you are working on it
   const result = yield call(() => storageApi.getPersistentVolumes());
 
@@ -322,9 +293,7 @@ export function* fetchPersistentVolumes(): Generator<
   if (!result.error) {
     //the storage capacity in the spec may not contain the reasonable/correct unit size
     const pvs = result?.body?.items?.map((item) => {
-      item.spec.capacity.storage = bytesToSize(
-        allSizeUnitsToBytes(item.spec.capacity.storage),
-      );
+      item.spec.capacity.storage = bytesToSize(allSizeUnitsToBytes(item.spec.capacity.storage));
       return item;
     });
     yield put(setPersistentVolumesAction(pvs ?? []));
@@ -344,9 +313,7 @@ export function* fetchStorageClass(): Generator<
     }
 > {
   yield put(updateStorageClassAction(true));
-  const storageApi = yield select(
-    (state: RootState) => state.config.storageApi,
-  );
+  const storageApi = yield select((state: RootState) => state.config.storageApi);
   // @ts-expect-error - FIXME when you are working on it
   const result = yield call(() => storageApi.getStorageClass());
 
@@ -441,9 +408,7 @@ export function* createVolumes({
       newVolumes[i].storageClass &&
       ((newVolumes[i].type === SPARSE_LOOP_DEVICE && newVolumes[i].size) ||
         (newVolumes[i].type === RAW_BLOCK_DEVICE && newVolumes[i].path) ||
-        (newVolumes[i].type === LVM_LOGICAL_VOLUME &&
-          newVolumes[i].size &&
-          newVolumes[i].vgName));
+        (newVolumes[i].type === LVM_LOGICAL_VOLUME && newVolumes[i].size && newVolumes[i].vgName));
 
     if (isNewVolumeValid) {
       if (newVolumes[i].type === SPARSE_LOOP_DEVICE) {
@@ -477,9 +442,7 @@ export function* createVolumes({
           };
         }
       }
-      const customObjectsApi = yield select(
-        (state: RootState) => state.config.customObjectsApi,
-      );
+      const customObjectsApi = yield select((state: RootState) => state.config.customObjectsApi);
       const result = yield call(() =>
         // @ts-expect-error - FIXME when you are working on it
         customObjectsApi.createMetalk8sV1alpha1Volume(body),
@@ -490,10 +453,7 @@ export function* createVolumes({
       if (!result.error) {
         // @ts-expect-error - FIXME when you are working on it
         const { history } = yield select((state: RootState) => state.history);
-        yield call(
-          history,
-          `/volumes/${newVolumes[i].name}/overview?node=${newVolumes[i].node}`,
-        );
+        yield call(history, `/volumes/${newVolumes[i].name}/overview?node=${newVolumes[i].node}`);
         yield put(
           addNotificationSuccessAction({
             // @ts-expect-error - FIXME when you are working on it
@@ -579,9 +539,7 @@ export function* fetchPersistentVolumeClaims(): Generator<
       body: null;
     }
 > {
-  const storageApi = yield select(
-    (state: RootState) => state.config.storageApi,
-  );
+  const storageApi = yield select((state: RootState) => state.config.storageApi);
   // @ts-expect-error - FIXME when you are working on it
   const result = yield call(() => storageApi.getPersistentVolumeClaims());
 
@@ -590,11 +548,7 @@ export function* fetchPersistentVolumeClaims(): Generator<
     yield put(setPersistentVolumeClaimAction(result.body.items));
   }
 }
-export function* fetchCurrentVolumeObject({
-  volumeName,
-}: {
-  volumeName: string;
-}): Generator<
+export function* fetchCurrentVolumeObject({ volumeName }: { volumeName: string }): Generator<
   Effect,
   void,
   | {
@@ -605,9 +559,7 @@ export function* fetchCurrentVolumeObject({
       body: null;
     }
 > {
-  const customObjectsApi = yield select(
-    (state: RootState) => state.config.customObjectsApi,
-  );
+  const customObjectsApi = yield select((state: RootState) => state.config.customObjectsApi);
   const result = yield call(() =>
     // @ts-expect-error - FIXME when you are working on it
     customObjectsApi.getMetalk8sV1alpha1Volume(volumeName),
@@ -653,11 +605,7 @@ export function* refreshPersistentVolumes(): Generator<
     }
   }
 }
-export function* stopRefreshPersistentVolumes(): Generator<
-  Effect,
-  void,
-  boolean
-> {
+export function* stopRefreshPersistentVolumes(): Generator<Effect, void, boolean> {
   yield put(updatePersistentVolumesRefreshingAction(false));
 }
 export function* deleteVolume({ payload }: { payload: string }): Generator<
@@ -672,9 +620,7 @@ export function* deleteVolume({ payload }: { payload: string }): Generator<
     }
   | boolean
 > {
-  const customObjectsApi = yield select(
-    (state: RootState) => state.config.customObjectsApi,
-  );
+  const customObjectsApi = yield select((state: RootState) => state.config.customObjectsApi);
   const result = yield call(() =>
     // @ts-expect-error - FIXME when you are working on it
     customObjectsApi.deleteMetalk8sV1alpha1Volume(payload),
@@ -734,10 +680,7 @@ export function* volumesSaga(): Generator<Effect, void, void> {
   yield takeLatest(STOP_REFRESH_VOLUMES, stopRefreshVolumes);
   yield takeLatest(FETCH_PERSISTENT_VOLUME_CLAIMS, fetchPersistentVolumeClaims);
   yield takeLatest(REFRESH_PERSISTENT_VOLUMES, refreshPersistentVolumes);
-  yield takeLatest(
-    STOP_REFRESH_PERSISTENT_VOLUMES,
-    stopRefreshPersistentVolumes,
-  );
+  yield takeLatest(STOP_REFRESH_PERSISTENT_VOLUMES, stopRefreshPersistentVolumes);
   // @ts-expect-error - FIXME when you are working on it
   yield takeLatest(FETCH_CURRENT_VOLUME_OBJECT, fetchCurrentVolumeObject);
 }

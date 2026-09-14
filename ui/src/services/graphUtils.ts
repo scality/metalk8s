@@ -1,7 +1,4 @@
-import type {
-  PrometheusQueryResult,
-  RangeMatrixResult,
-} from './prometheus/api';
+import type { PrometheusQueryResult, RangeMatrixResult } from './prometheus/api';
 import {
   CHART_COLOR_VALUES,
   CLUSTER_AVERAGE,
@@ -35,9 +32,8 @@ export const getMultiResourceSeriesForChart = (
       throw new Error('Failed to fetch data from Prometheus');
     }
     const matrixResult: RangeMatrixResult['result'][number] =
-      results?.data?.result?.find(
-        (i) => i?.metric?.instance === `${internalIP}:${PORT_NODE_EXPORTER}`,
-      ) || results[index];
+      results?.data?.result?.find((i) => i?.metric?.instance === `${internalIP}:${PORT_NODE_EXPORTER}`) ||
+      results[index];
     return convertMatrixResultToSerie(matrixResult, node.name);
   });
 };
@@ -57,15 +53,11 @@ export const fiterMetricValues = (
   }
   if (Object.prototype.hasOwnProperty.call(labels, 'device')) {
     return prometheusResult.data?.result.find(
-      (item) =>
-        item.metric.instance === labels.instance &&
-        item.metric.device === labels.device,
+      (item) => item.metric.instance === labels.instance && item.metric.device === labels.device,
     );
   }
 
-  return prometheusResult.data.result.find(
-    (item) => item.metric.instance === labels.instance,
-  );
+  return prometheusResult.data.result.find((item) => item.metric.instance === labels.instance);
 };
 // to retrieve Q90, median and Q5 for symmetrical chart
 // Results are in ascending order: [Q05, Q50, Q90]
@@ -81,49 +73,31 @@ export const getQuantileSymmetricalSeries = (
   return {
     above: [
       {
-        ...convertPrometheusResultToSerie(
-          resultAbove[2],
-          `Q90-${metricPrefixAbove}`,
-        ),
+        ...convertPrometheusResultToSerie(resultAbove[2], `Q90-${metricPrefixAbove}`),
         metricPrefix: metricPrefixAbove,
       },
       {
-        ...convertPrometheusResultToSerie(
-          resultAbove[1],
-          `Median-${metricPrefixAbove}`,
-        ),
+        ...convertPrometheusResultToSerie(resultAbove[1], `Median-${metricPrefixAbove}`),
         metricPrefix: metricPrefixAbove,
       },
       {
-        ...convertPrometheusResultToSerie(
-          resultAbove[0],
-          `Q5-${metricPrefixAbove}`,
-        ),
+        ...convertPrometheusResultToSerie(resultAbove[0], `Q5-${metricPrefixAbove}`),
         metricPrefix: metricPrefixAbove,
       },
     ],
     below: [
       {
-        ...convertPrometheusResultToSerie(
-          resultBelow[0],
-          `Q5-${metricPrefixBelow}`,
-        ),
+        ...convertPrometheusResultToSerie(resultBelow[0], `Q5-${metricPrefixBelow}`),
 
         metricPrefix: metricPrefixBelow,
       },
       {
-        ...convertPrometheusResultToSerie(
-          resultBelow[1],
-          `Median-${metricPrefixBelow}`,
-        ),
+        ...convertPrometheusResultToSerie(resultBelow[1], `Median-${metricPrefixBelow}`),
 
         metricPrefix: metricPrefixBelow,
       },
       {
-        ...convertPrometheusResultToSerie(
-          resultBelow[2],
-          `Q90-${metricPrefixBelow}`,
-        ),
+        ...convertPrometheusResultToSerie(resultBelow[2], `Q90-${metricPrefixBelow}`),
 
         metricPrefix: metricPrefixBelow,
       },
@@ -193,10 +167,7 @@ export const getMultipleSymmetricalSeries = (
   );
 };
 
-const convertMatrixResultToSerie = (
-  matrixResult: RangeMatrixResult['result'][0],
-  resource: string,
-): Serie => {
+const convertMatrixResultToSerie = (matrixResult: RangeMatrixResult['result'][0], resource: string): Serie => {
   const prometheusData = matrixResult?.values ?? [];
   return {
     data: prometheusData,
@@ -209,17 +180,9 @@ const convertMatrixResultToSerie = (
 };
 
 // return a single serie
-export const convertPrometheusResultToSerie = (
-  result: PrometheusQueryResult,
-  serieName: string,
-): Serie => {
-  if (
-    result &&
-    result.status === 'success' &&
-    result.data.resultType === 'matrix'
-  ) {
-    const matrixResult: RangeMatrixResult['result'][number] =
-      result?.data?.result[0];
+export const convertPrometheusResultToSerie = (result: PrometheusQueryResult, serieName: string): Serie => {
+  if (result && result.status === 'success' && result.data.resultType === 'matrix') {
+    const matrixResult: RangeMatrixResult['result'][number] = result?.data?.result[0];
     return convertMatrixResultToSerie(matrixResult, serieName);
   }
 
@@ -269,11 +232,7 @@ export const getSeriesForSymmetricalChart = (
     below: [],
   };
 
-  if (
-    resultAbove &&
-    resultAbove.status === 'success' &&
-    resultAbove.data.resultType === 'matrix'
-  ) {
+  if (resultAbove && resultAbove.status === 'success' && resultAbove.data.resultType === 'matrix') {
     const serieAbove = {
       metricPrefix: metricPrefixAbove,
       data: resultAbove?.data?.result[0]?.values || [],
@@ -285,11 +244,7 @@ export const getSeriesForSymmetricalChart = (
     series.above.push(serieAbove);
   }
 
-  if (
-    resultBelow &&
-    resultBelow.status === 'success' &&
-    resultBelow.data.resultType === 'matrix'
-  ) {
+  if (resultBelow && resultBelow.status === 'success' && resultBelow.data.resultType === 'matrix') {
     const serieBelow = {
       metricPrefix: metricPrefixBelow,
       data: resultBelow?.data?.result[0]?.values || [],
@@ -302,11 +257,7 @@ export const getSeriesForSymmetricalChart = (
   }
 
   // show cluster average is activated
-  if (
-    resultAvgAbove &&
-    resultAvgAbove.status === 'success' &&
-    resultAvgAbove.data.resultType === 'matrix'
-  ) {
+  if (resultAvgAbove && resultAvgAbove.status === 'success' && resultAvgAbove.data.resultType === 'matrix') {
     const serieAvgAbove = {
       metricPrefix: metricPrefixAbove,
       data: resultAvgAbove?.data?.result[0]?.values || [],
@@ -319,11 +270,7 @@ export const getSeriesForSymmetricalChart = (
     series.above.push(serieAvgAbove);
   }
 
-  if (
-    resultAvgBelow &&
-    resultAvgBelow.status === 'success' &&
-    resultAvgBelow.data.resultType === 'matrix'
-  ) {
+  if (resultAvgBelow && resultAvgBelow.status === 'success' && resultAvgBelow.data.resultType === 'matrix') {
     // the negative value
     if (resultAvgBelow.data.resultType !== 'matrix') {
       throw new Error('Failed to fetch data from Prometheus');
@@ -358,9 +305,7 @@ export const getNodesInterfacesString = (nodeIPsInfo): [] => {
 };
 
 // Shared function to create color mapping for chart series
-export const createColorSet = (
-  seriesNames: string[],
-): Record<string, string> => {
+export const createColorSet = (seriesNames: string[]): Record<string, string> => {
   const colorMapping: Record<string, string> = {};
   seriesNames.forEach((name, index) => {
     // Cycle through available colors
@@ -371,10 +316,7 @@ export const createColorSet = (
 };
 
 // Custom color mapping for symmetrical quantile chart
-export const createSymmetricalQuantileColorSet = (
-  aboveSeries: any[],
-  belowSeries: any[],
-): Record<string, string> => {
+export const createSymmetricalQuantileColorSet = (aboveSeries: any[], belowSeries: any[]): Record<string, string> => {
   const colorMapping: Record<string, string> = {};
 
   // Above series colors: Q90 = cyan, Median = yellow, Q5 = blue
@@ -407,14 +349,8 @@ export const createSymmetricalQuantileColorSet = (
 // Utility function to determine time format based on interval
 export const getTimeFormatForInterval = (
   interval: number,
-):
-  | 'day-month-abbreviated-hour-minute'
-  | 'day-month-abbreviated-hour-minute-second'
-  | 'long-date-without-weekday' => {
-  if (
-    interval === SAMPLE_FREQUENCY_LAST_SEVEN_DAYS ||
-    interval === SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS
-  ) {
+): 'day-month-abbreviated-hour-minute' | 'day-month-abbreviated-hour-minute-second' | 'long-date-without-weekday' => {
+  if (interval === SAMPLE_FREQUENCY_LAST_SEVEN_DAYS || interval === SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS) {
     return 'day-month-abbreviated-hour-minute';
   }
   if (interval === SAMPLE_FREQUENCY_LAST_ONE_HOUR) {

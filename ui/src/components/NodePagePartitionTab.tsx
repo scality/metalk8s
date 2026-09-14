@@ -21,12 +21,9 @@ const NodePagePartitionTab = (props: Record<string, any>) => {
   const intl = useIntl();
   // To redirect to the right Node(Detailed) dashboard in Grafana
   const api = useTypedSelector((state) => state.config.api);
-  const unameInfos = useTypedSelector(
-    (state) => state.app.monitoring.unameInfo,
-  );
+  const unameInfos = useTypedSelector((state) => state.app.monitoring.unameInfo);
   const hostnameLabel = unameInfos.find(
-    (unameInfo) =>
-      unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
+    (unameInfo) => unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
   )?.metric?.nodename;
   return (
     <Box height="100%" display="flex" flexDirection={'column'}>

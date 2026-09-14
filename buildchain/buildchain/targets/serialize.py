@@ -166,12 +166,12 @@ def _yaml_dump(data: Sequence[Any], fp: IO[Any]) -> None:
         YAMLDocument.ByteString, _bytestring_representer  # type: ignore
     )
     try:
-        dumper.open()  # type: ignore
+        dumper.open()
         for document in data:
             dumper.represent(document)
-        dumper.close()  # type: ignore
+        dumper.close()
     finally:
-        dumper.dispose()  # type: ignore
+        dumper.dispose()
 
 
 # }}}

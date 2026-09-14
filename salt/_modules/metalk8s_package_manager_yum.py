@@ -2,6 +2,7 @@
 Describes our custom way to deal with yum packages
 so that we can support downgrade in metalk8s
 """
+
 import logging
 
 from salt.exceptions import CommandExecutionError

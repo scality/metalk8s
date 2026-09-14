@@ -3,13 +3,13 @@ module github.com/scality/metalk8s/operator
 go 1.24.0
 
 require (
-	github.com/go-logr/logr v1.4.2
+	github.com/go-logr/logr v1.4.3
 	github.com/onsi/ginkgo/v2 v2.22.0
 	github.com/onsi/gomega v1.36.1
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.33.10
-	k8s.io/apimachinery v0.33.10
-	k8s.io/client-go v0.33.10
+	k8s.io/api v0.33.13
+	k8s.io/apimachinery v0.33.13
+	k8s.io/client-go v0.33.13
 	sigs.k8s.io/controller-runtime v0.21.0
 )
 

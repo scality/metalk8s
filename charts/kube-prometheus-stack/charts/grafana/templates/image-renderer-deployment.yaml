@@ -27,6 +27,9 @@ spec:
   strategy:
     {{- toYaml . | trim | nindent 4 }}
   {{- end }}
+  {{- with .Values.imageRenderer.progressDeadlineSeconds }}
+  progressDeadlineSeconds: {{ . }}
+  {{- end }}
   template:
     metadata:
       labels:
@@ -46,6 +49,10 @@ spec:
       {{- with .Values.imageRenderer.serviceAccountName }}
       serviceAccountName: "{{ . }}"
       {{- end }}
+      automountServiceAccountToken: {{ .Values.imageRenderer.automountServiceAccountToken }}
+      {{- if kindIs "bool" .Values.imageRenderer.hostUsers }}
+      hostUsers: {{ .Values.imageRenderer.hostUsers }}
+      {{- end }}
       {{- with .Values.imageRenderer.securityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -54,14 +61,19 @@ spec:
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.imageRenderer.dnsPolicy }}
+      dnsPolicy: {{ .Values.imageRenderer.dnsPolicy }}
+      {{- end }}
+      {{- with .Values.imageRenderer.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.imageRenderer.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
-      {{- with .Values.imageRenderer.image.pullSecrets }}
+      {{- if or .Values.imageRenderer.image.pullSecrets .Values.global.imagePullSecrets }}
       imagePullSecrets:
-        {{- range . }}
-        - name: {{ tpl . $root }}
-        {{- end}}
+        {{- include "grafana.imagePullSecrets" (dict "root" $root "imagePullSecrets" .Values.imageRenderer.image.pullSecrets) | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}-image-renderer
@@ -84,11 +96,18 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: {{ .Values.imageRenderer.healthcheckPath }}
               port: {{ .Values.imageRenderer.service.portName }}
           env:
             - name: HTTP_PORT
               value: {{ .Values.imageRenderer.service.targetPort | quote }}
+          {{- if .Values.imageRenderer.service.enabled }}
+            - name: AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.imageRenderer.existingSecret | default (printf "%s-image-renderer" (include "grafana.imageRenderer.fullname" .)) }}
+                  key: token
+          {{- end }}
           {{- if .Values.imageRenderer.serviceMonitor.enabled }}
             - name: ENABLE_METRICS
               value: "true"

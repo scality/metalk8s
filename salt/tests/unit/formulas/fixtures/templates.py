@@ -3,13 +3,13 @@
 This will list all files with one of the extensions in `TEMPLATE_EXTS`, filtering out
 directories listed in `EXCLUDE_DIRS`.
 """
+
 from pathlib import Path
 from typing import List, Optional
 
 import pytest
 
 from tests.unit.formulas import paths
-
 
 TEMPLATE_EXTS = ["sls", "sls.in", "j2", "j2.in", "jinja"]
 EXCLUDE_DIRS = [  # relative to paths.SALT_DIR

@@ -17,9 +17,9 @@ import { useIntl } from 'react-intl';
 //  Pod Succeeded => Green
 //  Pod Failed => Red
 //  Pod Unknown => Red
-const StatusText = styled.div<{ status; numContainer?; numContainerRunning? }>`
+const StatusText = styled.div<{ $status; $numContainer?; $numContainerRunning? }>`
   color: ${(props) => {
-    const { status, numContainer, numContainerRunning } = props;
+    const { $status: status, $numContainer: numContainer, $numContainerRunning: numContainerRunning } = props;
 
     if (status === STATUS_RUNNING && numContainer === numContainerRunning) {
       return props.theme.statusHealthy;
@@ -76,11 +76,11 @@ const NodePagePodsTab = React.memo((props) => {
         Cell: (cellProps) => {
           const { status, numContainer, numContainerRunning } = cellProps.value;
           return status === STATUS_RUNNING ? (
-            <StatusText status={status} numContainer={numContainer} numContainerRunning={numContainerRunning}>
+            <StatusText $status={status} $numContainer={numContainer} $numContainerRunning={numContainerRunning}>
               {`${status} (${numContainerRunning}/${numContainer})`}
             </StatusText>
           ) : (
-            <StatusText status={status}>{status}</StatusText>
+            <StatusText $status={status}>{status}</StatusText>
           );
         },
       },

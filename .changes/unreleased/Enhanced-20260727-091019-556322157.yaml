@@ -1,0 +1,8 @@
+kind: Enhanced
+body: |
+  Add support for RHEL/Rocky 9.
+  RHEL/Rocky 8 support will be dropped in a future release.
+time: 2026-07-27T09:10:19.556322157Z
+custom:
+  Pull: 5014
+  CommentId: backfill

@@ -3,7 +3,10 @@ import { CoreV1Api } from '@kubernetes/client-node/dist/gen/api/coreV1Api';
 import { StorageV1Api } from '@kubernetes/client-node/dist/gen/api/storageV1Api';
 
 export class StorageApi {
-  constructor(private coreV1: CoreV1Api, private storage: StorageV1Api) {}
+  constructor(
+    private coreV1: CoreV1Api,
+    private storage: StorageV1Api,
+  ) {}
   async getPersistentVolumes() {
     try {
       return await this.coreV1.listPersistentVolume();

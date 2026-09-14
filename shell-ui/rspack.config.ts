@@ -143,7 +143,12 @@ const config: Configuration = {
         './useNotificationCenter': './src/useNotificationCenter.ts',
       },
       shared: {
-        ...Object.fromEntries(Object.entries(deps).map(([key, version]) => [key, {}])),
+        ...Object.fromEntries(
+          Object.entries(deps)
+            // @mcp-b/* are side-effect-only browser globals — must not be shared via MF
+            .filter(([key]) => !key.startsWith('@mcp-b/'))
+            .map(([key]) => [key, {}]),
+        ),
         'react-intl': {
           eager: true,
           singleton: true,
@@ -210,7 +215,13 @@ const config: Configuration = {
       excludedChunks: ['shell'],
     }),
     new rspack.CopyRspackPlugin({
-      patterns: [{ from: 'public' }],
+      patterns: [
+        { from: 'public' },
+        {
+          from: 'node_modules/@mcp-b/webmcp-local-relay/dist/browser',
+          to: '.',
+        },
+      ],
     }),
     process.env.RSDOCTOR && new RsdoctorRspackPlugin({}),
   ].filter(Boolean),

@@ -1,0 +1,6 @@
+kind: Added
+body: The ISO now carries the containerd-image-preload package in its scality repository, for RedHat 8 and 9.
+time: 2026-08-25T12:09:54.36517469Z
+custom:
+    CommentId: "5410163664"
+    Pull: "5103"

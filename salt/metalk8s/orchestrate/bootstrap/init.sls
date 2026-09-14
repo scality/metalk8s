@@ -119,13 +119,25 @@ Bring bootstrap minion to highstate:
 
 Wait for API server to be available:
   http.wait_for_successful_query:
-  - name: https://127.0.0.1:7443/healthz
-  - match: 'ok'
+  - name: https://127.0.0.1:7443/readyz?verbose
+  - match: 'poststarthook/rbac/bootstrap-roles ok'
   - status: 200
   - verify_ssl: false
-  - request_interval: 1
+  - request_interval: 5
+  - wait_for: 420
+  - timeout: 10
   - require:
     - salt: Bring bootstrap minion to highstate
+
+Deploy kubeconfig to bootstrap:
+  salt.state:
+  - tgt: {{ pillar.bootstrap_id }}
+  - sls:
+    - metalk8s.salt.master.kubeconfig
+  - saltenv: {{ saltenv }}
+  - pillar: {{ pillar_data | tojson }}
+  - require:
+    - http: Wait for API server to be available
 
 Configure bootstrap Node object:
   salt.runner:
@@ -135,7 +147,7 @@ Configure bootstrap Node object:
   - saltenv: {{ saltenv }}
   - pillar: {{ pillar_data | tojson }}
   - require:
-    - http: Wait for API server to be available
+    - salt: Deploy kubeconfig to bootstrap
 
 Update pillar on bootstrap minion after highstate:
   salt.function:

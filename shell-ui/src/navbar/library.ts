@@ -1,8 +1,4 @@
-import {
-  AUTHENTICATED_EVENT,
-  LANGUAGE_CHANGED_EVENT,
-  THEME_CHANGED_EVENT,
-} from './events';
+import { AUTHENTICATED_EVENT, LANGUAGE_CHANGED_EVENT, THEME_CHANGED_EVENT } from './events';
 import packageJson from '../../package.json';
 const { version } = packageJson;
 // @ts-expect-error - FIXME when you are working on it

@@ -62,20 +62,26 @@ class LocalImage(image.ContainerImage):
         dockerfile: Optional[Path] = None,
         build_context: Optional[Union[Path, ExplicitContext]] = None,
         build_args: Optional[Dict[str, Any]] = None,
+        archive_reference: Optional[str] = None,
         **kwargs: Any,
     ):
         """Initialize a local container image.
 
         Arguments:
-            name:          image name
-            version:       image version
-            dockerfile:    path to the Dockerfile
-            destination:   where to save the result
-            save_on_disk:  save the image on disk?
-            build_context: path to the build context, or an ExplicitContext
-                           instance (defaults to the directory containing the
-                           Dockerfile)
-            build_args:    build arguments
+            name:              image name
+            version:           image version
+            dockerfile:        path to the Dockerfile
+            destination:       where to save the result
+            save_on_disk:      save the image on disk?
+            build_context:     path to the build context, or an ExplicitContext
+                               instance (defaults to the directory containing
+                               the Dockerfile)
+            build_args:        build arguments
+            archive_reference: if set, also save the image as an archive next
+                               to the layers (the layout `SaveAsTar` uses for
+                               remote images), under this exact reference:
+                               importing the archive makes the image available
+                               under that name, with no re-tagging
 
         Keyword Arguments:
             They are passed to `Target` init method.
@@ -96,6 +102,7 @@ class LocalImage(image.ContainerImage):
             self._build_context = build_context or self.dockerfile.parent
 
         self._save = save_on_disk
+        self._archive_reference = archive_reference
         self._build_args = build_args or {}
         kwargs.setdefault("file_dep", []).append(self.dockerfile)
         kwargs.setdefault("task_dep", []).append("check_for:skopeo")
@@ -104,10 +111,21 @@ class LocalImage(image.ContainerImage):
 
     dockerfile = property(operator.attrgetter("_dockerfile"))
     save_on_disk = property(operator.attrgetter("_save"))
+    archive_reference = property(operator.attrgetter("_archive_reference"))
     build_context = property(operator.attrgetter("_build_context"))
     custom_context = property(operator.attrgetter("_custom_context"))
     build_args = property(operator.attrgetter("_build_args"))
     dep_re = re.compile(r"^\s*(COPY|ADD)( --[^ ]+)* (?P<src>[^ ]+) (?P<dst>[^ ]+)\s*$")
+
+    @property
+    def save_as_tar(self) -> bool:
+        """Is the image also saved as an archive?"""
+        return self._archive_reference is not None
+
+    @property
+    def tar_filepath(self) -> Path:
+        """Path of the image archive, when saved as one."""
+        return self.dest_dir / f"{self.name}-{self.version}.tar"
 
     def load_deps_from_dockerfile(self) -> Dict[str, Any]:
         """Compute file dependencies from Dockerfile."""
@@ -147,13 +165,16 @@ class LocalImage(image.ContainerImage):
                 "uptodate": [(docker_command.docker_image_exists, [self.tag], {})],
             }
         )
+        outputs: List[Path] = []
+        cleaners: List[types.Action] = []
         if self.save_on_disk:
-            task.update(
-                {
-                    "targets": [self.dirname / "manifest.json"],
-                    "clean": [self.clean],
-                }
-            )
+            outputs.append(self.dirname / "manifest.json")
+            cleaners.append(self.clean)
+        if self.save_as_tar:
+            outputs.append(self.tar_filepath)
+            cleaners.append(self.clean_tar)
+        if outputs:
+            task.update({"targets": outputs, "clean": cleaners})
         return task
 
     @property
@@ -173,7 +194,13 @@ class LocalImage(image.ContainerImage):
         actions = self._do_build()
         if self.save_on_disk:
             actions.extend(self._do_save())
+        if self.save_as_tar:
+            actions.extend(self._do_save_as_tar())
         return actions
+
+    def clean_tar(self) -> None:
+        """Delete the image archive."""
+        self.tar_filepath.unlink(missing_ok=True)
 
     def _do_build(self) -> List[types.Action]:
         """Return the actions used to build the image."""
@@ -190,6 +217,21 @@ class LocalImage(image.ContainerImage):
         cmd.append(f"docker-daemon:{self.tag}")
         cmd.append(f"dir:{str(self.dirname)}")
         return [self.mkdirs, cmd]
+
+    def _do_save_as_tar(self) -> List[types.Action]:
+        """Return the actions used to save the image as an archive."""
+        cmd = list(constants.SKOPEO_COPY_DEFAULT_ARGS)
+        docker_host = os.getenv("DOCKER_HOST")
+        if docker_host is not None:
+            cmd.extend(["--src-daemon-host", f"http://{docker_host}"])
+        cmd.append(f"docker-daemon:{self.tag}")
+        cmd.append(f"docker-archive:{str(self.tar_filepath)}:{self.archive_reference}")
+        return [self._prepare_tar, cmd]
+
+    def _prepare_tar(self) -> None:
+        """Make room for the archive: `docker-archive` cannot overwrite."""
+        self.tar_filepath.parent.mkdir(parents=True, exist_ok=True)
+        self.clean_tar()
 
     @staticmethod
     def _expand_dep(dep: Path) -> List[Path]:

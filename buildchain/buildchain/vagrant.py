@@ -9,7 +9,6 @@ SSH key pair to be used during control plane expansion in this
 environment.
 """
 
-
 import shlex
 import subprocess
 

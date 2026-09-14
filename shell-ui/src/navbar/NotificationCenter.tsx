@@ -15,29 +15,21 @@ import { useNotificationCenter } from '../useNotificationCenter';
 import { ConstrainedText } from '@scality/core-ui/dist/components/constrainedtext/Constrainedtext.component';
 
 const NotificationMenu = styled.ul<{
-  buttonBoundingRect: DOMRect;
+  $buttonBoundingRect: DOMRect;
 }>`
   position: absolute;
   width: 25vw;
-  // TO MAKE SURE THE LIST IS CENTERED ON THE BELL BUTTON
+  /* TO MAKE SURE THE LIST IS CENTERED ON THE BELL BUTTON */
   left: ${(props) => {
     const notificationCenterWidth = 0.25 * window.innerWidth;
-    const leftRelativeToButton =
-      -notificationCenterWidth / 2 + props.buttonBoundingRect.width / 2;
-    const absoluteNotificationCenterX =
-      props.buttonBoundingRect.x + leftRelativeToButton;
-    if (
-      absoluteNotificationCenterX + notificationCenterWidth >
-      window.innerWidth
-    ) {
+    const leftRelativeToButton = -notificationCenterWidth / 2 + props.$buttonBoundingRect.width / 2;
+    const absoluteNotificationCenterX = props.$buttonBoundingRect.x + leftRelativeToButton;
+    if (absoluteNotificationCenterX + notificationCenterWidth > window.innerWidth) {
       // |<------------------window.innerWidth------------------------------------>|<--offset-->|
       // |<------------------button x------------------------------>|buttonwidth|---------------|
       // |---------------------------------|<-LeftRelativeToButton->|---------------------------|
       // |<--absoluteNotificationCenterX-->|<--notificationCenterWidth------------------------->|
-      const offset =
-        absoluteNotificationCenterX +
-        notificationCenterWidth -
-        window.innerWidth;
+      const offset = absoluteNotificationCenterX + notificationCenterWidth - window.innerWidth;
       return leftRelativeToButton - offset;
     }
     return leftRelativeToButton;
@@ -53,8 +45,8 @@ const NotificationMenu = styled.ul<{
   box-shadow: 0px 4px 10px 4px #000;
 `;
 const NotificationItem = styled.li<{
-  isHighlighted: boolean;
-  isRead: boolean;
+  $isHighlighted: boolean;
+  $isRead: boolean;
 }>`
   display: flex;
   align-items: center;
@@ -67,11 +59,11 @@ const NotificationItem = styled.li<{
     border-bottom: 1px solid ${(props) => props.theme.border};
   }
   background-color: ${(props) =>
-    props.isHighlighted
+    props.$isHighlighted
       ? props.theme.highlight
-      : props.isRead
-      ? props.theme.backgroundLevel4
-      : props.theme.backgroundLevel3};
+      : props.$isRead
+        ? props.theme.backgroundLevel4
+        : props.theme.backgroundLevel3};
 `;
 
 const NotificationCenterHeader = styled.div`
@@ -82,17 +74,9 @@ const NotificationCenterHeader = styled.div`
 
 const NotificationCenter = () => {
   const { notifications, readAllNotifications } = useNotificationCenter();
-  const [buttonBoundingRect, setButtonBoundingRect] = useState<DOMRect>(
-    new DOMRect(),
-  );
+  const [buttonBoundingRect, setButtonBoundingRect] = useState<DOMRect>(new DOMRect());
   const theme = useTheme();
-  const {
-    isOpen,
-    getToggleButtonProps,
-    getMenuProps,
-    highlightedIndex,
-    getItemProps,
-  } = useSelect({
+  const { isOpen, getToggleButtonProps, getMenuProps, highlightedIndex, getItemProps } = useSelect({
     items: notifications,
     onIsOpenChange: ({ isOpen }) => {
       if (!isOpen) {
@@ -107,9 +91,7 @@ const NotificationCenter = () => {
       readAllNotifications();
     },
   });
-  const isAtLeastOneNotificationUnread = notifications.some(
-    (notification) => !notification.readOn,
-  );
+  const isAtLeastOneNotificationUnread = notifications.some((notification) => !notification.readOn);
   const navigate = useShellHistory();
   return (
     <div
@@ -117,10 +99,7 @@ const NotificationCenter = () => {
       {...getToggleButtonProps({
         'aria-label': 'Notification Center',
         ref: (e: HTMLDivElement) => {
-          if (
-            e &&
-            (buttonBoundingRect.x === 0 || buttonBoundingRect.width === 0)
-          ) {
+          if (e && (buttonBoundingRect.x === 0 || buttonBoundingRect.width === 0)) {
             setButtonBoundingRect(e.getBoundingClientRect());
           }
         },
@@ -132,18 +111,14 @@ const NotificationCenter = () => {
           <span className="fa-layers fa-fw">
             <Icon
               aria-hidden="false"
-              aria-label={
-                !!notifications.length
-                  ? 'Notification Center'
-                  : 'Notification Center (Empty)'
-              }
+              aria-label={!!notifications.length ? 'Notification Center' : 'Notification Center (Empty)'}
               name={notifications.length ? 'Alert' : 'Bell'}
               color={
                 notifications.find((n) => n.severity === 'critical')
                   ? 'statusCritical'
                   : notifications.find((n) => n.severity === 'warning')
-                  ? 'statusWarning'
-                  : 'infoPrimary'
+                    ? 'statusWarning'
+                    : 'infoPrimary'
               }
               size="lg"
               style={
@@ -171,17 +146,14 @@ const NotificationCenter = () => {
       />
       <div {...getMenuProps()}>
         {isOpen && (
-          <NotificationMenu buttonBoundingRect={buttonBoundingRect}>
+          <NotificationMenu $buttonBoundingRect={buttonBoundingRect}>
             <NotificationCenterHeader>
               <Wrap alignItems="baseline">
                 <Text color="textSecondary" isEmphazed variant="Large">
                   Notifications
                 </Text>
                 {isAtLeastOneNotificationUnread && (
-                  <TextBadge
-                    text={`${notifications.filter((n) => !n.readOn).length}`}
-                    variant="selectedActive"
-                  />
+                  <TextBadge text={`${notifications.filter((n) => !n.readOn).length}`} variant="selectedActive" />
                 )}
               </Wrap>
             </NotificationCenterHeader>
@@ -189,17 +161,15 @@ const NotificationCenter = () => {
               <Box m={spacing.r16}>
                 <Wrap alignItems="center">
                   <SleepingNotificationBell />
-                  <Text color="textSecondary">
-                    You have no new notifications at the moment.
-                  </Text>
+                  <Text color="textSecondary">You have no new notifications at the moment.</Text>
                 </Wrap>
               </Box>
             )}
             {notifications.map((notification, index) => (
               <NotificationItem
                 key={notification.id}
-                isHighlighted={highlightedIndex === index}
-                isRead={!!notification.readOn}
+                $isHighlighted={highlightedIndex === index}
+                $isRead={!!notification.readOn}
                 {...getItemProps({
                   item: notification,
                   index,
@@ -210,15 +180,15 @@ const NotificationCenter = () => {
                     notification.severity === 'critical'
                       ? 'statusCritical'
                       : notification.severity === 'warning'
-                      ? 'statusWarning'
-                      : 'infoPrimary'
+                        ? 'statusWarning'
+                        : 'infoPrimary'
                   }
                   name={
                     notification.severity === 'critical'
                       ? 'Times-circle'
                       : notification.severity === 'warning'
-                      ? 'Exclamation-circle'
-                      : 'Dot-circle'
+                        ? 'Exclamation-circle'
+                        : 'Dot-circle'
                   }
                 />
 
@@ -241,20 +211,14 @@ const NotificationCenter = () => {
                       {notification.title}
                     </Text>
                     <Text variant="Smaller" color="textSecondary">
-                      <FormattedDateTime
-                        value={notification.createdOn}
-                        format="relative"
-                      />
+                      <FormattedDateTime value={notification.createdOn} format="relative" />
                     </Text>
                   </Wrap>
 
                   <ConstrainedText
                     lineClamp={2}
                     text={
-                      <Text
-                        color="textSecondary"
-                        isEmphazed={!notification.readOn}
-                      >
+                      <Text color="textSecondary" isEmphazed={!notification.readOn}>
                         {notification.description}
                       </Text>
                     }

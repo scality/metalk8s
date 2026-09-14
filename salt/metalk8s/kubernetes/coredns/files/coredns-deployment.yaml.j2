@@ -2,19 +2,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: coredns
-  namespace: kube-system
   labels:
     k8s-app: kube-dns
+  name: coredns
+  namespace: kube-system
 spec:
   replicas: {{ replicas }}
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
   selector:
     matchLabels:
       {{ label_selector | yaml(False) | indent(8) }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -27,34 +27,22 @@ spec:
     spec:
       affinity:
         {{ affinity | yaml(False) | indent(8) }}
-      priorityClassName: system-cluster-critical
-      tolerations:
-        - key: "CriticalAddonsOnly"
-          operator: "Exists"
-        - key: "node-role.kubernetes.io/bootstrap"
-          operator: "Exists"
-          effect: "NoSchedule"
-        - key: "node-role.kubernetes.io/infra"
-          operator: "Exists"
-          effect: "NoSchedule"
-      nodeSelector:
-        kubernetes.io/os: linux
-        node-role.kubernetes.io/infra: ''
       containers:
-      - name: coredns
+      - args:
+        - -conf
+        - /etc/coredns/Corefile
         image: {{ build_image_name('coredns') }}
         imagePullPolicy: IfNotPresent
-        resources:
-          limits:
-            memory: 170Mi
-          requests:
-            cpu: 100m
-            memory: 70Mi
-        args: [ "-conf", "/etc/coredns/Corefile" ]
-        volumeMounts:
-        - name: config-volume
-          mountPath: /etc/coredns
-          readOnly: true
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /health
+            port: liveness-probe
+            scheme: HTTP
+          initialDelaySeconds: 60
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: coredns
         ports:
         - containerPort: 53
           name: dns
@@ -65,6 +53,23 @@ spec:
         - containerPort: 9153
           name: metrics
           protocol: TCP
+        - containerPort: 8080
+          name: liveness-probe
+          protocol: TCP
+        - containerPort: 8181
+          name: readiness-probe
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: readiness-probe
+            scheme: HTTP
+        resources:
+          limits:
+            memory: 170Mi
+          requests:
+            cpu: 100m
+            memory: 70Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -73,26 +78,31 @@ spec:
             drop:
             - ALL
           readOnlyRootFilesystem: true
-        livenessProbe:
-          failureThreshold: 5
-          httpGet:
-            path: /health
-            port: 8080
-            scheme: HTTP
-          initialDelaySeconds: 60
-          successThreshold: 1
-          timeoutSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 8181
-            scheme: HTTP
+        volumeMounts:
+        - mountPath: /etc/coredns
+          name: config-volume
+          readOnly: true
       dnsPolicy: Default
+      nodeSelector:
+        kubernetes.io/os: linux
+        node-role.kubernetes.io/infra: ''
+      priorityClassName: system-cluster-critical
       serviceAccountName: coredns
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/bootstrap
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/infra
+        operator: Exists
       volumes:
-        - name: config-volume
-          configMap:
-            name: coredns
-            items:
-            - key: Corefile
-              path: Corefile
+      - configMap:
+          items:
+          - key: Corefile
+            path: Corefile
+          name: coredns
+        name: config-volume

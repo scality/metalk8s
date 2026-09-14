@@ -139,10 +139,10 @@ Deploy kube-proxy (DaemonSet):
         apiVersion: apps/v1
         kind: DaemonSet
         metadata:
-          name: kube-proxy
-          namespace: kube-system
           labels:
             k8s-app: kube-proxy
+          name: kube-proxy
+          namespace: kube-system
         spec:
           selector:
             matchLabels:
@@ -215,6 +215,8 @@ Deploy kube-proxy (DaemonSet):
                 - mountPath: /etc/kube-proxy
                   name: config
               hostNetwork: true
+              nodeSelector:
+                kubernetes.io/os: linux
               priorityClassName: system-node-critical
               serviceAccountName: kube-proxy
               tolerations:

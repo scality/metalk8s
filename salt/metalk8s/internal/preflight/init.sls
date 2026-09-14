@@ -9,7 +9,6 @@
 # ================
 #
 # * mandatory   -> prevent ERROR in preflight phase
-# * recommended -> prevent WARNING in preflight phase
 #
 # List of checks
 #
@@ -17,4 +16,3 @@
 
 include:
   - .mandatory
-  - .recommended

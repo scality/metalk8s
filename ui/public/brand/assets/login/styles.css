@@ -1,13 +1,13 @@
 .theme-body {
   text-align: center;
   background-color: #121214;
-  color: #FEFEFE;
-  font-family: 'Source Sans Pro', Helvetica, sans-serif;
+  color: #fefefe;
+  font-family: "Source Sans Pro", Helvetica, sans-serif;
 }
 
 .theme-navbar {
   background-color: #121214;
-  color: #FEFEFE;
+  color: #fefefe;
   font-size: 13px;
   font-weight: 100;
   height: 46px;
@@ -33,13 +33,13 @@
   font-weight: 500;
   margin-bottom: 10px;
   margin-top: 0;
-  color:#FEFEFE;
+  color: #fefefe;
 }
 
 .theme-panel {
   display: inline-block;
   text-align: center;
-  background-color: #32323B;
+  background-color: #32323b;
   padding: 30px;
   width: 500px;
 }
@@ -55,7 +55,7 @@
 }
 
 .theme-btn--primary {
-  background-color: #057AFF;
+  background-color: #057aff;
   border: none;
   color: #fff;
   min-width: 250px;
@@ -65,18 +65,18 @@
 }
 
 .theme-btn--primary:hover {
-  background-color: #057AFF;
+  background-color: #057aff;
   color: #fff;
 }
 
 .theme-btn--success {
-  background-color: #2FC98E;
+  background-color: #2fc98e;
   color: #fff;
   width: 250px;
 }
 
 .theme-btn--success:hover {
-  background-color: #49E3A8;
+  background-color: #49e3a8;
 }
 
 .theme-form-row {
@@ -101,7 +101,7 @@
 
 .theme-form-input:focus,
 .theme-form-input:active {
-  border-color: #66AFE9;
+  border-color: #66afe9;
   outline: none;
 }
 
@@ -112,7 +112,7 @@
   position: relative;
   text-align: left;
   width: 250px;
-  color:#FEFEFE;
+  color: #fefefe;
 }
 
 .theme-link-back {

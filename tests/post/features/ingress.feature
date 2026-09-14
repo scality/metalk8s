@@ -52,7 +52,8 @@ Feature: Ingress
         And we wait for the rollout of 'daemonset/calico-node' in namespace 'kube-system' to complete
         And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
-        Then an HTTP request on port 80 on a workload-plane IP should not return
+        Then the DaemonSet 'ingress-nginx-controller' in the 'metalk8s-ingress' namespace has all desired Pods ready  
+        And an HTTP request on port 80 on a workload-plane IP should not return
         And an HTTP request on port 80 on a control-plane IP returns 200 'OK'
         And the server should respond with shell-ui index
 
@@ -64,7 +65,8 @@ Feature: Ingress
         And we wait for the ClusterConfig to be 'Ready'
         And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
-        Then the '{wp_ingress_vips}' IPs are spread on nodes
+        Then the DaemonSet 'ingress-nginx-controller' in the 'metalk8s-ingress' namespace has all desired Pods ready
+        And the '{wp_ingress_vips}' IPs are spread on nodes
         And an HTTP request on port 80 on '{wp_ingress_vips}' IPs returns 200 'OK'
         And the server should respond with shell-ui index
 
@@ -76,9 +78,11 @@ Feature: Ingress
         And the '{wp_ingress_first_pool}' IPs are spread on nodes
         When we update the ClusterConfig to add 'test-vip-2' Workload Plane pool with IPs '{wp_ingress_second_pool}'
         And we wait for the ClusterConfig to be 'Ready'
+        And we wait for the rollout of 'daemonset/calico-node' in namespace 'kube-system' to complete
         And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
-        Then the '{wp_ingress_second_pool}' IPs are spread on nodes
+        Then the DaemonSet 'ingress-nginx-controller' in the 'metalk8s-ingress' namespace has all desired Pods ready
+        And the '{wp_ingress_second_pool}' IPs are spread on nodes
         And an HTTP request on port 80 on '{wp_ingress_second_pool}' IPs returns 200 'OK'
         And the server should respond with shell-ui index
         And the '{wp_ingress_first_pool}' IPs are no longer available on nodes
@@ -94,7 +98,8 @@ Feature: Ingress
         And we wait for the ClusterConfig to be 'Ready'
         And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
-        Then the '{wp_ingress_first_pool}' IPs are spread on nodes
+        Then the DaemonSet 'ingress-nginx-controller' in the 'metalk8s-ingress' namespace has all desired Pods ready
+        And the '{wp_ingress_first_pool}' IPs are spread on nodes
         And an HTTP request on port 80 on '{wp_ingress_first_pool}' IPs returns 200 'OK'
         And the server should respond with shell-ui index
         And the '{wp_ingress_second_pool}' IPs are spread on nodes

@@ -132,9 +132,7 @@ describe('useNavbar', () => {
       wrapper,
     });
     await waitFor(() => {
-      expect(result.current.getLinks()).toStrictEqual(
-        expectedDefaultNavbarLinks,
-      );
+      expect(result.current.getLinks()).toStrictEqual(expectedDefaultNavbarLinks);
     });
   });
   it('should set main navbar links', async () => {
@@ -231,9 +229,7 @@ describe('useNavbar', () => {
     //E
     await waitForLoadingToFinish();
     //Verify the Notification Center is displayed in the Navbar
-    expect(
-      screen.getByRole('button', { name: /Notification Center/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Notification Center/i })).toBeInTheDocument();
   });
   it('should hide the Notification Center for non Platform Admin', async () => {
     //S
@@ -254,8 +250,6 @@ describe('useNavbar', () => {
     //E
     await waitForLoadingToFinish();
     //V
-    expect(screen.queryByRole('button', { name: /Notification Center/i })).toBe(
-      null,
-    );
+    expect(screen.queryByRole('button', { name: /Notification Center/i })).toBe(null);
   });
 });

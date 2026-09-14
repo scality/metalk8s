@@ -1,14 +1,4 @@
-import {
-  actionChannel,
-  all,
-  call,
-  delay,
-  fork,
-  put,
-  select,
-  take,
-  takeLeading,
-} from 'redux-saga/effects';
+import { actionChannel, all, call, delay, fork, put, select, take, takeLeading } from 'redux-saga/effects';
 import { eventChannel, END } from 'redux-saga';
 import type { RootState } from '../reducer';
 import * as ApiSalt from '../../services/salt/api';
@@ -237,9 +227,7 @@ export function* updateJobStatus(job, status) {
       // already completed (usually this action will be watched to trigger
       // notifications).
       const completedTime = new Date();
-      yield put(
-        setJobCompletedAction(job.jid, completedTime.toISOString(), status),
-      );
+      yield put(setJobCompletedAction(job.jid, completedTime.toISOString(), status));
     } else {
       yield put(setJobStatusAction(job.jid, status));
     }
@@ -284,10 +272,7 @@ export function* watchSaltEvents({ payload: { url, token } }) {
     const relatedJob = jobs.find((job) => data.tag.includes(job.jid));
 
     if (relatedJob !== undefined) {
-      yield all([
-        put(addJobEventAction(relatedJob.jid, data)),
-        fork(readJobEvent, relatedJob, data),
-      ]);
+      yield all([put(addJobEventAction(relatedJob.jid, data)), fork(readJobEvent, relatedJob, data)]);
     }
   }
 }
@@ -316,9 +301,5 @@ export function* garbageCollectJobs() {
 }
 // }}}
 export function* saltSaga() {
-  yield all([
-    fork(manageLocalStorage),
-    fork(garbageCollectJobs),
-    takeLeading(CONNECT_SALT_API, initialize),
-  ]);
+  yield all([fork(manageLocalStorage), fork(garbageCollectJobs), takeLeading(CONNECT_SALT_API, initialize)]);
 }

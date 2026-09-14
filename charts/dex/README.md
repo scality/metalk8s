@@ -1,6 +1,6 @@
 # dex
 
-![version: 0.24.0](https://img.shields.io/badge/version-0.24.0-informational?style=flat-square) ![type: application](https://img.shields.io/badge/type-application-informational?style=flat-square) ![app version: 2.44.0](https://img.shields.io/badge/app%20version-2.44.0-informational?style=flat-square) ![kube version: >=1.14.0-0](https://img.shields.io/badge/kube%20version->=1.14.0--0-informational?style=flat-square) [![artifact hub](https://img.shields.io/badge/artifact%20hub-dex-informational?style=flat-square)](https://artifacthub.io/packages/helm/dex/dex)
+![version: 0.24.1](https://img.shields.io/badge/version-0.24.1-informational?style=flat-square) ![type: application](https://img.shields.io/badge/type-application-informational?style=flat-square) ![app version: 2.44.0](https://img.shields.io/badge/app%20version-2.44.0-informational?style=flat-square) ![kube version: >=1.14.0-0](https://img.shields.io/badge/kube%20version->=1.14.0--0-informational?style=flat-square) [![artifact hub](https://img.shields.io/badge/artifact%20hub-dex-informational?style=flat-square)](https://artifacthub.io/packages/helm/dex/dex)
 
 OpenID Connect (OIDC) identity and OAuth 2.0 provider with pluggable connectors.
 
@@ -162,6 +162,11 @@ ingress:
 | ingress.annotations | object | `{}` | Annotations to be added to the ingress. |
 | ingress.hosts | list | See [values.yaml](values.yaml). | Ingress host configuration. |
 | ingress.tls | list | See [values.yaml](values.yaml). | Ingress TLS configuration. |
+| httpRoute.enabled | bool | `false` | Enable Gateway API HTTPRoute. Gateway API support is in EXPERIMENTAL status. Support depends on your Gateway controller implementation. See the [Gateway API documentation](https://gateway-api.sigs.k8s.io/) for details. |
+| httpRoute.annotations | object | `{}` | Annotations to be added to the HTTPRoute. |
+| httpRoute.parentRefs | list | `[]` | References to the Gateway(s) that this HTTPRoute is attached to. See the [API reference](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.ParentReference) for details. |
+| httpRoute.hostnames | list | `["chart-example.local"]` | Hostnames defines the hostnames for routing. See the [API reference](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.Hostname) for details. |
+| httpRoute.rules | list | `[{"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]` | HTTPRoute rules configuration. See the [API reference](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRouteRule) for details. |
 | serviceMonitor.enabled | bool | `false` | Enable Prometheus ServiceMonitor. See the [documentation](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/design.md#servicemonitor) and the [API reference](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#servicemonitor) for details. |
 | serviceMonitor.namespace | string | Release namespace. | Namespace where the ServiceMonitor resource should be deployed. |
 | serviceMonitor.interval | duration | `nil` | Prometheus scrape interval. |

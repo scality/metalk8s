@@ -10,9 +10,7 @@ const ActiveAlertsFilter = () => {
   const selectedFilter = query.get('severity') ?? 'all';
 
   const displayOptions = ['all', 'warning', 'critical'];
-  const options = defaultOptions.filter((option) =>
-    displayOptions.includes(option.value),
-  );
+  const options = defaultOptions.filter((option) => displayOptions.includes(option.value));
 
   return (
     <HealthSelector

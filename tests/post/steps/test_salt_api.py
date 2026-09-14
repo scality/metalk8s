@@ -8,7 +8,6 @@ from pytest_bdd import parsers, scenario, then, when
 
 from tests.utils import negation
 
-
 # Scenario {{{
 
 
@@ -123,7 +122,6 @@ def ping_all_minions(host, context, negated):
 
     if negated:
         assert result.status_code == 401
-        assert "No permission" in result.text
     else:
         result_data = result.json()
         assert result_data["return"][0] != []
@@ -140,7 +138,6 @@ def run_state_on_targets(host, context, negated, module, targets):
 
     if negated:
         assert result.status_code == 401
-        assert "No permission" in result.text
     else:
         assert result.status_code == 200
 

@@ -37,11 +37,7 @@ export type PrometheusQueryResult =
     }
   | {
       status: 'success';
-      data:
-        | RangeMatrixResult
-        | InstantVectorResult
-        | ScalarResult
-        | StringResult;
+      data: RangeMatrixResult | InstantVectorResult | ScalarResult | StringResult;
       warnings?: string[];
     };
 
@@ -49,6 +45,16 @@ let prometheusApiClient = null;
 
 export function initialize(apiUrl: string) {
   prometheusApiClient = new ApiClient({ apiUrl });
+}
+
+export function setHeaders(headers: Record<string, string>) {
+  if (prometheusApiClient) {
+    prometheusApiClient.setHeaders(headers);
+  } else {
+    console.warn(
+      'setHeaders called before prometheusApiClient was initialized',
+    );
+  }
 }
 
 export function getAlerts() {
@@ -71,9 +77,6 @@ export function queryPrometheusRange(
   query: string, // query (the actual PromQL expression)
 ): Promise<PrometheusQueryResult | undefined> {
   if (prometheusApiClient) {
-    return prometheusApiClient.get(
-      `/api/v1/query_range?start=${start}&end=${end}&step=${step}&query=` +
-        query,
-    );
+    return prometheusApiClient.get(`/api/v1/query_range?start=${start}&end=${end}&step=${step}&query=` + query);
   }
 }

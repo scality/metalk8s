@@ -90,14 +90,30 @@ describe('the dashboard alerts sub-panel', () => {
     (useAlerts as any).mockImplementation(() => ({
       alerts: [],
     }));
-    const { queryByTestId, getByTestId, getByText } = render(
-      <DashboardAlerts />,
-    );
+    const { queryByTestId, getByTestId, getByText } = render(<DashboardAlerts />);
     expect(getByText('No active alerts')).toBeInTheDocument();
     expect(getByTestId('all-alert-badge')).toHaveTextContent('0');
     expect(queryByTestId('warning-alert-badge')).not.toBeInTheDocument();
     expect(queryByTestId('critical-alert-badge')).not.toBeInTheDocument();
     expect(queryByTestId('view-all-link')).not.toBeInTheDocument();
+  });
+  test('should display a warning banner when alerts fail to fetch', () => {
+    (useAlertLibrary as any).mockImplementation(() => ({
+      getPlatformAlertSelectors: () => ({
+        alertname: ['ClusterAtRisk', 'ClusterDegraded'],
+      }),
+    }));
+    (useAlerts as any).mockImplementation(() => ({
+      alerts: [],
+      error: new Error('Alert manager responded with 401'),
+    }));
+    const { getByText } = render(<DashboardAlerts />);
+    expect(
+      getByText('Monitoring information unavailable'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('Some data can not be well retrieved'),
+    ).toBeInTheDocument();
   });
   test('should redirect to alert page with View All link', () => {
     (useAlerts as any).mockImplementation(() => ({

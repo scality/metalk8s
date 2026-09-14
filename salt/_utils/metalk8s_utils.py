@@ -1,5 +1,4 @@
-"""Utility methods for MetalK8s modules.
-"""
+"""Utility methods for MetalK8s modules."""
 
 MISSING_DEPS = []
 

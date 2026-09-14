@@ -1,0 +1,8 @@
+kind: Enhanced
+body: |
+  Bump loki chart to [7.0.0](https://github.com/grafana/helm-charts/releases/tag/helm-loki-7.0.0)
+  and Loki image to [v3.6.7](https://github.com/grafana/loki/releases/tag/v3.6.7)
+time: 2026-07-27T09:10:19.556322164Z
+custom:
+  Pull: 4979
+  CommentId: backfill

@@ -12,7 +12,6 @@ from kubernetes.client.rest import ApiException
 from tests import kube_utils
 from tests import utils
 
-
 # Scenarios {{{
 
 
@@ -33,6 +32,30 @@ def test_reach_openid_config(host):
 
 @scenario("../features/authentication.feature", "Access HTTPS service")
 def test_access_https_service(host):
+    pass
+
+
+@scenario(
+    "../features/authentication.feature",
+    "kube-apiserver rejects anonymous requests",
+)
+def test_apiserver_rejects_anonymous(host):
+    pass
+
+
+@scenario(
+    "../features/authentication.feature",
+    "kube-apiserver allows anonymous access to <path>",
+)
+def test_apiserver_allows_anonymous_health(host):
+    pass
+
+
+@scenario(
+    "../features/authentication.feature",
+    "kube-apiserver accepts authenticated access to <path>",
+)
+def test_apiserver_accepts_authenticated_health(host):
     pass
 
 
@@ -109,6 +132,42 @@ def perform_request(host, context, control_plane_ingress_ep, path):
         pytest.fail("Failed to access oidc url path with error: {}".format(exc))
 
 
+@when(
+    parsers.parse("we perform an anonymous request on the API server '{path}' endpoint")
+)
+def perform_anonymous_apiserver_request(context, control_plane_ip, path):
+    """Hit kube-apiserver directly on :6443 with no credentials, bypassing
+    the control-plane Ingress so the path is exactly `/<path>`."""
+    session = utils.requests_retry_session()
+    try:
+        context["response"] = session.get(
+            "https://{ip}:6443/{path}".format(ip=control_plane_ip, path=path),
+            verify=False,
+        )
+    except requests.exceptions.ConnectionError as exc:
+        pytest.fail("Failed to access API server with error: {}".format(exc))
+
+
+@when(
+    parsers.parse(
+        "we perform an authenticated request on the API server '{path}' endpoint"
+    )
+)
+def perform_authenticated_request(context, control_plane_ip, k8s_client, path):
+    """Hit kube-apiserver directly on :6443 with the admin client cert,
+    bypassing the control-plane Ingress."""
+    config = k8s_client.client.configuration
+    session = utils.requests_retry_session()
+    try:
+        context["response"] = session.get(
+            "https://{ip}:6443/{path}".format(ip=control_plane_ip, path=path),
+            verify=config.ssl_ca_cert,
+            cert=(config.cert_file, config.key_file),
+        )
+    except requests.exceptions.ConnectionError as exc:
+        pytest.fail("Failed to access API server with error: {}".format(exc))
+
+
 # }}}
 # Then {{{
 
@@ -151,8 +210,46 @@ def reach_openid_config(host, control_plane_ingress_ep):
 def server_returns(host, context, status_code, status_message):
     response = context.get("response")
     assert response is not None
-    assert response.status_code == int(status_code)
-    assert response.text.rstrip("\n") == status_message
+
+    expected_code = int(status_code)
+    actual_url = response.request.url if response.request else "<unknown>"
+    actual_body_excerpt = response.text[:500].replace("\n", "\\n")
+
+    # kube-apiserver returns either:
+    #   * a plain-text body (e.g. /livez returns "ok\n"), or
+    #   * a structured `Status` JSON object (e.g. on a 401 with
+    #     AuthenticationConfiguration in use, the body is
+    #     {"kind":"Status",...,"message":"Unauthorized","code":401}).
+    # Compare against `message` for the JSON case, against the raw text
+    # otherwise.
+    try:
+        parsed = response.json()
+    except ValueError:
+        parsed = None
+    actual_message = (
+        parsed.get("message")
+        if isinstance(parsed, dict) and parsed.get("kind") == "Status"
+        else response.text.rstrip("\n")
+    )
+
+    assert response.status_code == expected_code, (
+        "Expected HTTP {expected} but got {actual} from {url}. "
+        "Body excerpt: {body}".format(
+            expected=expected_code,
+            actual=response.status_code,
+            url=actual_url,
+            body=actual_body_excerpt,
+        )
+    )
+    assert actual_message == status_message, (
+        "Expected message {expected!r} but got {actual!r} from {url}. "
+        "Body excerpt: {body}".format(
+            expected=status_message,
+            actual=actual_message,
+            url=actual_url,
+            body=actual_body_excerpt,
+        )
+    )
 
 
 #  }}}

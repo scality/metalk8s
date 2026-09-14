@@ -35,11 +35,7 @@ export const useK8sApiConfig = (): K8sApiConfig => {
   return { coreV1, customObjectsApi, storage, appsV1 };
 };
 
-export const updateApiServerConfig = (
-  url: string,
-  id_token: string,
-  token_type?: string,
-) => {
+export const updateApiServerConfig = (url: string, id_token: string, token_type?: string) => {
   config = new Config(url, id_token, token_type);
   coreV1 = config.makeApiClient(CoreV1Api);
   customObjects = config.makeApiClient(CustomObjectsApi);

@@ -50,7 +50,7 @@ class BaseAlert(metaclass=abc.ABCMeta):
         if not CLICK_AVAILABLE:
             return str(self)
 
-        labels = dict(**self.alert_rule.labels)
+        labels = {**self.alert_rule.labels}
         severity = labels.pop("severity")
         colors = {"warning": "yellow", "critical": "red"}
 
@@ -116,6 +116,8 @@ class Relationship(enum.Enum):
             join_by = " and "
         elif self == self.ANY:
             join_by = " or "
+        else:
+            raise ValueError(f"Unsupported relationship: {self!r}")
 
         prefix = f"sum by ({', '.join(group_by)}) " if group_by else "sum"
         children_query = join_by.join(child.query for child in children)

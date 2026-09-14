@@ -12,10 +12,7 @@ export const volumesKey = {
   volumeObject: (volumeName) => ['volumes', 'object', volumeName],
   persitant: ['persistentVolumes'],
 };
-export const getNodesCountQuery = (
-  k8sUrl: string,
-  getToken: getTokenType,
-): typeof useQuery => {
+export const getNodesCountQuery = (k8sUrl: string, getToken: getTokenType): typeof useQuery => {
   return {
     // @ts-expect-error - FIXME when you are working on it
     queryKey: ['countNodes'],
@@ -36,10 +33,7 @@ export const getNodesCountQuery = (
     refetchInterval: REFRESH_METRICS_GRAPH,
   };
 };
-export const getVolumesCountQuery = (
-  k8sUrl: string,
-  getToken: getTokenType,
-): typeof useQuery => {
+export const getVolumesCountQuery = (k8sUrl: string, getToken: getTokenType): typeof useQuery => {
   return {
     // @ts-expect-error - FIXME when you are working on it
     queryKey: 'countVolumes',
@@ -116,9 +110,7 @@ export function useGetPersistentVolumeQueryOption() {
           spec: {
             ...item.spec,
             capacity: {
-              storage: bytesToSize(
-                allSizeUnitsToBytes(item.spec.capacity.storage),
-              ),
+              storage: bytesToSize(allSizeUnitsToBytes(item.spec.capacity.storage)),
             },
           },
         };

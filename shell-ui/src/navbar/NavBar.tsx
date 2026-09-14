@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { RouteProps, matchPath, useNavigate } from 'react-router';
+import { matchPath, useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 
 import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
-import {
-  Icon,
-  IconName,
-} from '@scality/core-ui/dist/components/icon/Icon.component';
+import { Icon, IconName } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { Layout } from '@scality/core-ui/dist/components/layout/v2/index';
 import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
 
@@ -20,7 +17,6 @@ import {
   NonFederatedView,
   View,
   ViewDefinition,
-  useConfigRetriever,
   useDiscoveredViews,
   useLinkOpener,
 } from '../initFederation/ConfigurationProviders';
@@ -32,6 +28,8 @@ import { normalizePath } from './auth/permissionUtils';
 import { useLanguage } from './lang';
 import type { Link as TypeLink } from './navbarHooks';
 import { useNavbar } from './navbarHooks';
+import { useGuardianDrawer } from '../guardian/GuardianContext';
+import { Box } from '@scality/core-ui/dist/next';
 
 const Logo = styled.img`
   height: 1.5rem;
@@ -69,15 +67,7 @@ const NavbarDropDownItemExternal = styled.div`
   color: ${(props) => props.theme.textLink};
 `;
 
-const Item = ({
-  icon,
-  label,
-  isExternal,
-}: {
-  icon?: IconName;
-  label: string;
-  isExternal?: boolean;
-}) => {
+const Item = ({ icon, label, isExternal }: { icon?: IconName; label: string; isExternal?: boolean }) => {
   return (
     <NavbarDropDownItem>
       {icon && (
@@ -140,15 +130,9 @@ export const useNavbarLinksToActions = (
     .sort((a, b) => {
       if (!a.view.isFederated || !b.view.isFederated) {
         return 0;
-      } else if (
-        (a.view.view.exact && !b.view.view.exact) ||
-        (a.view.view.strict && !b.view.view.strict)
-      ) {
+      } else if ((a.view.view.exact && !b.view.view.exact) || (a.view.view.strict && !b.view.view.strict)) {
         return -1;
-      } else if (
-        (!a.view.view.exact && b.view.view.exact) ||
-        (!a.view.view.strict && b.view.view.strict)
-      ) {
+      } else if ((!a.view.view.exact && b.view.view.exact) || (!a.view.view.strict && b.view.view.strict)) {
         return 1;
       }
 
@@ -159,15 +143,10 @@ export const useNavbarLinksToActions = (
         ? doesRouteMatch({
             exact: link.view.view.exact,
             path: link.view.view.activeIfMatches
-              ? new RegExp(
-                  link.view.app.appHistoryBasePath +
-                    link.view.view.activeIfMatches,
-                  'i',
-                ).toString()
+              ? new RegExp(link.view.app.appHistoryBasePath + link.view.view.activeIfMatches, 'i').toString()
               : link.view.app.appHistoryBasePath + link.view.view.path,
           })
-        : normalizePath((link.view as NonFederatedView).url) ===
-          window.location.origin + window.location.pathname,
+        : normalizePath((link.view as NonFederatedView).url) === window.location.origin + window.location.pathname,
     );
 
   return links.map((link) => {
@@ -175,14 +154,11 @@ export const useNavbarLinksToActions = (
       link,
       selected:
         selectedTab && selectedTab.view.isFederated && link.view.isFederated
-          ? selectedTab.view.app.name === link.view.app.name &&
-            selectedTab.view.view.path === link.view.view.path
-          : selectedTab &&
-            !selectedTab.view.isFederated &&
-            !link.view.isFederated
-          ? normalizePath((selectedTab.view as NonFederatedView).url) ===
-            normalizePath((link.view as NonFederatedView).url)
-          : false,
+          ? selectedTab.view.app.name === link.view.app.name && selectedTab.view.view.path === link.view.view.path
+          : selectedTab && !selectedTab.view.isFederated && !link.view.isFederated
+            ? normalizePath((selectedTab.view as NonFederatedView).url) ===
+              normalizePath((link.view as NonFederatedView).url)
+            : false,
     };
   });
 };
@@ -192,12 +168,7 @@ export const useFederatedNavbarEntries = (): {
   const { userData } = useAuth();
   const discoveredViews = useDiscoveredViews();
   const accessibleViews = discoveredViews.filter(
-    (discoveredView) =>
-      userData &&
-      (discoveredView.groups?.some((group) =>
-        userData.groups.includes(group),
-      ) ??
-        true),
+    (discoveredView) => userData && (discoveredView.groups?.some((group) => userData.groups.includes(group)) ?? true),
   );
   return {
     accessibleViews,
@@ -205,9 +176,10 @@ export const useFederatedNavbarEntries = (): {
 };
 
 const SkipToContentLink = styled(Button)`
+  top: 0;
   left: 50%;
   width: max-content;
-  position: absolute;
+  position: fixed;
   transform: translateY(-100%);
   transition: transform 0.3s;
   &:focus {
@@ -219,11 +191,13 @@ export const Navbar = ({
   logo,
   canChangeLanguage,
   canChangeTheme,
+  canUseGuardian,
   children,
 }: {
   logo: string;
   canChangeLanguage?: boolean;
   canChangeTheme?: boolean;
+  canUseGuardian?: boolean;
   providerLogout?: boolean;
   children?: React.ReactNode;
 }) => {
@@ -235,13 +209,12 @@ export const Navbar = ({
   const { openLink } = useLinkOpener();
   const { logOut } = useLogOut();
   const { getLinks } = useNavbar();
+  const { isOpen: isGuardianOpen, toggle: toggleGuardian } = useGuardianDrawer();
   const navigate = useNavigate();
   const navbarLinks = useMemo(() => getLinks(), [getLinks]);
   const navbarMainActions = useNavbarLinksToActions(navbarLinks.main);
   const navbarSecondaryActions = useNavbarLinksToActions(navbarLinks.secondary);
-  const navbarSubloginActions = useNavbarLinksToActions(
-    navbarLinks.userDropdown,
-  );
+  const navbarSubloginActions = useNavbarLinksToActions(navbarLinks.userDropdown);
   const navbarEntrySelected =
     navbarMainActions.find((act) => act.selected) ||
     navbarSecondaryActions.find((act) => act.selected) ||
@@ -261,18 +234,9 @@ export const Navbar = ({
 
   useEffect(() => {
     const navbarMainSelected = navbarMainActions.find((act) => act.selected);
-    const navbarSecondarySelected = navbarSecondaryActions.find(
-      (act) => act.selected,
-    );
-    const navbarSubloginSelected = navbarSubloginActions.find(
-      (act) => act.selected,
-    );
-    if (
-      navbarMainActions.length &&
-      !navbarMainSelected &&
-      !navbarSecondarySelected &&
-      !navbarSubloginSelected
-    ) {
+    const navbarSecondarySelected = navbarSecondaryActions.find((act) => act.selected);
+    const navbarSubloginSelected = navbarSubloginActions.find((act) => act.selected);
+    if (navbarMainActions.length && !navbarMainSelected && !navbarSecondarySelected && !navbarSubloginSelected) {
       const link = navbarMainActions?.[0]?.link;
       const url = link.view.isFederated
         ? link.view.app.appHistoryBasePath + link.view.view.path
@@ -287,9 +251,7 @@ export const Navbar = ({
       link: action.link.render ? (
         <action.link.render selected={action.selected} />
       ) : (
-        <Link to={action.link.view}>
-          {action.link.view.view.label[language]}
-        </Link>
+        <Link to={action.link.view}>{action.link.view.view.label[language]}</Link>
       ),
       selected: action.selected,
     };
@@ -301,9 +263,7 @@ export const Navbar = ({
       action.link.render ? (
         <action.link.render selected={action.selected} />
       ) : (
-        <Link to={action.link.view}>
-          {action.link.view.view.label[language]}
-        </Link>
+        <Link to={action.link.view}>{action.link.view.view.label[language]}</Link>
       ),
   }));
 
@@ -423,22 +383,40 @@ export const Navbar = ({
     });
   }
 
+  if (config.guardianOrigin && canUseGuardian) {
+    rightTabs.unshift({
+      render: () => (
+        <Button
+          style={{ backgroundColor: 'transparent' }}
+          onClick={toggleGuardian}
+          icon={<Icon name="HandSparkles" color={isGuardianOpen ? theme.selectedActive : theme.textPrimary} />}
+          tooltip={{
+            overlay: isGuardianOpen ? 'Close Guardian assistant' : 'Open Guardian assistant',
+          }}
+        />
+      ),
+      type: 'custom',
+    });
+  }
+
   return (
     <>
       <GlobalStyle />
 
-      <SkipToContentLink
-        type="submit"
-        label="Skip to content"
-        variant="primary"
-        onClick={() => {
-          const link = document.createElement('a');
-          link.href = '#main';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }}
-      />
+      <Box height={0}>
+        <SkipToContentLink
+          type="submit"
+          label="Skip to content"
+          variant="primary"
+          onClick={() => {
+            const link = document.createElement('a');
+            link.href = '#main';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }}
+        />
+      </Box>
 
       <Layout
         headerNavigation={

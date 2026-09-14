@@ -15,8 +15,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.3
-    helm.sh/chart: fluent-bit-0.56.0
+    app.kubernetes.io/version: 5.0.7
+    helm.sh/chart: fluent-bit-0.57.7
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -1596,9 +1596,9 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.3
+    app.kubernetes.io/version: 5.0.7
     grafana_dashboard: '1'
-    helm.sh/chart: fluent-bit-0.56.0
+    helm.sh/chart: fluent-bit-0.57.7
     heritage: metalk8s
   name: fluent-bit-dashboard-fluent-bit
   namespace: metalk8s-logging
@@ -1611,8 +1611,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.3
-    helm.sh/chart: fluent-bit-0.56.0
+    app.kubernetes.io/version: 5.0.7
+    helm.sh/chart: fluent-bit-0.57.7
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -1635,8 +1635,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.3
-    helm.sh/chart: fluent-bit-0.56.0
+    app.kubernetes.io/version: 5.0.7
+    helm.sh/chart: fluent-bit-0.57.7
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -1657,8 +1657,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.3
-    helm.sh/chart: fluent-bit-0.56.0
+    app.kubernetes.io/version: 5.0.7
+    helm.sh/chart: fluent-bit-0.57.7
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -1681,8 +1681,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.3
-    helm.sh/chart: fluent-bit-0.56.0
+    app.kubernetes.io/version: 5.0.7
+    helm.sh/chart: fluent-bit-0.57.7
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -1694,10 +1694,11 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-        prometheus.io/path: /api/v1/metrics/prometheus
-        prometheus.io/port: '2020'
-        prometheus.io/scrape: 'true'
+        checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap",
+          apiVersion="v1", namespace="metalk8s-logging", name="fluent-bit", path="data:fluent-bit.conf")
+        checksum/secret: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret",
+          apiVersion="v1", namespace="metalk8s-logging", name="fluent-bit-certs",
+          path="data", ignore_not_found=True)
       labels:
         app.kubernetes.io/instance: fluent-bit
         app.kubernetes.io/name: fluent-bit
@@ -1713,7 +1714,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: {% endraw -%}{{ build_image_name("fluent-bit", False) }}{%- raw %}:4.2.3
+        image: {% endraw -%}{{ build_image_name("fluent-bit", False) }}{%- raw %}:5.0.7
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -1726,7 +1727,7 @@ spec:
           protocol: TCP
         readinessProbe:
           httpGet:
-            path: /api/v1/health
+            path: /api/v2/health
             port: http
         resources: {% endraw -%}{{ fluent_bit.spec.deployment.resources }}{%- raw %}
         volumeMounts:
@@ -1759,6 +1760,9 @@ spec:
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
         operator: Exists
+      - effect: NoExecute
+        key: node.scality.com/workload-plane-unreachable
+        operator: Exists
       volumes:
       - configMap:
           name: fluent-bit
@@ -1777,6 +1781,44 @@ spec:
           secretName: fluent-bit-certs
 ---
 apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app.kubernetes.io/instance: fluent-bit
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 5.0.7
+    helm.sh/chart: fluent-bit-0.57.7
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+  name: fluent-bit
+  namespace: metalk8s-logging
+spec:
+  groups:
+  - name: fluent-bit
+    rules:
+    - alert: FluentBitBackPressure
+      annotations:
+        message: |-
+          Fluent Bit pod {{ $labels.pod }} input {{ $labels.name }} has been paused due to back pressure for more than 5 minutes. Log ingestion is halted until the output pipeline catches up.
+        summary: Fluent Bit input is experiencing back pressure.
+      expr: fluentbit_input_ingestion_paused == 1 or fluentbit_input_storage_overlimit
+        == 1
+      for: 5m
+      labels:
+        severity: warning
+    - alert: FluentBitOutputRetryLimit
+      annotations:
+        message: |-
+          Fluent Bit pod {{ $labels.pod }} output {{ $labels.name }} has been failing retries and dropping log records for more than 15 minutes. Check the destination and network connectivity.
+        summary: Fluent Bit output is dropping logs after exhausting retries.
+      expr: rate(fluentbit_output_retries_failed_total[5m]) > 0
+      for: 15m
+      labels:
+        severity: critical
+---
+apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
@@ -1784,8 +1826,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.2.3
-    helm.sh/chart: fluent-bit-0.56.0
+    app.kubernetes.io/version: 5.0.7
+    helm.sh/chart: fluent-bit-0.57.7
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
   name: fluent-bit

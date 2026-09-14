@@ -19,6 +19,7 @@ Create metalk8s-fluent-bit-certs Secret:
         metadata:
           name: fluent-bit-certs
           namespace: metalk8s-logging
+        data: {}
 
 {%- else %}
 

@@ -25,8 +25,7 @@ export const data = {
                         ret: {
                           [NODE_NAME]: {
                             'grains_|-Set control_plane_ip grain_|-metalk8s:control_plane_ip_|-present': {
-                              comment:
-                                'Set grain metalk8s:control_plane_ip to 172.21.254.12',
+                              comment: 'Set grain metalk8s:control_plane_ip to 172.21.254.12',
                               name: 'metalk8s:control_plane_ip',
                               start_time: '21:33:34.750189',
                               result: false,
@@ -34,8 +33,7 @@ export const data = {
                               __run_num__: 0,
                             },
                             'grains_|-Set workload_plane_ip grain_|-metalk8s:workload_plane_ip_|-present': {
-                              comment:
-                                'Set grain metalk8s:workload_plane_ip to 172.21.254.45',
+                              comment: 'Set grain metalk8s:workload_plane_ip to 172.21.254.45',
                               name: 'metalk8s:workload_plane_ip',
                               start_time: '21:33:34.761797',
                               result: false,
@@ -57,8 +55,7 @@ export const data = {
                       __run_num__: 6,
                     },
                     'salt_|-Kill kube-controller-manager on all master nodes_|-ps.pkill_|-function': {
-                      comment:
-                        'Function ran successfully. Function ps.pkill ran on bootstrap.',
+                      comment: 'Function ran successfully. Function ps.pkill ran on bootstrap.',
                       name: 'ps.pkill',
                       start_time: '21:34:56.906105',
                       result: true,
@@ -74,8 +71,7 @@ export const data = {
                         },
                         out: 'highstate',
                       },
-                      __id__:
-                        'Kill kube-controller-manager on all master nodes',
+                      __id__: 'Kill kube-controller-manager on all master nodes',
                     },
                     'salt_|-Deploy salt-minion on a new node_|-Deploy salt-minion on a new node_|-state': {
                       comment: `States ran successfully. Updating ${NODE_NAME}.`,
@@ -158,8 +154,7 @@ export const data = {
                       __id__: 'Refresh the mine',
                     },
                     'salt_|-Wait minion available_|-metalk8s_saltutil.wait_minions_|-runner': {
-                      comment:
-                        "Runner function 'metalk8s_saltutil.wait_minions' executed.",
+                      comment: "Runner function 'metalk8s_saltutil.wait_minions' executed.",
                       name: 'metalk8s_saltutil.wait_minions',
                       __orchestration__: true,
                       start_time: '21:33:20.457775',

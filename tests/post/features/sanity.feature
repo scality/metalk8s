@@ -15,7 +15,7 @@ Feature: Cluster Sanity Checks
         Then we can read logs from all containers in a pod labeled 'app=salt-master' in the 'kube-system' namespace
 
     Scenario Outline: Static Pod runs where expected
-        Then the static Pod <name> in the <namespace> namespace runs on <role> nodes
+        Then the static Pod '<name>' in the '<namespace>' namespace runs on '<role>' nodes
 
         Examples:
         | namespace   | name                    | role      |
@@ -28,7 +28,7 @@ Feature: Cluster Sanity Checks
         | kube-system | apiserver-proxy         | all       |
 
     Scenario Outline: Deployment has available replicas
-        Then the Deployment <name> in the <namespace> namespace has all desired replicas available
+        Then the Deployment '<name>' in the '<namespace>' namespace has all desired replicas available
 
         Examples:
         | namespace           | name                                   |
@@ -41,6 +41,7 @@ Feature: Cluster Sanity Checks
         | metalk8s-monitoring | prometheus-operator-kube-state-metrics |
         | metalk8s-monitoring | prometheus-operator-operator           |
         | metalk8s-monitoring | thanos-query                           |
+        | metalk8s-monitoring | node-warden-operator-controller-manager |
         | metalk8s-ui         | metalk8s-ui                            |
         | metalk8s-certs      | cert-manager                           |
         | metalk8s-certs      | cert-manager-cainjector                |
@@ -48,19 +49,35 @@ Feature: Cluster Sanity Checks
         | metalk8s-certs      | crl-operator-controller-manager        |
 
     Scenario Outline: DaemonSet has desired Pods ready
-        Then the DaemonSet <name> in the <namespace> namespace has all desired Pods ready
+        Then the DaemonSet '<name>' in the '<namespace>' namespace has all desired Pods ready
 
         Examples:
-        | namespace           | name                                         |
-        | kube-system         | calico-node                                  |
-        | kube-system         | kube-proxy                                   |
-        | metalk8s-ingress    | ingress-nginx-controller                     |
-        | metalk8s-ingress    | ingress-nginx-control-plane-controller       |
-        | metalk8s-monitoring | prometheus-operator-prometheus-node-exporter |
+        | namespace                   | name                                         |
+        | kube-system                 | calico-node                                  |
+        | kube-system                 | kube-proxy                                   |
+        | metalk8s-ingress            | ingress-nginx-controller                     |
+        | metalk8s-ingress            | ingress-nginx-control-plane-controller       |
+        | metalk8s-monitoring         | prometheus-operator-prometheus-node-exporter |
+        | metalk8s-monitoring         | node-problem-detector                        |
+        | metalk8s-storage-management | disk-management-agent-controller-manager     |
+
+    Scenario Outline: Package is installed on every node
+        Then the package '<name>' is installed on every node
+
+        Examples:
+        | name                     |
+        | containerd-image-preload |
+
+    Scenario Outline: Systemd unit is enabled and running on every node
+        Then the systemd unit '<name>' is enabled and running on every node
+
+        Examples:
+        | name                           |
+        | containerd-image-preload.timer |
 
     @volumes_provisioned
     Scenario Outline: StatefulSet has available replicas
-        Then the StatefulSet <name> in the <namespace> namespace has all desired replicas available
+        Then the StatefulSet '<name>' in the '<namespace>' namespace has all desired replicas available
 
         Examples:
         | namespace           | name                                          |

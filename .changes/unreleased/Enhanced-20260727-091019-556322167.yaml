@@ -1,0 +1,7 @@
+kind: Enhanced
+body: |
+  Bump Calico version to [3.32.0](https://github.com/projectcalico/calico/releases/tag/v3.32.0)
+time: 2026-07-27T09:10:19.556322167Z
+custom:
+  Pull: 4985
+  CommentId: backfill

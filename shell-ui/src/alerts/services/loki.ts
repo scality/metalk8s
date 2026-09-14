@@ -17,22 +17,13 @@ type LokiQueryResult = {
 };
 // by default to get the last 7day alerts from Loki
 export function getLast7DaysAlerts(lokiUrl: string): Promise<Alert[]> {
-  const start = new Date(
-    new Date().getTime() - 7 * 24 * 60 * 60 * 1000,
-  ).toISOString();
+  const start = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const end = new Date().toISOString();
   return getAlertsLoki(lokiUrl, start, end);
 }
 // customise the `start` and `end` time to retrieve the history alerts
-export function getAlertsLoki(
-  lokiUrl: string,
-  start: string,
-  end: string,
-): Promise<Alert[]> {
-  return fetch(
-    lokiUrl +
-      `/loki/api/v1/query_range?start=${start}&end=${end}&query=${METALK8S_HISTORY_ALERTS_QUERY}`,
-  )
+export function getAlertsLoki(lokiUrl: string, start: string, end: string): Promise<Alert[]> {
+  return fetch(lokiUrl + `/loki/api/v1/query_range?start=${start}&end=${end}&query=${METALK8S_HISTORY_ALERTS_QUERY}`)
     .then((r) => {
       if (r.ok) {
         return r.json();

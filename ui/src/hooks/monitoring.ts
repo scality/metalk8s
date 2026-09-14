@@ -33,12 +33,7 @@ export function useFetchCurrentVolumeStats() {
         metrics: metrics,
       }),
     );
-  }, [
-    volumeUsedCurrent,
-    volumeCapacityCurrent,
-    volumeLatencyCurrent,
-    dispatch,
-  ]);
+  }, [volumeUsedCurrent, volumeCapacityCurrent, volumeLatencyCurrent, dispatch]);
   return {
     metrics,
   };

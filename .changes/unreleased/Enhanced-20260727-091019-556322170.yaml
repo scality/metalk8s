@@ -1,0 +1,7 @@
+kind: Enhanced
+body: |
+  Bump Alpine base image version to [3.24.1](https://github.com/alpinelinux/aports/releases/tag/v3.24.1)
+time: 2026-07-27T09:10:19.556322170Z
+custom:
+  Pull: 4993
+  CommentId: backfill

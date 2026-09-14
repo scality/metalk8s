@@ -45,7 +45,10 @@ def test_dex_spread(host):
 # Given {{{
 
 
-@given(parsers.parse("we have a '{name}' CSC in namespace '{namespace}'"))
+@given(
+    parsers.parse("we have a '{name}' CSC in namespace '{namespace}'"),
+    target_fixture="csc",
+)
 def csc(host, ssh_config, version, k8s_client, name, namespace):
     """Retrieve the content of a CSC"""
     csc_obj = ClusterServiceConfiguration(

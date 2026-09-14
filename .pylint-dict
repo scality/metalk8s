@@ -12,6 +12,7 @@ buildsrpm
 cli
 cni
 cmd
+cloudpickle
 cmp
 codegen
 config
@@ -60,11 +61,15 @@ nginx
 observability
 pdf
 parameterized
+picklable
 prebuilt
+preload
+prerelease
 prometheus
 py
 readonly
 recursing
+releasever
 renderer
 repo
 reprepro
@@ -80,6 +85,7 @@ skopeo
 sls
 sosreport
 srv
+stdlib
 Thanos
 timestamp
 tmp
@@ -89,6 +95,7 @@ tox
 treelib
 txt
 ui
+uncomment
 uptodate
 xenial
 yaml

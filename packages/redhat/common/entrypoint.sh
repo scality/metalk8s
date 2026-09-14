@@ -74,7 +74,7 @@ buildrepo() {
 
 get_rpm_gpg_keys() {
     declare -gA RPM_GPG_KEYS
-    local -r releasever=${RELEASEVER:-7}
+    local -r releasever=${RELEASEVER:-8}
     # shellcheck disable=SC2034
     # The variable is used in the `eval` below
     local -r basearch=${BASEARCH:-x86_64}
@@ -124,7 +124,7 @@ download_repository_gpg_keys() {
 }
 
 add_dependencies(){
-    while read -r name dependency repo relpath; do
+    while read -r name dependency repo; do
         case $repo in
             epel)
                 if [ ${#EPEL_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${EPEL_DEPS[@]}"; then
@@ -142,10 +142,7 @@ add_dependencies(){
                 fi
                 ;;
             saltstack)
-                # We exclude all package from "base" directory of Saltstack since those
-                # packages are available in "base" CentOS/RHEL 7 repositories
-                if [[ $relpath != base/* ]] && \
-                   ([ ${#SALT_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${SALT_DEPS[@]}"); then
+                if [ ${#SALT_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${SALT_DEPS[@]}"; then
                     SALT_DEPS+=("$dependency")
                 fi
                 ;;
@@ -159,19 +156,15 @@ add_dependencies(){
 download_packages() {
     set -x
     declare -ga EPEL_DEPS=() KUBERNETES_DEPS=() DOCKER_CE_DEPS=() SALT_DEPS=()
-    local -r releasever=${RELEASEVER:-7}
+    local -r releasever=${RELEASEVER:-8}
     local -a packages=("$@")
     local query_format query_opts repo_dir
     local -a dependencies=()
 
-    query_format='%{name} %{name}-%{version} %{repoid} %{relativepath}'
-    query_opts=""
-    if [[ "$releasever" == "8" ]]; then
-        # On new repoquery version, if we do not specify the `latest-limit`
-        # it will return all packages that match the query
-        # We only want to download the latest one
-        query_opts="--latest-limit=1"
-    fi
+    query_format='%{name} %{name}-%{version} %{repoid}'
+    # If we do not specify the `latest-limit` it will return all
+    # packages that match the query We only want to download the latest one
+    query_opts="--latest-limit=1"
 
     for package in "${packages[@]}"; do
         # Check from which repo the package come from
@@ -179,7 +172,7 @@ download_packages() {
         # version if not needed
         # (a package may require another version of this one)
         add_dependencies < <(
-            repoquery  $query_opts --queryformat="%{name} $package %{repoid} %{relativepath}" "$package"
+            repoquery  $query_opts --queryformat="%{name} $package %{repoid}" "$package"
         )
     done
     add_dependencies < <(
@@ -214,9 +207,16 @@ download_packages() {
                 ;;
         esac
 
-        yumdownloader --arch="x86_64,noarch" \
-                      --disablerepo="*" \
-                      --enablerepo="$repo" "${dependencies[@]}"
+        # Skip `yumdownloader` when no dependency resolved to this repo:
+        # invoking it without packages makes `dnf download` exit non-zero
+        # (`error: the following arguments are required: packages`), which
+        # would abort the whole loop under `set -e` and leave the remaining
+        # repos (e.g. saltstack) without their directory being created.
+        if [ "${#dependencies[@]}" -gt 0 ]; then
+            yumdownloader --arch="x86_64,noarch" \
+                          --disablerepo="*" \
+                          --enablerepo="$repo" "${dependencies[@]}"
+        fi
     done
 
     chown -R "$TARGET_UID:$TARGET_GID" "/repositories"

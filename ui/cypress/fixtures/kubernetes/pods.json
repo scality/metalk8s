@@ -1,10 +1,9 @@
 {
-    "kind": "PodList",
-    "apiVersion": "v1",
-    "metadata": {
-        "selfLink": "/api/v1/pods",
-        "resourceVersion": "27305765"
-    },
-    "items": [
-    ]
+  "kind": "PodList",
+  "apiVersion": "v1",
+  "metadata": {
+    "selfLink": "/api/v1/pods",
+    "resourceVersion": "27305765"
+  },
+  "items": []
 }

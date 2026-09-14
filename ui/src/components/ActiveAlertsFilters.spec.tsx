@@ -27,9 +27,7 @@ describe('ActiveAlertsFilter', () => {
       </QueryClientProvider>,
     );
 
-    await userEvent.click(
-      screen.getByRole('textbox', { name: 'Filter by severity' }),
-    );
+    await userEvent.click(screen.getByRole('textbox', { name: 'Filter by severity' }));
     await userEvent.click(screen.getByRole('option', { name: 'Critical' }));
 
     expect(SUT).toHaveBeenCalledWith(
@@ -38,9 +36,7 @@ describe('ActiveAlertsFilter', () => {
       }),
     );
 
-    await userEvent.click(
-      screen.getByRole('textbox', { name: 'Filter by severity' }),
-    );
+    await userEvent.click(screen.getByRole('textbox', { name: 'Filter by severity' }));
     await userEvent.click(screen.getByRole('option', { name: 'Warning' }));
     expect(SUT).toHaveBeenCalledWith(
       expect.objectContaining({

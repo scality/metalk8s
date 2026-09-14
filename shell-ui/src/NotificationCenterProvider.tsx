@@ -18,8 +18,7 @@ export type NotificationCenterContextType = {
   dispatch: Dispatch<NotificationCenterActions>;
 };
 
-export const NotificationCenterContext =
-  createContext<NotificationCenterContextType | null>(null);
+export const NotificationCenterContext = createContext<NotificationCenterContextType | null>(null);
 
 type NotificationCenterProviderProps = {
   children: ReactNode;
@@ -46,18 +45,11 @@ export type NotificationCenterActions =
 
 const LOCAL_STORAGE_NOTIFICATION_PREFIX = 'notification-center__';
 
-const NotificationCenterProvider: FC<NotificationCenterProviderProps> = ({
-  children,
-}) => {
-  const notificationReducer = (
-    state: InternalNotification[],
-    action: NotificationCenterActions,
-  ) => {
+const NotificationCenterProvider: FC<NotificationCenterProviderProps> = ({ children }) => {
+  const notificationReducer = (state: InternalNotification[], action: NotificationCenterActions) => {
     switch (action.type) {
       case NotificationActionType.PUBLISH:
-        const storedReadOn = localStorage.getItem(
-          LOCAL_STORAGE_NOTIFICATION_PREFIX + action.notification.id,
-        );
+        const storedReadOn = localStorage.getItem(LOCAL_STORAGE_NOTIFICATION_PREFIX + action.notification.id);
         const readOn = storedReadOn ? new Date(storedReadOn) : undefined;
         // if the Notification is already stored, update it with the newly published one.
         if (state.find((n) => n.id === action.notification.id)) {
@@ -69,16 +61,9 @@ const NotificationCenterProvider: FC<NotificationCenterProviderProps> = ({
           });
         }
         // sort the Notifications by the createdOn date
-        const index = state.findIndex(
-          (n) =>
-            n.createdOn.getTime() > action.notification.createdOn.getTime(),
-        );
+        const index = state.findIndex((n) => n.createdOn.getTime() > action.notification.createdOn.getTime());
 
-        return [
-          ...state.slice(0, index + 1),
-          { ...action.notification, readOn },
-          ...state.slice(index + 1),
-        ];
+        return [...state.slice(0, index + 1), { ...action.notification, readOn }, ...state.slice(index + 1)];
 
       case NotificationActionType.UNPUBLISH:
         localStorage.removeItem(LOCAL_STORAGE_NOTIFICATION_PREFIX + action.id);
@@ -87,10 +72,7 @@ const NotificationCenterProvider: FC<NotificationCenterProviderProps> = ({
         const date = new Date();
         return state.map((n) => {
           if (!n.readOn) {
-            localStorage.setItem(
-              LOCAL_STORAGE_NOTIFICATION_PREFIX + n.id,
-              date.toISOString(),
-            );
+            localStorage.setItem(LOCAL_STORAGE_NOTIFICATION_PREFIX + n.id, date.toISOString());
             return { ...n, readOn: date };
           }
           return n;

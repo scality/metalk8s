@@ -192,13 +192,9 @@ export const mockShellHooks = {
 };
 
 export const mockShellAlerts = {
-  AlertsProvider: ({
-    alertManagerUrl,
-    children,
-  }: {
-    alertManagerUrl: string;
-    children: JSX.Element;
-  }) => <>{children}</>,
+  AlertsProvider: ({ alertManagerUrl, children }: { alertManagerUrl: string; children: JSX.Element }) => (
+    <>{children}</>
+  ),
   alertHooks: {
     useAlerts: jest.fn(),
     useHighestSeverityAlerts: jest.fn(),

@@ -4,7 +4,6 @@
 
 include:
   - .standalone
-  - metalk8s.internal.m2crypto
   - metalk8s.kubernetes.ca.kubernetes.advertised
 
 {%- set apiserver = 'https://127.0.0.1:7443' %}
@@ -25,8 +24,6 @@ Create kubeconfig file for kubelet:
     - days_remaining: {{
         certificates.kubeconfig.files.kubelet.days_remaining |
         default(certificates.kubeconfig.days_remaining) }}
-    - require:
-      - metalk8s_package_manager: Install m2crypto
     - watch_in:
       - service: Ensure kubelet running
 

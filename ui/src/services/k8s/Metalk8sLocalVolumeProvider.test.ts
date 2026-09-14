@@ -1,9 +1,6 @@
 import { CoreV1Api, CustomObjectsApi } from '@kubernetes/client-node';
 import { updateApiServerConfig } from './api';
-import Metalk8sLocalVolumeProvider, {
-  HardwareDiskType,
-  VolumeType,
-} from './Metalk8sLocalVolumeProvider';
+import Metalk8sLocalVolumeProvider, { HardwareDiskType, VolumeType } from './Metalk8sLocalVolumeProvider';
 import * as NodeVolumesUtils from '../NodeVolumesUtils';
 
 jest.mock('../k8s/api', () => ({
@@ -77,9 +74,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
         },
       });
 
-      (
-        mockCustomObjectsApi.listClusterCustomObject as jest.Mock
-      ).mockResolvedValue({
+      (mockCustomObjectsApi.listClusterCustomObject as jest.Mock).mockResolvedValue({
         body: {
           items: [
             {
@@ -199,9 +194,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
         ],
       };
 
-      (
-        mockCustomObjectsApi.listClusterCustomObject as jest.Mock
-      ).mockResolvedValue({
+      (mockCustomObjectsApi.listClusterCustomObject as jest.Mock).mockResolvedValue({
         body: {
           items: [
             {
@@ -230,17 +223,9 @@ describe('Metalk8sLocalVolumeProvider', () => {
 
       const volumes = await provider.listLocalPersistentVolumes('test-node');
 
-      expect(NodeVolumesUtils.computeVolumeGlobalStatus).toHaveBeenCalledTimes(
-        2,
-      );
-      expect(NodeVolumesUtils.computeVolumeGlobalStatus).toHaveBeenCalledWith(
-        'test-volume-1',
-        mockVolumeStatus1,
-      );
-      expect(NodeVolumesUtils.computeVolumeGlobalStatus).toHaveBeenCalledWith(
-        'test-volume-2',
-        mockVolumeStatus2,
-      );
+      expect(NodeVolumesUtils.computeVolumeGlobalStatus).toHaveBeenCalledTimes(2);
+      expect(NodeVolumesUtils.computeVolumeGlobalStatus).toHaveBeenCalledWith('test-volume-1', mockVolumeStatus1);
+      expect(NodeVolumesUtils.computeVolumeGlobalStatus).toHaveBeenCalledWith('test-volume-2', mockVolumeStatus2);
 
       expect(volumes).toHaveLength(2);
       expect(volumes[0]).toMatchObject({
@@ -264,9 +249,9 @@ describe('Metalk8sLocalVolumeProvider', () => {
         body: { items: [] },
       });
 
-      await expect(
-        provider.listLocalPersistentVolumes('non-existent-node'),
-      ).rejects.toThrow('Failed to find IP for node non-existent-node');
+      await expect(provider.listLocalPersistentVolumes('non-existent-node')).rejects.toThrow(
+        'Failed to find IP for node non-existent-node',
+      );
     });
 
     it('should raise an error if volume retrieval fails', async () => {
@@ -286,13 +271,11 @@ describe('Metalk8sLocalVolumeProvider', () => {
         },
       });
 
-      (
-        mockCustomObjectsApi.listClusterCustomObject as jest.Mock
-      ).mockRejectedValue(new Error('Failed to fetch volumes'));
+      (mockCustomObjectsApi.listClusterCustomObject as jest.Mock).mockRejectedValue(
+        new Error('Failed to fetch volumes'),
+      );
 
-      await expect(
-        provider.listLocalPersistentVolumes('test-node'),
-      ).rejects.toThrow(
+      await expect(provider.listLocalPersistentVolumes('test-node')).rejects.toThrow(
         'Failed to fetch local persistent volumes: Failed to fetch volumes',
       );
     });
@@ -301,9 +284,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
   describe('detachVolume', () => {
     it('should detach volume', async () => {
       //S
-      (
-        mockCustomObjectsApi.deleteClusterCustomObject as jest.Mock
-      ).mockResolvedValue({
+      (mockCustomObjectsApi.deleteClusterCustomObject as jest.Mock).mockResolvedValue({
         body: {},
       });
       //E
@@ -315,9 +296,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
         metadata: { name: 'test-volume' },
       });
       //V
-      expect(
-        mockCustomObjectsApi.deleteClusterCustomObject,
-      ).toHaveBeenCalledWith(
+      expect(mockCustomObjectsApi.deleteClusterCustomObject).toHaveBeenCalledWith(
         MOCK_GROUP,
         MOCK_VERSION,
         MOCK_PLURAL,
@@ -328,9 +307,9 @@ describe('Metalk8sLocalVolumeProvider', () => {
 
     it('should raise an error if metalk8s volume deletion fails', async () => {
       //S
-      (
-        mockCustomObjectsApi.deleteClusterCustomObject as jest.Mock
-      ).mockRejectedValue(new Error('Failed to delete metalk8s volume'));
+      (mockCustomObjectsApi.deleteClusterCustomObject as jest.Mock).mockRejectedValue(
+        new Error('Failed to delete metalk8s volume'),
+      );
       //E+V
       await expect(
         provider.detachVolume({
@@ -340,18 +319,14 @@ describe('Metalk8sLocalVolumeProvider', () => {
           nodeName: 'test-node',
           metadata: { name: 'test-volume' },
         }),
-      ).rejects.toThrow(
-        'Failed to delete MetalK8s volume test-volume: Failed to delete metalk8s volume',
-      );
+      ).rejects.toThrow('Failed to delete MetalK8s volume test-volume: Failed to delete metalk8s volume');
     });
   });
 
   describe('isVolumeProvisioned', () => {
     it('should return false if the volume is not yet provisioned', async () => {
       //S
-      (
-        mockCustomObjectsApi.getClusterCustomObject as jest.Mock
-      ).mockResolvedValue({
+      (mockCustomObjectsApi.getClusterCustomObject as jest.Mock).mockResolvedValue({
         status: { conditions: [{ type: 'Ready', status: 'Unknown' }] },
       });
 
@@ -369,9 +344,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
 
     it('should return volume if the volume is provisioned', async () => {
       //S
-      (
-        mockCustomObjectsApi.getClusterCustomObject as jest.Mock
-      ).mockResolvedValue({
+      (mockCustomObjectsApi.getClusterCustomObject as jest.Mock).mockResolvedValue({
         body: { status: { conditions: [{ type: 'Ready', status: 'True' }] } },
       });
       (mockCoreV1Api.readPersistentVolume as jest.Mock).mockResolvedValue({
@@ -399,9 +372,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
 
     it('should return volume with status if the volume is provisioned and has volumeStatus', async () => {
       //S
-      (
-        mockCustomObjectsApi.getClusterCustomObject as jest.Mock
-      ).mockResolvedValue({
+      (mockCustomObjectsApi.getClusterCustomObject as jest.Mock).mockResolvedValue({
         body: { status: { conditions: [{ type: 'Ready', status: 'True' }] } },
       });
       (mockCoreV1Api.readPersistentVolume as jest.Mock).mockResolvedValue({
@@ -431,9 +402,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
 
     it('should raise an error if the volume is failed to provisioned', async () => {
       //S
-      (
-        mockCustomObjectsApi.getClusterCustomObject as jest.Mock
-      ).mockResolvedValue({
+      (mockCustomObjectsApi.getClusterCustomObject as jest.Mock).mockResolvedValue({
         body: {
           status: {
             conditions: [
@@ -455,9 +424,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
           nodeName: 'test-node',
           volumeName: 'test-volume',
         }),
-      ).rejects.toThrow(
-        'Volume test-volume failed to provisioned: Volume is not provisioned',
-      );
+      ).rejects.toThrow('Volume test-volume failed to provisioned: Volume is not provisioned');
     });
   });
 
@@ -480,9 +447,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
           ],
         },
       });
-      (
-        mockCustomObjectsApi.createClusterCustomObject as jest.Mock
-      ).mockResolvedValue({
+      (mockCustomObjectsApi.createClusterCustomObject as jest.Mock).mockResolvedValue({
         metadata: {
           name: 'storage-data-192.168.1.100-dev-sda',
         },
@@ -494,9 +459,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
         type: HardwareDiskType.NVMe,
       });
       //V
-      expect(
-        mockCustomObjectsApi.createClusterCustomObject,
-      ).toHaveBeenCalledWith(
+      expect(mockCustomObjectsApi.createClusterCustomObject).toHaveBeenCalledWith(
         'storage.metalk8s.scality.com',
         'v1alpha1',
         'volumes',
@@ -548,9 +511,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
           ],
         },
       });
-      (
-        mockCustomObjectsApi.createClusterCustomObject as jest.Mock
-      ).mockResolvedValue({
+      (mockCustomObjectsApi.createClusterCustomObject as jest.Mock).mockResolvedValue({
         error: {
           message: 'Error',
           body: {
@@ -570,9 +531,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
 
     it('should raise an error if node retrieval fails', async () => {
       //S
-      (mockCoreV1Api.listNode as jest.Mock).mockRejectedValue(
-        new Error('Error'),
-      );
+      (mockCoreV1Api.listNode as jest.Mock).mockRejectedValue(new Error('Error'));
       //E+V
       await expect(
         provider.attachHardwareVolume({
@@ -601,9 +560,7 @@ describe('Metalk8sLocalVolumeProvider', () => {
           ],
         },
       });
-      (
-        mockCustomObjectsApi.createClusterCustomObject as jest.Mock
-      ).mockResolvedValue({
+      (mockCustomObjectsApi.createClusterCustomObject as jest.Mock).mockResolvedValue({
         error: {
           body: {
             code: 409,

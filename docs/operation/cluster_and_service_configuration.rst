@@ -73,6 +73,19 @@ The default configuration values for Prometheus are specified below:
    :lines: 3-
 
 
+Thanos Default Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Thanos provides a global, deduplicated query view over the (highly available)
+Prometheus instances.
+
+The default configuration values for Thanos are specified below:
+
+.. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/thanos.yaml
+   :language: yaml
+   :lines: 3-
+
+
 Loki Default Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -378,6 +391,65 @@ Another example, with email receiver.
 
 There are more receivers available (PagerDuty, OpsGenie, HipChat, ...).
 
+Enable OIDC Authentication for Alertmanager
+""""""""""""""""""""""""""""""""""""""""""""
+
+By default, Alertmanager is accessible without authentication. OIDC
+authentication can be enabled to restrict access to users belonging to
+specific groups from your identity provider.
+
+When enabled, an OAuth2 proxy is deployed in front of Alertmanager, which
+validates JWT tokens against the configured OIDC provider.
+
+.. code-block:: yaml
+
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-alertmanager-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: AlertmanagerConfig
+       spec:
+         config:
+           enable_oidc_authentication: true
+           oidc:
+             issuer: "https://<control-plane-ingress-ip>:8443/oidc"
+             audience: "alertmanager"
+             groupsClaim: "groups"
+             authorizedGroups:
+               - "monitoring-admins"
+             caSecret:
+               namespace: "metalk8s-auth"
+               name: "oidc-ca-cert"
+
+The OIDC configuration fields are:
+
+- ``issuer``: The URL of the OIDC provider (e.g. Dex).
+- ``audience``: The expected audience claim in the JWT token, used to
+  verify that the token was issued for Alertmanager.
+- ``groupsClaim``: The name of the JWT claim that carries user
+  groups or roles.
+- ``authorizedGroups``: A list of groups or roles that are allowed to
+  access Alertmanager. Only users belonging to at least one of these
+  groups will be granted access.
+- ``caSecret.namespace``: The namespace of the Kubernetes Secret
+  containing the CA certificate used to verify the OIDC provider's
+  TLS certificate.
+- ``caSecret.name``: The name of the Kubernetes Secret containing the
+  CA certificate.
+
+.. note::
+
+   The Secret referenced by ``caSecret`` must be labeled with
+   ``metalk8s.scality.com/oidc-ca: "true"`` for the proxy to mount it.
+
+Then :ref:`apply the Alertmanager configuration<csc-alertmanager-apply-cfg>`.
+
+.. _csc-alertmanager-apply-cfg:
+
 Applying configuration
 """"""""""""""""""""""
 
@@ -595,6 +667,63 @@ It can be enabled with the following:
 
 Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
 
+Enable OIDC Authentication for Prometheus
+"""""""""""""""""""""""""""""""""""""""""
+
+By default, Prometheus is accessible without authentication. OIDC
+authentication can be enabled to restrict access to users belonging to
+specific groups from your identity provider.
+
+When enabled, an OAuth2 proxy is deployed in front of Prometheus, which
+validates JWT tokens against the configured OIDC provider.
+
+.. code-block:: yaml
+
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-prometheus-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: PrometheusConfig
+       spec:
+         config:
+           enable_oidc_authentication: true
+           oidc:
+             issuer: "https://<control-plane-ingress-ip>:8443/oidc"
+             audience: "prometheus"
+             groupsClaim: "groups"
+             authorizedGroups:
+               - "monitoring-admins"
+             caSecret:
+               namespace: "metalk8s-auth"
+               name: "oidc-ca-cert"
+
+The OIDC configuration fields are:
+
+- ``issuer``: The URL of the OIDC provider (e.g. Dex).
+- ``audience``: The expected audience claim in the JWT token, used to
+  verify that the token was issued for Prometheus.
+- ``groupsClaim``: The name of the JWT claim that carries user
+  groups or roles.
+- ``authorizedGroups``: A list of groups or roles that are allowed to
+  access Prometheus. Only users belonging to at least one of these
+  groups will be granted access.
+- ``caSecret.namespace``: The namespace of the Kubernetes Secret
+  containing the CA certificate used to verify the OIDC provider's
+  TLS certificate.
+- ``caSecret.name``: The name of the Kubernetes Secret containing the
+  CA certificate.
+
+.. note::
+
+   The Secret referenced by ``caSecret`` must be labeled with
+   ``metalk8s.scality.com/oidc-ca: "true"`` for the proxy to mount it.
+
+Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
+
 Adding New Rules
 """"""""""""""""
 
@@ -692,6 +821,61 @@ Applying configuration
 
 Any changes made to ``metalk8s-prometheus-config`` ConfigMap must then be
 applied with Salt.
+
+.. parsed-literal::
+
+   root\@bootstrap $ kubectl exec --kubeconfig /etc/kubernetes/admin.conf \\
+                      -n kube-system -c salt-master salt-master-bootstrap -- \\
+                      salt-run state.sls \\
+                      metalk8s.addons.prometheus-operator.deployed \\
+                      saltenv=metalk8s-|version|
+
+.. _csc-thanos-customization:
+
+Thanos Configuration Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Default configuration for Thanos can be overridden by editing its
+Cluster and Service ConfigMap ``metalk8s-thanos-config`` in namespace
+``metalk8s-monitoring`` under the key ``data.config.yaml``:
+
+.. code-block:: shell
+
+   root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                      edit configmap -n metalk8s-monitoring \
+                      metalk8s-thanos-config
+
+Adjust the Thanos Querier resources
+"""""""""""""""""""""""""""""""""""
+
+The Thanos Querier holds query results in memory, so a heavy query (e.g. the
+metrics collection performed by ``sosreport``) can exceed the default memory
+limit and get the Pod ``OOMKilled``. The CPU and memory requests and limits
+can be tuned:
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-thanos-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: ThanosConfig
+       spec:
+         deployment:
+           resources:
+             requests:
+               cpu: "500m"
+               memory: "512Mi"
+             limits:
+               cpu: "1"
+               memory: "4Gi"
+
+Then apply the configuration:
 
 .. parsed-literal::
 
@@ -1125,7 +1309,7 @@ steps:
                 label:
                   en: Documentation
                   fr: Documentation
-                url: https://13.48.197.10:8443/docs/
+                url: https://1.2.3.4:8443/docs/
 
 #. Apply your changes by running:
 

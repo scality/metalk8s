@@ -2,7 +2,7 @@
 {%- from "metalk8s/map.jinja" import kubernetes with context %}
 
 {%- set node_name = pillar.bootstrap_id %}
-{%- set cri_socket = kubelet.service.options['container-runtime-endpoint'] %}
+{%- set cri_socket = kubelet.container_runtime_endpoint %}
 
 Ensure node {{ node_name }} exists:
   test.configurable_test_state:

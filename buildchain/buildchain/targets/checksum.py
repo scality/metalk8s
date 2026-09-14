@@ -3,7 +3,6 @@
 
 """Provides file checksum computation, same output format as `sha256sum`."""
 
-
 from pathlib import Path
 from typing import Any, Sequence, Set
 

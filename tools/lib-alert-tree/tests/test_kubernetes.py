@@ -14,17 +14,12 @@ def test_daemonset_alerts():
         children=kubernetes.daemonset_alerts("my-ds", namespace="my-ns"),
         relationship=Relationship.ANY,
     )
-    assert (
-        test.build_tree().show(stdout=False)
-        == textwrap.dedent(
-            """
+    assert test.build_tree().show(stdout=False) == textwrap.dedent("""
             test{severity='warning'}
             ├── KubeDaemonSetMisScheduled{daemonset=~'my-ds', namespace=~'my-ns', severity='warning'}
             ├── KubeDaemonSetNotScheduled{daemonset=~'my-ds', namespace=~'my-ns', severity='warning'}
             └── KubeDaemonSetRolloutStuck{daemonset=~'my-ds', namespace=~'my-ns', severity='warning'}
-            """
-        ).lstrip()
-    )
+            """).lstrip()
 
 
 def test_deployment_alerts():
@@ -35,16 +30,11 @@ def test_deployment_alerts():
         children=kubernetes.deployment_alerts("my-deploy", namespace="my-ns"),
         relationship=Relationship.ANY,
     )
-    assert (
-        test.build_tree().show(stdout=False)
-        == textwrap.dedent(
-            """
+    assert test.build_tree().show(stdout=False) == textwrap.dedent("""
             test{severity='warning'}
             ├── KubeDeploymentGenerationMismatch{deployment=~'my-deploy', namespace=~'my-ns', severity='warning'}
             └── KubeDeploymentReplicasMismatch{deployment=~'my-deploy', namespace=~'my-ns', severity='warning'}
-            """
-        ).lstrip()
-    )
+            """).lstrip()
 
 
 def test_container_alerts():
@@ -57,14 +47,9 @@ def test_container_alerts():
         ),
         relationship=Relationship.ANY,
     )
-    assert (
-        test.build_tree().show(stdout=False)
-        == textwrap.dedent(
-            """
+    assert test.build_tree().show(stdout=False) == textwrap.dedent("""
             test{severity='warning'}
-            """
-        ).lstrip()
-    )
+            """).lstrip()
 
 
 def test_pod_alerts():
@@ -75,16 +60,11 @@ def test_pod_alerts():
         children=kubernetes.pod_alerts("my-pod", namespace="my-ns"),
         relationship=Relationship.ANY,
     )
-    assert (
-        test.build_tree().show(stdout=False)
-        == textwrap.dedent(
-            """
+    assert test.build_tree().show(stdout=False) == textwrap.dedent("""
             test{severity='warning'}
             ├── KubePodCrashLooping{namespace=~'my-ns', pod=~'my-pod', severity='warning'}
             └── KubePodNotReady{namespace=~'my-ns', pod=~'my-pod', severity='warning'}
-            """
-        ).lstrip()
-    )
+            """).lstrip()
 
 
 def test_statefulset_alerts():
@@ -95,17 +75,12 @@ def test_statefulset_alerts():
         children=kubernetes.statefulset_alerts("my-sts", namespace="my-ns"),
         relationship=Relationship.ANY,
     )
-    assert (
-        test.build_tree().show(stdout=False)
-        == textwrap.dedent(
-            """
+    assert test.build_tree().show(stdout=False) == textwrap.dedent("""
             test{severity='warning'}
             ├── KubeStatefulSetGenerationMismatch{namespace=~'my-ns', severity='warning', statefulset=~'my-sts'}
             ├── KubeStatefulSetReplicasMismatch{namespace=~'my-ns', severity='warning', statefulset=~'my-sts'}
             └── KubeStatefulSetUpdateNotRolledOut{namespace=~'my-ns', severity='warning', statefulset=~'my-sts'}
-            """
-        ).lstrip()
-    )
+            """).lstrip()
 
 
 def test_job_alerts():
@@ -115,13 +90,8 @@ def test_job_alerts():
         children=kubernetes.job_alerts("my-job", namespace="my-ns"),
         relationship=Relationship.ANY,
     )
-    assert (
-        test.build_tree().show(stdout=False)
-        == textwrap.dedent(
-            """
+    assert test.build_tree().show(stdout=False) == textwrap.dedent("""
             test{severity='warning'}
             ├── KubeJobCompletion{job=~'my-job', namespace=~'my-ns', severity='warning'}
             └── KubeJobFailed{job=~'my-job', namespace=~'my-ns', severity='warning'}
-            """
-        ).lstrip()
-    )
+            """).lstrip()

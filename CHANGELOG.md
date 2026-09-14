@@ -1,6 +1,178 @@
 # CHANGELOG
 
-## Release 133.0.0 (in development)
+
+## Release 133.0.15
+
+### Bug Fixes
+
+- The node-problem-detector workload plane check no longer resets every node's Calico
+  BGP sessions, which degraded inter-node pod traffic. The condition it reports is
+  renamed PodNetworkUnavailable.
+  (PR[#5114](https://github.com/scality/metalk8s/pull/5114))
+
+
+## Release 133.0.14
+
+### Bug Fixes
+
+- Fix a bug where Salt master process may report an error about `VerboseLogger`
+  not having attributes `trace`
+  (PR[#4831](https://github.com/scality/metalk8s/pull/4831))
+
+- Increase the Salt `timeout` to 300s, instead of the master's 20s default, on the
+  orchestrate states that reconfigure the very node the salt-master is polling
+  with `saltutil.find_job`: `Deploy apiserver <node>`, `Install apiserver-proxy on
+  <node>`, `Reconfigure apiserver on <node>` and `Run the highstate`. This gives
+  them time to finish when their node goes quiet for a moment, and prevents Salt
+  from giving up on a state that is still running and reporting `Run failed on
+  minions: <node>`, which aborted the bootstrap, the upgrade or a node deployment.
+  (PR[#5092](https://github.com/scality/metalk8s/pull/5092))
+
+- Upgrading the apiservers now waits, from the salt-master, for each master's
+  apiserver to answer `/readyz` on its own control plane IP before replacing the
+  next one, on top of the local `/healthz` check the deploy already runs.
+  Transient "No minions responded" on the grain sync and refresh steps is now
+  retried rather than failing the upgrade outright
+  (PR[#5096](https://github.com/scality/metalk8s/pull/5096))
+
+- A node drain no longer aborts the upgrade on a transient API server or etcd error.
+  An eviction rejected with a 5xx status, typically `etcdserver: request timed out`
+  while the upgrade restarts etcd and the API servers, is now retried for about a
+  minute per pod, and the drain state is retried too, its budget split across the
+  attempts so a drain that can never succeed still gives up in about the time it
+  used to take. A pod that keeps failing still fails the drain, naming the pod and
+  the API error.
+  (PR[#5090](https://github.com/scality/metalk8s/pull/5090))
+
+- A node that fails during an upgrade or a downgrade no longer advertises the
+  destination version as if it were running it. The version label is still set
+  before the deployment, since it selects the saltenv, but the node now also
+  carries a `metalk8s.scality.com/version-in-progress` annotation until that
+  deployment succeeds, plus a `metalk8s.scality.com/version-applied`
+  annotation recording the last version it completed. Both are written by the
+  node deployment, so they follow an expansion as well as an upgrade. Both
+  orchestrates select nodes on that recorded version rather than on the label,
+  so resuming an interrupted upgrade only deploys the nodes that need it, and
+  the upgrade prechecks refuse a destination other than the one an interrupted
+  upgrade was heading to.
+  (PR[#5090](https://github.com/scality/metalk8s/pull/5090))
+
+
+## Release 133.0.13
+
+### Enhancements
+
+- Deploy [node-warden-operator](https://github.com/scality/node-warden-operator)
+  v1.0.0, a cluster-scoped operator that reacts to node conditions through
+  `NodeRemediationPolicy` custom resources. MetalK8s ships a default policy that,
+  when a Workload Plane node reports `WorkloadPlaneNetworkUnavailable`, applies a
+  reversible `node.scality.com/workload-plane-unreachable:NoExecute` taint to evict
+  its workloads and drop it from Service endpoints, and removes the taint once the
+  Workload Plane connectivity recovers
+  (PR[#5031](https://github.com/scality/metalk8s/pull/5031))
+
+- Add Prometheus alerts for Workload Plane isolation: `NodeWorkloadPlaneUnavailable`
+  (a node reports `WorkloadPlaneNetworkUnavailable`), `NodeWorkloadPlaneRemediated`
+  (a node carries the Workload Plane isolation taint) and `WorkloadPlaneOutage` (the
+  majority of nodes are affected, remediation suppressed by the guard)
+  (PR[#5031](https://github.com/scality/metalk8s/pull/5031))
+
+## Release 133.0.12
+
+### Enhancements
+
+- Deploy [node-problem-detector](https://github.com/kubernetes/node-problem-detector)
+  v1.35.1 on every node, with a custom Workload Plane monitor exposing the
+  `WorkloadPlaneNetworkUnavailable` node condition when a node cannot reach the
+  majority of its peers over the Workload Plane, along with the standard
+  `KernelDeadlock` and `ReadonlyFilesystem` conditions
+  (PR[#5025](https://github.com/scality/metalk8s/pull/5025))
+
+### Bug Fixes
+
+- Stop resetting the `thanos-query-sd-files` ConfigMap every time the Prometheus
+  operator state is applied: its service discovery content, managed by MetalK8s
+  users, was wiped on each re-apply, leaving Thanos Query with no store to reach
+  (PR[#5027](https://github.com/scality/metalk8s/pull/5027))
+
+## Release 133.0.11
+
+### Bug Fixes
+
+- Avoid the Thanos Querier being OOMKilled on heavy queries (such as the
+  `sosreport` metrics collection): its CPU/memory requests and limits are now
+  configurable through the `metalk8s-thanos-config` Cluster and Service
+  ConfigMap, and the default memory limit is raised from 192Mi to 2Gi. The
+  Querier also now runs with two replicas for high availability.
+  (PR[#5008](https://github.com/scality/metalk8s/pull/5008))
+
+- Use the `EndpointSlice` service discovery role for Prometheus to stop the
+  deprecated `v1 Endpoints` API warnings logged on Kubernetes 1.33+
+  (PR[#5008](https://github.com/scality/metalk8s/pull/5008))
+
+## Release 133.0.10
+
+### Enhancements
+
+- Wait for the kube-apiserver to be ready before upgrading the apiservers, to
+  avoid a transient upgrade failure when etcd has just been restarted
+  (PR[#4974](https://github.com/scality/metalk8s/pull/4974))
+
+### Bug Fixes
+
+- upgrade script now waits for all minions to reconnect to new salt master before
+  flushing the mine
+  (PR[#4972](https://github.com/scality/metalk8s/pull/4972))
+
+## Release 133.0.9
+
+## Release 133.0.8
+
+## Release 133.0.7
+
+### Bug Fixes
+
+- Disable anonymous authentication on `kube-apiserver`, except for the kubelet
+  probe endpoints (`livez`, `readyz`, `healthz`)
+  (PR[#4900](https://github.com/scality/metalk8s/pull/4900))
+
+## Release 133.0.6
+
+## Release 133.0.5
+
+### Enhancements
+
+- Bump [disk-management-agent](https://github.com/scality/disk-management-agent) to version
+  [v0.0.1-beta.2](https://github.com/scality/disk-management-agent/releases/tag/v0.0.1-beta.2)
+  (PR[#4933](https://github.com/scality/metalk8s/pull/4933))
+
+### Bug Fixes
+
+- Fix a bug where the salt mine fails silently during upgrades due to a corrupted mine cache.
+  (PR[#4934](https://github.com/scality/metalk8s/pull/4934))
+
+- Fix a bug where the salt mine fails and prints many warnings when dex is disabled.
+  (PR[#4934](https://github.com/scality/metalk8s/pull/4934))
+
+## Release 133.0.4
+
+## Release 133.0.3
+
+## Release 133.0.2
+
+## Release 133.0.1
+
+### Enhancements
+
+- Ensure fluent-bit-certs secret is always created regardless of fluent-bit's state
+  (PR[#4876](https://github.com/scality/metalk8s/pull/4876))
+
+- Add alerts for fluent-bit:
+  - FluentBitOutputRetryLimit: when fluent-bit cannot reach an output for a long time
+  - FluentBitBackPressure: when fluent-bit pauses an input due to backpressure
+  (PR[#4877](https://github.com/scality/metalk8s/pull/4877))
+
+## Release 133.0.0
 
 ### Breaking changes
 
@@ -9,6 +181,10 @@
   possible.
 
 ### Enhancements
+
+- Install [disk-management-agent](https://github.com/scality/disk-management-agent) version
+  [v0.0.1-beta.1](https://github.com/scality/disk-management-agent/releases/tag/v0.0.1-beta.1) by default
+  (PR[#4826](https://github.com/scality/metalk8s/pull/4826))
 
 - Bump Kubernetes version to [1.33.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.33.7)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))
@@ -19,6 +195,25 @@
 
 - Bump etcd version to [3.5.26](https://github.com/etcd-io/etcd/releases/tag/v3.5.26)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))
+
+- Bump Calico version to [3.31.4](https://github.com/projectcalico/calico/releases/tag/v3.31.4)
+  (PR[#4856](https://github.com/scality/metalk8s/pull/4856))
+
+- Bump kube-prometheus-stack chart version to [82.15.1](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-82.15.1)
+  The following images have also been bumped accordingly:
+  - alertmanager to [v0.31.1](https://github.com/prometheus/alertmanager/releases/tag/v0.31.1)
+  - grafana to [12.4.2](https://github.com/grafana/grafana/releases/tag/v12.4.2)
+  - k8s-sidecar to [2.5.0](https://github.com/kiwigrid/k8s-sidecar/releases/tag/2.5.0)
+  - kube-state-metrics to [v2.18.0](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.18.0)
+  - node-exporter to [v1.10.2](https://github.com/prometheus/node_exporter/releases/tag/v1.10.2)
+  - prometheus to [v3.10.0](https://github.com/prometheus/prometheus/releases/tag/v3.10.0)
+  - prometheus-operator to [v0.89.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.89.0)
+  - thanos to [v0.41.0](https://github.com/thanos-io/thanos/releases/tag/v0.41.0)
+  (PR[#4857](https://github.com/scality/metalk8s/pull/4857))
+
+- Migrate the Thanos Helm chart from the abandoned Banzai Cloud chart (v0.4.9) to
+  the actively maintained [Bitnami Thanos chart (17.3.1)](https://github.com/bitnami/charts/tree/main/bitnami/thanos)
+  (PR[#4857](https://github.com/scality/metalk8s/pull/4857))
 
 - Bump CoreDNS version to [1.12.4](https://github.com/coredns/coredns/releases/tag/v1.12.4)
   (PR[#4769](https://github.com/scality/metalk8s/pull/4769))
@@ -64,19 +259,28 @@
 - Implement ability to add certificates to fluent-bit by mounting a fluent-bit-certs secret
   (PR[#4812](https://github.com/scality/metalk8s/pull/4812))
 
+- Add x509 `subjectKeyIdentifier` extension to CA certificates and
+  `authorityKeyIdentifier` extension to leaf certificates per RFC 5280
+  (PR[#4836](https://github.com/scality/metalk8s/pull/4836))
+
+- Ensure fluent-bit pods are restarted when its configmap or secret is modified
+  (PR[#4834](https://github.com/scality/metalk8s/pull/4834))
+
+- Bump nginx image to [1.29.7-alpine](https://github.com/nginx/nginx/releases/tag/release-1.29.7)
+  (PR[#4852](https://github.com/scality/metalk8s/pull/4852))
+
+- Bump the rocky base image used by `metalk8s-utils` image to
+  `rockylinux:9.7-minimal`
+  (PR[#4851](https://github.com/scality/metalk8s/pull/4851))
+
+- Bump Alpine base image version to [3.23.3](https://github.com/alpinelinux/aports/releases/tag/v3.23.3)
+  (PR[#4858](https://github.com/scality/metalk8s/pull/4858))
+
 ### Bug Fixes
 
 - Fix a bug where part of the upgrade process would silently be skipped
   if the containerd socket is lost (crictl exec would exit with code 0)
   (PR[#4802](https://github.com/scality/metalk8s/pull/4802))
-
-## Release 132.0.3 (in development)
-
-### Bug Fixes
-
-- Fix a bug where Salt master process may report an error about `VerboseLogger`
-  not having attributes `trace`
-  (PR[#4831](https://github.com/scality/metalk8s/pull/4831))
 
 ## Release 132.0.2
 

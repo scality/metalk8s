@@ -1,0 +1,12 @@
+kind: Enhanced
+body: |
+  Make node monitoring and Pod eviction timeouts configurable through the
+  `BootstrapConfiguration`: `kube-apiserver`
+  `defaultNotReadyTolerationSeconds`/`defaultUnreachableTolerationSeconds`
+  (default `60`), `kube-controller-manager`
+  `nodeMonitorGracePeriod`/`nodeMonitorPeriod` (default `30s`/`5s`) and kubelet
+  `nodeStatusUpdateFrequency` (default `10s`).
+time: 2026-07-27T09:10:19.556322158Z
+custom:
+  Pull: 4966
+  CommentId: backfill

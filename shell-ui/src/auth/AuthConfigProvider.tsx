@@ -1,9 +1,6 @@
 import React from 'react';
 import { createContext, useContext, useState } from 'react';
-import type {
-  OIDCConfig,
-  OAuth2ProxyConfig,
-} from '../initFederation/ConfigurationProviders';
+import type { OIDCConfig, OAuth2ProxyConfig } from '../initFederation/ConfigurationProviders';
 const AuthConfigContext = createContext(null);
 export const useAuthConfig = (): {
   authConfig: OAuth2ProxyConfig | OIDCConfig | undefined;
@@ -17,11 +14,7 @@ export const useAuthConfig = (): {
 
   return contextValue;
 };
-export function AuthConfigProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function AuthConfigProvider({ children }: { children: React.ReactNode }) {
   const [authConfig, setAuthConfig] = useState(undefined);
   return (
     <AuthConfigContext.Provider

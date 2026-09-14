@@ -12,7 +12,7 @@
   {%- set password = salt.hashutil.base64_b64decode(object["data"]["password"]) %}
 {%- else %}
   {%- set username = "backup" %}
-  {%- set password = salt.random.get_str(length=30) %}
+  {%- set password = salt.random.get_str(length=30, punctuation=false) %}
 {%- endif %}
 
 apiVersion: v1

@@ -9,7 +9,7 @@ import string
 from typing import Any, Callable, Dict, List, Optional, Type
 from unittest.mock import MagicMock
 
-from _modules import metalk8s_service_configuration  # type: ignore
+from _modules import metalk8s_service_configuration
 
 import jinja2
 import pytest
@@ -19,7 +19,6 @@ import salt.utils.yamlloader  # type: ignore
 
 from tests.unit.formulas.fixtures import kubernetes
 from tests.unit.formulas import paths
-
 
 # Default minion configuration
 DEFAULT_CONFIG = {
@@ -412,6 +411,7 @@ register_basic("cri.get_pod_id")(MagicMock(return_value="abcd1234"))
 register_basic("file.find")(MagicMock(return_value=[]))
 register_basic("file.join")(lambda *args: "/".join(args))
 register_basic("file.read")(MagicMock(return_value="<file contents>"))
+register_basic("file.file_exists")(MagicMock(return_value=False))
 register_basic("cp.get_file_str")(MagicMock(return_value="<file contents>"))
 register_basic("hashutil.base64_b64decode")(lambda input_data: input_data)
 register_basic("hashutil.base64_encodefile")(
@@ -419,6 +419,7 @@ register_basic("hashutil.base64_encodefile")(
 )
 register_basic("log.warning")(print)
 register_basic("metalk8s.format_san")(", ".join)
+register_basic("salt_version.greater_than")(MagicMock(return_value=True))
 
 
 @register_basic("metalk8s.cmp_sorted")
@@ -529,7 +530,11 @@ def metalk8s_solutions_manifest_from_iso(path: str) -> Dict[str, Any]:
 register_basic("mount.swaps")(MagicMock(return_value={}))
 
 # Used in metalk8s.internal.preflight.mandatory to check ports are free.
-register_basic("network.connect")(MagicMock(return_value=dict(result=False)))
+register_basic("network.connect")(MagicMock(return_value={"result": False}))
+
+# Used in metalk8s.salt.minion.installed to render the detached upgrade path
+# (an outdated salt-minion is installed)
+register_basic("pkg.version")(MagicMock(return_value="3006.0-0"))
 
 
 @register_basic("pkg.version_cmp")
@@ -545,9 +550,11 @@ def pkg_version_cmp(left: str, right: str) -> int:
 
 
 @register_basic("random.get_str")
-def random_get_str(length: int = 20) -> str:
+def random_get_str(length: int = 20, punctuation: bool = True) -> str:
     """Generate a random string of specific length."""
-    allowed_chars = string.ascii_letters + string.digits + string.punctuation
+    allowed_chars = string.ascii_letters + string.digits
+    if punctuation:
+        allowed_chars += string.punctuation
     return "".join(random.choices(allowed_chars, k=length))
 
 

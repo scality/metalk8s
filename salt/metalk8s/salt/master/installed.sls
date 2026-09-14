@@ -50,19 +50,19 @@ Install and start salt master manifest:
       - file: /etc/salt/master.d/99-metalk8s-roots.conf
 
 Delay after new pod deployment:
-  module.wait:
+  module.run:
     - test.sleep:
       - length: 10
-    - watch:
+    - onchanges:
       - metalk8s: Install and start salt master manifest
 
 Make sure salt master container is up:
-  module.wait:
+  module.run:
     - cri.wait_container:
       - name: salt-master
       - state: running
       - timeout: 180
-    - watch:
+    - onchanges:
       - metalk8s: Install and start salt master manifest
     - require:
       - module: Delay after new pod deployment

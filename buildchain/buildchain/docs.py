@@ -21,7 +21,6 @@ Overview:
 └───────────────┘    └───────┘    └────────┘
 """
 
-
 from collections import namedtuple
 from typing import Callable, Iterator
 from pathlib import Path
@@ -36,7 +35,6 @@ from buildchain import docker_command
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
-
 
 DocTarget = namedtuple("DocTarget", ("name", "command", "target"))
 

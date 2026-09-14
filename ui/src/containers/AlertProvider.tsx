@@ -25,11 +25,7 @@ export const highestAlertToStatus = (alerts?: Alert[]): Status => {
   if (!alerts || !alerts[0]?.severity) {
     return STATUS_HEALTH;
   } else {
-    if (
-      alerts[0].severity !== 'warning' &&
-      alerts[0].severity !== 'healthy' &&
-      alerts[0].severity !== 'critical'
-    ) {
+    if (alerts[0].severity !== 'warning' && alerts[0].severity !== 'healthy' && alerts[0].severity !== 'critical') {
       throw new Error('Unknow typeof severity');
     }
     return alerts[0]?.severity;
@@ -39,11 +35,7 @@ export const highestAlertToStatus = (alerts?: Alert[]): Status => {
 const AlertProvider = ({ children }: { children: React.ReactNode }) => {
   const { url_alertmanager } = useConfig();
   const alerts = useShellAlerts();
-  return (
-    <alerts.AlertsProvider alertManagerUrl={url_alertmanager}>
-      {children}
-    </alerts.AlertsProvider>
-  );
+  return <alerts.AlertsProvider alertManagerUrl={url_alertmanager}>{children}</alerts.AlertsProvider>;
 };
 
 export default AlertProvider;

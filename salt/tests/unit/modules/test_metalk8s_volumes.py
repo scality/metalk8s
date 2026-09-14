@@ -11,7 +11,6 @@ from _modules import metalk8s_volumes
 from tests.unit import mixins
 from tests.unit import utils
 
-
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "files", "test_metalk8s_volumes.yaml"
 )

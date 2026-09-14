@@ -3,7 +3,7 @@
 from lib_alert_tree.models import Relationship, severity_pair
 from lib_alert_tree.prometheus import PrometheusRule
 
-from .network import NETWORK_WARNING
+from .network import NETWORK_WARNING, NETWORK_CRITICAL
 from .nodes import NODE_WARNING, NODE_CRITICAL
 from .platform import PLATFORM_WARNING, PLATFORM_CRITICAL
 from .volumes import VOLUME_WARNING, VOLUME_CRITICAL
@@ -13,6 +13,11 @@ CLUSTER_WARNING, CLUSTER_CRITICAL = severity_pair(
     summary_name="The cluster",
     relationship=Relationship.ANY,
     warning_children=[NETWORK_WARNING, NODE_WARNING, PLATFORM_WARNING, VOLUME_WARNING],
-    critical_children=[NODE_CRITICAL, PLATFORM_CRITICAL, VOLUME_CRITICAL],
+    critical_children=[
+        NETWORK_CRITICAL,
+        NODE_CRITICAL,
+        PLATFORM_CRITICAL,
+        VOLUME_CRITICAL,
+    ],
     duration="1m",
 )

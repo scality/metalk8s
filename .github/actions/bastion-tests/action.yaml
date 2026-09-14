@@ -45,4 +45,4 @@ runs:
           export BOOTSTRAP_BACKUP_ARCHIVE=\"${{ inputs.BOOTSTRAP_BACKUP_ARCHIVE }}\"
           export CONTROL_PLANE_INGRESS_VIP=\"${{ inputs.CONTROL_PLANE_INGRESS_VIP }}\"
           export WORKLOAD_PLANE_INGRESS_VIPS=\"${{ inputs.WORKLOAD_PLANE_INGRESS_VIPS }}\"
-          tox -e tests -- -m \"${{ inputs.PYTEST_FILTERS }} ${{ inputs.EXTRA_FILTER }}\"
+          tox -e tests -- --color=yes -m \"${{ inputs.PYTEST_FILTERS }} ${{ inputs.EXTRA_FILTER }}\"

@@ -10,6 +10,7 @@ from tests.unit.formulas.fixtures.data import fixture_buildchain_template_contex
 from tests.unit.formulas.fixtures.data import fixture_metalk8s_versions
 from tests.unit.formulas.fixtures.environment import fixture_template_loader
 from tests.unit.formulas.fixtures.environment import fixture_environment
+from tests.unit.formulas.fixtures.rendered import fixture_rendered_states
 from tests.unit.formulas.fixtures.templates import fixture_template_path
 
 # pylint: enable=unused-import

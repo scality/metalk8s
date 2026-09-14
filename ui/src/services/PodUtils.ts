@@ -6,9 +6,7 @@ export const getPodsListData = (nodeName, pods) => {
     podsList?.map((pod) => {
       const age = new Date(pod.startTime).getTime();
       const numContainer = pod?.containerStatuses?.length ?? 0;
-      const numContainerRunning =
-        pod?.containerStatuses?.filter((container) => container.ready === true)
-          ?.length ?? 0;
+      const numContainerRunning = pod?.containerStatuses?.filter((container) => container.ready === true)?.length ?? 0;
       return {
         name: pod.name,
         age: age,

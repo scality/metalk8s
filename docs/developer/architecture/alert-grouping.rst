@@ -378,7 +378,6 @@ Core
    etcdGRPCRequestsSlow, Critical,
    etcdHighNumberOfFailedHTTPRequests, Critical,
    etcdInsufficientMembers, Critical,
-   etcdMembersDown, Critical,
    etcdNoLeader, Critical,
    KubeStateMetricsListErrors, Critical,
    KubeStateMetricsWatchErrors, Critical,
@@ -412,6 +411,7 @@ Core
    etcdHighNumberOfFailedProposals, Warning,
    etcdHighNumberOfLeaderChanges, Warning,
    etcdMemberCommunicationSlow, Warning,
+   etcdMembersDown, Warning,
    KubeCPUOvercommit, Warning,
    KubeCPUQuotaOvercommit, Warning,
    KubeMemoryOvercommit, Warning,
@@ -566,9 +566,7 @@ Observability
    :header: "Sub Alert", "Severity", "Filter"
    :widths: 200,50,250
 
-   AlertmanagerConfigInconsistent, Critical,
-   AlertmanagerMembersInconsistent , Critical,
-   AlertmanagerFailedReload, Critical,
+   FluentBitOutputRetryLimit, Critical, metalk8s-logging
 
 .. _LoggingServiceDegraded:
 
@@ -589,6 +587,8 @@ Observability
    TargetDown, Warning, To be defined
    KubeStatefulSetReplicasMismatch , Warning, metalk8s-logging/loki
    KubeDaemonSetNotScheduled, Warning,metalk8s-logging/fluentbit
+   FluentBitBackPressure, Warning, metalk8s-logging
+
 
 .. _AlertingServiceAtRisk:
 

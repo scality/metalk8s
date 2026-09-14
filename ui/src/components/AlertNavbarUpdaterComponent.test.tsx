@@ -22,8 +22,7 @@ describe('AlertNavbarUpdaterComponent', () => {
   };
   const WATCHDOG_ALERT = {
     id: 'fc30b79dbdb0a043',
-    summary:
-      'An alert that should always be firing to certify that Alertmanager is working properly.',
+    summary: 'An alert that should always be firing to certify that Alertmanager is working properly.',
     description:
       'This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n"DeadMansSnitch" integration in PagerDuty.',
     startsAt: '2023-08-11T06:02:15.628Z',
@@ -76,6 +75,39 @@ describe('AlertNavbarUpdaterComponent', () => {
     },
     originalAlert: {},
   };
+  const PARENT_WARNING_ALERT = {
+    id: 'parentwarning0001',
+    summary: 'The node is degraded',
+    description: 'The node is degraded',
+    startsAt: '2023-08-11T06:03:55.000Z',
+    endsAt: '2023-08-11T14:13:51.065Z',
+    severity: 'warning',
+    documentationUrl: '',
+    labels: {
+      alertname: 'NodeDegraded',
+      severity: 'warning',
+      children: 'artesca-data-ops-alerting-s3utils-CountItemsJobTakingTooLong',
+      selectors: [],
+    },
+    originalAlert: {},
+  };
+  it('should not count parent (aggregation) alerts that have children, to match the Alerts page count', async () => {
+    //S
+    // @ts-ignore mock implementation
+    useAlerts.mockImplementation(() => ({
+      alerts: [WATCHDOG_ALERT, WARNING_ALERT, PARENT_WARNING_ALERT],
+    }));
+    const { publishNotification } = setupTest();
+    //V
+    // Only the leaf warning alert must be counted, not the parent NodeDegraded alert.
+    expect(publishNotification).toBeCalledWith(
+      expect.objectContaining({
+        id: 'WarningNotification',
+        description: 'There is 1 warning alert currently firing on the platform.',
+      }),
+    );
+    expect(publishNotification).toHaveBeenCalledTimes(1);
+  });
   it('should publish a critical notification if there is a minimum of one critical alert', async () => {
     //S
     // @ts-ignore mock implementation
@@ -91,8 +123,7 @@ describe('AlertNavbarUpdaterComponent', () => {
     expect(publishNotification).toBeCalledWith({
       id: 'CriticalNotification',
       title: 'Alerts',
-      description:
-        'There is 1 critical alert currently firing on the platform.',
+      description: 'There is 1 critical alert currently firing on the platform.',
       severity: 'critical',
       createdOn: new Date('2023-08-11T06:03:19.730Z'),
       redirectUrl: '/platform/alerts',
@@ -177,8 +208,7 @@ describe('AlertNavbarUpdaterComponent', () => {
     expect(publishNotification).toBeCalledWith({
       id: 'CriticalNotification',
       title: 'Alerts',
-      description:
-        'There are 1 critical alert and 1 warning alert currently firing on the platform.',
+      description: 'There are 1 critical alert and 1 warning alert currently firing on the platform.',
       severity: 'critical',
       createdOn: new Date('2023-08-11T06:03:19.730Z'),
       redirectUrl: '/platform/alerts',

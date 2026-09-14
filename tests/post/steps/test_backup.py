@@ -4,6 +4,7 @@ from pytest_bdd import scenario, when, then, parsers
 
 from tests import utils
 
+
 # Scenarios
 @scenario("../features/backup.feature", "Backup multiple times")
 def test_backup(host):

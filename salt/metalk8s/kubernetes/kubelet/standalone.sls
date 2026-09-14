@@ -27,9 +27,6 @@ Create kubelet service environment file:
     - context:
     - context:
         options:
-      {%- for opt, value in kubelet.service.options.items() %}
-          {{ opt }}: {{ value }}
-      {%- endfor %}
           node-ip: {{ grains['metalk8s']['control_plane_ip'] }}
           hostname-override: {{ grains['id'] }}
           cgroup-driver: systemd
@@ -69,15 +66,15 @@ Create kubelet config file:
         clusterDNS:
           - {{ cluster_dns_ip }}
         clusterDomain: {{ coredns.cluster_domain }}
-        containerRuntimeEndpoint: ""
+        containerRuntimeEndpoint: {{ kubelet.container_runtime_endpoint }}
         cpuManagerReconcilePeriod: 0s
         evictionPressureTransitionPeriod: 0s
         fileCheckFrequency: 0s
         healthzBindAddress: 127.0.0.1
         healthzPort: 10248
         httpCheckFrequency: 0s
-        imageMinimumGCAge: 0s
         imageMaximumGCAge: 0s
+        imageMinimumGCAge: 0s
         kind: KubeletConfiguration
         logging:
           flushFrequency: 0
@@ -89,7 +86,7 @@ Create kubelet config file:
           verbosity: 0
         memorySwap: {}
         nodeStatusReportFrequency: 0s
-        nodeStatusUpdateFrequency: 0s
+        nodeStatusUpdateFrequency: {{ pillar.kubernetes.kubelet.config.nodeStatusUpdateFrequency }}
         # Disable rotate Certificates as we manage certificate rotation ourself
         # with salt
         # rotateCertificates: true

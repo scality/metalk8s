@@ -7,31 +7,19 @@ export const isEntryAccessibleByTheUser = (
   [path, pathDescription]: [string, PathDescription],
   userGroups: string[],
 ): boolean => {
-  return (
-    pathDescription.groups?.some((group) => userGroups.includes(group)) ?? true
-  );
+  return pathDescription.groups?.some((group) => userGroups.includes(group)) ?? true;
 };
 
 export const normalizePath = (path: string): string => {
   const url = new URL(path);
   return url.origin + url.pathname;
 };
-export const isPathAccessible = (
-  path: string,
-  accessiblePaths: string[],
-): boolean => {
+export const isPathAccessible = (path: string, accessiblePaths: string[]): boolean => {
   const normalizedPath = normalizePath(path);
-  return accessiblePaths.some(
-    (accessiblePath) => normalizePath(accessiblePath) === normalizedPath,
-  );
+  return accessiblePaths.some((accessiblePath) => normalizePath(accessiblePath) === normalizedPath);
 };
-export const getUserGroups = (
-  user?: User,
-  userGroupsMapping?: UserGroupsMapping,
-): string[] => {
+export const getUserGroups = (user?: User, userGroupsMapping?: UserGroupsMapping): string[] => {
   const userOIDCGroups: string[] = (user?.profile?.groups as string[]) || [];
-  const userMappedGroups = userGroupsMapping
-    ? userGroupsMapping[user?.profile?.email || ''] || []
-    : [];
+  const userMappedGroups = userGroupsMapping ? userGroupsMapping[user?.profile?.email || ''] || [] : [];
   return Array.from(new Set([...userOIDCGroups, ...userMappedGroups]));
 };

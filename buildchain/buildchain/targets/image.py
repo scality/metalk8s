@@ -3,7 +3,6 @@
 
 """Base class for container images."""
 
-
 import operator
 from typing import Any
 from pathlib import Path

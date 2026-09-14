@@ -1,22 +1,10 @@
-import {
-  ConstrainedText,
-  Icon,
-  Link,
-  ProgressBar,
-  Tooltip,
-  Wrap,
-  spacing,
-} from '@scality/core-ui';
+import { ConstrainedText, Icon, Link, ProgressBar, Tooltip, Wrap, spacing } from '@scality/core-ui';
 import { Button, Table } from '@scality/core-ui/dist/next';
 import isEqual from 'lodash.isequal';
 import React from 'react';
 import { useIntl } from 'react-intl';
 import { useTheme } from 'styled-components';
-import {
-  VOLUME_CONDITION_EXCLAMATION,
-  VOLUME_CONDITION_LINK,
-  VOLUME_CONDITION_UNLINK,
-} from '../constants';
+import { VOLUME_CONDITION_EXCLAMATION, VOLUME_CONDITION_LINK, VOLUME_CONDITION_UNLINK } from '../constants';
 import { formatSizeForDisplay } from '../services/utils';
 import CircleStatus from './CircleStatus';
 import { Latency } from './Latency';
@@ -41,7 +29,8 @@ const VolumeListTable = React.memo((props) => {
           textAlign: 'center',
           width: 'unset',
           flex: 0.5,
-          maxWidth: '4rem',
+          minWidth: '4rem',
+          maxWidth: '5.5rem',
         },
         Cell: (cellProps) => {
           return <CircleStatus status={cellProps.value} />;
@@ -82,7 +71,7 @@ const VolumeListTable = React.memo((props) => {
         Header: 'Usage',
         accessor: 'usage',
         cellStyle: {
-          textAlign: 'center',
+          textAlign: 'left',
           width: 'unset',
           minWidth: '4rem',
           flex: 1,
@@ -103,7 +92,7 @@ const VolumeListTable = React.memo((props) => {
         Header: 'Size',
         accessor: 'storageCapacity',
         cellStyle: {
-          textAlign: 'right',
+          textAlign: 'left',
           width: 'unset',
           minWidth: '3rem',
           flex: 0.75,
@@ -128,18 +117,14 @@ const VolumeListTable = React.memo((props) => {
           flex: 0.5,
         },
         Cell: (cellProps) => {
-          const volume = volumeListData?.find(
-            (vol) => vol.name === cellProps.cell.row.values.name,
-          );
+          const volume = volumeListData?.find((vol) => vol.name === cellProps.cell.row.values.name);
 
           switch (cellProps.value) {
             case 'exclamation':
               return (
                 <Tooltip
                   placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
-                  overlay={
-                    <TooltipContent>{volume?.errorReason}</TooltipContent>
-                  }
+                  overlay={<TooltipContent>{volume?.errorReason}</TooltipContent>}
                 >
                   <Icon name="Exclamation" />
                 </Tooltip>
@@ -200,9 +185,7 @@ const VolumeListTable = React.memo((props) => {
           minWidth: '3rem',
         },
         Cell: (cellProps) => {
-          return cellProps.value !== undefined ? (
-            <Latency latencyInMicroSeconds={cellProps.value} />
-          ) : null;
+          return cellProps.value !== undefined ? <Latency latencyInMicroSeconds={cellProps.value} /> : null;
         },
       },
     ]; // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -238,10 +221,7 @@ const VolumeListTable = React.memo((props) => {
           data-cy="create_volume_button"
         />
       </Wrap>
-      <Table.SingleSelectableContent
-        rowHeight="h40"
-        separationLineVariant="backgroundLevel3"
-      />
+      <Table.SingleSelectableContent rowHeight="h40" separationLineVariant="backgroundLevel3" />
     </Table>
   );
 }, isEqual);

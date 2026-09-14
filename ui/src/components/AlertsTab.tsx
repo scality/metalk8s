@@ -8,13 +8,7 @@ import CircleStatus from './CircleStatus';
 import { useIntl } from 'react-intl';
 import { NotBoundContainer } from './style/CommonLayoutStyle';
 
-const AlertsTab = ({
-  alerts,
-  status,
-}: {
-  alerts: Alert[];
-  status: 'idle' | 'loading' | 'error' | 'success';
-}) => {
+const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'loading' | 'error' | 'success' }) => {
   const query = useURLQuery();
   // Retrieve the severity filter from URL.
   // Filter more than one severity, the URL should be:
@@ -37,24 +31,27 @@ const AlertsTab = ({
       ?.filter((alert) => alertSeverity.includes(alert.severity)) ?? [];
   const columns = [
     {
-      Header: 'Name',
-      accessor: 'name',
-      cellStyle: {
-        flex: 1,
-        width: 'unset',
-      },
-    },
-    {
       Header: 'Severity',
       accessor: 'severity',
       cellStyle: {
         flex: 0.5,
         textAlign: 'center',
         width: 'unset',
+        paddingRight: spacing.r16,
       },
       Cell: ({ value }) => {
         return <CircleStatus name="Circle-health" status={value} />;
       },
+    },
+    {
+      Header: 'Name',
+      accessor: 'name',
+      cellStyle: {
+        flex: 1,
+        width: 'unset',
+        minWidth: 0,
+      },
+      Cell: ({ value }) => <ConstrainedText lineClamp={2} text={value} />,
     },
     {
       Header: 'Description',
@@ -78,12 +75,7 @@ const AlertsTab = ({
         width: 'unset',
       },
       Cell: ({ value }) => {
-        return (
-          <FormattedDateTime
-            value={new Date(value)}
-            format="date-time-second"
-          />
-        );
+        return <FormattedDateTime value={new Date(value)} format="date-time-second" />;
       },
     },
   ];
@@ -103,10 +95,7 @@ const AlertsTab = ({
           },
         }}
       >
-        <Table.SingleSelectableContent
-          rowHeight="h48"
-          separationLineVariant="backgroundLevel2"
-        />
+        <Table.SingleSelectableContent rowHeight="h48" separationLineVariant="backgroundLevel2" />
       </Table>
     </Box>
   );

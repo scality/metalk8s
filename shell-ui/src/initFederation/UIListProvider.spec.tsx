@@ -51,11 +51,7 @@ describe('useDeployedApps', () => {
     // E
     await waitForNextUpdate();
     // V
-    expect(result.current).toStrictEqual([
-      testLocalUI,
-      testEuWestUI,
-      anotherUI,
-    ]);
+    expect(result.current).toStrictEqual([testLocalUI, testEuWestUI, anotherUI]);
   });
   it('should retrieve an UI selected by name', async () => {
     const { result, waitForNextUpdate } = renderHook(

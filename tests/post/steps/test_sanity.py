@@ -1,5 +1,6 @@
+import json
+
 import kubernetes.client
-from kubernetes.client import AppsV1Api
 from kubernetes.client.rest import ApiException
 import pytest
 from pytest_bdd import scenario, then, parsers
@@ -25,38 +26,34 @@ def test_read_pod_logs(host):
     pass
 
 
-@scenario(
-    "../features/sanity.feature",
-    "Static Pod runs where expected",
-    example_converters={"namespace": str, "name": str, "role": str},
-)
+@scenario("../features/sanity.feature", "Static Pod runs where expected")
 def test_static_pod_running(host):
     pass
 
 
-@scenario(
-    "../features/sanity.feature",
-    "Deployment has available replicas",
-    example_converters={"namespace": str, "name": str},
-)
+@scenario("../features/sanity.feature", "Deployment has available replicas")
 def test_deployment_running(host):
     pass
 
 
-@scenario(
-    "../features/sanity.feature",
-    "DaemonSet has desired Pods ready",
-    example_converters={"namespace": str, "name": str},
-)
+@scenario("../features/sanity.feature", "DaemonSet has desired Pods ready")
 def test_daemonset_running(host):
     pass
 
 
+@scenario("../features/sanity.feature", "Package is installed on every node")
+def test_package_installed(host):
+    pass
+
+
 @scenario(
-    "../features/sanity.feature",
-    "StatefulSet has available replicas",
-    example_converters={"namespace": str, "name": str},
+    "../features/sanity.feature", "Systemd unit is enabled and running on every node"
 )
+def test_systemd_unit_running(host):
+    pass
+
+
+@scenario("../features/sanity.feature", "StatefulSet has available replicas")
 def test_statefulset_running(host):
     pass
 
@@ -145,7 +142,11 @@ def read_pod_logs(k8s_client, label, namespace):
         ).format(container.name, pod.metadata.name, pod.status.phase)
 
 
-@then("the static Pod <name> in the <namespace> namespace runs on <role> nodes")
+@then(
+    parsers.parse(
+        "the static Pod '{name}' in the '{namespace}' namespace runs on '{role}' nodes"
+    )
+)
 def check_static_pod(k8s_client, name, namespace, role):
     node_k8s_client = k8s_client.resources.get(api_version="v1", kind="Node")
     if role == "all":
@@ -169,10 +170,6 @@ def check_static_pod(k8s_client, name, namespace, role):
         )
 
 
-@then(
-    "the Deployment <name> in the <namespace> namespace has all desired "
-    "replicas available"
-)
 @then(
     parsers.parse(
         "the Deployment '{name}' in the '{namespace}' namespace has all desired "
@@ -204,46 +201,6 @@ def check_deployment(k8s_client, name, namespace):
     )
 
 
-@then("the DaemonSet <name> in the <namespace> namespace has all desired Pods ready")
-@then(
-    parsers.parse(
-        "the DaemonSet '{name}' in the '{namespace}' namespace has all desired "
-        "Pods ready"
-    )
-)
-def check_daemonset(k8s_client, name, namespace):
-    def _wait_for_daemon_set():
-        try:
-            daemon_set = k8s_client.resources.get(
-                api_version="apps/v1", kind="DaemonSet"
-            ).get(name=name, namespace=namespace)
-        except ApiException as exc:
-            if exc.status == 404:
-                pytest.fail("DaemonSet '{}/{}' does not exist".format(namespace, name))
-            raise
-
-        desired = daemon_set.status.desired_number_scheduled
-        scheduled = daemon_set.status.current_number_scheduled
-        assert desired == scheduled, (
-            "DaemonSet is not ready yet (desired={}, scheduled={})"
-        ).format(desired, scheduled)
-        available = daemon_set.status.number_available
-        assert desired == available, (
-            "DaemonSet is not ready yet (desired={}, available={})"
-        ).format(desired, available)
-
-    utils.retry(
-        _wait_for_daemon_set,
-        times=10,
-        wait=3,
-        name="wait for DaemonSet '{}/{}'".format(namespace, name),
-    )
-
-
-@then(
-    "the StatefulSet <name> in the <namespace> namespace has all desired "
-    "replicas available"
-)
 @then(
     parsers.parse(
         "the StatefulSet '{name}' in the '{namespace}' namespace has all desired "
@@ -275,6 +232,67 @@ def check_statefulset(k8s_client, name, namespace):
         wait=3,
         name="wait for StatefulSet '{}/{}'".format(namespace, name),
     )
+
+
+@then(parsers.parse("the package '{name}' is installed on every node"))
+def check_package_installed(host, ssh_config, k8s_client, name):
+    def _check_package():
+        versions = _salt_on_every_node(
+            host, ssh_config, k8s_client, "pkg.version", name
+        )
+
+        # An absent package answers with an empty string, and a minion that failed
+        # to run the function answers with its error message, so only take a version
+        # number for an answer, and quote what came back instead.
+        missing = {
+            node: version
+            for node, version in versions.items()
+            if not isinstance(version, str) or not version[:1].isdigit()
+        }
+        answers = ", ".join(
+            f"{node} ({version!r})" for node, version in sorted(missing.items())
+        )
+        assert not missing, f"'{name}' is not installed on {answers}"
+
+    utils.retry(_check_package, times=3, wait=5, name=f"check package '{name}'")
+
+
+@then(parsers.parse("the systemd unit '{name}' is enabled and running on every node"))
+def check_systemd_unit_running(host, ssh_config, k8s_client, name):
+    def _check_unit():
+        for description, function in [
+            ("enabled", "service.enabled"),
+            ("running", "service.status"),
+        ]:
+            results = _salt_on_every_node(host, ssh_config, k8s_client, function, name)
+
+            failed = sorted(
+                node for node, result in results.items() if result is not True
+            )
+            assert not failed, f"'{name}' is not {description} on {', '.join(failed)}"
+
+    utils.retry(_check_unit, times=3, wait=5, name=f"check systemd unit '{name}'")
+
+
+def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
+    """Run a Salt execution function on every node, return the result per node.
+
+    Target the Kubernetes nodes by name rather than every minion, so that a node
+    staying silent fails the check instead of dropping out of the results.
+    """
+    nodes = sorted(
+        node.metadata.name
+        for node in k8s_client.resources.get(api_version="v1", kind="Node").get().items
+    )
+    assert nodes, "no Kubernetes node to check"
+
+    command = ["salt", "--static", "--out=json", "-L", ",".join(nodes), function, *args]
+    results = json.loads(utils.run_salt_command(host, command, ssh_config).stdout)
+
+    silent = sorted(set(nodes) - set(results))
+    assert not silent, f"no answer from {', '.join(silent)}"
+
+    return results
 
 
 # }}}

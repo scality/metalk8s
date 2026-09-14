@@ -1,9 +1,6 @@
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
-import {
-  CoreUITheme,
-  CoreUIThemeName,
-} from '@scality/core-ui/dist/style/theme';
+import { CoreUITheme, CoreUIThemeName } from '@scality/core-ui/dist/style/theme';
 import React, { createContext, useContext } from 'react';
 import { useQuery } from 'react-query';
 
@@ -35,9 +32,7 @@ type CustomShellThemeDescription = {
   colors: CoreUITheme;
 };
 
-type ThemeDescription =
-  | CoreUIShellThemeDescription
-  | CustomShellThemeDescription;
+type ThemeDescription = CoreUIShellThemeDescription | CustomShellThemeDescription;
 
 type Themes = {
   dark: ThemeDescription;
@@ -53,11 +48,17 @@ export type ShellJSONFileConfig = {
   themes: Themes;
   favicon?: string;
 
+  // Origin of the embedded Guardian AI assistant (scheme + host + port, no path
+  // or query). Used as the iframe src and as the postMessage target origin.
+  guardianOrigin?: string;
+  guardianSource?: string;
+
   // for IDP that does not support user groups (ie: Dex)
   userGroupsMapping?: UserGroupsMapping;
 
   canChangeTheme?: boolean;
   canChangeInstanceName?: boolean;
+  canUseGuardian?: boolean;
   // Not yet used and working
   canChangeLanguage?: boolean;
 };
@@ -108,9 +109,7 @@ export const ShellConfigProvider = ({ shellConfigUrl, children }) => {
         status,
       }}
     >
-      {(status === 'idle' || status === 'loading') && (
-        <Loader size="massive" centered={true} aria-label="loading" />
-      )}
+      {(status === 'idle' || status === 'loading') && <Loader size="massive" centered={true} aria-label="loading" />}
       {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
       {status === 'success' && children}
     </ShellConfigContext.Provider>

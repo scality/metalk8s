@@ -179,13 +179,14 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          # NOTE: We add rocky-8 here even if it's already tested in pre-merge since
-          # we also test solution install + upgrade there
           - rocky-8
+          # NOTE: We add rocky-9 here even if it's already tested in pre-merge since
+          # we also test solution install + upgrade there
+          - rocky-9
         setup-idp: [true]
         setup-logging: [true]
         include:
-          - os: rocky-8
+          - os: rocky-9
             setup-idp: false
             setup-logging: false
     with:

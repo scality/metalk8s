@@ -1,0 +1,18 @@
+namespace: metalk8s-monitoring
+
+resources:
+  - github.com/scality/node-warden-operator.git/config/default?ref=v1.0.0
+
+images:
+  - name: controller
+    newName: '{% endraw -%}{{ build_image_name("node-warden-operator", False) }}{%- raw %}'
+    newTag: v1.0.0
+
+patches:
+  - path: servicemonitor_patch.yaml
+    target:
+      kind: ServiceMonitor
+  - path: deploy_patch.yaml
+    target:
+      kind: Deployment
+  - path: delete_ns.yaml

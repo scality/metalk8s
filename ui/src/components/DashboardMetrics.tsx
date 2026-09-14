@@ -1,18 +1,10 @@
 import React from 'react';
-import {
-  Box,
-  Button,
-  ChartLegend,
-  ChartLegendWrapper,
-} from '@scality/core-ui/dist/next';
+import { Box, Button, ChartLegend, ChartLegendWrapper } from '@scality/core-ui/dist/next';
 
 import { useIntl } from 'react-intl';
 import { GRAFANA_DASHBOARDS } from '../constants';
 import { createColorSet } from '../services/graphUtils';
-import {
-  PageSubtitle,
-  GraphsWrapper,
-} from '../components/style/CommonLayoutStyle';
+import { PageSubtitle, GraphsWrapper } from '../components/style/CommonLayoutStyle';
 import DashboardChartCpuUsage from './DashboardChartCpuUsage';
 import DashboardChartThroughput from './DashboardChartThroughput';
 import DashboardChartSystemLoad from './DashboardChartSystemLoad';
@@ -35,9 +27,7 @@ export const QuantileHelpTooltip = () => {
             })
             .split('\n')
             .map((line, key) => (
-              <SmallerText key={`globalheathexplanation-${key}`}>
-                {line}
-              </SmallerText>
+              <SmallerText key={`globalheathexplanation-${key}`}>{line}</SmallerText>
             ))}
         </Stack>
       }

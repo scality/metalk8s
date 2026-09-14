@@ -20,6 +20,8 @@ import { STATUS_CRITICAL, STATUS_HEALTH, STATUS_WARNING } from '../constants';
 import { useUserAccessRight } from '../hooks';
 import { compareHealth } from '../services/utils';
 import { useAlerts } from './AlertProvider';
+import type { Alert } from '../services/alertUtils';
+import type { QueryStatus } from 'react-query';
 import { useBasenameRelativeNavigate } from '@scality/module-federation';
 
 const AlertPageHeaderContainer = styled.div`
@@ -55,7 +57,7 @@ const TertiaryTitle = styled.div`
   color: ${(props) => props.theme.textPrimary};
 `;
 const SeperationLine = styled.div`
-  width: 250px; // the same width as the container
+  width: 250px; /* the same width as the container */
   height: 37px;
   border-right: 2px solid ${(props) => props.theme.backgroundLevel1};
   position: absolute;
@@ -82,20 +84,11 @@ const isEqualAlert = (a = [], b = []) => {
     return false;
   }
 
-  return a.every((alertData) =>
-    b.find(
-      (alert) =>
-        alert.id === alertData.id && alert.severity === alertData.severity,
-    ),
-  );
+  return a.every((alertData) => b.find((alert) => alert.id === alertData.id && alert.severity === alertData.severity));
 };
 
 const getAlertStatus = (numbersOfCritical, numbersOfWarning) =>
-  numbersOfCritical > 0
-    ? STATUS_CRITICAL
-    : numbersOfWarning > 0
-    ? STATUS_WARNING
-    : STATUS_HEALTH;
+  numbersOfCritical > 0 ? STATUS_CRITICAL : numbersOfWarning > 0 ? STATUS_WARNING : STATUS_HEALTH;
 
 function AlertPageHeader({
   activeAlerts,
@@ -118,7 +111,7 @@ function AlertPageHeader({
         <Title>
           <AlertStatusIcon>
             <StatusWrapper status={alertStatus}>
-              <StatusIcon status={alertStatus} name="Alert" entity='Alerts' />
+              <StatusIcon status={alertStatus} name="Alert" entity="Alerts" />
             </StatusWrapper>
           </AlertStatusIcon>
           <>
@@ -163,9 +156,14 @@ function AlertPageHeader({
   );
 }
 
+type ActiveAlertTabProps = {
+  columns: Record<string, unknown>[];
+  data: Alert[];
+  status: QueryStatus;
+};
+
 const ActiveAlertTab = React.memo(
-  // @ts-expect-error - FIXME when you are working on it
-  ({ columns, data }) => {
+  ({ columns, data, status }: ActiveAlertTabProps) => {
     const sortTypes = React.useMemo(() => {
       return {
         severity: (row1, row2) => {
@@ -197,6 +195,7 @@ const ActiveAlertTab = React.memo(
         data={data}
         defaultSortingKey={DEFAULT_SORTING_KEY}
         sortTypes={sortTypes}
+        status={status}
         entityName={{
           en: {
             singular: 'active alert',
@@ -219,10 +218,12 @@ const ActiveAlertTab = React.memo(
       </Table>
     );
   },
-  (a, b) => {
-    // compare the alert only on id and severity
-    // @ts-expect-error - FIXME when you are working on it
-    return isEqual(a.columns, b.columns) && isEqualAlert(a.data, b.data);
+  (prevProps: ActiveAlertTabProps, nextProps: ActiveAlertTabProps) => {
+    return (
+      isEqual(prevProps.columns, nextProps.columns) &&
+      isEqualAlert(prevProps.data, nextProps.data) &&
+      prevProps.status === nextProps.status
+    );
   },
 );
 export default function AlertPage() {
@@ -231,12 +232,8 @@ export default function AlertPage() {
     () => alerts?.alerts?.filter((alert) => !alert.labels.children) || [],
     [JSON.stringify(alerts?.alerts)],
   );
-  const criticalAlerts = leafAlerts.filter(
-    (alert) => alert.severity === 'critical',
-  );
-  const wariningAlerts = leafAlerts.filter(
-    (alert) => alert.severity === 'warning',
-  );
+  const criticalAlerts = leafAlerts.filter((alert) => alert.severity === 'critical');
+  const wariningAlerts = leafAlerts.filter((alert) => alert.severity === 'warning');
   const columns = React.useMemo(
     () => [
       {
@@ -275,12 +272,7 @@ export default function AlertPage() {
           textAlign: 'right',
           marginRight: spacing.r12,
         },
-        Cell: (cell) => (
-          <FormattedDateTime
-            value={new Date(cell.value)}
-            format="date-time-second"
-          />
-        ),
+        Cell: (cell) => <FormattedDateTime value={new Date(cell.value)} format="date-time-second" />,
       },
     ],
     [],
@@ -295,8 +287,7 @@ export default function AlertPage() {
         />
       </AppContainer.OverallSummary>
       <AppContainer.MainContent>
-        {/* @ts-expect-error - FIXME when you are working on it */}
-        <ActiveAlertTab data={leafAlerts} columns={columns} />
+        <ActiveAlertTab data={leafAlerts} columns={columns} status={alerts.status} />
       </AppContainer.MainContent>
     </AppContainer>
   );

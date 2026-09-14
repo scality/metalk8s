@@ -1,28 +1,36 @@
-import React, { PropsWithChildren } from 'react';
-import { InstanceNameProvider, _InternalInstanceName } from './InstanceName';
-import {
-  render,
-  screen,
-  waitFor,
-  waitForElementToBeRemoved,
-  within,
-} from '@testing-library/react';
 import { jest } from '@jest/globals';
-import userEvent from '@testing-library/user-event';
-import { QueryClient } from 'react-query';
+import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 import { ToastProvider } from '@scality/core-ui/dist/components/toast/ToastProvider';
-import { UserData } from '../auth/AuthProvider';
+import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import type { PropsWithChildren } from 'react';
+import { QueryClient } from 'react-query';
+import type { UserData } from '../auth/AuthProvider';
+import type { RuntimeWebFinger } from '../initFederation/ConfigurationProviders';
 import { QueryClientProvider } from '../QueryClientProvider';
+import { _InternalInstanceName } from './InstanceName';
 
 jest.mock('../initFederation/ConfigurationProviders', () => ({
   useConfigRetriever: () => ({
-    retrieveConfiguration: () => ({
-      spec: {
-        instanceNameAdapter: {
-          module: './instanceNameAdapter',
-        },
-      },
-    }),
+    retrieveConfiguration: (config: { configType: 'build'; name: string }) => {
+      if (config.configType === 'build') {
+        return {
+          spec: {
+            instanceNameAdapter: {
+              module: './instanceNameAdapter',
+            },
+          },
+        };
+      } else if (config.configType === 'run') {
+        return {
+          spec: {
+            apiUrl: 'http://localhost:3000/api/v1',
+          },
+        };
+      }
+      return null;
+    },
   }),
 }));
 
@@ -39,20 +47,21 @@ jest.mock('../initFederation/UIListProvider', () => ({
 jest.mock('../auth/AuthProvider', () => ({
   useAuth: () => ({
     userData: {
-      token: 'test',
+      token: 'test-token',
     },
   }),
 }));
 
-const Wrapper = ({ children }: PropsWithChildren<{}>) => (
-  <ToastProvider>
-    <InstanceNameProvider>
+const Wrapper = ({ children }: PropsWithChildren) => (
+  <CoreUiThemeProvider theme={coreUIAvailableThemes.darkRebrand}>
+    <ToastProvider>
       <QueryClientProvider
         client={
           new QueryClient({
             defaultOptions: {
               queries: {
                 retry: false,
+                retryDelay: 0,
               },
             },
           })
@@ -60,17 +69,27 @@ const Wrapper = ({ children }: PropsWithChildren<{}>) => (
       >
         {children}
       </QueryClientProvider>
-    </InstanceNameProvider>
-  </ToastProvider>
+    </ToastProvider>
+  </CoreUiThemeProvider>
 );
 
 describe('InstanceName', () => {
-  it('should display the instance name input when it resolved its configuration', async () => {
-    //S
+  it('shows Loader in Tooltip while deployment name query is loading', async () => {
     const getInstanceName = jest
-      .fn<(userData: UserData) => Promise<string>>()
-      .mockResolvedValue('default');
-    const setInstanceName = jest.fn<(userData: UserData) => Promise<void>>();
+      .fn<
+        (userData: UserData | undefined, configuration: RuntimeWebFinger<Record<string, unknown>>) => Promise<string>
+      >()
+      .mockImplementation(() => new Promise(() => {}));
+    const setInstanceName = jest
+      .fn<
+        (
+          userData: UserData | undefined,
+          name: string,
+          configuration: RuntimeWebFinger<Record<string, unknown>>,
+        ) => Promise<void>
+      >()
+      .mockResolvedValue(undefined);
+
     render(
       <_InternalInstanceName
         moduleExports={{
@@ -82,25 +101,168 @@ describe('InstanceName', () => {
       />,
       { wrapper: Wrapper },
     );
-    //E
-    await waitForElementToBeRemoved(() => screen.getByText(/loading/i));
-    await userEvent.tab();
-    await waitFor(() => expect(screen.getByRole('button')).toBeInTheDocument());
-    await userEvent.click(screen.getByRole('button'));
-    await userEvent.type(screen.getByRole('textbox'), 'test');
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+
+    await waitFor(() => {
+      expect(document.querySelector('.sc-loader')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: 'sweet-cluster' })).not.toBeInTheDocument();
+    expect(setInstanceName).not.toHaveBeenCalled();
+  });
+
+  it('shows warning Icon in Tooltip when loading deployment name fails', async () => {
+    const getInstanceName = jest
+      .fn<
+        (userData: UserData | undefined, configuration: RuntimeWebFinger<Record<string, unknown>>) => Promise<string>
+      >()
+      .mockRejectedValue(new Error('boom'));
+    const setInstanceName = jest
+      .fn<
+        (
+          userData: UserData | undefined,
+          name: string,
+          configuration: RuntimeWebFinger<Record<string, unknown>>,
+        ) => Promise<void>
+      >()
+      .mockResolvedValue(undefined);
+
+    render(
+      <_InternalInstanceName
+        moduleExports={{
+          './instanceNameAdapter': {
+            getInstanceName,
+            setInstanceName,
+          },
+        }}
+      />,
+      { wrapper: Wrapper },
+    );
+
+    await waitFor(() => {
+      expect(document.querySelector('.sc-loader')).not.toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      const icon = document.querySelector('[data-icon="circle-exclamation"]');
+      expect(icon).toBeInTheDocument();
+      expect(icon).toHaveAttribute('color', 'statusWarning');
+    });
+
+    expect(setInstanceName).not.toHaveBeenCalled();
+    expect(getInstanceName).toHaveBeenCalled();
+  });
+
+  it('renders nothing when getInstanceName rejects with a 403 (forbidden) error — no pill, no warning icon', async () => {
+    const forbidden = Object.assign(new Error('Forbidden'), {
+      status: 403,
+      code: 'InstanceNameForbidden',
+    });
+    const getInstanceName = jest
+      .fn<
+        (userData: UserData | undefined, configuration: RuntimeWebFinger<Record<string, unknown>>) => Promise<string>
+      >()
+      .mockRejectedValue(forbidden);
+    const setInstanceName = jest
+      .fn<
+        (
+          userData: UserData | undefined,
+          name: string,
+          configuration: RuntimeWebFinger<Record<string, unknown>>,
+        ) => Promise<void>
+      >()
+      .mockResolvedValue(undefined);
+
+    render(
+      <_InternalInstanceName
+        moduleExports={{
+          './instanceNameAdapter': {
+            getInstanceName,
+            setInstanceName,
+          },
+        }}
+      />,
+      { wrapper: Wrapper },
+    );
+
+    await waitFor(() => expect(getInstanceName).toHaveBeenCalled());
+    await waitFor(() => {
+      expect(document.querySelector('.sc-loader')).not.toBeInTheDocument();
+    });
+
+    expect(document.querySelector('[data-icon="circle-exclamation"]')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(setInstanceName).not.toHaveBeenCalled();
+    // No retry on 403: getInstanceName must be called exactly once.
+    expect(getInstanceName).toHaveBeenCalledTimes(1);
+  });
+
+  it('loads deployment name then renames via EditableDeploymentName and calls setInstanceName', async () => {
+    const getInstanceName = jest
+      .fn<
+        (userData: UserData | undefined, configuration: RuntimeWebFinger<Record<string, unknown>>) => Promise<string>
+      >()
+      .mockResolvedValue('sweet-cluster');
+    const setInstanceName = jest
+      .fn<
+        (
+          userData: UserData | undefined,
+          name: string,
+          configuration: RuntimeWebFinger<Record<string, unknown>>,
+        ) => Promise<void>
+      >()
+      .mockResolvedValue(undefined);
+
+    render(
+      <_InternalInstanceName
+        moduleExports={{
+          './instanceNameAdapter': {
+            getInstanceName,
+            setInstanceName,
+          },
+        }}
+      />,
+      { wrapper: Wrapper },
+    );
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'sweet-cluster' })).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: 'sweet-cluster' }));
+    const input = screen.getByRole('textbox', { name: 'Deployment name' });
+    await userEvent.type(input, 'test');
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Rename deployment?' })).toBeInTheDocument();
+    });
+
     await userEvent.click(
-      within(screen.getByRole('dialog')).getByRole('button', {
-        name: 'Confirm',
+      within(screen.getByRole('dialog', { name: 'Rename deployment?' })).getByRole('button', {
+        name: 'Rename',
       }),
     );
+
     await waitFor(() => expect(setInstanceName).toHaveBeenCalledTimes(1));
-    //V
-    expect(getInstanceName).toHaveBeenCalledTimes(1);
-    expect(setInstanceName).toHaveBeenCalledWith(
-      { token: 'test' },
-      'defaulttest',
+    await waitFor(() => expect(getInstanceName).toHaveBeenCalledTimes(2));
+
+    expect(getInstanceName).toHaveBeenNthCalledWith(
+      1,
+      { token: 'test-token' },
+      expect.objectContaining({ spec: { apiUrl: 'http://localhost:3000/api/v1' } }),
     );
+    expect(getInstanceName).toHaveBeenNthCalledWith(
+      2,
+      { token: 'test-token' },
+      expect.objectContaining({
+        spec: { apiUrl: 'http://localhost:3000/api/v1' },
+      }),
+    );
+    expect(setInstanceName).toHaveBeenCalledWith(
+      { token: 'test-token' },
+      'test',
+      expect.objectContaining({
+        spec: { apiUrl: 'http://localhost:3000/api/v1' },
+      }),
+    );
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'sweet-cluster' })).toBeInTheDocument());
   });
 });

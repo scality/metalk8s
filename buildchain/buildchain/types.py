@@ -3,12 +3,10 @@
 
 """Common types definitions and aliases."""
 
-
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 import docker  # type: ignore
 import doit  # type: ignore
-
 
 # A doit action.
 Action = Union[

@@ -2,11 +2,7 @@ import { useEffect } from 'react';
 import AlertProvider, { useAlerts } from '../containers/AlertProvider';
 import { Alert } from '../services/alertUtils';
 import FederatedIntlProvider from '../containers/IntlProvider';
-import {
-  AppConfigProvider,
-  AppConfigProviderWithoutRedux,
-  useConfig,
-} from '../FederableApp';
+import { AppConfigProvider, AppConfigProviderWithoutRedux, useConfig } from '../FederableApp';
 
 type Notification = {
   id: string;
@@ -61,14 +57,10 @@ function publishCriticalNotification(
       warningAlerts.length > 0
         ? `There ${alertsNum > 1 ? 'are' : 'is'} ${
             criticalAlerts.length
-          } critical alert${criticalAlerts.length > 1 ? 's' : ''} and ${
-            warningAlerts.length
-          } warning alert${
+          } critical alert${criticalAlerts.length > 1 ? 's' : ''} and ${warningAlerts.length} warning alert${
             warningAlerts.length > 1 ? 's' : ''
           } currently firing on the platform.`
-        : `There ${alertsNum > 1 ? 'are' : 'is'} ${
-            criticalAlerts.length
-          } critical alert${
+        : `There ${alertsNum > 1 ? 'are' : 'is'} ${criticalAlerts.length} critical alert${
             criticalAlerts.length > 1 ? 's' : ''
           } currently firing on the platform.`,
     severity: 'critical',
@@ -85,9 +77,7 @@ function publishWarningNotification(
   publishNotification({
     id: WARNING_NOTIFICATION_ID,
     title: 'Alerts',
-    description: `There ${alertsNum > 1 ? 'are' : 'is'} ${
-      warningAlerts.length
-    } warning alert${
+    description: `There ${alertsNum > 1 ? 'are' : 'is'} ${warningAlerts.length} warning alert${
       warningAlerts.length > 1 ? 's' : ''
     } currently firing on the platform.`,
     severity: 'warning',
@@ -108,13 +98,12 @@ export const AlertNavbarUpdaterComponentInternal = ({
     return new Date(b.startsAt) > new Date(a.startsAt) ? 1 : -1;
   });
   const { ui_base_path } = useConfig();
-  const watchdogAlert = alerts?.find(
-    (alert: Alert) => alert.labels.alertname === WATCHDOG_ALERT_NAME,
-  );
-  const criticalAlerts =
-    alerts?.filter((alert: Alert) => alert.severity === 'critical') ?? [];
-  const warningAlerts =
-    alerts?.filter((alert: Alert) => alert.severity === 'warning') ?? [];
+  // Exclude parent/aggregation alerts (those exposing `children`) so the notification
+  // center counts the same leaf alerts as the Alerts page (see AlertPage.tsx).
+  const leafAlerts = alerts?.filter((alert: Alert) => !alert.labels.children) ?? [];
+  const watchdogAlert = leafAlerts.find((alert: Alert) => alert.labels.alertname === WATCHDOG_ALERT_NAME);
+  const criticalAlerts = leafAlerts.filter((alert: Alert) => alert.severity === 'critical');
+  const warningAlerts = leafAlerts.filter((alert: Alert) => alert.severity === 'warning');
 
   useEffect(() => {
     // We have initialData when loading alerts, so we should check if the query is fetching or not.
@@ -126,7 +115,7 @@ export const AlertNavbarUpdaterComponentInternal = ({
     // we need to check if there is any new alert raised, if yes, we need to publish the notification.
     const alertsIdArray = alertsId ? alertsId.split(',') : [];
     // check if all the criticalAlerts item belongs to part of the alertsIdArray
-    const newlyRaisedAlertNum = alerts?.filter((alert) => {
+    const newlyRaisedAlertNum = leafAlerts.filter((alert) => {
       if (!alertsIdArray.includes(alert.id)) {
         return alert.id;
       }
@@ -150,23 +139,14 @@ export const AlertNavbarUpdaterComponentInternal = ({
       if (newlyRaisedAlertNum) {
         unPublishNotification(CRITICAL_NOTIFICATION_ID);
       }
-      publishCriticalNotification(
-        publishNotification,
-        warningAlerts,
-        criticalAlerts,
-        ui_base_path,
-      );
+      publishCriticalNotification(publishNotification, warningAlerts, criticalAlerts, ui_base_path);
     } else if (warningAlerts.length) {
       unPublishNotification(WATCHDOG_ALERT_NAME);
       unPublishNotification(CRITICAL_NOTIFICATION_ID);
       if (newlyRaisedAlertNum) {
         unPublishNotification(WARNING_NOTIFICATION_ID);
       }
-      publishWarningNotification(
-        publishNotification,
-        warningAlerts,
-        ui_base_path,
-      );
+      publishWarningNotification(publishNotification, warningAlerts, ui_base_path);
     } else {
       unPublishNotification(CRITICAL_NOTIFICATION_ID);
       unPublishNotification(WARNING_NOTIFICATION_ID);
@@ -174,17 +154,8 @@ export const AlertNavbarUpdaterComponentInternal = ({
     }
 
     // Update the alerts Id in the localstorage
-    localStorage.setItem(
-      LOCAL_STORAGE_ALL_ALERTS_ID,
-      `${alerts?.map((alert) => alert.id).join(',')}`,
-    );
-  }, [
-    criticalAlerts.length,
-    warningAlerts.length,
-    watchdogAlert === undefined,
-    status,
-    isFetching,
-  ]);
+    localStorage.setItem(LOCAL_STORAGE_ALL_ALERTS_ID, `${leafAlerts.map((alert) => alert.id).join(',')}`);
+  }, [criticalAlerts.length, warningAlerts.length, watchdogAlert === undefined, status, isFetching]);
 
   return <></>;
 };

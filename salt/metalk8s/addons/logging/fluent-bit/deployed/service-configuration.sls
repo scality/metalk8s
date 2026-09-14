@@ -1,5 +1,6 @@
 include:
   - ...deployed.namespace
+  - .secret
 
 {%- set fluent_bit_config = salt.metalk8s_kubernetes.get_object(
         kind='ConfigMap',

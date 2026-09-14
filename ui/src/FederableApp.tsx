@@ -6,6 +6,7 @@ import { applyMiddleware, compose, createStore, Store } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import 'regenerator-runtime/runtime';
 import App from './containers/App';
+import PrometheusAuthProvider from './containers/PrometheusAuthProvider';
 import { authErrorAction } from './ducks/app/authError';
 import { setApiConfigAction } from './ducks/config';
 import { setHistory as setReduxHistory } from './ducks/history';
@@ -13,11 +14,7 @@ import reducer from './ducks/reducer';
 import sagas from './ducks/sagas';
 import { useTypedSelector } from './hooks';
 import { AuthError } from './services/errorhandler';
-import {
-  ShellHooksProvider,
-  useBasenameRelativeNavigate,
-  useShellHooks,
-} from '@scality/module-federation';
+import { ShellHooksProvider, useBasenameRelativeNavigate, useShellHooks } from '@scality/module-federation';
 import { FederatedAppProps } from '../@mf-types/shell/App';
 
 const composeEnhancers =
@@ -119,17 +116,16 @@ export const AppConfigProvider = ({
 
 export default function FederableApp(props: FederatedAppProps) {
   return (
-    <ShellHooksProvider
-      shellHooks={props.shellHooks}
-      shellAlerts={props.shellAlerts}
-    >
+    <ShellHooksProvider shellHooks={props.shellHooks} shellAlerts={props.shellAlerts}>
       <Provider store={store}>
         <AppConfigProvider>
-          <ToastProvider>
-            <RouterWithBaseName>
-              <App />
-            </RouterWithBaseName>
-          </ToastProvider>
+          <PrometheusAuthProvider>
+            <ToastProvider>
+              <RouterWithBaseName>
+                <App />
+              </RouterWithBaseName>
+            </ToastProvider>
+          </PrometheusAuthProvider>
         </AppConfigProvider>
       </Provider>
     </ShellHooksProvider>

@@ -623,7 +623,7 @@
                                 description {{ end }}
                               </td>
                               <td>
-                                {{ .StartsAt.Format "2006-01-02 15:04:05 (Z07:00)" }}
+                                {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
                               </td>
                             </tr>
                             {{ end }}
@@ -949,7 +949,7 @@
                                 description {{ end }}
                               </td>
                               <td>
-                                {{ .StartsAt.Format "2006-01-02 15:04:05 (Z07:00)" }} - {{ .EndsAt.Format "2006-01-02 15:04:05 (Z07:00)" }}
+                                {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }} - {{ .EndsAt.Format "2006-01-02 15:04:05 MST" }}
                               </td>
                             </tr>
                             {{ end }}

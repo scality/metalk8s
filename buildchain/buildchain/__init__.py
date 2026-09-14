@@ -6,9 +6,7 @@
 It defines tasks and helper for the build system.
 """
 
-
 from pathlib import Path
-
 
 # Root of the repository.
 ROOT: Path = (Path(__file__) / "../../../").resolve()

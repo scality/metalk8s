@@ -3,7 +3,6 @@
 
 """Base classes definition for classes that produces tasks."""
 
-
 import abc
 import operator
 from pathlib import Path

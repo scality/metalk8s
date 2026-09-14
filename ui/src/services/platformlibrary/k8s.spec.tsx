@@ -43,11 +43,7 @@ describe('getNodesCount', () => {
   );
   afterEach(() => server.resetHandlers());
 
-  const wrapper = ({ children }) => (
-    <QueryClientProvider client={new QueryClient()}>
-      {children}
-    </QueryClientProvider>
-  );
+  const wrapper = ({ children }) => <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>;
 
   it('should return the number of nodes in the cluster', async () => {
     // S

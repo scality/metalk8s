@@ -19,24 +19,65 @@ runs:
       run: |
         export HOSTS_LIST=""
         echo "HOSTS_LIST=bootstrap$(seq -s '' --format ' node-%g' 1 ${{ inputs.NODES_COUNT }})" >> $GITHUB_ENV
+    ## Why a host has no sosreport matters more than how many do:
+    ##
+    ##   - unreachable over ssh: expected. This action runs with `if: always()`,
+    ##     and `bootstrap-restore` destroys the Bootstrap node on purpose --
+    ##     precisely when the surviving nodes' logs are worth having. Warn and
+    ##     move on.
+    ##   - reachable, but its sosreport could not be generated or collected: the
+    ##     node was up and we lost its evidence anyway. That fails the step.
+    ##
+    ## Either way every host is attempted before any verdict is reached, so one
+    ## bad host never costs us the others.
     - name: generate sosreport on each node
       shell: bash
       run: |
+        skipped=""
+        failed=""
         for host in ${HOSTS_LIST}; do
-          ssh -F ssh_config ${host} \
+          if ! ssh -F ssh_config -o ConnectTimeout=15 ${host} true 2> /dev/null; then
+            echo "::warning title=sosreport::'${host}' is unreachable, skipping it"
+            skipped="${skipped} ${host}"
+            continue
+          fi
+          if ! ssh -F ssh_config -o ConnectTimeout=15 ${host} \
           "sudo sos report --all-logs \
           -o metalk8s -kmetalk8s.k8s-resources -kmetalk8s.pod-logs -k metalk8s.describe -k metalk8s.metrics \
           -o metalk8s_containerd -kmetalk8s_containerd.all -kmetalk8s_containerd.logs \
           --batch --tmp-dir /var/tmp && \
-          sudo chown 1000:1000 /var/tmp/sosreport*"
+          sudo chown 1000:1000 /var/tmp/sosreport*"; then
+            echo "::error title=sosreport::'${host}' is reachable but generating its sosreport failed"
+            failed="${failed} ${host}"
+          fi
         done
+        ## Recorded rather than acted on here, so the collection below still runs
+        ## for the hosts that did produce a report.
+        echo "SOSREPORT_SKIPPED=${skipped# }" >> $GITHUB_ENV
+        echo "SOSREPORT_FAILED=${failed# }" >> $GITHUB_ENV
     - name: collect sosreport on each node
       shell: bash
       run: |
         export DEST_DIR="artifacts/sosreport/${{ github.job }}"
         mkdir -p ${DEST_DIR}
+        failed="${SOSREPORT_FAILED}"
         for host in ${HOSTS_LIST}; do
-          scp -F ssh_config \
+          ## Nothing to fetch from a host we skipped, or that failed to generate.
+          case " ${SOSREPORT_SKIPPED} ${SOSREPORT_FAILED} " in
+            *" ${host} "*) continue ;;
+          esac
+          if ! scp -F ssh_config -o ConnectTimeout=15 \
           "${host}:/var/tmp/sosreport-*" \
-          "${DEST_DIR}/"
+          "${DEST_DIR}/"; then
+            echo "::error title=sosreport::'${host}' is reachable but collecting its sosreport failed"
+            failed="${failed} ${host}"
+          fi
         done
+        if [ -z "$(ls -A ${DEST_DIR})" ]; then
+          echo "::error title=sosreport::No sosreport could be collected from any host"
+          exit 1
+        fi
+        if [ -n "${failed# }" ]; then
+          echo "::error title=sosreport::Reachable nodes left without a sosreport: ${failed# }"
+          exit 1
+        fi

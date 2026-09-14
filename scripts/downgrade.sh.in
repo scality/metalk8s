@@ -165,12 +165,10 @@ patch_kubesystem_namespace() {
         saltenv="$SALTENV"
 
     #update the annotation with the new destination value
-    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate_single \
-        metalk8s_kubernetes.object_updated \
-        "kube-system" \
-        kind=Namespace apiVersion=v1 \
-        patch="{'metadata': {'annotations': \
-        {'metalk8s.scality.com/cluster-version': '$DESTINATION_VERSION'}}}"
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.patch_kubesystem_namespace \
+        saltenv="$SALTENV" \
+        pillar="{'orchestrate': {'destination_version': '$DESTINATION_VERSION'}}"
 }
 
 get_cluster_version() {

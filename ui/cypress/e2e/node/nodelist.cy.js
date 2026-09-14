@@ -61,9 +61,6 @@ describe('Node list', () => {
     cy.stubHistory();
 
     cy.findByRole('searchbox').type('hello');
-    cy.url().should(
-      'include',
-      '/nodes/master-0/alerts?severity=warning&search=hello',
-    );
+    cy.url().should('include', '/nodes/master-0/alerts?severity=warning&search=hello');
   });
 });

@@ -30,7 +30,6 @@ Overview:
                                 └───────────────┘
 """
 
-
 import datetime as dt
 import socket
 from pathlib import Path
@@ -47,8 +46,20 @@ from buildchain import types
 from buildchain import utils
 from buildchain import versions
 
-
 ISO_FILE: Path = config.BUILD_ROOT / f"{config.PROJECT_NAME.lower()}.iso"
+
+
+# Module-level (not closures) so they're picklable when doit runs tasks in
+# parallel workers (`-n N`); doit ≥ 0.37 dropped cloudpickle and uses stdlib
+# pickle, which rejects local closures
+def _unlink_iso_on_failure() -> None:
+    utils.unlink_if_exist(ISO_FILE)
+
+
+def _title_implantisomd5(_: types.Task) -> str:
+    return f"{'IMPLANTISOMD5': <{constants.CMD_WIDTH}} {utils.build_relpath(Path(ISO_FILE))}"
+
+
 FILE_TREES: Tuple[helper.FileTree, ...] = (
     helper.FileTree(
         basename="_iso_add_tree",
@@ -128,9 +139,9 @@ FILE_TREES: Tuple[helper.FileTree, ...] = (
                     "VERSION": versions.VERSION,
                     "SHORT_VERSION": versions.SHORT_VERSION,
                     "GIT": constants.GIT_REF or "",
-                    "DEVELOPMENT_RELEASE": "1"
-                    if versions.VERSION_SUFFIX == "-dev"
-                    else "0",
+                    "DEVELOPMENT_RELEASE": (
+                        "1" if versions.VERSION_SUFFIX == "-dev" else "0"
+                    ),
                     "BUILD_TIMESTAMP": dt.datetime.utcnow().strftime(
                         "%Y-%m-%dT%H:%M:%SZ"
                     ),
@@ -195,10 +206,6 @@ def task__iso_add_tree() -> Iterator[types.TaskDict]:
 @doit.create_after(executed="populate_iso")  # type: ignore
 def task__iso_build() -> types.TaskDict:
     """Create the ISO from the files in ISO_ROOT."""
-
-    def on_failure() -> None:
-        utils.unlink_if_exist(ISO_FILE)
-
     cmd: List[Union[str, Path]] = [
         config.ExtCommand.MKISOFS.value,
         "-output",
@@ -229,7 +236,11 @@ def task__iso_build() -> types.TaskDict:
     return {
         "title": utils.title_with_target1("MKISOFS"),
         "doc": doc,
-        "actions": [action.CmdActionOnFailure(cmd, shell=False, on_failure=on_failure)],
+        "actions": [
+            action.CmdActionOnFailure(
+                cmd, shell=False, on_failure=_unlink_iso_on_failure
+            )
+        ],
         "targets": [ISO_FILE],
         "file_dep": depends,
         "task_dep": ["check_for:mkisofs", "_build_root", "_iso_mkdir_root"],
@@ -239,24 +250,22 @@ def task__iso_build() -> types.TaskDict:
 
 def task__iso_implantisomd5() -> types.TaskDict:
     """Implant data segments checksum into the ISO."""
-
-    def on_failure() -> None:
-        utils.unlink_if_exist(ISO_FILE)
-
     cmd: List[Union[str, Path]] = [
         config.ExtCommand.IMPLANTISOMD5.value,
         ISO_FILE,
     ]
-    title = (
-        lambda _: f"{'IMPLANTISOMD5': <{constants.CMD_WIDTH}} {utils.build_relpath(Path(ISO_FILE))}"
-    )
+
     doc = f"Implant MD5 in ISO {utils.build_relpath(ISO_FILE)}."
     return {
-        "title": title,
+        "title": _title_implantisomd5,
         "doc": doc,
         "file_dep": [ISO_FILE],
         "task_dep": ["check_for:implantisomd5", "_iso_build"],
-        "actions": [action.CmdActionOnFailure(cmd, shell=False, on_failure=on_failure)],
+        "actions": [
+            action.CmdActionOnFailure(
+                cmd, shell=False, on_failure=_unlink_iso_on_failure
+            )
+        ],
     }
 
 

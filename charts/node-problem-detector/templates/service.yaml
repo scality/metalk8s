@@ -1,0 +1,31 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "node-problem-detector.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "node-problem-detector.name" . }}
+    helm.sh/chart: {{ include "node-problem-detector.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app: {{ include "node-problem-detector.name" . }}
+  annotations:
+  {{- if .Values.metrics.annotations }}
+    {{- toYaml .Values.metrics.annotations | nindent 4 }}
+  {{- else }}
+    prometheus.io/scrape: "true"
+    prometheus.io/scheme: http
+    prometheus.io/port: "{{ .Values.settings.prometheus_port }}"
+    prometheus.io/path: /metrics
+  {{- end }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: exporter
+    port: {{ .Values.settings.prometheus_port }}
+    protocol: TCP
+  selector:
+    app: {{ include "node-problem-detector.name" . }}
+{{- end }}

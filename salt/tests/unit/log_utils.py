@@ -1,9 +1,9 @@
 """Copied and inspired from `unittest._log`, added in Python 3.4+"""
+
 import collections
 import contextlib
 from io import StringIO
 import logging
-
 
 LoggingWatcher = collections.namedtuple("LoggingWatcher", ["records", "output"])
 

@@ -3,11 +3,7 @@ import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/Error
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { ScrollbarWrapper } from '@scality/core-ui/dist/components/scrollbarwrapper/ScrollbarWrapper.component';
 import { ToastProvider } from '@scality/core-ui/dist/components/toast/ToastProvider';
-import {
-  FederatedComponent,
-  FederatedComponentProps,
-  SolutionUI,
-} from '@scality/module-federation';
+import { FederatedComponent, FederatedComponentProps, SolutionUI } from '@scality/module-federation';
 import React, { useEffect, useMemo } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { QueryClient } from 'react-query';
@@ -18,25 +14,16 @@ import { useQuery } from 'react-query';
 import { AuthConfigProvider, useAuthConfig } from './auth/AuthConfigProvider';
 import { AuthProvider } from './auth/AuthProvider';
 import { FirstTimeLoginProvider } from './auth/FirstTimeLoginProvider';
-import {
-  ShellAlerts,
-  shellAlerts,
-  ShellHooks,
-  shellHooks,
-} from './hooks/useShellHooks';
+import { ShellAlerts, shellAlerts, ShellHooks, shellHooks } from './hooks/useShellHooks';
 import './index.css';
-import {
-  ConfigurationProvider,
-  useConfigRetriever,
-  useFederatedRoutes,
-} from './initFederation/ConfigurationProviders';
-import {
-  ShellConfigProvider,
-  useShellConfig,
-} from './initFederation/ShellConfigProvider';
+import { ConfigurationProvider, useConfigRetriever, useFederatedRoutes } from './initFederation/ConfigurationProviders';
+import { ShellConfigProvider, useShellConfig } from './initFederation/ShellConfigProvider';
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
 import { ShellThemeSelectorProvider } from './initFederation/ShellThemeSelectorProvider';
 import { UIListProvider } from './initFederation/UIListProvider';
+import { GuardianDrawer } from './guardian/GuardianDrawer';
+import { GuardianDrawerProvider } from './guardian/GuardianContext';
+import { MCPRegistrar } from './mcp/MCPRegistrar';
 import { SolutionsNavbar } from './navbar';
 import { LanguageProvider, useLanguage } from './navbar/lang';
 import NotificationCenterProvider from './NotificationCenterProvider';
@@ -55,8 +42,7 @@ import { QueryClientProvider } from './QueryClientProvider';
 const mockLoadShare: typeof loadShare = () => {
   return Promise.resolve(false);
 };
-const loadShareModule =
-  process.env.NODE_ENV === 'test' ? mockLoadShare : loadShare;
+const loadShareModule = process.env.NODE_ENV === 'test' ? mockLoadShare : loadShare;
 
 export const queryClient = new QueryClient();
 
@@ -95,17 +81,14 @@ function FederatedRoute({ scope, module, app }: FederatedRouteProps) {
   });
 
   return (
-    <ErrorBoundary
-      FallbackComponent={() => (
-        <ErrorPage500 data-cy="sc-error-page500" locale={language} />
-      )}
-    >
+    <ErrorBoundary FallbackComponent={() => <ErrorPage500 data-cy="sc-error-page500" locale={language} />}>
       <FederatedComponent
         url={`${app.url}${appBuildConfig?.spec.remoteEntryPath}?version=${app.version}`}
         module={module}
         props={federatedAppProps}
         scope={scope}
         app={app}
+        renderOnLoading={<Loader size="massive" centered={true} aria-label="loading" />}
       />
     </ErrorBoundary>
   );
@@ -140,9 +123,7 @@ function InternalRouter() {
           path: app.appHistoryBasePath + view.path,
           basename: app.appHistoryBasePath,
           sensitive: view.sensitive,
-          element: (
-            <FederatedRoute module={view.module} scope={view.scope} app={app} />
-          ),
+          element: <FederatedRoute module={view.module} scope={view.scope} app={app} />,
         })),
     [JSON.stringify(federatedRoutes)],
   );
@@ -150,17 +131,14 @@ function InternalRouter() {
   return (
     <Routes>
       {routes.map((route) => (
-        <Route
-          key={route.path}
-          path={`${route.basename}/*`}
-          element={route.element}
-        />
+        <Route key={route.path} path={`${route.basename}/*`} element={route.element} />
       ))}
     </Routes>
   );
 }
 
 function InternalApp() {
+  const { config } = useShellConfig();
   const { status } = useQuery({
     queryKey: ['load-share-deps'],
     queryFn: async () => {
@@ -184,15 +162,31 @@ function InternalApp() {
       <ShellHistoryProvider>
         <FirstTimeLoginProvider>
           <NotificationCenterProvider>
-            {(status === 'idle' || status === 'loading') && (
-              <Loader size="massive" centered={true} aria-label="loading" />
-            )}
-            {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
-            {status === 'success' && (
-              <SolutionsNavbar>
-                <InternalRouter />
-              </SolutionsNavbar>
-            )}
+            <GuardianDrawerProvider>
+              {(status === 'idle' || status === 'loading') && (
+                <Loader size="massive" centered={true} aria-label="loading" />
+              )}
+              {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
+              {status === 'success' && (
+                <>
+                  <MCPRegistrar />
+                  <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+                    {/* Layout containment makes this column the containing block
+                        for its fixed-position descendants. The drawer beside it
+                        takes width from this column without the viewport
+                        changing, so a federated UI's fixed elements would
+                        otherwise stay anchored to the browser's edge and end up
+                        over the drawer. */}
+                    <div style={{ flex: 1, minWidth: 0, contain: 'layout' }}>
+                      <SolutionsNavbar>
+                        <InternalRouter />
+                      </SolutionsNavbar>
+                    </div>
+                    {config.canUseGuardian && <GuardianDrawer />}
+                  </div>
+                </>
+              )}
+            </GuardianDrawerProvider>
           </NotificationCenterProvider>
         </FirstTimeLoginProvider>
       </ShellHistoryProvider>
@@ -200,11 +194,7 @@ function InternalApp() {
   );
 }
 
-export function WithInitFederationProviders({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function WithInitFederationProviders({ children }: { children: React.ReactNode }) {
   const { config: shellConfig } = useShellConfig();
   return (
     <UIListProvider discoveryURL={shellConfig.discoveryUrl}>
@@ -224,21 +214,12 @@ const AppProviderWrapper = () => {
       FallbackComponent={({ error }) => {
         if ('en' in error && 'fr' in error) {
           return (
-            <ErrorPage500
-              data-cy="sc-error-page500"
-              locale={language}
-              errorMessage={{ en: error.en, fr: error.fr }}
-            />
+            <ErrorPage500 data-cy="sc-error-page500" locale={language} errorMessage={{ en: error.en, fr: error.fr }} />
           );
         }
         if (error instanceof Error) {
           if (error.message.includes('AbortError: The operation was aborted')) {
-            return (
-              <>
-                Loading of the application has been aborted due to a redirection
-                in progress.
-              </>
-            );
+            return <>Loading of the application has been aborted due to a redirection in progress.</>;
           }
           return (
             <ErrorPage500

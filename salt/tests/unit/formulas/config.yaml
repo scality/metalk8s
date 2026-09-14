@@ -3,7 +3,7 @@
 # Please be mindful of the number of cases generated, as these will apply to
 # many formulas.
 default_case:
-  os: CentOS/8
+  os: Rocky/9
   saltenv: metalk8s-2.8.0
   minion_state: ready
   architecture: single-node
@@ -18,8 +18,14 @@ metalk8s:
     _cases:
       "CentOS 8":
         os: CentOS/8
+      "Rocky 8":
+        os: Rocky/8
       "RHEL 8":
         os: RedHat/8
+      "Rocky 9":
+        os: Rocky/9
+      "RHEL 9":
+        os: RedHat/9
 
   addons:
     dex:
@@ -80,6 +86,13 @@ metalk8s:
                           kind: LokiConfig
                           spec: {}
 
+    node-problem-detector:
+      deployed:
+        wp-monitor.sls:
+          _cases:
+            "Render from the master (orchestrate)":
+              mode: master
+
     prometheus-operator:
       post-cleanup.sls:
         _cases:
@@ -114,6 +127,17 @@ metalk8s:
                         apiVersion: addons.metalk8s.scality.com
                         kind: PrometheusConfig
                         spec: {}
+        thanos-query-sd-files.sls:
+          _cases:
+            "ConfigMap does not exist (default)": {}
+            "ConfigMap already exists":
+              k8s_overrides:
+                add:
+                  - kind: ConfigMap
+                    apiVersion: v1
+                    metadata:
+                      name: thanos-query-sd-files
+                      namespace: metalk8s-monitoring
 
     solutions:
       deployed:
@@ -227,6 +251,15 @@ metalk8s:
                   NO_PROXY: localhost,127.0.0.1,10.0.0.0/16
                   HTTP_PROXY: http://my-proxy.local
                   HTTPS_PROXY: https://my-proxy.local
+
+  image-cache:
+    installed.sls:
+      _cases:
+        "Containerd (default)": {}
+        "Without any container engine":
+          pillar_overrides:
+            kubelet:
+              container_engine: ""
 
   kubernetes:
     apiserver:
@@ -377,9 +410,6 @@ metalk8s:
             "From metalk8s.kubernetes.kubelet.standalone":
               extra_context:
                 options:
-                  container-runtime: remote
-                  container-runtime-endpoint: >-
-                    unix:///run/containerd/containerd.sock
                   node-ip: "10.0.0.1"
                   hostname-override: bootstrap
                   v: 0
@@ -478,6 +508,16 @@ metalk8s:
                     master-1:
                       skip_roles: [etcd]
 
+    patch_kubesystem_namespace.sls:
+      _cases:
+        "From upgrade":
+          <<: *orch_compact_arch
+          _subcases:
+            "Patch kube-system namespace cluster-version annotation":
+              pillar_overrides:
+                orchestrate:
+                  destination_version: 2.7.1
+
     etcd.sls:
       _cases: *orch_base_cases
 
@@ -556,6 +596,76 @@ metalk8s:
                   metalk8s:
                     cluster_version: 2.7.3
               "Destination is lower than some nodes":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.3
+              # A downgrade to 2.7.3 was interrupted on this node: its label
+              # was lowered, the version it completed was not
+              "A node that never completed the destination version":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.3
+                        version_in_progress: 2.7.3
+                        version_applied: 2.8.0
+              # A downgrade to 2.7.1 was interrupted, and the operator now
+              # targets 2.7.3: the label says skip, what the node ran
+              # says deploy
+              "A node whose label ran ahead of the destination":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.1
+                        version_in_progress: 2.7.1
+                        version_applied: 2.8.0
+              # This node completed 2.7.1, already below the destination
+              "A node that completed a version below the destination":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.1
+                        version_applied: 2.7.1
+              # A run by an older version left the recorded version ahead of
+              # the label, the label wins
+              "A node whose recorded version ran ahead of its label":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.8.0
+                        version_applied: 2.9.0
+              # Nothing was ever recorded for this node, and a deployment was
+              # left in progress, so its label proves nothing
+              "A node left in progress with no recorded version":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.1
+                        version_in_progress: 2.7.1
+              # This node recorded this very version, so it is left alone
+              "A node that already completed the destination":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.3
+                        version_applied: 2.7.3
+              # Same label, but nothing recorded: the label is set before a node
+              # is deployed, so it does not prove this node ran 2.7.3 (MK8S-370)
+              "A node whose label alone says the destination":
                 pillar_overrides:
                   metalk8s:
                     cluster_version: 2.7.3
@@ -861,6 +971,95 @@ metalk8s:
                     nodes:
                       master-1:
                         version: 2.9.0
+              # An upgrade to 2.9.0 was interrupted on this node: its label
+              # was bumped, the version it completed was not
+              "A node that never completed the destination version":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+                    nodes:
+                      master-1:
+                        version: 2.9.0
+                        version_in_progress: 2.9.0
+                        version_applied: 2.8.0
+              # An upgrade to 2.9.1 was interrupted, and the operator now
+              # targets 2.9.0: the label says skip, the version completed
+              # says deploy
+              "A node whose label ran ahead of the destination":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+                    nodes:
+                      master-1:
+                        version: 2.9.1
+                        version_in_progress: 2.9.1
+                        version_applied: 2.8.0
+              # This node did complete 2.9.1, so a lower destination is a
+              # downgrade and this orchestrate leaves it alone
+              "A node that completed a version above the destination":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+                    nodes:
+                      master-1:
+                        version: 2.9.1
+                        version_applied: 2.9.1
+              # A downgrade run by an older version left the recorded
+              # version ahead of the label, the label wins
+              "A node whose recorded version ran ahead of its label":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+                    nodes:
+                      master-1:
+                        version: 2.8.0
+                        version_applied: 2.9.1
+              # Nothing was ever recorded for this node, and a deployment was
+              # left in progress, so its label proves nothing
+              "A node left in progress with no recorded version":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+                    nodes:
+                      master-1:
+                        version: 2.9.1
+                        version_in_progress: 2.9.1
+              # This node recorded this very version, so it is left alone
+              "A node that already completed the destination":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+                    nodes:
+                      master-1:
+                        version: 2.9.0
+                        version_applied: 2.9.0
+              # Same label, but nothing recorded: the label is bumped before a
+              # node is deployed, so it does not prove this node ran 2.9.0,
+              # which is the whole point of MK8S-370
+              "A node whose label alone says the destination":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+                    nodes:
+                      master-1:
+                        version: 2.9.0
+              # The whole point: an upgrade that stopped after the first
+              # node, resumed with the same destination
+              "A cluster resuming an interrupted upgrade":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+                    nodes:
+                      bootstrap:
+                        version: 2.9.0
+                        version_applied: 2.9.0
+                      master-1:
+                        version: 2.9.0
+                        version_applied: 2.8.0
+                        version_in_progress: 2.9.0
+                      master-2:
+                        version: 2.8.0
+                        version_applied: 2.8.0
 
           "Standard cluster":
             architecture: standard
@@ -970,8 +1169,14 @@ metalk8s:
       _cases:
         "CentOS 8":
           os: CentOS/8
+        "Rocky 8":
+          os: Rocky/8
         "RHEL 8":
           os: RedHat/8
+        "Rocky 9":
+          os: Rocky/9
+        "RHEL 9":
+          os: RedHat/9
 
   salt:
     master:
@@ -1084,7 +1289,7 @@ metalk8s:
       installed.sls:
         _cases:
           "RedHat family":
-            os: CentOS/8
+            os: Rocky/9
 
   volumes:
     unprepared.sls:

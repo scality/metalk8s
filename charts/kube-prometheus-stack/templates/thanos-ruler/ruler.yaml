@@ -29,6 +29,9 @@ spec:
 {{- end }}
   replicas: {{ .Values.thanosRuler.thanosRulerSpec.replicas }}
   listenLocal: {{ .Values.thanosRuler.thanosRulerSpec.listenLocal }}
+  {{- if .Values.thanosRuler.thanosRulerSpec.serviceName }}
+  serviceName: {{ tpl .Values.thanosRuler.thanosRulerSpec.serviceName . }}
+  {{- end }}
   serviceAccountName: {{ template "kube-prometheus-stack.thanosRuler.serviceAccountName" . }}
 {{- if .Values.thanosRuler.thanosRulerSpec.externalPrefix }}
   externalPrefix: "{{ tpl .Values.thanosRuler.thanosRulerSpec.externalPrefix . }}"
@@ -104,6 +107,9 @@ spec:
 {{- if .Values.thanosRuler.thanosRulerSpec.routePrefix }}
   routePrefix: "{{ .Values.thanosRuler.thanosRulerSpec.routePrefix }}"
 {{- end }}
+{{- if kindIs "bool" .Values.thanosRuler.thanosRulerSpec.hostUsers }}
+  hostUsers: {{ .Values.thanosRuler.thanosRulerSpec.hostUsers }}
+{{- end }}
 {{- if .Values.thanosRuler.thanosRulerSpec.securityContext }}
   securityContext:
 {{ toYaml .Values.thanosRuler.thanosRulerSpec.securityContext | indent 4 }}
@@ -166,9 +172,22 @@ spec:
   imagePullSecrets:
 {{ toYaml .Values.global.imagePullSecrets | indent 4 }}
 {{- end }}
-{{- if .Values.thanosRuler.thanosRulerSpec.containers }}
+{{- if or .Values.thanosRuler.thanosRulerSpec.containers .Values.thanosRuler.thanosRulerSpec.extraEnv }}
   containers:
+{{- if .Values.thanosRuler.thanosRulerSpec.extraEnv }}
+{{/* The operator applies env overrides through a strategic merge patch on the generated thanos-ruler container. */}}
+{{- range .Values.thanosRuler.thanosRulerSpec.containers }}
+{{- if eq .name "thanos-ruler" }}
+{{- fail "thanosRuler.thanosRulerSpec.extraEnv cannot be used together with a thanos-ruler entry in thanosRuler.thanosRulerSpec.containers" }}
+{{- end }}
+{{- end }}
+  - name: thanos-ruler
+    env:
+{{ toYaml .Values.thanosRuler.thanosRulerSpec.extraEnv | indent 6 }}
+{{- end }}
+{{- if .Values.thanosRuler.thanosRulerSpec.containers }}
 {{ toYaml .Values.thanosRuler.thanosRulerSpec.containers | indent 4 }}
+{{- end }}
 {{- end }}
 {{- if .Values.thanosRuler.thanosRulerSpec.initContainers }}
   initContainers:
@@ -190,6 +209,16 @@ spec:
 {{ toYaml .Values.thanosRuler.thanosRulerSpec.alertDropLabels | indent 4 }}
 {{- end }}
   portName: {{ .Values.thanosRuler.thanosRulerSpec.portName }}
+{{- if .Values.thanosRuler.thanosRulerSpec.podManagementPolicy }}
+  podManagementPolicy: {{ .Values.thanosRuler.thanosRulerSpec.podManagementPolicy }}
+{{- end }}
+{{- if .Values.thanosRuler.thanosRulerSpec.updateStrategy }}
+  updateStrategy:
+{{ toYaml .Values.thanosRuler.thanosRulerSpec.updateStrategy | indent 4 }}
+{{- end }}
+{{- if .Values.thanosRuler.thanosRulerSpec.terminationGracePeriodSeconds }}
+  terminationGracePeriodSeconds: {{ .Values.thanosRuler.thanosRulerSpec.terminationGracePeriodSeconds }}
+{{- end }}
 {{- with .Values.thanosRuler.thanosRulerSpec.additionalConfig }}
   {{- tpl (toYaml .) $ | nindent 2 }}
 {{- end }}

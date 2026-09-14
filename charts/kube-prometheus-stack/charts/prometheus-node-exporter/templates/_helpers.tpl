@@ -79,15 +79,15 @@ The image to use
 {{- fail "image.sha forbidden. Use image.digest instead" }}
 {{- else if .Values.image.digest }}
 {{- if .Values.global.imageRegistry }}
-{{- printf "%s/%s:%s@%s" .Values.global.imageRegistry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) .Values.image.digest }}
+{{- printf "%s/%s:%s%s@%s" .Values.global.imageRegistry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) (ternary "-distroless" "" .Values.image.distroless) .Values.image.digest }}
 {{- else }}
-{{- printf "%s/%s:%s@%s" .Values.image.registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) .Values.image.digest }}
+{{- printf "%s/%s:%s%s@%s" .Values.image.registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) (ternary "-distroless" "" .Values.image.distroless) .Values.image.digest }}
 {{- end }}
 {{- else }}
 {{- if .Values.global.imageRegistry }}
-{{- printf "%s/%s:%s" .Values.global.imageRegistry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) }}
+{{- printf "%s/%s:%s%s" .Values.global.imageRegistry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) (ternary "-distroless" "" .Values.image.distroless) }}
 {{- else }}
-{{- printf "%s/%s:%s" .Values.image.registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) }}
+{{- printf "%s/%s:%s%s" .Values.image.registry .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) (ternary "-distroless" "" .Values.image.distroless) }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -200,3 +200,38 @@ labelValueLengthLimit: {{ . }}
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+The default node affinity to exclude
+- AWS Fargate
+- Azure virtual nodes
+*/}}
+{{- define "prometheus-node-exporter.defaultAffinity" -}}
+nodeAffinity:
+  requiredDuringSchedulingIgnoredDuringExecution:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: eks.amazonaws.com/compute-type
+        operator: NotIn # codespell:ignore
+        values:
+        - fargate
+      - key: type
+        operator: NotIn # codespell:ignore
+        values:
+        - virtual-kubelet
+{{- end -}}
+{{- define "prometheus-node-exporter.mergedAffinities" -}}
+{{- $defaultAffinity := include "prometheus-node-exporter.defaultAffinity" . | fromYaml -}}
+{{- with .Values.affinity -}}
+  {{- if .nodeAffinity -}}
+    {{- $_ := set $defaultAffinity "nodeAffinity" (mergeOverwrite $defaultAffinity.nodeAffinity .nodeAffinity) -}}
+  {{- end -}}
+  {{- if .podAffinity -}}
+    {{- $_ := set $defaultAffinity "podAffinity" .podAffinity -}}
+  {{- end -}}
+  {{- if .podAntiAffinity -}}
+    {{- $_ := set $defaultAffinity "podAntiAffinity" .podAntiAffinity -}}
+  {{- end -}}
+{{- end -}}
+{{- toYaml $defaultAffinity -}}
+{{- end -}}

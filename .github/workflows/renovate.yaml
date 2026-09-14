@@ -1,0 +1,44 @@
+name: Renovate
+on:
+  schedule:
+    - cron: "0 8 * * 1-5" # Weekdays at 8am UTC
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.ACTIONS_APP_ID }}
+          private-key: ${{ secrets.ACTIONS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Run Renovate
+        uses: renovatebot/github-action@v46.1.9
+        with:
+          configurationFile: renovate.json
+          token: ${{ steps.app-token.outputs.token }}
+        env:
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+
+      - name: Auto-approve Renovate PRs
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh pr list --repo ${{ github.repository }} --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("improvement/renovate-")) | .number' | while read -r pr; do
+            if ! gh pr view "$pr" --repo ${{ github.repository }} --json comments --jq '.comments[].body' | grep -q '^/approve$'; then
+              gh pr comment "$pr" --repo ${{ github.repository }} --body '/approve'
+              echo "Approved PR #$pr"
+            else
+              echo "PR #$pr already approved, skipping"
+            fi
+          done

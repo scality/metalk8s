@@ -23,14 +23,8 @@ const NodePageVolumesTab = (props) => {
   const dispatch = useDispatch();
   const volumeListData = useVolumesWithAlerts(nodeName);
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
-  useRefreshEffect(
-    refreshCurrentVolumeStatsAction,
-    stopRefreshCurrentVolumeStatsAction,
-  );
-  useRefreshEffect(
-    refreshPersistentVolumesAction,
-    stopRefreshPersistentVolumesAction,
-  );
+  useRefreshEffect(refreshCurrentVolumeStatsAction, stopRefreshCurrentVolumeStatsAction);
+  useRefreshEffect(refreshPersistentVolumesAction, stopRefreshPersistentVolumesAction);
   useEffect(() => {
     // @ts-expect-error - FIXME when you are working on it
     dispatch(fetchVolumeStatsAction());

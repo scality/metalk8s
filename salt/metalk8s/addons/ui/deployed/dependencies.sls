@@ -54,7 +54,7 @@ spec:
   externalName: prometheus-proxy.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
   ports:
     - name: http
-      port: 10902
+      port: 9090
 ---
 kind: Service
 apiVersion: v1

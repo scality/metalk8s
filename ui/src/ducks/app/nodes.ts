@@ -1,32 +1,10 @@
-import {
-  all,
-  call,
-  delay,
-  put,
-  select,
-  take,
-  takeEvery,
-  takeLatest,
-  race,
-} from 'redux-saga/effects';
+import { all, call, delay, put, select, take, takeEvery, takeLatest, race } from 'redux-saga/effects';
 import * as ApiSalt from '../../services/salt/api';
-import {
-  addNotificationSuccessAction,
-  addNotificationErrorAction,
-} from './notifications';
-import {
-  addJobAction,
-  JOB_COMPLETED,
-  allJobsSelector,
-  CONNECT_SALT_API,
-} from './salt';
+import { addNotificationSuccessAction, addNotificationErrorAction } from './notifications';
+import { addJobAction, JOB_COMPLETED, allJobsSelector, CONNECT_SALT_API } from './salt';
 import { REFRESH_TIMEOUT } from '../../constants';
 import { nodesCPWPIPsInterface } from '../../services/NodeUtils';
-import {
-  API_STATUS_READY,
-  API_STATUS_NOT_READY,
-  API_STATUS_UNKNOWN,
-} from '../../constants';
+import { API_STATUS_READY, API_STATUS_NOT_READY, API_STATUS_UNKNOWN } from '../../constants';
 import { RootState } from '../reducer';
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
@@ -49,8 +27,7 @@ export const ROLE_ETCD = 'node-role.kubernetes.io/etcd';
 export const ROLE_BOOTSTRAP = 'node-role.kubernetes.io/bootstrap';
 export const ROLE_INFRA = 'node-role.kubernetes.io/infra';
 export const ROLE_PREFIX = 'node-role.kubernetes.io';
-export const CLUSTER_VERSION_ANNOTATION =
-  'metalk8s.scality.com/cluster-version';
+export const CLUSTER_VERSION_ANNOTATION = 'metalk8s.scality.com/cluster-version';
 export const roleTaintMap = [
   {
     control_plane: false,
@@ -175,13 +152,7 @@ export type NodesState = {
     name: string;
     metalk8s_version: string;
     status: 'ready' | 'not_ready' | 'unknown';
-    conditions: (
-      | 'DiskPressure'
-      | 'MemoryPressure'
-      | 'PIDPressure'
-      | 'NetworkUnavailable'
-      | 'Unschedulable'
-    )[];
+    conditions: ('DiskPressure' | 'MemoryPressure' | 'PIDPressure' | 'NetworkUnavailable' | 'Unschedulable')[];
     roles: string;
     deploying: boolean;
     internalIP: string;
@@ -303,9 +274,7 @@ export function* fetchClusterVersion() {
     yield put(
       updateNodesAction({
         clusterVersion: result.body.items.length
-          ? result.body.items[0].metadata.annotations[
-              CLUSTER_VERSION_ANNOTATION
-            ]
+          ? result.body.items[0].metadata.annotations[CLUSTER_VERSION_ANNOTATION]
           : '',
       }),
     );
@@ -318,9 +287,7 @@ export function* fetchNodes() {
     }),
   );
   const allJobs = yield select(allJobsSelector);
-  const deployingNodes = allJobs
-    .filter((job) => job.type === 'deploy-node' && !job.completed)
-    .map((job) => job.node);
+  const deployingNodes = allJobs.filter((job) => job.type === 'deploy-node' && !job.completed).map((job) => job.node);
 
   const coreApi = yield select((state: RootState) => state.config.coreApi);
   const result = yield call(() => coreApi.getNodes());
@@ -329,15 +296,11 @@ export function* fetchNodes() {
       updateNodesAction({
         list: result?.body?.items?.map((node) => {
           const statusType =
-            node.status.conditions &&
-            node.status.conditions.find(
-              (conditon) => conditon.type === 'Ready',
-            );
+            node.status.conditions && node.status.conditions.find((conditon) => conditon.type === 'Ready');
           // Store the name of conditions which the status are True in the array, except "Ready" condition, which we can know from the `status` field.
           // Given the available conditions ("DiskPressure", "MemoryPressure", "PIDPressure", "NetworkUnavailable", "Unschedulable")
           const conditions = node?.status?.conditions?.reduce((acc, cond) => {
-            if (cond.status === 'True' && cond?.type && cond?.type !== 'Ready')
-              acc.push(cond.type);
+            if (cond.status === 'True' && cond?.type && cond?.type !== 'Ready') acc.push(cond.type);
             return acc;
           }, []);
           let status;
@@ -351,23 +314,18 @@ export function* fetchNodes() {
           }
 
           // the Roles of the Node should be the ones that are stored in the labels `node-role.kubernetes.io/<role-name>`
-          const nodeRolesLabels = Object.keys(node.metadata.labels).filter(
-            (label) => label.startsWith(ROLE_PREFIX),
-          );
+          const nodeRolesLabels = Object.keys(node.metadata.labels).filter((label) => label.startsWith(ROLE_PREFIX));
           const nodeRoles = nodeRolesLabels?.map((nRL) => nRL.split('/')[1]);
           return {
             id: node.metadata.uid,
             displayName: node.metadata.labels['metalk8s.scality.com/name'],
             name: node.metadata.name,
-            metalk8s_version:
-              node.metadata.labels['metalk8s.scality.com/version'],
+            metalk8s_version: node.metadata.labels['metalk8s.scality.com/version'],
             status: status,
             conditions: conditions,
             roles: nodeRoles.join(' / '),
             deploying: deployingNodes.includes(node.metadata.name),
-            internalIP: node?.status?.addresses?.find(
-              (ip) => ip.type === 'InternalIP',
-            ).address,
+            internalIP: node?.status?.addresses?.find((ip) => ip.type === 'InternalIP').address,
             creationTimestamp: node?.metadata?.creationTimestamp,
             kubeletVersion: node?.status?.nodeInfo?.kubeletVersion,
           };
@@ -467,9 +425,7 @@ export function* createNode({ payload }) {
   }
 }
 export function* deployNode({ payload }) {
-  const clusterVersion = yield select(
-    (state) => state.app.nodes.clusterVersion,
-  );
+  const clusterVersion = yield select((state) => state.app.nodes.clusterVersion);
   const intl = yield select(intlSelector);
   const result = yield call(ApiSalt.deployNode, payload.name, clusterVersion);
 

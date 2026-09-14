@@ -1,3 +1,4 @@
+import contextlib
 import json
 import os
 import re
@@ -10,12 +11,238 @@ from pytest_bdd import given, parsers, scenario, then, when
 import testinfra
 
 from tests import utils
-
+from tests.conftest import rollout_restart, wait_rollout_status
 
 MAIN_CC_NAME = "main"
 
 OPERATOR_DEPLOYMENT = "metalk8s-operator-controller-manager"
 OPERATOR_NAMESPACE = "kube-system"
+
+INGRESS_NAMESPACE = "metalk8s-ingress"
+
+# Namespace holding the Workload Plane VirtualIPPools, and the keepalived
+# DaemonSet of each pool, all created by the operator (see `vipNamespaceName`
+# in `operator/pkg/controller/clusterconfig/workloadplane/virtualippool.go`).
+# A WP Ingress VIP is *assigned* from there, not from `metalk8s-ingress`.
+VIP_NAMESPACE = "metalk8s-vips"
+
+KUBECTL = "kubectl --kubeconfig=/etc/kubernetes/admin.conf"
+
+# Print events with their absolute timestamp instead of the relative `AGE`
+# column, so they can be correlated with the failing request, the Pod logs and
+# the sosreport.
+EVENT_COLUMNS = (
+    "LAST:.lastTimestamp,COUNT:.count,TYPE:.type,REASON:.reason,"
+    "OBJECT:.involvedObject.name,MESSAGE:.message"
+)
+
+_DEBUG_COMMANDS = (
+    ("collection time (UTC)", "date -u +%Y-%m-%dT%H:%M:%SZ"),
+    ("ingress-nginx pods", f"{KUBECTL} -n {INGRESS_NAMESPACE} get pods -o wide"),
+    (
+        "ingress-nginx daemonsets",
+        f"{KUBECTL} -n {INGRESS_NAMESPACE} get daemonset -o wide",
+    ),
+    ("ingress-nginx services", f"{KUBECTL} -n {INGRESS_NAMESPACE} get svc -o wide"),
+    ("ingress-nginx endpoints", f"{KUBECTL} -n {INGRESS_NAMESPACE} get endpoints"),
+    # A single `rollout restart` has been seen to be followed by a second roll
+    # of the DaemonSet, the assertions then running while that second roll is
+    # still in flight. List the revisions with their creation timestamps so
+    # such a churn is explicit instead of guessed from the Pod ages.
+    (
+        "ingress-nginx controller revisions",
+        f"{KUBECTL} -n {INGRESS_NAMESPACE} get controllerrevisions"
+        " --sort-by=.metadata.creationTimestamp"
+        " -o custom-columns=NAME:.metadata.name,REVISION:.revision,"
+        "CREATED:.metadata.creationTimestamp",
+    ),
+    (
+        "ingress-nginx-controller rollout history",
+        f"{KUBECTL} -n {INGRESS_NAMESPACE} rollout history"
+        " daemonset/ingress-nginx-controller",
+    ),
+    ("virtual IP pools", f"{KUBECTL} -n {VIP_NAMESPACE} get virtualippool -o wide"),
+    (
+        "virtual IP pool daemonsets",
+        f"{KUBECTL} -n {VIP_NAMESPACE} get daemonset -o wide",
+    ),
+    ("virtual IP pool pods", f"{KUBECTL} -n {VIP_NAMESPACE} get pods -o wide"),
+    (
+        "keepalived logs",
+        f"{KUBECTL} -n {VIP_NAMESPACE} logs -l app.kubernetes.io/name=virtualippool"
+        " --tail=20 --timestamps --prefix --max-log-requests=20",
+    ),
+    (
+        "calico-node daemonset",
+        f"{KUBECTL} -n kube-system get daemonset calico-node -o wide",
+    ),
+    (
+        "calico-node pods",
+        f"{KUBECTL} -n kube-system get pods -l k8s-app=calico-node -o wide",
+    ),
+    (
+        "recent ingress events",
+        f"{KUBECTL} -n {INGRESS_NAMESPACE} get events --sort-by=.lastTimestamp"
+        f" -o custom-columns={EVENT_COLUMNS}",
+    ),
+    (
+        "recent virtual IP pool events",
+        f"{KUBECTL} -n {VIP_NAMESPACE} get events --sort-by=.lastTimestamp"
+        f" -o custom-columns={EVENT_COLUMNS}",
+    ),
+    (
+        "recent calico events",
+        f"{KUBECTL} -n kube-system get events --sort-by=.lastTimestamp"
+        f" -o custom-columns={EVENT_COLUMNS} | grep -i calico | tail -n 30",
+    ),
+)
+
+
+def _section(title, content):
+    return "--- {} ---\n{}".format(title, content or "<no output>")
+
+
+def _run(host, command):
+    """Run a command on `host` and return its output, whatever the exit code."""
+    with host.sudo():
+        result = host.run(command)
+    return (result.stdout or result.stderr).strip()
+
+
+def _salt_cmd_run(host, ssh_config, target, command):
+    """Run a shell command on a single node, through the Salt master."""
+    output = utils.kubectl_exec(
+        host,
+        ["salt", "--out=txt", f"'{target}'", "cmd.run", f"'{command}'"],
+        "salt-master-{}".format(utils.get_node_name("bootstrap", ssh_config)),
+        container="salt-master",
+        namespace="kube-system",
+    )
+    return (output.stdout or output.stderr).strip()
+
+
+def _vip_debug(host, ssh_config, vip):
+    """Collect diagnostics about the node currently holding `vip`.
+
+    A "Connection refused" on a VIP means the SYN reached a node where nothing
+    answered, so the decisive information is which node holds the VIP and what
+    that node looks like -- something no `metalk8s-ingress` dump can tell, as
+    the VIP is assigned by a keepalived Pod living in another namespace.
+    """
+    node_ips = get_node_ips(host, ssh_config)
+    owner = next((node for node, ips in node_ips.items() if vip in ips), None)
+
+    if owner is None:
+        return [
+            _section(
+                f"owner of {vip}",
+                "No node holds this VIP, node addresses are:\n"
+                + "\n".join(
+                    f"  - {node}: {', '.join(ips)}"
+                    for node, ips in sorted(node_ips.items())
+                ),
+            )
+        ]
+
+    sections = [_section(f"owner of {vip}", owner)]
+
+    for namespace in (INGRESS_NAMESPACE, VIP_NAMESPACE):
+        sections.append(
+            _section(
+                f"pods on '{owner}' in '{namespace}'",
+                _run(
+                    host,
+                    f"{KUBECTL} -n {namespace} get pods -o wide"
+                    f" --field-selector spec.nodeName={owner}",
+                ),
+            )
+        )
+
+    # Those run on the node holding the VIP, reached through Salt since `host`
+    # is the Bootstrap node. A request from the node itself tells a VIP the node
+    # cannot serve from an unrelated network path issue, and the CNI
+    # configuration and NAT rules then say why.
+    #
+    # NOTE: `ss -lntp` is deliberately not collected: the controller exposes
+    # :80/:443 through hostPort, which the portmap CNI plugin implements as DNAT
+    # rules, so no listening socket exists on the host even when serving works.
+    # What matters is the portmap `conditionsV4` of the conflist -- and *when* it
+    # was written, as an Ingress Pod recreated before its node caught up keeps
+    # DNAT rules built from the previous one.
+    probes = (
+        ("IPv4 addresses", "ip -4 -o addr show"),
+        (
+            f"local request on {vip}",
+            f"curl -sS -o /dev/null -m 5 -w %{{http_code}} http://{vip}:80/",
+        ),
+        # NOTE: no single quote in those commands, they are passed to Salt
+        # already wrapped in single quotes.
+        ("CNI configuration files", 'stat -c "%y %n" /etc/cni/net.d/*'),
+        ("calico CNI configuration", "cat /etc/cni/net.d/10-calico.conflist"),
+        # The VIPs are added to the portmap conditions as explicit /32 by
+        # `metalk8s_network.get_portmap_ips`, so a rule covering this VIP names
+        # it. Dump the whole chain as well, to see a wrong rule and not only a
+        # missing one.
+        (
+            f"NAT rules mentioning {vip}",
+            f"iptables -t nat -S | grep -F {vip} || echo none",
+        ),
+        (
+            "portmap DNAT chain",
+            "iptables -t nat -S CNI-HOSTPORT-DNAT || echo none",
+        ),
+    )
+    for title, command in probes:
+        try:
+            output = _salt_cmd_run(host, ssh_config, owner, command)
+        except Exception as exc:  # pylint: disable=broad-except
+            output = f"failed to collect: {exc}"
+        sections.append(_section(f"'{owner}': {title}", output))
+
+    return sections
+
+
+def _ingress_debug(host, ssh_config=None, vip=None):
+    """Collect live cluster-side ingress diagnostics.
+
+    The sosreport is collected after the whole step finishes and may miss the
+    transient state (a controller still rolling, missing endpoints, calico not
+    ready, ...) that caused a request to fail, so we dump the relevant cluster
+    state at failure time to complement it. Best-effort: never raises.
+
+    When `vip` and `ssh_config` are given, also collect which node holds that
+    VIP and the state of that node, since the VIP layer (`metalk8s-vips`) is
+    where a request on a Workload Plane Ingress VIP actually lands.
+    """
+    sections = []
+
+    try:
+        for title, command in _DEBUG_COMMANDS:
+            sections.append(_section(title, _run(host, command)))
+    except Exception as exc:  # pylint: disable=broad-except
+        sections.append(_section("failed to collect ingress debug", str(exc)))
+
+    if vip is not None and ssh_config is not None:
+        try:
+            sections.extend(_vip_debug(host, ssh_config, vip))
+        except Exception as exc:  # pylint: disable=broad-except
+            sections.append(_section(f"failed to collect debug for {vip}", str(exc)))
+
+    return "\n\n".join(sections)
+
+
+@contextlib.contextmanager
+def _ingress_debug_on_failure(host, label, ssh_config=None, vip=None):
+    """Append live cluster ingress diagnostics to any assertion failure raised
+    inside the block, to complement the (later, possibly-stale) sosreport."""
+    try:
+        yield
+    except AssertionError as exc:
+        raise AssertionError(
+            f"{exc}\n\n"
+            f"=== Cluster ingress debug ({label}) ===\n"
+            f"{_ingress_debug(host, ssh_config=ssh_config, vip=vip)}"
+        ) from exc
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -164,6 +391,21 @@ def teardown(context, host, ssh_config, version, k8s_client):
     if context.get("reconfigure_portmap"):
         re_configure_portmap(host, version, ssh_config)
 
+    # Ensure all pods are ready
+    def _wait_for_pods_ready():
+        with host.sudo():
+            result = host.run(
+                "kubectl --kubeconfig=/etc/kubernetes/admin.conf wait --for=condition=Ready "
+                "pods --all -n metalk8s-ingress --timeout=30s"
+            )
+        assert result.succeeded, (
+            f"All pods in metalk8s-ingress namespace are not ready:\n"
+            f"    stdout: {result.stdout}\n"
+            f"    stderr: {result.stderr}"
+        )
+
+    utils.retry(_wait_for_pods_ready, times=10, wait=5)
+
 
 @given("a VIP for Control Plane Ingress is available")
 def we_have_a_vip(context):
@@ -242,6 +484,7 @@ def wp_ingress_vip_setup(
     update_cc_pool(host, context, ssh_config, version, k8s_client, pool_name, ips)
     wait_cc_status(k8s_client, "Ready")
     rollout_restart(host, "daemonset/ingress-nginx-controller", "metalk8s-ingress")
+    wait_rollout_status(host, "daemonset/ingress-nginx-controller", "metalk8s-ingress")
 
 
 _SPREAD_IPS_PARSER = parsers.parse("the '{ips}' IPs are spread on nodes")
@@ -268,6 +511,7 @@ def perform_request(host, context, protocol, port, plane, path):
         raise NotImplementedError
 
     ip = utils.get_grain(host, grains[plane])
+    context["request_ip"] = ip
 
     try:
         context["response"] = requests.get(
@@ -491,21 +735,6 @@ def update_portmap_cidr(host, context, ssh_config, version, plane):
 
 @when(
     parsers.parse(
-        "we trigger a rollout restart of '{resource}' in namespace '{namespace}'"
-    )
-)
-def rollout_restart(host, resource, namespace):
-    with host.sudo():
-        result = host.run(
-            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
-            "rollout restart %s --namespace %s",
-            resource,
-            namespace,
-        )
-
-
-@when(
-    parsers.parse(
         "we update the ClusterConfig to add '{pool_name}' Workload Plane pool with IPs '{ips}'"
     )
 )
@@ -588,11 +817,17 @@ def wait_cc_status(k8s_client, status):
     parsers.re(r"the server returns (?P<status_code>\d+) '(?P<reason>.+)'"),
     converters=dict(status_code=int),
 )
-def server_returns(host, context, status_code, reason):
-    response = context.get("response")
-    assert response is not None
-    assert response.status_code == int(status_code)
-    assert response.reason == reason
+def server_returns(host, ssh_config, context, status_code, reason):
+    with _ingress_debug_on_failure(
+        host,
+        f"expecting {status_code} '{reason}'",
+        ssh_config=ssh_config,
+        vip=context.get("request_ip"),
+    ):
+        response = context.get("response")
+        assert response is not None
+        assert response.status_code == int(status_code)
+        assert response.reason == reason
 
 
 @then("the server should respond with shell-ui index")
@@ -610,9 +845,15 @@ def shell_ui_not_returns(host, context):
 
 
 @then("the server should not respond")
-def server_does_not_respond(host, context):
-    assert "exception" in context
-    assert isinstance(context["exception"], requests.exceptions.ConnectionError)
+def server_does_not_respond(host, ssh_config, context):
+    with _ingress_debug_on_failure(
+        host,
+        "expecting no response",
+        ssh_config=ssh_config,
+        vip=context.get("request_ip"),
+    ):
+        assert "exception" in context
+        assert isinstance(context["exception"], requests.exceptions.ConnectionError)
 
 
 @then(
@@ -624,12 +865,18 @@ def server_does_not_respond(host, context):
     converters=dict(status_code=int),
 )
 def server_request_returns(
-    host, context, protocol, port, plane, path, status_code, reason
+    host, ssh_config, context, protocol, port, plane, path, status_code, reason
 ):
     perform_request(
         host=host, context=context, protocol=protocol, port=port, plane=plane, path=path
     )
-    server_returns(host=host, context=context, status_code=status_code, reason=reason)
+    server_returns(
+        host=host,
+        ssh_config=ssh_config,
+        context=context,
+        status_code=status_code,
+        reason=reason,
+    )
 
 
 @then(
@@ -638,11 +885,13 @@ def server_request_returns(
         r"on port (?P<port>\d+) on a (?P<plane>.*) IP should not return"
     ),
 )
-def server_request_does_not_return(host, context, protocol, port, plane, path):
+def server_request_does_not_return(
+    host, ssh_config, context, protocol, port, plane, path
+):
     perform_request(
         host=host, context=context, protocol=protocol, port=port, plane=plane, path=path
     )
-    server_does_not_respond(host=host, context=context)
+    server_does_not_respond(host=host, ssh_config=ssh_config, context=context)
 
 
 @then(
@@ -654,7 +903,7 @@ def server_request_does_not_return(host, context, protocol, port, plane, path):
     converters=dict(status_code=int),
 )
 def server_request_returns_multiple_ips(
-    context, protocol, port, ips, path, status_code, reason
+    host, ssh_config, context, protocol, port, ips, path, status_code, reason
 ):
     ips = ips.format(**context).split(",")
 
@@ -664,15 +913,18 @@ def server_request_returns_multiple_ips(
         endpoint = "{proto}://{ip}:{port}/{path}".format(
             proto=protocol.lower(), ip=ip, port=port, path=path or ""
         )
-        try:
-            response = requests.get(endpoint, verify=False)
-            context["response"] = response
-        except Exception as exc:
-            raise AssertionError(f"Unable to reach ingress on '{endpoint}': {exc}")
+        with _ingress_debug_on_failure(
+            host, f"request on '{endpoint}'", ssh_config=ssh_config, vip=ip
+        ):
+            try:
+                response = requests.get(endpoint, verify=False)
+                context["response"] = response
+            except Exception as exc:
+                raise AssertionError(f"Unable to reach ingress on '{endpoint}': {exc}")
 
-        assert response is not None
-        assert response.status_code == status_code
-        assert response.reason == reason
+            assert response is not None
+            assert response.status_code == status_code
+            assert response.reason == reason
 
 
 @then(
@@ -681,7 +933,9 @@ def server_request_returns_multiple_ips(
         r"on port (?P<port>\d+) on '(?P<ips>.*)' IPs should not return"
     ),
 )
-def server_request_not_returns_multiple_ips(context, protocol, port, ips, path):
+def server_request_not_returns_multiple_ips(
+    host, ssh_config, context, protocol, port, ips, path
+):
     ips = ips.format(**context).split(",")
 
     assert ips, "Error IPs list cannot be empty"
@@ -690,16 +944,19 @@ def server_request_not_returns_multiple_ips(context, protocol, port, ips, path):
         endpoint = "{proto}://{ip}:{port}/{path}".format(
             proto=protocol.lower(), ip=ip, port=port, path=path or ""
         )
-        try:
-            response = requests.get(endpoint, verify=False)
-        except requests.exceptions.ConnectionError as exc:
-            return
-        except Exception as exc:
-            raise AssertionError(
-                f"Error when trying to reach ingress on '{endpoint}': {exc}"
-            )
+        with _ingress_debug_on_failure(
+            host, f"request on '{endpoint}'", ssh_config=ssh_config, vip=ip
+        ):
+            try:
+                response = requests.get(endpoint, verify=False)
+            except requests.exceptions.ConnectionError:
+                return
+            except Exception as exc:
+                raise AssertionError(
+                    f"Error when trying to reach ingress on '{endpoint}': {exc}"
+                )
 
-        raise AssertionError(f"The server shouldn't answer but got '{response}'")
+            raise AssertionError(f"The server shouldn't answer but got '{response}'")
 
 
 @then(_SPREAD_IPS_PARSER)
@@ -807,6 +1064,25 @@ def re_configure_portmap(host, version, ssh_config, context=None):
     ]
 
     utils.run_salt_command(host, command, ssh_config)
+
+    # Wait for the `calico-node` rollout to complete, i.e. for every node to
+    # have rewritten its conflist with the new portmap conditions. Here
+    # rather than in each caller, so no caller can restart the Ingress over a
+    # conflist still holding the previous ones.
+    #
+    # The state above rewrites the portmap `conditionsV4` in the
+    # `calico-config` ConfigMap; `calico-node` carries a `checksum/config`
+    # annotation built from that ConfigMap, so the rewrite changes the Pod
+    # template and rolls the DaemonSet. A Pod turns Ready only once its
+    # `install-cni` init container has exited, and that container is what
+    # writes the conditions to the node's `10-calico.conflist` -- which is
+    # why a completed rollout is the signal we need.
+    #
+    # It matters because portmap bakes the hostPort DNAT rules of an
+    # `ingress-nginx-controller` Pod from the conflist present at sandbox
+    # creation: a Pod recreated too early keeps rules missing the new VIPs,
+    # and keepalived then hands the node a VIP it refuses connections on.
+    wait_rollout_status(host, "daemonset/calico-node", "kube-system")
 
     command = [
         "salt",

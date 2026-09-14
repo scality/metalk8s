@@ -1,0 +1,7 @@
+kind: Enhanced
+body: |
+  Bump dex chart to [0.24.1](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.1)
+time: 2026-07-27T09:10:19.556322162Z
+custom:
+  Pull: 4977
+  CommentId: backfill

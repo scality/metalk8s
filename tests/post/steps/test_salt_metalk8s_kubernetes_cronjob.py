@@ -8,7 +8,6 @@ import yaml
 
 from tests.utils import negation, run_salt_command, retry
 
-
 # Fixtures {{{
 
 
@@ -86,10 +85,9 @@ def poll_get_jobs(host, ssh_config, context, cronjob_name, timeout):
         call_metalk8s_kubernetes_cronjob_get_jobs(
             host, ssh_config, context, cronjob_name
         )
-        assert (
-            context[f"{cronjob_name}_jobs"],
-            f"CronJob {cronjob_name} has no jobs after {timeout} seconds",
-        )
+        assert context[
+            f"{cronjob_name}_jobs"
+        ], f"CronJob {cronjob_name} has no jobs after {timeout} seconds"
 
     retry(_wait_get_jobs, times=int(timeout / 10), wait=10)
 

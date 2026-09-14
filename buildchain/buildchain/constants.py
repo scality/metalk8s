@@ -3,14 +3,12 @@
 
 """Useful global constants, used hither and yon."""
 
-
 from pathlib import Path
 import subprocess
 from typing import List, Optional, FrozenSet
 
 from buildchain import ROOT  # Re-export ROOT through this module.
 from buildchain import config, versions
-
 
 # Max length of a "command".
 # (used in task display, for a nice aligned output).
@@ -27,6 +25,7 @@ GRAFANA_REPOSITORY: str = "docker.io/grafana"
 INGRESS_REPOSITORY: str = f"{K8S_REPOSITORY}/ingress-nginx"
 KIWIGRID_REPOSITORY: str = "quay.io/kiwigrid"
 KUBE_STATE_METRICS_REPOSITORY: str = f"{K8S_REPOSITORY}/kube-state-metrics"
+NODE_PROBLEM_DETECTOR_REPOSITORY: str = f"{K8S_REPOSITORY}/node-problem-detector"
 PROMETHEUS_ADAPTER_REPOSITORY: str = f"{K8S_REPOSITORY}/prometheus-adapter"
 PROMETHEUS_OPERATOR_REPOSITORY: str = "quay.io/prometheus-operator"
 PROMETHEUS_REPOSITORY: str = "quay.io/prometheus"
@@ -34,6 +33,12 @@ THANOS_REPOSITORY: str = "quay.io/thanos"
 CERT_MANAGER_REPOSITORY: str = "quay.io/jetstack"
 OAUTH2_PROXY_REPOSITORY: str = "quay.io/oauth2-proxy"
 SCALITY_REPOSITORY: str = "ghcr.io/scality"
+
+# Registry endpoint the nodes resolve through their containerd mirror
+# configuration: kept in sync with `repo:registry_endpoint` in
+# salt/metalk8s/defaults.yaml. An image archive cached on a node is imported
+# as-is, so it must already carry the name the kubelet asks for.
+NODE_REGISTRY_ENDPOINT: str = "metalk8s-registry-from-config.invalid"
 
 # Paths {{{
 
@@ -49,6 +54,9 @@ ISO_IMAGE_ROOT: Path = ISO_ROOT / "images"
 ISO_DOCS_ROOT: Path = ISO_ROOT / "documentation"
 # Root for the documentation build.
 DOCS_BUILD_ROOT: Path = config.BUILD_ROOT / "docs"
+# Root of the boot cache build contexts: build-only, never on the ISO (only
+# the resulting boot cache images are shipped).
+BOOT_CACHE_ROOT: Path = config.BUILD_ROOT / "boot-cache"
 # Root for the packages that we build ourselves.
 PKG_ROOT: Path = config.BUILD_ROOT / "packages"
 # Root for the RedHat packages that we build ourselves.

@@ -4,6 +4,7 @@
 
 include:
   - metalk8s.addons.metalk8s-operator.deployed
+  - metalk8s.addons.prometheus-operator.pre-upgrade
 
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') %}
 {%- if cp_nodes|length == 1 %}

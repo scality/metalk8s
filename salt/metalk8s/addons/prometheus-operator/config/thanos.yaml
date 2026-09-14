@@ -1,0 +1,15 @@
+#!yaml
+
+# Configuration of the Thanos service
+apiVersion: addons.metalk8s.scality.com
+kind: ThanosConfig
+spec:
+  # Configure the Thanos Querier Deployment
+  deployment:
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "2Gi"

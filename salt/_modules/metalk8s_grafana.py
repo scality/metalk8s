@@ -2,7 +2,6 @@
 
 import json
 
-
 __virtualname__ = "metalk8s_grafana"
 
 

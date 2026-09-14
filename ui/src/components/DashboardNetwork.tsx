@@ -45,19 +45,9 @@ const DashboardNetwork = () => {
 
       <DashboardPlaneHealth />
       <DashboardScrollableArea>
-        <Stack
-          direction="vertical"
-          gap="r16"
-          style={{ paddingInline: spacing.r8 }}
-        >
-          <DashboardBandwidthChart
-            title="ControlPlane Bandwidth"
-            plane="controlPlane"
-          />
-          <DashboardBandwidthChart
-            title="WorkloadPlane Bandwidth"
-            plane="workloadPlane"
-          />
+        <Stack direction="vertical" gap="r16" style={{ paddingInline: spacing.r8 }}>
+          <DashboardBandwidthChart title="ControlPlane Bandwidth" plane="controlPlane" />
+          <DashboardBandwidthChart title="WorkloadPlane Bandwidth" plane="workloadPlane" />
         </Stack>
       </DashboardScrollableArea>
     </DashboardSectionContainer>

@@ -11,6 +11,7 @@ import yaml
 from tests import kube_utils
 from tests import utils
 
+
 # Scenarios
 @scenario("../features/expansion.feature", "Add one node to the cluster")
 def test_cluster_expansion_1_node(host):

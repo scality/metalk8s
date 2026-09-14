@@ -436,9 +436,7 @@
             "sizeBytes": 762476
           },
           {
-            "names": [
-              "k8s.gcr.io/pause:3.1"
-            ],
+            "names": ["k8s.gcr.io/pause:3.1"],
             "sizeBytes": 746400
           },
           {
@@ -587,15 +585,11 @@
             "sizeBytes": 298329600
           },
           {
-            "names": [
-              "docker.io/library/metalk8s-ui:2.5.2-dev"
-            ],
+            "names": ["docker.io/library/metalk8s-ui:2.5.2-dev"],
             "sizeBytes": 151008379
           },
           {
-            "names": [
-              "docker.io/library/metalk8s-ui:2.6.0-dev"
-            ],
+            "names": ["docker.io/library/metalk8s-ui:2.6.0-dev"],
             "sizeBytes": 150523506
           },
           {
@@ -877,9 +871,7 @@
             "sizeBytes": 762476
           },
           {
-            "names": [
-              "k8s.gcr.io/pause:3.1"
-            ],
+            "names": ["k8s.gcr.io/pause:3.1"],
             "sizeBytes": 746400
           }
         ],
@@ -1021,15 +1013,11 @@
             "sizeBytes": 298329600
           },
           {
-            "names": [
-              "docker.io/library/metalk8s-ui:2.5.2-dev"
-            ],
+            "names": ["docker.io/library/metalk8s-ui:2.5.2-dev"],
             "sizeBytes": 151008379
           },
           {
-            "names": [
-              "docker.io/library/metalk8s-ui:2.6.0-dev"
-            ],
+            "names": ["docker.io/library/metalk8s-ui:2.6.0-dev"],
             "sizeBytes": 150523506
           },
           {
@@ -1330,9 +1318,7 @@
             "sizeBytes": 762476
           },
           {
-            "names": [
-              "k8s.gcr.io/pause:3.1"
-            ],
+            "names": ["k8s.gcr.io/pause:3.1"],
             "sizeBytes": 746400
           }
         ],
@@ -2208,9 +2194,7 @@
             "sizeBytes": 767890
           },
           {
-            "names": [
-              "k8s.gcr.io/pause:3.1"
-            ],
+            "names": ["k8s.gcr.io/pause:3.1"],
             "sizeBytes": 746400
           },
           {
@@ -2628,9 +2612,7 @@
             "sizeBytes": 1791163
           },
           {
-            "names": [
-              "k8s.gcr.io/pause:3.1"
-            ],
+            "names": ["k8s.gcr.io/pause:3.1"],
             "sizeBytes": 746400
           },
           {

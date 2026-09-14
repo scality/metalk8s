@@ -1,2 +1,2 @@
 cloud  = "ovh"
-flavor = "c2-15"
+flavor = "c3-16"

@@ -51,9 +51,9 @@ Prevent swap mount from fstab:
 Check that the crictl socket answer:
   # use test.succeed_without_changes instead of cmd.run for idempotency
   test.succeed_without_changes:
-    - name: crictl --runtime-endpoint {{ kubelet.service.options.get("container-runtime-endpoint") }} info
+    - name: crictl --runtime-endpoint {{ kubelet.container_runtime_endpoint }} info
     - check_cmd:
-      - crictl --runtime-endpoint {{ kubelet.service.options.get("container-runtime-endpoint") }} info
+      - crictl --runtime-endpoint {{ kubelet.container_runtime_endpoint }} info
 
 {%- if not defaults.upgrade %}
   {%- for port in kubeadm_preflight.mandatory.ports %}

@@ -1,0 +1,76 @@
+image:
+  repository: '__image__(node-problem-detector)'
+
+settings:
+  # Chart defaults minus docker-monitor (containerd runtime)
+  log_monitors:
+    - /config/kernel-monitor.json
+    - /config/readonly-monitor.json
+
+  custom_monitor_definitions:
+    wp-monitor.json: |
+      {
+        "plugin": "custom",
+        "pluginConfig": {
+          "invoke_interval": "30s",
+          "timeout": "10s",
+          "max_output_length": 120,
+          "concurrency": 1,
+          "skip_initial_status": true
+        },
+        "source": "workload-plane-monitor",
+        "metricsReporting": true,
+        "conditions": [
+          {
+            "type": "PodNetworkUnavailable",
+            "reason": "PodNetworkReady",
+            "message": "pod network reachable"
+          }
+        ],
+        "rules": [
+          {
+            "type": "permanent",
+            "condition": "PodNetworkUnavailable",
+            "reason": "PodNetworkUnreachable",
+            "path": "/scripts/check-wp.sh",
+            "timeout": "10s"
+          }
+        ]
+      }
+
+  custom_plugin_monitors:
+    - /custom-config/wp-monitor.json
+
+# Tolerate all taints so NPD keeps probing on remediated (tainted) nodes
+tolerations:
+  - operator: Exists
+
+# Let the probe exclude itself from the peers resolved through the headless Service
+env:
+  - name: POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
+
+extraVolumes:
+  - name: wp-scripts
+    configMap:
+      name: npd-wp-scripts
+      defaultMode: 0755
+  # Holds the last peer list the probe resolved, cluster DNS is not always reachable
+  - name: wp-state
+    emptyDir: {}
+
+extraVolumeMounts:
+  - name: wp-scripts
+    mountPath: /scripts
+    readOnly: true
+  - name: wp-state
+    mountPath: /run/wp-monitor
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      metalk8s.scality.com/monitor: ''

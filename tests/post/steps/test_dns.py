@@ -3,6 +3,7 @@ from pytest_bdd import scenario, given, then, parsers
 
 from tests import utils
 
+
 # Scenarios
 @scenario("../features/dns_resolution.feature", "check DNS")
 def test_dns(host):

@@ -1,11 +1,4 @@
-import {
-  ConstrainedText,
-  Icon,
-  Stack,
-  Text,
-  Wrap,
-  spacing,
-} from '@scality/core-ui';
+import { ConstrainedText, Icon, Stack, Text, Wrap, spacing } from '@scality/core-ui';
 import { Button, Table } from '@scality/core-ui/dist/next';
 import React, { useCallback } from 'react';
 import { useIntl } from 'react-intl';
@@ -15,13 +8,13 @@ import styled from 'styled-components';
 import { useTypedSelector } from '../hooks';
 import { useURLQuery } from '../services/utils';
 import CircleStatus from './CircleStatus';
-const StatusText = styled.div`
+const StatusText = styled.div<{ $color?: string }>`
   color: ${(props) => {
-    return props.color;
+    return props.$color;
   }};
 `;
 
-const NodeListTable = ({ nodeTableData }) => {
+const NodeListTable = ({ nodeTableData, loading }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const query = useURLQuery();
@@ -61,11 +54,7 @@ const NodeListTable = ({ nodeTableData }) => {
             <>
               <ConstrainedText
                 text={
-                  <Text
-                    data-cy="node_table_name_cell"
-                    variant="Basic"
-                    isEmphazed
-                  >
+                  <Text data-cy="node_table_name_cell" variant="Basic" isEmphazed>
                     {name}
                   </Text>
                 }
@@ -107,7 +96,7 @@ const NodeListTable = ({ nodeTableData }) => {
           const { statusTextColor, computedStatus } = cellProps.value;
           return computedStatus.map((status) => {
             return (
-              <StatusText key={status} color={statusTextColor}>
+              <StatusText key={status} $color={statusTextColor}>
                 {intl.formatMessage({
                   id: `${status}`,
                 })}
@@ -132,10 +121,7 @@ const NodeListTable = ({ nodeTableData }) => {
         location.pathname.endsWith('partitions') ||
         location.pathname.endsWith('details');
 
-      const newPath = location.pathname.replace(
-        /\/nodes\/[^/]*\//,
-        `/nodes/${nodeName}/`,
-      );
+      const newPath = location.pathname.replace(/\/nodes\/[^/]*\//, `/nodes/${nodeName}/`);
       if (isTabSelected) {
         navigate(`${newPath}?${query.toString()}`);
       } else {
@@ -148,6 +134,7 @@ const NodeListTable = ({ nodeTableData }) => {
     <Table
       columns={columns}
       data={nodeTableData}
+      status={loading ? 'loading' : 'success'}
       defaultSortingKey={'health'}
       entityName={{
         en: {

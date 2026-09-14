@@ -1,0 +1,8 @@
+kind: Breaking
+body: |
+  Due to the major bump of Salt and Python version, downgrading from
+  134 to 133 will not be possible.
+time: 2026-07-27T09:10:19.556322156Z
+custom:
+  Pull: 5017
+  CommentId: backfill

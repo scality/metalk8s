@@ -3,6 +3,7 @@
 This module is merged into the `metalk8s_kubernetes` execution module,
 by virtue of its `__virtualname__`.
 """
+
 from __future__ import absolute_import
 
 from salt.exceptions import CommandExecutionError
@@ -23,6 +24,8 @@ except ImportError:
 
 
 __virtualname__ = "metalk8s_kubernetes"
+
+PING_REQUEST_TIMEOUT = 10
 
 
 def __virtual__():
@@ -95,12 +98,23 @@ def ping(**kwargs):
 
     Returns True if a request could be made, False otherwise.
 
+    The response body is discarded: this is a liveness check, not a version
+    read.
+
     CLI Example:
         salt '*' metalk8s_kubernetes.ping
     """
+    kubeconfig, context = get_kubeconfig(**kwargs)
+
     try:
-        get_version_info(**kwargs)
-    except CommandExecutionError:
+        client = __utils__["metalk8s_kubernetes.get_client"](kubeconfig, context)
+        client.request(
+            "get",
+            "/version",
+            serialize=False,
+            _request_timeout=PING_REQUEST_TIMEOUT,
+        )
+    except (ApiException, HTTPError):
         return False
     return True
 

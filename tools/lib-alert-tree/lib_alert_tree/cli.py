@@ -58,8 +58,11 @@ def generate_cli(roots, prometheus_rule_labels=None):
         tree = Tree()
 
         if len(selected_roots) > 1:
-            root_data = lambda: None
-            root_data.pretty_str = click.style("[root]", fg=8)
+
+            def root_data() -> None:
+                return None
+
+            root_data.pretty_str = click.style("[root]", fg=8)  # type: ignore
             root = tree.create_node("[root]", data=root_data)
 
             if depth >= 0:

@@ -10,3 +10,6 @@ spec:
     hide-headers: 'Server,X-Powered-By'
     ssl-ciphers: 'EECDH+AESGCM:EDH+AESGCM'
     ssl-protocols: 'TLSv1.2 TLSv1.3'
+    location-snippet: |
+      proxy_set_header traceparent "";
+      proxy_set_header tracestate "";

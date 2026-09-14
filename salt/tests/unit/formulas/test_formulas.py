@@ -3,6 +3,7 @@
 Currently only define a single test function, focused on rendering any Jinja template
 available under the salt/ directory.
 """
+
 from pathlib import Path
 from typing import Iterable
 

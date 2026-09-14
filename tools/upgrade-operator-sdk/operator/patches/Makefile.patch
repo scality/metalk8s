@@ -1,0 +1,15 @@
+--- a/Makefile
++++ b/Makefile
+@@ -3,3 +3,12 @@
+ .PHONY: catalog-push
+ catalog-push: ## Push a catalog image.
+ 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
++
++# Force Go toolchain version
++export GOTOOLCHAIN = __GOTOOLCHAIN__
++
++.PHONY: metalk8s
++metalk8s: manifests kustomize ## Generate MetalK8s resulting manifests
++	mkdir -p deploy
++	$(KUSTOMIZE) build config/metalk8s | \
++	sed 's/BUILD_IMAGE_CLUSTER_OPERATOR:latest/{{ build_image_name("metalk8s-operator") }}/' > deploy/manifests.yaml

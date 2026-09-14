@@ -1,6 +1,7 @@
 # Include here all states that should be called after upgrading
 
 include:
+  - metalk8s.addons.node-problem-detector.post-upgrade
   - metalk8s.addons.prometheus-operator.post-upgrade
   - metalk8s.addons.ui.post-upgrade
 
@@ -11,3 +12,10 @@ Post upgrade on Bootstrap:
     - tgt: {{ salt['metalk8s.minions_by_role']('bootstrap') | first }}
     - saltenv: {{ saltenv }}
     - sync_mods: all
+
+Cleanup Rocky Linux workaround grains:
+  salt.state:
+    - tgt: '*'
+    - sls:
+      - metalk8s.node.cleanup-rocky-grains
+    - saltenv: {{ saltenv }}

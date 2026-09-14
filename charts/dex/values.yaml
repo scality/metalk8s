@@ -220,6 +220,41 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+httpRoute:
+  # -- Enable Gateway API HTTPRoute.
+  # Gateway API support is in EXPERIMENTAL status. Support depends on your Gateway controller implementation.
+  # See the [Gateway API documentation](https://gateway-api.sigs.k8s.io/) for details.
+  enabled: false
+
+  # -- Annotations to be added to the HTTPRoute.
+  annotations: {}
+
+  # -- References to the Gateway(s) that this HTTPRoute is attached to.
+  # See the [API reference](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.ParentReference) for details.
+  parentRefs: []
+    # - name: gateway
+    # namespace: gateway-system
+    # sectionName: https
+    # port: 443
+
+  # -- Hostnames defines the hostnames for routing.
+  # See the [API reference](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.Hostname) for details.
+  hostnames:
+    - chart-example.local
+
+  # -- HTTPRoute rules configuration.
+  # See the [API reference](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRouteRule) for details.
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      # filters:
+      #   - type: RequestHeaderModifier
+      #     requestHeaderModifier:
+      #       add:
+      #         - name: X-Custom-Header
+      #           value: custom-value
 serviceMonitor:
   # -- Enable Prometheus ServiceMonitor.
   # See the [documentation](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/design.md#servicemonitor) and the [API reference](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#servicemonitor) for details.

@@ -21,17 +21,12 @@ const NodePageContent = (props) => {
    ** This allow us to check if we need to display EmptyState or not
    */
   useEffect(() => {
-    if (previousLoading && !loading && !isFirstLoadingDone)
-      setIsFirstLoadingDone(true);
+    if (previousLoading && !loading && !isFirstLoadingDone) setIsFirstLoadingDone(true);
   }, [previousLoading, loading, isFirstLoadingDone]);
   useEffect(() => {
     if (nodeTableData.length > 0) {
       const firstNodeName = nodeTableData[0]?.name?.name;
-      if (
-        firstNodeName &&
-        !path.includes(firstNodeName) &&
-        path.endsWith('/nodes')
-      ) {
+      if (firstNodeName && !path.includes(firstNodeName) && path.endsWith('/nodes')) {
         navigate(`/nodes/${firstNodeName}/overview`, { replace: true });
       }
     } // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,17 +52,14 @@ const NodePageContent = (props) => {
         leftPanel={{
           children: (
             <LeftSideInstanceList>
-              <NodeListTable nodeTableData={nodeTableData} />
+              <NodeListTable nodeTableData={nodeTableData} loading={loading} />
             </LeftSideInstanceList>
           ),
         }}
         rightPanel={{
           children: (
             <Routes>
-              <Route
-                path=":name/*"
-                element={<NodePageRSP nodeTableData={nodeTableData} />}
-              />
+              <Route path=":name/*" element={<NodePageRSP nodeTableData={nodeTableData} />} />
             </Routes>
           ),
         }}

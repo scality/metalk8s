@@ -1,9 +1,9 @@
 annotations:
   artifacthub.io/changes: |-
-    - kind: added
-      description: "VPA recommender may be specified with .autoscaling.vpa."
+    - kind: changed
+      description: "Update Fluent Bit OCI image to v5.0.7."
 apiVersion: v1
-appVersion: 4.2.3
+appVersion: 5.0.7
 description: Fast and lightweight log processor and forwarder for Linux, OSX and BSD
   family operating systems.
 home: https://fluentbit.io/
@@ -24,4 +24,4 @@ maintainers:
 name: fluent-bit
 sources:
 - https://github.com/fluent/fluent-bit/
-version: 0.56.0
+version: 0.57.7

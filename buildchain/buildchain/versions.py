@@ -6,28 +6,28 @@
 This module MUST be kept valid in a standalone context, since it is intended
 for use in tests and documentation as well.
 """
+
 import operator
 import json
 
 from collections import namedtuple
 from pathlib import Path
-from typing import Any, cast, Dict, Optional, Tuple
-
+from typing import Any, cast, Dict, NamedTuple, Optional, Tuple
 
 Image = namedtuple("Image", ("name", "version", "digest"))
 
 # Project-wide versions {{{
 
 K8S_VERSION_MAJOR: str = "1"
-K8S_VERSION_MINOR: str = "33"
+K8S_VERSION_MINOR: str = "34"
 K8S_VERSION_PATCH: str = "7"
 
 K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
 K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
-CALICO_VERSION: str = "3.29.3"
-SALT_VERSION: str = "3002.9"
-CONTAINERD_VERSION: str = "2.2.2"
+CALICO_VERSION: str = "3.32.0"
+SALT_VERSION: str = "3006.27"
+CONTAINERD_VERSION: str = "2.2.5"
 
 SOSREPORT_RELEASE: str = "2"
 
@@ -70,29 +70,25 @@ SHELL_UI_VERSION: str = json.loads(shell_ui_package_contents)["version"]
 # Container images {{{
 
 ROCKY_BASE_IMAGE: str = "docker.io/rockylinux/rockylinux"
-ROCKY_BASE_IMAGE_8_SHA256: str = (
-    # rockylinux:8.10-minimal
-    "6d2ede107b4f005a638728711dae05d5fbbfd8abd521cecf5ab61196b361c965"
-)
 ROCKY_BASE_IMAGE_9_SHA256: str = (
-    # rockylinux:9.5-minimal
-    "2cb86b2d8326a987546dc7fb393f43d43d478fea12ce3ce4accbda571f47f86b"
+    # rockylinux:9.8-minimal
+    "e1d0a9f5ed99d52e7faf03afe7ee32e48b231c4dd9586808b3d1aedf894dff04"
 )
 
-ETCD_VERSION: str = "3.5.26"
+ETCD_VERSION: str = "3.6.11"
 ETCD_IMAGE_VERSION: str = f"{ETCD_VERSION}-0"
-NGINX_IMAGE_VERSION: str = "1.27.5-alpine"
+NGINX_IMAGE_VERSION: str = "1.31.2-alpine"
 NODEJS_IMAGE_VERSION: str = "20.11.1"
 KEEPALIVED_VERSION: str = "2.3.3"
 CERT_MANAGER_VERSION: str = "1.17.1"
-UI_OPERATOR_VERSION: str = "1.0.16"
+UI_OPERATOR_VERSION: str = "1.1.0"
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
 # image, e.g. because the `Dockerfile` is changed, or one of the dependencies
 # installed in the image needs to be updated.
 # This should be reset to 1 when the service exposed by the container changes
 # version.
-SALT_MASTER_BUILD_ID = 1
+SALT_MASTER_BUILD_ID = 2
 
 
 def _version_prefix(version: str, prefix: str = "v") -> str:
@@ -105,28 +101,28 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     # Remote images
     Image(
         name="alpine",
-        version="3.21.3",
-        digest="sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c",
+        version="3.24.1",
+        digest="sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b",
     ),
     Image(
         name="alertmanager",
-        version="v0.27.0",
-        digest="sha256:3053afcdc74adc4ee5f30634454784b7ba96ce7a81f5d998e8f9507cb80bf505",
+        version="v0.33.0",
+        digest="sha256:af26fbe4dd1886ac0efd7bd55cd9027da262e105b137a376522b7c14c3626e4a",
     ),
     Image(
         name="calico-cni",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:53f826d3f565a6635b4d58ea4fcfdc0e7ea418ffd4dbb495b4c801074e6eb99c",
+        digest="sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14",
     ),
     Image(
         name="calico-node",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:eed399f2a727cfc1f374ab5c9cda6123c207e794ed8dc66c7eb6d8db412669e1",
+        digest="sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
     ),
     Image(
         name="calico-kube-controllers",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:5516ab776c38525fcc985a3030b4f2fd472da68b4170601c23bf6887bfdce703",
+        digest="sha256:adf0ac895796d21bca5383bc81c4cd2614be3a4308085b47857d7999f4cc2b1f",
     ),
     Image(
         name="coredns",
@@ -141,42 +137,42 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="etcd",
         version=ETCD_IMAGE_VERSION,
-        digest="sha256:97b4a5c4f11b202d6ea637e2b34654b11eb98bbebb23e15db797a74c7914a2d7",
+        digest="sha256:fbab3d2954652f592b2653cc1b9decdbe2a633de9320735e9f364b185b6b309a",
     ),
     Image(
         name="grafana",
-        version="11.2.2-security-01",
-        digest="sha256:464eac539793a183381ae198cb3bfcee137f17888ee192b8ac1ae2e867f72a9d",
+        version="13.0.2",
+        digest="sha256:5dad0df181cb644a14e13617b913b261a54f7d4fd4510721dba420929f35bea2",
     ),
     Image(
         name="k8s-sidecar",
-        version="1.28.0",
-        digest="sha256:4166a019eeafd1f0fef4d867dc5f224f18d84ec8681dbb31f3ca258ecf07bcf2",
+        version="2.7.3",
+        digest="sha256:694950d736c8b532eba4006527ccbdac98fefc9f30b3346ba2de50b6cad91c94",
     ),
     Image(
         name="kube-apiserver",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:9585226cb85d1dc0f0ef5f7a75f04e4bc91ddd82de249533bd293aa3cf958dab",
+        digest="sha256:b96b8464d152a24c81d7f0435fd2198f8486970cd26a9e0e9c20826c73d1441c",
     ),
     Image(
         name="kube-controller-manager",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:9585226cb85d1dc0f0ef5f7a75f04e4bc91ddd82de249533bd293aa3cf958dab",
+        digest="sha256:7d759bdc4fef10a3fc1ad60ce9439d58e1a4df7ebb22751f7cc0201ce55f280b",
     ),
     Image(
         name="kube-proxy",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:9585226cb85d1dc0f0ef5f7a75f04e4bc91ddd82de249533bd293aa3cf958dab",
+        digest="sha256:062519bc0a14769e2f98c6bdff7816a17e6252de3f3c9cb102e6be33fe38d9e2",
     ),
     Image(
         name="kube-scheduler",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:9585226cb85d1dc0f0ef5f7a75f04e4bc91ddd82de249533bd293aa3cf958dab",
+        digest="sha256:4ab32f707ff84beaac431797999707757b885196b0b9a52d29cb67f95efce7c1",
     ),
     Image(
         name="kube-state-metrics",
-        version="v2.13.0",
-        digest="sha256:639a1e2da549210adddc0391ff91e270e83f7873014aec53258462812f741e6f",
+        version="v2.19.1",
+        digest="sha256:85108987d044b18a098126732f98602df408888c0f7d456241f5abefb9744bc1",
     ),
     Image(
         name="nginx",
@@ -187,13 +183,18 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="nginx-ingress-controller",
-        version="v1.15.0",
-        digest="sha256:4eea9a4cc2cb6ddcb7da14d377aaf452e68bd3dbe87fe280755d225c4d5e7e4e",
+        version="v1.15.1",
+        digest="sha256:594ceea76b01c592858f803f9ff4d2cb40542cae2060410b2c95f75907d659e1",
     ),
     Image(
         name="node-exporter",
-        version="v1.8.2",
-        digest="sha256:4032c6d5bfd752342c3e631c2f1de93ba6b86c41db6b167b9a35372c139e7706",
+        version="v1.11.1-distroless",
+        digest="sha256:6112664fd761bb964d8a2d3d0119d6c8402618a89edbb3a43c8f7b4090fb53c9",
+    ),
+    Image(
+        name="node-problem-detector",
+        version="v1.35.1",
+        digest="sha256:c380751accc5e15973f7bf98a3725c3c30826b36ae407903c34297be47b73bc6",
     ),
     Image(
         name="oauth2-proxy",
@@ -202,15 +203,15 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="pause",
-        version="3.10",
+        version="3.10.1",
         # Do not check the digest for this image, since this one is re-published
         # several times with the same tag
         digest=None,
     ),
     Image(
         name="prometheus",
-        version="v2.55.0",
-        digest="sha256:378f4e03703557d1c6419e6caccf922f96e6d88a530f7431d66a4c4f4b1000fe",
+        version="v3.12.0-distroless",
+        digest="sha256:f39df5334dee301b885f77e0ff1159f5d8a43bf9db518f885544594799a1e3c2",
     ),
     Image(
         name="prometheus-adapter",
@@ -219,22 +220,32 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus-config-reloader",
-        version="v0.77.2",
-        digest="sha256:c96d4fb1d57f4e7a6504d8da7d1ee9254018039939842bf65e86563b66e5a14f",
+        version="v0.91.0",
+        digest="sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1",
     ),
     Image(
         name="prometheus-operator",
-        version="v0.77.2",
-        digest="sha256:af92db7eac86d012085969ba2c4a5fb97b99cc2720dce805038b28ca4395ec4b",
+        version="v0.91.0",
+        digest="sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d",
     ),
     Image(
         name="thanos",
-        version="v0.36.1",
-        digest="sha256:e542959e1b36d5046083d1b64a7049c356b68a44a173c58b3ae7c0c9ada932d5",
+        version="v0.41.0",
+        digest="sha256:cf3e9b292e4302ad4a4955b56379703aea39516607d382a57604a3d003c35d10",
     ),
     # Local images
     Image(
         name="metalk8s-alert-logger",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
+        name="metalk8s-boot-cache-control-plane",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
+        name="metalk8s-boot-cache-worker",
         version=VERSION,
         digest=None,
     ),
@@ -276,17 +287,17 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="ui-operator",
         version=UI_OPERATOR_VERSION,
-        digest="sha256:9dcdb02407fc452b2d6334c796558ebd79ca2f1abca1496ebdf79592f7fff66f",
+        digest="sha256:d889e95cc230a8ade3cea8fe4ec231d5b7f1865d557d521254f9f51e49430288",
     ),
     Image(
         name="loki",
-        version="3.6.5",
-        digest="sha256:847c287ada0e12603910589f42038c5cdaaad04e248bd1dc6c6e0920a235f427",
+        version="3.6.7",
+        digest="sha256:3c8fd3570dd9219951a60d3f919c7f31923d10baee578b77bc26c4a0b32d092d",
     ),
     Image(
         name="fluent-bit",
-        version="4.2.3",
-        digest="sha256:a5761fa961cb22dd0875883a4d446b1acd99d4935d77358aa9f50ee177e44fe2",
+        version="5.0.7",
+        digest="sha256:c96ee743cba9b1d5a38654931f411700af80bb7652697afbe67daad46cae237b",
     ),
     Image(
         name="cert-manager-controller",
@@ -312,6 +323,21 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         name="crl-operator",
         version="v1.0.0",
         digest="sha256:86b4198036c1f83f1d9363a1e2ae78015482ca4fe60cd706939b8730c179ac8a",
+    ),
+    Image(
+        name="disk-management-agent",
+        version="v0.1.0",
+        digest="sha256:d63d4e20a089dcd3ac33f58d2210a66e48a1f9f08120494352b22cca94747769",
+    ),
+    Image(
+        name="file-reflector",
+        version="v0.2.0",
+        digest="sha256:97f14f857ebef1b421ad2799e6fba77c9b0cebcfc19f0b726344e322a4f7ead5",
+    ),
+    Image(
+        name="node-warden-operator",
+        version="v1.0.0",
+        digest="sha256:9fafa55c92f07f1d48a9fd69b4a9e78b7918939a56fc3449d10f121c7cba633f",
     ),
 )
 
@@ -387,6 +413,74 @@ class PackageVersion:
 #   * kubelet and kubectl which _make_ the K8s version of the cluster
 #   * salt-minion which _makes_ the Salt version of the cluster
 #
+class PrebuiltRPM(NamedTuple):
+    """A RPM fetched from a GitHub release instead of being built here.
+
+    One declaration serves both sides: the build reads the release and the
+    digest to fetch the package, and the version pin the Salt states use is
+    derived from the same tag, so the two cannot drift.
+    """
+
+    name: str
+    # Repository of the ISO the package lands in.
+    repo: str
+    # GitHub repository publishing the package.
+    source: str
+    tag: str
+    # Digest of the RPM attached to the release, per RedHat release. Refresh
+    # them along with the tag, from the release page or by running `sha256sum`
+    # on the downloaded packages. An empty digest stops the build, naming the
+    # release it expected.
+    sha256: Dict[str, str]
+    # A bump moves the tag, and the spec keeps its release digit at 1.
+    release: str = "1"
+    arch: str = "noarch"
+
+    @property
+    def version(self) -> str:
+        """Version of the RPM, as the source repository derives it.
+
+        `rpm/build.sh` in image-cache drops the leading "v" and replaces any
+        hyphen with a tilde, which RPM accepts in a version and sorts before
+        the final release.
+        """
+        return self.tag.removeprefix("v").replace("-", "~")
+
+    def package_version(self, releasever: str) -> PackageVersion:
+        """Version pin of the package, for one RedHat release."""
+        return PackageVersion(
+            name=self.name,
+            version=self.version,
+            release=f"{self.release}.el{releasever}",
+        )
+
+
+PREBUILT_RPMS: Tuple[PrebuiltRPM, ...] = (
+    # The package requires `containerd`, provided by the `containerd.io`
+    # package the ISO already carries, so nothing else has to be downloaded
+    # for it. A future version that needs more has to be declared in
+    # `PACKAGES`: the availability check the Salt states run on every node
+    # resolves the dependencies of every declared package against the ISO
+    # repositories alone.
+    #
+    # A package we build gets its dependencies from the spec it owns. A
+    # finished RPM has no spec: declaring them by name here would have `dnf`
+    # download an unpinned copy, and reading them off the package makes the
+    # download list depend on a file we have yet to fetch. Worth solving on
+    # the second prebuilt package, not for one dependency already on the ISO.
+    PrebuiltRPM(
+        name="containerd-image-preload",
+        repo="scality",
+        source="scality/image-cache",
+        tag="v0.1.0-alpha.1",
+        sha256={
+            "8": "b374b74d78c2786c8143e1da2f20bfd46434bc007c42ebb458e87af22a527ad1",
+            "9": "bc205c2120970f5185bbd2808cb55219141acb311692707249692492b143d954",
+        },
+    ),
+)
+
+
 # These common packages may be overridden by OS-specific packages if package
 # names or version conventions diverge.
 #
@@ -400,22 +494,24 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="kubelet", version=K8S_VERSION),
         PackageVersion(name="containerd.io", version=CONTAINERD_VERSION),
         # Latest packages
+        PackageVersion(name="container-selinux"),
         PackageVersion(name="coreutils"),
         PackageVersion(name="cri-tools"),
         PackageVersion(name="e2fsprogs"),
-        PackageVersion(name="ebtables"),
-        PackageVersion(name="ethtool"),
+        PackageVersion(name="iptables-nft"),
         PackageVersion(name="gdisk"),
         PackageVersion(name="genisoimage"),
         PackageVersion(name="httpd-tools"),
         PackageVersion(name="iproute"),
-        PackageVersion(name="iptables"),
         PackageVersion(name="kubernetes-cni"),
         PackageVersion(name="lvm2"),
-        PackageVersion(name="m2crypto"),
-        PackageVersion(name="python36-psutil"),
-        PackageVersion(name="python36-pyOpenSSL"),
+        PackageVersion(name="python3-boto3"),
+        PackageVersion(name="python3-dnf-plugin-versionlock"),
         PackageVersion(name="salt-minion", version=SALT_VERSION),
+        # NOTE: We pin also the salt package version since repository
+        # is not versioned and we want to ensure we use the same version as the
+        # salt-minion package
+        PackageVersion(name="salt", version=SALT_VERSION),
         PackageVersion(name="socat"),
         PackageVersion(name="tar"),
         PackageVersion(name="util-linux"),
@@ -424,21 +520,33 @@ PACKAGES: Dict[str, Any] = {
     ),
     "redhat": {
         "8": (
-            PackageVersion(name="container-selinux"),
-            PackageVersion(name="iptables-ebtables", override="ebtables"),
+            PackageVersion(name="iptables-ebtables", override="iptables-nft"),
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=NONSUFFIXED_VERSION,
                 release=f"{SOSREPORT_RELEASE}.el8",
             ),
-            PackageVersion(name="python3-boto3"),
-            PackageVersion(name="python3-m2crypto", override="m2crypto"),
-            PackageVersion(name="python3-dnf-plugin-versionlock"),
-            PackageVersion(name="python3-psutil", override="python36-psutil"),
-            PackageVersion(name="python3-pyOpenSSL", override="python36-pyOpenSSL"),
+        ),
+        "9": (
+            PackageVersion(
+                name="metalk8s-sosreport",
+                version=NONSUFFIXED_VERSION,
+                release=f"{SOSREPORT_RELEASE}.el9",
+            ),
         ),
     },
 }
+
+# The prebuilt packages are declared once, in `PREBUILT_RPMS`, and their
+# version pin follows from the release they are fetched from. `pkg_installed`
+# reads the version of a package from this listing, and `dnf` skips a package
+# that is in it instead of looking for it in a repository that does not carry
+# it. The loop variable is not called `version` or `releasever`: both shadow
+# something else in this file.
+for rh_release in PACKAGES["redhat"]:
+    PACKAGES["redhat"][rh_release] += tuple(
+        prebuilt.package_version(rh_release) for prebuilt in PREBUILT_RPMS
+    )
 
 
 def _list_pkgs_for_os_family(os_family: str) -> Dict[str, Tuple[PackageVersion, ...]]:
@@ -452,7 +560,7 @@ def _list_pkgs_for_os_family(os_family: str) -> Dict[str, Tuple[PackageVersion, 
     os_pkgs = {}
 
     if os_family_pkgs is None:
-        raise Exception(f"No packages for OS family: {os_family}")
+        raise ValueError(f"No packages for OS family: {os_family}")
 
     for version, pkgs in os_family_pkgs.items():
         os_override_names = [pkg.override for pkg in pkgs if pkg.override is not None]
@@ -481,14 +589,11 @@ REDHAT_PACKAGES_MAP = {
 SALT_VERSIONS_JSON = {
     "kubernetes": {"version": K8S_VERSION},
     "packages": {
-        "centos": {
+        os: {
             version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
             for version, pkgs in REDHAT_PACKAGES.items()
-        },
-        "redhat": {
-            version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
-            for version, pkgs in REDHAT_PACKAGES.items()
-        },
+        }
+        for os in ["centos", "rocky", "redhat"]
     },
     "images": {img.name: {"version": img.version} for img in CONTAINER_IMAGES},
     "metalk8s": {"version": VERSION},

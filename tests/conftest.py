@@ -368,6 +368,24 @@ def wait_rollout_status(host, resource, namespace):
     )
 
 
+@when(
+    parsers.parse(
+        "we trigger a rollout restart of '{resource}' in namespace '{namespace}'"
+    )
+)
+def rollout_restart(host, resource, namespace):
+    # Make sure any previous rollout is completed
+    wait_rollout_status(host, resource, namespace)
+
+    with host.sudo():
+        host.run_test(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
+            "rollout restart %s --namespace %s",
+            resource,
+            namespace,
+        )
+
+
 @when(parsers.parse("we wait {seconds} seconds for the {job} job to complete"))
 def wait_for_job(host, seconds, job):
     with host.sudo():

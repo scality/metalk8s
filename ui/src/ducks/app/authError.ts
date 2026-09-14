@@ -7,10 +7,7 @@ type AuthErrorAction = {
 const defaultState: AuthErrorState = {
   isAuthError: false,
 };
-export default function reducer(
-  state: AuthErrorState = defaultState,
-  action: AuthErrorAction,
-) {
+export default function reducer(state: AuthErrorState = defaultState, action: AuthErrorAction) {
   switch (action.type) {
     case 'AUTH_ERROR': {
       return { ...state, isAuthError: true };

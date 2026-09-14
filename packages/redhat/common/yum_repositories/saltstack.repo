@@ -1,6 +1,9 @@
 [saltstack]
-name=Scality SaltStack repo for RHEL/CentOS $releasever
-baseurl=https://downloads.scality.com/repository/redhat/$releasever/saltstack/@SALT_VERSION@
+name=Saltstack Repo
+baseurl=https://packages.broadcom.com/artifactory/saltproject-rpm/
+skip_if_unavailable=True
+priority=10
 enabled=1
+enabled_metadata=1
 gpgcheck=1
-gpgkey=https://downloads.scality.com/repository/redhat/$releasever/saltstack/@SALT_VERSION@/SALTSTACK-GPG-KEY.pub
+gpgkey=https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public

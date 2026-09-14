@@ -3,7 +3,7 @@
 
 """Miscellaneous helpers."""
 
-
+import functools
 import inspect
 import subprocess
 import sys
@@ -49,41 +49,26 @@ def build_relpath(path: Path) -> Path:
     return path.relative_to(config.BUILD_ROOT.parent)
 
 
+# Module-level helpers (not closures) wrapped with `functools.partial` below,
+# so the resulting `title` callable is picklable for doit `-n N` workers
+# (doit ≥ 0.37 dropped cloudpickle and stdlib pickle rejects local closures).
+def _title_with_target1(command: str, task: types.Task) -> str:
+    return f"{command: <{constants.CMD_WIDTH}} {build_relpath(Path(task.targets[0]))}"
+
+
+def _title_with_subtask_name(command: str, task: types.Task) -> str:
+    # Extract the sub-task name (the part after `:`) from the task name.
+    return f"{command: <{constants.CMD_WIDTH}} {task.name.split(':')[1]}"
+
+
 def title_with_target1(command: str) -> Callable[[types.Task], str]:
-    """Return a title with the command suffixed with the first target.
-
-    Arguments:
-        command: name of the command
-        task: a doit task
-
-    Returns:
-        A function that returns the title
-    """
-
-    def title(task: types.Task) -> str:
-        return (
-            f"{command: <{constants.CMD_WIDTH}} {build_relpath(Path(task.targets[0]))}"
-        )
-
-    return title
+    """Return a title with the command suffixed with the first target."""
+    return functools.partial(_title_with_target1, command)
 
 
 def title_with_subtask_name(command: str) -> Callable[[types.Task], str]:
-    """Return a title with the command suffixed with the sub-task name.
-
-    Arguments:
-        command: name of the command
-        task: a doit task
-
-    Returns:
-        A function that returns the title
-    """
-
-    def title(task: types.Task) -> str:
-        # Extract the sub-task name (the part after `:`) from the task name.
-        return f"{command: <{constants.CMD_WIDTH}} {task.name.split(':')[1]}"
-
-    return title
+    """Return a title with the command suffixed with the sub-task name."""
+    return functools.partial(_title_with_subtask_name, command)
 
 
 def bind_mount(source: Path, target: Path, **kwargs: Any) -> Mount:

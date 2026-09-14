@@ -1,12 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 
-export const SMTPAuthTypes = [
-  'CRAM-MD5',
-  'PLAIN',
-  'LOGIN',
-  'NO_AUTHENTICATION',
-] as const;
+export const SMTPAuthTypes = ['CRAM-MD5', 'PLAIN', 'LOGIN', 'NO_AUTHENTICATION'] as const;
 
 export type AuthType = (typeof SMTPAuthTypes)[number];
 
@@ -41,12 +36,7 @@ export type AlertConfiguration = {
   from: string;
   to: string;
   sendResolved: boolean;
-} & (
-  | PLAINCRedentials
-  | LOGINCRedentials
-  | CRAMMD5Credentials
-  | NO_AUTHENCATIONCredentials
-);
+} & (PLAINCRedentials | LOGINCRedentials | CRAMMD5Credentials | NO_AUTHENCATIONCredentials);
 
 type Loading = 'loading';
 type Success = 'success';
@@ -69,10 +59,7 @@ export interface PromiseLoadingResult {
   status: Loading;
 }
 
-export type PromiseResult<T> =
-  | PromiseLoadingResult
-  | PromiseSucceedResult<T>
-  | PromiseRejectedResult;
+export type PromiseResult<T> = PromiseLoadingResult | PromiseSucceedResult<T> | PromiseRejectedResult;
 
 export const useAlertConfiguration = ({
   alertConfigurationStore,
@@ -149,10 +136,7 @@ export interface IAlertConfigurationStore {
   getAlertConfiguration(): Promise<AlertConfiguration>;
   putAlertConfiguration(alertConfiguration: AlertConfiguration): Promise<void>;
   getTestConfiguration(): Promise<AlertConfiguration>;
-  testAlertConfiguration(
-    alertConfiguration: AlertConfiguration,
-    configurationHasChanged: boolean,
-  ): Promise<void>;
+  testAlertConfiguration(alertConfiguration: AlertConfiguration, configurationHasChanged: boolean): Promise<void>;
   getAlertStoreLogsForTestAlert(): Promise<AlertStoreLogLine[]>;
   getAlertStoreLogs(): Promise<AlertStoreLogLine[]>;
 }
@@ -170,10 +154,7 @@ export const useEditAlertConfiguration = ({
     onSuccess: (_, alertConfiguration) => {
       queryClient.refetchQueries(['alertstorelogs']);
       queryClient.setQueryData<AlertStoreLogLine[]>(['alertstoretestlogs'], []);
-      queryClient.setQueriesData<AlertConfiguration>(
-        ['alertConfiguration'],
-        alertConfiguration,
-      );
+      queryClient.setQueriesData<AlertConfiguration>(['alertConfiguration'], alertConfiguration);
     },
   });
 
@@ -205,8 +186,7 @@ export const useTestAlertConfiguration = ({
 
       return alertConfigurationStore.testAlertConfiguration(
         alertConfiguration,
-        JSON.stringify(data) !==
-          JSON.stringify({ ...alertConfiguration, enabled: true }),
+        JSON.stringify(data) !== JSON.stringify({ ...alertConfiguration, enabled: true }),
       );
     },
     onSuccess: () => {
@@ -223,9 +203,7 @@ export const useTestAlertConfiguration = ({
     refetchInterval: isTestInProgress ? 1_000 : Infinity,
   });
 
-  const hasFailedToSendTestAlert = !!logsData?.find(
-    (logLine) => logLine.level === 'ERROR',
-  );
+  const hasFailedToSendTestAlert = !!logsData?.find((logLine) => logLine.level === 'ERROR');
 
   const overOneMinute = testDateRef.current < new Date(Date.now() - 60_000);
   useMemo(() => {

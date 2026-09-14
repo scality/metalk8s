@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-# pylint:disable=unused-wildcard-import
+# pylint:disable=wildcard-import,unused-wildcard-import
 
 
 """Build entry point."""

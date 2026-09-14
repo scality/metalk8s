@@ -4,7 +4,6 @@ import collections
 import re
 from typing import Any, Dict, Iterator, List, Optional
 
-
 APIVersion = str
 Kind = str
 ItemList = List[Any]

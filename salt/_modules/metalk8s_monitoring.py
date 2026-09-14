@@ -1,5 +1,4 @@
-"""Utiliy methods to interact with MetalK8s monitoring.
-"""
+"""Utiliy methods to interact with MetalK8s monitoring."""
 
 from salt.exceptions import CommandExecutionError
 

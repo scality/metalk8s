@@ -1,17 +1,8 @@
-import {
-  LineTimeSerieChart,
-  useMetricsTimeSpan,
-  useChartId,
-} from '@scality/core-ui/dist/next';
+import { LineTimeSerieChart, useMetricsTimeSpan, useChartId } from '@scality/core-ui/dist/next';
 import { useChartLegendRegistration } from '../hooks/useChartLegendRegistration';
 
 import { useCallback } from 'react';
-import {
-  useNodeAddressesSelector,
-  useNodes,
-  useShowQuantileChart,
-  useSingleChartSerie,
-} from '../hooks';
+import { useNodeAddressesSelector, useNodes, useShowQuantileChart, useSingleChartSerie } from '../hooks';
 import { getMultiResourceSeriesForChart } from '../services/graphUtils';
 import {
   getNodesSystemLoadOutpassingThresholdQuery,
@@ -48,8 +39,7 @@ const DashboardChartSystemLoadWithoutQuantiles = () => {
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
     getQuery: (timeSpanProps) => getNodesSystemLoadQuery(timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
-      (prometheusResult) =>
-        getMultiResourceSeriesForChart(prometheusResult, nodeAddresses),
+      (prometheusResult) => getMultiResourceSeriesForChart(prometheusResult, nodeAddresses),
       //Expect warning because of complex dependency
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [JSON.stringify(nodeAddresses)],

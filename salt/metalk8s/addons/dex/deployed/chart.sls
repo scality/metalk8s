@@ -16,7 +16,7 @@ metadata:
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.44.0
-    helm.sh/chart: dex-0.24.0
+    helm.sh/chart: dex-0.24.1
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.44.0
-    helm.sh/chart: dex-0.24.0
+    helm.sh/chart: dex-0.24.1
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -52,7 +52,7 @@ metadata:
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.44.0
-    helm.sh/chart: dex-0.24.0
+    helm.sh/chart: dex-0.24.1
     heritage: metalk8s
   name: dex-cluster
   namespace: metalk8s-auth
@@ -74,7 +74,7 @@ metadata:
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.44.0
-    helm.sh/chart: dex-0.24.0
+    helm.sh/chart: dex-0.24.1
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -95,7 +95,7 @@ metadata:
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.44.0
-    helm.sh/chart: dex-0.24.0
+    helm.sh/chart: dex-0.24.1
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -117,7 +117,7 @@ metadata:
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.44.0
-    helm.sh/chart: dex-0.24.0
+    helm.sh/chart: dex-0.24.1
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -153,7 +153,7 @@ metadata:
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.44.0
-    helm.sh/chart: dex-0.24.0
+    helm.sh/chart: dex-0.24.1
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -265,7 +265,7 @@ metadata:
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.44.0
-    helm.sh/chart: dex-0.24.0
+    helm.sh/chart: dex-0.24.1
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth

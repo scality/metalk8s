@@ -5,10 +5,7 @@ import { setupServer } from 'msw/node';
 import { QueryClient } from 'react-query';
 import { QueryClientProvider } from '../QueryClientProvider';
 import type { BuildtimeWebFinger, View } from './ConfigurationProviders';
-import {
-  ConfigurationProvider,
-  useFederatedRoutes,
-} from './ConfigurationProviders';
+import { ConfigurationProvider, useFederatedRoutes } from './ConfigurationProviders';
 import { UIListProvider } from './UIListProvider';
 
 const testService = 'http://10.0.0.1/uilist.json';
@@ -48,10 +45,7 @@ const externalHookUI = {
 const singleDeployedUI = [testLocalUI];
 const allDeployedUIs = [testLocalUI, addonUIV1, addonUIV2, externalHookUI];
 
-const createMockBuildConfig = (
-  kind: string,
-  views: Record<string, View>,
-): BuildtimeWebFinger => ({
+const createMockBuildConfig = (kind: string, views: Record<string, View>): BuildtimeWebFinger => ({
   kind: 'MicroAppConfiguration',
   apiVersion: 'ui.scality.com/v1alpha1',
   metadata: {
@@ -81,33 +75,27 @@ const server = setupServer(
   rest.get(`${testService}`, (req, res, ctx) => {
     return res(ctx.json(singleDeployedUI));
   }),
-  rest.get(
-    `http://test.local.test/.well-known/micro-app-configuration`,
-    (req, res, ctx) => {
-      return res(
-        ctx.json(
-          createMockBuildConfig('test-ui', {
-            overview: {
-              path: '/',
-              exact: true,
-              label: {
-                en: 'Overview',
-                fr: 'Vue générale',
-              },
-              module: './FederableApp',
-              scope: 'artesca',
+  rest.get(`http://test.local.test/.well-known/micro-app-configuration`, (req, res, ctx) => {
+    return res(
+      ctx.json(
+        createMockBuildConfig('test-ui', {
+          overview: {
+            path: '/',
+            exact: true,
+            label: {
+              en: 'Overview',
+              fr: 'Vue générale',
             },
-          }),
-        ),
-      );
-    },
-  ),
-  rest.get(
-    `http://test.local.test/.well-known/runtime-app-configuration`,
-    (req, res, ctx) => {
-      return res(ctx.json(createRuntimeAppConfig('test-ui', 'test.local')));
-    },
-  ),
+            module: './FederableApp',
+            scope: 'artesca',
+          },
+        }),
+      ),
+    );
+  }),
+  rest.get(`http://test.local.test/.well-known/runtime-app-configuration`, (req, res, ctx) => {
+    return res(ctx.json(createRuntimeAppConfig('test-ui', 'test.local')));
+  }),
 );
 
 describe('useFederatedRoutes', () => {
@@ -161,66 +149,67 @@ describe('useFederatedRoutes', () => {
 
   it('should retrieve federated routes with same kind', async () => {
     const configs = {
-      'http://test.local.test/.well-known/micro-app-configuration':
-        createMockBuildConfig('test-ui', {
-          overview: {
-            path: '/',
-            exact: true,
-            label: {
-              en: 'Overview',
-              fr: 'Vue générale',
-            },
-            module: './FederableApp',
-            scope: 'artesca',
+      'http://test.local.test/.well-known/micro-app-configuration': createMockBuildConfig('test-ui', {
+        overview: {
+          path: '/',
+          exact: true,
+          label: {
+            en: 'Overview',
+            fr: 'Vue générale',
           },
-        }),
-      'http://test.local.test/.well-known/runtime-app-configuration':
-        createRuntimeAppConfig('test-ui', 'test.local'),
-      'http://addon-v1.local.test/.well-known/micro-app-configuration':
-        createMockBuildConfig('addon-ui', {
-          addon1: {
-            path: '/addon-v1',
-            exact: true,
-            label: {
-              en: 'Addon v1',
-              fr: 'Addon v1',
-            },
-            module: './AddonApp',
-            scope: 'addon1',
+          module: './FederableApp',
+          scope: 'artesca',
+        },
+      }),
+      'http://test.local.test/.well-known/runtime-app-configuration': createRuntimeAppConfig('test-ui', 'test.local'),
+      'http://addon-v1.local.test/.well-known/micro-app-configuration': createMockBuildConfig('addon-ui', {
+        addon1: {
+          path: '/addon-v1',
+          exact: true,
+          label: {
+            en: 'Addon v1',
+            fr: 'Addon v1',
           },
-        }),
-      'http://addon-v1.local.test/.well-known/runtime-app-configuration':
-        createRuntimeAppConfig('addon-ui', 'addon-v1.local'),
-      'http://addon-v2.local.test/.well-known/micro-app-configuration':
-        createMockBuildConfig('addon-ui', {
-          addon2: {
-            path: '/addon-v2',
-            exact: true,
-            label: {
-              en: 'Addon v2',
-              fr: 'Addon v2',
-            },
-            module: './AddonApp',
-            scope: 'addon2',
+          module: './AddonApp',
+          scope: 'addon1',
+        },
+      }),
+      'http://addon-v1.local.test/.well-known/runtime-app-configuration': createRuntimeAppConfig(
+        'addon-ui',
+        'addon-v1.local',
+      ),
+      'http://addon-v2.local.test/.well-known/micro-app-configuration': createMockBuildConfig('addon-ui', {
+        addon2: {
+          path: '/addon-v2',
+          exact: true,
+          label: {
+            en: 'Addon v2',
+            fr: 'Addon v2',
           },
-        }),
-      'http://addon-v2.local.test/.well-known/runtime-app-configuration':
-        createRuntimeAppConfig('addon-ui', 'addon-v2.local'),
-      'http://external-hook.local.test/.well-known/micro-app-configuration':
-        createMockBuildConfig('external-hook-ui', {
-          externalHook: {
-            path: '/external-hook',
-            exact: true,
-            label: {
-              en: 'External hook',
-              fr: 'External hook',
-            },
-            module: './ExternalHookApp',
-            scope: 'external-hook',
+          module: './AddonApp',
+          scope: 'addon2',
+        },
+      }),
+      'http://addon-v2.local.test/.well-known/runtime-app-configuration': createRuntimeAppConfig(
+        'addon-ui',
+        'addon-v2.local',
+      ),
+      'http://external-hook.local.test/.well-known/micro-app-configuration': createMockBuildConfig('external-hook-ui', {
+        externalHook: {
+          path: '/external-hook',
+          exact: true,
+          label: {
+            en: 'External hook',
+            fr: 'External hook',
           },
-        }),
-      'http://external-hook.local.test/.well-known/runtime-app-configuration':
-        createRuntimeAppConfig('external-hook-ui', 'external-hook.local'),
+          module: './ExternalHookApp',
+          scope: 'external-hook',
+        },
+      }),
+      'http://external-hook.local.test/.well-known/runtime-app-configuration': createRuntimeAppConfig(
+        'external-hook-ui',
+        'external-hook.local',
+      ),
     };
     server.use(
       rest.get(`${testService}`, (req, res, ctx) => {
@@ -328,22 +317,12 @@ describe('useFederatedRoutes', () => {
       rest.get(`${testService}`, (req, res, ctx) => {
         return res(ctx.json(singleDeployedUI));
       }),
-      rest.get(
-        `http://test.local.test/.well-known/micro-app-configuration`,
-        (req, res, ctx) => {
-          return res(ctx.json(createMockBuildConfig('test-ui', {})));
-        },
-      ),
-      rest.get(
-        `http://test.local.test/.well-known/runtime-app-configuration`,
-        (req, res, ctx) => {
-          return res(
-            ctx.json(
-              createRuntimeAppConfig('wrong-kind-test-ui', 'test.local'),
-            ),
-          );
-        },
-      ),
+      rest.get(`http://test.local.test/.well-known/micro-app-configuration`, (req, res, ctx) => {
+        return res(ctx.json(createMockBuildConfig('test-ui', {})));
+      }),
+      rest.get(`http://test.local.test/.well-known/runtime-app-configuration`, (req, res, ctx) => {
+        return res(ctx.json(createRuntimeAppConfig('wrong-kind-test-ui', 'test.local')));
+      }),
     );
 
     const { result } = renderHook(() => useFederatedRoutes(), {

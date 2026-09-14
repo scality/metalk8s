@@ -2,6 +2,7 @@
 
 See the `tests.unit.formulas.options` module and the configuration file for details.
 """
+
 from collections import namedtuple
 import copy
 import functools
@@ -14,7 +15,6 @@ import jinja2
 from tests.unit.formulas import config
 from tests.unit.formulas.fixtures import kubernetes
 from tests.unit.formulas.fixtures.salt import SaltMock
-
 
 Context = namedtuple("Context", ("id", "data"))
 
@@ -30,13 +30,13 @@ def fixture_base_context(
     Do not include a SaltMock at this stage, since each data source will be replaced by
     an independent copy for each test run (to avoid side-effects when applying options).
     """
-    return dict(
-        grains=base_grains,
-        pillar=base_pillar,
-        opts={},
-        __minions__={base_grains["id"]: {}},
-        __kubernetes__=base_kubernetes,
-    )
+    return {
+        "grains": base_grains,
+        "pillar": base_pillar,
+        "opts": {},
+        "__minions__": {base_grains["id"]: {}},
+        "__kubernetes__": base_kubernetes,
+    }
 
 
 @pytest.fixture(name="render_contexts")

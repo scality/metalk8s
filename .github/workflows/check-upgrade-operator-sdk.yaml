@@ -1,0 +1,56 @@
+name: Check upgrade operator-sdk
+
+on:
+  workflow_call:
+    inputs:
+      operator-dir:
+        type: string
+        required: true
+        description: "Path to the operator project directory (e.g. operator, storage-operator)"
+      config-dir:
+        type: string
+        required: true
+        description: "Path to the upgrade config directory (e.g. tools/upgrade-operator-sdk/operator)"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}/devcontainer:${{ github.sha }}
+      # We have to use `root` for the moment
+      # Sees: https://github.com/actions/checkout/issues/1575
+      # Could work with a user with 1001 id but not for docker
+      options: --user root
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set safe directory (since container is root and not user 1001)
+        run: git config --global --add safe.directory $GITHUB_WORKSPACE
+      - name: Run operator-sdk upgrade tooling
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 tools/upgrade-operator-sdk/upgrade.py \
+            --operator-dir "${{ inputs.operator-dir }}" \
+            --config-dir "${{ inputs.config-dir }}" \
+            --yes
+      - name: Verify no drift from upgrade tooling
+        run: |
+          if git diff --quiet "${{ inputs.operator-dir }}"; then
+            echo "No drift detected in ${{ inputs.operator-dir }}"
+          else
+            echo "::error::${{ inputs.operator-dir }}/ differs from what the upgrade tool produces. Run the upgrade tool locally and commit the result, or update the upgrade config/patches."
+            echo ""
+            echo "=== Changed files ==="
+            git diff --stat "${{ inputs.operator-dir }}"
+            echo ""
+            echo "=== Full diff ==="
+            git diff "${{ inputs.operator-dir }}"
+            exit 1
+          fi

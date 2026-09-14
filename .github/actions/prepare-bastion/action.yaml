@@ -15,6 +15,18 @@ runs:
   using: "composite"
   steps:
     - name: Install git and tox on bastion
+      if: "!contains(inputs.BRANCH, '132.')"
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: bastion
+        COMMAND: |
+          sudo dnf install -y git python3.12-pip
+          pip3.12 install --user tox
+    # In order to support test after install during dev
+    # upgrade we have this `if` logic
+    # This can be removed in `development/135.0`
+    - name: Install git and tox on bastion - older
+      if: "contains(inputs.BRANCH, '132.')"
       uses: ./.github/actions/run-command-ssh
       with:
         NODE: bastion

@@ -132,11 +132,7 @@ export async function getNodesIPsInterfaces(nodeNames: string[]): Promise<{
     tgt: nodeNames.join(','),
     tgt_type: 'list',
     fun: 'grains.item',
-    arg: [
-      'metalk8s:control_plane_ip',
-      'metalk8s:workload_plane_ip',
-      'ip_interfaces',
-    ],
+    arg: ['metalk8s:control_plane_ip', 'metalk8s:workload_plane_ip', 'ip_interfaces'],
   });
 
   if (result.error) {

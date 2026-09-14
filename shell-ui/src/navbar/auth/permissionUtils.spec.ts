@@ -1,10 +1,5 @@
 import '../index';
-import {
-  getUserGroups,
-  isEntryAccessibleByTheUser,
-  isPathAccessible,
-  normalizePath,
-} from './permissionUtils';
+import { getUserGroups, isEntryAccessibleByTheUser, isPathAccessible, normalizePath } from './permissionUtils';
 describe('permission utils - isEntryAccessibleByTheUser', () => {
   it('should return true if the user has explicit access', () => {
     //E
@@ -57,12 +52,8 @@ describe('permission utils - isEntryAccessibleByTheUser', () => {
 
 describe('permission utils - normalizePath', () => {
   it('should normalize path', () => {
-    expect(normalizePath('http://fake/groupPath')).toEqual(
-      'http://fake/groupPath',
-    );
-    expect(normalizePath('http://fake/path/subPath?a=test#test')).toEqual(
-      'http://fake/path/subPath',
-    );
+    expect(normalizePath('http://fake/groupPath')).toEqual('http://fake/groupPath');
+    expect(normalizePath('http://fake/path/subPath?a=test#test')).toEqual('http://fake/path/subPath');
   });
   it('should throw if the path is an invalid url', () => {
     expect(() => normalizePath('invalidUrl')).toThrow();
@@ -71,17 +62,13 @@ describe('permission utils - normalizePath', () => {
 describe('permission utils - isPathAccessible', () => {
   it('should return true when the path is accessible', () => {
     //E
-    const isAccessible = isPathAccessible('http://fake/path?hello=world', [
-      'http://fake/path?hello=test',
-    ]);
+    const isAccessible = isPathAccessible('http://fake/path?hello=world', ['http://fake/path?hello=test']);
     //V
     expect(isAccessible).toBe(true);
   });
   it('should return false when the path is not accessible', () => {
     //E
-    const isAccessible = isPathAccessible('http://fake/path?hello=world', [
-      'http://fake/another-path?hello=test',
-    ]);
+    const isAccessible = isPathAccessible('http://fake/path?hello=world', ['http://fake/another-path?hello=test']);
     //V
     expect(isAccessible).toBe(false);
   });
@@ -140,10 +127,6 @@ describe('permission utils - getUserGroups', () => {
       },
     );
     //V
-    expect(groups).toEqual([
-      ...oidcAndStaticGroups,
-      ...oidcOnlyGroups,
-      ...staticOnlyGroups,
-    ]);
+    expect(groups).toEqual([...oidcAndStaticGroups, ...oidcOnlyGroups, ...staticOnlyGroups]);
   });
 });

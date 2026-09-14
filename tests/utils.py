@@ -15,7 +15,6 @@ from requests.packages.urllib3.util.retry import Retry
 
 import pytest
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -74,7 +73,7 @@ def requests_retry_session(
     retries=3,
     backoff_factor=0.3,
     status_forcelist=(500, 503),
-    method_whitelist=frozenset(["GET", "POST"]),
+    allowed_methods=frozenset(["GET", "POST"]),
     session=None,
 ):
     """Configure a `requests.session` for retry on error.
@@ -88,7 +87,7 @@ def requests_retry_session(
         backoff_factor:   The sleep interval between requests computed as
                           {backoff factor} * (2 ^ ({number retries} - 1))
         status_forcelist: HTTP status codes that we should force a retry on
-        method_whitelist: uppercased HTTP methods that we should retry
+        allowed_methods:  uppercased HTTP methods that we should retry
         session:          Used to create a session
 
     Returns:
@@ -101,7 +100,7 @@ def requests_retry_session(
         connect=retries,
         backoff_factor=backoff_factor,
         status_forcelist=status_forcelist,
-        method_whitelist=method_whitelist,
+        allowed_methods=allowed_methods,
     )
     adapter = HTTPAdapter(max_retries=retry)
     session.mount("http://", adapter)

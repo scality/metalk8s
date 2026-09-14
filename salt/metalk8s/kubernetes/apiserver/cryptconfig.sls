@@ -13,7 +13,7 @@ include:
 
 {% if 'apiserver_key' not in pillar.metalk8s.private %}
 
-{% set encryption_key = salt['random.get_str'](32) | base64_encode %}
+{% set encryption_key = salt['random.get_str'](32, punctuation=false) | base64_encode %}
 
 Create encryption configuration from scratch:
   file.managed:

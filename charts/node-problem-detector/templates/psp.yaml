@@ -1,0 +1,40 @@
+{{- if .Values.rbac.pspEnabled }}
+apiVersion: {{ template "podSecurityPolicy.apiVersion" . }}
+kind: PodSecurityPolicy
+metadata:
+  name: {{ template "node-problem-detector.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "node-problem-detector.name" . }}
+    helm.sh/chart: {{ include "node-problem-detector.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  privileged: true
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - '*'
+  volumes:
+  - 'configMap'
+  - 'emptyDir'
+  - 'projected'
+  - 'secret'
+  - 'downwardAPI'
+  - 'persistentVolumeClaim'
+  - 'hostPath'
+  hostNetwork: {{ .Values.hostNetwork }}
+  hostIPC: false
+  hostPID: {{ .Values.hostPID }}
+  {{- if .Values.hostNetwork }}
+  hostPorts:
+  - min: {{ .Values.settings.prometheus_port }}
+    max: {{ .Values.settings.prometheus_port }}
+  {{- end }}
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+{{- end }}

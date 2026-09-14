@@ -36,13 +36,7 @@ type NodetableList = {
   };
   status: {
     status: 'ready' | 'not_ready' | 'unknown';
-    conditions: (
-      | 'DiskPressure'
-      | 'MemoryPressure'
-      | 'PIDPressure'
-      | 'NetworkUnavailable'
-      | 'Unschedulable'
-    )[];
+    conditions: ('DiskPressure' | 'MemoryPressure' | 'PIDPressure' | 'NetworkUnavailable' | 'Unschedulable')[];
     statusTextColor: string;
     computedStatus: string[];
   };
@@ -72,17 +66,11 @@ export const getNodeListData = (alerts: Array<Alert>, theme: CoreUITheme) =>
             alertname: NODE_ALERTS_GROUP,
           }).filter(
             (alert) =>
-              alert.labels.instance ===
-                `${node.internalIP}:${PORT_NODE_EXPORTER}` ||
-              alert.labels.node === node.name,
+              alert.labels.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}` || alert.labels.node === node.name,
           );
           const totalAlertsCounter = alertsNode.length;
-          const criticalAlertsCounter = alertsNode.filter(
-            (alert) => alert.labels.severity === STATUS_CRITICAL,
-          ).length;
-          const warningAlertsCounter = alertsNode.filter(
-            (alert) => alert.labels.severity === STATUS_WARNING,
-          ).length;
+          const criticalAlertsCounter = alertsNode.filter((alert) => alert.labels.severity === STATUS_CRITICAL).length;
+          const warningAlertsCounter = alertsNode.filter((alert) => alert.labels.severity === STATUS_WARNING).length;
           health = getHealthStatus(alertsNode);
           const computedStatus = [];
 
@@ -94,10 +82,7 @@ export const getNodeListData = (alerts: Array<Alert>, theme: CoreUITheme) =>
           if (node.status === API_STATUS_READY && conditions.length === 0) {
             statusTextColor = theme.statusHealthy;
             computedStatus.push(API_STATUS_READY);
-          } else if (
-            node.status === API_STATUS_READY &&
-            conditions.length !== 0
-          ) {
+          } else if (node.status === API_STATUS_READY && conditions.length !== 0) {
             statusTextColor = theme.statusWarning;
             conditions.map((cond) => {
               return computedStatus.push(cond);
@@ -146,9 +131,7 @@ export const getNodeListData = (alerts: Array<Alert>, theme: CoreUITheme) =>
             },
           };
         }) || [];
-      return mapped.sort((a, b) =>
-        compareHealth(b.health.health, a.health.health),
-      );
+      return mapped.sort((a, b) => compareHealth(b.health.health, a.health.health));
     },
     nodesSelector,
     IPsInfoSelector,
@@ -206,18 +189,14 @@ export const nodesCPWPIPsInterface = (
       ip: IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP],
       interface:
         Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
-          IPsInterfacesObject[IP_INTERFACES][en].includes(
-            IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP],
-          ),
+          IPsInterfacesObject[IP_INTERFACES][en].includes(IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP]),
         ) || '',
     },
     workloadPlane: {
       ip: IPsInterfacesObject[METALK8S_WORKLOAD_PLANE_IP],
       interface:
         Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
-          IPsInterfacesObject[IP_INTERFACES][en].includes(
-            IPsInterfacesObject[METALK8S_WORKLOAD_PLANE_IP],
-          ),
+          IPsInterfacesObject[IP_INTERFACES][en].includes(IPsInterfacesObject[METALK8S_WORKLOAD_PLANE_IP]),
         ) || '',
     },
   };

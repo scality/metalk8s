@@ -410,7 +410,9 @@ def list_objects(
     return result.to_dict()["items"]
 
 
-def get_object_digest(path=None, checksum="sha256", *args, **kwargs):
+def get_object_digest(
+    path=None, checksum="sha256", ignore_not_found=False, *args, **kwargs
+):
     """
     Helper to get the digest of one kubernetes object or from a specific key
     of this object using a path
@@ -432,7 +434,11 @@ def get_object_digest(path=None, checksum="sha256", *args, **kwargs):
         obj = salt.utils.data.traverse_dict_and_list(obj, path, delimiter=":")
 
         if not obj:
-            raise CommandExecutionError(f'Unable to find key "{path}" in the object')
+            if not ignore_not_found:
+                raise CommandExecutionError(
+                    f'Unable to find key "{path}" in the object'
+                )
+            return ""
 
     if isinstance(obj, dict):
         obj = json.dumps(obj, sort_keys=True)
