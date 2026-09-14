@@ -133,6 +133,16 @@ kubelet:
   container_engine: "containerd"
   container_runtime_endpoint: "unix:///var/run/containerd/containerd.sock"
 
+image_cache:
+  # Where the boot cache archives are extracted, and where
+  # `containerd-image-preload` imports them from. Both sides read this:
+  # the states write here, and `metalk8s.image-cache.installed` renders
+  # /etc/sysconfig/containerd-image-preload from it.
+  directory: "/var/lib/image-cache"
+  # Platform passed to `ctr images import`. The archives on the ISO are
+  # built for amd64 only.
+  platform: "linux/amd64"
+
 ca:
   cert:
     days_remaining: 90

@@ -1,0 +1,6 @@
+kind: Added
+body: 'The bootstrap node now fills its image cache from the boot cache image shipped on the ISO, before the kubelet starts. The archives it carries are extracted into `/var/lib/image-cache` and imported into containerd right away, so the first node can bring up its static pods with no registry to pull from. Only the control plane variant is provisioned, and only at bootstrap: a node joining the cluster still gets nothing.'
+time: 2026-09-08T14:47:08.100112452Z
+custom:
+    CommentId: "5587012798"
+    Pull: "5122"
