@@ -19,13 +19,28 @@ import pytest
 LOGGER = logging.getLogger(__name__)
 
 
-def retry(operation, times=1, wait=1, error_msg=None, name="default"):
-    last_assert = None
+def retry(operation, times=1, wait=1, error_msg=None, name="default", retry_on=None):
+    """Run `operation` until it stops failing, up to `times` attempts.
+
+    An `AssertionError` always counts as a failed attempt, since that is how a
+    polled condition reports "not yet".
+
+    `retry_on` is an optional predicate, called with any other exception, that
+    returns whether it too should count as a failed attempt rather than abort
+    the whole retry. Use it for the errors that say "ask again later" instead of
+    "this will never work" - a transient API server 5xx, typically. Anything the
+    predicate rejects is re-raised untouched, as it is without a predicate.
+    """
+    last_failure = None
     for idx in range(times):
         try:
             res = operation()
-        except AssertionError as exc:
-            last_assert = str(exc)
+        except Exception as exc:  # pylint: disable=broad-except
+            if not isinstance(exc, AssertionError) and (
+                retry_on is None or not retry_on(exc)
+            ):
+                raise
+            last_failure = str(exc)
             LOGGER.info("[%s] Attempt %d/%d failed: %s", name, idx, times, str(exc))
             time.sleep(wait)
         else:
@@ -38,8 +53,8 @@ def retry(operation, times=1, wait=1, error_msg=None, name="default"):
                 "(waited {total}s in total)"
             ).format(name=name, attempts=times, total=times * wait)
 
-        if last_assert:
-            error_msg = error_msg + ": " + last_assert
+        if last_failure:
+            error_msg = error_msg + ": " + last_failure
 
         pytest.fail(error_msg)
 
