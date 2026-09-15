@@ -39,6 +39,12 @@ const VolumeTitleSection = styled.div`
   padding: 0 0 ${spacing.r24} 0;
   display: flex;
   align-items: center;
+  /* The name and its action stay put while the card scrolls under them. The
+     background matches the tab's own so the content does not show through. */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: ${(props) => props.theme.backgroundLevel4};
   /* The delete button is sized to its own content and never shrinks, so in a
      narrow panel it has to take a line of its own rather than push the name out. */
   flex-wrap: wrap;
@@ -57,12 +63,10 @@ const VolumeGraph = styled.div`
   display: flex;
   flex-direction: column;
   margin-left: 2%;
-  padding-right: ${spacing.r24};
 `;
 const VolumeUsage = styled.div`
   min-height: 94px;
-  margin: ${spacing.r20} ${spacing.r8} ${spacing.r20} 0;
-  padding: 0 ${spacing.r16} 0 0;
+  margin: ${spacing.r20} 0;
 `;
 const VolumeSectionTitle = styled.div`
   color: ${(props) => props.theme.textPrimary};
