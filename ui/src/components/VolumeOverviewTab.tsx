@@ -27,12 +27,31 @@ const VolumeDetailCardContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+
+  /* Both columns hold rows whose value is an unbroken identifier, so without this
+     they keep the card wider than the panel instead of wrapping. */
+  > div {
+    min-width: 0;
+  }
 `;
 const VolumeTitleSection = styled.div`
   color: ${(props) => props.theme.textPrimary};
   padding: 0 0 ${spacing.r24} 0;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  /* The delete button is sized to its own content and never shrinks, so in a
+     narrow panel it has to take a line of its own rather than push the name out. */
+  flex-wrap: wrap;
+  gap: ${spacing.r8};
+`;
+const VolumeTitleName = styled.div`
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow-wrap: anywhere;
+`;
+const VolumeTitleActions = styled.div`
+  margin-left: auto;
 `;
 const VolumeGraph = styled.div`
   display: flex;
@@ -80,6 +99,10 @@ const LabelList = styled.div`
   flex-direction: column;
   gap: ${spacing.r4};
   min-width: 0;
+  /* A label key such as kubernetes.io/hostname carries no break opportunity, and
+     break-word does not lower an element's intrinsic minimum width the way anywhere
+     does - so the pair would hold the row open past the panel's width. */
+  overflow-wrap: anywhere;
 `;
 
 const VolumeDetailCard = (props) => {
@@ -161,24 +184,26 @@ const VolumeDetailCard = (props) => {
   return (
     <VolumeTab>
       <VolumeTitleSection data-cy="volume_detail_card_name">
-        <div>
+        <VolumeTitleName>
           <CircleStatus status={health} />
           <OverviewResourceName>{name}</OverviewResourceName>
-        </div>
-        <Button
-          variant="danger"
-          style={{ width: 'max-content' }}
-          icon={<Icon size="sm" name="Delete" />}
-          label={intl.formatMessage({
-            id: 'delete_volume',
-          })}
-          onClick={(e) => {
-            e.stopPropagation();
-            setisDeleteConfirmationModalOpen(true);
-          }}
-          disabled={!isEnableClick}
-          data-cy="delete_volume_button"
-        />
+        </VolumeTitleName>
+        <VolumeTitleActions>
+          <Button
+            variant="danger"
+            style={{ width: 'max-content' }}
+            icon={<Icon size="sm" name="Delete" />}
+            label={intl.formatMessage({
+              id: 'delete_volume',
+            })}
+            onClick={(e) => {
+              e.stopPropagation();
+              setisDeleteConfirmationModalOpen(true);
+            }}
+            disabled={!isEnableClick}
+            data-cy="delete_volume_button"
+          />
+        </VolumeTitleActions>
       </VolumeTitleSection>
 
       {!isVolumeUsageRetrievable && (
