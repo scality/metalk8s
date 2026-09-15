@@ -1,4 +1,9 @@
-import { Banner, Checkbox, Form, FormGroup, FormSection, Icon, Stack, Text, Toggle } from '@scality/core-ui';
+/* Not the bare '@scality/core-ui': that specifier is federation-shared and resolves to
+   the host's copy, while Input and Select come from dist/next and so from this app's.
+   Form passes responsive, error and disabled to its fields through React context, which
+   is created per copy - across two copies the fields receive none of it and keep their
+   fixed width. */
+import { Banner, Checkbox, Form, FormGroup, FormSection, Icon, Stack, Text, Toggle } from '@scality/core-ui/dist/index';
 import { Button, Input } from '@scality/core-ui/dist/next';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import { Formik } from 'formik';

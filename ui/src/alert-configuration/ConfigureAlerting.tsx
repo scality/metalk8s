@@ -1,3 +1,8 @@
+/* Not the bare '@scality/core-ui': that specifier is federation-shared and resolves to
+   the host's copy, while Input and Select come from dist/next and so from this app's.
+   Form passes responsive, error and disabled to its fields through React context, which
+   is created per copy - across two copies the fields receive none of it and keep their
+   fixed width. */
 import Joi from '@hapi/joi';
 import { joiResolver } from '@hookform/resolvers/joi';
 import {
@@ -13,7 +18,7 @@ import {
   Stack,
   Text,
   TextArea,
-} from '@scality/core-ui';
+} from '@scality/core-ui/dist/index';
 import { Box, Button, Input, Select } from '@scality/core-ui/dist/next';
 import { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
