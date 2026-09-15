@@ -26,6 +26,9 @@ import { useBasenameRelativeNavigate } from '@scality/module-federation';
    right: the panel has no width to spare and the scroll area ends the content. */
 const OverviewTab = styled.div`
   height: 100%;
+  /* The app sets no global box-sizing, so without this the vertical inset is added
+     to the tab's own height and the bottom one falls outside it. */
+  box-sizing: border-box;
   color: ${(props) => props.theme.textPrimary};
   padding: ${spacing.r16} 0 ${spacing.r16} ${spacing.r16};
   display: flex;
