@@ -182,7 +182,13 @@ export const ActiveAlertWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 0 ${spacing.r16} 0 ${spacing.r20};
+  /* The two counters need only their own content; the 200px is the room that
+     separates them, so it is a preferred width and not a floor. Sized border-box
+     so the cap covers the inset as well - without it the padding is added on top
+     and the box still runs 36px past a narrow panel. */
+  box-sizing: border-box;
   width: 200px;
+  max-width: 100%;
 `;
 export const NotBoundContainer = styled(Box)`
   display: flex;

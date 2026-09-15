@@ -55,7 +55,9 @@ const VolumeDetailCardContainer = styled.div`
 `;
 const VolumeTitleSection = styled.div`
   color: ${(props) => props.theme.textPrimary};
-  padding: 0 0 ${spacing.r24} 0;
+  /* The tab drops its right inset for the scroll area below, but the title sits
+     outside it and would otherwise run to the panel's edge. */
+  padding: 0 ${spacing.r16} ${spacing.r24} 0;
   display: flex;
   align-items: center;
   flex: none;
