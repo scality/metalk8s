@@ -86,7 +86,13 @@ def _check_pods_status(
         name += " with label '{}'".format(label)
 
     # Wait for pod to be in the correct state
-    utils.retry(_wait_for_status, times=24, wait=5, name=name)
+    utils.retry(
+        _wait_for_status,
+        times=24,
+        wait=5,
+        name=name,
+        retry_on=kube_utils.is_transient_api_error,
+    )
 
 
 # }}}
@@ -272,6 +278,7 @@ def check_daemonset(host, k8s_client, name, namespace):
         times=60,
         wait=3,
         name=f"wait for DaemonSet '{namespace}/{name}'",
+        retry_on=kube_utils.is_transient_api_error,
     )
 
     wait_rollout_status(host, f"daemonset/{name}", namespace)
