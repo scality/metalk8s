@@ -173,7 +173,9 @@ export default function ConfigureAlerting() {
     }
   }, [sendTestAlertMutation.status]);
 
-  const labelWidth = 270;
+  /* A string so the column follows the root font size; a number is pixels, and the
+     270 it replaces was chosen against a 16px root the shell does not use. */
+  const labelWidth = '18.5rem';
 
   const disableFormButton =
     editAlertMutation.isLoading || sendTestAlertMutation.isLoading || !formState.isDirty || !formState.isValid;

@@ -1,5 +1,4 @@
 import { Banner, Checkbox, Form, FormGroup, FormSection, Icon, Loader, Stack, Text, Toggle } from '@scality/core-ui';
-import { convertRemToPixels } from '@scality/core-ui/dist/components/tablev2/TableUtils';
 import { Button, Input as InputV2, Select } from '@scality/core-ui/dist/next';
 import { fontSize, fontWeight, padding } from '@scality/core-ui/dist/style/theme';
 import { Field, FieldArray, Formik, useField, useFormikContext } from 'formik';
@@ -658,7 +657,7 @@ const CreateVolume = (props) => {
               )
             }
           >
-            <FormSection forceLabelWidth={convertRemToPixels(10)}>
+            <FormSection forceLabelWidth="10rem">
               <FormGroup
                 label={intl.formatMessage({
                   id: 'name',
@@ -846,7 +845,7 @@ const CreateVolume = (props) => {
                 />
               </CheckboxContainer>
             </FormSection>
-            <FormSection forceLabelWidth={convertRemToPixels(10)}>
+            <FormSection forceLabelWidth="10rem">
               {values.multiVolumeCreation && (
                 <MultiCreationFormContainer>
                   <FieldArray
