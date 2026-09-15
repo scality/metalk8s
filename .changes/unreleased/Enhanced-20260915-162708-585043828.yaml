@@ -1,0 +1,6 @@
+kind: Enhanced
+body: The UI pages now adapt to the width of the area they are given, and stay usable when that area is narrowed.
+time: 2026-09-15T16:27:08.585043828Z
+custom:
+    CommentId: "5683986993"
+    Pull: "5106"
