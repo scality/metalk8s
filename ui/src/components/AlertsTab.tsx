@@ -56,7 +56,6 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
     },
     {
       Header: 'Description',
-      dropAt: 520,
       accessor: 'alertDescription',
       cellStyle: {
         minWidth: '6.5rem',

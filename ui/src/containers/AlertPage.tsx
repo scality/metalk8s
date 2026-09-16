@@ -34,22 +34,11 @@ const AlertPageHeaderContainer = styled.div`
 `;
 
 const HeaderSegment = styled.div`
-  position: relative;
   display: flex;
   align-items: center;
   flex: 1 1 0;
   min-width: 0;
   color: ${(props) => props.theme.textPrimary};
-
-  &:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 37px;
-    border-right: 2px solid ${(props) => props.theme.backgroundLevel1};
-  }
 `;
 
 const Title = styled(HeaderSegment)`
@@ -110,7 +99,7 @@ function AlertPageHeader({
 
   return (
     <AlertPageHeaderContainer>
-      <Stack style={{ flex: '1 1 auto', minWidth: 0 }}>
+      <Stack withSeparators style={{ flex: '1 1 auto', minWidth: 0 }}>
         <Title>
           <AlertStatusIcon>
             <StatusWrapper status={alertStatus}>
