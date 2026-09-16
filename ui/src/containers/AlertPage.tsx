@@ -28,19 +28,11 @@ const AlertPageHeaderContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* The three summary segments and the button together need more room than a
-     768px content box has, so let the button drop to its own line instead of
-     pushing the page into horizontal scroll. */
   flex-wrap: wrap;
   gap: ${spacing.r8};
   background: ${(props) => props.theme.backgroundLevel2};
 `;
 
-/* The three segments were each pinned at 250px -- 750px of the header before the
-   button. They divide the available width equally instead, and draw their own
-   divider: the previous SeperationLine was a 250px absolutely-positioned box
-   whose right border happened to land at the segment's edge, which only worked
-   while the segment was exactly that wide. */
 const HeaderSegment = styled.div`
   position: relative;
   display: flex;

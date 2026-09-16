@@ -178,8 +178,6 @@ const VolumeListTable = (props) => {
         },
       }}
     >
-      {/* The search block is two lines tall and the button is a fixed 32px, so under
-          the row's default stretch the button sits against the top of it. */}
       <Wrap padding={spacing.r16} gap={spacing.r16} alignItems="center">
         <Table.SearchWithQueryParams />
         <Button

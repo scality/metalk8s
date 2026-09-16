@@ -1,10 +1,6 @@
 import { ErrorPage500, Loader, ToastProvider } from '@scality/core-ui';
-/* Deliberately not the bare '@scality/core-ui': that specifier is federation-shared and
-   resolves to the host's copy, while Select and Form - which mount this same global
-   style themselves - come from subpaths and so from this app's own copy.
-   styled-components keys a global style group by a hash of its CSS and rebuilds the
-   whole group from the mounting copy's own instances on every mount and unmount, so
-   unmounting a Select wipes the rules unless this permanent mount is in that copy. */
+/* Keep the dist/index path: this global style must mount from the same federated copy
+   as the Select and Form that also mount it, or unmounting one wipes the rules. */
 import { ScrollbarWrapper } from '@scality/core-ui/dist/index';
 import { useCurrentApp } from '@scality/module-federation';
 import { PropsWithChildren, ReactNode, useEffect, useMemo } from 'react';

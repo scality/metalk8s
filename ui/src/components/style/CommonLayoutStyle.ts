@@ -70,9 +70,6 @@ export const TableHeader = styled.div`
 export const MetricsActionContainer = styled.div`
   display: flex;
   flex-direction: row;
-  /* The toggle, the Grafana link and the timespan selector cannot share a
-     ~370px panel on one line. Wrapping keeps each control at its natural size
-     instead of compressing all three. */
   flex-wrap: wrap;
   align-items: center;
   gap: ${spacing.r8};
@@ -134,8 +131,6 @@ export const OverviewInformationLabel = styled.span`
   display: inline-block;
   min-width: 10.714rem;
   color: ${(props) => props.theme.textSecondary};
-  /* The floor only exists to align values across rows; once the rows stack it
-     just adds dead space before the value. */
   @container responsive (max-width: 420px) {
     min-width: 0;
   }
@@ -145,9 +140,6 @@ export const OverviewInformationSpan = styled.div`
   padding-left: ${spacing.r20};
   display: flex;
   min-width: 0;
-  /* Every row switches to stacked at the same panel width. Letting each row
-     wrap on its own content instead makes neighbouring rows break at different
-     widths, which reads as a rendering glitch rather than a layout. */
   @container responsive (max-width: 420px) {
     flex-direction: column;
   }
@@ -182,10 +174,8 @@ export const ActiveAlertWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 0 ${spacing.r16} 0 ${spacing.r20};
-  /* The two counters need only their own content; the 200px is the room that
-     separates them, so it is a preferred width and not a floor. Sized border-box
-     so the cap covers the inset as well - without it the padding is added on top
-     and the box still runs 36px past a narrow panel. */
+  /* 200px is the room separating the two counters, a preferred width and not a
+     floor. border-box so the cap covers the 36px inset rather than adding to it. */
   box-sizing: border-box;
   width: 200px;
   max-width: 100%;

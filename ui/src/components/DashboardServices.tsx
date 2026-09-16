@@ -5,11 +5,6 @@ import { spacing } from '@scality/core-ui';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 import { useAlertLibrary, useHighestSeverityAlerts, highestAlertToStatus } from '../containers/AlertProvider';
 import HealthItem from './HealthItem';
-/* Fully restacked, the inventory cell spans the whole content box while the two
-   chart panels below it compete for what height is left, so every line the
-   services keep is a line the charts lose. Each group turns into a single row -
-   its heading inline, its items flowing after it - which is three lines instead
-   of a heading line plus the tallest group's four items. */
 const ServiceItems = styled.div`
   display: flex;
   flex-direction: column;

@@ -58,9 +58,9 @@ export const GraphGrid = styled.div`
      content's min-content width, which self-sizing charts push past. */
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 
-  /* Two charts side by side in the ~370px right panel are ~180px each. Resolves
-     against the panel container declared on TwoPanelLayout; 560 sits between the
-     panel's drawer-open (~370px) and drawer-closed (~620px) widths. */
+  /* 560 sits between the panel's two widths - ~370px with the drawer open and
+     ~620px without - so the charts stack only in the narrow case. Resolves against
+     the container declared on TwoPanelLayout. */
   @container responsive (max-width: 560px) {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -71,9 +71,6 @@ const MetricsToggleWrapper = styled.div`
   flex: 1;
   min-width: 0;
 
-  /* Own line, so the label is never truncated to fit beside the actions. Ordered
-     last so the actions keep the first line: they are what the tab is for, and a
-     toggle above them reads as a page header. */
   @container responsive (max-width: 560px) {
     flex: 1 0 100%;
     order: 1;

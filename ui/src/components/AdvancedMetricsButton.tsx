@@ -4,10 +4,6 @@ import { useIntl } from 'react-intl';
 import { GRAFANA_DASHBOARDS } from '../constants';
 import { useTypedSelector } from '../hooks';
 
-/* Opens the Grafana node dashboard, which covers everything the Network and the
-   Metrics panels chart. It belongs to neither panel in particular, so it sits in
-   the page's context bar next to the timespan selector, the other control the
-   two panels share. */
 const AdvancedMetricsButton = () => {
   const intl = useIntl();
   const { url_grafana } = useTypedSelector((state) => state.config.api);

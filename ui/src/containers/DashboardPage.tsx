@@ -10,11 +10,9 @@ import TimespanSelector from './TimespanSelector';
 import DashboardNetwork from '../components/DashboardNetwork';
 import AdvancedMetricsButton from '../components/AdvancedMetricsButton';
 
-/* Declares the query container the grid below resolves against. The dashboard is
-   not inside a TwoPanelLayout, so nothing above it opts in. width: 100% is
-   load-bearing: container-type: inline-size implies contain: inline-size, so a
-   content-sized box would resolve to 0px wide -- the inline size has to come
-   from the parent. */
+/* Its inline size has to come from the parent, and flex and width each ensure that:
+   container-type implies contain: inline-size, so a content-sized box here resolves
+   to 0px and no query in the grid below fires. */
 const DashboardContainer = styled.div`
   container-type: inline-size;
   container-name: responsive;
@@ -22,11 +20,6 @@ const DashboardContainer = styled.div`
   flex: 1;
   width: 100%;
   min-height: 0;
-  /* Scroll owner for the one-row layout, where the grid is sized by its content.
-     Once the grid restacks it is stretched to this box and each cell scrolls
-     itself, so nothing reaches here - that is deliberate: the grid and the cards
-     inside it used to scroll too, which stacked up to three nested scrollbars
-     for a single list. */
   overflow: hidden auto;
 `;
 
@@ -71,21 +64,8 @@ const DashboardGrid = styled.div`
     min-height: 0;
   }
 
-  /* One row of five equal columns leaves the inventory ~150px and each chart
-     group ~300px once the Guardian drawer narrows the content box, all of it
-     silently clipped by the overflow: hidden above. Restack in two steps.
-
-     The first step keeps the inventory as a full-height left column and moves
-     the metrics under the network, since the inventory reads as a sidebar
-     rather than a peer of the two chart groups. Only the second step stacks
-     all three.
-
-     Both steps keep the grid stretched to the container and clipping, and every
-     cell scrolls itself: the two chart rows split the available height evenly, so
-     the page never grows a scrollbar of its own and neither panel can push the
-     other off screen. Neither chart row carries a minimum - the grid clips, so a
-     minimum the height cannot honour is not a floor, it is content cut off with
-     no way to scroll to it. */
+  /* Neither chart row gets a minimum height: the grid clips, so a minimum it cannot
+     honour would cut content off with no scrollbar to reach it. */
   @container responsive (max-width: 1100px) {
     grid-template:
       'inventory network' minmax(0, 1fr)
@@ -93,8 +73,6 @@ const DashboardGrid = styled.div`
       / minmax(0, 1fr) minmax(0, 2fr);
   }
 
-  /* Fully restacked, the inventory keeps its content height and the two chart
-     panels split what is left of it. */
   @container responsive (max-width: 700px) {
     grid-template:
       'inventory' auto
@@ -115,10 +93,6 @@ export const DashboardScrollableArea = styled.div`
   overflow-x: hidden;
 `;
 
-/* Both controls act on the Network and the Metrics panels rather than on either
-   one of them, so they live in the page's context bar. The dropdown used to be
-   positioned absolutely against the viewport, which put it under the Guardian
-   drawer as soon as the drawer opened. */
 const ContextActions = styled.div`
   display: flex;
   align-items: center;

@@ -22,8 +22,6 @@ import {
   OverviewResourceName,
 } from './style/CommonLayoutStyle';
 import { useBasenameRelativeNavigate } from '@scality/module-federation';
-/* The tab is rendered withoutPadding so this owns the inset, and drops it on the
-   right: the panel has no width to spare and the scroll area ends the content. */
 const OverviewTab = styled.div`
   height: 100%;
   /* The app sets no global box-sizing, so without this the vertical inset is added
@@ -35,8 +33,6 @@ const OverviewTab = styled.div`
   flex-direction: column;
   overflow: hidden;
 `;
-/* Only the card scrolls, so the title keeps the top and the scrollbar runs beside
-   the content rather than the full height of the tab. */
 const OverviewContent = styled.div`
   flex: 1;
   min-height: 0;
@@ -55,14 +51,10 @@ const VolumeDetailCardContainer = styled.div`
 `;
 const VolumeTitleSection = styled.div`
   color: ${(props) => props.theme.textPrimary};
-  /* The tab drops its right inset for the scroll area below, but the title sits
-     outside it and would otherwise run to the panel's edge. */
   padding: 0 ${spacing.r16} ${spacing.r24} 0;
   display: flex;
   align-items: center;
   flex: none;
-  /* The delete button is sized to its own content and never shrinks, so in a
-     narrow panel it has to take a line of its own rather than push the name out. */
   flex-wrap: wrap;
   gap: ${spacing.r8};
 `;
@@ -112,8 +104,6 @@ const LabelValue = styled.span`
   font-size: ${fontSize.small};
   color: ${(props) => props.theme.textPrimary};
 `;
-/* One label per line: the pairs are unrelated to each other, so letting them
-   share a line makes the name of one read as the value of another. */
 const LabelList = styled.div`
   display: flex;
   flex-direction: column;

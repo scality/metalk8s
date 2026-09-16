@@ -14,12 +14,6 @@ import { SleepingNotificationBell } from './SleepingNotificationBell';
 import { useNotificationCenter } from '../useNotificationCenter';
 import { ConstrainedText } from '@scality/core-ui/dist/components/constrainedtext/Constrainedtext.component';
 
-/* Anchored to the bell's right edge rather than positioned against the viewport.
-   The navbar lives inside the flex-1 content column, which the Guardian drawer
-   narrows without changing window.innerWidth — so any viewport-derived offset
-   lets this menu extend underneath the drawer. Anchoring right keeps it inside
-   the column at any width, and needs no measurement to stay correct when the
-   drawer opens (which resizes the column live, without a reload). */
 const NotificationMenu = styled.ul`
   position: absolute;
   right: 0;

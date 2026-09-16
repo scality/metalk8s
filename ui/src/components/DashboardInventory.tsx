@@ -22,15 +22,11 @@ const CardsWrapper = styled.div`
   justify-content: space-around;
   font-size: ${fontSize.base};
   margin: ${spacing.r4} 0px;
-  /* The cards are sized in % of the inventory column, which becomes a
-     full-height sidebar and then a full-width band as the dashboard restacks.
-     Cap them at the width they already have in the five-column desktop layout
-     so they stay card-shaped instead of stretching with the column. */
+  /* 11rem is the width the cards have in the five-column desktop layout; they are
+     sized in % of a column that later becomes a full-width band. */
   > * {
     max-width: 11rem;
   }
-  /* Fully restacked, the inventory spans the whole content box and space-around
-     would strand the two capped cards at opposite ends of it. Keep them a pair. */
   @container responsive (max-width: 700px) {
     justify-content: flex-start;
     gap: ${spacing.r16};

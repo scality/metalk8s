@@ -16,9 +16,6 @@ const BadgesContainer = styled.div`
   display: flex;
   gap: ${spacing.r16};
 `;
-/* The counts and the link are one group, laid out next to each other. Anchoring
-   the link to the right edge instead pushed it as far from the section it
-   belongs to as the summary bar happened to be wide. */
 const CountsRow = styled.div`
   display: flex;
   align-items: center;

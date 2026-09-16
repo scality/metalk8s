@@ -19,9 +19,6 @@ export const DashboardSectionContainer = styled.div`
   gap: ${spacing.r16};
   padding-bottom: ${spacing.r16};
 
-  /* Stacked, the two panels share whatever height the inventory leaves, so the
-     desktop breathing room between the title and the charts is height taken
-     straight out of the charts. */
   @container responsive (max-width: 700px) {
     gap: ${spacing.r8};
     padding-bottom: ${spacing.r4};

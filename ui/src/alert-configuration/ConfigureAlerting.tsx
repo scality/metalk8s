@@ -1,10 +1,7 @@
 import Joi from '@hapi/joi';
 import { joiResolver } from '@hookform/resolvers/joi';
-/* Not the bare '@scality/core-ui': that specifier is federation-shared and resolves to
-   the host's copy, while Input and Select come from dist/next and so from this app's.
-   Form passes responsive, error and disabled to its fields through React context, which
-   is created per copy - across two copies the fields receive none of it and keep their
-   fixed width. */
+/* Keep the dist/index path: the bare specifier resolves to the host's federated
+   copy, and Form's context would not reach fields imported from a different one. */
 import {
   AppContainer,
   Banner,
@@ -178,8 +175,7 @@ export default function ConfigureAlerting() {
     }
   }, [sendTestAlertMutation.status]);
 
-  /* A string so the column follows the root font size; a number is pixels, and the
-     270 it replaces was chosen against a 16px root the shell does not use. */
+  /* A string so the column follows the root font size; a number would be read as pixels. */
   const labelWidth = '18.5rem';
 
   const disableFormButton =
