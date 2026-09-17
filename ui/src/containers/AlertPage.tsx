@@ -28,39 +28,31 @@ const AlertPageHeaderContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: ${spacing.r8};
   background: ${(props) => props.theme.backgroundLevel2};
 `;
 
-const Title = styled.div`
+const HeaderSegment = styled.div`
   display: flex;
   align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+  color: ${(props) => props.theme.textPrimary};
+`;
+
+const Title = styled(HeaderSegment)`
   justify-content: space-around;
-  width: 250px;
   font-size: ${fontSize.larger};
   font-weight: bold;
-  color: ${(props) => props.theme.textPrimary};
 `;
-const SecondaryTitle = styled.div`
-  display: flex;
-  align-items: center;
+const SecondaryTitle = styled(HeaderSegment)`
   justify-content: center;
   font-size: ${fontSize.base};
-  width: 250px;
-  color: ${(props) => props.theme.textPrimary};
 `;
-const TertiaryTitle = styled.div`
-  display: flex;
-  align-items: center;
+const TertiaryTitle = styled(HeaderSegment)`
   justify-content: space-around;
   font-size: ${fontSize.base};
-  width: 250px;
-  color: ${(props) => props.theme.textPrimary};
-`;
-const SeperationLine = styled.div`
-  width: 250px; /* the same width as the container */
-  height: 37px;
-  border-right: 2px solid ${(props) => props.theme.backgroundLevel1};
-  position: absolute;
 `;
 const AlertStatusIcon = styled.div`
   font-size: 2rem;
@@ -107,7 +99,7 @@ function AlertPageHeader({
 
   return (
     <AlertPageHeaderContainer>
-      <Stack>
+      <Stack withSeparators style={{ flex: '1 1 auto', minWidth: 0 }}>
         <Title>
           <AlertStatusIcon>
             <StatusWrapper status={alertStatus}>
@@ -119,7 +111,6 @@ function AlertPageHeader({
               id: 'alerts',
             })}
           </>
-          <SeperationLine />
         </Title>
 
         <SecondaryTitle>
@@ -129,7 +120,6 @@ function AlertPageHeader({
             })}
           </>
           <TextBadge variant="infoPrimary" text={activeAlerts + ''} />
-          <SeperationLine />
         </SecondaryTitle>
 
         <TertiaryTitle>
@@ -191,6 +181,7 @@ const ActiveAlertTab = React.memo(
     const DEFAULT_SORTING_KEY = 'severity';
     return (
       <Table
+        revealDroppedColumns
         columns={columns}
         data={data}
         defaultSortingKey={DEFAULT_SORTING_KEY}
@@ -242,7 +233,7 @@ export default function AlertPage() {
         cellStyle: {
           textAlign: 'center',
           flex: 1,
-          minWidth: '3rem',
+          minWidth: '6rem',
         },
         sortType: 'severity',
         Cell: (cell) => <CircleStatus status={cell.value} />,
@@ -259,6 +250,7 @@ export default function AlertPage() {
       {
         Header: 'Description',
         cellStyle: {
+          minWidth: '10rem',
           flex: 12,
         },
         accessor: (row) => row.description || row.summary,
@@ -266,8 +258,10 @@ export default function AlertPage() {
       },
       {
         Header: 'Active since',
+        dropAt: 620,
         accessor: 'startsAt',
         cellStyle: {
+          minWidth: '9rem',
           flex: 2,
           textAlign: 'right',
           marginRight: spacing.r12,

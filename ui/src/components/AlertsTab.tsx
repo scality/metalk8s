@@ -34,6 +34,7 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
       Header: 'Severity',
       accessor: 'severity',
       cellStyle: {
+        minWidth: '6rem',
         flex: 0.5,
         textAlign: 'center',
         width: 'unset',
@@ -49,7 +50,7 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
       cellStyle: {
         flex: 1,
         width: 'unset',
-        minWidth: 0,
+        minWidth: '4rem',
       },
       Cell: ({ value }) => <ConstrainedText lineClamp={2} text={value} />,
     },
@@ -57,6 +58,7 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
       Header: 'Description',
       accessor: 'alertDescription',
       cellStyle: {
+        minWidth: '6.5rem',
         flex: 3,
         width: 'unset',
         paddingLeft: '1rem',
@@ -67,8 +69,10 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
     },
     {
       Header: 'Active since',
+      dropAt: 440,
       accessor: 'activeSince',
       cellStyle: {
+        minWidth: '9rem',
         textAlign: 'right',
         flex: 1,
         marginRight: spacing.r16,
@@ -85,6 +89,7 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
         <ActiveAlertsFilter />
       </Box>
       <Table
+        revealDroppedColumns
         columns={columns}
         data={activeAlertListData}
         status={status}

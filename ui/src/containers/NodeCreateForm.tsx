@@ -1,4 +1,6 @@
-import { Banner, Checkbox, Form, FormGroup, FormSection, Icon, Stack, Text, Toggle } from '@scality/core-ui';
+/* Keep the dist/index path: the bare specifier resolves to the host's federated
+   copy, and Form's context would not reach fields imported from a different one. */
+import { Banner, Checkbox, Form, FormGroup, FormSection, Icon, Stack, Text, Toggle } from '@scality/core-ui/dist/index';
 import { Button, Input } from '@scality/core-ui/dist/next';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import { Formik } from 'formik';
@@ -88,6 +90,7 @@ const NodeCreateForm = () => {
 
         return (
           <Form
+            responsive
             requireMode="partial"
             layout={{
               kind: 'page',

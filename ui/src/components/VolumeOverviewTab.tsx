@@ -20,30 +20,61 @@ import {
   OverviewInformationSpan,
   OverviewInformationValue,
   OverviewResourceName,
-  VolumeTab,
 } from './style/CommonLayoutStyle';
 import { useBasenameRelativeNavigate } from '@scality/module-federation';
+const OverviewTab = styled.div`
+  height: 100%;
+  /* The app sets no global box-sizing, so without this the vertical inset is added
+     to the tab's own height and the bottom one falls outside it. */
+  box-sizing: border-box;
+  color: ${(props) => props.theme.textPrimary};
+  padding: ${spacing.r16} 0 ${spacing.r16} ${spacing.r16};
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+const OverviewContent = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+`;
 const VolumeDetailCardContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+
+  /* Both columns hold rows whose value is an unbroken identifier, so without this
+     they keep the card wider than the panel instead of wrapping. */
+  > div {
+    min-width: 0;
+  }
 `;
 const VolumeTitleSection = styled.div`
   color: ${(props) => props.theme.textPrimary};
-  padding: 0 0 ${spacing.r24} 0;
+  padding: 0 ${spacing.r16} ${spacing.r24} 0;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  flex: none;
+  flex-wrap: wrap;
+  gap: ${spacing.r8};
+`;
+const VolumeTitleName = styled.div`
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow-wrap: anywhere;
+`;
+const VolumeTitleActions = styled.div`
+  margin-left: auto;
 `;
 const VolumeGraph = styled.div`
   display: flex;
   flex-direction: column;
   margin-left: 2%;
-  padding-right: ${spacing.r24};
 `;
 const VolumeUsage = styled.div`
   min-height: 94px;
-  margin: ${spacing.r20} ${spacing.r8} ${spacing.r20} 0;
-  padding: 0 ${spacing.r16} 0 0;
+  margin: ${spacing.r20} 0;
 `;
 const VolumeSectionTitle = styled.div`
   color: ${(props) => props.theme.textPrimary};
@@ -72,6 +103,16 @@ const LabelName = styled.span`
 const LabelValue = styled.span`
   font-size: ${fontSize.small};
   color: ${(props) => props.theme.textPrimary};
+`;
+const LabelList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.r4};
+  min-width: 0;
+  /* A label key such as kubernetes.io/hostname carries no break opportunity, and
+     break-word does not lower an element's intrinsic minimum width the way anywhere
+     does - so the pair would hold the row open past the panel's width. */
+  overflow-wrap: anywhere;
 `;
 
 const VolumeDetailCard = (props) => {
@@ -151,229 +192,235 @@ const VolumeDetailCard = (props) => {
       })
     : [];
   return (
-    <VolumeTab>
+    <OverviewTab>
       <VolumeTitleSection data-cy="volume_detail_card_name">
-        <div>
+        <VolumeTitleName>
           <CircleStatus status={health} />
           <OverviewResourceName>{name}</OverviewResourceName>
-        </div>
-        <Button
-          variant="danger"
-          style={{ width: 'max-content' }}
-          icon={<Icon size="sm" name="Delete" />}
-          label={intl.formatMessage({
-            id: 'delete_volume',
-          })}
-          onClick={(e) => {
-            e.stopPropagation();
-            setisDeleteConfirmationModalOpen(true);
-          }}
-          disabled={!isEnableClick}
-          data-cy="delete_volume_button"
-        />
+        </VolumeTitleName>
+        <VolumeTitleActions>
+          <Button
+            variant="danger"
+            style={{ width: 'max-content' }}
+            icon={<Icon size="sm" name="Delete" />}
+            label={intl.formatMessage({
+              id: 'delete_volume',
+            })}
+            onClick={(e) => {
+              e.stopPropagation();
+              setisDeleteConfirmationModalOpen(true);
+            }}
+            disabled={!isEnableClick}
+            data-cy="delete_volume_button"
+          />
+        </VolumeTitleActions>
       </VolumeTitleSection>
 
-      {!isVolumeUsageRetrievable && (
-        <Box padding="0 20px 2rem 20px">
-          <Banner
-            variant="warning"
-            icon={<Icon name="Exclamation-circle" />}
-            title={intl.formatMessage({
-              id: 'monitoring_information_unavailable',
-            })}
-          >
-            {intl.formatMessage({
-              id: 'some_data_not_retrieved',
-            })}
-          </Banner>
-        </Box>
-      )}
+      <OverviewContent>
+        {!isVolumeUsageRetrievable && (
+          <Box padding="0 20px 2rem 20px">
+            <Banner
+              variant="warning"
+              icon={<Icon name="Exclamation-circle" />}
+              title={intl.formatMessage({
+                id: 'monitoring_information_unavailable',
+              })}
+            >
+              {intl.formatMessage({
+                id: 'some_data_not_retrieved',
+              })}
+            </Banner>
+          </Box>
+        )}
 
-      <VolumeDetailCardContainer>
-        <div>
-          <OverviewInformationSpan>
-            <OverviewInformationLabel>
-              {intl.formatMessage({
-                id: 'node',
-              })}
-            </OverviewInformationLabel>
-            <Link onClick={onClickNodeName}>{nodeName}</Link>
-          </OverviewInformationSpan>
-          <OverviewInformationSpan>
-            <OverviewInformationLabel>
-              {intl.formatMessage({
-                id: 'size',
-              })}
-            </OverviewInformationLabel>
-            <OverviewInformationValue data-cy="volume_size_value">
-              {storageCapacity ||
-                intl.formatMessage({
-                  id: 'unknown',
-                })}
-            </OverviewInformationValue>
-          </OverviewInformationSpan>
-          <OverviewInformationSpan>
-            <OverviewInformationLabel>
-              {intl.formatMessage({
-                id: 'status',
-              })}
-            </OverviewInformationLabel>
-            <OverviewInformationValue data-cy="volume_status_value">{status}</OverviewInformationValue>
-          </OverviewInformationSpan>
-          <OverviewInformationSpan>
-            <OverviewInformationLabel>
-              {intl.formatMessage({
-                id: 'storageClass',
-              })}
-            </OverviewInformationLabel>
-            <OverviewInformationValue>{storageClassName}</OverviewInformationValue>
-          </OverviewInformationSpan>
-          <OverviewInformationSpan>
-            <OverviewInformationLabel>
-              {intl.formatMessage({
-                id: 'creationTime',
-              })}
-            </OverviewInformationLabel>
-            {creationTimestamp ? (
-              <OverviewInformationValue>
-                <FormattedDateTime format="date-time-second" value={new Date(creationTimestamp)} />
-              </OverviewInformationValue>
-            ) : (
-              ''
-            )}
-          </OverviewInformationSpan>
-          <OverviewInformationSpan>
-            <OverviewInformationLabel>
-              {intl.formatMessage({
-                id: 'volume_type',
-              })}
-            </OverviewInformationLabel>
-            <OverviewInformationValue>{volumeType}</OverviewInformationValue>
-          </OverviewInformationSpan>
-          <OverviewInformationSpan>
-            <OverviewInformationLabel>
-              {intl.formatMessage({
-                id: 'used_by',
-              })}
-            </OverviewInformationLabel>
-            <OverviewInformationValue>{usedPodName}</OverviewInformationValue>
-          </OverviewInformationSpan>
-          <OverviewInformationSpan>
-            {volumeType !== LVM_LOGICAL_VOLUME ? (
-              <>
-                <OverviewInformationLabel data-cy="backend_disk_label">
-                  {intl.formatMessage({
-                    id: 'backend_disk',
-                  })}
-                </OverviewInformationLabel>
-                <OverviewInformationValue data-cy="backend_disk_value">{devicePath}</OverviewInformationValue>
-              </>
-            ) : (
-              <>
-                <OverviewInformationLabel data-cy="vg_name_label">VG Name</OverviewInformationLabel>
-                <OverviewInformationValue data-cy="vg_name_value">{vgName}</OverviewInformationValue>
-              </>
-            )}
-          </OverviewInformationSpan>
-          <OverviewInformationSpan>
-            <OverviewInformationLabel>
-              {intl.formatMessage({
-                id: 'labels',
-              })}
-            </OverviewInformationLabel>
-            <OverviewInformationValue>
-              {labels?.map((label) => {
-                return (
-                  <div key={label.name}>
-                    <LabelName data-cy="volume_label_name">{label.name}</LabelName>
-                    <LabelValue data-cy="volume_label_value">{label.value}</LabelValue>
-                  </div>
-                );
-              })}
-            </OverviewInformationValue>
-          </OverviewInformationSpan>
-        </div>
-
-        <VolumeGraph>
-          {alertlist && (
-            <ActiveAlertWrapper>
-              <ActiveAlertTitle>
+        <VolumeDetailCardContainer>
+          <div>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>
                 {intl.formatMessage({
-                  id: 'active_alerts',
+                  id: 'node',
                 })}
-              </ActiveAlertTitle>
-              <ActiveAlertsCounter
-                criticalCounter={alertlist?.filter((item) => item?.labels?.severity === STATUS_CRITICAL).length}
-                warningCounter={alertlist?.filter((item) => item?.labels?.severity === STATUS_WARNING).length}
-              />
-            </ActiveAlertWrapper>
-          )}
-          <VolumeUsage>
-            <VolumeSectionTitle>
-              {intl.formatMessage({
-                id: 'usage',
-              })}
-            </VolumeSectionTitle>
-            {!isVolumeUsageRetrievable && <RenderNoDataAvailable />}
-            {isVolumeUsageRetrievable && condition === VOLUME_CONDITION_LINK && (
-              <ProgressBarContainer>
-                <ProgressBar
-                  size="large"
-                  percentage={volumeUsagePercentage}
-                  topRightLabel={`${volumeUsagePercentage}%`}
-                  bottomLeftLabel={`${volumeUsageBytes} USED`}
-                  bottomRightLabel={`${formatSizeForDisplay(storageCapacity)} TOTAL`}
-                  color={theme.infoSecondary}
-                  backgroundColor={theme.buttonSecondary}
+              </OverviewInformationLabel>
+              <Link onClick={onClickNodeName}>{nodeName}</Link>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>
+                {intl.formatMessage({
+                  id: 'size',
+                })}
+              </OverviewInformationLabel>
+              <OverviewInformationValue data-cy="volume_size_value">
+                {storageCapacity ||
+                  intl.formatMessage({
+                    id: 'unknown',
+                  })}
+              </OverviewInformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>
+                {intl.formatMessage({
+                  id: 'status',
+                })}
+              </OverviewInformationLabel>
+              <OverviewInformationValue data-cy="volume_status_value">{status}</OverviewInformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>
+                {intl.formatMessage({
+                  id: 'storageClass',
+                })}
+              </OverviewInformationLabel>
+              <OverviewInformationValue>{storageClassName}</OverviewInformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>
+                {intl.formatMessage({
+                  id: 'creationTime',
+                })}
+              </OverviewInformationLabel>
+              {creationTimestamp ? (
+                <OverviewInformationValue>
+                  <FormattedDateTime format="date-time-second" value={new Date(creationTimestamp)} />
+                </OverviewInformationValue>
+              ) : (
+                ''
+              )}
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>
+                {intl.formatMessage({
+                  id: 'volume_type',
+                })}
+              </OverviewInformationLabel>
+              <OverviewInformationValue>{volumeType}</OverviewInformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>
+                {intl.formatMessage({
+                  id: 'used_by',
+                })}
+              </OverviewInformationLabel>
+              <OverviewInformationValue>{usedPodName}</OverviewInformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              {volumeType !== LVM_LOGICAL_VOLUME ? (
+                <>
+                  <OverviewInformationLabel data-cy="backend_disk_label">
+                    {intl.formatMessage({
+                      id: 'backend_disk',
+                    })}
+                  </OverviewInformationLabel>
+                  <OverviewInformationValue data-cy="backend_disk_value">{devicePath}</OverviewInformationValue>
+                </>
+              ) : (
+                <>
+                  <OverviewInformationLabel data-cy="vg_name_label">VG Name</OverviewInformationLabel>
+                  <OverviewInformationValue data-cy="vg_name_value">{vgName}</OverviewInformationValue>
+                </>
+              )}
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>
+                {intl.formatMessage({
+                  id: 'labels',
+                })}
+              </OverviewInformationLabel>
+              <OverviewInformationValue>
+                <LabelList>
+                  {labels?.map((label) => {
+                    return (
+                      <div key={label.name}>
+                        <LabelName data-cy="volume_label_name">{label.name}</LabelName>
+                        <LabelValue data-cy="volume_label_value">{label.value}</LabelValue>
+                      </div>
+                    );
+                  })}
+                </LabelList>
+              </OverviewInformationValue>
+            </OverviewInformationSpan>
+          </div>
+
+          <VolumeGraph>
+            {alertlist && (
+              <ActiveAlertWrapper>
+                <ActiveAlertTitle>
+                  {intl.formatMessage({
+                    id: 'active_alerts',
+                  })}
+                </ActiveAlertTitle>
+                <ActiveAlertsCounter
+                  criticalCounter={alertlist?.filter((item) => item?.labels?.severity === STATUS_CRITICAL).length}
+                  warningCounter={alertlist?.filter((item) => item?.labels?.severity === STATUS_WARNING).length}
                 />
-              </ProgressBarContainer>
+              </ActiveAlertWrapper>
             )}
-          </VolumeUsage>
-        </VolumeGraph>
-        <Modal
-          close={() => setisDeleteConfirmationModalOpen(false)}
-          isOpen={isDeleteConfirmationModalOpen}
-          title={intl.formatMessage({
-            id: 'delete_volume',
-          })}
-          footer={
-            <NotificationButtonGroup>
-              <CancelButton
-                variant="outline"
-                label={intl.formatMessage({
-                  id: 'cancel',
+            <VolumeUsage>
+              <VolumeSectionTitle>
+                {intl.formatMessage({
+                  id: 'usage',
                 })}
-                onClick={onClickCancelButton}
-              />
-              <Button
-                variant="danger"
-                label={intl.formatMessage({
-                  id: 'delete',
+              </VolumeSectionTitle>
+              {!isVolumeUsageRetrievable && <RenderNoDataAvailable />}
+              {isVolumeUsageRetrievable && condition === VOLUME_CONDITION_LINK && (
+                <ProgressBarContainer>
+                  <ProgressBar
+                    size="large"
+                    percentage={volumeUsagePercentage}
+                    topRightLabel={`${volumeUsagePercentage}%`}
+                    bottomLeftLabel={`${volumeUsageBytes} USED`}
+                    bottomRightLabel={`${formatSizeForDisplay(storageCapacity)} TOTAL`}
+                    color={theme.infoSecondary}
+                    backgroundColor={theme.buttonSecondary}
+                  />
+                </ProgressBarContainer>
+              )}
+            </VolumeUsage>
+          </VolumeGraph>
+          <Modal
+            close={() => setisDeleteConfirmationModalOpen(false)}
+            isOpen={isDeleteConfirmationModalOpen}
+            title={intl.formatMessage({
+              id: 'delete_volume',
+            })}
+            footer={
+              <NotificationButtonGroup>
+                <CancelButton
+                  variant="outline"
+                  label={intl.formatMessage({
+                    id: 'cancel',
+                  })}
+                  onClick={onClickCancelButton}
+                />
+                <Button
+                  variant="danger"
+                  label={intl.formatMessage({
+                    id: 'delete',
+                  })}
+                  onClick={() => {
+                    onClickDeleteButton(name, nodeName);
+                  }}
+                  data-cy="confirm_deletion_button"
+                />
+              </NotificationButtonGroup>
+            }
+          >
+            <ModalBody>
+              <div>
+                {intl.formatMessage({
+                  id: 'delete_a_volume_warning',
                 })}
-                onClick={() => {
-                  onClickDeleteButton(name, nodeName);
-                }}
-                data-cy="confirm_deletion_button"
-              />
-            </NotificationButtonGroup>
-          }
-        >
-          <ModalBody>
-            <div>
-              {intl.formatMessage({
-                id: 'delete_a_volume_warning',
-              })}
-            </div>
-            <div>
-              {intl.formatMessage({
-                id: 'delete_a_volume_confirm',
-              })}
-              <strong>{name}</strong>?
-            </div>
-          </ModalBody>
-        </Modal>
-      </VolumeDetailCardContainer>
-    </VolumeTab>
+              </div>
+              <div>
+                {intl.formatMessage({
+                  id: 'delete_a_volume_confirm',
+                })}
+                <strong>{name}</strong>?
+              </div>
+            </ModalBody>
+          </Modal>
+        </VolumeDetailCardContainer>
+      </OverviewContent>
+    </OverviewTab>
   );
 };
 

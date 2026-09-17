@@ -1,4 +1,7 @@
 import { ErrorPage500, Loader, ToastProvider } from '@scality/core-ui';
+/* Keep the dist/index path: this global style must mount from the same federated copy
+   as the Select and Form that also mount it, or unmounting one wipes the rules. */
+import { ScrollbarWrapper } from '@scality/core-ui/dist/index';
 import { useCurrentApp } from '@scality/module-federation';
 import { PropsWithChildren, ReactNode, useEffect, useMemo } from 'react';
 import { Provider, useDispatch } from 'react-redux';
@@ -117,17 +120,19 @@ export const AppConfigProvider = ({
 export default function FederableApp(props: FederatedAppProps) {
   return (
     <ShellHooksProvider shellHooks={props.shellHooks} shellAlerts={props.shellAlerts}>
-      <Provider store={store}>
-        <AppConfigProvider>
-          <PrometheusAuthProvider>
-            <ToastProvider>
-              <RouterWithBaseName>
-                <App />
-              </RouterWithBaseName>
-            </ToastProvider>
-          </PrometheusAuthProvider>
-        </AppConfigProvider>
-      </Provider>
+      <ScrollbarWrapper>
+        <Provider store={store}>
+          <AppConfigProvider>
+            <PrometheusAuthProvider>
+              <ToastProvider>
+                <RouterWithBaseName>
+                  <App />
+                </RouterWithBaseName>
+              </ToastProvider>
+            </PrometheusAuthProvider>
+          </AppConfigProvider>
+        </Provider>
+      </ScrollbarWrapper>
     </ShellHooksProvider>
   );
 }

@@ -54,6 +54,7 @@ export const VolumePageRSP = (props) => {
             id: 'overview',
           })}
           data-cy="overview_tab_volume_page"
+          withoutPadding
         >
           <VolumeOverviewTab
             name={currentVolumeName}

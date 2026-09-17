@@ -9,6 +9,9 @@ export const CenteredPageContainer = styled.div`
 `;
 export const LeftSideInstanceList = styled.div`
   flex: 1;
+  /* Without this the panel refuses to shrink below the table's content width,
+     so the list pushes the layout wider instead of letting the table adapt. */
+  min-width: 0;
   background-color: ${(props) => props.theme.backgroundLevel2};
 `;
 export const RightSidePanel = styled.div`
@@ -67,6 +70,9 @@ export const TableHeader = styled.div`
 export const MetricsActionContainer = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: ${spacing.r8};
   justify-content: flex-end;
   padding-bottom: ${spacing.r16};
   position: sticky;
@@ -125,11 +131,18 @@ export const OverviewInformationLabel = styled.span`
   display: inline-block;
   min-width: 10.714rem;
   color: ${(props) => props.theme.textSecondary};
+  @container responsive (max-width: 420px) {
+    min-width: 0;
+  }
 `;
 export const OverviewInformationSpan = styled.div`
   padding-bottom: ${spacing.r20};
   padding-left: ${spacing.r20};
   display: flex;
+  min-width: 0;
+  @container responsive (max-width: 420px) {
+    flex-direction: column;
+  }
 `;
 export const OverviewInformationWrapper = styled.div`
   padding-left: 0.313rem;
@@ -138,6 +151,7 @@ export const OverviewInformationValue = styled.span`
   color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
   word-wrap: break-word;
+  min-width: 0;
   max-width: 20rem;
 `;
 export const OverviewClickableInformationValue = styled.span`
@@ -160,7 +174,11 @@ export const ActiveAlertWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 0 ${spacing.r16} 0 ${spacing.r20};
+  /* 200px is the room separating the two counters, a preferred width and not a
+     floor. border-box so the cap covers the 36px inset rather than adding to it. */
+  box-sizing: border-box;
   width: 200px;
+  max-width: 100%;
 `;
 export const NotBoundContainer = styled(Box)`
   display: flex;

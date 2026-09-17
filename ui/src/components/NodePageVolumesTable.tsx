@@ -1,12 +1,12 @@
-import { ConstrainedText, Icon, Link, ProgressBar, Tooltip, Wrap, spacing } from '@scality/core-ui';
+import { ConstrainedText, Icon, Link, Tooltip, Wrap, spacing } from '@scality/core-ui';
 import { Button, Table } from '@scality/core-ui/dist/next';
 import isEqual from 'lodash.isequal';
 import React from 'react';
 import { useIntl } from 'react-intl';
-import { useTheme } from 'styled-components';
 import { VOLUME_CONDITION_EXCLAMATION, VOLUME_CONDITION_LINK, VOLUME_CONDITION_UNLINK } from '../constants';
 import { formatSizeForDisplay } from '../services/utils';
 import CircleStatus from './CircleStatus';
+import { UsageProgressBar } from './UsageProgressBar';
 import { Latency } from './Latency';
 import { TooltipContent, UnknownIcon } from './TableRow';
 import { useBasenameRelativeNavigate } from '@scality/module-federation';
@@ -14,7 +14,6 @@ const VolumeListTable = React.memo((props) => {
   // @ts-expect-error - FIXME when you are working on it
   const { nodeName, volumeListData } = props;
   const navigate = useBasenameRelativeNavigate();
-  const theme = useTheme();
   const intl = useIntl();
   const columns = React.useMemo(() => {
     const onClickCell = (name) => {
@@ -29,7 +28,7 @@ const VolumeListTable = React.memo((props) => {
           textAlign: 'center',
           width: 'unset',
           flex: 0.5,
-          minWidth: '4rem',
+          minWidth: '5rem',
           maxWidth: '5.5rem',
         },
         Cell: (cellProps) => {
@@ -69,32 +68,26 @@ const VolumeListTable = React.memo((props) => {
       },
       {
         Header: 'Usage',
+        dropAt: 520,
         accessor: 'usage',
         cellStyle: {
           textAlign: 'left',
           width: 'unset',
-          minWidth: '4rem',
+          minWidth: '4.5rem',
           flex: 1,
         },
         Cell: ({ value }) => {
-          return (
-            <ProgressBar
-              size="large"
-              percentage={value}
-              buildinLabel={`${value}%`}
-              color={theme.infoSecondary}
-              backgroundColor={theme.buttonSecondary}
-            />
-          );
+          return <UsageProgressBar percentage={value} />;
         },
       },
       {
         Header: 'Size',
+        dropAt: 560,
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'left',
           width: 'unset',
-          minWidth: '3rem',
+          minWidth: '3.5rem',
           flex: 0.75,
         },
         sortType: (row1, row2) => {
@@ -109,10 +102,11 @@ const VolumeListTable = React.memo((props) => {
       },
       {
         Header: 'Status',
+        dropAt: 480,
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          minWidth: '3rem',
+          minWidth: '5rem',
           width: 'unset',
           flex: 0.5,
         },
@@ -177,21 +171,23 @@ const VolumeListTable = React.memo((props) => {
       },
       {
         Header: 'Latency',
+        dropAt: 640,
         accessor: 'latency',
         cellStyle: {
           textAlign: 'right',
           flex: 0.75,
           width: 'unset',
-          minWidth: '3rem',
+          minWidth: '5rem',
         },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? <Latency latencyInMicroSeconds={cellProps.value} /> : null;
         },
       },
     ]; // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [volumeListData, theme, navigate, nodeName]);
+  }, [volumeListData, navigate, nodeName]);
   return (
     <Table
+      revealDroppedColumns
       columns={columns}
       data={volumeListData}
       defaultSortingKey="health"

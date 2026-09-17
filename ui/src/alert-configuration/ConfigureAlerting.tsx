@@ -1,5 +1,7 @@
 import Joi from '@hapi/joi';
 import { joiResolver } from '@hookform/resolvers/joi';
+/* Keep the dist/index path: the bare specifier resolves to the host's federated
+   copy, and Form's context would not reach fields imported from a different one. */
 import {
   AppContainer,
   Banner,
@@ -13,7 +15,7 @@ import {
   Stack,
   Text,
   TextArea,
-} from '@scality/core-ui';
+} from '@scality/core-ui/dist/index';
 import { Box, Button, Input, Select } from '@scality/core-ui/dist/next';
 import { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -173,7 +175,8 @@ export default function ConfigureAlerting() {
     }
   }, [sendTestAlertMutation.status]);
 
-  const labelWidth = 270;
+  /* A string so the column follows the root font size; a number would be read as pixels. */
+  const labelWidth = '18.5rem';
 
   const disableFormButton =
     editAlertMutation.isLoading || sendTestAlertMutation.isLoading || !formState.isDirty || !formState.isValid;
@@ -187,6 +190,7 @@ export default function ConfigureAlerting() {
       <AppContainer.MainContent background="backgroundLevel1">
         <Box margin="0 auto" background={theme.backgroundLevel4} flex="1">
           <Form
+            responsive
             onSubmit={handleSubmit((data) => {
               editAlertMutation.mutate(data);
             })}

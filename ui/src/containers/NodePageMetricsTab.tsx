@@ -44,16 +44,37 @@ export const ChartContainer = styled.div`
   height: calc(100% - 3rem);
   padding-left: ${spacing.r12};
   overflow: hidden auto;
+
+  /* The header takes a second line at this width (see MetricsToggleWrapper), so
+     the subtraction above no longer matches its height. */
+  @container responsive (max-width: 560px) {
+    height: calc(100% - 6rem);
+  }
 `;
 export const GraphGrid = styled.div`
   display: grid;
   gap: 8px;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, ...) rather than a bare 1fr: a bare fr track floors at the
+     content's min-content width, which self-sizing charts push past. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+  /* 560 sits between the panel's two widths - ~370px with the drawer open and
+     ~620px without - so the charts stack only in the narrow case. Resolves against
+     the container declared on TwoPanelLayout. */
+  @container responsive (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 `;
 const MetricsToggleWrapper = styled.div`
   display: flex;
   align-items: center;
   flex: 1;
+  min-width: 0;
+
+  @container responsive (max-width: 560px) {
+    flex: 1 0 100%;
+    order: 1;
+  }
 
   .sc-toggle {
     margin-right: ${spacing.r8};
@@ -149,6 +170,7 @@ const NodePageMetricsTab = ({
                 id: 'advanced_metrics',
               })}
               variant={'secondary'}
+              iconOnly={480}
               icon={<Icon name="External-link" />}
               disabled={instanceIP === ''}
             />

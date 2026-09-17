@@ -1,10 +1,10 @@
-import { Icon, ProgressBar, Tooltip, Wrap, spacing } from '@scality/core-ui';
+import { Icon, Tooltip, Wrap, spacing } from '@scality/core-ui';
 import { Button, Table } from '@scality/core-ui/dist/next';
 import React from 'react';
 import { useIntl } from 'react-intl';
 import { useNavigate, useLocation } from 'react-router';
-import { useTheme } from 'styled-components';
 import CircleStatus from './CircleStatus';
+import { UsageProgressBar } from './UsageProgressBar';
 import { Latency } from './Latency';
 import { TooltipContent, UnknownIcon } from './TableRow';
 import { useCurrentApp } from '@scality/module-federation';
@@ -14,7 +14,6 @@ const VolumeListTable = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const intl = useIntl();
-  const theme = useTheme();
   const { appHistoryBasePath } = useCurrentApp();
 
   const columns = React.useMemo(() => {
@@ -24,7 +23,7 @@ const VolumeListTable = (props) => {
         accessor: 'health',
         cellStyle: {
           textAlign: 'center',
-          width: '3rem',
+          width: '5rem',
         },
         Cell: (cellProps) => {
           return <CircleStatus name="Circle-health" status={cellProps.value} />;
@@ -42,6 +41,7 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Node',
+        dropAt: 460,
         accessor: 'node',
         cellStyle: {
           textAlign: 'left',
@@ -52,25 +52,19 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Usage',
+        dropAt: 520,
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
           width: '4.5rem',
         },
         Cell: ({ value }) => {
-          return (
-            <ProgressBar
-              size="large"
-              percentage={value}
-              buildinLabel={`${value}%`}
-              color={theme.infoSecondary}
-              backgroundColor={theme.buttonSecondary}
-            />
-          );
+          return <UsageProgressBar percentage={value} />;
         },
       },
       {
         Header: 'Size',
+        dropAt: 560,
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'right',
@@ -79,10 +73,11 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Status',
+        dropAt: 480,
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          width: '3rem',
+          width: '5rem',
         },
         Cell: (cellProps) => {
           const volume = volumeListData?.find((vol) => vol.name === cellProps.cell.row.values.name);
@@ -138,17 +133,18 @@ const VolumeListTable = (props) => {
       },
       {
         Header: 'Latency',
+        dropAt: 640,
         accessor: 'latency',
         cellStyle: {
           textAlign: 'right',
-          width: '3.5rem',
+          width: '5rem',
         },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? <Latency latencyInMicroSeconds={cellProps.value} /> : null;
         },
       },
     ]; // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [volumeListData, theme]);
+  }, [volumeListData]);
 
   // handle the row selection by updating the URL
   const onClickRow = (row) => {
@@ -168,6 +164,7 @@ const VolumeListTable = (props) => {
 
   return (
     <Table
+      revealDroppedColumns
       columns={columns}
       data={volumeListData}
       status={props.loading ? 'loading' : 'success'}
@@ -181,13 +178,14 @@ const VolumeListTable = (props) => {
         },
       }}
     >
-      <Wrap padding={spacing.r16}>
+      <Wrap padding={spacing.r16} gap={spacing.r16} alignItems="center">
         <Table.SearchWithQueryParams />
         <Button
           variant={'primary'}
           label={intl.formatMessage({
             id: 'create_new_volume',
           })}
+          iconOnly={480}
           icon={<Icon name="Create-add" />}
           onClick={() => {
             navigate(appHistoryBasePath + '/volumes/createVolume');

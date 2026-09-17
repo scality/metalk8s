@@ -1,5 +1,17 @@
-import { Banner, Checkbox, Form, FormGroup, FormSection, Icon, Loader, Stack, Text, Toggle } from '@scality/core-ui';
-import { convertRemToPixels } from '@scality/core-ui/dist/components/tablev2/TableUtils';
+/* Keep the dist/index path: the bare specifier resolves to the host's federated
+   copy, and Form's context would not reach fields imported from a different one. */
+import {
+  Banner,
+  Checkbox,
+  Form,
+  FormGroup,
+  FormSection,
+  Icon,
+  Loader,
+  Stack,
+  Text,
+  Toggle,
+} from '@scality/core-ui/dist/index';
 import { Button, Input as InputV2, Select } from '@scality/core-ui/dist/next';
 import { fontSize, fontWeight, padding } from '@scality/core-ui/dist/style/theme';
 import { Field, FieldArray, Formik, useField, useFormikContext } from 'formik';
@@ -603,6 +615,7 @@ const CreateVolume = (props) => {
 
         return (
           <Form
+            responsive
             onSubmit={handleSubmit}
             rightActions={
               <Stack gap="r16">
@@ -657,7 +670,7 @@ const CreateVolume = (props) => {
               )
             }
           >
-            <FormSection forceLabelWidth={convertRemToPixels(10)}>
+            <FormSection forceLabelWidth="10rem">
               <FormGroup
                 label={intl.formatMessage({
                   id: 'name',
@@ -845,7 +858,7 @@ const CreateVolume = (props) => {
                 />
               </CheckboxContainer>
             </FormSection>
-            <FormSection forceLabelWidth={convertRemToPixels(10)}>
+            <FormSection forceLabelWidth="10rem">
               {values.multiVolumeCreation && (
                 <MultiCreationFormContainer>
                   <FieldArray

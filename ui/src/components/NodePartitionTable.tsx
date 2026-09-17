@@ -1,8 +1,6 @@
 import { useCallback } from 'react';
 import { useQuery } from 'react-query';
-import { useTheme } from 'styled-components';
-
-import { ProgressBar, spacing } from '@scality/core-ui';
+import { spacing } from '@scality/core-ui';
 
 import { Table } from '@scality/core-ui/dist/next';
 import {
@@ -16,9 +14,9 @@ import { useAlerts } from '../containers/AlertProvider';
 import { getNodePartitionsTableData } from '../services/NodeVolumesUtils';
 import { queryNodeFSSize, queryNodeFSUsage } from '../services/prometheus/fetchMetrics';
 import CircleStatus from './CircleStatus';
+import { UsageProgressBar } from './UsageProgressBar';
 
 const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
-  const theme = useTheme();
   const columns = [
     {
       Header: 'Health',
@@ -26,7 +24,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       cellStyle: {
         textAlign: 'center',
         width: 'unset',
-        minWidth: '4rem',
+        minWidth: '5rem',
         maxWidth: '5.5rem',
         paddingRight: spacing.r16,
         flex: 0.5,
@@ -47,29 +45,24 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
     },
     {
       Header: 'Usage',
+      dropAt: 400,
       accessor: 'usage',
       cellStyle: {
+        minWidth: '4.5rem',
         textAlign: 'left',
         width: 'unset',
         flex: 0.5,
       },
       Cell: ({ value }) => {
-        return (
-          <ProgressBar
-            size="large"
-            color={theme.infoSecondary}
-            percentage={value}
-            buildinLabel={`${value}%`}
-            backgroundColor={theme.buttonSecondary}
-            aria-label={`${value}%`}
-          />
-        );
+        return <UsageProgressBar percentage={value} />;
       },
     },
     {
       Header: 'Size',
+      dropAt: 340,
       accessor: 'size',
       cellStyle: {
+        minWidth: '3.5rem',
         textAlign: 'right',
         flex: 0.5,
         width: 'unset',
@@ -115,6 +108,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
     partitions = getNodePartitionsTableData(nodeFSResult.nodeFSUsage, nodeFSResult.nodeFSSize, alertNF);
   return (
     <Table
+      revealDroppedColumns
       status={status}
       columns={columns}
       data={partitions}

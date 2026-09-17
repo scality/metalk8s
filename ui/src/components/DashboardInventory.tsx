@@ -22,6 +22,15 @@ const CardsWrapper = styled.div`
   justify-content: space-around;
   font-size: ${fontSize.base};
   margin: ${spacing.r4} 0px;
+  /* 11rem is the width the cards have in the five-column desktop layout; they are
+     sized in % of a column that later becomes a full-width band. */
+  > * {
+    max-width: 11rem;
+  }
+  @container responsive (max-width: 700px) {
+    justify-content: flex-start;
+    gap: ${spacing.r16};
+  }
 `;
 const InventoryIcon = styled.i`
   font-size: ${fontSize.larger};
