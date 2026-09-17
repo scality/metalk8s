@@ -81,6 +81,7 @@
   "force_lvcreate": "Force LV creation",
   "details": "Details",
   "volumes": "Volumes",
+  "virtual_machines": "Virtual Machines",
   "size": "Size",
   "bound": "Bound",
   "path": "Path",

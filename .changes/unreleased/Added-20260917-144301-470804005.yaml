@@ -1,0 +1,6 @@
+kind: Added
+body: 'The Platform navigation now carries a Virtual Machines tab next to Nodes and Volumes, opening the VM Management micro-app inline. It shows up on ARTESCA+ platforms only: the micro-app is not deployed elsewhere, so no tab is added and the route falls through to the 404 page.'
+time: 2026-09-17T14:43:01.470804005Z
+custom:
+    CommentId: cli
+    Pull: "5127"
