@@ -1,4 +1,5 @@
 import json
+import shlex
 
 import kubernetes.client
 from kubernetes.client.rest import ApiException
@@ -50,6 +51,11 @@ def test_package_installed(host):
     "../features/sanity.feature", "Systemd unit is enabled and running on every node"
 )
 def test_systemd_unit_running(host):
+    pass
+
+
+@scenario("../features/sanity.feature", "The image cache holds archives on every node")
+def test_image_cache_filled(host):
     pass
 
 
@@ -274,6 +280,55 @@ def check_systemd_unit_running(host, ssh_config, k8s_client, name):
     utils.retry(_check_unit, times=3, wait=5, name=f"check systemd unit '{name}'")
 
 
+@then(
+    parsers.parse(
+        "the directory '{directory}' holds at least one '{pattern}' on every node"
+    )
+)
+def check_directory_holds(host, ssh_config, k8s_client, directory, pattern):
+    """Check every node was provisioned, whichever path filled its cache.
+
+    The bootstrap node reads the ISO and a joining node pulls from the
+    registry, so this says nothing about which one ran. What it does say is
+    that no node was released with an empty cache, which is the failure that
+    leaves a kubelet unable to bring its images back.
+    """
+
+    def _check_directory():
+        # `maxdepth=1` and `type=f`: the image cache agent owns per-resource
+        # subdirectories under this same root, so a recursive find would let
+        # one of its archives stand in for the flat cache this checks.
+        results = _salt_on_every_node(
+            host,
+            ssh_config,
+            k8s_client,
+            "file.find",
+            directory,
+            f"name={pattern}",
+            "type=f",
+            "maxdepth=1",
+        )
+
+        # A missing directory answers with an empty list, and a minion that
+        # failed to run the function answers with its error message.
+        empty = {
+            node: found
+            for node, found in results.items()
+            if not isinstance(found, list) or not found
+        }
+        answers = ", ".join(
+            f"{node} ({found!r})" for node, found in sorted(empty.items())
+        )
+        assert not empty, f"no '{pattern}' under '{directory}' on {answers}"
+
+    utils.retry(
+        _check_directory,
+        times=3,
+        wait=5,
+        name=f"check '{directory}' holds '{pattern}'",
+    )
+
+
 def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
     """Run a Salt execution function on every node, return the result per node.
 
@@ -286,7 +341,18 @@ def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
     )
     assert nodes, "no Kubernetes node to check"
 
-    command = ["salt", "--static", "--out=json", "-L", ",".join(nodes), function, *args]
+    # Quoted: the command is joined into one shell line before it runs, so
+    # an argument such as `name=*.tar` would be glob expanded on the way, and
+    # a match in the current directory would silently change what is checked.
+    command = [
+        "salt",
+        "--static",
+        "--out=json",
+        "-L",
+        ",".join(nodes),
+        function,
+        *(shlex.quote(arg) for arg in args),
+    ]
     results = json.loads(utils.run_salt_command(host, command, ssh_config).stdout)
 
     silent = sorted(set(nodes) - set(results))
