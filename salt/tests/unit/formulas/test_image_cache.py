@@ -74,6 +74,13 @@ def pull_state(variant: str) -> str:
     return f"Pull the {variant} boot cache"
 
 
+# What every branch declares, and the only state the node role gates on.
+TERMINAL_STATE = "The boot cache this node needs is in place"
+
+# Deliberately not GATE_STATE: the bootstrap node applies both role SLS in one
+# run, and Salt refuses a state ID declared twice with different bodies.
+PULL_GATE_STATE = "Ensure the image cache is pulled before the kubelet starts"
+
 # Same reason: the two imports watch different sources, so they cannot share
 # an ID either, and a node applying both paths would fail to render.
 PULL_IMPORT_STATE = "Import the pulled boot cache archives into containerd"
@@ -293,6 +300,46 @@ def test_no_two_sls_applied_together_share_a_state_id(
         f"{sorted(shared)} is declared by both {left} and {right}, which can be"
         " applied in the same run"
     )
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [NODE_ROLE], indirect=True)
+def test_pulling_runs_before_the_kubelet(
+    rendered_states: RenderedStates,
+) -> None:
+    """Check a joining node fills its cache before the kubelet may start.
+
+    The registry does answer here, unlike at bootstrap, so this is not about
+    being able to pull at all. It is about the node holding its own images
+    before it needs them, so that a registry going away later cannot keep a
+    sandbox or a static pod from coming back.
+    """
+    for case_id, states in rendered_states:
+        assert PULL_GATE_STATE in states, f"the ordering gate is gone ({case_id})"
+
+        waits_for = requisite_states(states, PULL_GATE_STATE)
+        assert TERMINAL_STATE in waits_for, (
+            f"'{PULL_GATE_STATE}' does not require '{TERMINAL_STATE}', it gates"
+            f" nothing ({case_id})"
+        )
+        assert PULLED_SLS not in waits_for, (
+            f"'{PULL_GATE_STATE}' requires '{PULLED_SLS}' whole, so the kubelet"
+            " waits on its failure branch too and a highstate can no longer"
+            f" restart a kubelet that is down ({case_id})"
+        )
+
+        releases = requisite_states(states, PULL_GATE_STATE, "require_in")
+        assert KUBELET_STATE in releases, (
+            f"'{PULL_GATE_STATE}' is not ordered before '{KUBELET_STATE}', the kubelet"
+            f" could start on a node whose cache is empty ({case_id})"
+        )
+
+        includes = states.get("include", [])
+        for included in (PULLED_SLS, "metalk8s.kubernetes.kubelet"):
+            assert included in includes, (
+                f"'{included}' is not included, the requisites of '{PULL_GATE_STATE}'"
+                f" cannot resolve ({case_id})"
+            )
 
 
 @pytest.mark.formulas
