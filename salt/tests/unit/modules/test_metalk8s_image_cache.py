@@ -70,6 +70,16 @@ def make_boot_cache_image(path, files, layer_count=1, manifest=None):
     return write_archive(path, members)
 
 
+def registry_manifest(digest, layer_count=1):
+    """Build the image manifest a registry serves, in its own schema."""
+    return json.dumps(
+        {
+            "schemaVersion": 2,
+            "layers": [{"digest": digest} for _ in range(layer_count)],
+        }
+    ).encode()
+
+
 class BrokenPipe(io.RawIOBase):
     """The standard output of the stand-in, which notices an early close.
 
@@ -538,6 +548,43 @@ class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     ["content", "fetch-object", "registry.invalid/image:1.0", "1.0"]
                 ):
                     pass
+
+    @parameterized.expand(
+        [
+            ("not_json", b"{", "is not valid JSON"),
+            ("no_layers", b'{"schemaVersion": 2}', "no list of layers"),
+            (
+                "two_layers",
+                b'{"layers": [{"digest": "sha256:a"}, {"digest": "sha256:b"}]}',
+                "exactly one layer",
+            ),
+            ("no_digest", b'{"layers": [{}]}', "its layer has no digest"),
+        ]
+    )
+    def test_layer_digest_broken_manifest(self, _name, blob, message):
+        """
+        Tests that `_layer_digest` refuses a manifest it cannot read
+        """
+        self.assertRaisesRegex(
+            CommandExecutionError,
+            message,
+            metalk8s_image_cache._layer_digest,  # pylint: disable=protected-access
+            blob,
+            "registry.invalid/image:1.0",
+        )
+
+    def test_layer_digest(self):
+        """
+        Tests that `_layer_digest` reads the digest of the single layer
+        """
+        digest = "sha256:" + "a" * 64
+
+        self.assertEqual(
+            metalk8s_image_cache._layer_digest(  # pylint: disable=protected-access
+                registry_manifest(digest), "registry.invalid/image:1.0"
+            ),
+            digest,
+        )
 
     def test_ctr_streams_the_output_of_the_command(self):
         """

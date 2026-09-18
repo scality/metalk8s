@@ -220,6 +220,42 @@ def _ctr(args):
             raise failure
 
 
+def _layer_digest(blob, image):
+    """Return the digest of the single layer the image manifest announces.
+
+    A registry serves its own schema, a mapping with a ``layers`` list, not the
+    ``manifest.json`` of a docker archive that :func:`provision` reads.
+    """
+    try:
+        manifest = json.loads(blob)
+    except ValueError as exc:
+        raise CommandExecutionError(
+            f'The manifest of "{image}" is not valid JSON: {exc}'
+        ) from exc
+
+    try:
+        layers = manifest["layers"]
+        count = len(layers)
+    except (KeyError, TypeError) as exc:
+        raise CommandExecutionError(
+            f'Unexpected manifest for "{image}": no list of layers'
+        ) from exc
+
+    # One image, one layer, same guard as the cold path: anything else means
+    # this is no longer the flat carrier this module knows how to read.
+    if count != 1:
+        raise CommandExecutionError(
+            f'Boot cache image "{image}" must carry exactly one layer, found {count}'
+        )
+
+    try:
+        return layers[0]["digest"]
+    except (KeyError, TypeError) as exc:
+        raise CommandExecutionError(
+            f'Unexpected manifest for "{image}": its layer has no digest'
+        ) from exc
+
+
 def provision(source, dest, dry_run=False):
     """
     Extract the image archives carried by a boot cache image into the cache.
