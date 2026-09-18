@@ -284,7 +284,69 @@ def _layer_digest(blob, image):
         ) from exc
 
 
-def provision_from_image(image, dest, hosts_dir=None):
+def _settled(marker, dest, image):
+    """Return what the marker records when the cache already holds this image.
+
+    Both halves matter. The reference says the cache was filled from what is
+    being asked for now, and it carries the version, so an upgrade does not
+    match. The archive names say the cache still holds it: a marker on its own
+    would report an emptied directory as provisioned, and the state gates the
+    kubelet on that answer.
+
+    Answered from disk alone, deliberately. This runs on every highstate and
+    not only at join, so reaching the registry to conclude there is nothing to
+    do would make the kubelet a permanent dependent of a registry served by
+    pods that need kubelets.
+    """
+    try:
+        with salt.utils.files.fopen(marker, "r") as recorded:
+            state = json.load(recorded)
+    except (OSError, ValueError):
+        return None
+
+    if not isinstance(state, dict) or state.get("image") != image:
+        return None
+
+    archives = state.get("archives") or []
+    if not archives:
+        return None
+
+    if not all(os.path.isfile(os.path.join(dest, name)) for name in archives):
+        return None
+
+    # The record itself, and not the digest it holds: a marker written by an
+    # older format, or repaired by hand, records no digest and would then read
+    # as an unfilled cache, costing a gigabyte to reach the state already on
+    # disk while the gate holds the kubelet back.
+    return state
+
+
+def _record(marker, image, digest, archives):
+    """Record what was extracted, so the next run can settle without a pull."""
+    directory, name = os.path.split(marker)
+    tmp = os.path.join(directory, _temporary_name(name))
+    try:
+        with salt.utils.files.fopen(tmp, "w") as out:
+            json.dump({"image": image, "digest": digest, "archives": archives}, out)
+            out.flush()
+            os.fsync(out.fileno())
+        # Written beside and renamed, like every archive it records: truncating
+        # in place turns a crash mid-write into a marker that parses as
+        # nothing, and the next run then refetches the whole blob to reach the
+        # state the node already holds.
+        os.replace(tmp, marker)
+    except OSError as exc:
+        with contextlib.suppress(OSError):
+            os.remove(tmp)
+        # The archives are already published, so this is not a failed
+        # provisioning. Left raw it would surface as a traceback, and the next
+        # run would fetch the whole blob again to reach the same state.
+        raise CommandExecutionError(
+            f'Extracted "{image}" but failed to record it in "{marker}": {exc}'
+        ) from exc
+
+
+def provision_from_image(image, dest, marker, hosts_dir=None, dry_run=False):
     """
     Extract the image archives a boot cache image carries, pulled from a registry.
 
@@ -300,11 +362,18 @@ def provision_from_image(image, dest, hosts_dir=None):
         Reference of the boot cache image in the registry
     dest
         Path of the cache directory the archives are extracted into
+    marker
+        Path of the JSON file recording what was extracted: the image
+        reference, the layer digest and the archive names
     hosts_dir : None
         Directory holding the registry host configuration, since :command:`ctr`
         does not read the one containerd itself uses. The scheme comes from the
         host entry there, so reaching a registry served in the clear needs no
         flag of its own.
+    dry_run : False
+        Report whether the cache is stale without reaching the registry at
+        all. Both the digest and the archive names are answered as ``None``
+        rather than guessed, since neither is known without asking.
     """
     # The object to resolve is the tag, and it is only a tag if the last path
     # segment carries one. A reference such as `10.0.0.1:5000/foo` would
@@ -313,6 +382,18 @@ def provision_from_image(image, dest, hosts_dir=None):
     reference = image.rsplit("/", 1)[-1]
     if "@" in reference or ":" not in reference:
         raise CommandExecutionError(f'Boot cache image "{image}" carries no tag')
+
+    settled = _settled(marker, dest, image)
+    if settled is not None:
+        log.info('Cache "%s" already holds the archives of "%s"', dest, image)
+        return {"extracted": [], "digest": settled.get("digest")}
+
+    if dry_run:
+        # `test=True` must change nothing, and a registry call is not nothing:
+        # it fails when the registry is down, which is the very state an
+        # operator runs `test=True` to look into. The cold path refuses the
+        # same way, see `provision`.
+        return {"extracted": None, "digest": None}
 
     # Checked before the fetch, since the blob is about a gigabyte and the
     # first write only happens once it is all read. After the dry run returns,
@@ -339,6 +420,8 @@ def provision_from_image(image, dest, hosts_dir=None):
             raise CommandExecutionError(
                 f'The layer of "{image}" is not a readable archive: {exc}'
             ) from exc
+
+    _record(marker, image, digest, extracted)
 
     log.info('Provisioned "%s" from "%s": %d extracted', dest, image, len(extracted))
 
