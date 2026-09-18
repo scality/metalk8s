@@ -1,3 +1,6 @@
+import contextlib
+import errno
+import gzip
 import io
 import json
 import os
@@ -70,6 +73,13 @@ def make_boot_cache_image(path, files, layer_count=1, manifest=None):
     return write_archive(path, members)
 
 
+def registry_blob(files):
+    """Build the layer blob a registry serves, gzipped as registries store it."""
+    return gzip.compress(
+        layer_bytes({"images/{}".format(name): data for name, data in files.items()})
+    )
+
+
 def registry_manifest(digest, layer_count=1):
     """Build the image manifest a registry serves, in its own schema."""
     return json.dumps(
@@ -78,6 +88,40 @@ def registry_manifest(digest, layer_count=1):
             "layers": [{"digest": digest} for _ in range(layer_count)],
         }
     ).encode()
+
+
+class UnseekableStream(io.RawIOBase):
+    """A read-only stream that refuses to seek, as a pipe does.
+
+    `subprocess.PIPE` is not seekable, so the extraction may only read
+    forward. A `BytesIO` would let a rewinding implementation pass here and
+    fail on every node with `OSError: [Errno 29] Illegal seek`.
+    """
+
+    def __init__(self, data):
+        super().__init__()
+        self._data = io.BytesIO(data)
+
+    def readable(self):
+        return True
+
+    def seekable(self):
+        return False
+
+    def seek(self, *_args):
+        raise OSError(errno.ESPIPE, "Illegal seek")
+
+    def tell(self):
+        raise OSError(errno.ESPIPE, "Illegal seek")
+
+    def readinto(self, buffer):
+        return self._data.readinto(buffer)
+
+
+@contextlib.contextmanager
+def fake_stream(data):
+    """Stand in for a `ctr content fetch-*` invocation."""
+    yield UnseekableStream(data)
 
 
 class BrokenPipe(io.RawIOBase):
@@ -535,6 +579,43 @@ class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
             self.dest,
         )
 
+    def test_provision_from_image_refuses_a_reference_without_a_tag(self):
+        """
+        Tests that a reference carrying a port but no tag is refused
+
+        `10.0.0.1:5000/foo` would otherwise hand `5000/foo` to `fetch-object`
+        as the object to resolve. The SLS always builds a tagged reference,
+        but this is a public module function and `salt-call` reaches it.
+        """
+        with patch.object(metalk8s_image_cache, "_ctr") as ctr:
+            self.assertRaisesRegex(
+                CommandExecutionError,
+                "carries no tag",
+                metalk8s_image_cache.provision_from_image,
+                "10.0.0.1:5000/metalk8s-boot-cache-worker",
+                self.dest,
+            )
+
+        self.assertEqual(ctr.call_count, 0)
+
+    def test_provision_from_image_refuses_a_cache_that_is_not_a_directory(self):
+        """
+        Tests that the cache directory is checked before the blob is fetched
+
+        A gigabyte is downloaded before the first write, so a missing
+        directory has to fail first. The cold path checks the same way.
+        """
+        with patch.object(metalk8s_image_cache, "_ctr") as ctr:
+            self.assertRaisesRegex(
+                CommandExecutionError,
+                "is not a directory",
+                metalk8s_image_cache.provision_from_image,
+                "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                self.path("nowhere"),
+            )
+
+        self.assertEqual(ctr.call_count, 0)
+
     def test_ctr_reports_a_missing_binary(self):
         """
         Tests that an absent `ctr` is reported, not raised raw
@@ -695,6 +776,301 @@ class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         self.assertNotEqual(popen.call_args.kwargs["stderr"], subprocess.PIPE)
 
+    def test_provision_from_image(self):
+        """
+        Tests that `provision_from_image` extracts what the registry serves
+        """
+        digest = "sha256:" + "a" * 64
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(registry_blob({"etcd.tar": b"etcd", "pause.tar": b"pause!"})),
+        ]
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams):
+            result = metalk8s_image_cache.provision_from_image(
+                "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                self.dest,
+            )
+
+        self.assertEqual(
+            result, {"extracted": ["etcd.tar", "pause.tar"], "digest": digest}
+        )
+        self.assertEqual(sorted(os.listdir(self.dest)), ["etcd.tar", "pause.tar"])
+        self.assertEqual(self.content("etcd.tar"), b"etcd")
+        self.assertEqual(self.content("pause.tar"), b"pause!")
+
+    def test_provision_from_image_builds_both_commands(self):
+        """
+        Tests the whole argument list of each `ctr` invocation
+
+        Asserting a flag is present says nothing about what the command is
+        asked to fetch. The manifest is resolved by tag and the blob by
+        digest, and swapping either one still returns the canned stream a mock
+        hands back, so only the argument list catches it.
+        """
+        digest = "sha256:" + "4" * 64
+        image = "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0"
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(registry_blob({"etcd.tar": b"etcd"})),
+        ]
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams) as ctr:
+            metalk8s_image_cache.provision_from_image(
+                image,
+                self.dest,
+                hosts_dir="/etc/containerd/certs.d",
+            )
+
+        options = ["--hosts-dir", "/etc/containerd/certs.d"]
+        self.assertEqual(
+            [call.args[0] for call in ctr.call_args_list],
+            [
+                ["content", "fetch-object"] + options + [image, "134.0.0"],
+                ["content", "fetch-blob"] + options + [image, digest],
+            ],
+        )
+
+    def test_provision_from_image_passes_the_hosts_directory(self):
+        """
+        Tests that the registry configuration of the node reaches `ctr`
+
+        `ctr` does not read the `config.toml` containerd itself uses, so
+        without this the canonical image name resolves to nothing.
+        """
+        digest = "sha256:" + "c" * 64
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(registry_blob({"etcd.tar": b"etcd"})),
+        ]
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams) as ctr:
+            metalk8s_image_cache.provision_from_image(
+                "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                self.dest,
+                hosts_dir="/etc/containerd/certs.d",
+            )
+
+        for call in ctr.call_args_list:
+            self.assertIn("--hosts-dir", call.args[0])
+            self.assertIn("/etc/containerd/certs.d", call.args[0])
+
+    def test_provision_from_image_removes_its_temporary_file_on_failure(self):
+        """
+        Tests that a failed write leaves no temporary file behind
+
+        The cleanup of the whole batch only knows about the archives already
+        written, so the one being written has to remove its own.
+        """
+        digest = "sha256:" + "d" * 64
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(registry_blob({"etcd.tar": b"etcd"})),
+        ]
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams):
+            with patch(
+                "shutil.copyfileobj", side_effect=OSError("No space left on device")
+            ):
+                self.assertRaisesRegex(
+                    CommandExecutionError,
+                    "No space left on device",
+                    metalk8s_image_cache.provision_from_image,
+                    "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                    self.dest,
+                )
+
+        self.assertEqual(os.listdir(self.dest), [])
+
+    def test_provision_from_image_duplicate_names(self):
+        """
+        Tests that `provision_from_image` refuses two archives sharing a name
+
+        Everything lands flat, so two members differing only by directory
+        would overwrite each other and one image would go missing.
+        """
+        layer = layer_bytes({"images/etcd.tar": b"etcd", "other/etcd.tar": b"etcd"})
+        digest = "sha256:" + "e" * 64
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(gzip.compress(layer)),
+        ]
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams):
+            self.assertRaisesRegex(
+                CommandExecutionError,
+                "twice",
+                metalk8s_image_cache.provision_from_image,
+                "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                self.dest,
+            )
+
+        self.assertEqual(os.listdir(self.dest), [])
+
+    def test_provision_from_image_with_an_empty_image(self):
+        """
+        Tests that `provision_from_image` refuses an image carrying no archive
+
+        Reported as a success, an empty cache would release the kubelet on a
+        node whose images are nowhere to be found. The marker must not record
+        a digest that nothing was extracted from either.
+        """
+        digest = "sha256:" + "f" * 64
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(registry_blob({})),
+        ]
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams):
+            self.assertRaisesRegex(
+                CommandExecutionError,
+                "carries no archive",
+                metalk8s_image_cache.provision_from_image,
+                "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                self.dest,
+            )
+
+    def test_provision_from_image_with_a_member_without_a_name(self):
+        """
+        Tests that `provision_from_image` names the member with no base name
+        """
+        layer = io.BytesIO()
+        with tarfile.open(fileobj=layer, mode="w") as inner:
+            info = tarfile.TarInfo("images/")
+            info.size = 0
+            inner.addfile(info, io.BytesIO(b""))
+
+        digest = "sha256:" + "0" * 64
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(gzip.compress(layer.getvalue())),
+        ]
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams):
+            self.assertRaisesRegex(
+                CommandExecutionError,
+                "which has no file name",
+                metalk8s_image_cache.provision_from_image,
+                "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                self.dest,
+            )
+
+    def test_provision_from_image_leaves_no_temporary_file_on_a_cut_stream(self):
+        """
+        Tests that a stream dying mid-copy leaves nothing behind
+
+        The batch cleanup only knows the archives already written, and the
+        member being written is not one of them yet. Nothing else ever removes
+        it: the agent's garbage collection spares flat files, and the name
+        matches no glob the preload script reports on.
+        """
+        digest = "sha256:" + "d" * 64
+        # Incompressible on purpose, so that cutting the gzip in half lands in
+        # the payload rather than before the first header.
+        blob = registry_blob({"etcd.tar": os.urandom(256 * 1024)})
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            # Cut short: the header is read, the copy is not finished.
+            fake_stream(blob[: len(blob) // 2]),
+        ]
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams):
+            self.assertRaises(
+                CommandExecutionError,
+                metalk8s_image_cache.provision_from_image,
+                "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                self.dest,
+            )
+
+        self.assertEqual(os.listdir(self.dest), [])
+
+    def test_provision_from_image_reports_a_failed_publication(self):
+        """
+        Tests that a rename that cannot happen is reported, not raised raw
+
+        Renaming several files is not one atomic act, so this can leave the
+        cache holding a prefix. What matters is that it says so and records
+        nothing: the state fails, the gate keeps the kubelet back, and the
+        next run redoes the whole extraction.
+        """
+        digest = "sha256:" + "e" * 64
+        blocked = os.path.join(self.dest, "pause.tar")
+        os.mkdir(blocked)
+        with open(os.path.join(blocked, "busy"), "wb") as occupant:
+            occupant.write(b"in the way")
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(registry_blob({"etcd.tar": b"etcd", "pause.tar": b"pause!"})),
+        ]
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams):
+            self.assertRaisesRegex(
+                CommandExecutionError,
+                "pause.tar",
+                metalk8s_image_cache.provision_from_image,
+                "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                self.dest,
+            )
+
+    def test_provision_from_image_reports_an_unreadable_layer(self):
+        """
+        Tests that a corrupt blob is reported, not raised raw
+
+        A registry behind a proxy can answer an error page, and a connection
+        cut mid-stream truncates the gzip. Neither is a `CommandExecutionError`
+        on its own, so the state would render a traceback instead of saying
+        what happened.
+        """
+        digest = "sha256:" + "c" * 64
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(b"<html>504 Gateway Time-out</html>"),
+        ]
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams):
+            self.assertRaisesRegex(
+                CommandExecutionError,
+                "is not a readable archive",
+                metalk8s_image_cache.provision_from_image,
+                "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                self.dest,
+            )
+
+    def test_provision_from_image_writes_nothing_when_a_later_member_is_refused(self):
+        """
+        Tests that a refused member leaves no name in the cache
+
+        A stream cannot check every header before writing, so the proof that
+        the image is refused whole is that the temporary files are renamed
+        together, and removed when anything goes wrong.
+        """
+        layer = io.BytesIO()
+        with tarfile.open(fileobj=layer, mode="w") as inner:
+            info = tarfile.TarInfo("images/etcd.tar")
+            info.size = 4
+            inner.addfile(info, io.BytesIO(b"etcd"))
+            link = tarfile.TarInfo("images/pause.tar")
+            link.type = tarfile.SYMTYPE
+            link.linkname = "etcd.tar"
+            inner.addfile(link)
+
+        digest = "sha256:" + "b" * 64
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(gzip.compress(layer.getvalue())),
+        ]
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams):
+            self.assertRaisesRegex(
+                CommandExecutionError,
+                "which is not a regular file",
+                metalk8s_image_cache.provision_from_image,
+                "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                self.dest,
+            )
+
+        self.assertEqual(os.listdir(self.dest), [])
+
     def test_provision_writes_nothing_when_a_later_member_is_refused(self):
         """
         Tests that a refused member leaves the cache untouched
@@ -726,3 +1102,106 @@ class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
             self.dest,
         )
         self.assertEqual(os.listdir(self.dest), [])
+
+    def test_provision_from_image_refuses_a_reference_by_digest(self):
+        """
+        Tests that a reference pinned by digest is refused, and named as such
+
+        `img@sha256:<hex>` carries a colon, so the tag guard lets it through,
+        and the object handed to `fetch-object` is then the bare hex. The
+        command answers an opaque `not found` instead of the refusal the
+        guard exists to give.
+        """
+        with patch.object(metalk8s_image_cache, "_ctr") as ctr:
+            self.assertRaisesRegex(
+                CommandExecutionError,
+                "carries no tag",
+                metalk8s_image_cache.provision_from_image,
+                "registry.invalid/134.0.0/boot-cache@sha256:" + "b" * 64,
+                self.dest,
+                self.path("marker.json"),
+            )
+
+        self.assertEqual(ctr.call_count, 0)
+
+    def test_provision_from_image_refuses_a_member_named_like_a_temporary_file(self):
+        """
+        Tests that a member whose name is a temporary name is refused
+
+        `.etcd.tar.tmp` is where the archive `etcd.tar` is written before it is
+        published, so a layer carrying both keys them as two distinct targets,
+        the duplicate guard stays silent, and one archive ends up holding the
+        other's bytes.
+        """
+        digest = "sha256:" + "c" * 64
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(registry_blob({"etcd.tar": b"etcd", ".etcd.tar.tmp": b"!!"})),
+        ]
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams):
+            self.assertRaisesRegex(
+                CommandExecutionError,
+                "reserved name",
+                metalk8s_image_cache.provision_from_image,
+                "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                self.dest,
+                self.path("marker.json"),
+            )
+
+        self.assertEqual(os.listdir(self.dest), [])
+
+    def test_provision_refuses_a_member_named_like_a_temporary_file(self):
+        """
+        Tests that the cold path refuses a temporary name the same way
+
+        The two paths write through the same `.<name>.tmp` convention, so a
+        guard on one and not the other would leave the bootstrap exposed to
+        what the join refuses.
+        """
+        source = make_boot_cache_image(
+            self.path("boot-cache.tar"),
+            {"etcd.tar": b"etcd", ".etcd.tar.tmp": b"!!"},
+        )
+
+        self.assertRaisesRegex(
+            CommandExecutionError,
+            "reserved name",
+            metalk8s_image_cache.provision,
+            source,
+            self.dest,
+        )
+        self.assertEqual(os.listdir(self.dest), [])
+
+    def test_provision_from_image_names_what_it_published_before_failing(self):
+        """
+        Tests that a failed publication still reports the archives it wrote
+
+        Renaming several files is not one atomic act, so a failure part way
+        through leaves the cache holding a prefix that the preload timer will
+        import. A state reporting no change at all on such a node sends the
+        operator looking in the wrong place.
+        """
+        digest = "sha256:" + "d" * 64
+        streams = [
+            fake_stream(registry_manifest(digest)),
+            fake_stream(registry_blob({"etcd.tar": b"etcd", "pause.tar": b"pause!"})),
+        ]
+        published = []
+        real_replace = os.replace
+
+        def replace(src, dst):
+            if published:
+                raise OSError(errno.EIO, "I/O error")
+            published.append(os.path.basename(dst))
+            real_replace(src, dst)
+
+        with patch.object(metalk8s_image_cache, "_ctr", side_effect=streams):
+            with patch.object(metalk8s_image_cache.os, "replace", side_effect=replace):
+                with self.assertRaises(CommandExecutionError) as caught:
+                    metalk8s_image_cache.provision_from_image(
+                        "registry.invalid/134.0.0/metalk8s-boot-cache-worker:134.0.0",
+                        self.dest,
+                        self.path("marker.json"),
+                    )
+
+        self.assertEqual(caught.exception.published, ["etcd.tar"])
