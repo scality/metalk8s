@@ -1,6 +1,8 @@
 import io
 import json
 import os
+import signal
+import subprocess
 import tarfile
 import tempfile
 from unittest import TestCase
@@ -66,6 +68,63 @@ def make_boot_cache_image(path, files, layer_count=1, manifest=None):
         manifest = [{"Layers": layers}]
     members["manifest.json"] = json.dumps(manifest).encode()
     return write_archive(path, members)
+
+
+class BrokenPipe(io.RawIOBase):
+    """The standard output of the stand-in, which notices an early close.
+
+    A reader that gives up before the end leaves the command writing into a
+    pipe nobody holds, and it dies of `SIGPIPE`. Python reports that as a
+    negative return code. Without this, a stand-in always reports the code it
+    was given, and no test can tell the two kinds of failure apart.
+    """
+
+    def __init__(self, data, process):
+        super().__init__()
+        self._data = io.BytesIO(data)
+        self._process = process
+
+    def readable(self):
+        return True
+
+    def seekable(self):
+        return False
+
+    def readinto(self, buffer):
+        return self._data.readinto(buffer)
+
+    def close(self):
+        if not self.closed and self._data.read(1):
+            self._process.returncode = -signal.SIGPIPE
+        super().close()
+
+
+class FakeProcess:
+    """Stand in for the `ctr` process `subprocess.Popen` would start."""
+
+    def __init__(self, stdout=b"", returncode=0):
+        self.returncode = returncode
+        self.stdout = BrokenPipe(stdout, self)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args):
+        return False
+
+
+def fake_popen(output=b"", error=b"", returncode=0):
+    """Return a `subprocess.Popen` stand-in that writes `error` where told to.
+
+    The real command writes its diagnostics into whatever file object it is
+    handed, so the stand-in does the same rather than expose one of its own.
+    """
+
+    def run(_args, stdout=None, stderr=None):  # pylint: disable=unused-argument
+        stderr.write(error)
+        return FakeProcess(stdout=output, returncode=returncode)
+
+    return run
 
 
 class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
@@ -465,6 +524,129 @@ class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
             source,
             self.dest,
         )
+
+    def test_ctr_reports_a_missing_binary(self):
+        """
+        Tests that an absent `ctr` is reported, not raised raw
+
+        The state only converts `CommandExecutionError`, so a bare
+        `FileNotFoundError` would reach the operator as a traceback.
+        """
+        with patch("subprocess.Popen", side_effect=FileNotFoundError("ctr")):
+            with self.assertRaisesRegex(CommandExecutionError, "could not be run"):
+                with metalk8s_image_cache._ctr(  # pylint: disable=protected-access
+                    ["content", "fetch-object", "registry.invalid/image:1.0", "1.0"]
+                ):
+                    pass
+
+    def test_ctr_streams_the_output_of_the_command(self):
+        """
+        Tests that `_ctr` runs `ctr` with the arguments it was given
+        """
+        with patch(
+            "subprocess.Popen", side_effect=fake_popen(output=b"payload")
+        ) as popen:
+            with metalk8s_image_cache._ctr(  # pylint: disable=protected-access
+                ["content", "fetch-object", "registry.invalid/image:1.0", "1.0"]
+            ) as stream:
+                self.assertEqual(stream.read(), b"payload")
+
+        self.assertEqual(
+            popen.call_args.args[0],
+            ["ctr", "content", "fetch-object", "registry.invalid/image:1.0", "1.0"],
+        )
+
+    def test_ctr_reports_a_failed_command(self):
+        """
+        Tests that `_ctr` raises with what the command printed on stderr
+
+        A registry that does not answer has to name the endpoint it tried,
+        otherwise a failed join says nothing about what to look at.
+        """
+        error = (
+            b'ctr: failed to do request: Head "http://10.0.0.1:8080/v2/": '
+            b"dial tcp 10.0.0.1:8080: connect: connection refused"
+        )
+
+        with patch(
+            "subprocess.Popen", side_effect=fake_popen(error=error, returncode=1)
+        ):
+            with self.assertRaisesRegex(CommandExecutionError, "connection refused"):
+                with metalk8s_image_cache._ctr(  # pylint: disable=protected-access
+                    ["content", "fetch-blob", "registry.invalid/image:1.0", "sha256:x"]
+                ) as stream:
+                    stream.read()
+
+    def test_ctr_reports_the_body_error_when_the_early_close_killed_it(self):
+        """
+        Tests that the SIGPIPE we cause does not bury the real error
+
+        Giving up mid blob closes the pipe, so `ctr` dies of SIGPIPE and
+        reports a negative code. That code is our own doing. Reporting it
+        instead of what the body raised hides the real fault, which is the
+        archive the extraction refused or the disk that filled up.
+        """
+        with patch("subprocess.Popen", side_effect=fake_popen(output=b"x" * 4096)):
+            with self.assertRaisesRegex(ValueError, "refused the payload"):
+                with metalk8s_image_cache._ctr(  # pylint: disable=protected-access
+                    ["content", "fetch-blob", "registry.invalid/image:1.0", "sha256:x"]
+                ) as stream:
+                    stream.read(16)
+                    raise ValueError("refused the payload")
+
+    def test_ctr_reports_the_command_failure_over_a_body_error(self):
+        """
+        Tests that a failing `ctr` is reported even when the body raised first
+
+        This is the shape of the most common failure: the registry does not
+        answer, `ctr` exits non-zero having written nothing to stdout, and the
+        manifest parser raises on the empty stream before the exit code is
+        ever looked at. Reported that way, the cause is lost and the operator
+        reads a JSON error about a registry that is simply unreachable.
+        """
+        error = (
+            b'ctr: failed to do request: Head "http://10.0.0.1:8080/v2/": '
+            b"dial tcp 10.0.0.1:8080: connect: connection refused"
+        )
+
+        with patch(
+            "subprocess.Popen", side_effect=fake_popen(error=error, returncode=1)
+        ):
+            with self.assertRaisesRegex(CommandExecutionError, "connection refused"):
+                with metalk8s_image_cache._ctr(  # pylint: disable=protected-access
+                    ["content", "fetch-object", "registry.invalid/image:1.0", "1.0"]
+                ) as stream:
+                    raise ValueError(f"nothing to parse in {stream.read()!r}")
+
+    def test_ctr_lets_a_body_error_through_when_the_command_succeeded(self):
+        """
+        Tests that holding the body error does not swallow it
+
+        A command that exits zero having served a blob the caller cannot read
+        means the fault is in the payload, so that error is the one to report.
+        """
+        with patch("subprocess.Popen", side_effect=fake_popen(output=b"payload")):
+            with self.assertRaisesRegex(ValueError, "unreadable payload"):
+                with metalk8s_image_cache._ctr(  # pylint: disable=protected-access
+                    ["content", "fetch-blob", "registry.invalid/image:1.0", "sha256:x"]
+                ) as stream:
+                    raise ValueError(f"unreadable payload: {stream.read()!r}")
+
+    def test_ctr_does_not_read_stderr_from_a_pipe(self):
+        """
+        Tests that the diagnostics of `ctr` go to a file, not a pipe
+
+        They are only read once the blob has been consumed. On a pipe, a
+        command verbose enough to fill the buffer would block writing while
+        this blocks reading, and the join would hang rather than fail.
+        """
+        with patch("subprocess.Popen", side_effect=fake_popen()) as popen:
+            with metalk8s_image_cache._ctr(  # pylint: disable=protected-access
+                ["content", "fetch-object", "registry.invalid/image:1.0", "1.0"]
+            ) as stream:
+                stream.read()
+
+        self.assertNotEqual(popen.call_args.kwargs["stderr"], subprocess.PIPE)
 
     def test_provision_writes_nothing_when_a_later_member_is_refused(self):
         """

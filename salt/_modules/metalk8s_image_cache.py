@@ -24,7 +24,9 @@ import json
 import logging
 import os
 import shutil
+import subprocess
 import tarfile
+import tempfile
 
 import salt.utils.files
 from salt.exceptions import CommandExecutionError
@@ -155,6 +157,67 @@ def _write(layer, member, target):
         # to clean up must not replace the error being raised.
         with contextlib.suppress(OSError):
             os.remove(tmp)
+
+
+@contextlib.contextmanager
+def _ctr(args):
+    """Run a :command:`ctr` command, yielding its standard output as a stream.
+
+    The blob of a boot cache image weighs about a gigabyte, so it is read as it
+    arrives rather than captured: nothing here ever holds the whole payload.
+    """
+    # A file and not a pipe: the diagnostics are only read once the blob has
+    # been consumed, and a pipe whose buffer filled would block the command
+    # writing it while this blocks reading the blob.
+    with tempfile.TemporaryFile() as diagnostics:
+        failure = None
+
+        try:
+            started = subprocess.Popen(  # pylint: disable=consider-using-with
+                ["ctr"] + args, stdout=subprocess.PIPE, stderr=diagnostics
+            )
+        except OSError as exc:
+            # A state only converts `CommandExecutionError`, so a bare `OSError`
+            # here would reach the operator as a traceback.
+            raise CommandExecutionError(
+                f"`ctr {' '.join(args)}` could not be run: {exc}"
+            ) from exc
+
+        with started as process:
+            try:
+                yield process.stdout
+            except Exception as exc:  # pylint: disable=broad-except
+                # Held rather than propagated: a command that failed wrote
+                # nothing to read, so the caller raising on an empty stream is
+                # the symptom. The exit code below says whether it is also the
+                # cause, and it is only final once `Popen` has waited.
+                failure = exc
+            finally:
+                process.stdout.close()
+
+        # A negative code means a signal, and the only signal this sends is the
+        # `SIGPIPE` of closing the pipe above while the command was still
+        # writing. That happens exactly when the body gave up early, so the
+        # command died of the failure rather than caused it: reporting the
+        # signal here would bury the archive that was refused, or the disk that
+        # filled up, under `failed with -13`.
+        #
+        # This reads the sign because `ctr` is executed directly, so the kernel
+        # reports the signal as such. Run it behind a shell, or hand it a
+        # version that traps `EPIPE` and exits non-zero, and a broken pipe
+        # would come back as a positive code that this no longer recognises.
+        if failure is not None and process.returncode < 0:
+            raise failure
+
+        if process.returncode != 0:
+            diagnostics.seek(0)
+            error = diagnostics.read().decode(errors="replace").strip()
+            raise CommandExecutionError(
+                f"`ctr {' '.join(args)}` failed with {process.returncode}: {error}"
+            ) from failure
+
+        if failure is not None:
+            raise failure
 
 
 def provision(source, dest, dry_run=False):
