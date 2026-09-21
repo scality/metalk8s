@@ -142,6 +142,13 @@ image_cache:
   # Platform passed to `ctr images import`. The archives on the ISO are
   # built for amd64 only.
   platform: "linux/amd64"
+  # Where a node records what it extracted, one JSON file per boot cache
+  # variant it holds, each carrying the image reference, the layer digest and
+  # the archive names. Reading them back is what lets a redeployment skip a
+  # gigabyte it already holds. Outside `directory` on purpose:
+  # `containerd-image-preload` globs that directory and would try to import
+  # these files as archives.
+  marker_directory: "/var/lib/metalk8s/image-cache"
 
 ca:
   cert:
