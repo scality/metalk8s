@@ -1,0 +1,6 @@
+kind: Added
+body: A node joining the cluster now fills its image cache from the registry, before its kubelet starts. It pulls the boot cache images its roles call for, extracts the archives into `/var/lib/image-cache` and imports them into containerd right away, so it holds the images it needs to boot without depending on a registry later on. Every node takes the worker variant, and a control plane node takes the control plane variant as well. A node that already holds the archives settles from its own disk, with no call to the registry.
+time: 2026-09-21T07:50:13.853688171Z
+custom:
+    CommentId: "5757163402"
+    Pull: "5135"
