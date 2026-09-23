@@ -13,6 +13,16 @@ Execute the upgrade prechecks:
 
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
+{%- set upgrade_order = cp_nodes + other_nodes %}
+{#- The CA minion goes first. Every node asks it to sign certificates, and a
+    salt-minion only talks to a CA running the same x509 module, which Salt 3006
+    changed: a node upgraded before the CA could no longer get its certificates
+    signed. #}
+{%- set ca_minion = pillar.metalk8s.ca.minion %}
+{%- if ca_minion in upgrade_order %}
+  {%- do upgrade_order.remove(ca_minion) %}
+  {%- do upgrade_order.insert(0, ca_minion) %}
+{%- endif %}
 
 {#- Nodes are deployed one by one, each waiting on the previous one. A skipped node
     declares no state, so the chain must remember the last node actually deployed,
@@ -20,7 +30,7 @@ Execute the upgrade prechecks:
     with "The following requisites were not found". #}
 {%- set deployed = namespace(previous=None) %}
 
-{%- for node in cp_nodes + other_nodes %}
+{%- for node in upgrade_order %}
 
   {#- The version label is set before a node is deployed, since it selects the
       saltenv, so it says what the node was asked to run, not what it runs. The
