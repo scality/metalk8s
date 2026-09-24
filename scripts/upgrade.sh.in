@@ -130,6 +130,12 @@ launch_post_upgrade () {
         saltenv="$SALTENV"
 }
 
+align_salt_minions () {
+    SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.upgrade.salt-minions saltenv="$SALTENV"
+}
+
 upgrade_etcd () {
     SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
@@ -241,6 +247,7 @@ run "Upgrading bootstrap" upgrade_bootstrap
 run "Refreshing Salt mine on nodes" flush_and_refresh_mine
 run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the pre-upgrade" launch_pre_upgrade
+run "Aligning Salt minions with the CA minion" align_salt_minions
 run "Upgrading etcd cluster" upgrade_etcd
 run "Upgrading all kube-api-server instances" upgrade_apiservers
 run "Upgrading local containerd and kubelet" upgrade_local_engines
