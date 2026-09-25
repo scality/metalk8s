@@ -1077,6 +1077,30 @@ metalk8s:
             architecture: extended
             _subcases: *upgrade_subcases
 
+      pre.sls:
+        _cases:
+          "Single node cluster":
+            architecture: single-node
+            _subcases:
+              "Destination matches (default)": {}
+              "Destination is higher than node version":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+              # The upgrade skips this node, so it must not be drained
+              # either: nothing would uncordon it
+              "Node already completed the destination":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+                    nodes:
+                      bootstrap:
+                        version: 2.9.0
+                        version_applied: 2.9.0
+
+          "Compact cluster":
+            architecture: compact
+
       precheck.sls:
         _cases:
           "Saltenv matches destination version (default)":

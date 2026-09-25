@@ -1,0 +1,6 @@
+kind: Fix
+body: An upgrade to the version a single-node cluster already runs no longer leaves the node cordoned and fails waiting on the metalk8s-operator.
+time: 2026-09-25T13:53:07.549777713Z
+custom:
+    CommentId: "5833534450"
+    Pull: "5140"
