@@ -1,0 +1,14 @@
+kind: Fix
+body: |
+  The Platform dashboard and node page bandwidth charts are no longer empty on
+  nodes whose control-plane or workload-plane IP sits on a bond or a VLAN. The
+  interface carrying each plane IP is now resolved live on the minion instead of
+  being read from the `ip_interfaces` grain, which is only computed when the
+  minion daemon starts -- before those interfaces exist -- and is not refreshed
+  afterwards. The charts used to query `node_network_receive_bytes_total` with an
+  empty device matcher, which no series can match, so Prometheus answered with an
+  empty result and the panel rendered blank without any error
+time: 2026-09-04T08:15:00.411000000Z
+custom:
+  Pull: 5120
+  CommentId: cli
