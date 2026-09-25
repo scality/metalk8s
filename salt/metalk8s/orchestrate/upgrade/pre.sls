@@ -2,12 +2,18 @@
 # NOTE: This state should be called by salt-master using the saltenv of
 # the destination version (salt-master should have been upgraded)
 
+{%- from "metalk8s/orchestrate/upgrade/nodes.jinja" import skipped_nodes with context %}
+
 include:
   - metalk8s.addons.metalk8s-operator.deployed
   - metalk8s.addons.prometheus-operator.pre-upgrade
 
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') %}
-{%- if cp_nodes|length == 1 %}
+{#- A node the upgrade skips is never deployed, so nothing would uncordon it
+    after this drain. On a single-node cluster, that leaves the
+    metalk8s-operator with nowhere to run, and the upgrade waits on it
+    forever. #}
+{%- if cp_nodes|length == 1 and cp_nodes[0] not in skipped_nodes %}
 
 # NOTE: Due to a "bug" in kubelet that affect static pod deployment when
 # APIServer is down (See: https://github.com/kubernetes/kubernetes/issues/103658)
