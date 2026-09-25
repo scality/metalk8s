@@ -486,6 +486,7 @@ export class Metalk8sCSCAlertConfigurationStore implements IAlertConfigurationSt
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${await this.getToken()}`,
       },
       body: JSON.stringify([
         {
@@ -501,13 +502,11 @@ export class Metalk8sCSCAlertConfigurationStore implements IAlertConfigurationSt
       ]),
     });
 
-    if (alertFetchResponse.status !== 200) {
-      throw new Error(`Error while sending test alert`);
-    }
-
-    const alertResponse = await alertFetchResponse.json();
-    if (alertResponse.status !== 'success') {
-      throw new Error(`Error while sending test alert : ${alertResponse.error.message}`);
+    if (!alertFetchResponse.ok) {
+      const errorBody = await alertFetchResponse.text().catch(() => '');
+      throw new Error(
+        `Error while sending test alert (HTTP ${alertFetchResponse.status})${errorBody ? `: ${errorBody}` : ''}`,
+      );
     }
   }
 

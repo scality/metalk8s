@@ -59,6 +59,18 @@ const LogsBanner = ({ logs }: { logs: PromiseResult<AlertStoreLogLine[]> }) => {
   );
 };
 
+const MutationErrorBanner = ({ title, error }: { title: string; error: unknown }) => {
+  if (!error) {
+    return <></>;
+  }
+
+  return (
+    <Banner variant="danger" title={title} icon={<Icon name="Exclamation-circle" color="statusCritical" />}>
+      {error instanceof Error ? error.message : String(error)}
+    </Banner>
+  );
+};
+
 const emailRegex =
   // eslint-disable-next-line no-useless-escape
   /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/i;
@@ -266,6 +278,8 @@ export default function ConfigureAlerting() {
               <>
                 <LogsBanner logs={alertLogs} />
                 {sendTestAlertMutation.status === 'success' && <LogsBanner logs={testAlertlogs} />}
+                <MutationErrorBanner title="Failed to send the test email" error={sendTestAlertMutation.error} />
+                <MutationErrorBanner title="Failed to save the configuration" error={editAlertMutation.error} />
               </>
             }
           >

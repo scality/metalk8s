@@ -12,6 +12,7 @@ import ConfigureAlerting from './ConfigureAlerting';
 
 const saltLoginRequest = jest.fn();
 const patchAlertmanagerConfig = jest.fn();
+const postAlertmanagerAlertsAuthorization = jest.fn();
 
 jest.setTimeout(30000);
 
@@ -112,10 +113,8 @@ const server = setupServer(
   }),
 
   rest.post('http://localhost/api/alertmanager/api/v2/alerts', (req, res, ctx) => {
-    const result = {
-      status: 'success',
-    };
-    return res(ctx.json(result));
+    postAlertmanagerAlertsAuthorization(req.headers.get('Authorization'));
+    return res(ctx.status(200));
   }),
 );
 
@@ -166,6 +165,7 @@ describe('<ConfigureAlerting />', () => {
   beforeEach(() => {
     saltLoginRequest.mockClear();
     patchAlertmanagerConfig.mockClear();
+    postAlertmanagerAlertsAuthorization.mockClear();
     // Setting defaultHidden will disable visibility check on aria-label
     // and speed up the test that use `getByRole`.
     configure({ defaultHidden: true });
@@ -830,6 +830,7 @@ spec:
         'config.yaml': data,
       },
     });
+    expect(postAlertmanagerAlertsAuthorization).toHaveBeenCalledWith('Bearer xxx-yyy-zzz-token');
     await waitFor(() => {
       return expect(screen.getByText(/The email has been sent, please check your email/i)).toBeInTheDocument();
     });
@@ -1041,6 +1042,32 @@ spec:
         screen.getByText(/establish connection to server: dial tcp: lookup smtp4dev.default.svc.cluster.local1/i),
       ).toBeInTheDocument();
     });
+  });
+
+  it('test "send a test email" reports a rejected alert', async () => {
+    server.use(
+      rest.post('http://localhost/api/alertmanager/api/v2/alerts', (req, res, ctx) => {
+        return res(ctx.status(401), ctx.text('Unauthorized'));
+      }),
+    );
+    await commonSetup();
+
+    await act(async () => {
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
+      await userEvent.type(selectors.port(), '42');
+
+      await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
+
+      await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
+    });
+
+    await userEvent.click(selectors.sendTestingEmailButton());
+
+    await waitFor(() => {
+      return expect(screen.getByText(/Failed to send the test email/i)).toBeInTheDocument();
+    });
+    expect(screen.getByText(/Error while sending test alert \(HTTP 401\): Unauthorized/i)).toBeInTheDocument();
+    expect(screen.queryByText(/The email has been sent, please check your email/i)).not.toBeInTheDocument();
   });
 
   it('show errors on sender email address and Recipient Email Addresses fields', async () => {
