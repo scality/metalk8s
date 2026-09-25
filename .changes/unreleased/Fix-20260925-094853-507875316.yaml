@@ -1,0 +1,10 @@
+kind: Fix
+body: |-
+    The node-problem-detector no longer reports the `ReadonlyFilesystem` node
+    condition. It was raised on various platforms without a known root cause, had no
+    observed impact, and never cleared on its own: the node-problem-detector pod had
+    to be restarted to reset it.
+time: 2026-09-25T09:48:53.507875316Z
+custom:
+    CommentId: "5830348369"
+    Pull: "5138"
