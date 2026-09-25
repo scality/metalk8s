@@ -648,6 +648,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/orchestrate/downgrade/post.sls"),
     Path("salt/metalk8s/orchestrate/update-control-plane-ingress-ip.sls"),
     Path("salt/metalk8s/orchestrate/upgrade/init.sls"),
+    Path("salt/metalk8s/orchestrate/upgrade/nodes.jinja"),
     Path("salt/metalk8s/orchestrate/upgrade/pre.sls"),
     Path("salt/metalk8s/orchestrate/upgrade/post.sls"),
     Path("salt/metalk8s/orchestrate/solutions/import-components.sls"),

@@ -3,7 +3,7 @@
 #       This orchestrate should only be called after several other upgrade
 #       steps, refer to the upgrade script.
 
-{%- set dest_version = pillar.metalk8s.cluster_version %}
+{%- from "metalk8s/orchestrate/upgrade/nodes.jinja" import dest_version, skipped_nodes with context %}
 
 Execute the upgrade prechecks:
   salt.runner:
@@ -22,48 +22,8 @@ Execute the upgrade prechecks:
 
 {%- for node in cp_nodes + other_nodes %}
 
-  {#- The version label is set before a node is deployed, since it selects the
-      saltenv, so it says what the node was asked to run, not what it runs. The
-      `version-applied` annotation records the last version a node completed, and
-      that is what decides whether it still needs this one. #}
-  {%- set node_label = pillar.metalk8s.nodes[node].version|string %}
-  {%- set node_applied = pillar.metalk8s.nodes[node].get('version_applied') %}
-  {%- set node_in_progress = pillar.metalk8s.nodes[node].get('version_in_progress') %}
-  {#- Of a node that did finish its last deployment, keep the lower of the annotation
-      and the label. Every version of this orchestrate maintains the label, only the
-      ones that know about the annotation maintain it, so the two can disagree. An
-      upgrade must not skip a node that might still run the older of the two. #}
-  {%- if node_applied
-      and salt.pkg.version_cmp(node_applied|string, node_label) in (-1, 0) %}
-    {%- set node_version = node_applied|string %}
-  {%- else %}
-    {%- set node_version = node_label %}
-  {%- endif %}
-  {%- set version_cmp = salt.pkg.version_cmp(dest_version, node_version) %}
-  {#- A node that completed the destination is left alone, so resuming an
-      interrupted upgrade only works the nodes that need it. This leans on the
-      annotation: `node_version` only equals `node_applied` when that annotation
-      is the one we trust, and the label alone never proved that a node ran the
-      version it advertises (MK8S-370). #}
-  {%- set completed_dest = node_applied is not none
-                           and node_version == node_applied|string
-                           and node_version == dest_version %}
-  {#- If dest_version = 2.1.0-dev and node_version = 2.1.0, version_cmp = 0
-      but we should not upgrade this node #}
-  {#- A node still carrying the in-progress marker is another matter: its
-      deployment never finished, so neither its label nor its recorded version
-      says what it runs, and it gets deployed rather than trusted. #}
-  {%- if node_in_progress is none
-      and (version_cmp == -1
-           or completed_dest
-           or (version_cmp == 0 and dest_version != node_version and '-' not in node_version)) %}
-
-  {%- if completed_dest %}
-    {%- set skip_reason = "already completed " ~ dest_version %}
-  {%- else %}
-    {%- set skip_reason = "already in " ~ node_version ~ " newer than " ~ dest_version %}
-  {%- endif %}
-Skip node {{ node }}, {{ skip_reason }}:
+  {%- if node in skipped_nodes %}
+Skip node {{ node }}, {{ skipped_nodes[node] }}:
   test.succeed_without_changes
 
   {%- else %}
