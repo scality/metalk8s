@@ -15,7 +15,7 @@ import {
   TextArea,
 } from '@scality/core-ui';
 import { Box, Button, Input, Select } from '@scality/core-ui/dist/next';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import { useTheme } from 'styled-components';
@@ -31,7 +31,7 @@ import {
   useEditAlertConfiguration,
   useTestAlertConfiguration,
 } from './domain/AlertConfigurationDomain';
-import { Metalk8sCSCAlertConfigurationStore } from './infrastructure/Metalk8sCSCAlertConfigurationStore';
+import { HttpRequestError, Metalk8sCSCAlertConfigurationStore } from './infrastructure/Metalk8sCSCAlertConfigurationStore';
 import { useBasenameRelativeNavigate } from '@scality/module-federation';
 
 const LogsBanner = ({ logs }: { logs: PromiseResult<AlertStoreLogLine[]> }) => {
@@ -59,14 +59,37 @@ const LogsBanner = ({ logs }: { logs: PromiseResult<AlertStoreLogLine[]> }) => {
   );
 };
 
-const MutationErrorBanner = ({ title, error }: { title: string; error: unknown }) => {
-  if (!error) {
+const getMutationErrorMessage = (error: unknown, failure: string) => {
+  if (error instanceof HttpRequestError && (error.status === 401 || error.status === 403)) {
+    return `You are not allowed to ${failure}. Sign in again, or ask an administrator for the required role.`;
+  }
+  if (error instanceof TypeError || (error instanceof HttpRequestError && error.status >= 500)) {
+    return 'The alerting service could not be reached. Try again in a few minutes.';
+  }
+  return null;
+};
+
+const MutationErrorBanner = ({
+  error,
+  failure,
+  fallbackMessage,
+}: {
+  error: unknown;
+  failure: string;
+  fallbackMessage: string;
+}) => {
+  const message = useMemo(
+    () => (error ? getMutationErrorMessage(error, failure) ?? fallbackMessage : null),
+    [error, failure, fallbackMessage],
+  );
+
+  if (!message) {
     return <></>;
   }
 
   return (
-    <Banner variant="danger" title={title} icon={<Icon name="Exclamation-circle" color="statusCritical" />}>
-      {error instanceof Error ? error.message : String(error)}
+    <Banner variant="danger" icon={<Icon name="Exclamation-circle" color="statusCritical" />}>
+      {message}
     </Banner>
   );
 };
@@ -278,8 +301,16 @@ export default function ConfigureAlerting() {
               <>
                 <LogsBanner logs={alertLogs} />
                 {sendTestAlertMutation.status === 'success' && <LogsBanner logs={testAlertlogs} />}
-                <MutationErrorBanner title="Failed to send the test email" error={sendTestAlertMutation.error} />
-                <MutationErrorBanner title="Failed to save the configuration" error={editAlertMutation.error} />
+                <MutationErrorBanner
+                  error={sendTestAlertMutation.error}
+                  failure="send a test email"
+                  fallbackMessage="The test email could not be sent. Try again, or check the alerting service logs."
+                />
+                <MutationErrorBanner
+                  error={editAlertMutation.error}
+                  failure="save the configuration"
+                  fallbackMessage="The configuration could not be saved. Try again, or check the alerting service logs."
+                />
               </>
             }
           >

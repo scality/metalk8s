@@ -1064,10 +1064,41 @@ spec:
     await userEvent.click(selectors.sendTestingEmailButton());
 
     await waitFor(() => {
-      return expect(screen.getByText(/Failed to send the test email/i)).toBeInTheDocument();
+      return expect(
+        screen.getByText(
+          'You are not allowed to send a test email. Sign in again, or ask an administrator for the required role.',
+        ),
+      ).toBeInTheDocument();
     });
-    expect(screen.getByText(/Error while sending test alert \(HTTP 401\): Unauthorized/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Unauthorized/)).not.toBeInTheDocument();
     expect(screen.queryByText(/The email has been sent, please check your email/i)).not.toBeInTheDocument();
+  });
+
+  it('test "send a test email" reports an unreachable alerting service', async () => {
+    server.use(
+      rest.post('http://localhost/api/alertmanager/api/v2/alerts', (req, res, ctx) => {
+        return res(ctx.status(502), ctx.text('<html>Bad Gateway</html>'));
+      }),
+    );
+    await commonSetup();
+
+    await act(async () => {
+      await userEvent.type(selectors.host(), 'smtp4dev.default.svc.cluster.local');
+      await userEvent.type(selectors.port(), '42');
+
+      await userEvent.type(selectors.sender(), 'renard.admin@scality.com');
+
+      await userEvent.type(selectors.recipient(), 'user1@test.com, user2@test.com');
+    });
+
+    await userEvent.click(selectors.sendTestingEmailButton());
+
+    await waitFor(() => {
+      return expect(
+        screen.getByText('The alerting service could not be reached. Try again in a few minutes.'),
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/Bad Gateway/)).not.toBeInTheDocument();
   });
 
   it('show errors on sender email address and Recipient Email Addresses fields', async () => {
