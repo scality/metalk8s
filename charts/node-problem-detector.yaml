@@ -2,10 +2,11 @@ image:
   repository: '__image__(node-problem-detector)'
 
 settings:
-  # Chart defaults minus docker-monitor (containerd runtime)
+  # Chart defaults minus docker-monitor (containerd runtime) and
+  # readonly-monitor: its ReadonlyFilesystem condition fires with no known
+  # root cause and never clears until the NPD pod restarts
   log_monitors:
     - /config/kernel-monitor.json
-    - /config/readonly-monitor.json
 
   custom_monitor_definitions:
     wp-monitor.json: |

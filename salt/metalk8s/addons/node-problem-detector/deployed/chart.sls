@@ -177,7 +177,7 @@ spec:
       - command:
         - /bin/sh
         - -c
-        - 'exec /node-problem-detector --logtostderr --config.system-log-monitor=/config/kernel-monitor.json,/config/readonly-monitor.json
+        - 'exec /node-problem-detector --logtostderr --config.system-log-monitor=/config/kernel-monitor.json
           --config.custom-plugin-monitor=/custom-config/wp-monitor.json --prometheus-address=0.0.0.0
           --prometheus-port=20257 --k8s-exporter-heartbeat-period=5m0s  '
         env:
