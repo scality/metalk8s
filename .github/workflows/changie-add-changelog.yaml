@@ -302,7 +302,7 @@ jobs:
           echo "force=$should_amend" >> "$GITHUB_OUTPUT"
       - name: Push changes
         if: steps.commit.outputs.changed == 'true'
-        uses: ad-m/github-push-action@v0.8.0
+        uses: ad-m/github-push-action@v1.3.0
         with:
           github_token: ${{ steps.app-token.outputs.token }}
           branch: ${{ fromJSON(steps.get-pr.outputs.result).head.ref }}
