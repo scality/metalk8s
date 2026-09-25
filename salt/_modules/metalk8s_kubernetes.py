@@ -13,6 +13,7 @@ from datetime import datetime
 import json
 import logging
 import re
+import time
 
 from salt.exceptions import CommandExecutionError
 from salt.utils import yaml
@@ -36,6 +37,18 @@ log = logging.getLogger(__name__)
 
 __virtualname__ = "metalk8s_kubernetes"
 
+# A dropped connection means the API server is not answering at all, usually
+# because it is restarting. After an etcd restart it may do so more than once,
+# so the window has to cover a few of those.
+TRANSPORT_RETRY_ATTEMPTS = 12
+TRANSPORT_RETRY_INTERVAL = 5
+
+# The API server answered and asked us to come back later, an etcd leader
+# election typically. It is up, so this resolves in seconds rather than minutes.
+RETRIABLE_API_STATUSES = (500, 502, 503, 504)
+API_STATUS_RETRY_ATTEMPTS = 5
+API_STATUS_RETRY_INTERVAL = 2
+
 
 def __virtual__():
     if MISSING_DEPS:
@@ -43,6 +56,49 @@ def __virtual__():
         return False, error_msg
 
     return __virtualname__
+
+
+def _retry_policy(exception, read_only):
+    """Return `(attempts, interval)` for `exception`, or None to not retry it.
+
+    A dropped connection leaves us unable to tell whether the request was
+    applied, so only reads may be repeated blindly.
+    """
+    if isinstance(exception, ApiException):
+        if exception.status in RETRIABLE_API_STATUSES:
+            return (API_STATUS_RETRY_ATTEMPTS, API_STATUS_RETRY_INTERVAL)
+        return None
+
+    if read_only:
+        return (TRANSPORT_RETRY_ATTEMPTS, TRANSPORT_RETRY_INTERVAL)
+    return None
+
+
+def _call_api(func, read_only=False, **kwargs):
+    """Call a Kubernetes API method, retrying the failures worth retrying."""
+    attempt = 0
+
+    while True:
+        attempt += 1
+        try:
+            return func(**kwargs)
+        except (ApiException, HTTPError) as exc:
+            policy = _retry_policy(exc, read_only)
+            if policy is None:
+                raise
+
+            attempts, interval = policy
+            if attempt >= attempts:
+                raise
+
+            log.warning(
+                "Kubernetes API call failed (attempt %d/%d), retrying in %ds: %s",
+                attempt,
+                attempts,
+                interval,
+                exc,
+            )
+            time.sleep(interval)
 
 
 def _handle_error(exception, action):
@@ -230,7 +286,7 @@ def _object_manipulation_function(action):
         log.debug("Running '%s' with: %s", action, call_kwargs)
 
         try:
-            result = method_func(**call_kwargs)
+            result = _call_api(method_func, read_only=action == "get", **call_kwargs)
         except (ApiException, HTTPError) as exc:
             return _handle_error(exc, action)
 
@@ -400,7 +456,7 @@ def list_objects(
         call_kwargs["label_selector"] = label_selector
 
     try:
-        result = api.get(**call_kwargs)
+        result = _call_api(api.get, read_only=True, **call_kwargs)
     except (ApiException, HTTPError) as exc:
         base_msg = f'Failed to list resources "{apiVersion}/{kind}"'
         if "namespace" in call_kwargs:
