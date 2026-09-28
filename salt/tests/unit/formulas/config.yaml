@@ -953,6 +953,15 @@ metalk8s:
                   <<: *base_context_solution_operator_files
 
     upgrade:
+      salt-minions.sls:
+        _cases:
+          "Single-node cluster":
+            mode: master
+            architecture: single-node
+          "Compact cluster":
+            mode: master
+            architecture: compact
+
       init.sls:
         _cases:
           "Single node cluster":
