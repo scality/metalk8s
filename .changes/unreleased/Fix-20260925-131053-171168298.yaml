@@ -1,0 +1,10 @@
+kind: Fix
+body: |-
+    The **Send a test email** button on the email notification configuration page
+    sends the test alert again. The request was rejected once Alertmanager became
+    protected by OIDC authentication, and the page reported nothing. A failed test or
+    save now shows an error message explaining what went wrong.
+time: 2026-09-25T13:10:53.171168298Z
+custom:
+    CommentId: "5832938760"
+    Pull: "5139"
