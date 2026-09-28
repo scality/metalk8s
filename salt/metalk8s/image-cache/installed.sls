@@ -7,6 +7,17 @@
 include:
   - metalk8s.container-engine.containerd.installed
 
+{#- Declared here and not in either provisioning SLS: both include this
+    one, and a state ID is unique across the whole run, so declaring it twice
+    fails the render of any node that applies both. #}
+Create the image cache directory:
+  file.directory:
+    - name: {{ image_cache.directory }}
+    - user: root
+    - group: root
+    - mode: '0755'
+    - makedirs: True
+
 Install containerd image preload:
   {{ pkg_installed('containerd-image-preload') }}
     - require:

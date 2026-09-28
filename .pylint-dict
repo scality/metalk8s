@@ -39,6 +39,7 @@ getattr
 getitem
 globals
 gofmt
+highstate
 Kube
 kustomize
 html

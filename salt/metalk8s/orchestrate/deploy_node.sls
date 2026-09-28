@@ -275,6 +275,14 @@ Install etcd node:
           # Skip apiserver-proxy healthcheck as local apiserver may not be
           # deployed yet (as we call `highstate` just after)
           skip_apiserver_proxy_healthcheck: True
+    {#- Same grace as the highstate below, and for the same reason. This step
+        applies `metalk8s.roles.etcd`, which pulls in `metalk8s.roles.node`, so
+        it is where an etcd node fills its image cache: a boot cache image is
+        about a gigabyte, and the state does not return while it downloads.
+        Once a `saltutil.find_job` probe goes unanswered no further probe is
+        sent, and Salt reports `Run failed on minions: <node>` while the state
+        is still running, aborting the deployment with the node cordoned #}
+    - timeout: 300
     - require:
       - salt: Check pillar before etcd deployment
 
