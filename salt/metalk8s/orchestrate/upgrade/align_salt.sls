@@ -7,34 +7,29 @@
 {%- set salt_minion_version = repo.packages.get('salt-minion', {}).get('version') %}
 {%- set ca_minion = salt.pillar.get("metalk8s:ca:minion", none) %}
 
-{%- set lagging_nodes = [] %}
-{%- if salt_minion_version and ca_minion %}
-  {%- set ca_versions = salt.saltutil.runner(
-          'metalk8s_saltutil.minions_salt_version', tgt=ca_minion
+{%- macro minion_salt_version(minion) %}
+  {%- set versions = salt.saltutil.runner(
+          'metalk8s_saltutil.minions_salt_version', tgt=minion
       ) %}
-  {%- if ca_versions is not mapping or ca_versions.get(ca_minion) is not string %}
+  {%- if versions is not mapping or versions.get(minion) is not string %}
     {{ raise(
-           "Unable to get the salt-minion version of '" ~ ca_minion ~ "': "
-           ~ ca_versions | string
+           "Unable to get the salt-minion version of '" ~ minion ~ "': "
+           ~ versions | string
        ) }}
   {%- endif %}
-  {%- set ca_version = ca_versions[ca_minion] %}
+  {{- versions[minion] }}
+{%- endmacro %}
+
+{%- set lagging_nodes = [] %}
+{%- if salt_minion_version and ca_minion %}
+  {%- set ca_version = minion_salt_version(ca_minion) | trim %}
   {%- if ca_version == salt_minion_version or ca_version.startswith(salt_minion_version ~ "-") %}
     {%- set control_plane_nodes = (
             salt.metalk8s.minions_by_role('etcd')
             + salt.metalk8s.minions_by_role('master')
         ) | unique | sort %}
     {%- for node in control_plane_nodes if node != ca_minion %}
-      {%- set versions = salt.saltutil.runner(
-              'metalk8s_saltutil.minions_salt_version', tgt=node
-          ) %}
-      {%- if versions is not mapping or versions.get(node) is not string %}
-        {{ raise(
-               "Unable to get the salt-minion version of '" ~ node ~ "': "
-               ~ versions | string
-           ) }}
-      {%- endif %}
-      {%- set version = versions[node] %}
+      {%- set version = minion_salt_version(node) | trim %}
       {%- if version != salt_minion_version and not version.startswith(salt_minion_version ~ "-") %}
         {%- do lagging_nodes.append(node) %}
       {%- endif %}
