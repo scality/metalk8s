@@ -14,13 +14,23 @@ Execute the upgrade prechecks:
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
 
+{#- The CA minion goes first, so that no other control-plane node can request a
+    certificate from a CA minion already upgraded while still running a legacy
+    version itself. Fall back to the sorted order if it cannot lead. #}
+{%- set ca_minion = salt.pillar.get("metalk8s:ca:minion", none) %}
+{%- if ca_minion and ca_minion in cp_nodes and ca_minion in pillar.metalk8s.nodes and ca_minion not in skipped_nodes %}
+  {%- set ordered_nodes = [ca_minion] + (cp_nodes | reject("equalto", ca_minion) | list) + other_nodes %}
+{%- else %}
+  {%- set ordered_nodes = cp_nodes + other_nodes %}
+{%- endif %}
+
 {#- Nodes are deployed one by one, each waiting on the previous one. A skipped node
     declares no state, so the chain must remember the last node actually deployed,
     otherwise the next one waits on a state that does not exist and Salt fails it
     with "The following requisites were not found". #}
 {%- set deployed = namespace(previous=None) %}
 
-{%- for node in cp_nodes + other_nodes %}
+{%- for node in ordered_nodes %}
 
   {%- if node in skipped_nodes %}
 Skip node {{ node }}, {{ skipped_nodes[node] }}:
