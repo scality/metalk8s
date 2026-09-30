@@ -953,6 +953,12 @@ metalk8s:
                   <<: *base_context_solution_operator_files
 
     upgrade:
+      align_salt.sls:
+        _cases:
+          "Compact cluster":
+            mode: master
+            architecture: compact
+
       init.sls:
         _cases:
           "Single node cluster":

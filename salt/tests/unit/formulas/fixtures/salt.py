@@ -373,6 +373,23 @@ def saltutil_runner(salt_mock: SaltMock, method: str, **kwargs: Any) -> Any:
     return salt_mock[method](**kwargs)
 
 
+@register("metalk8s_saltutil.minions_salt_version")
+def metalk8s_saltutil_minions_salt_version(
+    salt_mock: SaltMock, tgt: str = "*"
+) -> Dict[str, str]:
+    """Report the destination salt-minion version, unless overridden in pillar."""
+    versions = json.loads(salt_mock._env.get_template("metalk8s/versions.json").render())
+    packages = versions["packages"][salt_mock._grains["os"].lower()][
+        str(salt_mock._grains["osmajorrelease"])
+    ]
+    default = packages["salt-minion"]["version"]
+    overrides = salt_mock._pillar.get("__TEST_INTERNAL__", {}).get(
+        "salt_minion_versions", {}
+    )
+    minions = list(salt_mock._minions) if tgt == "*" else [tgt]
+    return {minion: overrides.get(minion, default) for minion in minions}
+
+
 @register("saltutil.cmd")
 def saltutil_cmd(
     salt_mock: SaltMock,
