@@ -958,6 +958,30 @@ metalk8s:
           "Compact cluster":
             mode: master
             architecture: compact
+            _subcases:
+              "Every minion already runs the destination Salt (default)": {}
+              # The CA minion is the one already upgraded, the others are
+              # not: they must be aligned before etcd is touched
+              "CA minion on the destination with lagging masters":
+                pillar_overrides:
+                  __TEST_INTERNAL__:
+                    salt_minion_versions:
+                      master-1: "3002.9"
+                      master-2: "3002.9"
+              "CA minion on the destination with one lagging master":
+                pillar_overrides:
+                  __TEST_INTERNAL__:
+                    salt_minion_versions:
+                      master-2: "3002.9"
+              # The CA minion still runs the old Salt, so the others cannot
+              # be ahead of it and nothing is aligned
+              "CA minion on the old version":
+                pillar_overrides:
+                  __TEST_INTERNAL__:
+                    salt_minion_versions:
+                      bootstrap: "3002.9"
+                      master-1: "3002.9"
+                      master-2: "3002.9"
 
       init.sls:
         _cases:
@@ -974,6 +998,26 @@ metalk8s:
             architecture: compact
             _subcases: &upgrade_subcases
               "Destination matches (default)": {}
+              # The CA minion must not be served by a control-plane node
+              # already upgraded while it runs a legacy version itself, so
+              # it is deployed first whatever its name sorts to
+              "The CA minion sorts after another master":
+                pillar_overrides:
+                  metalk8s:
+                    ca:
+                      minion: master-2
+                    cluster_version: 2.9.0
+              # A CA minion that has nothing to deploy cannot lead
+              "The CA minion sorts after another master and is skipped":
+                pillar_overrides:
+                  metalk8s:
+                    ca:
+                      minion: master-2
+                    cluster_version: 2.9.0
+                    nodes:
+                      master-2:
+                        version: 2.9.0
+                        version_applied: 2.9.0
               "Destination is higher than all nodes":
                 pillar_overrides:
                   metalk8s:

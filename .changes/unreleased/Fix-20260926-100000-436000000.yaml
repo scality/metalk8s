@@ -1,0 +1,5 @@
+kind: Fix
+body: An upgrade no longer breaks when the CA minion is not the first control-plane node in name order (MK8S-436). The CA minion is now deployed first, and the salt-minion of the other etcd and master nodes is aligned before etcd is upgraded, so that no node requests a certificate from an already upgraded CA while still running a legacy version.
+time: 2026-09-26T10:00:00.436000000Z
+custom:
+    CommentId: cli

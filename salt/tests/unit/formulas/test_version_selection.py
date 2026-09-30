@@ -10,11 +10,12 @@ from typing import Any, Dict, Iterator, List, Optional, Set
 
 import pytest
 
-from tests.unit.formulas.fixtures.rendered import RenderedStates
+from tests.unit.formulas.fixtures.rendered import RenderedStates, required_states
 
 UPGRADE = Path("metalk8s/orchestrate/upgrade/init.sls")
 DOWNGRADE = Path("metalk8s/orchestrate/downgrade/init.sls")
 DEPLOY_NODE = Path("metalk8s/orchestrate/deploy_node.sls")
+ALIGN_SALT = Path("metalk8s/orchestrate/upgrade/align_salt.sls")
 
 # The node the test cases give a version history to.
 NODE = "master-1"
@@ -31,6 +32,19 @@ DEPLOYED_PER_CASE: Dict[str, bool] = {
     "A node that already completed the destination": False,
     "A node whose label alone says the destination": True,
     "A cluster resuming an interrupted upgrade": True,
+}
+
+# The CA minion of the test cases that give it a name sorting after another master.
+CA_NODE = "master-2"
+
+# Test case name, and the minions that must be reconfigured by `align_salt.sls`
+# for it. The names come from the sub-cases declared in `config.yaml`, and the CA
+# minion, `bootstrap`, is never one of them.
+ALIGNED_PER_CASE: Dict[str, Set[str]] = {
+    "Every minion already runs the destination Salt": set(),
+    "CA minion on the destination with lagging masters": {"master-1", "master-2"},
+    "CA minion on the destination with one lagging master": {"master-2"},
+    "CA minion on the old version": set(),
 }
 
 # Requisites naming another state, all of which must exist in the same document.
@@ -116,7 +130,7 @@ def test_selection_follows_the_applied_version(
 
 @pytest.mark.formulas
 @pytest.mark.parametrize(
-    "template_path", [UPGRADE, DOWNGRADE, DEPLOY_NODE], indirect=True
+    "template_path", [UPGRADE, DOWNGRADE, DEPLOY_NODE, ALIGN_SALT], indirect=True
 )
 def test_no_requisite_on_a_missing_state(rendered_states: RenderedStates) -> None:
     """Check that no state waits on a state the orchestrate did not declare.
@@ -172,3 +186,86 @@ def test_the_deployment_maintains_both_annotations(
         )
         in_progress = annotations["metalk8s.scality.com/version-in-progress"]
         assert in_progress is None, f"marker still set ({case_id})"
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [UPGRADE], indirect=True)
+def test_the_ca_minion_is_deployed_first(rendered_states: RenderedStates) -> None:
+    """Check that no node is deployed before the CA minion, whatever its name.
+
+    A control-plane node deployed while the CA minion already runs the new version
+    asks that CA for certificates with its legacy version, so the CA leads, unless
+    it has nothing to deploy.
+    """
+    checked = 0
+
+    for case_id, states in rendered_states:
+        if "The CA minion sorts after another master" not in case_id:
+            continue
+        checked += 1
+
+        ca_deploy_id = f"Deploy node {CA_NODE}"
+        others = [
+            state_id
+            for state_id in states
+            if state_id.startswith("Deploy node ") and state_id != ca_deploy_id
+        ]
+        assert others, f"no other node is deployed ({case_id})"
+
+        if "and is skipped" in case_id:
+            assert ca_deploy_id not in states, f"'{ca_deploy_id}' is declared ({case_id})"
+            assert any(
+                state_id.startswith(f"Skip node {CA_NODE},") for state_id in states
+            ), f"{CA_NODE} is not skipped ({case_id})"
+            continue
+
+        assert ca_deploy_id in states, f"'{ca_deploy_id}' is missing ({case_id})"
+        assert not required_states(states, ca_deploy_id) & set(
+            others
+        ), f"'{ca_deploy_id}' waits on another node ({case_id})"
+        for state_id in others:
+            assert ca_deploy_id in required_states(
+                states, state_id
+            ), f"'{state_id}' does not wait on '{ca_deploy_id}' ({case_id})"
+
+    assert checked >= 2, "the CA ordering cases are gone from `config.yaml`"
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [ALIGN_SALT], indirect=True)
+def test_only_lagging_minions_are_aligned(rendered_states: RenderedStates) -> None:
+    """Check that only the minions behind the CA minion get their Salt aligned."""
+    seen: Set[str] = set()
+
+    for case_id, states in rendered_states:
+        expected = next(
+            (
+                aligned
+                for case_name, aligned in ALIGNED_PER_CASE.items()
+                if case_name in case_id
+            ),
+            None,
+        )
+        if expected is None:
+            continue
+        seen.add(case_id)
+
+        reconfigured = {
+            state_id.split(" on ", 1)[1]
+            for state_id in states
+            if state_id.startswith("Reconfigure salt-minion on ")
+        }
+        waited = {
+            state_id.split(" ")[2]
+            for state_id in states
+            if state_id.startswith("Wait minion ")
+        }
+        assert reconfigured == expected, f"unexpected minions aligned ({case_id})"
+        assert waited == expected, f"unexpected minions waited on ({case_id})"
+        assert "bootstrap" not in reconfigured, f"the CA is reconfigured ({case_id})"
+        if not expected:
+            assert set(states) == {"No salt-minion to align"}, case_id
+
+    assert len(seen) == len(ALIGNED_PER_CASE), (
+        "the cases exercising the alignment are gone from `config.yaml`"
+    )
