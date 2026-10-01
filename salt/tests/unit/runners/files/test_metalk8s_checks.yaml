@@ -475,6 +475,66 @@ upgrade:
         - Node node-1 iS nOt ReAdY
         - Minion node-1 iS nOt ReAdY
 
+  # 11. Success: apiserver feature gates kube-apiserver still accepts
+  - pillar:
+      metalk8s:
+        nodes:
+          node-1:
+            version: 1.1.0
+      kubernetes:
+        apiServer:
+          featureGates:
+            # Not in the feature list, e.g. a client-go gate
+            WatchListClient: true
+            # Locked, but to the value set
+            DynamicResourceAllocation: true
+            VolumeAttributesClass: "True"
+            GitRepoVolumeDriver: "false"
+            # Not a boolean, kube-apiserver refuses it whatever the version
+            JobManagedBy: maybe
+    dest_version: 1.2.0
+    saltenv: metalk8s-1.2.0
+    result: True
+
+  # 12. Failure: apiserver feature gates removed or locked to the other value
+  - &feature_gates_failures
+    pillar:
+      metalk8s:
+        nodes:
+          node-1:
+            version: 1.1.0
+      kubernetes:
+        apiServer:
+          featureGates:
+            StrictCostEnforcementForVAP: true
+            DynamicResourceAllocation: false
+            SeparateCacheWatchRPC: "true"
+    dest_version: 1.2.0
+    saltenv: metalk8s-1.2.0
+    raises: False
+    result:
+      retcode: 1
+      errors:
+        - >-
+          kube-apiserver feature gate 'DynamicResourceAllocation' is locked to
+          true in Kubernetes, remove it from 'kubernetes.apiServer.featureGates'
+          in the Bootstrap configuration before upgrading
+        - >-
+          kube-apiserver feature gate 'SeparateCacheWatchRPC' is locked to
+          false in Kubernetes, remove it from 'kubernetes.apiServer.featureGates'
+          in the Bootstrap configuration before upgrading
+        - >-
+          kube-apiserver feature gate 'StrictCostEnforcementForVAP' was removed
+          from Kubernetes, remove it from 'kubernetes.apiServer.featureGates' in
+          the Bootstrap configuration before upgrading
+
+  # 13. Failure: apiserver feature gates removed (raises)
+  - <<: *feature_gates_failures
+    raises: True
+    expect_raise: True
+    result: |-
+      kube-apiserver feature gate 'StrictCostEnforcementForVAP' was removed
+
 downgrade:
   # 1. Success: nominal (minor downgrade)
   - pillar:

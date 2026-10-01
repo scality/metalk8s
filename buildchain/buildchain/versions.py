@@ -19,8 +19,8 @@ Image = namedtuple("Image", ("name", "version", "digest"))
 # Project-wide versions {{{
 
 K8S_VERSION_MAJOR: str = "1"
-K8S_VERSION_MINOR: str = "34"
-K8S_VERSION_PATCH: str = "7"
+K8S_VERSION_MINOR: str = "36"
+K8S_VERSION_PATCH: str = "5"
 
 K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
 K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
@@ -126,8 +126,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="coredns",
-        version="v1.12.4",
-        digest="sha256:986f04c2e15e147d00bdd51e8c51bcef3644b13ff806be7d2ff1b261d6dfbae1",
+        version="v1.14.2",
+        digest="sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
     ),
     Image(
         name="dex",
@@ -152,22 +152,22 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="kube-apiserver",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:b96b8464d152a24c81d7f0435fd2198f8486970cd26a9e0e9c20826c73d1441c",
+        digest="sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
     ),
     Image(
         name="kube-controller-manager",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:7d759bdc4fef10a3fc1ad60ce9439d58e1a4df7ebb22751f7cc0201ce55f280b",
+        digest="sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
     ),
     Image(
         name="kube-proxy",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:062519bc0a14769e2f98c6bdff7816a17e6252de3f3c9cb102e6be33fe38d9e2",
+        digest="sha256:5f180e85f05b5b0949fc9d2886ca536c2aa8b8a3b8302b58e7d49c4a645f97a9",
     ),
     Image(
         name="kube-scheduler",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:4ab32f707ff84beaac431797999707757b885196b0b9a52d29cb67f95efce7c1",
+        digest="sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
     ),
     Image(
         name="kube-state-metrics",
@@ -203,7 +203,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="pause",
-        version="3.10.1",
+        version="3.10.2",
         # Do not check the digest for this image, since this one is re-published
         # several times with the same tag
         digest=None,
