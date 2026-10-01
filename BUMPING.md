@@ -242,6 +242,19 @@ New `.patch` files in the patches directory are automatically picked up.
 5. Check `deploy/manifests.yaml` for correct Jinja templates
 6. Remove backup: `rm -rf <operator>.bak/`
 
+## Kubernetes
+
+The upgrade prechecks refuse kube-apiserver feature gates that the new
+Kubernetes version removed or locked, since `kubernetes.apiServer.featureGates`
+is passed to kube-apiserver as is. Regenerate the `KUBE_REMOVED_FEATURE_GATES`
+and `KUBE_LOCKED_FEATURE_GATES` constants of `salt/_runners/metalk8s_checks.py`
+on every bump, from the Kubernetes version the previous MetalK8s major ships to
+the new one:
+
+```
+python3 tools/kube-feature-gates/generate.py 1.33.7 1.36.5
+```
+
 ## Calico
 
 See [BUMPING_CALICO.md](BUMPING_CALICO.md) for the full Calico bump guide.
