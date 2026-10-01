@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from kubernetes.dynamic.exceptions import ResourceNotFoundError
 from kubernetes.client.rest import ApiException
+from urllib3.exceptions import ProtocolError
 from parameterized import param, parameterized
 from salt.utils import dictupdate, hashutils
 from salt.exceptions import CommandExecutionError
@@ -122,14 +123,30 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         namespaced=False,
         manifest_file_content=None,
         called_with=None,
+        transport_error=False,
+        errors=None,
+        calls=None,
         **kwargs
     ):
         """
         Tests the return of `create_object` function
         """
 
+        remaining_errors = [errors]
+
+        def _fail_now():
+            """Whether this call fails, consuming one scheduled failure."""
+            if remaining_errors[0] is None:
+                return api_status_code is not None or transport_error
+            if remaining_errors[0] <= 0:
+                return False
+            remaining_errors[0] -= 1
+            return True
+
         def _create_mock(body, **_):
-            if api_status_code is not None:
+            if _fail_now():
+                if transport_error:
+                    raise ProtocolError("Connection aborted.", OSError(0, "Error"))
                 raise ApiException(
                     status=api_status_code, reason="An error has occurred"
                 )
@@ -161,16 +178,22 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         }
         with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch.dict(
             metalk8s_kubernetes.__salt__, salt_dict
-        ):
+        ), patch("time.sleep", MagicMock()) as sleep_mock:
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.create_object, **kwargs
                 )
             else:
                 self.assertEqual(metalk8s_kubernetes.create_object(**kwargs), result)
-                create_mock.assert_called_once()
                 if called_with:
                     self.assertDictContainsSubset(called_with, create_mock.call_args[1])
+
+            if calls is not None:
+                self.assertEqual(create_mock.call_count, calls)
+                self.assertEqual(sleep_mock.call_count, calls - 1)
+            elif not raises:
+                create_mock.assert_called_once()
+                sleep_mock.assert_not_called()
 
     @utils.parameterized_from_cases(
         YAML_TESTS_CASES["delete_object"] + YAML_TESTS_CASES["common_tests"]
@@ -463,13 +486,21 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         api_status_code=None,
         namespaced=True,
         called_with=None,
+        transport_errors=0,
+        calls=None,
         **kwargs
     ):
         """
         Tests the return of `list_objects` function
         """
 
+        remaining_transport_errors = [transport_errors]
+
         def _list_mock(**_):
+            if remaining_transport_errors[0]:
+                remaining_transport_errors[0] -= 1
+                raise ProtocolError("Connection aborted.", OSError(0, "Error"))
+
             if api_status_code is not None:
                 raise ApiException(
                     status=api_status_code, reason="An error has occurred"
@@ -494,16 +525,24 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             )
         }
 
-        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict):
+        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch(
+            "time.sleep", MagicMock()
+        ) as sleep_mock:
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.list_objects, **kwargs
                 )
             else:
                 self.assertEqual(metalk8s_kubernetes.list_objects(**kwargs), result)
-                list_mock.assert_called_once()
                 if called_with:
                     self.assertDictContainsSubset(called_with, list_mock.call_args[1])
+
+            if calls is not None:
+                self.assertEqual(list_mock.call_count, calls)
+                self.assertEqual(sleep_mock.call_count, calls - 1)
+            elif not raises:
+                list_mock.assert_called_once()
+                sleep_mock.assert_not_called()
 
     @parameterized.expand(
         param.explicit(kwargs=test_case)

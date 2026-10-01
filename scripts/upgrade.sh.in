@@ -146,15 +146,22 @@ upgrade_etcd () {
 }
 
 upgrade_apiservers () {
-    # The etcd upgrade above restarts etcd, which can make the kube-apiserver
-    # briefly unavailable (especially on a single-node cluster). Wait for the
-    # apiserver to be ready before running the orchestrate: rendering it
-    # requires the salt-master to compile the `metalk8s_nodes` ext_pillar
-    # against the apiserver, and if it is still down the pillar compilation
-    # fails and aborts the whole upgrade.
+    # The etcd upgrade above restarts etcd, which leaves the kube-apiserver
+    # unable to serve until the kubelet has swapped the etcd static pod. Wait
+    # for it before running the orchestrate: rendering that orchestrate makes
+    # the salt-master compile the `metalk8s_nodes` ext_pillar against the
+    # apiserver, and a failure there aborts the upgrade before any state runs.
+    #
+    # NOTE: this polls `/readyz`, not `/healthz`. On a graceful shutdown the
+    # apiserver keeps answering `/healthz` and `/livez` with `ok` while
+    # `/readyz` fails, so that load balancers drain it -- meaning `/healthz`
+    # reports a healthy apiserver that is about to stop listening. The match
+    # on the RBAC bootstrap hook mirrors the gate in `orchestrate/apiserver`.
     "${SALT_CALL}" --local --retcode-passthrough http.wait_for_successful_query \
-        https://127.0.0.1:7443/healthz \
-        verify_ssl=False status=200 match="ok" wait_for=300 request_interval=5
+        "https://127.0.0.1:7443/readyz?verbose" \
+        verify_ssl=False status=200 \
+        match="poststarthook/rbac/bootstrap-roles ok" \
+        wait_for=300 request_interval=5
 
     SALT_MASTER_CALL=("${EXEC_CONTAINER_COMMAND[@]}" "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
