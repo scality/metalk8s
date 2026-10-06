@@ -52,14 +52,19 @@ spec:
     tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
+        operator: Exists
       - key: node-role.kubernetes.io/control-plane
         effect: NoSchedule
+        operator: Exists
       - key: node-role.kubernetes.io/bootstrap
         effect: NoSchedule
+        operator: Exists
       - key: node-role.kubernetes.io/registry
         effect: NoSchedule
+        operator: Exists
       - key: node-role.kubernetes.io/infra
         effect: NoSchedule
+        operator: Exists
     enabled: true
     ignorePaths:
       - metalk8s-registry-from-config.invalid # This one is still handled by salt until the migration to the new registry is fully completed
