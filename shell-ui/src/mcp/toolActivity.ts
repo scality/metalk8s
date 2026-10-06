@@ -25,6 +25,8 @@
  * (`isTaskHandle(ret)` → `registerHostTask`), and both engines call that same function.
  */
 
+import type { ModelContextWithExtensions } from '@mcp-b/webmcp-types';
+
 type RegisteredTool = { name: string };
 
 type NativeModelContext = {
@@ -33,14 +35,13 @@ type NativeModelContext = {
   executeTool: (tool: RegisteredTool, args: string) => Promise<string>;
 };
 
-type McpToolResult = {
-  content: { type: 'text'; text: string }[];
-  structuredContent?: unknown;
-  isError: boolean;
-};
-
-export type PolyfilledModelContext = {
-  callTool: (tool: { name?: string } | string, args: unknown) => Promise<McpToolResult>;
+/**
+ * `callTool` takes ONE object — `{ name, arguments }`, the shape MCP puts on the wire. Its signature
+ * is taken from the package rather than restated here, so it cannot drift from what callers actually
+ * pass: an earlier version of this file declared a second `args` parameter that nothing passes, and
+ * every natively routed tool silently ran with `{}`.
+ */
+export type PolyfilledModelContext = Pick<ModelContextWithExtensions, 'callTool'> & {
   native?: NativeModelContext;
   __isBrowserMcpServer?: boolean;
   __rerouted?: boolean;
@@ -64,8 +65,8 @@ export const rerouteThroughNative = (polyfill: PolyfilledModelContext): boolean 
 
   const executeInPage = polyfill.callTool.bind(polyfill);
 
-  polyfill.callTool = async (tool, args) => {
-    const name = typeof tool === 'string' ? tool : tool?.name;
+  polyfill.callTool = async (params) => {
+    const { name } = params;
     try {
       // Failing to read the mirror is not fatal: no handle simply means the original engine runs it.
       // getTools is synchronous in Chrome today, so this has to catch a plain throw as well as a
@@ -79,15 +80,12 @@ export const rerouteThroughNative = (polyfill: PolyfilledModelContext): boolean 
       const handle = Array.from(tools).find((candidate) => candidate.name === name);
       // Anything the polyfill did not mirror keeps the original path rather than failing, so
       // installing this can never take a tool offline.
-      if (!handle) return executeInPage(tool, args);
+      if (!handle) return executeInPage(params);
 
       // Executed once, here — never alongside the original path. This route carries every app's
       // mutating tools (deleteBucket, putObject) as well as the read-only ones, so running both
       // engines "to compare" would perform the operation twice.
-      const text = await native.executeTool(
-        handle,
-        typeof args === 'string' ? args : JSON.stringify(args ?? {}),
-      );
+      const text = await native.executeTool(handle, JSON.stringify(params.arguments ?? {}));
 
       let structuredContent: unknown;
       try {

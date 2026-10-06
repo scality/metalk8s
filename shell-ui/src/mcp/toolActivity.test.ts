@@ -1,3 +1,4 @@
+import type { ToolResponse } from '@mcp-b/webmcp-types';
 import {
   rerouteThroughNative,
   traceToolActivity,
@@ -6,17 +7,27 @@ import {
 
 /**
  * The re-route sits in front of every tool call every app registers, mutating ones included, so the
- * behaviour worth pinning is not "it traces" — it is that it stays faithful: one execution, the same
- * envelope back, and no tool taken offline when the mirror is incomplete.
+ * behaviour worth pinning is not "it traces" — it is that it stays faithful: the arguments arrive,
+ * one execution happens, the same envelope comes back, and no tool is taken offline when the mirror
+ * is incomplete.
+ *
+ * Every call here uses the real `callTool({ name, arguments })` shape. The first version of these
+ * tests invented a second `args` parameter, which made them pass against a signature no caller uses
+ * while real calls lost their arguments.
  */
 
 type Call = { name: string; args: string };
+
+const textOf = (result: ToolResponse): string | undefined => {
+  const block = result.content?.[0];
+  return block && 'text' in block ? (block.text as string) : undefined;
+};
 
 const polyfillWith = (
   mirroredToolNames: string[],
   execute: (call: Call) => Promise<string>,
 ) => {
-  const inPageCalls: string[] = [];
+  const inPageCalls: Call[] = [];
   const nativeCalls: Call[] = [];
 
   const polyfill: PolyfilledModelContext = {
@@ -28,8 +39,8 @@ const polyfillWith = (
         return execute({ name: tool.name, args });
       },
     },
-    callTool: async (tool) => {
-      inPageCalls.push(typeof tool === 'string' ? tool : (tool.name ?? ''));
+    callTool: async (params) => {
+      inPageCalls.push({ name: params.name, args: JSON.stringify(params.arguments ?? {}) });
       return { content: [{ type: 'text', text: 'from the page' }], isError: false };
     },
   };
@@ -38,12 +49,31 @@ const polyfillWith = (
 };
 
 describe('rerouteThroughNative', () => {
-  it('returns the native result in the envelope the relay expects', async () => {
+  it('hands the arguments to the native engine', async () => {
+    const { polyfill, nativeCalls } = polyfillWith(['createBucket'], async () => '{}');
+    rerouteThroughNative(polyfill);
+
+    await polyfill.callTool({ name: 'createBucket', arguments: { Bucket: 'b1' } });
+
+    // The whole point: a bucket name that does not survive the hop creates the wrong bucket.
+    expect(nativeCalls).toEqual([{ name: 'createBucket', args: '{"Bucket":"b1"}' }]);
+  });
+
+  it('sends an empty object for a tool called with no arguments', async () => {
+    const { polyfill, nativeCalls } = polyfillWith(['listBuckets'], async () => '{}');
+    rerouteThroughNative(polyfill);
+
+    await polyfill.callTool({ name: 'listBuckets' });
+
+    expect(nativeCalls).toEqual([{ name: 'listBuckets', args: '{}' }]);
+  });
+
+  it('returns the native result in the envelope the caller expects', async () => {
     const payload = '{"Status":"Enabled","MFADelete":"Disabled"}';
     const { polyfill } = polyfillWith(['getBucketVersioning'], async () => payload);
     rerouteThroughNative(polyfill);
 
-    const result = await polyfill.callTool({ name: 'getBucketVersioning' }, {});
+    const result = await polyfill.callTool({ name: 'getBucketVersioning' });
 
     expect(result).toEqual({
       content: [{ type: 'text', text: payload }],
@@ -53,25 +83,25 @@ describe('rerouteThroughNative', () => {
   });
 
   it('runs the tool once, through the native engine only', async () => {
-    const { polyfill, inPageCalls, nativeCalls } = polyfillWith(['createBucket'], async () => '{}');
+    const { polyfill, inPageCalls, nativeCalls } = polyfillWith(['deleteBucket'], async () => '{}');
     rerouteThroughNative(polyfill);
 
-    await polyfill.callTool({ name: 'createBucket' }, { Bucket: 'b1' });
+    await polyfill.callTool({ name: 'deleteBucket', arguments: { Bucket: 'b1' } });
 
-    // Running both engines "to compare" would create the bucket twice.
-    expect(nativeCalls).toEqual([{ name: 'createBucket', args: '{"Bucket":"b1"}' }]);
+    // Running both engines "to compare" would delete the bucket twice.
+    expect(nativeCalls).toHaveLength(1);
     expect(inPageCalls).toEqual([]);
   });
 
-  it('falls back to the page engine for a tool the mirror does not have', async () => {
+  it('falls back to the page engine for a tool the mirror does not have, arguments included', async () => {
     const { polyfill, inPageCalls, nativeCalls } = polyfillWith([], async () => '{}');
     rerouteThroughNative(polyfill);
 
-    const result = await polyfill.callTool({ name: 'listBuckets' }, {});
+    const result = await polyfill.callTool({ name: 'putObject', arguments: { Key: 'k' } });
 
-    expect(inPageCalls).toEqual(['listBuckets']);
+    expect(inPageCalls).toEqual([{ name: 'putObject', args: '{"Key":"k"}' }]);
     expect(nativeCalls).toEqual([]);
-    expect(result.content[0].text).toBe('from the page');
+    expect(textOf(result)).toBe('from the page');
   });
 
   it('falls back to the page engine when the mirror cannot be read', async () => {
@@ -81,10 +111,10 @@ describe('rerouteThroughNative', () => {
     };
     rerouteThroughNative(polyfill);
 
-    const result = await polyfill.callTool({ name: 'listBuckets' }, {});
+    const result = await polyfill.callTool({ name: 'listBuckets' });
 
     // Tracing is never worth failing a tool call for.
-    expect(inPageCalls).toEqual(['listBuckets']);
+    expect(inPageCalls.map((call) => call.name)).toEqual(['listBuckets']);
     expect(result.isError).toBe(false);
   });
 
@@ -92,20 +122,20 @@ describe('rerouteThroughNative', () => {
     const { polyfill } = polyfillWith(['getObject'], async () => 'plain log line');
     rerouteThroughNative(polyfill);
 
-    const result = await polyfill.callTool({ name: 'getObject' }, {});
+    const result = await polyfill.callTool({ name: 'getObject' });
 
-    expect(result.content[0].text).toBe('plain log line');
+    expect(textOf(result)).toBe('plain log line');
     expect(result.structuredContent).toBeUndefined();
     expect(result.isError).toBe(false);
   });
 
-  it('reports a native failure as an MCP error instead of throwing at the relay', async () => {
+  it('reports a native failure as an MCP error instead of throwing at the caller', async () => {
     const { polyfill } = polyfillWith(['getBucketVersioning'], async () => {
       throw new Error('the endpoint did not answer');
     });
     rerouteThroughNative(polyfill);
 
-    const result = await polyfill.callTool({ name: 'getBucketVersioning' }, {});
+    const result = await polyfill.callTool({ name: 'getBucketVersioning' });
 
     expect(result).toEqual({
       content: [{ type: 'text', text: 'the endpoint did not answer' }],
@@ -119,7 +149,7 @@ describe('rerouteThroughNative', () => {
     expect(rerouteThroughNative(polyfill)).toBe(true);
     expect(rerouteThroughNative(polyfill)).toBe(false);
 
-    await polyfill.callTool({ name: 'headBucket' }, {});
+    await polyfill.callTool({ name: 'headBucket' });
     expect(nativeCalls).toHaveLength(1);
   });
 
@@ -150,13 +180,10 @@ describe('traceToolActivity', () => {
     expect(polyfill.__rerouted).toBe(true);
   });
 
-  it('does nothing on a native context, which needs no re-routing', () => {
+  it('does nothing on a context with no mirror to execute against', () => {
     window.localStorage.setItem('webmcp.trace', '1');
-    // A context with no `.native` is either the real API or something we do not understand; either
-    // way there is no mirror to execute against.
-    const nativeOnly = { callTool: async () => ({ content: [], isError: false }) };
 
-    expect(() => traceToolActivity(nativeOnly)).not.toThrow();
+    expect(() => traceToolActivity({ callTool: async () => ({ content: [] }) })).not.toThrow();
   });
 
   it('survives being handed nothing at all', () => {
