@@ -17,8 +17,6 @@ import {
 import { useDeployedApps } from '../initFederation/UIListProvider';
 import type { ToolContext } from './types';
 
-declare const __webpack_public_path__: string;
-
 type MCPToolsModule =
   | {
       /** New factory-based export — preferred. */
@@ -133,23 +131,6 @@ export const _InternalMCPRegistrar = ({
   return null;
 };
 
-// Inject the local-relay embed script once — must be a <script> tag (not an ES module import)
-// so that document.currentScript.src is set, allowing widget.html to resolve locally
-// instead of falling back to the CDN.
-function useRelayEmbed() {
-  useEffect(() => {
-    if (document.querySelector('script[data-webmcp-relay-embed]')) return;
-    const script = document.createElement('script');
-    // __webpack_public_path__ is the runtime public path (e.g. '/shell/'),
-    // ensuring the request hits the actual file rather than the SPA fallback.
-    script.src = `${__webpack_public_path__}embed.js`;
-    script.dataset.webmcpRelayEmbed = '1';
-    script.dataset.requestTimeout = '120000'; // 2 min — tools can chain multiple API calls
-    document.head.appendChild(script);
-    return () => script.remove();
-  }, []);
-}
-
 type DeployedApp = ReturnType<typeof useDeployedApps>[0];
 
 // Extracted to a component so useMemo can stabilise selfConfiguration at hook
@@ -199,7 +180,6 @@ const AppMCPRegistrar = ({
 };
 
 export const MCPRegistrar = () => {
-  useRelayEmbed();
   const deployedApps = useDeployedApps();
   const navigate = useNavigate();
 

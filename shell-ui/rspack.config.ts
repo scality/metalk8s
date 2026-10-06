@@ -217,10 +217,6 @@ const config: Configuration = {
     new rspack.CopyRspackPlugin({
       patterns: [
         { from: 'public' },
-        {
-          from: 'node_modules/@mcp-b/webmcp-local-relay/dist/browser',
-          to: '.',
-        },
       ],
     }),
     process.env.RSDOCTOR && new RsdoctorRspackPlugin({}),
