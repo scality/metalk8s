@@ -291,6 +291,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/cert-manager/deployed/chart.sls"),
     Path("salt/metalk8s/addons/cert-manager/deployed/init.sls"),
     Path("salt/metalk8s/addons/cert-manager/deployed/namespace.sls"),
+    Path("salt/metalk8s/addons/cert-manager/deployed/monitoring/init.sls"),
+    Path("salt/metalk8s/addons/cert-manager/deployed/monitoring/servicemonitor.sls"),
     Path("salt/metalk8s/addons/crl-operator/deployed/chart.sls"),
     Path("salt/metalk8s/addons/crl-operator/deployed/init.sls"),
     Path("salt/metalk8s/addons/disk-management-agent/deployed/chart.sls"),
