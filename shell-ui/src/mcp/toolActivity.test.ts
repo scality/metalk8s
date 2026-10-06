@@ -25,7 +25,7 @@ const textOf = (result: ToolResponse): string | undefined => {
 
 const polyfillWith = (
   mirroredToolNames: string[],
-  execute: (call: Call) => Promise<string>,
+  execute: (call: Call) => Promise<string | null>,
 ) => {
   const inPageCalls: Call[] = [];
   const nativeCalls: Call[] = [];
@@ -152,6 +152,28 @@ describe('rerouteThroughNative', () => {
     expect(result.structuredContent).toEqual(data);
     expect(textOf(result)).toBe(JSON.stringify(data));
     expect(result.isError).toBe(false);
+  });
+
+  it('reports an absent result as an error, not as a successful "null"', async () => {
+    const { polyfill } = polyfillWith(['navigateToRoute'], async () => null);
+    rerouteThroughNative(polyfill);
+
+    const result = await polyfill.callTool({ name: 'navigateToRoute' });
+
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toBe('Tool execution interrupted by navigation');
+  });
+
+  it('unquotes a string result, so the text is the same as the page engine returns', async () => {
+    // A plain string can come back JSON-quoted depending on how the mirror serialises it; the page
+    // engine would have returned `done`, and tracing must not change what the caller reads.
+    const { polyfill } = polyfillWith(['headBucket'], async () => JSON.stringify('done'));
+    rerouteThroughNative(polyfill);
+
+    const result = await polyfill.callTool({ name: 'headBucket' });
+
+    expect(textOf(result)).toBe('done');
+    expect(result.structuredContent).toBeUndefined();
   });
 
   it('reports a native failure as an MCP error instead of throwing at the caller', async () => {

@@ -32,7 +32,9 @@ type RegisteredTool = { name: string };
 type NativeModelContext = {
   getTools: () => RegisteredTool[] | Promise<RegisteredTool[]>;
   // Takes the handle getTools() hands back — not a name — and the arguments as a JSON *string*.
-  executeTool: (tool: RegisteredTool, args: string) => Promise<string>;
+  // Resolves to null when there is no result to report: @mcp-b/global's own shim path answers null
+  // for a tool that returns nothing or whose call was cut short by navigation.
+  executeTool: (tool: RegisteredTool, args: string) => Promise<string | null>;
 };
 
 /**
@@ -49,6 +51,12 @@ export type PolyfilledModelContext = Pick<ModelContextWithExtensions, 'callTool'
 
 const TAG = '[MCP]';
 const OPT_IN_KEY = 'webmcp.trace';
+
+// Same wording @mcp-b/global uses for this case, so a reader sees one message rather than two.
+const NO_RESULT: ToolResponse = {
+  content: [{ type: 'text', text: 'Tool execution interrupted by navigation' }],
+  isError: true,
+};
 
 const isOptedIn = (): boolean => {
   try {
@@ -109,6 +117,10 @@ export const rerouteThroughNative = (polyfill: PolyfilledModelContext): boolean 
       // engines "to compare" would perform the operation twice.
       const text = await native.executeTool(handle, JSON.stringify(params.arguments ?? {}));
 
+      // No result to report — a tool that returned nothing, or a call navigation cut short.
+      // `String(null)` would otherwise answer a cheerful `"null"` with isError: false.
+      if (text === null || text === undefined) return NO_RESULT;
+
       let parsed: unknown;
       try {
         parsed = JSON.parse(text);
@@ -122,9 +134,13 @@ export const rerouteThroughNative = (polyfill: PolyfilledModelContext): boolean 
       // because MCP allows a tool to return a CallToolResult directly.
       if (isToolResponse(parsed)) return parsed;
 
+      // A string result can arrive JSON-quoted (`"hello"`) or raw (`hello`) depending on how the
+      // mirror serialises it. Taking the parsed string when there is one yields `hello` either way,
+      // which is what the page engine returns — so the text does not change when tracing is on.
       const structuredContent =
         parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : undefined;
-      return { content: [{ type: 'text', text: String(text) }], structuredContent, isError: false };
+      const content = typeof parsed === 'string' ? parsed : text;
+      return { content: [{ type: 'text', text: content }], structuredContent, isError: false };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       return { content: [{ type: 'text', text: message }], isError: true };
