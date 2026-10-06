@@ -328,12 +328,25 @@ def codegen_chart_thanos() -> types.TaskDict:
 def codegen_chart_cert_manager() -> types.TaskDict:
     """Generate the SLS file for Cert-Manager using the chart render script."""
     target_sls = constants.ROOT / "salt/metalk8s/addons/cert-manager/deployed/chart.sls"
+    sm_sls = (
+        constants.ROOT
+        / "salt/metalk8s/addons/cert-manager/deployed/monitoring/servicemonitor.sls"
+    )
     chart_dir = constants.CHART_ROOT / "cert-manager"
     value_file = constants.CHART_ROOT / "cert-manager.yaml"
-    cmd = (
+
+    chart_cmd = (
         f"{constants.CHART_RENDER_CMD} cert-manager {value_file} {chart_dir} "
         "--namespace metalk8s-certs "
+        "--remove-manifest ServiceMonitor cert-manager "
         f"--output {target_sls}"
+    )
+
+    sm_cmd = (
+        f"{constants.CHART_RENDER_CMD} cert-manager {value_file} {chart_dir} "
+        "--namespace metalk8s-certs "
+        "--keep-manifest ServiceMonitor cert-manager "
+        f"--output {sm_sls}"
     )
 
     file_dep = list(utils.git_ls(chart_dir))
@@ -344,7 +357,11 @@ def codegen_chart_cert_manager() -> types.TaskDict:
         "name": "chart_cert-manager",
         "title": utils.title_with_subtask_name("CODEGEN"),
         "doc": codegen_chart_cert_manager.__doc__,
-        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
+        "actions": [
+            doit.action.CmdAction(chart_cmd, cwd=constants.ROOT),
+            doit.action.CmdAction(sm_cmd, cwd=constants.ROOT),
+        ],
+        "targets": [target_sls, sm_sls],
         "file_dep": file_dep,
         "task_dep": ["check_for:tox", "check_for:helm"],
     }
@@ -385,7 +402,7 @@ def codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
             "getargs": {
                 "Manifests": (
                     "get_codegen_kustomize_metalk8s_registry_operator",
-                    "stdout"
+                    "stdout",
                 ),
             },
         }
