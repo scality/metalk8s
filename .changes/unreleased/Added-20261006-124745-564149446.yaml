@@ -1,0 +1,6 @@
+kind: Added
+body: Integrate metalk8s-registry-operator as a core addon into MetalK8s, providing a built-in container image registry for bootstrap and cluster operations. Includes proper certificate management and node image caching support.
+time: 2026-10-06T12:47:45.564149446Z
+custom:
+    CommentId: "6016452175"
+    Pull: "5097"
