@@ -25,7 +25,7 @@
  * (`isTaskHandle(ret)` → `registerHostTask`), and both engines call that same function.
  */
 
-import type { ModelContextWithExtensions } from '@mcp-b/webmcp-types';
+import type { ModelContextWithExtensions, ToolResponse } from '@mcp-b/webmcp-types';
 
 type RegisteredTool = { name: string };
 
@@ -59,6 +59,28 @@ const isOptedIn = (): boolean => {
   }
 };
 
+/**
+ * Is this already a tool response, rather than data to wrap in one?
+ *
+ * Every block is checked, not just the presence of a `content` array: a tool returning data that
+ * happens to have a `content` key — a listing, a page body — would otherwise be mistaken for an
+ * envelope and have its text block dropped. Content blocks carry a string `type`; arbitrary data
+ * rarely does.
+ */
+const isToolResponse = (value: unknown): value is ToolResponse => {
+  const content = (value as { content?: unknown } | null)?.content;
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    Array.isArray(content) &&
+    content.length > 0 &&
+    content.every(
+      (block) =>
+        !!block && typeof block === 'object' && typeof (block as { type?: unknown }).type === 'string',
+    )
+  );
+};
+
 export const rerouteThroughNative = (polyfill: PolyfilledModelContext): boolean => {
   const native = polyfill.native;
   if (!native || polyfill.__rerouted) return false;
@@ -87,13 +109,21 @@ export const rerouteThroughNative = (polyfill: PolyfilledModelContext): boolean 
       // engines "to compare" would perform the operation twice.
       const text = await native.executeTool(handle, JSON.stringify(params.arguments ?? {}));
 
-      let structuredContent: unknown;
+      let parsed: unknown;
       try {
-        const parsed: unknown = JSON.parse(text);
-        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) structuredContent = parsed;
+        parsed = JSON.parse(text);
       } catch {
         // A plain-text result rather than JSON; the text content below still carries it.
       }
+
+      // A tool may answer with a finished envelope of its own instead of plain data. Wrapping that
+      // again would bury it in `content[0].text` and, worse, stamp `isError: false` over a failure
+      // the tool was reporting. No tool in any of the apps does this today -- it is reachable
+      // because MCP allows a tool to return a CallToolResult directly.
+      if (isToolResponse(parsed)) return parsed;
+
+      const structuredContent =
+        parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : undefined;
       return { content: [{ type: 'text', text: String(text) }], structuredContent, isError: false };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

@@ -129,6 +129,31 @@ describe('rerouteThroughNative', () => {
     expect(result.isError).toBe(false);
   });
 
+  it('passes through a tool that answered with an envelope of its own', async () => {
+    const envelope = { content: [{ type: 'text', text: 'could not reach the node' }], isError: true };
+    const { polyfill } = polyfillWith(['getObject'], async () => JSON.stringify(envelope));
+    rerouteThroughNative(polyfill);
+
+    const result = await polyfill.callTool({ name: 'getObject' });
+
+    // Re-wrapping would bury this in content[0].text and stamp isError: false over the failure.
+    expect(result).toEqual(envelope);
+  });
+
+  it('still wraps data that merely has a content key', async () => {
+    // The reason the envelope check inspects every block rather than just the array: this is data,
+    // not a tool response, and dropping its text block would lose the result.
+    const data = { content: ['first.txt', 'second.txt'], truncated: false };
+    const { polyfill } = polyfillWith(['listObjects'], async () => JSON.stringify(data));
+    rerouteThroughNative(polyfill);
+
+    const result = await polyfill.callTool({ name: 'listObjects' });
+
+    expect(result.structuredContent).toEqual(data);
+    expect(textOf(result)).toBe(JSON.stringify(data));
+    expect(result.isError).toBe(false);
+  });
+
   it('reports a native failure as an MCP error instead of throwing at the caller', async () => {
     const { polyfill } = polyfillWith(['getBucketVersioning'], async () => {
       throw new Error('the endpoint did not answer');
