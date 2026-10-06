@@ -244,16 +244,24 @@ New `.patch` files in the patches directory are automatically picked up.
 
 ## Kubernetes
 
-The upgrade prechecks refuse kube-apiserver feature gates that the new
-Kubernetes version removed or locked, since `kubernetes.apiServer.featureGates`
-is passed to kube-apiserver as is. Regenerate the `KUBE_REMOVED_FEATURE_GATES`
-and `KUBE_LOCKED_FEATURE_GATES` constants of `salt/_runners/metalk8s_checks.py`
-on every bump, from the Kubernetes version the previous MetalK8s major ships to
-the new one:
-
-```
-python3 tools/kube-feature-gates/generate.py 1.33.7 1.36.5
-```
+1. In `buildchain/buildchain/versions.py`, set `K8S_VERSION_MAJOR`,
+   `K8S_VERSION_MINOR` and `K8S_VERSION_PATCH`. Nothing else to edit for the
+   packages: `kubelet` and `kubectl` are pinned to this version, and the build
+   fetches them from the official Kubernetes RPM repository.
+2. Update the digests of the control-plane images (`kube-apiserver`,
+   `kube-controller-manager`, `kube-scheduler`, `kube-proxy`):
+   ```gcrane digest registry.k8s.io/$image:v$K8S_VERSION```
+3. Read the changelogs of every minor version crossed, and adapt the salt
+   states to removed flags, removed APIs and changed defaults (kubelet, for
+   one, does not start with an unknown flag).
+4. Check that the `kubectl` commands in `docs/` still work.
+5. Regenerate `KUBE_REMOVED_FEATURE_GATES` and `KUBE_LOCKED_FEATURE_GATES` in
+   `salt/_runners/metalk8s_checks.py`, which the upgrade prechecks use to
+   refuse feature gates the new kube-apiserver no longer accepts. `$FROM` is
+   the Kubernetes version of the previous MetalK8s version, and `$K8S_VERSION` is the new one:
+   ```
+   python3 tools/kube-feature-gates/generate.py $FROM $K8S_VERSION
+   ```
 
 ## Calico
 

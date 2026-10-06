@@ -107,8 +107,10 @@ Create kubelet config file:
           memory: 200Mi
         kubeReserved: {{ salt.metalk8s_os.get_kubereserved() | tojson }}
         containerLogMaxSize: 50Mi # default is 10Mi
+{%- if grains['os_family'] == 'RedHat' and grains['osmajorrelease'] | int == 8 %}
         # Kubelet refuses to start on cgroup v1 hosts since 1.35, and EL8 still boots with cgroup v1 by default
         failCgroupV1: false
+{%- endif %}
 {%- for key, value in kubelet.config.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}
