@@ -1,0 +1,277 @@
+import type { K8sApiClients } from './api';
+import { ALLOWED_KINDS, K8sApiError, listResources, MAX_ITEMS, resolveTarget } from './resources';
+
+const makeClients = () =>
+  ({
+    coreV1: {
+      listPodForAllNamespaces: jest.fn(),
+      listNode: jest.fn(),
+      listConfigMapForAllNamespaces: jest.fn(),
+      listPersistentVolumeClaimForAllNamespaces: jest.fn(),
+    },
+    appsV1: { listDeploymentForAllNamespaces: jest.fn() },
+    batchV1: { listJobForAllNamespaces: jest.fn() },
+    batchV1beta1: { listCronJobForAllNamespaces: jest.fn() },
+    customObjects: { listClusterCustomObject: jest.fn() },
+  }) as unknown as K8sApiClients;
+
+/** What the client rejects with: `{ response, body }`, not an Error subclass. */
+const apiRejection = (statusCode: number) => ({ response: { statusCode }, body: {} });
+
+const ok = (items: unknown[]) => Promise.resolve({ response: { statusCode: 200 }, body: { items } });
+
+describe('resolveTarget', () => {
+  it('refuses an unknown kind with no apiVersion, before anything is sent', () => {
+    expect(() => resolveTarget('widgets')).toThrow(expect.objectContaining({ status: 'not_found' }));
+  });
+
+  it('maps an allowlisted kind to its typed client and its own apiVersion', () => {
+    const target = resolveTarget('deployments');
+
+    expect(target.apiVersion).toBe('apps/v1');
+    expect(target.namespaced).toBe(true);
+    expect(target.entry).toBeDefined();
+    expect(target.custom).toBeUndefined();
+  });
+
+  it('sends an unknown kind with an apiVersion to custom objects, group and version split', () => {
+    const target = resolveTarget('volumes', 'storage.metalk8s.scality.com/v1alpha1');
+
+    expect(target.entry).toBeUndefined();
+    expect(target.custom).toEqual({
+      group: 'storage.metalk8s.scality.com',
+      version: 'v1alpha1',
+      plural: 'volumes',
+    });
+  });
+
+  it('reaches a built-in kind outside the allowlist, not just custom resources', () => {
+    // CustomObjectsApi serves any API group, so the escape hatch is not limited to CRDs — and the
+    // tool's description says so. This is what makes that true.
+    const target = resolveTarget('ingresses', 'networking.k8s.io/v1');
+
+    expect(target.custom).toEqual({
+      group: 'networking.k8s.io',
+      version: 'v1',
+      plural: 'ingresses',
+    });
+  });
+
+  it('tells a caller naming an unknown kind how to reach it, not only that it failed', () => {
+    expect(() => resolveTarget('ingresses')).toThrow(/apiVersion/);
+    // Named explicitly, because "custom resource" alone reads as "built-in kinds are out of reach".
+    expect(() => resolveTarget('ingresses')).toThrow(/built-in/i);
+  });
+
+  it('refuses an apiVersion that is not one', () => {
+    expect(() => resolveTarget('volumes', 'not/an/apiversion')).toThrow(
+      expect.objectContaining({ status: 'malformed' }),
+    );
+    expect(() => resolveTarget('volumes', '/v1alpha1')).toThrow(expect.objectContaining({ status: 'malformed' }));
+  });
+
+  it('refuses a bare core version for a kind it does not know: custom resources have a group', () => {
+    expect(() => resolveTarget('endpoints', 'v1')).toThrow(expect.objectContaining({ status: 'not_found' }));
+  });
+
+  it('refuses secrets, with or without an apiVersion, and never as "not found"', () => {
+    // Without one it is simply not in the allowlist — refused, and nothing is sent either way.
+    expect(() => resolveTarget('secrets')).toThrow(K8sApiError);
+
+    // With one, a caller is routing around the allowlist. That is the refusal that has to be ours.
+    const refusal = (): never => resolveTarget('secrets', 'v1') as never;
+    expect(refusal).toThrow(expect.objectContaining({ status: 'not_authorized' }));
+    expect(refusal).toThrow(/never listed or read/i);
+    expect(() => resolveTarget('Secret', 'v1')).toThrow(expect.objectContaining({ status: 'not_authorized' }));
+  });
+
+  it('does not offer secrets among the kinds it lists', () => {
+    expect(ALLOWED_KINDS).not.toContain('secrets');
+  });
+});
+
+describe('listResources', () => {
+  let clients: K8sApiClients;
+
+  beforeEach(() => {
+    clients = makeClients();
+  });
+
+  it('projects a pod down to the fields that say whether it is healthy', async () => {
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: {
+            name: 'storage-operator-7d9f',
+            namespace: 'metalk8s-system',
+            creationTimestamp: new Date('2026-10-02T08:11:04Z'),
+          },
+          spec: { nodeName: 'node-2', containers: [{ name: 'operator' }] },
+          status: {
+            phase: 'Running',
+            containerStatuses: [{ ready: false, restartCount: 47, state: { waiting: { reason: 'CrashLoopBackOff' } } }],
+          },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('pods'));
+
+    expect(list).toEqual({
+      kind: 'pods',
+      namespace: 'all',
+      returned: 1,
+      truncated: false,
+      items: [
+        {
+          name: 'storage-operator-7d9f',
+          namespace: 'metalk8s-system',
+          // The phase says Running. The container reason is the answer anyone wanted.
+          status: 'CrashLoopBackOff',
+          ready: '0/1',
+          restarts: 47,
+          node: 'node-2',
+          createdAt: '2026-10-02T08:11:04.000Z',
+        },
+      ],
+    });
+  });
+
+  it('omits the namespace field for a cluster-scoped kind', async () => {
+    (clients.coreV1.listNode as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: {
+            name: 'node-1',
+            labels: { 'node-role.kubernetes.io/master': '', 'metalk8s.scality.com/version': '129.0' },
+          },
+          status: { conditions: [{ type: 'Ready', status: 'True' }], nodeInfo: { kubeletVersion: 'v1.29.5' } },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('nodes'));
+
+    expect(list.namespace).toBeUndefined();
+    expect(list.items[0]).toEqual({
+      name: 'node-1',
+      status: 'Ready',
+      roles: ['master'],
+      kubeletVersion: 'v1.29.5',
+      createdAt: undefined,
+    });
+  });
+
+  it('returns a ConfigMap key names and never its values', async () => {
+    (clients.coreV1.listConfigMapForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'app-config', namespace: 'default' },
+          data: { 'database.url': 'postgres://user:hunter2@db:5432/app' },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('configmaps'));
+
+    expect(list.items[0]).toMatchObject({ keys: ['database.url'] });
+    expect(JSON.stringify(list)).not.toContain('hunter2');
+  });
+
+  it('lists a custom resource through CustomObjectsApi, with group and version as arguments', async () => {
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
+      ok([{ metadata: { name: 'volume-1' }, status: { phase: 'Available' } }]),
+    );
+
+    const list = await listResources(clients, resolveTarget('volumes', 'storage.metalk8s.scality.com/v1alpha1'));
+
+    expect(clients.customObjects.listClusterCustomObject).toHaveBeenCalledWith(
+      'storage.metalk8s.scality.com',
+      'v1alpha1',
+      'volumes',
+    );
+    expect(list.apiVersion).toBe('storage.metalk8s.scality.com/v1alpha1');
+    expect(list.items[0]).toEqual({
+      name: 'volume-1',
+      namespace: undefined,
+      status: 'Available',
+      createdAt: undefined,
+    });
+  });
+
+  it("projects a custom resource's conditions, which is where most CRDs report health", async () => {
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'storage-data-01', namespace: undefined },
+          status: {
+            conditions: [{ type: 'Ready', status: 'False', reason: 'FormatFailed', extra: 'not projected' }],
+          },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('volumes', 'storage.metalk8s.scality.com/v1alpha1'));
+
+    expect(list.items[0]).toMatchObject({
+      name: 'storage-data-01',
+      conditions: [{ type: 'Ready', status: 'False', reason: 'FormatFailed' }],
+    });
+  });
+
+  it.each([
+    [401, 'session_expired'],
+    [403, 'not_authorized'],
+    [404, 'not_found'],
+    [500, 'unavailable'],
+  ])('maps HTTP %i to %s, keeping them apart', async (statusCode, status) => {
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockRejectedValue(apiRejection(statusCode));
+
+    await expect(listResources(clients, resolveTarget('pods'))).rejects.toMatchObject({ status });
+  });
+
+  it('reads the status off a fetch-shaped rejection too', async () => {
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockRejectedValue({
+      response: { status: 403 },
+    });
+
+    await expect(listResources(clients, resolveTarget('pods'))).rejects.toMatchObject({
+      status: 'not_authorized',
+    });
+  });
+
+  it('calls a 200 with no items malformed, not an empty list', async () => {
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockResolvedValue({
+      response: { statusCode: 200 },
+      body: { kind: 'Status', message: 'something else entirely' },
+    });
+
+    await expect(listResources(clients, resolveTarget('pods'))).rejects.toMatchObject({
+      status: 'malformed',
+    });
+  });
+
+  it('reports an empty cluster as an empty list', async () => {
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(ok([]));
+
+    const list = await listResources(clients, resolveTarget('pods'));
+
+    expect(list).toMatchObject({ items: [], returned: 0, truncated: false });
+  });
+
+  it('cuts an over-long list and says so, with an honest count', async () => {
+    const pods = Array.from({ length: MAX_ITEMS + 7 }, (_, i) => ({
+      metadata: { name: `pod-${i}`, namespace: 'default' },
+      spec: { containers: [] },
+      status: { phase: 'Running' },
+    }));
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(ok(pods));
+
+    const list = await listResources(clients, resolveTarget('pods'));
+
+    expect(list.items).toHaveLength(MAX_ITEMS);
+    expect(list.returned).toBe(MAX_ITEMS);
+    expect(list.truncated).toBe(true);
+    expect(list.total).toBe(MAX_ITEMS + 7);
+  });
+});
