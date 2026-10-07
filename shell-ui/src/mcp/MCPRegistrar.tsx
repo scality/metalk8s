@@ -21,6 +21,7 @@ import {
   type TaskStatusReport,
   useHostGetTaskStatusTool,
 } from './tasks';
+import { traceToolActivity } from './toolActivity';
 import type { ToolContext } from './types';
 
 interface MCPToolDescriptor extends ToolDescriptor {
@@ -71,6 +72,12 @@ export const _InternalMCPRegistrar = ({
     // canonical; navigator.modelContext is kept as a deprecated alias.
     const modelContext = document.modelContext || navigator.modelContext;
     if (!modelContext) return;
+
+    // No-op unless localStorage 'webmcp.trace' is '1'. Without it, DevTools lists every registered
+    // tool but records no invocation, because the relay polyfill executes them in page JS rather
+    // than through the browser's native ModelContext. Installed here, where the context is already
+    // resolved, so there is nothing to wait for.
+    traceToolActivity(modelContext);
 
     const mod = moduleExports[mcpToolsModuleInfo.module] as MCPToolsModule | undefined;
     // Proxy getToken/userData through refs so execute() always uses the latest
