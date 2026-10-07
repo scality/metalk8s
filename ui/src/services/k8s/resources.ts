@@ -105,6 +105,12 @@ type KindEntry = {
   namespaced: boolean;
   list: (clients: K8sApiClients) => Promise<ListResponse>;
   /**
+   * How to order the items before the list is cut, for a kind where time decides which rows matter.
+   * The API server returns items in etcd key order — namespace, then name — so a plain cut at
+   * MAX_ITEMS drops whole namespaces that sort late, however recent they are.
+   */
+  newestFirst?: (item: never) => number;
+  /**
    * Typed with the client's own V1* type at each call site, so a projection that drifts from the
    * real object stops compiling. Where a projection and the real type disagree, the real type wins.
    */
@@ -115,11 +121,48 @@ type KindEntry = {
 const iso = (value?: Date | string): string | undefined => (value instanceof Date ? value.toISOString() : value);
 
 /**
+ * When an event was last seen, resolved the way `kubectl get events` resolves it.
+ *
+ * An event written through events.k8s.io/v1 sets neither `lastTimestamp` nor `count` in this core
+ * v1 view — it carries `series` or a bare `eventTime` instead. On 1.34 that includes the
+ * scheduler's FailedScheduling, which is the whole answer for a Pending pod.
+ */
+const eventLastSeen = (event: V1Event): Date | string | undefined =>
+  event.lastTimestamp ?? event.series?.lastObservedTime ?? event.eventTime ?? event.metadata?.creationTimestamp;
+
+const millis = (value?: Date | string): number => {
+  const time = value === undefined ? Number.NaN : new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
+
+/**
+ * The reason an init container is holding the pod up, as `Init:<reason>`.
+ *
+ * Init containers run in order, and until they finish the main container reports `PodInitializing`.
+ * Without this, a pod whose init container is crash-looping reads as PodInitializing or Pending and
+ * the real fault is invisible — so they are read first, and only the one currently blocking counts.
+ */
+const initStatus = (pod: V1Pod): string | undefined => {
+  for (const container of pod.status?.initContainerStatuses ?? []) {
+    const terminated = container.state?.terminated;
+    if (terminated?.exitCode === 0) continue;
+
+    const reason = container.state?.waiting?.reason ?? terminated?.reason ?? (terminated ? 'Error' : undefined);
+    // PodInitializing on an init container means it has not started yet, which is not a fault.
+    return reason && reason !== 'PodInitializing' ? `Init:${reason}` : undefined;
+  }
+  return undefined;
+};
+
+/**
  * A pod's phase is frequently not the interesting word: a crash-looping pod sits in phase Running
  * or Pending with the reason on the container. kubectl surfaces the container reason for the same
  * reason, so `status` here is the most specific thing available.
  */
 const podStatus = (pod: V1Pod): string => {
+  const init = initStatus(pod);
+  if (init) return init;
+
   const containers = pod.status?.containerStatuses ?? [];
   const waiting = containers.find((cs) => cs.state?.waiting?.reason)?.state?.waiting?.reason;
   const terminated = containers.find((cs) => cs.state?.terminated?.reason)?.state?.terminated?.reason;
@@ -291,6 +334,7 @@ export const KINDS: Record<string, KindEntry> = {
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listEventForAllNamespaces(),
+    newestFirst: (event: V1Event) => millis(eventLastSeen(event)),
     project: (event: V1Event) => ({
       name: event.metadata?.name,
       namespace: event.metadata?.namespace,
@@ -298,8 +342,8 @@ export const KINDS: Record<string, KindEntry> = {
       reason: event.reason,
       object: `${event.involvedObject?.kind}/${event.involvedObject?.name}`,
       message: event.message,
-      count: event.count,
-      lastSeen: iso(event.lastTimestamp),
+      count: event.count ?? event.series?.count,
+      lastSeen: iso(eventLastSeen(event)),
     }),
   },
   // Key NAMES only. A ConfigMap can hold a connection string, and excluding Secret does not make
@@ -468,8 +512,11 @@ export const listResources = async (clients: K8sApiClients, target: KubeTarget):
     ? target.namespaced
     : items.some((item) => (item as { metadata?: { namespace?: string } })?.metadata?.namespace);
 
-  const truncated = items.length > MAX_ITEMS;
-  const kept = truncated ? items.slice(0, MAX_ITEMS) : items;
+  const newestFirst = target.entry?.newestFirst;
+  const ordered = newestFirst ? [...items].sort((a, b) => newestFirst(b as never) - newestFirst(a as never)) : items;
+
+  const truncated = ordered.length > MAX_ITEMS;
+  const kept = truncated ? ordered.slice(0, MAX_ITEMS) : ordered;
 
   return {
     kind: target.kind,

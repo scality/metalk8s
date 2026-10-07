@@ -7,6 +7,7 @@ const makeClients = () =>
       listPodForAllNamespaces: jest.fn(),
       listNode: jest.fn(),
       listConfigMapForAllNamespaces: jest.fn(),
+      listEventForAllNamespaces: jest.fn(),
       listPersistentVolumeClaimForAllNamespaces: jest.fn(),
     },
     appsV1: { listDeploymentForAllNamespaces: jest.fn() },
@@ -134,6 +135,104 @@ describe('listResources', () => {
         },
       ],
     });
+  });
+
+  it("reads an init container's failure, which the main container hides", async () => {
+    // While an init container runs or fails, the main container reports PodInitializing — so
+    // without this the answer for a pod stuck on a crash-looping init container is "initializing".
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'migrate-abc', namespace: 'default' },
+          spec: { containers: [{ name: 'app' }] },
+          status: {
+            phase: 'Pending',
+            initContainerStatuses: [
+              { ready: false, restartCount: 6, state: { waiting: { reason: 'CrashLoopBackOff' } } },
+            ],
+            containerStatuses: [{ ready: false, restartCount: 0, state: { waiting: { reason: 'PodInitializing' } } }],
+          },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('pods'));
+
+    expect(list.items[0]).toMatchObject({ status: 'Init:CrashLoopBackOff' });
+  });
+
+  it('ignores init containers that have already finished', async () => {
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'app-xyz', namespace: 'default' },
+          spec: { containers: [{ name: 'app' }] },
+          status: {
+            phase: 'Running',
+            initContainerStatuses: [{ state: { terminated: { exitCode: 0, reason: 'Completed' } } }],
+            containerStatuses: [{ ready: true, restartCount: 0, state: { running: {} } }],
+          },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('pods'));
+
+    expect(list.items[0]).toMatchObject({ status: 'Running', ready: '1/1' });
+  });
+
+  it('dates an event written through the newer events API, which sets no lastTimestamp', async () => {
+    (clients.coreV1.listEventForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'web.17f', namespace: 'default' },
+          type: 'Warning',
+          reason: 'FailedScheduling',
+          involvedObject: { kind: 'Pod', name: 'web' },
+          message: 'no nodes available',
+          // No lastTimestamp and no count — the shape events.k8s.io/v1 leaves in the core v1 view.
+          series: { count: 9, lastObservedTime: new Date('2026-10-06T09:14:22Z') },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('events'));
+
+    expect(list.items[0]).toMatchObject({ count: 9, lastSeen: '2026-10-06T09:14:22.000Z' });
+  });
+
+  it('falls back to eventTime when there is no series either', async () => {
+    (clients.coreV1.listEventForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'web.18a', namespace: 'default' },
+          involvedObject: { kind: 'Pod', name: 'web' },
+          eventTime: new Date('2026-10-06T10:00:00Z'),
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('events'));
+
+    expect(list.items[0]).toMatchObject({ lastSeen: '2026-10-06T10:00:00.000Z' });
+  });
+
+  it('keeps the newest events when it has to cut, not the ones that sort first by name', async () => {
+    // The API server returns items in etcd key order, so without an explicit sort the cut drops
+    // whole namespaces — and for events the dropped part is as likely as not to be the answer.
+    const events = Array.from({ length: MAX_ITEMS + 2 }, (_, i) => ({
+      metadata: { name: `event-${i}`, namespace: 'default' },
+      involvedObject: { kind: 'Pod', name: `pod-${i}` },
+      // Oldest first, which is the worst case: a plain slice would keep exactly the wrong end.
+      lastTimestamp: new Date(2026, 0, 1, 0, 0, i),
+    }));
+    (clients.coreV1.listEventForAllNamespaces as jest.Mock).mockReturnValue(ok(events));
+
+    const list = await listResources(clients, resolveTarget('events'));
+
+    expect(list.truncated).toBe(true);
+    expect(list.items[0]).toMatchObject({ name: `event-${MAX_ITEMS + 1}` });
+    expect(list.items.map((item) => item.name)).not.toContain('event-0');
   });
 
   it('omits the namespace field for a cluster-scoped kind', async () => {

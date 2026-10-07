@@ -149,7 +149,7 @@ export function createListKubeResourcesTool(context: ToolContext) {
           ...(list.truncated
             ? {
                 message:
-                  `Only the first ${list.returned} of ${list.total} were returned. There is no way ` +
+                  `Only ${list.returned} of the ${list.total} present were returned. There is no way ` +
                   'to ask for the rest: narrow what you are looking for, or say your answer covers ' +
                   'part of the cluster.',
               }
