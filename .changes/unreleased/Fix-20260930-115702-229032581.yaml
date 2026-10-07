@@ -1,0 +1,6 @@
+kind: Fix
+body: Stop the UI from auto-discovering a WebMCP local relay on the administrator's machine at login, which triggered an unexplained Chrome "access other apps and services on your computer" permission prompt
+time: 2026-09-30T11:57:02.229032581Z
+custom:
+    CommentId: "5910747535"
+    Pull: "5145"
