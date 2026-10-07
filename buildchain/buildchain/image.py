@@ -370,11 +370,23 @@ BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
         "calico-node",
         "calico-kube-controllers",
     ],
+    # Every node is a worker, and this is what lets one come back after it
+    # lost its images while the registry is unreachable.
     "worker": [
         "pause",
-        # The agent the registry operator runs to write the containerd mirror
-        # configuration on every node: a worker that has both the sandbox image
-        # and this one can boot and reach a registry.
+        # The `apiserver-proxy` static pod: the kubelet reaches the API server
+        # through it.
+        "nginx",
+        # calico-node reaches the API server through the `kubernetes`
+        # ClusterIP, and the `kube-proxy` pod has an init container on
+        # `alpine`.
+        "kube-proxy",
+        "alpine",
+        # calico-cni runs the init containers that write the CNI config.
+        "calico-cni",
+        "calico-node",
+        # Writes the containerd mirror configuration of the registry. It is
+        # not in the host network, so it needs the CNI above.
         "file-reflector",
     ],
     # The registry variant waits on images the buildchain does not carry yet:
