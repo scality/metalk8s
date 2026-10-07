@@ -1,0 +1,6 @@
+kind: Enhanced
+body: add new webmcp tool to get a list of a specific resource in kubernetes
+time: 2026-10-07T14:47:55.113876066Z
+custom:
+    CommentId: "6040476791"
+    Pull: "5149"
