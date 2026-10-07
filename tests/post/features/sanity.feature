@@ -75,6 +75,9 @@ Feature: Cluster Sanity Checks
         | name                           |
         | containerd-image-preload.timer |
 
+    Scenario: The worker image cache is filled on every node
+        Then every node holds the worker image cache in '/var/lib/image-cache'
+
     @volumes_provisioned
     Scenario Outline: StatefulSet has available replicas
         Then the StatefulSet '<name>' in the '<namespace>' namespace has all desired replicas available
