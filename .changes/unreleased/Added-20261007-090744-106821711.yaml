@@ -1,0 +1,6 @@
+kind: Added
+body: 'A node joining the cluster now fills its image cache before its kubelet starts. It pulls the worker boot cache image from the cluster registry into `/var/lib/image-cache` and imports it into containerd, so it can start its Pods again even if the registry goes away later. Both the bootstrap and the join paths use the `imagecachectl` command, and name each cache after its ImageCache resource, such as `worker-134-0-0`.'
+time: 2026-10-07T09:07:44.106821711Z
+custom:
+    CommentId: cli
+    Pull: "5135"
