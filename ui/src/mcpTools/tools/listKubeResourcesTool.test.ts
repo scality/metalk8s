@@ -57,6 +57,9 @@ describe('listKubeResources', () => {
 
     expect(result.status).toBe('not_authorized');
     expect(result.message).toMatch(/never listed or read/i);
+    // And nothing about RBAC in front of it: this is our policy, not the cluster's answer, and
+    // saying both leaves the caller to tell the user their permissions are the problem.
+    expect(result.message).not.toMatch(/RBAC/i);
     expect(k8sApi).not.toHaveBeenCalled();
   });
 

@@ -166,7 +166,9 @@ const podStatus = (pod: V1Pod): string => {
   const containers = pod.status?.containerStatuses ?? [];
   const waiting = containers.find((cs) => cs.state?.waiting?.reason)?.state?.waiting?.reason;
   const terminated = containers.find((cs) => cs.state?.terminated?.reason)?.state?.terminated?.reason;
-  return waiting ?? terminated ?? pod.status?.phase ?? 'Unknown';
+  // status.reason before the phase: an evicted pod is phase Failed with reason Evicted, and so is a
+  // lost or shut-down one. kubectl prefers the reason for the same reason — "Failed" says nothing.
+  return waiting ?? terminated ?? pod.status?.reason ?? pod.status?.phase ?? 'Unknown';
 };
 
 const nodeStatus = (node: V1Node): string => {
@@ -211,6 +213,9 @@ export const KINDS: Record<string, KindEntry> = {
     project: (node: V1Node) => ({
       name: node.metadata?.name,
       status: nodeStatus(node),
+      // A cordoned node is Ready and still takes no new pods — kubectl says Ready,SchedulingDisabled.
+      // Kept as its own field rather than folded into status, so nothing has to parse a pair.
+      unschedulable: node.spec?.unschedulable ?? false,
       // The same derivation the nodes page runs (ducks/app/nodes, hooks/nodes), off the same
       // constant: a role is the second half of a `node-role.kubernetes.io/<role>` label.
       roles: Object.keys(node.metadata?.labels ?? {})
@@ -466,6 +471,17 @@ export const resolveTarget = (kind: string, apiVersion?: string): KubeTarget => 
     throw new K8sApiError(
       'not_found',
       `"${kind}" is not one of the core ("v1") kinds this tool lists by name, and the core group is the one apiVersion cannot reach. Kinds in an API GROUP are reachable — "networking.k8s.io/v1", "storage.metalk8s.scality.com/v1alpha1" — but core ones are limited to the list.`,
+    );
+  }
+
+  // group and version are checked by parseApiVersion; the plural is the remaining path segment, and
+  // it comes from the caller. A resource plural is a DNS label, so anything else is refused here
+  // rather than relied on being encoded: encodeURIComponent leaves `.` alone, and an ingress that
+  // normalises the URI before rewriting it can turn a traversal back into a path of its own.
+  if (!/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(normalized)) {
+    throw new K8sApiError(
+      'malformed',
+      `"${kind}" is not a resource plural name — those are lower-case letters, digits and dashes.`,
     );
   }
 

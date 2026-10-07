@@ -15,8 +15,8 @@ import type { MetalK8sSelfConfiguration, ToolContext } from '../types';
  * What a caller is told, per failure. One sentence each, because each needs a different next step —
  * and one copy, so the same failure is worded the same way wherever it comes from.
  *
- * The layer's own `detail` is appended when there is one: the kind says what SORT of thing went
- * wrong, only the detail says which.
+ * Used when a failure arrives with no detail of its own — an HTTP status and nothing more. A
+ * failure that carries a detail says something more specific, and that text is used instead.
  */
 const EXPLAIN: Record<K8sFailureKind, string> = {
   session_expired: 'Your session has expired. Sign in again, then retry once.',
@@ -44,7 +44,11 @@ const secretRefusal = () =>
 
 const refusal = (error: K8sApiError) => ({
   status: error.status,
-  message: error.detail ? `${EXPLAIN[error.status]} ${error.detail}` : EXPLAIN[error.status],
+  // The detail alone when there is one. EXPLAIN says what SORT of thing went wrong, and in front of
+  // a detail that already names the specific thing it contradicts it — "your RBAC does not allow
+  // this" ahead of "Secrets are never listed whatever your permissions allow" blames the cluster for
+  // a policy of ours.
+  message: error.detail ?? EXPLAIN[error.status],
   // Attached to every not_found, which is either a kind this tool does not know or a group/version
   // the cluster does not serve. Either way the next call is a better one if the caller can see what
   // is on offer — one turn instead of a guessing loop.

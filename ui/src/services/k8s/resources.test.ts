@@ -63,6 +63,22 @@ describe('resolveTarget', () => {
     expect(() => resolveTarget('ingresses')).toThrow(/built-in/i);
   });
 
+  it.each([
+    '../../../api/v1/secrets',
+    '..%2F..%2Fapi%2Fv1%2Fsecrets',
+    'volumes/../../secrets',
+    'volumes.storage',
+  ])('refuses %s as a plural, rather than trusting it to be encoded', (plural) => {
+    // group and version are checked by parseApiVersion; this is the remaining path segment, and the
+    // only one the caller writes freely. A resource plural is a DNS label and nothing else.
+    expect(() => resolveTarget(plural, 'apps/v1')).toThrow(expect.objectContaining({ status: 'malformed' }));
+  });
+
+  it('still accepts a plural however it was capitalised', () => {
+    // Case is normalised on the way in, so it is not what makes a plural invalid.
+    expect(resolveTarget('Volumes', 'storage.metalk8s.scality.com/v1alpha1').custom?.plural).toBe('volumes');
+  });
+
   it('refuses an apiVersion that is not one', () => {
     expect(() => resolveTarget('volumes', 'not/an/apiversion')).toThrow(
       expect.objectContaining({ status: 'malformed' }),
@@ -254,10 +270,45 @@ describe('listResources', () => {
     expect(list.items[0]).toEqual({
       name: 'node-1',
       status: 'Ready',
+      unschedulable: false,
       roles: ['master'],
       kubeletVersion: 'v1.29.5',
       createdAt: undefined,
     });
+  });
+
+  it('says a node is cordoned, which it stays Ready while being', async () => {
+    (clients.coreV1.listNode as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'node-2', labels: {} },
+          spec: { unschedulable: true },
+          status: { conditions: [{ type: 'Ready', status: 'True' }] },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('nodes'));
+
+    // Ready and taking no new pods: a common reason for a Pending pod, and invisible in the status.
+    expect(list.items[0]).toMatchObject({ status: 'Ready', unschedulable: true });
+  });
+
+  it('calls an evicted pod evicted, not failed', async () => {
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'web-abc', namespace: 'default' },
+          spec: { containers: [{ name: 'web' }] },
+          // An evicted pod has no container statuses left — the reason is on the pod.
+          status: { phase: 'Failed', reason: 'Evicted' },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('pods'));
+
+    expect(list.items[0]).toMatchObject({ status: 'Evicted' });
   });
 
   it('returns a ConfigMap key names and never its values', async () => {
