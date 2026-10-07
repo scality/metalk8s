@@ -1,7 +1,6 @@
 import { Config } from '@kubernetes/client-node/dist/browser/config';
 import { AppsV1Api } from '@kubernetes/client-node/dist/gen/api/appsV1Api';
 import { BatchV1Api } from '@kubernetes/client-node/dist/gen/api/batchV1Api';
-import { BatchV1beta1Api } from '@kubernetes/client-node/dist/gen/api/batchV1beta1Api';
 import { CoreV1Api } from '@kubernetes/client-node/dist/gen/api/coreV1Api';
 import { CustomObjectsApi } from '@kubernetes/client-node/dist/gen/api/customObjectsApi';
 import { StorageV1Api } from '@kubernetes/client-node/dist/gen/api/storageV1Api';
@@ -22,7 +21,6 @@ export type K8sApiClients = {
   storage: StorageV1Api;
   appsV1: AppsV1Api;
   batchV1: BatchV1Api;
-  batchV1beta1: BatchV1beta1Api;
 };
 
 type K8sApiConfig = {
@@ -48,7 +46,6 @@ export const k8sApi = (url: string, token: string): K8sApiClients => {
     storage: config.makeApiClient(StorageV1Api),
     appsV1: config.makeApiClient(AppsV1Api),
     batchV1: config.makeApiClient(BatchV1Api),
-    batchV1beta1: config.makeApiClient(BatchV1beta1Api),
   };
 };
 

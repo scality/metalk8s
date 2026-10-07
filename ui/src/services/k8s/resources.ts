@@ -86,7 +86,10 @@ export type KubeResourceList = {
   kind: string;
   /** Echoed only when the caller supplied one, i.e. when this went through CustomObjectsApi. */
   apiVersion?: string;
-  /** 'all' for namespaced kinds — nothing filters this list. Absent for cluster-scoped kinds. */
+  /**
+   * 'all' for namespaced kinds — nothing filters this list. Absent for a cluster-scoped kind, and
+   * for a kind whose scope the items do not show.
+   */
   namespace?: 'all';
   items: KubeResourceItem[];
   returned: number;
@@ -225,13 +228,14 @@ export const KINDS: Record<string, KindEntry> = {
       createdAt: iso(job.metadata?.creationTimestamp),
     }),
   },
-  // batch/v1beta1, not batch/v1: this client is generated from the v1.13 OpenAPI, where CronJob is
-  // still beta. The allowlist entry is what a caller gets when it omits apiVersion, so it names the
-  // version this client can actually reach.
+  // batch/v1, through CustomObjectsApi. This client is generated from the v1.13 OpenAPI, where
+  // CronJob is still beta, so its only CronJob method addresses /apis/batch/v1beta1/cronjobs — a
+  // path the API server has not served since 1.25, and this ships Kubernetes 1.34. V1beta1CronJob
+  // still types the projection: the fields read here are the same in both versions.
   cronjobs: {
-    apiVersion: 'batch/v1beta1',
+    apiVersion: 'batch/v1',
     namespaced: true,
-    list: (c) => c.batchV1beta1.listCronJobForAllNamespaces(),
+    list: (c) => c.customObjects.listClusterCustomObject('batch', 'v1', 'cronjobs'),
     project: (cronJob: V1beta1CronJob) => ({
       name: cronJob.metadata?.name,
       namespace: cronJob.metadata?.namespace,
@@ -379,7 +383,8 @@ export type KubeTarget =
   | {
       kind: string;
       apiVersion: string;
-      namespaced: true;
+      /** Not known ahead of the call: an apiVersion says nothing about the kind's scope. */
+      namespaced?: undefined;
       entry?: never;
       custom: { group: string; version: string; plural: string };
     };
@@ -430,7 +435,6 @@ export const resolveTarget = (kind: string, apiVersion?: string): KubeTarget => 
   return {
     kind: normalized,
     apiVersion,
-    namespaced: true,
     custom: { group, version, plural: normalized },
   };
 };
@@ -469,6 +473,14 @@ export const listResources = async (clients: K8sApiClients, target: KubeTarget):
   }
 
   const project = target.entry ? target.entry.project : projectCustomObject;
+
+  // Whether to say the list spans every namespace. The allowlist carries each kind's scope; a kind
+  // reached by apiVersion does not, so it is read off the objects — claimed only when an item
+  // carries a namespace, never inferred from an empty list.
+  const namespaced = target.entry
+    ? target.namespaced
+    : items.some((item) => (item as { metadata?: { namespace?: string } })?.metadata?.namespace);
+
   const truncated = items.length > MAX_ITEMS;
   const kept = truncated ? items.slice(0, MAX_ITEMS) : items;
 
@@ -477,7 +489,7 @@ export const listResources = async (clients: K8sApiClients, target: KubeTarget):
     // Echoed only for custom resources: it is the one thing the caller had to supply, and the thing
     // it most likely got wrong if the answer surprises it.
     ...(target.entry ? {} : { apiVersion: target.apiVersion }),
-    ...(target.namespaced ? { namespace: 'all' as const } : {}),
+    ...(namespaced ? { namespace: 'all' as const } : {}),
     items: kept.map((item) => project(item as never)),
     returned: kept.length,
     truncated,

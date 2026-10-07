@@ -52,8 +52,9 @@ describe('listKubeResources', () => {
 
     expect(withApiVersion.status).toBe('not_authorized');
     expect(withApiVersion.message).toMatch(/never listed or read/i);
-    // And without one — refused either way, and nothing is sent either way.
-    expect((await run({ kind: 'secrets' })).status).toBeDefined();
+    // Without one it never reaches the Secret guard: it is not in the allowlist, so it stops one
+    // check earlier. Refused either way, and nothing is sent either way.
+    expect((await run({ kind: 'secrets' })).status).toBe('not_found');
     expect(k8sApi).not.toHaveBeenCalled();
   });
 

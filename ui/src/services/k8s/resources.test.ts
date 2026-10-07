@@ -11,7 +11,6 @@ const makeClients = () =>
     },
     appsV1: { listDeploymentForAllNamespaces: jest.fn() },
     batchV1: { listJobForAllNamespaces: jest.fn() },
-    batchV1beta1: { listCronJobForAllNamespaces: jest.fn() },
     customObjects: { listClusterCustomObject: jest.fn() },
   }) as unknown as K8sApiClients;
 
@@ -217,6 +216,45 @@ describe('listResources', () => {
       name: 'storage-data-01',
       conditions: [{ type: 'Ready', status: 'False', reason: 'FormatFailed' }],
     });
+  });
+
+  it('asks for cronjobs at batch/v1, the version the API server serves', async () => {
+    // The generated client's only CronJob method points at batch/v1beta1, which has been gone since
+    // Kubernetes 1.25. Mocking the client hides that, so this asserts the path instead.
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'backup', namespace: 'default', creationTimestamp: '2026-10-02T08:11:04Z' },
+          spec: { schedule: '0 2 * * *' },
+          status: { active: [] },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('cronjobs'));
+
+    expect(clients.customObjects.listClusterCustomObject).toHaveBeenCalledWith('batch', 'v1', 'cronjobs');
+    expect(list.items[0]).toMatchObject({ name: 'backup', schedule: '0 2 * * *', active: 0 });
+  });
+
+  it('does not claim a namespace scope it was never told, for a cluster-scoped custom kind', async () => {
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
+      ok([{ metadata: { name: 'ssd-ext4' } }]),
+    );
+
+    const list = await listResources(clients, resolveTarget('storageclasses', 'storage.k8s.io/v1'));
+
+    expect(list.namespace).toBeUndefined();
+  });
+
+  it('says "all" for a custom kind once an item shows it is namespaced', async () => {
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
+      ok([{ metadata: { name: 'artesca-data', namespace: 'zenko' } }]),
+    );
+
+    const list = await listResources(clients, resolveTarget('zenkos', 'zenko.io/v1alpha2'));
+
+    expect(list.namespace).toBe('all');
   });
 
   it.each([
