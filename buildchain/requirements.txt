@@ -18,7 +18,7 @@ pyyaml==6.0.3
     # via -r buildchain/requirements.in
 requests==2.33.1
     # via docker
-urllib3==2.6.3
+urllib3==2.7.0
     # via
     #   docker
     #   requests
