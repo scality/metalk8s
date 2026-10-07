@@ -11,9 +11,13 @@ its archives and they have been imported.
 
 from pathlib import Path
 import re
-from typing import Any, Dict
+from typing import Any, Dict, Set
+import jinja2
 import pytest
+import salt.utils.yaml  # type: ignore
 
+from tests.unit.formulas import config
+from tests.unit.formulas.fixtures.context import make_context
 from tests.unit.formulas.fixtures.rendered import (
     RenderedStates,
     required_states,
@@ -24,6 +28,7 @@ IMAGE_CACHE_INSTALLED = Path("metalk8s/image-cache/installed.sls")
 IMAGE_CACHE_PROVISIONED = Path("metalk8s/image-cache/provisioned.sls")
 IMAGE_CACHE_PULLED = Path("metalk8s/image-cache/pulled.sls")
 BOOTSTRAP_LOCAL = Path("metalk8s/roles/bootstrap/local.sls")
+NODE_ROLE = Path("metalk8s/roles/node/init.sls")
 
 # The formula that transitively brings in every state we require, so it must stay
 # in the `include` block. It defines `Install containerd`, and it includes both
@@ -69,6 +74,9 @@ PULL_STATE = "Pull the worker boot cache from the registry"
 PULL_IMPORT_STATE = "Import the pulled boot cache archives into containerd"
 # Declared by both branches of the pull, so a role can always require it.
 PULL_TERMINAL_STATE = "The worker boot cache is in place"
+PULLED_SLS = "metalk8s.image-cache.pulled"
+# Not GATE_STATE: the bootstrap node applies both role SLS in one run.
+PULL_GATE_STATE = "Ensure the image cache is pulled before the kubelet starts"
 
 
 @pytest.mark.formulas
@@ -311,3 +319,89 @@ def test_pull_reads_the_registry_endpoint(
         checked = True
 
     assert checked, "no rendering case pulls the cache, the requisites went unchecked"
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [NODE_ROLE], indirect=True)
+def test_pulling_runs_before_the_kubelet(
+    rendered_states: RenderedStates,
+) -> None:
+    """Check a joining node holds its cache before the kubelet may start."""
+    for case_id, states in rendered_states:
+        assert PULL_GATE_STATE in states, f"the ordering gate is gone ({case_id})"
+
+        waits_for = requisite_states(states, PULL_GATE_STATE)
+        assert PULL_TERMINAL_STATE in waits_for, (
+            f"'{PULL_GATE_STATE}' does not require '{PULL_TERMINAL_STATE}', it"
+            f" gates nothing ({case_id})"
+        )
+        assert PULLED_SLS not in waits_for, (
+            f"'{PULL_GATE_STATE}' requires '{PULLED_SLS}' whole, not its"
+            f" terminal state ({case_id})"
+        )
+
+        releases = requisite_states(states, PULL_GATE_STATE, "require_in")
+        assert KUBELET_STATE in releases, (
+            f"'{PULL_GATE_STATE}' is not ordered before '{KUBELET_STATE}', the"
+            f" kubelet could start on a node whose cache is empty ({case_id})"
+        )
+
+        includes = states.get("include", [])
+        for included in (PULLED_SLS, "metalk8s.kubernetes.kubelet"):
+            assert included in includes, (
+                f"'{included}' is not included, the requisites of"
+                f" '{PULL_GATE_STATE}' cannot resolve ({case_id})"
+            )
+
+
+def _declared_ids(
+    environment: jinja2.Environment, base_context: Dict[str, Any], path: Path
+) -> Set[str]:
+    """Return every state ID an SLS declares, across all its rendering cases."""
+    template = environment.get_template(str(path))
+    ids: Set[str] = set()
+
+    for case in config.get_cases(path):
+        context = make_context(
+            dict(base_context, slspath=str(path.parent)), environment, case
+        )
+        states = salt.utils.yaml.safe_load(template.render(**context.data))
+        ids |= {key for key in states if key != "include"}
+
+    return ids
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize(
+    "left,right",
+    [
+        # The bootstrap node applies `roles.bootstrap` and, through
+        # `roles.master`, `roles.node`.
+        (BOOTSTRAP_LOCAL, NODE_ROLE),
+        # So the bootstrap node applies both ways to fill the cache.
+        (IMAGE_CACHE_PROVISIONED, IMAGE_CACHE_PULLED),
+        # And each of them includes `installed.sls`.
+        (IMAGE_CACHE_INSTALLED, IMAGE_CACHE_PROVISIONED),
+        (IMAGE_CACHE_INSTALLED, IMAGE_CACHE_PULLED),
+    ],
+)
+def test_no_two_sls_applied_together_share_a_state_id(
+    environment: jinja2.Environment,
+    base_context: Dict[str, Any],
+    left: Path,
+    right: Path,
+) -> None:
+    """Check two SLS that can land in one run declare no common state ID.
+
+    Salt demands globally unique IDs, so the render then fails whole with
+    "Detected conflicting IDs" and nothing on that node converges. The other
+    tests here render one SLS at a time, which cannot see this.
+    """
+    shared = _declared_ids(environment, base_context, left) & _declared_ids(
+        environment, base_context, right
+    )
+
+    assert not shared, (
+        f"{sorted(shared)} is declared by both {left} and {right}, which can be"
+        " applied in the same run"
+    )
