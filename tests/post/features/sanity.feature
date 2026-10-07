@@ -75,6 +75,9 @@ Feature: Cluster Sanity Checks
         | name                           |
         | containerd-image-preload.timer |
 
+    Scenario: The image cache holds archives on every node
+        Then the directory '/var/lib/image-cache' holds at least one '*.tar' on every node
+
     @volumes_provisioned
     Scenario Outline: StatefulSet has available replicas
         Then the StatefulSet '<name>' in the '<namespace>' namespace has all desired replicas available

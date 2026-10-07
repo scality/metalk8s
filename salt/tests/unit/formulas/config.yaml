@@ -269,6 +269,63 @@ metalk8s:
             kubelet:
               container_engine: ""
 
+    pulled.sls:
+      _cases:
+        # The default node carries the `bootstrap` role, so the default case
+        # is the one that must render nothing: its cache came from the ISO.
+        "Containerd (default)": {}
+        "Control plane node":
+          pillar_overrides:
+            metalk8s:
+              nodes:
+                bootstrap:
+                  roles:
+                    - master
+                    - etcd
+                    - infra
+                    - node
+        # A Node dedicated to etcd is a documented topology, and it runs the
+        # etcd static pod, which only the control plane variant carries.
+        "Etcd node":
+          pillar_overrides:
+            metalk8s:
+              nodes:
+                bootstrap:
+                  roles:
+                    - etcd
+        "Worker node":
+          pillar_overrides:
+            metalk8s:
+              nodes:
+                bootstrap:
+                  roles:
+                    - node
+        # The bootstrap orchestrate hands the highstate a nodes pillar holding
+        # `_errors: None`, so a guard testing the key alone breaks every fresh
+        # install.
+        "Nodes pillar carrying a null _errors":
+          pillar_overrides:
+            metalk8s:
+              nodes:
+                _errors: null
+        "Nodes pillar in error":
+          pillar_overrides:
+            metalk8s:
+              nodes:
+                _errors:
+                  - "Failed to read nodes from the apiserver"
+        # The window where a Node exists but carries no role label yet.
+        "Node without any role":
+          pillar_overrides:
+            metalk8s:
+              nodes:
+                bootstrap:
+                  roles: []
+        "Without any container engine":
+          pillar_overrides:
+            kubelet:
+              container_engine: ""
+
   kubernetes:
     apiserver:
       files:

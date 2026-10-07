@@ -29,14 +29,6 @@ include:
   - .installed
   - metalk8s.archives.mounted
 
-Create the image cache directory:
-  file.directory:
-    - name: {{ image_cache.directory }}
-    - user: root
-    - group: root
-    - mode: '0755'
-    - makedirs: True
-
 Provision the boot cache:
   metalk8s_image_cache.provisioned:
     - name: {{ image_cache.directory }}
