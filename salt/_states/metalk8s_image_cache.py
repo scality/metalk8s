@@ -1,5 +1,9 @@
 """
-States to manage the local container image cache.
+States to fill the local container image cache with `imagecachectl`.
+
+`imagecachectl` comes from the image-cache project. It writes the archives a
+boot cache image carries under `<cache-path>/<name>/`, next to a sentinel, and
+does nothing when that sentinel is already there.
 """
 
 import logging
@@ -10,52 +14,62 @@ log = logging.getLogger(__name__)
 
 __virtualname__ = "metalk8s_image_cache"
 
+# What `imagecachectl import` prints when the cache already holds the resource.
+_ALREADY_HELD = "already holds"
+
 
 def __virtual__():
-    if "metalk8s_image_cache.provision" not in __salt__:
-        return (False, "Missing 'metalk8s_image_cache' module")
-
+    # No check on the binary here: it may be installed by the same run that
+    # applies this state, after the state modules are loaded.
     return __virtualname__
 
 
-def provisioned(name, source):
+def imported(name, source, cache_path=None, plain_http=False):
     """
-    Extract the image archives a boot cache image carries into the cache.
-
-    The archives land flat in the cache directory, which is what
-    :program:`containerd-image-preload` imports from.
+    Import a boot cache image into the cache with `imagecachectl import`.
 
     name
-        Path of the cache directory
+        Name of the cache resource, such as `worker-134-0-0-dev`
     source
-        Path of the boot cache image, as a docker archive
+        Path of a docker archive, or an image reference to pull
+    cache_path
+        Root of the image cache, the `imagecachectl` default if not set
+    plain_http
+        Talk plain HTTP to the registry
     """
     ret = {"name": name, "result": False, "changes": {}, "comment": ""}
 
-    try:
-        result = __salt__["metalk8s_image_cache.provision"](
-            source, name, dry_run=__opts__["test"]
-        )
-    except CommandExecutionError as exc:
-        # The comment reaches the state output, the log reaches the minion
-        # log, which is where a failed bootstrap gets read from.
-        log.error('Failed to provision "%s" from "%s": %s', name, source, exc)
-        ret["comment"] = str(exc)
-        return ret
-
-    if not result["extracted"]:
-        ret["result"] = True
-        ret["comment"] = f"All {len(result['present'])} archives already in the cache"
-        return ret
-
-    ret["changes"] = {"extracted": result["extracted"]}
+    command = ["imagecachectl", "import", "--name", name]
+    if cache_path:
+        command.extend(["--cache-path", cache_path])
+    if plain_http:
+        command.append("--plain-http")
+    command.append(source)
 
     if __opts__["test"]:
         ret["result"] = None
-        ret["comment"] = f"Would extract {len(result['extracted'])} archives"
+        ret["comment"] = f"Would run: {' '.join(command)}"
+        return ret
+
+    try:
+        out = __salt__["cmd.run_all"](command, python_shell=False)
+    except CommandExecutionError as exc:
+        # Raised when the command cannot start at all, e.g. a missing binary.
+        ret["comment"] = f"Failed to run imagecachectl: {exc}"
+        return ret
+
+    if out["retcode"] != 0:
+        # The comment reaches the state output, the log reaches the minion
+        # log, which is where a failed deployment gets read from.
+        log.error('Failed to import "%s" from "%s": %s', name, source, out["stderr"])
+        ret["comment"] = (
+            f"imagecachectl exited with code {out['retcode']}: {out['stderr']}"
+        )
         return ret
 
     ret["result"] = True
-    ret["comment"] = f"Extracted {len(result['extracted'])} archives"
+    ret["comment"] = out["stdout"].strip()
+    if _ALREADY_HELD not in out["stdout"]:
+        ret["changes"] = {"imported": source}
 
     return ret

@@ -10,6 +10,7 @@ its archives and they have been imported.
 """
 
 from pathlib import Path
+from typing import Any, Dict
 import pytest
 
 from tests.unit.formulas.fixtures.rendered import (
@@ -46,7 +47,12 @@ REQUIRED_GATES = [
 CONFIG_STATE = "Configure containerd image preload"
 
 DIRECTORY_STATE = "Create the image cache directory"
-PROVISION_STATE = "Provision the boot cache"
+# The bootstrap node holds the control plane, etcd and workloads, so it gets
+# every variant.
+VARIANTS = ("worker", "control-plane", "etcd")
+PROVISION_STATES = [
+    f"Import the {variant} boot cache from the ISO" for variant in VARIANTS
+]
 IMPORT_STATE = "Import the boot cache archives into containerd"
 KUBELET_STATE = "Ensure kubelet running"
 GATE_STATE = "Ensure the image cache is filled before the kubelet starts"
@@ -136,25 +142,28 @@ def test_import_follows_the_provisioning(
     checked = False
 
     for case_id, states in rendered_states:
-        if PROVISION_STATE not in states:
+        if NO_PROVISION_STATE in states:
             # The bootstrap role requires this SLS as a whole, so its
             # no-containerd branch has to declare a state of its own.
-            assert (
-                NO_PROVISION_STATE in states
-            ), f"no '{NO_PROVISION_STATE}' state ({case_id})"
+            assert not set(PROVISION_STATES) & set(
+                states
+            ), f"'{NO_PROVISION_STATE}' next to an import ({case_id})"
             continue
 
-        assert DIRECTORY_STATE in required_states(states, PROVISION_STATE), (
-            f"'{PROVISION_STATE}' does not require '{DIRECTORY_STATE}', it would"
-            f" write into a directory nothing created ({case_id})"
-        )
+        for provision_state in PROVISION_STATES:
+            assert provision_state in states, f"no '{provision_state}' ({case_id})"
 
-        triggers = requisite_states(states, PROVISION_STATE, "onchanges_in")
-        triggers |= requisite_states(states, IMPORT_STATE, "onchanges")
-        assert PROVISION_STATE in triggers, (
-            f"'{IMPORT_STATE}' does not watch '{PROVISION_STATE}', new archives"
-            f" would wait for the next firing of the timer ({case_id})"
-        )
+            assert DIRECTORY_STATE in required_states(states, provision_state), (
+                f"'{provision_state}' does not require '{DIRECTORY_STATE}', it"
+                f" would write into a directory nothing created ({case_id})"
+            )
+
+            triggers = requisite_states(states, provision_state, "onchanges_in")
+            triggers |= requisite_states(states, IMPORT_STATE, "onchanges")
+            assert provision_state in triggers, (
+                f"'{IMPORT_STATE}' does not watch '{provision_state}', new"
+                f" archives would wait for the next firing of the timer ({case_id})"
+            )
 
         assert TIMER_STATE in required_states(states, IMPORT_STATE), (
             f"'{IMPORT_STATE}' does not require '{TIMER_STATE}', it could run"
@@ -210,3 +219,44 @@ def test_preload_reads_the_configured_cache_directory(
     assert (
         checked
     ), "no rendering case configures the package, the requisites went unchecked"
+
+
+def _state_args(states: Dict[str, Any], state_id: str) -> Dict[str, Any]:
+    """Return the arguments of a single-function state as one mapping."""
+    (body,) = states[state_id].values()
+    return {key: value for arg in body for key, value in arg.items()}
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [IMAGE_CACHE_PROVISIONED], indirect=True)
+def test_provisioning_names_match_the_image_cache_resources(
+    rendered_states: RenderedStates, metalk8s_versions: Any
+) -> None:
+    """Check each import is named after the ImageCache resource that owns it.
+
+    The image cache agent finds the directory by that name. Another name and
+    the agent pulls the same archives again, next to the ones already there.
+    """
+    checked = False
+
+    for case_id, states in rendered_states:
+        if NO_PROVISION_STATE in states:
+            continue
+
+        for variant, state_id in zip(VARIANTS, PROVISION_STATES):
+            version = metalk8s_versions["images"][f"metalk8s-boot-cache-{variant}"][
+                "version"
+            ]
+            args = _state_args(states, state_id)
+            expected = f"{variant}-{version.replace('.', '-')}"
+            assert (
+                args["name"] == expected
+            ), f"'{state_id}' is named '{args['name']}', not '{expected}' ({case_id})"
+            assert args["source"].endswith(
+                f"/images/metalk8s-boot-cache-{variant}-{version}.tar"
+            ), f"'{state_id}' does not read its ISO archive ({case_id})"
+            assert args.get("cache_path"), f"'{state_id}' sets no cache ({case_id})"
+
+        checked = True
+
+    assert checked, "no rendering case provisions the cache, the names went unchecked"

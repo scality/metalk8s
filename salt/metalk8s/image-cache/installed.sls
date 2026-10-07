@@ -33,6 +33,16 @@ Configure containerd image preload:
     - require:
       - metalk8s_package_manager: Install containerd image preload
 
+# NOTE: Here and not in the SLS that fill the cache, so that both can require
+# it without declaring the same state ID twice in one run.
+Create the image cache directory:
+  file.directory:
+    - name: {{ image_cache.directory }}
+    - user: root
+    - group: root
+    - mode: '0755'
+    - makedirs: True
+
 Ensure containerd image preload timer running:
   service.running:
     - name: containerd-image-preload.timer
