@@ -60,6 +60,7 @@ Feature: Cluster Sanity Checks
         | metalk8s-monitoring         | prometheus-operator-prometheus-node-exporter |
         | metalk8s-monitoring         | node-problem-detector                        |
         | metalk8s-storage-management | disk-management-agent-controller-manager     |
+        | metalk8s-image-cache        | image-cache-agent-controller-manager         |
 
     Scenario Outline: Package is installed on every node
         Then the package '<name>' is installed on every node
