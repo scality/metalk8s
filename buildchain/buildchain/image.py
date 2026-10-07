@@ -326,6 +326,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "crl-operator",
         "disk-management-agent",
         "file-reflector",
+        "image-cache-agent",
         "node-warden-operator",
     ],
 }
