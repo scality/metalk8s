@@ -48,7 +48,7 @@ jobs:
         docs-only change), apply the `skip changelog` label instead.
     steps:
       - name: "Clone repository"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
