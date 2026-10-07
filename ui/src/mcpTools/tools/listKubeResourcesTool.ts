@@ -109,10 +109,14 @@ export function createListKubeResourcesTool(context: ToolContext) {
     annotations: { readOnlyHint: true },
 
     execute: async ({ kind, apiVersion }: { kind: string; apiVersion?: string }) => {
-      // The schema says kind is required, but a tool is a plain function and nothing guarantees the
-      // host validated anything. This is the boundary; it checks.
-      if (!kind) {
-        return refusal(new K8sApiError('not_found', 'A kind is required.'));
+      // The schema says kind is required and that both are strings, but a tool is a plain function
+      // and nothing guarantees the host validated either. This is the boundary; it checks — a
+      // number here would otherwise reach kind.trim() and throw straight out of execute.
+      if (typeof kind !== 'string' || !kind) {
+        return refusal(new K8sApiError('not_found', 'A kind is required, as a string.'));
+      }
+      if (apiVersion !== undefined && typeof apiVersion !== 'string') {
+        return refusal(new K8sApiError('malformed', 'apiVersion has to be a string, like "apps/v1".'));
       }
 
       // Before the kind is even resolved, so that no route to a Secret exists — not the allowlist,

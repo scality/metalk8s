@@ -63,6 +63,18 @@ describe('listKubeResources', () => {
     expect(k8sApi).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ['a kind that is not a string', { kind: 123 }, 'not_found'],
+    ['an apiVersion that is not a string', { kind: 'pods', apiVersion: 1 }, 'malformed'],
+  ])('refuses %s rather than throwing out of execute', async (_, args, status) => {
+    // Nothing guarantees the host validated the schema. Untyped input used to reach kind.trim(),
+    // where it threw, or resolveTarget, where it was reported as an unreachable API.
+    const result = await run(args as unknown as { kind: string });
+
+    expect(result.status).toBe(status);
+    expect(k8sApi).not.toHaveBeenCalled();
+  });
+
   it('refuses a malformed apiVersion without reaching the network', async () => {
     const result = await run({ kind: 'volumes', apiVersion: 'storage.metalk8s.scality.com' });
 
