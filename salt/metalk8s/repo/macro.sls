@@ -18,3 +18,22 @@
 {{ prefix }}/{{ name }}
     {%- endif -%}
 {%- endmacro -%}
+
+
+{#- Same reference as `build_image_name`, but on the address of the first
+    registry endpoint. The registry name `build_image_name` uses is only
+    known to containerd, through its mirror configuration, so any other
+    client needs this one.
+    Only the first endpoint is used: there is no fallback to the next one. #}
+{%- macro build_registry_image_name(name) -%}
+    {%- set endpoints = metalk8s.endpoints.repositories -%}
+    {%- if not endpoints | is_list -%}
+        {%- set endpoints = [endpoints] -%}
+    {%- endif -%}
+    {%- set endpoint = endpoints | first | default({}, true) -%}
+    {%- if not endpoint.get('ip') or not endpoint.get('ports', {}).get('http') -%}
+{{ raise('Missing address of the repositories endpoint') }}
+    {%- endif -%}
+{{ endpoint.ip }}:{{ endpoint.ports.http }}/{{
+    build_image_name(name, include_registry=False) }}
+{%- endmacro -%}

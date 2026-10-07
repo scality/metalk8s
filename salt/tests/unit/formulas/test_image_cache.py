@@ -10,6 +10,7 @@ its archives and they have been imported.
 """
 
 from pathlib import Path
+import re
 from typing import Any, Dict
 import pytest
 
@@ -21,6 +22,7 @@ from tests.unit.formulas.fixtures.rendered import (
 
 IMAGE_CACHE_INSTALLED = Path("metalk8s/image-cache/installed.sls")
 IMAGE_CACHE_PROVISIONED = Path("metalk8s/image-cache/provisioned.sls")
+IMAGE_CACHE_PULLED = Path("metalk8s/image-cache/pulled.sls")
 BOOTSTRAP_LOCAL = Path("metalk8s/roles/bootstrap/local.sls")
 
 # The formula that transitively brings in every state we require, so it must stay
@@ -60,6 +62,13 @@ PROVISIONED_SLS = "metalk8s.image-cache.provisioned"
 
 # What the provisioning renders instead when the node runs no containerd.
 NO_PROVISION_STATE = "No image cache to provision"
+
+PULL_STATE = "Pull the worker boot cache from the registry"
+# Not IMPORT_STATE: both SLS can land in one run, and Salt refuses an ID
+# declared twice.
+PULL_IMPORT_STATE = "Import the pulled boot cache archives into containerd"
+# Declared by both branches of the pull, so a role can always require it.
+PULL_TERMINAL_STATE = "The worker boot cache is in place"
 
 
 @pytest.mark.formulas
@@ -260,3 +269,45 @@ def test_provisioning_names_match_the_image_cache_resources(
         checked = True
 
     assert checked, "no rendering case provisions the cache, the names went unchecked"
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [IMAGE_CACHE_PULLED], indirect=True)
+def test_pull_reads_the_registry_endpoint(
+    rendered_states: RenderedStates, metalk8s_versions: Any
+) -> None:
+    """Check a joining node pulls the worker variant over plain HTTP.
+
+    The reference names the endpoint address, not the registry name only
+    containerd resolves through its mirror configuration.
+    """
+    version = metalk8s_versions["images"]["metalk8s-boot-cache-worker"]["version"]
+    checked = False
+
+    for case_id, states in rendered_states:
+        assert PULL_TERMINAL_STATE in states, f"no '{PULL_TERMINAL_STATE}' ({case_id})"
+        if PULL_STATE not in states:
+            continue
+
+        args = _state_args(states, PULL_STATE)
+        assert args["name"] == f"worker-{version.replace('.', '-')}", case_id
+        assert re.fullmatch(
+            rf"[0-9.]+:[0-9]+/[^/]+/metalk8s-boot-cache-worker:{re.escape(version)}",
+            args["source"],
+        ), f"unexpected source '{args['source']}' ({case_id})"
+        assert args.get("plain_http") is True, f"no plain HTTP ({case_id})"
+        assert args.get("cache_path"), f"'{PULL_STATE}' sets no cache ({case_id})"
+
+        assert DIRECTORY_STATE in required_states(states, PULL_STATE), case_id
+        assert PULL_STATE in requisite_states(
+            states, PULL_IMPORT_STATE, "onchanges"
+        ), f"'{PULL_IMPORT_STATE}' does not watch '{PULL_STATE}' ({case_id})"
+        assert TIMER_STATE in required_states(states, PULL_IMPORT_STATE), case_id
+
+        assert {PULL_STATE, PULL_IMPORT_STATE} <= required_states(
+            states, PULL_TERMINAL_STATE
+        ), f"'{PULL_TERMINAL_STATE}' does not wait for the pull ({case_id})"
+
+        checked = True
+
+    assert checked, "no rendering case pulls the cache, the requisites went unchecked"

@@ -269,6 +269,22 @@ metalk8s:
             kubelet:
               container_engine: ""
 
+    pulled.sls:
+      _cases:
+        "Containerd, endpoints as a list (default)": {}
+        "Containerd, endpoints as a dict":
+          pillar_overrides:
+            metalk8s:
+              endpoints:
+                repositories:
+                  ip: 10.0.0.2
+                  ports:
+                    http: 8081
+        "Without any container engine":
+          pillar_overrides:
+            kubelet:
+              container_engine: ""
+
   kubernetes:
     apiserver:
       files:
