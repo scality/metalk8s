@@ -419,7 +419,6 @@ register_basic("hashutil.base64_encodefile")(
 )
 register_basic("log.warning")(print)
 register_basic("metalk8s.format_san")(", ".join)
-register_basic("salt_version.greater_than")(MagicMock(return_value=True))
 
 
 @register_basic("metalk8s.cmp_sorted")
