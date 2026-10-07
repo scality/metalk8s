@@ -141,11 +141,16 @@ const millis = (value?: Date | string): number => {
  * Init containers run in order, and until they finish the main container reports `PodInitializing`.
  * Without this, a pod whose init container is crash-looping reads as PodInitializing or Pending and
  * the real fault is invisible — so they are read first, and only the one currently blocking counts.
+ *
+ * A running one is skipped rather than reported, as kubectl skips it. A sidecar — an init container
+ * with restartPolicy Always — runs for the pod's whole life and would otherwise hide every init
+ * container listed after it. For a plain init container the answer is unchanged: the ones after it
+ * are waiting with `PodInitializing`, which is not a fault either.
  */
 const initStatus = (pod: V1Pod): string | undefined => {
   for (const container of pod.status?.initContainerStatuses ?? []) {
     const terminated = container.state?.terminated;
-    if (terminated?.exitCode === 0) continue;
+    if (terminated?.exitCode === 0 || container.state?.running) continue;
 
     const reason = container.state?.waiting?.reason ?? terminated?.reason ?? (terminated ? 'Error' : undefined);
     // PodInitializing on an init container means it has not started yet, which is not a fault.

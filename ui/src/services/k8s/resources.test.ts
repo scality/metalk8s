@@ -177,6 +177,52 @@ describe('listResources', () => {
     expect(list.items[0]).toMatchObject({ status: 'Init:CrashLoopBackOff' });
   });
 
+  it('looks past a running sidecar to the init container that is actually stuck', async () => {
+    // A sidecar is an init container with restartPolicy Always: it runs for the pod's whole life, so
+    // stopping at it would hide everything listed after it for as long as the pod exists.
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'web-abc', namespace: 'default' },
+          spec: { containers: [{ name: 'web' }] },
+          status: {
+            phase: 'Pending',
+            initContainerStatuses: [
+              { state: { running: { startedAt: new Date('2026-10-06T09:00:00Z') } } },
+              { state: { waiting: { reason: 'CrashLoopBackOff' } } },
+            ],
+            containerStatuses: [{ ready: false, state: { waiting: { reason: 'PodInitializing' } } }],
+          },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('pods'));
+
+    expect(list.items[0]).toMatchObject({ status: 'Init:CrashLoopBackOff' });
+  });
+
+  it('still says PodInitializing while a plain init container is simply running', async () => {
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'migrate-xyz', namespace: 'default' },
+          spec: { containers: [{ name: 'app' }] },
+          status: {
+            phase: 'Pending',
+            initContainerStatuses: [{ state: { running: {} } }],
+            containerStatuses: [{ ready: false, state: { waiting: { reason: 'PodInitializing' } } }],
+          },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('pods'));
+
+    // Nothing is wrong here, and skipping the running container must not invent a fault.
+    expect(list.items[0]).toMatchObject({ status: 'PodInitializing' });
+  });
+
   it('ignores init containers that have already finished', async () => {
     (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
       ok([
