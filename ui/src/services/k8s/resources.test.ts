@@ -73,19 +73,19 @@ describe('resolveTarget', () => {
     expect(() => resolveTarget('endpoints', 'v1')).toThrow(expect.objectContaining({ status: 'not_found' }));
   });
 
-  it('refuses secrets, with or without an apiVersion, and never as "not found"', () => {
-    // Without one it is simply not in the allowlist — refused, and nothing is sent either way.
-    expect(() => resolveTarget('secrets')).toThrow(K8sApiError);
-
-    // With one, a caller is routing around the allowlist. That is the refusal that has to be ours.
-    const refusal = (): never => resolveTarget('secrets', 'v1') as never;
-    expect(refusal).toThrow(expect.objectContaining({ status: 'not_authorized' }));
-    expect(refusal).toThrow(/never listed or read/i);
-    expect(() => resolveTarget('Secret', 'v1')).toThrow(expect.objectContaining({ status: 'not_authorized' }));
-  });
-
   it('does not offer secrets among the kinds it lists', () => {
     expect(ALLOWED_KINDS).not.toContain('secrets');
+  });
+
+  it('holds no opinion about secrets — that belongs to whoever is asking', () => {
+    // Deliberately not refused here. Never returning a Secret is listKubeResources' policy, and this
+    // service has other possible callers; the tool refuses before anything reaches this function.
+    expect(() => resolveTarget('secrets', 'v1')).toThrow(expect.objectContaining({ status: 'not_found' }));
+    expect(resolveTarget('secrets', 'example.com/v1').custom).toEqual({
+      group: 'example.com',
+      version: 'v1',
+      plural: 'secrets',
+    });
   });
 });
 

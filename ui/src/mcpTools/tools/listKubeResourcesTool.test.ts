@@ -47,14 +47,16 @@ describe('listKubeResources', () => {
     expect(listPodForAllNamespaces).not.toHaveBeenCalled();
   });
 
-  it('refuses secrets before any request is made', async () => {
-    const withApiVersion = await run({ kind: 'secrets', apiVersion: 'v1' });
+  it.each([
+    ['on its own', { kind: 'secrets' }],
+    ['with a core apiVersion', { kind: 'secrets', apiVersion: 'v1' }],
+    ['with a group, which would route around the allowlist', { kind: 'secrets', apiVersion: 'example.com/v1' }],
+    ['capitalised and singular', { kind: 'Secret' }],
+  ])('refuses secrets %s, before any request is made', async (_, args) => {
+    const result = await run(args);
 
-    expect(withApiVersion.status).toBe('not_authorized');
-    expect(withApiVersion.message).toMatch(/never listed or read/i);
-    // Without one it never reaches the Secret guard: it is not in the allowlist, so it stops one
-    // check earlier. Refused either way, and nothing is sent either way.
-    expect((await run({ kind: 'secrets' })).status).toBe('not_found');
+    expect(result.status).toBe('not_authorized');
+    expect(result.message).toMatch(/never listed or read/i);
     expect(k8sApi).not.toHaveBeenCalled();
   });
 

@@ -30,6 +30,18 @@ const EXPLAIN: Record<K8sFailureKind, string> = {
   malformed: 'The request could not be formed as the Kubernetes API requires.',
 };
 
+/**
+ * Refused here rather than in the service layer: never returning a Secret is this tool's policy, not
+ * a property of the cluster. Another caller of services/k8s/resources may well need to read one.
+ */
+const SECRET_KINDS = ['secret', 'secrets'];
+
+const secretRefusal = () =>
+  new K8sApiError(
+    'not_authorized',
+    'Secrets are never listed or read by this tool, whatever your permissions allow. If what a Secret holds matters, ask the user to look at it themselves.',
+  );
+
 const refusal = (error: K8sApiError) => ({
   status: error.status,
   message: error.detail ? `${EXPLAIN[error.status]} ${error.detail}` : EXPLAIN[error.status],
@@ -99,8 +111,12 @@ export function createListKubeResourcesTool(context: ToolContext) {
         return refusal(new K8sApiError('not_found', 'A kind is required.'));
       }
 
-      // Resolved first, and purely: an unknown kind, an apiVersion that is not one, and a Secret all
-      // cost nothing and reach no network.
+      // Before the kind is even resolved, so that no route to a Secret exists — not the allowlist,
+      // not an apiVersion naming the core group, not a CRD that happens to be called "secrets".
+      if (SECRET_KINDS.includes(kind.trim().toLowerCase())) return refusal(secretRefusal());
+
+      // Resolved purely: an unknown kind and an apiVersion that is not one both cost nothing and
+      // reach no network.
       let target: KubeTarget;
       try {
         target = resolveTarget(kind, apiVersion);

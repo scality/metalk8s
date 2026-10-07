@@ -330,9 +330,6 @@ export const KINDS: Record<string, KindEntry> = {
 /** What a caller is shown when it names a kind this does not know. */
 export const ALLOWED_KINDS = Object.keys(KINDS);
 
-/** `secrets` is refused by us, before any request — whatever the caller's RBAC allows. */
-const SECRET_KINDS = ['secret', 'secrets'];
-
 /**
  * A kind reached by apiVersion has no generated type here, so its projection is the handful of
  * fields every object carries. `phase` only when the kind uses one.
@@ -396,10 +393,9 @@ export type KubeTarget =
  * The order of the checks is the design, and the first failure stops it:
  *   1.  the kind is in the allowlist, or an apiVersion was supplied  → not_found, with the allowlist
  *   1b. the apiVersion parses                                        → malformed
- *   2.  the kind is not a Secret                                     → not_authorized, refused by us
  *
- * (2) comes last because a bare `secrets` is already not in the allowlist and stops at (1); what
- * reaches (2) is a caller routing around the allowlist with an explicit apiVersion.
+ * What a caller may ASK for is the caller's own business — listKubeResources refuses Secrets before
+ * it gets here, because that is its policy and not a property of the cluster.
  */
 export const resolveTarget = (kind: string, apiVersion?: string): KubeTarget => {
   const normalized = (kind ?? '').trim().toLowerCase();
@@ -415,13 +411,10 @@ export const resolveTarget = (kind: string, apiVersion?: string): KubeTarget => 
   // The allowlist answers when it can: it is the same resource, through a typed client, with a
   // projection worth reading. An apiVersion naming something ELSE routes to custom objects.
   if (entry && (!apiVersion || apiVersion === entry.apiVersion)) {
-    if (SECRET_KINDS.includes(normalized)) throw secretRefusal();
     return { kind: normalized, apiVersion: entry.apiVersion, namespaced: entry.namespaced, entry };
   }
 
   const { group, version } = parseApiVersion(apiVersion);
-
-  if (SECRET_KINDS.includes(normalized)) throw secretRefusal();
 
   // The core group is not reachable through CustomObjectsApi — it builds /apis/{group}/{version}/…,
   // which has no core form. Core kinds come from the allowlist or not at all.
@@ -438,12 +431,6 @@ export const resolveTarget = (kind: string, apiVersion?: string): KubeTarget => 
     custom: { group, version, plural: normalized },
   };
 };
-
-const secretRefusal = () =>
-  new K8sApiError(
-    'not_authorized',
-    'Secrets are never listed or read by this tool, whatever your permissions allow. If what a Secret holds matters, ask the user to look at it themselves.',
-  );
 
 /**
  * List one kind, and project it.
