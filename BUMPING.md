@@ -248,8 +248,9 @@ New `.patch` files in the patches directory are automatically picked up.
    `K8S_VERSION_MINOR` and `K8S_VERSION_PATCH`. Nothing else to edit for the
    packages: `kubelet` and `kubectl` are pinned to this version, and the build
    fetches them from the official Kubernetes RPM repository.
-2. Update the digests of the control-plane images (`kube-apiserver`,
-   `kube-controller-manager`, `kube-scheduler`, `kube-proxy`):
+2. In the same `buildchain/buildchain/versions.py`, update the digests of the
+   control-plane images (`kube-apiserver`, `kube-controller-manager`,
+   `kube-scheduler`, `kube-proxy`):
    ```gcrane digest registry.k8s.io/$image:v$K8S_VERSION```
 3. Read the changelogs of every minor version crossed, and adapt the salt
    states to removed flags, removed APIs and changed defaults (kubelet, for
