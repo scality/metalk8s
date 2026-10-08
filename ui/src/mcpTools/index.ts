@@ -1,3 +1,4 @@
+import { createDescribeKubeResourceTool } from './tools/describeKubeResourceTool';
 import { createListKubeResourcesTool } from './tools/listKubeResourcesTool';
 import type { ToolContext } from './types';
 
@@ -8,4 +9,7 @@ import type { ToolContext } from './types';
  * public/.well-known/micro-app-configuration, calls createTools once per registration pass, and
  * registers what comes back. Without that declaration the registrar skips the app in silence.
  */
-export const createTools = (context: ToolContext) => [createListKubeResourcesTool(context)];
+export const createTools = (context: ToolContext) => [
+  createListKubeResourcesTool(context),
+  createDescribeKubeResourceTool(context),
+];
