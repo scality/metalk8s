@@ -340,6 +340,36 @@ describe('listResources', () => {
     expect(list.items[0]).toMatchObject({ status: 'Ready', unschedulable: true });
   });
 
+  it.each([
+    [
+      'a pod on its way out reads Terminating, not Running',
+      { phase: 'Running', containerStatuses: [{ ready: true, restartCount: 0, state: { running: {} } }] },
+      'Terminating',
+    ],
+    // kubectl drops Terminating for these, and so does this: each says more than "Terminating" does.
+    ['a lost node keeps NodeLost', { phase: 'Running', reason: 'NodeLost' }, 'NodeLost'],
+    ['an evicted pod keeps Evicted', { phase: 'Failed', reason: 'Evicted' }, 'Evicted'],
+    ['a finished pod keeps Succeeded', { phase: 'Succeeded' }, 'Succeeded'],
+  ])('%s', async (_, status, expected) => {
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: {
+            name: 'web-abc',
+            namespace: 'default',
+            deletionTimestamp: new Date('2026-10-07T09:00:00Z'),
+          },
+          spec: { containers: [{ name: 'web' }] },
+          status,
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('pods'));
+
+    expect(list.items[0]).toMatchObject({ status: expected });
+  });
+
   it('calls an evicted pod evicted, not failed', async () => {
     (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
       ok([

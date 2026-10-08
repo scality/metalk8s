@@ -165,15 +165,22 @@ const initStatus = (pod: V1Pod): string | undefined => {
  * reason, so `status` here is the most specific thing available.
  */
 const podStatus = (pod: V1Pod): string => {
-  const init = initStatus(pod);
-  if (init) return init;
-
   const containers = pod.status?.containerStatuses ?? [];
   const waiting = containers.find((cs) => cs.state?.waiting?.reason)?.state?.waiting?.reason;
   const terminated = containers.find((cs) => cs.state?.terminated?.reason)?.state?.terminated?.reason;
   // status.reason before the phase: an evicted pod is phase Failed with reason Evicted, and so is a
   // lost or shut-down one. kubectl prefers the reason for the same reason — "Failed" says nothing.
-  return waiting ?? terminated ?? pod.status?.reason ?? pod.status?.phase ?? 'Unknown';
+  const status = initStatus(pod) ?? waiting ?? terminated ?? pod.status?.reason ?? pod.status?.phase ?? 'Unknown';
+
+  // A pod being deleted goes on reporting whatever it was until it actually goes, so one wedged on a
+  // finalizer or a lost node reads as healthy. kubectl calls that Terminating, last, over everything
+  // else it worked out — and so does this.
+  //
+  // Except on a pod that has already finished: Succeeded and Failed carry their own answer, and
+  // Evicted or Completed says more about a pod on its way out than Terminating does. NodeLost is
+  // kept for the same reason — it names why this one is not going anywhere.
+  const finished = pod.status?.phase === 'Succeeded' || pod.status?.phase === 'Failed';
+  return pod.metadata?.deletionTimestamp && !finished && status !== 'NodeLost' ? 'Terminating' : status;
 };
 
 const nodeStatus = (node: V1Node): string => {
