@@ -1,60 +1,15 @@
-import { k8sApi } from '../../services/k8s/clients';
 import {
   ALLOWED_KINDS,
   failureFor,
   K8sApiError,
-  type K8sFailureKind,
   type KubeTarget,
   kubeResourcesQuery,
   MAX_ITEMS,
   resolveTarget,
 } from '../../services/k8s/resources';
 import { discloseList } from '../disclosure';
-import type { MetalK8sSelfConfiguration, ToolContext } from '../types';
-
-/**
- * What a caller is told, per failure. One sentence each, because each needs a different next step —
- * and one copy, so the same failure is worded the same way wherever it comes from.
- *
- * Used when a failure arrives with no detail of its own — an HTTP status and nothing more. A
- * failure that carries a detail says something more specific, and that text is used instead.
- */
-const EXPLAIN: Record<K8sFailureKind, string> = {
-  session_expired: 'Your session has expired. Sign in again, then retry once.',
-  // Spelled out because the two are easy to conflate in a summary, and conflating them turns a
-  // permissions problem into a wrong diagnosis.
-  not_authorized:
-    'Your Kubernetes permissions (RBAC) do not allow this. This does NOT mean the resources are ' +
-    'absent — say you could not look, never that there was nothing there.',
-  not_found: 'There is no such resource kind in this cluster.',
-  unavailable: 'The Kubernetes API could not be reached, or answered unusably.',
-  malformed: 'The request could not be formed as the Kubernetes API requires.',
-};
-
-/**
- * Refused here rather than in the service layer: never returning a Secret is this tool's policy, not
- * a property of the cluster. Another caller of services/k8s/resources may well need to read one.
- */
-const SECRET_KINDS = ['secret', 'secrets'];
-
-const secretRefusal = () =>
-  new K8sApiError(
-    'not_authorized',
-    'Secrets are never listed or read by this tool, whatever your permissions allow. If what a Secret holds matters, ask the user to look at it themselves.',
-  );
-
-const refusal = (error: K8sApiError) => ({
-  status: error.status,
-  // The detail alone when there is one. EXPLAIN says what SORT of thing went wrong, and in front of
-  // a detail that already names the specific thing it contradicts it — "your RBAC does not allow
-  // this" ahead of "Secrets are never listed whatever your permissions allow" blames the cluster for
-  // a policy of ours.
-  message: error.detail ?? EXPLAIN[error.status],
-  // Attached to every not_found, which is either a kind this tool does not know or a group/version
-  // the cluster does not serve. Either way the next call is a better one if the caller can see what
-  // is on offer — one turn instead of a guessing loop.
-  ...(error.status === 'not_found' ? { allowedKinds: ALLOWED_KINDS } : {}),
-});
+import { isSecretKind, kubeClients, refusal, secretRefusal } from '../kubeTools';
+import type { ToolContext } from '../types';
 
 /**
  * READ-ONLY: what exists in the cluster, of one kind, and which of it is unhappy.
@@ -116,39 +71,20 @@ export function createListKubeResourcesTool(context: ToolContext) {
     execute: async ({ kind, apiVersion }: { kind: string; apiVersion?: string }) => {
       // Before the kind is even resolved, so that no route to a Secret exists — not the allowlist,
       // not an apiVersion naming the core group, not a CRD that happens to be called "secrets".
-      if (
-        SECRET_KINDS.includes(
-          String(kind ?? '')
-            .trim()
-            .toLowerCase(),
-        )
-      )
-        return refusal(secretRefusal());
+      if (isSecretKind(kind)) return refusal(secretRefusal());
 
       // Resolved purely: an unknown kind and an apiVersion that is not one both cost nothing and
       // reach no network.
-      let target: KubeTarget;
       try {
-        target = resolveTarget(kind, apiVersion);
-      } catch (error) {
-        return refusal(failureFor(error));
-      }
+        // Resolved purely: an unknown kind and an apiVersion that is not one both cost nothing and
+        // reach no network.
+        const target: KubeTarget = resolveTarget(kind, apiVersion);
+        const clients = await kubeClients(context);
 
-      const { url } = (context.selfConfiguration ?? {}) as MetalK8sSelfConfiguration;
-      if (!url) {
-        return refusal(new K8sApiError('unavailable', 'This deployment does not expose the Kubernetes API.'));
-      }
-
-      // Read per call, not at registration: getToken returns the current token, which may have been
-      // renewed in the background since the tools were registered.
-      const token = await context.getToken();
-      if (!token) return refusal(new K8sApiError('session_expired'));
-
-      try {
         // Through shell-ui's QueryClient — the one every federated app shares, by contextSharing in
         // its FederatedApp — rather than a bare call. The failures are rejections, so only
         // successes are cached.
-        const list = await context.queryClient.fetchQuery(kubeResourcesQuery(k8sApi(url, token), target));
+        const list = await context.queryClient.fetchQuery(kubeResourcesQuery(clients, target));
 
         // The service hands back what the cluster holds; what may be disclosed of it is decided here.
         // An allowlisted kind keeps only the spec keys its entry names, which is why no pod template
