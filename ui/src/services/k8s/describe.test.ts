@@ -112,7 +112,9 @@ describe('describeResource', () => {
 
     expect(description.resource.status).not.toHaveProperty('images');
     expect(description.resource.status).toMatchObject({ conditions: [{ type: 'Ready' }] });
-    expect(description.omitted).toContain('status.images');
+    // Only what it actually shed: this node has no managed fields to lose, and naming them would be
+    // claiming work it did not do.
+    expect(description.omitted).toEqual(['status.images']);
   });
 
   it('keeps env names and drops their values', async () => {
@@ -185,6 +187,26 @@ describe('describeResource', () => {
     expect(JSON.stringify(description)).not.toContain('hunter2');
     expect(JSON.stringify(description)).toContain('"PW"');
     expect(description.omitted).toContain('env values (names kept)');
+  });
+
+  it("keeps a ConfigMap's keys and drops its values, as the listing does", async () => {
+    (clients.coreV1.readNamespacedConfigMap as jest.Mock).mockReturnValue(
+      ok({
+        metadata: { name: 'app-config', namespace: 'default' },
+        data: { 'database.url': 'postgres://user:hunter2@db:5432/app' },
+      }),
+    );
+
+    const description = await describeResource(clients, resolveTarget('configmaps'), {
+      name: 'app-config',
+      namespace: 'default',
+    });
+
+    // Describing one is no safer than listing one, and the listing has never returned the values.
+    expect(JSON.stringify(description)).not.toContain('hunter2');
+    expect(description.resource).not.toHaveProperty('data');
+    expect(description.resource.dataKeys).toEqual(['database.url']);
+    expect(description.omitted).toContain('ConfigMap values (keys kept)');
   });
 
   it('never returns the annotation holding a copy of the applied spec', async () => {
