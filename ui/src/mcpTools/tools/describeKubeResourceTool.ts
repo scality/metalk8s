@@ -17,20 +17,20 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
   return {
     name: 'describeKubeResource',
     description:
-      'Describes ONE Kubernetes resource: its spec and status as the cluster holds them, a summary ' +
-      'of the fields that say whether it is healthy, and the events attached to it. This is what ' +
-      '`kubectl describe` shows, and the events are usually the actual reason something is wrong — ' +
-      'a failed scheduling, an image that will not pull, a probe that keeps failing.\n' +
+      'Describes ONE Kubernetes resource: the object as the cluster holds it, and the events ' +
+      'attached to it. This is what `kubectl describe` shows, and the events are usually the ' +
+      'actual reason something is wrong — a failed scheduling, an image that will not pull, a ' +
+      'probe that keeps failing.\n' +
       `kind is one of: ${ALLOWED_KINDS.join(', ')}.\n` +
       'name must be exact. Get it from listKubeResources rather than guessing it.\n' +
       'namespace is required for a namespaced kind and refused for a cluster-scoped one ' +
       '(nodes, persistentvolumes, namespaces) — a wrong one is an error, not a filter.\n' +
-      'summary answers the usual question without reading anything else; resource.spec and ' +
-      'resource.status hold the object in full for whatever it does not cover. The top-level ' +
-      "status is this call's own — ok, or why not — and never the object's.\n" +
-      "omitted lists what was left out — managed fields, a node's image list, and the VALUES of " +
-      'environment variables, whose names are kept. A variable listed with no value is set: never ' +
-      'report it as empty or missing.\n' +
+      "resource is the object itself, whole. The top-level status is this call's own — ok, or " +
+      "why not — and never the object's.\n" +
+      'omitted lists what was left out, and is usually empty. The VALUES of environment variables ' +
+      'are always among them when a pod has any: a variable listed with no value is SET, never ' +
+      "report it as empty or missing. An outsized object also sheds its managed fields, a node's " +
+      'image list, or the annotation holding a copy of its own spec.\n' +
       'events is null when they could not be read, and eventsUnavailable says why. That is not a ' +
       'failure of the description, and null is NOT "no events" — never say nothing happened.\n' +
       `truncated means there were more than ${MAX_EVENTS} events and the oldest were dropped.\n` +
