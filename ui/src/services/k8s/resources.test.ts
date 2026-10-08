@@ -90,6 +90,10 @@ describe('resolveTarget', () => {
     expect(resolveTarget(asked).kind).toBe(resolved);
   });
 
+  it.each([['crd'], ['crds']])('takes %s for customresourcedefinitions', (asked) => {
+    expect(resolveTarget(asked).kind).toBe('customresourcedefinitions');
+  });
+
   it('refuses an apiVersion that is not one', () => {
     expect(() => resolveTarget('volumes', 'not/an/apiversion')).toThrow(
       expect.objectContaining({ status: 'malformed' }),
@@ -124,7 +128,7 @@ describe('listResources', () => {
     clients = makeClients();
   });
 
-  it('projects a pod down to the fields that say whether it is healthy', async () => {
+  it('gives a pod its state as Kubernetes reports it, not as a sentence', async () => {
     (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
       ok([
         {
@@ -136,7 +140,19 @@ describe('listResources', () => {
           spec: { nodeName: 'node-2', containers: [{ name: 'operator' }] },
           status: {
             phase: 'Running',
-            containerStatuses: [{ ready: false, restartCount: 47, state: { waiting: { reason: 'CrashLoopBackOff' } } }],
+            conditions: [{ type: 'Ready', status: 'False', reason: 'ContainersNotReady' }],
+            containerStatuses: [
+              {
+                name: 'operator',
+                ready: false,
+                restartCount: 47,
+                state: { waiting: { reason: 'CrashLoopBackOff' } },
+                lastState: { terminated: { exitCode: 1, reason: 'Error' } },
+                image: 'registry/operator:1.2.3',
+                imageID: 'registry/operator@sha256:0123456789abcdef',
+                containerID: 'containerd://fedcba9876543210',
+              },
+            ],
           },
         },
       ]),
@@ -144,139 +160,132 @@ describe('listResources', () => {
 
     const list = await listResources(clients, resolveTarget('pods'));
 
-    expect(list).toEqual({
-      kind: 'pods',
-      namespace: 'all',
-      returned: 1,
-      truncated: false,
-      items: [
-        {
-          name: 'storage-operator-7d9f',
-          namespace: 'metalk8s-system',
-          // The phase says Running. The container reason is the answer anyone wanted.
-          status: 'CrashLoopBackOff',
-          ready: '0/1',
-          restarts: 47,
-          node: 'node-2',
-          createdAt: '2026-10-02T08:11:04.000Z',
-        },
-      ],
+    expect(list.items[0]).toEqual({
+      name: 'storage-operator-7d9f',
+      namespace: 'metalk8s-system',
+      createdAt: '2026-10-02T08:11:04.000Z',
+      spec: { nodeName: 'node-2' },
+      status: {
+        phase: 'Running',
+        conditions: [{ type: 'Ready', status: 'False', reason: 'ContainersNotReady' }],
+        containerStatuses: [
+          {
+            name: 'operator',
+            ready: false,
+            restartCount: 47,
+            state: { waiting: { reason: 'CrashLoopBackOff' } },
+            lastState: { terminated: { exitCode: 1, reason: 'Error' } },
+            image: 'registry/operator:1.2.3',
+          },
+        ],
+      },
     });
   });
 
-  it("reads an init container's failure, which the main container hides", async () => {
-    // While an init container runs or fails, the main container reports PodInitializing — so
-    // without this the answer for a pod stuck on a crash-looping init container is "initializing".
+  it('derives nothing a reader can see for itself', async () => {
     (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
       ok([
         {
-          metadata: { name: 'migrate-abc', namespace: 'default' },
-          spec: { containers: [{ name: 'app' }] },
-          status: {
-            phase: 'Pending',
-            initContainerStatuses: [
-              { ready: false, restartCount: 6, state: { waiting: { reason: 'CrashLoopBackOff' } } },
-            ],
-            containerStatuses: [{ ready: false, restartCount: 0, state: { waiting: { reason: 'PodInitializing' } } }],
-          },
+          metadata: { name: 'web', namespace: 'default' },
+          spec: { nodeName: 'node-1', containers: [{ name: 'web' }] },
+          status: { phase: 'Running', containerStatuses: [{ name: 'web', ready: true, restartCount: 0 }] },
         },
       ]),
     );
 
-    const list = await listResources(clients, resolveTarget('pods'));
+    const row = (await listResources(clients, resolveTarget('pods'))).items[0];
 
-    // The restart count is the evidence for that status, so it cannot stay at the main container's 0.
-    expect(list.items[0]).toMatchObject({ status: 'Init:CrashLoopBackOff', restarts: 6 });
+    // No computed words: CrashLoopBackOff, how many containers are ready and a restart total are all
+    // readable from the state above, and computing them here would be a place to be wrong about a
+    // cluster newer than the client.
+    expect(row).not.toHaveProperty('ready');
+    expect(row).not.toHaveProperty('restarts');
+    expect(row).not.toHaveProperty('node');
   });
 
-  it('counts restarts across every container in the pod, sidecars included', async () => {
+  it('drops managed fields, image digests and container ids, which are bulk', async () => {
     (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
       ok([
         {
-          metadata: { name: 'web-abc', namespace: 'default' },
-          spec: { containers: [{ name: 'web' }] },
+          metadata: { name: 'web', namespace: 'default', managedFields: [{ manager: 'kubelet' }] },
+          spec: { containers: [] },
           status: {
             phase: 'Running',
-            // A sidecar is an init container, so this is the only place its restarts are reported.
-            initContainerStatuses: [{ restartCount: 88, state: { running: {} } }],
-            containerStatuses: [{ ready: true, restartCount: 3, state: { running: {} } }],
+            containerStatuses: [{ name: 'web', imageID: 'registry/web@sha256:dead', containerID: 'containerd://beef' }],
           },
         },
       ]),
     );
 
-    const list = await listResources(clients, resolveTarget('pods'));
+    const row = (await listResources(clients, resolveTarget('pods'))).items[0];
 
-    expect(list.items[0]).toMatchObject({ status: 'Running', restarts: 91 });
+    expect(JSON.stringify(row)).not.toContain('sha256');
+    expect(JSON.stringify(row)).not.toContain('containerd://');
+    expect(JSON.stringify(row)).not.toContain('managedFields');
   });
 
-  it('looks past a running sidecar to the init container that is actually stuck', async () => {
-    // A sidecar is an init container with restartPolicy Always: it runs for the pod's whole life, so
-    // stopping at it would hide everything listed after it for as long as the pod exists.
+  it('keeps what an init container is doing, sidecars included', async () => {
     (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
       ok([
         {
-          metadata: { name: 'web-abc', namespace: 'default' },
+          metadata: { name: 'web', namespace: 'default' },
           spec: { containers: [{ name: 'web' }] },
           status: {
             phase: 'Pending',
             initContainerStatuses: [
-              { state: { running: { startedAt: new Date('2026-10-06T09:00:00Z') } } },
-              { state: { waiting: { reason: 'CrashLoopBackOff' } } },
+              { name: 'sidecar', restartCount: 88, state: { running: {} } },
+              { name: 'migrate', restartCount: 6, state: { waiting: { reason: 'CrashLoopBackOff' } } },
             ],
-            containerStatuses: [{ ready: false, state: { waiting: { reason: 'PodInitializing' } } }],
+            containerStatuses: [{ name: 'web', ready: false, state: { waiting: { reason: 'PodInitializing' } } }],
           },
         },
       ]),
     );
 
-    const list = await listResources(clients, resolveTarget('pods'));
+    const row = (await listResources(clients, resolveTarget('pods'))).items[0];
 
-    expect(list.items[0]).toMatchObject({ status: 'Init:CrashLoopBackOff' });
+    // Both of them, in order: which one is holding the pod up is a question the reader answers.
+    expect((row.status as { initContainerStatuses: unknown[] }).initContainerStatuses).toHaveLength(2);
   });
 
-  it('still says PodInitializing while a plain init container is simply running', async () => {
+  it('says when an object is on its way out', async () => {
     (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
       ok([
         {
-          metadata: { name: 'migrate-xyz', namespace: 'default' },
-          spec: { containers: [{ name: 'app' }] },
-          status: {
-            phase: 'Pending',
-            initContainerStatuses: [{ state: { running: {} } }],
-            containerStatuses: [{ ready: false, state: { waiting: { reason: 'PodInitializing' } } }],
+          metadata: {
+            name: 'web',
+            namespace: 'default',
+            deletionTimestamp: new Date('2026-10-07T09:00:00Z'),
           },
+          spec: { containers: [] },
+          status: { phase: 'Running' },
         },
       ]),
     );
 
-    const list = await listResources(clients, resolveTarget('pods'));
+    const row = (await listResources(clients, resolveTarget('pods'))).items[0];
 
-    // Nothing is wrong here, and skipping the running container must not invent a fault.
-    expect(list.items[0]).toMatchObject({ status: 'PodInitializing' });
+    // A pod being deleted goes on reporting Running until it goes; this is the field that says so.
+    expect(row.deletionTimestamp).toBe('2026-10-07T09:00:00.000Z');
   });
 
-  it('ignores init containers that have already finished', async () => {
+  it('gives an evicted pod the reason, which is on the pod and not on a container', async () => {
     (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
       ok([
         {
-          metadata: { name: 'app-xyz', namespace: 'default' },
-          spec: { containers: [{ name: 'app' }] },
-          status: {
-            phase: 'Running',
-            initContainerStatuses: [{ state: { terminated: { exitCode: 0, reason: 'Completed' } } }],
-            containerStatuses: [{ ready: true, restartCount: 0, state: { running: {} } }],
-          },
+          metadata: { name: 'web', namespace: 'default' },
+          spec: { containers: [] },
+          status: { phase: 'Failed', reason: 'Evicted' },
         },
       ]),
     );
 
-    const list = await listResources(clients, resolveTarget('pods'));
+    const row = (await listResources(clients, resolveTarget('pods'))).items[0];
 
-    expect(list.items[0]).toMatchObject({ status: 'Running', ready: '1/1' });
+    expect(row.status).toEqual({ phase: 'Failed', reason: 'Evicted' });
   });
 
-  it('dates an event written through the newer events API, which sets no lastTimestamp', async () => {
+  it('keeps every field that dates an event, whichever API wrote it', async () => {
     (clients.coreV1.listEventForAllNamespaces as jest.Mock).mockReturnValue(
       ok([
         {
@@ -285,40 +294,28 @@ describe('listResources', () => {
           reason: 'FailedScheduling',
           involvedObject: { kind: 'Pod', name: 'web' },
           message: 'no nodes available',
-          // No lastTimestamp and no count — the shape events.k8s.io/v1 leaves in the core v1 view.
+          // An events.k8s.io/v1 writer leaves neither count nor lastTimestamp in this view.
           series: { count: 9, lastObservedTime: new Date('2026-10-06T09:14:22Z') },
         },
       ]),
     );
 
-    const list = await listResources(clients, resolveTarget('events'));
+    const row = (await listResources(clients, resolveTarget('events'))).items[0];
 
-    expect(list.items[0]).toMatchObject({ count: 9, lastSeen: '2026-10-06T09:14:22.000Z' });
-  });
-
-  it('falls back to eventTime when there is no series either', async () => {
-    (clients.coreV1.listEventForAllNamespaces as jest.Mock).mockReturnValue(
-      ok([
-        {
-          metadata: { name: 'web.18a', namespace: 'default' },
-          involvedObject: { kind: 'Pod', name: 'web' },
-          eventTime: new Date('2026-10-06T10:00:00Z'),
-        },
-      ]),
-    );
-
-    const list = await listResources(clients, resolveTarget('events'));
-
-    expect(list.items[0]).toMatchObject({ lastSeen: '2026-10-06T10:00:00.000Z' });
+    expect(row).toMatchObject({
+      type: 'Warning',
+      reason: 'FailedScheduling',
+      series: { count: 9 },
+    });
   });
 
   it('keeps the newest events when it has to cut, not the ones that sort first by name', async () => {
     // The API server returns items in etcd key order, so without an explicit sort the cut drops
     // whole namespaces — and for events the dropped part is as likely as not to be the answer.
+    // This is the one piece of derivation left, because a caller cannot reorder what it never got.
     const events = Array.from({ length: MAX_ITEMS + 2 }, (_, i) => ({
       metadata: { name: `event-${i}`, namespace: 'default' },
       involvedObject: { kind: 'Pod', name: `pod-${i}` },
-      // Oldest first, which is the worst case: a plain slice would keep exactly the wrong end.
       lastTimestamp: new Date(2026, 0, 1, 0, 0, i),
     }));
     (clients.coreV1.listEventForAllNamespaces as jest.Mock).mockReturnValue(ok(events));
@@ -326,24 +323,20 @@ describe('listResources', () => {
     const list = await listResources(clients, resolveTarget('events'));
 
     expect(list.truncated).toBe(true);
-    expect(list.items[0]).toMatchObject({ name: `event-${MAX_ITEMS + 1}` });
-    expect(list.items.map((item) => item.name)).not.toContain('event-0');
+    expect(list.items[0]).toMatchObject({ involvedObject: { name: `pod-${MAX_ITEMS + 1}` } });
   });
 
-  it.each([
-    ['a job counting to a total', { completions: 3, parallelism: 1 }, { succeeded: 1 }, '1/3'],
-    // No completions: the pods work a queue until one of them says it is done. "3/1" reads as
-    // overshoot, and a caller would report it as a fault.
-    ['a work-queue job', { parallelism: 5 }, { succeeded: 3 }, '3/1 of 5'],
-    ['an ordinary job that sets neither', {}, {}, '0/1'],
-  ])('reports %s as %s', async (_, spec, status, expected) => {
-    (clients.batchV1.listJobForAllNamespaces as jest.Mock).mockReturnValue(
-      ok([{ metadata: { name: 'import', namespace: 'default' }, spec, status }]),
+  it('dates an event off series or eventTime when there is no lastTimestamp to sort on', async () => {
+    (clients.coreV1.listEventForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        { metadata: { name: 'old' }, eventTime: new Date('2026-10-06T08:00:00Z') },
+        { metadata: { name: 'new' }, series: { lastObservedTime: new Date('2026-10-06T10:00:00Z') } },
+      ]),
     );
 
-    const list = await listResources(clients, resolveTarget('jobs'));
+    const list = await listResources(clients, resolveTarget('events'));
 
-    expect(list.items[0]).toMatchObject({ completions: expected });
+    expect(list.items.map((item) => item.name)).toEqual(['new', 'old']);
   });
 
   it('omits the namespace field for a cluster-scoped kind', async () => {
@@ -354,7 +347,8 @@ describe('listResources', () => {
             name: 'node-1',
             labels: { 'node-role.kubernetes.io/master': '', 'metalk8s.scality.com/version': '129.0' },
           },
-          status: { conditions: [{ type: 'Ready', status: 'True' }], nodeInfo: { kubeletVersion: 'v1.29.5' } },
+          spec: { unschedulable: true, taints: [{ key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' }] },
+          status: { conditions: [{ type: 'Ready', status: 'True' }], nodeInfo: { kubeletVersion: 'v1.34.7' } },
         },
       ]),
     );
@@ -364,76 +358,30 @@ describe('listResources', () => {
     expect(list.namespace).toBeUndefined();
     expect(list.items[0]).toEqual({
       name: 'node-1',
-      status: 'Ready',
-      unschedulable: false,
-      roles: ['master'],
-      kubeletVersion: 'v1.29.5',
-      createdAt: undefined,
+      // Roles are labels, and a cordon is a spec field. Both are read, neither is interpreted.
+      labels: { 'node-role.kubernetes.io/master': '', 'metalk8s.scality.com/version': '129.0' },
+      spec: { unschedulable: true, taints: [{ key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' }] },
+      status: { conditions: [{ type: 'Ready', status: 'True' }], nodeInfo: { kubeletVersion: 'v1.34.7' } },
     });
   });
 
-  it('says a node is cordoned, which it stays Ready while being', async () => {
-    (clients.coreV1.listNode as jest.Mock).mockReturnValue(
+  it('gives a job both its completions and its parallelism', async () => {
+    (clients.batchV1.listJobForAllNamespaces as jest.Mock).mockReturnValue(
       ok([
         {
-          metadata: { name: 'node-2', labels: {} },
-          spec: { unschedulable: true },
-          status: { conditions: [{ type: 'Ready', status: 'True' }] },
+          metadata: { name: 'import', namespace: 'default' },
+          // A work-queue job sets only parallelism: there is no total to count towards, and that
+          // difference is what a reader needs rather than a denominator invented here.
+          spec: { parallelism: 5 },
+          status: { succeeded: 3, active: 2 },
         },
       ]),
     );
 
-    const list = await listResources(clients, resolveTarget('nodes'));
+    const row = (await listResources(clients, resolveTarget('jobs'))).items[0];
 
-    // Ready and taking no new pods: a common reason for a Pending pod, and invisible in the status.
-    expect(list.items[0]).toMatchObject({ status: 'Ready', unschedulable: true });
-  });
-
-  it.each([
-    [
-      'a pod on its way out reads Terminating, not Running',
-      { phase: 'Running', containerStatuses: [{ ready: true, restartCount: 0, state: { running: {} } }] },
-      'Terminating',
-    ],
-    // kubectl drops Terminating for these, and so does this: each says more than "Terminating" does.
-    ['a lost node keeps NodeLost', { phase: 'Running', reason: 'NodeLost' }, 'NodeLost'],
-    ['an evicted pod keeps Evicted', { phase: 'Failed', reason: 'Evicted' }, 'Evicted'],
-    ['a finished pod keeps Succeeded', { phase: 'Succeeded' }, 'Succeeded'],
-  ])('%s', async (_, status, expected) => {
-    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
-      ok([
-        {
-          metadata: {
-            name: 'web-abc',
-            namespace: 'default',
-            deletionTimestamp: new Date('2026-10-07T09:00:00Z'),
-          },
-          spec: { containers: [{ name: 'web' }] },
-          status,
-        },
-      ]),
-    );
-
-    const list = await listResources(clients, resolveTarget('pods'));
-
-    expect(list.items[0]).toMatchObject({ status: expected });
-  });
-
-  it('calls an evicted pod evicted, not failed', async () => {
-    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
-      ok([
-        {
-          metadata: { name: 'web-abc', namespace: 'default' },
-          spec: { containers: [{ name: 'web' }] },
-          // An evicted pod has no container statuses left — the reason is on the pod.
-          status: { phase: 'Failed', reason: 'Evicted' },
-        },
-      ]),
-    );
-
-    const list = await listResources(clients, resolveTarget('pods'));
-
-    expect(list.items[0]).toMatchObject({ status: 'Evicted' });
+    expect(row).toMatchObject({ spec: { parallelism: 5 }, status: { succeeded: 3, active: 2 } });
+    expect(row.spec).not.toHaveProperty('completions');
   });
 
   it('returns a ConfigMap key names and never its values', async () => {
@@ -448,8 +396,43 @@ describe('listResources', () => {
 
     const list = await listResources(clients, resolveTarget('configmaps'));
 
-    expect(list.items[0]).toMatchObject({ keys: ['database.url'] });
+    expect(list.items[0]).toMatchObject({ name: 'app-config', keys: ['database.url'] });
     expect(JSON.stringify(list)).not.toContain('hunter2');
+  });
+
+  it('lists the CRDs with the apiVersion to ask each one for, ready to send back', async () => {
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'volumes.storage.metalk8s.scality.com' },
+          spec: {
+            group: 'storage.metalk8s.scality.com',
+            scope: 'Cluster',
+            names: { plural: 'volumes' },
+            versions: [
+              { name: 'v1alpha1', served: true },
+              // Defined but not served: asking for it answers 404, so it is not offered.
+              { name: 'v1alpha2', served: false },
+            ],
+          },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('customresourcedefinitions'));
+
+    expect(clients.customObjects.listClusterCustomObject).toHaveBeenCalledWith(
+      'apiextensions.k8s.io',
+      'v1',
+      'customresourcedefinitions',
+    );
+    expect(list.items[0]).toEqual({
+      name: 'volumes.storage.metalk8s.scality.com',
+      plural: 'volumes',
+      scope: 'Cluster',
+      // The exact strings a caller sends back as kind + apiVersion. Nothing to assemble.
+      apiVersions: ['storage.metalk8s.scality.com/v1alpha1'],
+    });
   });
 
   it('lists a custom resource through CustomObjectsApi, with group and version as arguments', async () => {
@@ -465,22 +448,19 @@ describe('listResources', () => {
       'volumes',
     );
     expect(list.apiVersion).toBe('storage.metalk8s.scality.com/v1alpha1');
-    expect(list.items[0]).toEqual({
-      name: 'volume-1',
-      namespace: undefined,
-      status: 'Available',
-      createdAt: undefined,
-    });
+    // No entry means no list of keys to apply, so a custom resource keeps its whole status — which
+    // is where a CRD says whether it is working.
+    // No entry means no list of keys to apply, so a custom resource keeps its whole status — which
+    // is where a CRD says whether it is working.
+    expect(list.items[0]).toEqual({ name: 'volume-1', status: { phase: 'Available' } });
   });
 
-  it("projects a custom resource's conditions, which is where most CRDs report health", async () => {
+  it("keeps a custom resource's conditions, which is where most CRDs report health", async () => {
     (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
       ok([
         {
-          metadata: { name: 'storage-data-01', namespace: undefined },
-          status: {
-            conditions: [{ type: 'Ready', status: 'False', reason: 'FormatFailed', extra: 'not projected' }],
-          },
+          metadata: { name: 'storage-data-01' },
+          status: { conditions: [{ type: 'Ready', status: 'False', reason: 'FormatFailed' }] },
         },
       ]),
     );
@@ -489,7 +469,7 @@ describe('listResources', () => {
 
     expect(list.items[0]).toMatchObject({
       name: 'storage-data-01',
-      conditions: [{ type: 'Ready', status: 'False', reason: 'FormatFailed' }],
+      status: { conditions: [{ type: 'Ready', status: 'False', reason: 'FormatFailed' }] },
     });
   });
 
@@ -509,7 +489,7 @@ describe('listResources', () => {
     const list = await listResources(clients, resolveTarget('cronjobs'));
 
     expect(clients.customObjects.listClusterCustomObject).toHaveBeenCalledWith('batch', 'v1', 'cronjobs');
-    expect(list.items[0]).toMatchObject({ name: 'backup', schedule: '0 2 * * *', active: 0 });
+    expect(list.items[0]).toMatchObject({ name: 'backup', spec: { schedule: '0 2 * * *' } });
   });
 
   it('does not claim a namespace scope it was never told, for a cluster-scoped custom kind', async () => {

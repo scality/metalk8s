@@ -1,6 +1,8 @@
-// Listing one kind of Kubernetes resource, projected down to the few fields that say whether it is
-// healthy — the read behind the `listKubeResources` MCP tool, and usable by anything else that
-// wants the same summary.
+// Listing one kind of Kubernetes resource, cut down to the parts that say whether it is healthy —
+// the read behind the `listKubeResources` MCP tool, and usable by anything else that wants the same.
+//
+// Rows carry the object's own fields under the API's own names. Selection is for size: a raw pod is
+// 3 kB and a cluster has hundreds.
 //
 // It deliberately does NOT use `handleUnAuthorizedError` from services/errorhandler: that helper
 // collapses 401 and 403 into a single AuthError, and returns `{ error }` for everything else rather
@@ -9,21 +11,21 @@
 // mapped here instead.
 
 import type {
-  V1beta1CronJob,
+  V1beta1CronJobSpec,
   V1ConfigMap,
-  V1DaemonSet,
-  V1Deployment,
+  V1DeploymentSpec,
   V1Event,
-  V1Job,
-  V1Namespace,
-  V1Node,
-  V1PersistentVolume,
-  V1PersistentVolumeClaim,
-  V1Pod,
-  V1Service,
-  V1StatefulSet,
+  V1JobSpec,
+  V1JobStatus,
+  V1NodeSpec,
+  V1NodeStatus,
+  V1ObjectMeta,
+  V1PersistentVolumeClaimSpec,
+  V1PersistentVolumeSpec,
+  V1PodSpec,
+  V1ServiceSpec,
+  V1StatefulSetSpec,
 } from '@kubernetes/client-node';
-import { ROLE_PREFIX } from '../../constants';
 import type { K8sApiClients } from './api';
 
 /**
@@ -105,46 +107,37 @@ type KindEntry = {
   namespaced: boolean;
   list: (clients: K8sApiClients) => Promise<ListResponse>;
   /**
+   * Which keys of the object, its metadata and its spec a row keeps, and — only where a status
+   * carries something outsized — which keys of that.
+   *
+   * A reader of these rows knows Kubernetes, so the fields arrive as the API names them and are
+   * read rather than rewritten. What is left out is bulk, not meaning: a pod's spec is its
+   * containers, volumes and tolerations, which is most of its 3 kB and none of its health.
+   */
+  fields?: string[];
+  metadata?: string[];
+  spec?: string[];
+  status?: string[];
+  /** For the two kinds a list of keys cannot express. */
+  project?: (item: never) => KubeResourceItem;
+  /**
    * How to order the items before the list is cut, for a kind where time decides which rows matter.
    * The API server returns items in etcd key order — namespace, then name — so a plain cut at
    * MAX_ITEMS drops whole namespaces that sort late, however recent they are.
    */
   newestFirst?: (item: never) => number;
-  /**
-   * Typed with the client's own V1* type at each call site, so a projection that drifts from the
-   * real object stops compiling. Where a projection and the real type disagree, the real type wins.
-   */
-  project: (item: never) => KubeResourceItem;
 };
 
 /** metadata.creationTimestamp arrives deserialised to a Date; the wire shape is ISO 8601. */
 const iso = (value?: Date | string): string | undefined => (value instanceof Date ? value.toISOString() : value);
 
 /**
- * How far a job has got, written the way `kubectl get jobs` writes it.
- *
- * A work-queue job sets `parallelism` and no `completions`: its pods pull from a queue until one of
- * them reports the work done, so there is no count to finish. Against a denominator of 1 it reads as
- * overshoot — `3/1` — which is a bug report waiting to happen rather than a job doing its job.
- */
-const jobCompletions = (job: V1Job): string => {
-  const succeeded = job.status?.succeeded ?? 0;
-  if (job.spec?.completions != null) return `${succeeded}/${job.spec.completions}`;
-
-  // Only worth naming when there is more than one pod. An ordinary job sets neither field and reads
-  // `0/1`, as it does under kubectl.
-  const parallelism = job.spec?.parallelism ?? 1;
-  return parallelism > 1 ? `${succeeded}/1 of ${parallelism}` : `${succeeded}/1`;
-};
-
-/**
  * When an event was last seen, resolved the way `kubectl get events` resolves it.
  *
- * An event written through events.k8s.io/v1 sets neither `lastTimestamp` nor `count` in this core
- * v1 view — it carries `series` or a bare `eventTime` instead. On 1.34 that includes the
- * scheduler's FailedScheduling, which is the whole answer for a Pending pod.
+ * Kept as code because it decides the ORDER events are cut in, which a caller cannot do after the
+ * fact. The fields it reads are in the row too, so nothing is hidden behind it.
  */
-const eventLastSeen = (event: V1Event): Date | string | undefined =>
+export const eventLastSeen = (event: V1Event): Date | string | undefined =>
   event.lastTimestamp ?? event.series?.lastObservedTime ?? event.eventTime ?? event.metadata?.creationTimestamp;
 
 const millis = (value?: Date | string): number => {
@@ -153,265 +146,240 @@ const millis = (value?: Date | string): number => {
 };
 
 /**
- * The reason an init container is holding the pod up, as `Init:<reason>`.
+ * The kinds that can be asked for by name alone, each mapped to the client method that lists it
+ * across every namespace and the fields a row keeps.
  *
- * Init containers run in order, and until they finish the main container reports `PodInitializing`.
- * Without this, a pod whose init container is crash-looping reads as PodInitializing or Pending and
- * the real fault is invisible — so they are read first, and only the one currently blocking counts.
+ * This is NOT the limit of what can be listed. Anything that lives in an API group is reachable by
+ * passing its apiVersion — custom resources included — so the list is what needs no apiVersion
+ * rather than what exists. `customresourcedefinitions` is in it so that a caller can find out what
+ * the cluster defines and then ask for it, without a release shipping per CRD.
  *
- * A running one is skipped rather than reported, as kubectl skips it. A sidecar — an init container
- * with restartPolicy Always — runs for the pod's whole life and would otherwise hide every init
- * container listed after it. For a plain init container the answer is unchanged: the ones after it
- * are waiting with `PodInitializing`, which is not a fault either.
+ * Allowlisted rather than discovery-driven for one reason that matters: it makes excluding Secret a
+ * wall rather than a filter.
  */
-const initStatus = (pod: V1Pod): string | undefined => {
-  for (const container of pod.status?.initContainerStatuses ?? []) {
-    const terminated = container.state?.terminated;
-    if (terminated?.exitCode === 0 || container.state?.running) continue;
-
-    const reason = container.state?.waiting?.reason ?? terminated?.reason ?? (terminated ? 'Error' : undefined);
-    // PodInitializing on an init container means it has not started yet, which is not a fault.
-    return reason && reason !== 'PodInitializing' ? `Init:${reason}` : undefined;
-  }
-  return undefined;
-};
-
 /**
- * A pod's phase is frequently not the interesting word: a crash-looping pod sits in phase Running
- * or Pending with the reason on the container. kubectl surfaces the container reason for the same
- * reason, so `status` here is the most specific thing available.
+ * One entry, with its key lists checked against the client's own types: a key that is not on
+ * V1PodSpec stops compiling. Where a list and the real type disagree, the real type is right.
  */
-const podStatus = (pod: V1Pod): string => {
-  const containers = pod.status?.containerStatuses ?? [];
-  const waiting = containers.find((cs) => cs.state?.waiting?.reason)?.state?.waiting?.reason;
-  const terminated = containers.find((cs) => cs.state?.terminated?.reason)?.state?.terminated?.reason;
-  // status.reason before the phase: an evicted pod is phase Failed with reason Evicted, and so is a
-  // lost or shut-down one. kubectl prefers the reason for the same reason — "Failed" says nothing.
-  const status = initStatus(pod) ?? waiting ?? terminated ?? pod.status?.reason ?? pod.status?.phase ?? 'Unknown';
+const kind = <TSpec = never, TStatus = never, TItem = never>(entry: {
+  apiVersion: string;
+  namespaced: boolean;
+  list: (clients: K8sApiClients) => Promise<ListResponse>;
+  fields?: (keyof TItem)[];
+  metadata?: (keyof V1ObjectMeta)[];
+  spec?: (keyof TSpec)[];
+  status?: (keyof TStatus)[];
+  project?: (item: TItem) => KubeResourceItem;
+  newestFirst?: (item: TItem) => number;
+}): KindEntry => entry as unknown as KindEntry;
 
-  // A pod being deleted goes on reporting whatever it was until it actually goes, so one wedged on a
-  // finalizer or a lost node reads as healthy. kubectl calls that Terminating, last, over everything
-  // else it worked out — and so does this.
-  //
-  // Except on a pod that has already finished: Succeeded and Failed carry their own answer, and
-  // Evicted or Completed says more about a pod on its way out than Terminating does. NodeLost is
-  // kept for the same reason — it names why this one is not going anywhere.
-  const finished = pod.status?.phase === 'Succeeded' || pod.status?.phase === 'Failed';
-  return pod.metadata?.deletionTimestamp && !finished && status !== 'NodeLost' ? 'Terminating' : status;
-};
-
-const nodeStatus = (node: V1Node): string => {
-  const ready = node.status?.conditions?.find((condition) => condition.type === 'Ready');
-  if (ready?.status === 'True') return 'Ready';
-  if (ready?.status === 'False') return 'NotReady';
-  return 'Unknown';
-};
-
-/**
- * The kinds reachable by name, each mapped to the generated client method that lists it across
- * every namespace.
- *
- * Allowlisted rather than discovered: predictable, and it makes excluding Secret a wall rather than
- * a filter. The cost is a list to maintain — which is why `apiVersion` exists, so any kind in an
- * API group stays reachable without shipping a release.
- *
- * Fields are per-kind rather than uniform. A pod has `ready` and `restarts`; a PVC has `capacity`
- * and `boundTo`. Forcing one shape would mean inventing empty columns.
- */
 export const KINDS: Record<string, KindEntry> = {
-  pods: {
+  pods: kind<V1PodSpec>({
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listPodForAllNamespaces(),
-    project: (pod: V1Pod) => ({
-      name: pod.metadata?.name,
-      namespace: pod.metadata?.namespace,
-      status: podStatus(pod),
-      ready: `${(pod.status?.containerStatuses ?? []).filter((cs) => cs.ready).length}/${
-        pod.spec?.containers?.length ?? 0
-      }`,
-      // Every container in the pod, init ones included: a pod reported as Init:CrashLoopBackOff with
-      // restarts 0 contradicts itself, and the restarts are the evidence for the status. A sidecar
-      // is an init container too, so this is where its restarts are counted.
-      //
-      // One number, for the pod's whole life. kubectl's column resets to the main containers once
-      // the pod has initialized, so this can read higher for a pod that struggled on the way up.
-      restarts: [...(pod.status?.initContainerStatuses ?? []), ...(pod.status?.containerStatuses ?? [])].reduce(
-        (total, container) => total + (container.restartCount ?? 0),
-        0,
-      ),
-      node: pod.spec?.nodeName,
-      createdAt: iso(pod.metadata?.creationTimestamp),
-    }),
-  },
-  nodes: {
+    spec: ['nodeName'],
+  }),
+  nodes: kind<V1NodeSpec, V1NodeStatus>({
     apiVersion: 'v1',
     namespaced: false,
     list: (c) => c.coreV1.listNode(),
-    project: (node: V1Node) => ({
-      name: node.metadata?.name,
-      status: nodeStatus(node),
-      // A cordoned node is Ready and still takes no new pods — kubectl says Ready,SchedulingDisabled.
-      // Kept as its own field rather than folded into status, so nothing has to parse a pair.
-      unschedulable: node.spec?.unschedulable ?? false,
-      // The same derivation the nodes page runs (ducks/app/nodes, hooks/nodes), off the same
-      // constant: a role is the second half of a `node-role.kubernetes.io/<role>` label.
-      roles: Object.keys(node.metadata?.labels ?? {})
-        .filter((label) => label.startsWith(`${ROLE_PREFIX}/`))
-        .map((label) => label.slice(ROLE_PREFIX.length + 1)),
-      kubeletVersion: node.status?.nodeInfo?.kubeletVersion,
-      createdAt: iso(node.metadata?.creationTimestamp),
-    }),
-  },
-  deployments: {
+    // Labels, because that is where a node's roles are: `node-role.kubernetes.io/<role>`.
+    metadata: ['labels'],
+    // unschedulable is a cordon, and taints are the other half of why nothing schedules here.
+    spec: ['unschedulable', 'taints'],
+    // The one status worth narrowing: a node's carries `images`, every image on the box with every
+    // tag it answers to.
+    status: ['conditions', 'nodeInfo', 'capacity', 'allocatable', 'addresses'],
+  }),
+  deployments: kind<V1DeploymentSpec>({
     apiVersion: 'apps/v1',
     namespaced: true,
     list: (c) => c.appsV1.listDeploymentForAllNamespaces(),
-    project: (deployment: V1Deployment) => ({
-      name: deployment.metadata?.name,
-      namespace: deployment.metadata?.namespace,
-      ready: `${deployment.status?.readyReplicas ?? 0}/${deployment.spec?.replicas ?? 0}`,
-      upToDate: deployment.status?.updatedReplicas ?? 0,
-      available: deployment.status?.availableReplicas ?? 0,
-      createdAt: iso(deployment.metadata?.creationTimestamp),
-    }),
-  },
-  statefulsets: {
+    spec: ['replicas'],
+  }),
+  statefulsets: kind<V1StatefulSetSpec>({
     apiVersion: 'apps/v1',
     namespaced: true,
     list: (c) => c.appsV1.listStatefulSetForAllNamespaces(),
-    project: (statefulSet: V1StatefulSet) => ({
-      name: statefulSet.metadata?.name,
-      namespace: statefulSet.metadata?.namespace,
-      ready: `${statefulSet.status?.readyReplicas ?? 0}/${statefulSet.spec?.replicas ?? 0}`,
-      currentRevision: statefulSet.status?.currentRevision,
-      createdAt: iso(statefulSet.metadata?.creationTimestamp),
-    }),
-  },
-  daemonsets: {
+    spec: ['replicas'],
+  }),
+  daemonsets: kind({
     apiVersion: 'apps/v1',
     namespaced: true,
     list: (c) => c.appsV1.listDaemonSetForAllNamespaces(),
-    project: (daemonSet: V1DaemonSet) => ({
-      name: daemonSet.metadata?.name,
-      namespace: daemonSet.metadata?.namespace,
-      ready: `${daemonSet.status?.numberReady ?? 0}/${daemonSet.status?.desiredNumberScheduled ?? 0}`,
-      available: daemonSet.status?.numberAvailable ?? 0,
-      misscheduled: daemonSet.status?.numberMisscheduled ?? 0,
-      createdAt: iso(daemonSet.metadata?.creationTimestamp),
-    }),
-  },
-  jobs: {
+  }),
+  jobs: kind<V1JobSpec & { suspend?: boolean }, V1JobStatus>({
     apiVersion: 'batch/v1',
     namespaced: true,
     list: (c) => c.batchV1.listJobForAllNamespaces(),
-    project: (job: V1Job) => ({
-      name: job.metadata?.name,
-      namespace: job.metadata?.namespace,
-      completions: jobCompletions(job),
-      active: job.status?.active ?? 0,
-      failed: job.status?.failed ?? 0,
-      createdAt: iso(job.metadata?.creationTimestamp),
-    }),
-  },
+    // completions and parallelism both: a work-queue job sets only the second, and the difference is
+    // what says whether there is a total to count towards at all.
+    //
+    // `suspend` is widened above because the cluster has it and this client does not: it arrived in
+    // batch/v1 at Kubernetes 1.21, and these types are generated from v1.13.
+    spec: ['completions', 'parallelism', 'suspend'],
+  }),
   // batch/v1, through CustomObjectsApi. This client is generated from the v1.13 OpenAPI, where
   // CronJob is still beta, so its only CronJob method addresses /apis/batch/v1beta1/cronjobs — a
-  // path the API server has not served since 1.25, and this ships Kubernetes 1.34. V1beta1CronJob
-  // still types the projection: the fields read here are the same in both versions.
-  cronjobs: {
+  // path the API server has not served since 1.25, and this ships Kubernetes 1.34.
+  cronjobs: kind<V1beta1CronJobSpec>({
     apiVersion: 'batch/v1',
     namespaced: true,
     list: (c) => c.customObjects.listClusterCustomObject('batch', 'v1', 'cronjobs'),
-    project: (cronJob: V1beta1CronJob) => ({
-      name: cronJob.metadata?.name,
-      namespace: cronJob.metadata?.namespace,
-      schedule: cronJob.spec?.schedule,
-      suspended: cronJob.spec?.suspend ?? false,
-      active: cronJob.status?.active?.length ?? 0,
-      lastScheduleTime: iso(cronJob.status?.lastScheduleTime),
-      createdAt: iso(cronJob.metadata?.creationTimestamp),
-    }),
-  },
-  services: {
+    spec: ['schedule', 'suspend'],
+  }),
+  services: kind<V1ServiceSpec>({
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listServiceForAllNamespaces(),
-    project: (service: V1Service) => ({
-      name: service.metadata?.name,
-      namespace: service.metadata?.namespace,
-      type: service.spec?.type,
-      clusterIP: service.spec?.clusterIP,
-      ports: (service.spec?.ports ?? []).map((port) => `${port.port}/${port.protocol ?? 'TCP'}`),
-      createdAt: iso(service.metadata?.creationTimestamp),
-    }),
-  },
-  persistentvolumeclaims: {
+    spec: ['type', 'clusterIP', 'ports', 'selector'],
+  }),
+  persistentvolumeclaims: kind<V1PersistentVolumeClaimSpec>({
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listPersistentVolumeClaimForAllNamespaces(),
-    project: (claim: V1PersistentVolumeClaim) => ({
-      name: claim.metadata?.name,
-      namespace: claim.metadata?.namespace,
-      status: claim.status?.phase,
-      capacity: claim.status?.capacity?.storage,
-      boundTo: claim.spec?.volumeName,
-      storageClass: claim.spec?.storageClassName,
-      createdAt: iso(claim.metadata?.creationTimestamp),
-    }),
-  },
-  persistentvolumes: {
+    spec: ['volumeName', 'storageClassName', 'resources', 'accessModes'],
+  }),
+  persistentvolumes: kind<V1PersistentVolumeSpec>({
     apiVersion: 'v1',
     namespaced: false,
     list: (c) => c.coreV1.listPersistentVolume(),
-    project: (volume: V1PersistentVolume) => ({
-      name: volume.metadata?.name,
-      status: volume.status?.phase,
-      capacity: volume.spec?.capacity?.storage,
-      claim: volume.spec?.claimRef ? `${volume.spec.claimRef.namespace}/${volume.spec.claimRef.name}` : undefined,
-      storageClass: volume.spec?.storageClassName,
-      reclaimPolicy: volume.spec?.persistentVolumeReclaimPolicy,
-      createdAt: iso(volume.metadata?.creationTimestamp),
-    }),
-  },
-  events: {
+    spec: ['capacity', 'storageClassName', 'persistentVolumeReclaimPolicy', 'claimRef', 'accessModes'],
+  }),
+  events: kind<never, never, V1Event>({
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listEventForAllNamespaces(),
+    // An event has no spec or status; everything is on the object. series and eventTime are here
+    // because an event written through events.k8s.io/v1 sets neither count nor lastTimestamp.
+    fields: [
+      'type',
+      'reason',
+      'message',
+      'count',
+      'lastTimestamp',
+      'eventTime',
+      'series',
+      'involvedObject',
+      'reportingComponent',
+    ],
     newestFirst: (event: V1Event) => millis(eventLastSeen(event)),
-    project: (event: V1Event) => ({
-      name: event.metadata?.name,
-      namespace: event.metadata?.namespace,
-      type: event.type,
-      reason: event.reason,
-      object: `${event.involvedObject?.kind}/${event.involvedObject?.name}`,
-      message: event.message,
-      count: event.count ?? event.series?.count,
-      lastSeen: iso(eventLastSeen(event)),
-    }),
-  },
-  // Key NAMES only. A ConfigMap can hold a connection string, and excluding Secret does not make
-  // ConfigMap values safe to hand to a model.
-  configmaps: {
+  }),
+  // Key NAMES only, which a list of keys cannot say. A ConfigMap can hold a connection string, and
+  // excluding Secret does not make ConfigMap values safe to hand to a model.
+  configmaps: kind<never, never, V1ConfigMap>({
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listConfigMapForAllNamespaces(),
-    project: (configMap: V1ConfigMap) => ({
-      name: configMap.metadata?.name,
-      namespace: configMap.metadata?.namespace,
-      keys: Object.keys(configMap.data ?? {}),
-      createdAt: iso(configMap.metadata?.creationTimestamp),
+    project: (configMap: V1ConfigMap) => ({ keys: Object.keys(configMap.data ?? {}) }),
+  }),
+  // apiextensions.k8s.io/v1, through CustomObjectsApi: this client's only CRD type is v1beta1, a
+  // version the API server stopped serving in 1.22.
+  //
+  // Here so that a caller can discover what the cluster defines. Without it, reaching a custom
+  // resource means knowing its group and version already — which a model does by memory or not at
+  // all, and memory is how you end up asking for a version this cluster does not serve.
+  customresourcedefinitions: kind<never, never, CustomResourceDefinition>({
+    apiVersion: 'apiextensions.k8s.io/v1',
+    namespaced: false,
+    list: (c) => c.customObjects.listClusterCustomObject('apiextensions.k8s.io', 'v1', 'customresourcedefinitions'),
+    project: (crd: CustomResourceDefinition) => ({
+      plural: crd.spec?.names?.plural,
+      scope: crd.spec?.scope,
+      // Joined here rather than left as a group and a list of versions: this is the exact string to
+      // pass back as apiVersion, and nothing should have to assemble it to ask the next question.
+      // Only the served ones — a version that is defined but not served answers 404.
+      apiVersions: (crd.spec?.versions ?? [])
+        .filter((version) => version.served)
+        .map((version) => `${crd.spec?.group}/${version.name}`),
     }),
-  },
-  namespaces: {
+  }),
+  namespaces: kind({
     apiVersion: 'v1',
     namespaced: false,
     list: (c) => c.coreV1.listNamespace(),
-    project: (namespace: V1Namespace) => ({
-      name: namespace.metadata?.name,
-      status: namespace.status?.phase,
-      createdAt: iso(namespace.metadata?.creationTimestamp),
-    }),
-  },
+  }),
+};
+
+/**
+ * Keys whose value is bulk and never an answer: who owns which field, an image digest, a container
+ * id. Dropped wherever they appear — a third of a pod's bytes, and nothing reads them.
+ */
+const NOISE = new Set(['managedFields', 'imageID', 'containerID']);
+
+const withoutNoise = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(withoutNoise);
+  if (value === null || typeof value !== 'object' || value instanceof Date) return value;
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => !NOISE.has(key))
+      .map(([key, nested]) => [key, withoutNoise(nested)]),
+  );
+};
+
+const pick = (source: unknown, keys?: string[]): Record<string, unknown> | undefined => {
+  if (!keys?.length || !source || typeof source !== 'object') return undefined;
+
+  const from = source as Record<string, unknown>;
+  const picked = Object.fromEntries(
+    keys.filter((key) => from[key] !== undefined).map((key) => [key, withoutNoise(from[key])]),
+  );
+
+  return Object.keys(picked).length > 0 ? picked : undefined;
+};
+
+type KubeObject = {
+  metadata?: {
+    name?: string;
+    namespace?: string;
+    creationTimestamp?: Date | string;
+    deletionTimestamp?: Date | string;
+  };
+  spec?: unknown;
+  status?: unknown;
+};
+
+/** What every object has, and what every row starts with. */
+const identity = (object: KubeObject) => ({
+  name: object?.metadata?.name,
+  namespace: object?.metadata?.namespace,
+  createdAt: iso(object?.metadata?.creationTimestamp),
+  // Only when it is set — and then it is half the answer, because an object with one is on its way
+  // out and goes on reporting whatever it was until it goes.
+  ...(object?.metadata?.deletionTimestamp ? { deletionTimestamp: iso(object.metadata.deletionTimestamp) } : {}),
+});
+
+/**
+ * One row: what the object is, and the parts of it this kind keeps.
+ *
+ * A kind reached by apiVersion has no entry, so it keeps its whole status — there is no list of keys
+ * to apply to a resource nobody declared here, and a custom resource's status is where it says
+ * whether it is working.
+ */
+const projectItem = (entry: KindEntry | undefined, item: unknown): KubeResourceItem => {
+  const object = item as KubeObject;
+  // Whole, unless the kind named the keys it wants. A status is small and it is the half of an
+  // object that says how it is doing, so listing its keys buys about a hundred bytes and costs a
+  // line per kind to keep in step with the API.
+  const status = entry?.status
+    ? pick(object?.status, entry.status)
+    : (withoutNoise(object?.status) as object | undefined);
+
+  const row = {
+    ...identity(object),
+    ...pick(object, entry?.fields),
+    ...pick(object?.metadata, entry?.metadata),
+    ...(pick(object?.spec, entry?.spec) ? { spec: pick(object?.spec, entry?.spec) } : {}),
+    ...(status && Object.keys(status).length > 0 ? { status } : {}),
+    ...(entry?.project ? entry.project(item as never) : {}),
+  };
+
+  // A key with nothing behind it says nothing, and a cluster-scoped object has no namespace to
+  // report. JSON drops these anyway; dropping them here means the object a caller holds is the one
+  // that ships.
+  return Object.fromEntries(Object.entries(row).filter(([, value]) => value !== undefined));
 };
 
 /** What a caller is shown when it names a kind this does not know. */
@@ -427,38 +395,23 @@ export const ALLOWED_KINDS = Object.keys(KINDS);
 const ALIASES: Record<string, string> = {
   pvc: 'persistentvolumeclaims',
   pv: 'persistentvolumes',
+  crd: 'customresourcedefinitions',
+  crds: 'customresourcedefinitions',
 };
 
 /**
- * A kind reached by apiVersion has no generated type here, so its projection is the handful of
- * fields every object carries. `phase` only when the kind uses one.
+ * A CustomResourceDefinition as apiextensions.k8s.io/v1 returns it. Declared here because the
+ * generated client only knows the v1beta1 shape, which the API server no longer serves.
  */
-type CustomObject = {
-  metadata?: { name?: string; namespace?: string; creationTimestamp?: Date | string };
-  status?: {
-    phase?: unknown;
-    conditions?: { type?: string; status?: string; reason?: string }[];
+type CustomResourceDefinition = {
+  metadata?: { name?: string; creationTimestamp?: Date | string };
+  spec?: {
+    group?: string;
+    scope?: string;
+    names?: { plural?: string };
+    versions?: { name?: string; served?: boolean }[];
   };
 };
-
-const projectCustomObject = (item: CustomObject): KubeResourceItem => ({
-  name: item?.metadata?.name,
-  namespace: item?.metadata?.namespace,
-  ...(typeof item?.status?.phase === 'string' ? { status: item.status.phase } : {}),
-  // Conditions, because many kinds report health there rather than in a phase — the metalk8s Volume
-  // is one. Without them such a kind lists as a name and a date, which answers "what exists" and
-  // nothing about whether any of it is working.
-  ...(Array.isArray(item?.status?.conditions)
-    ? {
-        conditions: item.status.conditions.map((condition) => ({
-          type: condition?.type,
-          status: condition?.status,
-          ...(condition?.reason ? { reason: condition.reason } : {}),
-        })),
-      }
-    : {}),
-  createdAt: iso(item?.metadata?.creationTimestamp),
-});
 
 /** group/version, as CustomObjectsApi wants them: two arguments, never a path fragment. */
 const parseApiVersion = (apiVersion: string): { group: string; version: string } => {
@@ -508,8 +461,8 @@ export const resolveTarget = (kind: string, apiVersion?: string): KubeTarget => 
     );
   }
 
-  // The allowlist answers when it can: it is the same resource, through a typed client, with a
-  // projection worth reading. An apiVersion naming something ELSE routes to custom objects.
+  // The allowlist answers when it can: the same resource, through a typed client, with the fields
+  // that kind is worth reading. An apiVersion naming something ELSE routes to custom objects.
   if (entry && (!apiVersion || apiVersion === entry.apiVersion)) {
     return { kind: normalized, apiVersion: entry.apiVersion, namespaced: entry.namespaced, entry };
   }
@@ -544,7 +497,7 @@ export const resolveTarget = (kind: string, apiVersion?: string): KubeTarget => 
 };
 
 /**
- * List one kind, and project it.
+ * List one kind.
  *
  * Throws K8sApiError, which is what makes this usable as a react-query `queryFn`: a failure is a
  * rejection, so only successes are cached.
@@ -570,8 +523,6 @@ export const listResources = async (clients: K8sApiClients, target: KubeTarget):
     throw new K8sApiError('malformed', 'The Kubernetes API answered without a list of items.');
   }
 
-  const project = target.entry ? target.entry.project : projectCustomObject;
-
   // Whether to say the list spans every namespace. The allowlist carries each kind's scope; a kind
   // reached by apiVersion does not, so it is read off the objects — claimed only when an item
   // carries a namespace, never inferred from an empty list.
@@ -591,7 +542,7 @@ export const listResources = async (clients: K8sApiClients, target: KubeTarget):
     // it most likely got wrong if the answer surprises it.
     ...(target.entry ? {} : { apiVersion: target.apiVersion }),
     ...(namespaced ? { namespace: 'all' as const } : {}),
-    items: kept.map((item) => project(item as never)),
+    items: kept.map((item) => projectItem(target.entry, item)),
     returned: kept.length,
     truncated,
     ...(truncated ? { total: items.length } : {}),

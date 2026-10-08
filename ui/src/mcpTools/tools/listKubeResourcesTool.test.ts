@@ -110,7 +110,7 @@ describe('listKubeResources', () => {
         {
           metadata: { name: 'coredns-abc', namespace: 'kube-system' },
           spec: { nodeName: 'node-1', containers: [{ name: 'coredns' }] },
-          status: { phase: 'Running', containerStatuses: [{ ready: true, restartCount: 0 }] },
+          status: { phase: 'Running', containerStatuses: [{ name: 'coredns', ready: true, restartCount: 0 }] },
         },
       ]),
     );
@@ -127,11 +127,8 @@ describe('listKubeResources', () => {
         {
           name: 'coredns-abc',
           namespace: 'kube-system',
-          status: 'Running',
-          ready: '1/1',
-          restarts: 0,
-          node: 'node-1',
-          createdAt: undefined,
+          spec: { nodeName: 'node-1' },
+          status: { phase: 'Running', containerStatuses: [{ name: 'coredns', ready: true, restartCount: 0 }] },
         },
       ],
     });
@@ -192,8 +189,10 @@ describe('listKubeResources', () => {
     expect(description).toContain('pods');
     // A caller that knows "networking.k8s.io/v1" has to read the description as permission to use
     // it: naming only custom resources there reads as "built-in kinds are out of reach".
-    expect(description).toMatch(/built-in kinds outside the list/i);
+    expect(description).toMatch(/built-in ones outside the list/i);
     expect(description).toContain('networking.k8s.io/v1');
+    // The way out of "I do not know this cluster's CRDs": ask it, rather than guess a version.
+    expect(description).toMatch(/customresourcedefinitions first/i);
     expect(description).not.toMatch(/secrets are listed/i);
     expect(inputSchema.required).toEqual(['kind']);
   });
