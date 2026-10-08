@@ -9,12 +9,12 @@
 import type { K8sApiClients } from './api';
 import { eventLastSeen, failureFor, K8sApiError, KINDS, type KubeTarget } from './resources';
 
-/** Whatever the API returned. Only the three keys this file touches are named. */
+/** Whatever the API returned. Only the keys this file touches are named. */
 type KubeObject = {
   metadata?: { name?: string; uid?: string } & Record<string, unknown>;
   spec?: unknown;
   status?: unknown;
-};
+} & Record<string, unknown>;
 
 /** Enough to see a pattern; past that it is the same message again with a later timestamp. */
 export const MAX_EVENTS = 50;
@@ -106,8 +106,12 @@ const checkNamespace = (target: KubeTarget, namespace?: string) => {
  * Above this, the object sheds its known bulk rather than arriving whole.
  *
  * One object is not a list, so there is normally nothing to save by cutting it down. This is for the
- * ones that are outsized on their own: a node carrying every image on the box, a CRD carrying its
- * OpenAPI schema, an object whose managed fields have grown for a year.
+ * ones that are outsized on their own: a node carrying every image on the box, an object whose
+ * managed fields have grown for a year.
+ *
+ * Only bulk is shed, never content. A CRD's OpenAPI schema runs to hundreds of kilobytes and is not
+ * on the list for that reason — it is what a CRD IS, and an object described without the thing it
+ * describes would be worse than a large answer.
  */
 export const MAX_OBJECT_BYTES = 128 * 1024;
 
@@ -159,6 +163,24 @@ const redactEnv = (value: unknown, dropped: { any: boolean }): unknown => {
 };
 
 /**
+ * A ConfigMap's values, dropped, its keys kept — the same stance the listing takes, for the same
+ * reason: a ConfigMap holds a connection string as readily as a Secret does, and describing one is
+ * no safer than listing it.
+ */
+const withoutConfigMapValues = (target: KubeTarget, object: KubeObject, omitted: string[]): KubeObject => {
+  if (target.kind !== 'configmaps') return object;
+
+  const { data, binaryData, ...rest } = object as KubeObject & {
+    data?: Record<string, string>;
+    binaryData?: Record<string, string>;
+  };
+  if (!data && !binaryData) return object;
+
+  omitted.push('ConfigMap values (keys kept)');
+  return { ...rest, dataKeys: [...Object.keys(data ?? {}), ...Object.keys(binaryData ?? {})] };
+};
+
+/**
  * The annotation `kubectl apply` writes: a verbatim JSON copy of the applied spec, env values and
  * all. Dropped every time rather than only when the object is outsized — redacting the spec and
  * leaving its copy behind would hand the values over anyway — and it says nothing `spec` does not.
@@ -174,19 +196,28 @@ const withoutLastApplied = (object: KubeObject, omitted: string[]): KubeObject =
 };
 
 /** The bulk an outsized object sheds, biggest first, each named as it goes. */
+/**
+ * The bulk an outsized object sheds, biggest first, each named as it goes.
+ *
+ * `shed` returns the object UNCHANGED when there is nothing of its to drop — the caller compares by
+ * identity to decide whether to name it, so rebuilding an equal object would have it reporting work
+ * it did not do.
+ */
 const SHEDDABLE: { what: string; shed: (object: KubeObject) => KubeObject }[] = [
   {
     what: 'metadata.managedFields',
-    shed: ({ metadata, ...rest }) => {
+    shed: (object) => {
+      const { metadata, ...rest } = object;
       const { managedFields, ...kept } = (metadata ?? {}) as Record<string, unknown>;
-      return managedFields ? { ...rest, metadata: kept } : { metadata, ...rest };
+      return managedFields ? { ...rest, metadata: kept } : object;
     },
   },
   {
     what: 'status.images',
-    shed: ({ status, ...rest }) => {
+    shed: (object) => {
+      const { status, ...rest } = object;
       const { images, ...kept } = (status ?? {}) as Record<string, unknown>;
-      return images ? { ...rest, status: kept } : { status, ...rest };
+      return images ? { ...rest, status: kept } : object;
     },
   },
 ];
@@ -320,7 +351,7 @@ export const describeResource = async (
     kind: target.kind,
     name,
     ...(namespace ? { namespace } : {}),
-    resource: sizeDown(withoutLastApplied(redacted, omitted), omitted),
+    resource: sizeDown(withoutConfigMapValues(target, withoutLastApplied(redacted, omitted), omitted), omitted),
     events,
     ...(eventsUnavailable ? { eventsUnavailable } : {}),
     truncated,
