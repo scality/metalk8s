@@ -79,6 +79,17 @@ describe('resolveTarget', () => {
     expect(resolveTarget('Volumes', 'storage.metalk8s.scality.com/v1alpha1').custom?.plural).toBe('volumes');
   });
 
+  it.each([
+    ['persistentvolumeclaims', 'persistentvolumeclaims'],
+    ['pvc', 'persistentvolumeclaims'],
+    ['persistentvolumes', 'persistentvolumes'],
+    ['pv', 'persistentvolumes'],
+  ])('takes %s and resolves it to %s', (asked, resolved) => {
+    // The API's own plural is the key, because that is what kind means everywhere else. kubectl's
+    // short name resolves to it rather than being a dead end a caller has to back out of.
+    expect(resolveTarget(asked).kind).toBe(resolved);
+  });
+
   it('refuses an apiVersion that is not one', () => {
     expect(() => resolveTarget('volumes', 'not/an/apiversion')).toThrow(
       expect.objectContaining({ status: 'malformed' }),

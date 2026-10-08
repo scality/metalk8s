@@ -328,7 +328,7 @@ export const KINDS: Record<string, KindEntry> = {
       createdAt: iso(service.metadata?.creationTimestamp),
     }),
   },
-  pvc: {
+  persistentvolumeclaims: {
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listPersistentVolumeClaimForAllNamespaces(),
@@ -342,7 +342,7 @@ export const KINDS: Record<string, KindEntry> = {
       createdAt: iso(claim.metadata?.creationTimestamp),
     }),
   },
-  pv: {
+  persistentvolumes: {
     apiVersion: 'v1',
     namespaced: false,
     list: (c) => c.coreV1.listPersistentVolume(),
@@ -399,6 +399,18 @@ export const KINDS: Record<string, KindEntry> = {
 
 /** What a caller is shown when it names a kind this does not know. */
 export const ALLOWED_KINDS = Object.keys(KINDS);
+
+/**
+ * kubectl's short names for the two kinds anyone writes short, resolved to the API's own plural.
+ *
+ * `kind` is a resource plural everywhere else — it has to be, for anything reached by apiVersion,
+ * since it goes into the path — so the plurals are the keys, and these do not become a second
+ * spelling anyone has to learn.
+ */
+const ALIASES: Record<string, string> = {
+  pvc: 'persistentvolumeclaims',
+  pv: 'persistentvolumes',
+};
 
 /**
  * A kind reached by apiVersion has no generated type here, so its projection is the handful of
@@ -468,7 +480,8 @@ export type KubeTarget =
  * it gets here, because that is its policy and not a property of the cluster.
  */
 export const resolveTarget = (kind: string, apiVersion?: string): KubeTarget => {
-  const normalized = (kind ?? '').trim().toLowerCase();
+  const spelled = (kind ?? '').trim().toLowerCase();
+  const normalized = ALIASES[spelled] ?? spelled;
   const entry = KINDS[normalized];
 
   if (!entry && !apiVersion) {
