@@ -150,7 +150,90 @@ describe('describeResource', () => {
         },
       ],
     });
-    expect(description.omitted).toContain('env values in spec (names kept)');
+    expect(description.omitted).toContain('env values (names kept)');
+  });
+
+  it.each([
+    [
+      'a deployment, whose containers are under spec.template.spec',
+      'deployments',
+      { spec: { template: { spec: { containers: [{ name: 'web', env: [{ name: 'PW', value: 'hunter2' }] }] } } } },
+    ],
+    [
+      'a cronjob, two templates deep',
+      'cronjobs',
+      {
+        spec: {
+          jobTemplate: {
+            spec: { template: { spec: { containers: [{ name: 'job', env: [{ name: 'PW', value: 'hunter2' }] }] } } },
+          },
+        },
+      },
+    ],
+  ])('keeps env values out of %s', async (_, kind, body) => {
+    // Every kind puts its pod template somewhere different, and reaching for the pod path would
+    // have handed a Deployment's env values over in full.
+    (clients.customObjects.getNamespacedCustomObject as jest.Mock).mockReturnValue(
+      ok({ metadata: { name: 'thing', namespace: 'default' }, ...body }),
+    );
+
+    const description = await describeResource(clients, resolveTarget(kind), {
+      name: 'thing',
+      namespace: 'default',
+    });
+
+    expect(JSON.stringify(description)).not.toContain('hunter2');
+    expect(JSON.stringify(description)).toContain('"PW"');
+    expect(description.omitted).toContain('env values (names kept)');
+  });
+
+  it('never returns the annotation holding a copy of the applied spec', async () => {
+    (clients.coreV1.readNamespacedPod as jest.Mock).mockReturnValue(
+      ok(
+        pod({
+          metadata: {
+            name: 'web-abc',
+            namespace: 'default',
+            uid: 'uid-1',
+            annotations: {
+              // kubectl apply writes the whole spec back verbatim, env values and all — redacting
+              // the spec and leaving this behind would hand them over anyway.
+              'kubectl.kubernetes.io/last-applied-configuration':
+                '{"spec":{"containers":[{"name":"web","env":[{"name":"PW","value":"hunter2"}]}]}}',
+              'other/annotation': 'kept',
+            },
+          },
+        }),
+      ),
+    );
+
+    const description = await describePod();
+
+    expect(JSON.stringify(description)).not.toContain('hunter2');
+    expect(description.resource.metadata?.annotations).toEqual({ 'other/annotation': 'kept' });
+    expect(description.omitted).toContain('metadata.annotations["kubectl.kubernetes.io/last-applied-configuration"]');
+  });
+
+  it('leaves dates alone while walking the object', async () => {
+    (clients.coreV1.readNamespacedPod as jest.Mock).mockReturnValue(
+      ok(
+        pod({
+          metadata: {
+            name: 'web-abc',
+            namespace: 'default',
+            uid: 'uid-1',
+            creationTimestamp: new Date('2026-10-02T08:11:04Z'),
+          },
+        }),
+      ),
+    );
+
+    const description = await describePod();
+
+    // A Date has no own entries, so walking one without a guard turns it into {}.
+    expect((description.resource.metadata as { creationTimestamp: Date }).creationTimestamp).toEqual(
+      new Date('2026-10-02T08:11:04Z'),
+    );
   });
 
   it('asks for the events of this object, by uid as well as name', async () => {

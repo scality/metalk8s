@@ -114,50 +114,63 @@ export const MAX_OBJECT_BYTES = 128 * 1024;
 /** An annotation holding a copy of the whole object, which `spec` already is. */
 const LAST_APPLIED = 'kubectl.kubernetes.io/last-applied-configuration';
 
+/** Wherever a pod template puts its containers, these are the arrays holding them. */
+const CONTAINER_KEYS = new Set(['containers', 'initContainers', 'ephemeralContainers']);
+
+const withoutEnvValues = (container: unknown, dropped: { any: boolean }): unknown => {
+  const env = (container as { env?: { name?: string; value?: string }[] })?.env;
+  if (!Array.isArray(env)) return container;
+
+  return {
+    ...(container as object),
+    env: env.map((variable) => {
+      const { value, ...withoutValue } = variable ?? {};
+      if (value !== undefined) dropped.any = true;
+      return withoutValue;
+    }),
+  };
+};
+
 /**
- * Environment values dropped, their names kept.
+ * Environment values dropped, their names kept — wherever in the object the containers are.
+ *
+ * It walks rather than reaching for a path, because every kind puts its pod template somewhere
+ * different: a Pod at `spec.containers`, a Deployment or Job at `spec.template.spec.containers`, a
+ * CronJob at `spec.jobTemplate.spec.template.spec.containers`, and a custom resource that embeds a
+ * template wherever its author chose.
  *
  * Not a size measure, and so not conditional on one: excluding Secrets is necessary and not
  * sufficient, because a pod spec can hold a password in a plain env value. The names and any
  * `valueFrom` reference survive, which is what a diagnosis reads — that a variable is set, and where
  * it comes from.
  */
-const redactEnv = (object: KubeObject, omitted: string[]): KubeObject => {
-  const spec = object.spec as { containers?: unknown; initContainers?: unknown } | undefined;
-  if (!spec) return object;
+const redactEnv = (value: unknown, dropped: { any: boolean }): unknown => {
+  if (Array.isArray(value)) return value.map((nested) => redactEnv(nested, dropped));
+  // A Date survives only by being returned as it is: entries() on one gives nothing back.
+  if (value === null || typeof value !== 'object' || value instanceof Date) return value;
 
-  let redacted = false;
-  const strip = (containers: unknown) => {
-    if (!Array.isArray(containers)) return containers;
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, nested]) =>
+      CONTAINER_KEYS.has(key) && Array.isArray(nested)
+        ? [key, nested.map((container) => withoutEnvValues(container, dropped))]
+        : [key, redactEnv(nested, dropped)],
+    ),
+  );
+};
 
-    return containers.map((container) => {
-      const env = (container as { env?: { name?: string; value?: string }[] })?.env;
-      if (!Array.isArray(env)) return container;
+/**
+ * The annotation `kubectl apply` writes: a verbatim JSON copy of the applied spec, env values and
+ * all. Dropped every time rather than only when the object is outsized — redacting the spec and
+ * leaving its copy behind would hand the values over anyway — and it says nothing `spec` does not.
+ */
+const withoutLastApplied = (object: KubeObject, omitted: string[]): KubeObject => {
+  const metadata = object.metadata as Record<string, unknown> | undefined;
+  const annotations = metadata?.annotations as Record<string, unknown> | undefined;
+  if (!annotations?.[LAST_APPLIED]) return object;
 
-      return {
-        ...(container as object),
-        env: env.map((variable) => {
-          const { value, ...withoutValue } = variable ?? {};
-          if (value !== undefined) redacted = true;
-          return withoutValue;
-        }),
-      };
-    });
-  };
-
-  const containers = strip(spec.containers);
-  const initContainers = strip(spec.initContainers);
-  if (!redacted) return object;
-
-  omitted.push('env values in spec (names kept)');
-  return {
-    ...object,
-    spec: {
-      ...spec,
-      ...(spec.containers ? { containers } : {}),
-      ...(spec.initContainers ? { initContainers } : {}),
-    },
-  };
+  const { [LAST_APPLIED]: copy, ...kept } = annotations;
+  omitted.push(`metadata.annotations["${LAST_APPLIED}"]`);
+  return { ...object, metadata: { ...metadata, annotations: kept } };
 };
 
 /** The bulk an outsized object sheds, biggest first, each named as it goes. */
@@ -174,17 +187,6 @@ const SHEDDABLE: { what: string; shed: (object: KubeObject) => KubeObject }[] = 
     shed: ({ status, ...rest }) => {
       const { images, ...kept } = (status ?? {}) as Record<string, unknown>;
       return images ? { ...rest, status: kept } : { status, ...rest };
-    },
-  },
-  {
-    what: `metadata.annotations["${LAST_APPLIED}"]`,
-    shed: ({ metadata, ...rest }) => {
-      const meta = (metadata ?? {}) as Record<string, unknown>;
-      const annotations = meta.annotations as Record<string, unknown> | undefined;
-      if (!annotations?.[LAST_APPLIED]) return { metadata, ...rest };
-
-      const { [LAST_APPLIED]: dropped, ...keptAnnotations } = annotations;
-      return { ...rest, metadata: { ...meta, annotations: keptAnnotations } };
     },
   },
 ];
@@ -288,6 +290,9 @@ export const describeResource = async (
   }
 
   const omitted: string[] = [];
+  const dropped = { any: false };
+  const redacted = redactEnv(object, dropped) as KubeObject;
+  if (dropped.any) omitted.push('env values (names kept)');
 
   let events: KubeEvent[] | null = null;
   let eventsUnavailable: string | undefined;
@@ -315,7 +320,7 @@ export const describeResource = async (
     kind: target.kind,
     name,
     ...(namespace ? { namespace } : {}),
-    resource: sizeDown(redactEnv(object, omitted), omitted),
+    resource: sizeDown(withoutLastApplied(redacted, omitted), omitted),
     events,
     ...(eventsUnavailable ? { eventsUnavailable } : {}),
     truncated,

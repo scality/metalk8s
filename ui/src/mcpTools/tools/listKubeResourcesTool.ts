@@ -73,8 +73,6 @@ export function createListKubeResourcesTool(context: ToolContext) {
       // not an apiVersion naming the core group, not a CRD that happens to be called "secrets".
       if (isSecretKind(kind)) return refusal(secretRefusal());
 
-      // Resolved purely: an unknown kind and an apiVersion that is not one both cost nothing and
-      // reach no network.
       try {
         // Resolved purely: an unknown kind and an apiVersion that is not one both cost nothing and
         // reach no network.
