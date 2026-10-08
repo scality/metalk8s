@@ -462,6 +462,33 @@ describe('listResources', () => {
     });
   });
 
+  it('advertises CRDs in exactly the words it accepts back', async () => {
+    // The discovery loop, end to end: ask what the cluster defines, then ask for one of them. If the
+    // row's plural and apiVersion did not resolve, a caller would have to guess at a version.
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'volumes.storage.metalk8s.scality.com' },
+          spec: {
+            group: 'storage.metalk8s.scality.com',
+            scope: 'Cluster',
+            names: { plural: 'volumes' },
+            versions: [{ name: 'v1alpha1', served: true }],
+          },
+        },
+      ]),
+    );
+
+    const discovered = (await listResources(clients, resolveTarget('customresourcedefinitions'))).items[0];
+    const target = resolveTarget(discovered.plural as string, (discovered.apiVersions as string[])[0]);
+
+    expect(target.custom).toEqual({
+      group: 'storage.metalk8s.scality.com',
+      version: 'v1alpha1',
+      plural: 'volumes',
+    });
+  });
+
   it('lists a custom resource through CustomObjectsApi, with group and version as arguments', async () => {
     (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
       ok([{ metadata: { name: 'volume-1' }, status: { phase: 'Available' } }]),
