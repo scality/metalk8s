@@ -8,62 +8,61 @@
     modules do not call it with the same arguments, so a minion and the CA
     minion must run the same one. A fresh upgrade keeps them aligned: every
     minion stays on its version until its turn in `metalk8s.orchestrate.upgrade`,
-    whose loop starts with the CA minion, and the etcd and API server steps run
-    before that loop. An upgrade interrupted inside the loop, once the CA minion
-    moved on, is resumed from the top, and the etcd step then has lagging
-    minions ask a CA they cannot talk to. So when the CA minion already runs the
-    destination version, upgrade the etcd and master minions first, the way
-    `metalk8s.orchestrate.deploy_node` does. The other nodes only talk to the CA
-    during their own deployment, which upgrades their salt-minion first. #}
+    whose loop starts with the CA minion. An upgrade interrupted inside the loop,
+    once the CA minion moved on, is resumed from the top, and the steps before
+    the loop then have lagging minions ask a CA they cannot talk to. So when the
+    CA minion already runs the destination version, upgrade every other minion
+    first, the way `metalk8s.orchestrate.deploy_node` does. #}
 
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- set dest_salt_version = repo.packages.get('salt-minion', {}).get('version') %}
 {%- set ca_minion = pillar.metalk8s.ca.minion %}
-{%- set early_nodes = (salt.metalk8s.minions_by_role('etcd')
-                       + salt.metalk8s.minions_by_role('master'))
-                      | unique | reject('equalto', ca_minion) | sort %}
+{%- set other_nodes = pillar.metalk8s.nodes.keys() | reject('equalto', ca_minion)
+                      | sort %}
 
-{#- The CA minion is queried first, and the others only when it already runs
-    the destination version: on a fresh upgrade this step then costs a single
-    query. Retry like `metalk8s.orchestrate.bootstrap`, since the salt-master
-    just restarted. #}
+{#- Retry like `metalk8s.orchestrate.bootstrap`, since the salt-master just
+    restarted #}
 {%- set max_try = 5 %}
 {%- set installed = {} %}
 {%- set unanswered = [] %}
-{%- for node in [ca_minion] + early_nodes %}
+
+{%- macro query_version(node) %}
   {%- for _ in range(max_try) %}
     {%- set res = salt.saltutil.cmd(tgt=node, fun='pkg.version', arg=['salt-minion'])
                   .get(node, {}) %}
-    {#- `ret` holds the error text when the function raised #}
+    {#- `ret` holds the error text when the function raised. Otherwise it is
+        the package version with its release, e.g. "3006.27-0" for "3006.27" #}
     {%- if res.get('retcode', 0) == 0 and res.get('ret') is string and res.ret %}
-      {%- do installed.update({node: res.ret}) %}
+      {%- do installed.update({node: res.ret.split('-')[0]}) %}
       {%- break %}
     {%- endif %}
   {%- endfor %}
   {%- if node not in installed %}
     {%- do unanswered.append(node) %}
   {%- endif %}
-  {#- `pkg.version` gives the package version with its release, e.g.
-      "3006.27-0" for "3006.27" #}
-  {%- if node == ca_minion
-      and not (dest_salt_version
-               and (installed.get(node) == dest_salt_version
-                    or installed.get(node, '').startswith(dest_salt_version ~ '-'))) %}
-    {%- break %}
-  {%- endif %}
-{%- endfor %}
+{%- endmacro %}
+
+{#- On a fresh upgrade that changes the Salt version, the CA minion still runs
+    the source one, so this step costs a single query #}
+{%- do query_version(ca_minion) %}
+{%- if dest_salt_version and installed.get(ca_minion) == dest_salt_version %}
+  {%- for node in other_nodes %}
+    {%- do query_version(node) %}
+  {%- endfor %}
+{%- endif %}
 
 {%- set lagging = [] %}
-{%- for node in early_nodes if node in installed %}
-  {%- if not (installed[node] == dest_salt_version
-              or installed[node].startswith(dest_salt_version ~ '-')) %}
+{#- Only an older minion is lagging. A newer one is left alone, since this step
+    must not downgrade a node the upgrade itself would skip. #}
+{%- for node in other_nodes if node in installed %}
+  {%- if salt.pkg.version_cmp(installed[node], dest_salt_version) == -1 %}
     {%- do lagging.append(node) %}
   {%- endif %}
 {%- endfor %}
 
 {#- A minion that does not answer cannot be told apart from a lagging one, and
-    the etcd step would then fail on it with an error that says nothing about
+    a later step would then fail on it with an error that says nothing about
     versions #}
 {%- if unanswered %}
 
