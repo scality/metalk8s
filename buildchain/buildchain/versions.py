@@ -245,6 +245,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
+        name="metalk8s-boot-cache-etcd",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
         name="metalk8s-boot-cache-worker",
         version=VERSION,
         digest=None,
