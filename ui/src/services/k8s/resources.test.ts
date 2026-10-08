@@ -10,8 +10,6 @@ const makeClients = () =>
       listEventForAllNamespaces: jest.fn(),
       listPersistentVolumeClaimForAllNamespaces: jest.fn(),
     },
-    appsV1: { listDeploymentForAllNamespaces: jest.fn() },
-    batchV1: { listJobForAllNamespaces: jest.fn() },
     customObjects: { listClusterCustomObject: jest.fn() },
   }) as unknown as K8sApiClients;
 
@@ -366,7 +364,7 @@ describe('listResources', () => {
   });
 
   it('gives a job both its completions and its parallelism', async () => {
-    (clients.batchV1.listJobForAllNamespaces as jest.Mock).mockReturnValue(
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
       ok([
         {
           metadata: { name: 'import', namespace: 'default' },
@@ -382,6 +380,35 @@ describe('listResources', () => {
 
     expect(row).toMatchObject({ spec: { parallelism: 5 }, status: { succeeded: 3, active: 2 } });
     expect(row.spec).not.toHaveProperty('completions');
+  });
+
+  it.each([
+    ['jobs', 'batch', 'v1'],
+    ['deployments', 'apps', 'v1'],
+    ['statefulsets', 'apps', 'v1'],
+    ['daemonsets', 'apps', 'v1'],
+  ])('lists %s through CustomObjectsApi, which does not run the response through v1.13 models', async (kind, group, version) => {
+    // The generated methods rebuild the object from the attributes their v1.13 models declare, so
+    // anything Kubernetes added since is discarded on the way in — a Job's `suspend`, for one.
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
+      ok([{ metadata: { name: 'x', namespace: 'default' }, spec: { suspend: true }, status: {} }]),
+    );
+
+    const list = await listResources(clients, resolveTarget(kind));
+
+    expect(clients.customObjects.listClusterCustomObject).toHaveBeenCalledWith(group, version, kind);
+    expect(list.items[0]).toMatchObject({ name: 'x' });
+  });
+
+  it('keeps a suspended job distinguishable from a stuck one', async () => {
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
+      ok([{ metadata: { name: 'paused', namespace: 'default' }, spec: { suspend: true }, status: {} }]),
+    );
+
+    const row = (await listResources(clients, resolveTarget('jobs'))).items[0];
+
+    // Without it a suspended job reads as one that has simply never run: no active, no succeeded.
+    expect(row.spec).toEqual({ suspend: true });
   });
 
   it('returns a ConfigMap key names and never its values', async () => {

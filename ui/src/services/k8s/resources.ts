@@ -11,12 +11,8 @@
 // mapped here instead.
 
 import type {
-  V1beta1CronJobSpec,
   V1ConfigMap,
-  V1DeploymentSpec,
   V1Event,
-  V1JobSpec,
-  V1JobStatus,
   V1NodeSpec,
   V1NodeStatus,
   V1ObjectMeta,
@@ -24,7 +20,6 @@ import type {
   V1PersistentVolumeSpec,
   V1PodSpec,
   V1ServiceSpec,
-  V1StatefulSetSpec,
 } from '@kubernetes/client-node';
 import type { K8sApiClients } from './api';
 
@@ -149,6 +144,14 @@ const millis = (value?: Date | string): number => {
  * The kinds that can be asked for by name alone, each mapped to the client method that lists it
  * across every namespace and the fields a row keeps.
  *
+ * A kind in an API GROUP is listed through CustomObjectsApi rather than its generated method. The
+ * generated ones run the response through ObjectSerializer, which builds a fresh object and copies
+ * only the attributes the v1.13 models declare — so a Job's `suspend`, added in 1.21, is discarded
+ * before anything here sees it, and a suspended Job reads as a stuck one. CustomObjectsApi hands the
+ * JSON over untouched. Core-group kinds have no such route: /apis/{group}/{version} has no core
+ * form, so pods, nodes and the rest come through the generated client and lose whatever Kubernetes
+ * has added since 1.13.
+ *
  * This is NOT the limit of what can be listed. Anything that lives in an API group is reachable by
  * passing its apiVersion — custom resources included — so the list is what needs no apiVersion
  * rather than what exists. `customresourcedefinitions` is in it so that a caller can find out what
@@ -158,8 +161,10 @@ const millis = (value?: Date | string): number => {
  * wall rather than a filter.
  */
 /**
- * One entry, with its key lists checked against the client's own types: a key that is not on
- * V1PodSpec stops compiling. Where a list and the real type disagree, the real type is right.
+ * One entry. A core-group kind passes the client's own types, so its key lists are checked against
+ * them and a key that is not on V1PodSpec stops compiling — where a list and the real type disagree,
+ * the real type is right. A kind listed through CustomObjectsApi passes none: its JSON is untouched
+ * and carries fields the v1.13 models never declared, which is the point of listing it that way.
  */
 const kind = <TSpec = never, TStatus = never, TItem = never>(entry: {
   apiVersion: string;
@@ -192,38 +197,36 @@ export const KINDS: Record<string, KindEntry> = {
     // tag it answers to.
     status: ['conditions', 'nodeInfo', 'capacity', 'allocatable', 'addresses'],
   }),
-  deployments: kind<V1DeploymentSpec>({
+  deployments: kind({
     apiVersion: 'apps/v1',
     namespaced: true,
-    list: (c) => c.appsV1.listDeploymentForAllNamespaces(),
+    list: (c) => c.customObjects.listClusterCustomObject('apps', 'v1', 'deployments'),
     spec: ['replicas'],
   }),
-  statefulsets: kind<V1StatefulSetSpec>({
+  statefulsets: kind({
     apiVersion: 'apps/v1',
     namespaced: true,
-    list: (c) => c.appsV1.listStatefulSetForAllNamespaces(),
+    list: (c) => c.customObjects.listClusterCustomObject('apps', 'v1', 'statefulsets'),
     spec: ['replicas'],
   }),
   daemonsets: kind({
     apiVersion: 'apps/v1',
     namespaced: true,
-    list: (c) => c.appsV1.listDaemonSetForAllNamespaces(),
+    list: (c) => c.customObjects.listClusterCustomObject('apps', 'v1', 'daemonsets'),
   }),
-  jobs: kind<V1JobSpec & { suspend?: boolean }, V1JobStatus>({
+  jobs: kind({
     apiVersion: 'batch/v1',
     namespaced: true,
-    list: (c) => c.batchV1.listJobForAllNamespaces(),
+    list: (c) => c.customObjects.listClusterCustomObject('batch', 'v1', 'jobs'),
     // completions and parallelism both: a work-queue job sets only the second, and the difference is
-    // what says whether there is a total to count towards at all.
-    //
-    // `suspend` is widened above because the cluster has it and this client does not: it arrived in
-    // batch/v1 at Kubernetes 1.21, and these types are generated from v1.13.
+    // what says whether there is a total to count towards at all. `suspend` arrived in 1.21, which
+    // is after this client was generated — it is here because the call above does not go through
+    // the client's models.
     spec: ['completions', 'parallelism', 'suspend'],
   }),
-  // batch/v1, through CustomObjectsApi. This client is generated from the v1.13 OpenAPI, where
-  // CronJob is still beta, so its only CronJob method addresses /apis/batch/v1beta1/cronjobs — a
-  // path the API server has not served since 1.25, and this ships Kubernetes 1.34.
-  cronjobs: kind<V1beta1CronJobSpec>({
+  // batch/v1 for a second reason as well as the one above: this client's only CronJob method
+  // addresses /apis/batch/v1beta1/cronjobs, a path the API server has not served since 1.25.
+  cronjobs: kind({
     apiVersion: 'batch/v1',
     namespaced: true,
     list: (c) => c.customObjects.listClusterCustomObject('batch', 'v1', 'cronjobs'),

@@ -9,9 +9,8 @@ describe('k8sApi', () => {
 
     expect(clients.coreV1).toBeInstanceOf(CoreV1Api);
     // The kinds listKubeResources reaches need these too — a missing one would only show up at call
-    // time, inside a tool, as "clients.batchV1 is undefined".
+    // time, inside a tool, as "clients.customObjects is undefined".
     expect(clients.appsV1).toBeDefined();
-    expect(clients.batchV1).toBeDefined();
     expect(clients.customObjects).toBeDefined();
     expect(clients.coreV1.basePath).toBe('/api/kubernetes');
   });
