@@ -39,59 +39,38 @@ describe('describeResource', () => {
   const describePod = (params: Record<string, unknown> = {}) =>
     describeResource(clients, resolveTarget('pods'), { name: 'web-abc', namespace: 'default', ...params });
 
-  it('reads one object and summarises it the way a list row would', async () => {
-    (clients.coreV1.readNamespacedPod as jest.Mock).mockReturnValue(ok(pod()));
+  it('hands the object over as the API returned it', async () => {
+    const object = {
+      metadata: {
+        name: 'web-abc',
+        namespace: 'default',
+        uid: 'uid-1',
+        labels: { app: 'web' },
+        managedFields: [{ manager: 'kubelet', fieldsV1: { 'f:status': {} } }],
+      },
+      spec: { nodeName: 'node-1', containers: [{ name: 'web', image: 'registry/web:1' }] },
+      status: {
+        phase: 'Running',
+        containerStatuses: [
+          { name: 'web', ready: true, restartCount: 7, lastState: { terminated: { exitCode: 1, reason: 'Error' } } },
+        ],
+      },
+    };
+    (clients.coreV1.readNamespacedPod as jest.Mock).mockReturnValue(ok(object));
 
     const description = await describePod();
 
     expect(clients.coreV1.readNamespacedPod).toHaveBeenCalledWith('web-abc', 'default');
-    // The same row listKubeResources would give for this object, built by the same code.
-    expect(description.summary).toMatchObject({
-      name: 'web-abc',
-      namespace: 'default',
-      spec: { nodeName: 'node-1' },
-      status: { phase: 'Running' },
-    });
-    expect(description.resource.spec).toMatchObject({ nodeName: 'node-1' });
-    expect(description.resource.status).toMatchObject({ phase: 'Running' });
+    // Whole, managed fields included: one object fits, and a reader of it knows Kubernetes. Why the
+    // container last stopped is in there too, where the API put it.
+    expect(description.resource).toEqual(object);
+    expect(description.omitted).toEqual([]);
+    // No summary beside it — the row a listing would give for this object is a subset of what is
+    // already here, and a reader that can read the object does not need it read out first.
+    expect(description).not.toHaveProperty('summary');
   });
 
-  it('says why a container last stopped, which the status alone does not', async () => {
-    (clients.coreV1.readNamespacedPod as jest.Mock).mockReturnValue(
-      ok(
-        pod({
-          status: {
-            phase: 'Running',
-            containerStatuses: [
-              {
-                ready: false,
-                restartCount: 7,
-                state: { waiting: { reason: 'CrashLoopBackOff' } },
-                lastState: { terminated: { reason: 'Error', exitCode: 1 } },
-              },
-            ],
-          },
-        }),
-      ),
-    );
-
-    const description = await describePod();
-
-    // What it is doing now and what went wrong the time before, both in the container's own state —
-    // no longer worth a per-kind summary of its own, since the row carries lastState whole.
-    expect(description.summary).toMatchObject({
-      status: {
-        containerStatuses: [
-          {
-            state: { waiting: { reason: 'CrashLoopBackOff' } },
-            lastState: { terminated: { reason: 'Error', exitCode: 1 } },
-          },
-        ],
-      },
-    });
-  });
-
-  it('drops managedFields, and says it did', async () => {
+  it('sheds its known bulk only once the object is outsized, and names what it shed', async () => {
     (clients.coreV1.readNamespacedPod as jest.Mock).mockReturnValue(
       ok(
         pod({
@@ -100,7 +79,8 @@ describe('describeResource', () => {
             namespace: 'default',
             uid: 'uid-1',
             labels: { app: 'web' },
-            managedFields: [{ manager: 'kubelet', fieldsV1: { 'f:status': {} } }],
+            // Grown over a year of updates, and the first thing worth losing.
+            managedFields: Array.from({ length: 40 }, () => ({ manager: 'x'.repeat(4096) })),
           },
         }),
       ),
@@ -113,14 +93,17 @@ describe('describeResource', () => {
     expect(description.omitted).toContain('metadata.managedFields');
   });
 
-  it("drops a node's image list, which is tens of kilobytes and never the answer", async () => {
+  it("sheds a node's image list once that is what makes it outsized", async () => {
     (clients.coreV1.readNode as jest.Mock).mockReturnValue(
       ok({
         metadata: { name: 'node-1', labels: {} },
         spec: {},
         status: {
           conditions: [{ type: 'Ready', status: 'True' }],
-          images: [{ names: ['registry/image@sha256:abc'], sizeBytes: 1 }],
+          // Every image on the box, with every tag it answers to.
+          images: Array.from({ length: 200 }, (_, i) => ({
+            names: [`registry/image-${i}@sha256:${'a'.repeat(700)}`],
+          })),
         },
       }),
     );
@@ -128,6 +111,7 @@ describe('describeResource', () => {
     const description = await describeResource(clients, resolveTarget('nodes'), { name: 'node-1' });
 
     expect(description.resource.status).not.toHaveProperty('images');
+    expect(description.resource.status).toMatchObject({ conditions: [{ type: 'Ready' }] });
     expect(description.omitted).toContain('status.images');
   });
 
@@ -152,6 +136,7 @@ describe('describeResource', () => {
 
     const description = await describePod();
 
+    // Not a size measure, so it does not wait for the object to be big.
     expect(JSON.stringify(description)).not.toContain('hunter2');
     expect(description.resource.spec).toMatchObject({
       containers: [
@@ -224,7 +209,7 @@ describe('describeResource', () => {
 
     const description = await describePod();
 
-    expect(description.summary).toMatchObject({ status: { phase: 'Running' } });
+    expect(description.resource.status).toMatchObject({ phase: 'Running' });
     // null, and a reason — never an empty array, which would read as "nothing has happened".
     expect(description.events).toBeNull();
     expect(description.eventsUnavailable).toMatch(/not_authorized/);
@@ -320,7 +305,7 @@ describe('describeResource', () => {
       'cronjobs',
       'backup',
     );
-    expect(description.summary).toMatchObject({ spec: { schedule: '0 2 * * *' } });
+    expect(description.resource.spec).toMatchObject({ schedule: '0 2 * * *' });
   });
 
   it('cannot describe a kind reached only by apiVersion, and says so', async () => {

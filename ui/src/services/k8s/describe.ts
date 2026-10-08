@@ -1,22 +1,20 @@
 // One object in full, and what the cluster has been saying about it — the read behind the
 // `describeKubeResource` MCP tool.
 //
-// Where `listResources` answers "what exists", this answers "what is wrong with this one". It keeps
-// the object's own `spec` and `status` as the API returned them, minus the parts that are bulk
-// rather than information, and adds the events attached to it, which are usually the actual reason
+// Where `listResources` answers "what exists", this answers "what is wrong with this one". The
+// object comes through as the API returned it — one of them fits, so there is nothing to save by
+// cutting it down — and the events attached to it come with it, which are usually the actual reason
 // anyone is describing it.
 
-import type { V1Node, V1ObjectMeta, V1Pod } from '@kubernetes/client-node';
 import type { K8sApiClients } from './api';
-import {
-  eventLastSeen,
-  failureFor,
-  K8sApiError,
-  KINDS,
-  type KubeResourceItem,
-  type KubeTarget,
-  projectItem,
-} from './resources';
+import { eventLastSeen, failureFor, K8sApiError, KINDS, type KubeTarget } from './resources';
+
+/** Whatever the API returned. Only the three keys this file touches are named. */
+type KubeObject = {
+  metadata?: { name?: string; uid?: string } & Record<string, unknown>;
+  spec?: unknown;
+  status?: unknown;
+};
 
 /** Enough to see a pattern; past that it is the same message again with a later timestamp. */
 export const MAX_EVENTS = 50;
@@ -33,16 +31,17 @@ export type KubeDescription = {
   kind: string;
   name: string;
   namespace?: string;
-  /** The row this object would have in a list, built by the same code. */
-  summary: KubeResourceItem;
   /**
-   * The object as the API holds it, minus what `omitted` names.
+   * The object as the API returned it, minus what `omitted` names.
    *
    * Nested rather than spread across the top level because a tool's answer already has a `status` —
    * ok, or why not — and a Kubernetes object has one too. Flat, one would quietly overwrite the
    * other, and a caller could not tell a healthy object from a successful call.
+   *
+   * There is no summary beside it. The row listKubeResources would give for this object is a subset
+   * of what is here, and a reader that can read the object does not need it read out first.
    */
-  resource: { metadata?: unknown; spec?: unknown; status?: unknown };
+  resource: KubeObject;
   /** null when the events could not be read — which is not a failure of the description. */
   events: KubeEvent[] | null;
   /** Why the events are null, when they are. */
@@ -103,40 +102,31 @@ const checkNamespace = (target: KubeTarget, namespace?: string) => {
   }
 };
 
+/**
+ * Above this, the object sheds its known bulk rather than arriving whole.
+ *
+ * One object is not a list, so there is normally nothing to save by cutting it down. This is for the
+ * ones that are outsized on their own: a node carrying every image on the box, a CRD carrying its
+ * OpenAPI schema, an object whose managed fields have grown for a year.
+ */
+export const MAX_OBJECT_BYTES = 128 * 1024;
+
 /** An annotation holding a copy of the whole object, which `spec` already is. */
 const LAST_APPLIED = 'kubectl.kubernetes.io/last-applied-configuration';
 
-const pruneMetadata = (metadata: V1ObjectMeta | undefined, omitted: string[]) => {
-  if (!metadata) return metadata;
-
-  const { managedFields, annotations, ...kept } = metadata as V1ObjectMeta & {
-    managedFields?: unknown[];
-  };
-  // Most of the bytes of a long-lived object, and none of the information: who last touched which
-  // field, field by field.
-  if (managedFields) omitted.push('metadata.managedFields');
-
-  if (!annotations) return kept;
-
-  const { [LAST_APPLIED]: lastApplied, ...rest } = annotations;
-  if (lastApplied) omitted.push(`metadata.annotations["${LAST_APPLIED}"]`);
-
-  return { ...kept, annotations: rest };
-};
-
 /**
- * The pod spec, with environment values dropped and their names kept.
+ * Environment values dropped, their names kept.
  *
- * Excluding Secrets is necessary and not sufficient: a pod spec can hold a password in a plain env
- * value. The names and any `valueFrom` reference survive, which is what a diagnosis actually reads —
- * that a variable is set, and where it comes from.
+ * Not a size measure, and so not conditional on one: excluding Secrets is necessary and not
+ * sufficient, because a pod spec can hold a password in a plain env value. The names and any
+ * `valueFrom` reference survive, which is what a diagnosis reads — that a variable is set, and where
+ * it comes from.
  */
-const pruneSpec = (target: KubeTarget, spec: unknown, omitted: string[]): unknown => {
-  if (target.kind !== 'pods' || !spec) return spec;
+const redactEnv = (object: KubeObject, omitted: string[]): KubeObject => {
+  const spec = object.spec as { containers?: unknown; initContainers?: unknown } | undefined;
+  if (!spec) return object;
 
-  const podSpec = spec as V1Pod['spec'];
   let redacted = false;
-
   const strip = (containers: unknown) => {
     if (!Array.isArray(containers)) return containers;
 
@@ -155,25 +145,69 @@ const pruneSpec = (target: KubeTarget, spec: unknown, omitted: string[]): unknow
     });
   };
 
-  const containers = strip(podSpec?.containers);
-  const initContainers = strip(podSpec?.initContainers);
-  if (redacted) omitted.push('env values in spec (names kept)');
+  const containers = strip(spec.containers);
+  const initContainers = strip(spec.initContainers);
+  if (!redacted) return object;
 
+  omitted.push('env values in spec (names kept)');
   return {
-    ...podSpec,
-    ...(podSpec?.containers ? { containers } : {}),
-    ...(podSpec?.initContainers ? { initContainers } : {}),
+    ...object,
+    spec: {
+      ...spec,
+      ...(spec.containers ? { containers } : {}),
+      ...(spec.initContainers ? { initContainers } : {}),
+    },
   };
 };
 
-const pruneStatus = (target: KubeTarget, status: unknown, omitted: string[]): unknown => {
-  if (target.kind !== 'nodes' || !status) return status;
+/** The bulk an outsized object sheds, biggest first, each named as it goes. */
+const SHEDDABLE: { what: string; shed: (object: KubeObject) => KubeObject }[] = [
+  {
+    what: 'metadata.managedFields',
+    shed: ({ metadata, ...rest }) => {
+      const { managedFields, ...kept } = (metadata ?? {}) as Record<string, unknown>;
+      return managedFields ? { ...rest, metadata: kept } : { metadata, ...rest };
+    },
+  },
+  {
+    what: 'status.images',
+    shed: ({ status, ...rest }) => {
+      const { images, ...kept } = (status ?? {}) as Record<string, unknown>;
+      return images ? { ...rest, status: kept } : { status, ...rest };
+    },
+  },
+  {
+    what: `metadata.annotations["${LAST_APPLIED}"]`,
+    shed: ({ metadata, ...rest }) => {
+      const meta = (metadata ?? {}) as Record<string, unknown>;
+      const annotations = meta.annotations as Record<string, unknown> | undefined;
+      if (!annotations?.[LAST_APPLIED]) return { metadata, ...rest };
 
-  const { images, ...kept } = status as NonNullable<V1Node['status']>;
-  // Every image on the node with every tag it answers to — tens of kilobytes, and never the answer.
-  if (images) omitted.push('status.images');
+      const { [LAST_APPLIED]: dropped, ...keptAnnotations } = annotations;
+      return { ...rest, metadata: { ...meta, annotations: keptAnnotations } };
+    },
+  },
+];
 
-  return kept;
+/**
+ * The object, whole, unless it is big enough that its known bulk is worth shedding.
+ *
+ * Raw is the default on purpose: one object fits, a reader of it knows Kubernetes, and anything cut
+ * out here is something it cannot ask for again.
+ */
+const sizeDown = (object: KubeObject, omitted: string[]): KubeObject => {
+  let result = object;
+  if (JSON.stringify(result).length <= MAX_OBJECT_BYTES) return result;
+
+  for (const { what, shed } of SHEDDABLE) {
+    const next = shed(result);
+    if (next === result) continue;
+
+    omitted.push(what);
+    result = next;
+    if (JSON.stringify(result).length <= MAX_OBJECT_BYTES) break;
+  }
+  return result;
 };
 
 /**
@@ -240,7 +274,7 @@ export const describeResource = async (
   checkName(name);
   checkNamespace(target, namespace);
 
-  let object: { metadata?: V1ObjectMeta; spec?: unknown; status?: unknown };
+  let object: KubeObject;
   try {
     const response = await entry.read(clients, name, namespace);
     object = response?.body as typeof object;
@@ -281,14 +315,7 @@ export const describeResource = async (
     kind: target.kind,
     name,
     ...(namespace ? { namespace } : {}),
-    // The row this object would have in a list, built by the same code, so the two tools say the
-    // same thing about the same object.
-    summary: projectItem(entry, object),
-    resource: {
-      metadata: pruneMetadata(object.metadata, omitted),
-      spec: pruneSpec(target, object.spec, omitted),
-      status: pruneStatus(target, object.status, omitted),
-    },
+    resource: sizeDown(redactEnv(object, omitted), omitted),
     events,
     ...(eventsUnavailable ? { eventsUnavailable } : {}),
     truncated,

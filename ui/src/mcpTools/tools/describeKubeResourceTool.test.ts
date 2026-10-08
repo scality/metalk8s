@@ -50,7 +50,7 @@ describe('describeKubeResource', () => {
 
     expect(result.status).toBe('ok');
     expect(result.name).toBe('web-abc');
-    expect(result.summary).toMatchObject({ status: { phase: 'Running' } });
+    expect(result.resource).toMatchObject({ status: { phase: 'Running' } });
     expect(k8sApi).toHaveBeenCalledWith('/api/kubernetes', 'a-fresh-token');
   });
 
