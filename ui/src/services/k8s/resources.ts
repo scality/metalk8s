@@ -213,7 +213,16 @@ export const KINDS: Record<string, KindEntry> = {
       ready: `${(pod.status?.containerStatuses ?? []).filter((cs) => cs.ready).length}/${
         pod.spec?.containers?.length ?? 0
       }`,
-      restarts: (pod.status?.containerStatuses ?? []).reduce((total, cs) => total + (cs.restartCount ?? 0), 0),
+      // Every container in the pod, init ones included: a pod reported as Init:CrashLoopBackOff with
+      // restarts 0 contradicts itself, and the restarts are the evidence for the status. A sidecar
+      // is an init container too, so this is where its restarts are counted.
+      //
+      // One number, for the pod's whole life. kubectl's column resets to the main containers once
+      // the pod has initialized, so this can read higher for a pod that struggled on the way up.
+      restarts: [...(pod.status?.initContainerStatuses ?? []), ...(pod.status?.containerStatuses ?? [])].reduce(
+        (total, container) => total + (container.restartCount ?? 0),
+        0,
+      ),
       node: pod.spec?.nodeName,
       createdAt: iso(pod.metadata?.creationTimestamp),
     }),

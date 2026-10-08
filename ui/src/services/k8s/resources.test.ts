@@ -174,7 +174,29 @@ describe('listResources', () => {
 
     const list = await listResources(clients, resolveTarget('pods'));
 
-    expect(list.items[0]).toMatchObject({ status: 'Init:CrashLoopBackOff' });
+    // The restart count is the evidence for that status, so it cannot stay at the main container's 0.
+    expect(list.items[0]).toMatchObject({ status: 'Init:CrashLoopBackOff', restarts: 6 });
+  });
+
+  it('counts restarts across every container in the pod, sidecars included', async () => {
+    (clients.coreV1.listPodForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'web-abc', namespace: 'default' },
+          spec: { containers: [{ name: 'web' }] },
+          status: {
+            phase: 'Running',
+            // A sidecar is an init container, so this is the only place its restarts are reported.
+            initContainerStatuses: [{ restartCount: 88, state: { running: {} } }],
+            containerStatuses: [{ ready: true, restartCount: 3, state: { running: {} } }],
+          },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('pods'));
+
+    expect(list.items[0]).toMatchObject({ status: 'Running', restarts: 91 });
   });
 
   it('looks past a running sidecar to the init container that is actually stuck', async () => {
