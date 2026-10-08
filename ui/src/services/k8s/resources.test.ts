@@ -330,6 +330,22 @@ describe('listResources', () => {
     expect(list.items.map((item) => item.name)).not.toContain('event-0');
   });
 
+  it.each([
+    ['a job counting to a total', { completions: 3, parallelism: 1 }, { succeeded: 1 }, '1/3'],
+    // No completions: the pods work a queue until one of them says it is done. "3/1" reads as
+    // overshoot, and a caller would report it as a fault.
+    ['a work-queue job', { parallelism: 5 }, { succeeded: 3 }, '3/1 of 5'],
+    ['an ordinary job that sets neither', {}, {}, '0/1'],
+  ])('reports %s as %s', async (_, spec, status, expected) => {
+    (clients.batchV1.listJobForAllNamespaces as jest.Mock).mockReturnValue(
+      ok([{ metadata: { name: 'import', namespace: 'default' }, spec, status }]),
+    );
+
+    const list = await listResources(clients, resolveTarget('jobs'));
+
+    expect(list.items[0]).toMatchObject({ completions: expected });
+  });
+
   it('omits the namespace field for a cluster-scoped kind', async () => {
     (clients.coreV1.listNode as jest.Mock).mockReturnValue(
       ok([

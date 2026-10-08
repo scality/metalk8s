@@ -121,6 +121,23 @@ type KindEntry = {
 const iso = (value?: Date | string): string | undefined => (value instanceof Date ? value.toISOString() : value);
 
 /**
+ * How far a job has got, written the way `kubectl get jobs` writes it.
+ *
+ * A work-queue job sets `parallelism` and no `completions`: its pods pull from a queue until one of
+ * them reports the work done, so there is no count to finish. Against a denominator of 1 it reads as
+ * overshoot — `3/1` — which is a bug report waiting to happen rather than a job doing its job.
+ */
+const jobCompletions = (job: V1Job): string => {
+  const succeeded = job.status?.succeeded ?? 0;
+  if (job.spec?.completions != null) return `${succeeded}/${job.spec.completions}`;
+
+  // Only worth naming when there is more than one pod. An ordinary job sets neither field and reads
+  // `0/1`, as it does under kubectl.
+  const parallelism = job.spec?.parallelism ?? 1;
+  return parallelism > 1 ? `${succeeded}/1 of ${parallelism}` : `${succeeded}/1`;
+};
+
+/**
  * When an event was last seen, resolved the way `kubectl get events` resolves it.
  *
  * An event written through events.k8s.io/v1 sets neither `lastTimestamp` nor `count` in this core
@@ -291,7 +308,7 @@ export const KINDS: Record<string, KindEntry> = {
     project: (job: V1Job) => ({
       name: job.metadata?.name,
       namespace: job.metadata?.namespace,
-      completions: `${job.status?.succeeded ?? 0}/${job.spec?.completions ?? 1}`,
+      completions: jobCompletions(job),
       active: job.status?.active ?? 0,
       failed: job.status?.failed ?? 0,
       createdAt: iso(job.metadata?.creationTimestamp),
