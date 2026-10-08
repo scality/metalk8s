@@ -2,7 +2,7 @@ import { all, call, delay, put, select, take, takeEvery, takeLatest, race } from
 import * as ApiSalt from '../../services/salt/api';
 import { addNotificationSuccessAction, addNotificationErrorAction } from './notifications';
 import { addJobAction, JOB_COMPLETED, allJobsSelector, CONNECT_SALT_API } from './salt';
-import { REFRESH_TIMEOUT, ROLE_PREFIX } from '../../constants';
+import { REFRESH_TIMEOUT } from '../../constants';
 import { nodesCPWPIPsInterface } from '../../services/NodeUtils';
 import { API_STATUS_READY, API_STATUS_NOT_READY, API_STATUS_UNKNOWN } from '../../constants';
 import { RootState } from '../reducer';
@@ -26,8 +26,7 @@ export const ROLE_NODE = 'node-role.kubernetes.io/node';
 export const ROLE_ETCD = 'node-role.kubernetes.io/etcd';
 export const ROLE_BOOTSTRAP = 'node-role.kubernetes.io/bootstrap';
 export const ROLE_INFRA = 'node-role.kubernetes.io/infra';
-// Defined in constants.ts, re-exported here for the modules that import it from this one.
-export { ROLE_PREFIX };
+export const ROLE_PREFIX = 'node-role.kubernetes.io';
 export const CLUSTER_VERSION_ANNOTATION = 'metalk8s.scality.com/cluster-version';
 export const roleTaintMap = [
   {

@@ -10,8 +10,6 @@ export const STATUS_CRITICAL = 'critical';
 export const STATUS_SUCCESS = 'success';
 export const STATUS_NONE = 'none';
 export const STATUS_HEALTH = 'healthy';
-/** Node roles are labels: `node-role.kubernetes.io/<role>`. */
-export const ROLE_PREFIX = 'node-role.kubernetes.io';
 export const API_STATUS_READY = 'ready';
 export const API_STATUS_NOT_READY = 'not_ready';
 export const API_STATUS_UNKNOWN = 'unknown';
