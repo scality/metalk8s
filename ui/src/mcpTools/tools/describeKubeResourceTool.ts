@@ -25,9 +25,9 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
       '(nodes, persistentvolumes, namespaces) — a wrong one is an error, not a filter.\n' +
       "resource is the object itself. The top-level status is this call's own — ok, or why not — " +
       "and never the object's.\n" +
-      'omitted names whatever was left out, and is usually empty. Environment VALUES are always ' +
-      'among them when a pod has any: a variable listed without one is SET, never report it as ' +
-      'empty or missing.\n' +
+      'omitted names whatever was left out. Environment VALUES are always among them when the ' +
+      'object has containers, at any depth — a variable listed without one is SET, never report it ' +
+      'as empty or missing.\n' +
       'events is null when they could not be read, and eventsUnavailable says why — null is NOT ' +
       '"no events", so never say nothing happened. They expire after about an hour, so an empty ' +
       'list means nothing happened RECENTLY.\n' +
