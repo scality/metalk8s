@@ -98,7 +98,7 @@ export type KubeResourceList = {
 type ListResponse = { body?: { items?: unknown[] } };
 type ReadResponse = { body?: unknown };
 
-export type KindEntry = {
+type KindEntry = {
   apiVersion: string;
   namespaced: boolean;
   list: (clients: K8sApiClients) => Promise<ListResponse>;
@@ -394,7 +394,7 @@ const beyondIdentity = (object: KubeObject): Record<string, unknown> => {
 };
 
 /** One row: what the object is, and the parts of it this kind keeps. */
-export const projectItem = (entry: KindEntry | undefined, item: unknown): KubeResourceItem => {
+const projectItem = (entry: KindEntry | undefined, item: unknown): KubeResourceItem => {
   const object = item as KubeObject;
 
   // A kind reached by apiVersion keeps everything. There is no list of keys to apply to a resource

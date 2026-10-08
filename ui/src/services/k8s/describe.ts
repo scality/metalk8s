@@ -195,7 +195,6 @@ const withoutLastApplied = (object: KubeObject, omitted: string[]): KubeObject =
   return { ...object, metadata: { ...metadata, annotations: kept } };
 };
 
-/** The bulk an outsized object sheds, biggest first, each named as it goes. */
 /**
  * The bulk an outsized object sheds, biggest first, each named as it goes.
  *
