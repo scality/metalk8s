@@ -48,7 +48,14 @@ export const refusal = (error: K8sApiError) => ({
  */
 const SECRET_KINDS = ['secret', 'secrets'];
 
-export const isSecretKind = (kind: string) => SECRET_KINDS.includes(kind.trim().toLowerCase());
+// String(), for the same reason resolveTarget coerces: a guard that throws on the input it exists to
+// catch is not a guard.
+export const isSecretKind = (kind: string) =>
+  SECRET_KINDS.includes(
+    String(kind ?? '')
+      .trim()
+      .toLowerCase(),
+  );
 
 export const secretRefusal = () =>
   new K8sApiError(

@@ -1,5 +1,6 @@
-import { kubeDescriptionQuery, MAX_EVENTS } from '../../services/k8s/describe';
-import { ALLOWED_KINDS, failureFor, K8sApiError, resolveTarget } from '../../services/k8s/resources';
+import { checkDescribeParams, kubeDescriptionQuery, MAX_EVENTS } from '../../services/k8s/describe';
+import { ALLOWED_KINDS, failureFor, resolveTarget } from '../../services/k8s/resources';
+import { objectForModel } from '../forModel';
 import { isSecretKind, kubeClients, refusal, secretRefusal } from '../kubeTools';
 import type { ToolContext } from '../types';
 
@@ -19,7 +20,6 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
     description:
       'Describes ONE Kubernetes resource: the object as the cluster holds it, plus the events ' +
       'attached to it.\n' +
-      `kind is one of: ${ALLOWED_KINDS.join(', ')}.\n` +
       'name must be exact. Get it from listKubeResources rather than guessing it.\n' +
       'namespace is required for a namespaced kind and refused for a cluster-scoped one ' +
       '(nodes, persistentvolumes, namespaces) — a wrong one is an error, not a filter.\n' +
@@ -74,35 +74,30 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
       namespace?: string;
       includeEvents?: boolean;
     }) => {
-      // The schema says what these are, but a tool is a plain function and nothing guarantees the
-      // host validated any of it. This is the boundary; it checks.
-      if (typeof kind !== 'string' || !kind) {
-        return refusal(new K8sApiError('not_found', 'A kind is required, as a string.'));
-      }
-      if (typeof name !== 'string' || !name) {
-        return refusal(new K8sApiError('malformed', 'A name is required, as a string.'));
-      }
-      if (namespace !== undefined && typeof namespace !== 'string') {
-        return refusal(new K8sApiError('malformed', 'namespace has to be a string.'));
-      }
-      if (includeEvents !== undefined && typeof includeEvents !== 'boolean') {
-        return refusal(new K8sApiError('malformed', 'includeEvents has to be true or false.'));
-      }
-
-      // Before the kind is resolved, so no route to a Secret exists.
+      // Before the kind is resolved, so no route to a Secret exists. Nothing guarantees the host
+      // validated the schema, so this and everything downstream of it take whatever arrives:
+      // resolveTarget, checkName and checkNamespace all answer a number the way they answer a
+      // nonsense string, which is the answer a caller can act on.
       if (isSecretKind(kind)) return refusal(secretRefusal());
 
       try {
         // Purely resolved, so an unknown kind costs no connection. No apiVersion here: describing
         // reads one typed object per kind, which the allowlist is what supplies.
         const target = resolveTarget(kind);
+        // Both pure, and both before a connection is opened: an unknown kind, a name that is a path
+        // and a namespace on a cluster-scoped kind all cost nothing.
+        checkDescribeParams(target, { name, namespace });
+
         const clients = await kubeClients(context);
 
         const description = await context.queryClient.fetchQuery(
           kubeDescriptionQuery(clients, target, { name, namespace, includeEvents }),
         );
 
-        return { status: 'ok', ...description };
+        // The service hands back what the cluster holds; what a model may see of it is decided here.
+        const { resource, omitted } = objectForModel(target.kind, description.resource);
+
+        return { status: 'ok', ...description, resource, omitted };
       } catch (error) {
         return refusal(failureFor(error));
       }
