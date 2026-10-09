@@ -4,7 +4,7 @@
 // Where `listResources` answers "what exists", this answers "what is wrong with this one". The
 // object comes through as the API returned it, with the events attached to it, which are usually the
 // actual reason anyone is describing it. What a caller may show of it is the caller's own business —
-// see mcpTools/forModel.ts for what the tools hold back.
+// see mcpTools/disclosure.ts for what the tools withhold.
 
 import type { K8sApiClients } from './api';
 import { eventLastSeen, failureFor, K8sApiError, KINDS, type KubeTarget } from './resources';
@@ -38,10 +38,10 @@ export type KubeDescription = {
    * ok, or why not — and a Kubernetes object has one too. Flat, one would quietly overwrite the
    * other, and a caller could not tell a healthy object from a successful call.
    *
-   * There is no summary beside it, and nothing is held back: what a particular caller may not show
+   * There is no summary beside it, and nothing is withheld: what a particular caller may not show
    * is that caller's business. The MCP tools drop environment values and a ConfigMap's contents
-   * before handing any of this to a model; a panel rendering the same object for the administrator
-   * whose cluster it is may want exactly those.
+   * before disclosing any of this to a model; a panel rendering the same object for the
+   * administrator whose cluster it is may want exactly those.
    */
   resource: KubeObject;
   /** null when the events could not be read — which is not a failure of the description. */
@@ -108,9 +108,15 @@ const checkNamespace = (target: KubeTarget, namespace?: string) => {
  * Exported so a caller can refuse a bad request before opening a connection — a name that is a path
  * should cost nothing, not a token refresh and a client.
  */
-export const checkDescribeParams = (target: KubeTarget, { name, namespace }: DescribeParams) => {
+export const checkDescribeParams = (target: KubeTarget, { name, namespace, includeEvents }: DescribeParams) => {
   checkName(name);
   checkNamespace(target, namespace);
+
+  // Refused rather than coerced, because there is no sensible coercion: the string "false" is
+  // truthy, so taking it as given would read the events the caller asked to skip.
+  if (includeEvents !== undefined && typeof includeEvents !== 'boolean') {
+    throw new K8sApiError('malformed', 'includeEvents is true or false.');
+  }
 };
 
 /**
@@ -174,8 +180,7 @@ export const describeResource = async (
     );
   }
 
-  checkName(name);
-  checkNamespace(target, namespace);
+  checkDescribeParams(target, { name, namespace, includeEvents });
 
   let object: KubeObject;
   try {

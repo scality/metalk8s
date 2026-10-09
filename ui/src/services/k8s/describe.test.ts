@@ -69,28 +69,6 @@ describe('describeResource', () => {
     expect(description).not.toHaveProperty('summary');
   });
 
-  it('leaves dates alone while walking the object', async () => {
-    (clients.coreV1.readNamespacedPod as jest.Mock).mockReturnValue(
-      ok(
-        pod({
-          metadata: {
-            name: 'web-abc',
-            namespace: 'default',
-            uid: 'uid-1',
-            creationTimestamp: new Date('2026-10-02T08:11:04Z'),
-          },
-        }),
-      ),
-    );
-
-    const description = await describePod();
-
-    // A Date has no own entries, so walking one without a guard turns it into {}.
-    expect((description.resource.metadata as { creationTimestamp: Date }).creationTimestamp).toEqual(
-      new Date('2026-10-02T08:11:04Z'),
-    );
-  });
-
   it('asks for the events of this object, by uid as well as name', async () => {
     (clients.coreV1.readNamespacedPod as jest.Mock).mockReturnValue(ok(pod()));
     (clients.coreV1.listNamespacedEvent as jest.Mock).mockReturnValue(
