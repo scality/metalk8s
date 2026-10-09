@@ -96,11 +96,19 @@ export type KubeResourceList = {
 };
 
 type ListResponse = { body?: { items?: unknown[] } };
+type ReadResponse = { body?: unknown };
 
 type KindEntry = {
   apiVersion: string;
   namespaced: boolean;
   list: (clients: K8sApiClients) => Promise<ListResponse>;
+  /**
+   * The same resource, one object of it, by the same route as `list` and for the same reasons:
+   * a grouped kind goes through CustomObjectsApi so its JSON arrives untouched, a core one through
+   * the generated client because there is no other way in. `namespace` is undefined for a
+   * cluster-scoped kind.
+   */
+  read: (clients: K8sApiClients, name: string, namespace?: string) => Promise<ReadResponse>;
   /**
    * Which keys of the object, its metadata and its spec a row keeps, and — only where a status
    * carries something outsized — which keys of that.
@@ -150,6 +158,7 @@ const kind = <TSpec = never, TStatus = never, TItem = never>(entry: {
   apiVersion: string;
   namespaced: boolean;
   list: (clients: K8sApiClients) => Promise<ListResponse>;
+  read: (clients: K8sApiClients, name: string, namespace?: string) => Promise<ReadResponse>;
   fields?: (keyof TItem)[];
   metadata?: (keyof V1ObjectMeta)[];
   spec?: (keyof TSpec)[];
@@ -183,12 +192,14 @@ export const KINDS: Record<string, KindEntry> = {
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listPodForAllNamespaces(),
+    read: (c, name, namespace) => c.coreV1.readNamespacedPod(name, namespace),
     spec: ['nodeName'],
   }),
   nodes: kind<V1NodeSpec, V1NodeStatus>({
     apiVersion: 'v1',
     namespaced: false,
     list: (c) => c.coreV1.listNode(),
+    read: (c, name) => c.coreV1.readNode(name),
     // Labels, because that is where a node's roles are: `node-role.kubernetes.io/<role>`.
     metadata: ['labels'],
     // unschedulable is a cordon, and taints are the other half of why nothing schedules here.
@@ -201,23 +212,30 @@ export const KINDS: Record<string, KindEntry> = {
     apiVersion: 'apps/v1',
     namespaced: true,
     list: (c) => c.customObjects.listClusterCustomObject('apps', 'v1', 'deployments'),
+    read: (c, name, namespace) =>
+      c.customObjects.getNamespacedCustomObject('apps', 'v1', namespace, 'deployments', name),
     spec: ['replicas'],
   }),
   statefulsets: kind({
     apiVersion: 'apps/v1',
     namespaced: true,
     list: (c) => c.customObjects.listClusterCustomObject('apps', 'v1', 'statefulsets'),
+    read: (c, name, namespace) =>
+      c.customObjects.getNamespacedCustomObject('apps', 'v1', namespace, 'statefulsets', name),
     spec: ['replicas'],
   }),
   daemonsets: kind({
     apiVersion: 'apps/v1',
     namespaced: true,
     list: (c) => c.customObjects.listClusterCustomObject('apps', 'v1', 'daemonsets'),
+    read: (c, name, namespace) =>
+      c.customObjects.getNamespacedCustomObject('apps', 'v1', namespace, 'daemonsets', name),
   }),
   jobs: kind({
     apiVersion: 'batch/v1',
     namespaced: true,
     list: (c) => c.customObjects.listClusterCustomObject('batch', 'v1', 'jobs'),
+    read: (c, name, namespace) => c.customObjects.getNamespacedCustomObject('batch', 'v1', namespace, 'jobs', name),
     // completions and parallelism both: a work-queue job sets only the second, and the difference is
     // what says whether there is a total to count towards at all. `suspend` arrived in 1.21, which
     // is after this client was generated — it is here because the call above does not go through
@@ -230,30 +248,35 @@ export const KINDS: Record<string, KindEntry> = {
     apiVersion: 'batch/v1',
     namespaced: true,
     list: (c) => c.customObjects.listClusterCustomObject('batch', 'v1', 'cronjobs'),
+    read: (c, name, namespace) => c.customObjects.getNamespacedCustomObject('batch', 'v1', namespace, 'cronjobs', name),
     spec: ['schedule', 'suspend'],
   }),
   services: kind<V1ServiceSpec>({
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listServiceForAllNamespaces(),
+    read: (c, name, namespace) => c.coreV1.readNamespacedService(name, namespace),
     spec: ['type', 'clusterIP', 'ports', 'selector'],
   }),
   persistentvolumeclaims: kind<V1PersistentVolumeClaimSpec>({
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listPersistentVolumeClaimForAllNamespaces(),
+    read: (c, name, namespace) => c.coreV1.readNamespacedPersistentVolumeClaim(name, namespace),
     spec: ['volumeName', 'storageClassName', 'resources', 'accessModes'],
   }),
   persistentvolumes: kind<V1PersistentVolumeSpec>({
     apiVersion: 'v1',
     namespaced: false,
     list: (c) => c.coreV1.listPersistentVolume(),
+    read: (c, name) => c.coreV1.readPersistentVolume(name),
     spec: ['capacity', 'storageClassName', 'persistentVolumeReclaimPolicy', 'claimRef', 'accessModes'],
   }),
   events: kind<never, never, V1Event>({
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listEventForAllNamespaces(),
+    read: (c, name, namespace) => c.coreV1.readNamespacedEvent(name, namespace),
     // An event has no spec or status; everything is on the object. series and eventTime are here
     // because an event written through events.k8s.io/v1 sets neither count nor lastTimestamp.
     fields: [
@@ -275,6 +298,7 @@ export const KINDS: Record<string, KindEntry> = {
     apiVersion: 'v1',
     namespaced: true,
     list: (c) => c.coreV1.listConfigMapForAllNamespaces(),
+    read: (c, name, namespace) => c.coreV1.readNamespacedConfigMap(name, namespace),
     project: (configMap: V1ConfigMap) => ({ keys: Object.keys(configMap.data ?? {}) }),
   }),
   // apiextensions.k8s.io/v1, through CustomObjectsApi: this client's only CRD type is v1beta1, a
@@ -287,6 +311,8 @@ export const KINDS: Record<string, KindEntry> = {
     apiVersion: 'apiextensions.k8s.io/v1',
     namespaced: false,
     list: (c) => c.customObjects.listClusterCustomObject('apiextensions.k8s.io', 'v1', 'customresourcedefinitions'),
+    read: (c, name) =>
+      c.customObjects.getClusterCustomObject('apiextensions.k8s.io', 'v1', 'customresourcedefinitions', name),
     project: (crd: CustomResourceDefinition) => ({
       plural: crd.spec?.names?.plural,
       scope: crd.spec?.scope,
@@ -302,6 +328,7 @@ export const KINDS: Record<string, KindEntry> = {
     apiVersion: 'v1',
     namespaced: false,
     list: (c) => c.coreV1.listNamespace(),
+    read: (c, name) => c.coreV1.readNamespace(name),
   }),
 };
 

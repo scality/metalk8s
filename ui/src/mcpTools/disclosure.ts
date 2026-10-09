@@ -1,8 +1,35 @@
-// What a tool discloses of what the cluster returned.
+// What a tool discloses of an object, as against what the cluster returned.
 //
 // This is policy, not Kubernetes: it lives here rather than in services/k8s because the service has
 // other callers. A panel rendering a pod for the administrator whose cluster it is may want the
 // environment values withheld here, and it should not have to argue with the service about it.
+//
+// Two reasons to withhold. Credentials: excluding Secret is necessary and not sufficient, because a
+// pod spec and a ConfigMap carry them just as readily. And bulk: a single object normally fits
+// whole, but some arrive outsized on their own, and a model's context is not free.
+
+/** Whatever the API returned. Only the keys this file touches are named. */
+type KubeObject = {
+  metadata?: Record<string, unknown>;
+  spec?: unknown;
+  status?: unknown;
+} & Record<string, unknown>;
+
+/**
+ * Above this, the object sheds its known bulk rather than arriving whole.
+ *
+ * One object is not a list, so there is normally nothing to save by cutting it down. This is for the
+ * ones that are outsized on their own: a node carrying every image on the box, an object whose
+ * managed fields have grown for a year.
+ *
+ * Only bulk is shed, never content. A CRD's OpenAPI schema runs to hundreds of kilobytes and is not
+ * on the list for that reason — it is what a CRD IS, and an object described without the thing it
+ * describes would be worse than a large answer.
+ */
+export const MAX_OBJECT_BYTES = 128 * 1024;
+
+/** An annotation holding a copy of the whole object, which `spec` already is. */
+const LAST_APPLIED = 'kubectl.kubernetes.io/last-applied-configuration';
 
 /** Wherever a pod template puts its containers, these are the arrays holding them. */
 const CONTAINER_KEYS = new Set(['containers', 'initContainers', 'ephemeralContainers']);
@@ -46,6 +73,105 @@ export const withoutEnvironmentValues = (value: unknown, dropped: { any: boolean
         : [key, withoutEnvironmentValues(nested, dropped)],
     ),
   );
+};
+
+/**
+ * A ConfigMap's values, dropped, its keys kept — the same stance the listing takes, for the same
+ * reason: a ConfigMap holds a connection string as readily as a Secret does, and describing one is
+ * no safer than listing it.
+ */
+const withoutConfigMapValues = (kind: string, object: KubeObject, omitted: string[]): KubeObject => {
+  if (kind !== 'configmaps') return object;
+
+  const { data, binaryData, ...rest } = object as KubeObject & {
+    data?: Record<string, string>;
+    binaryData?: Record<string, string>;
+  };
+  if (!data && !binaryData) return object;
+
+  omitted.push('ConfigMap values (keys kept)');
+  return { ...rest, dataKeys: [...Object.keys(data ?? {}), ...Object.keys(binaryData ?? {})] };
+};
+
+/**
+ * The annotation `kubectl apply` writes: a verbatim JSON copy of the applied spec, env values and
+ * all. Dropped every time rather than only when the object is outsized — redacting the spec and
+ * leaving its copy behind would hand the values over anyway — and it says nothing `spec` does not.
+ */
+const withoutLastApplied = (object: KubeObject, omitted: string[]): KubeObject => {
+  const metadata = object.metadata as Record<string, unknown> | undefined;
+  const annotations = metadata?.annotations as Record<string, unknown> | undefined;
+  if (!annotations?.[LAST_APPLIED]) return object;
+
+  const { [LAST_APPLIED]: copy, ...kept } = annotations;
+  omitted.push(`metadata.annotations["${LAST_APPLIED}"]`);
+  return { ...object, metadata: { ...metadata, annotations: kept } };
+};
+
+/**
+ * The bulk an outsized object sheds, biggest first, each named as it goes.
+ *
+ * `shed` returns the object UNCHANGED when there is nothing of its to drop — the caller compares by
+ * identity to decide whether to name it, so rebuilding an equal object would have it reporting work
+ * it did not do.
+ */
+const SHEDDABLE: { what: string; shed: (object: KubeObject) => KubeObject }[] = [
+  {
+    what: 'metadata.managedFields',
+    shed: (object) => {
+      const { metadata, ...rest } = object;
+      const { managedFields, ...kept } = (metadata ?? {}) as Record<string, unknown>;
+      return managedFields ? { ...rest, metadata: kept } : object;
+    },
+  },
+  {
+    what: 'status.images',
+    shed: (object) => {
+      const { status, ...rest } = object;
+      const { images, ...kept } = (status ?? {}) as Record<string, unknown>;
+      return images ? { ...rest, status: kept } : object;
+    },
+  },
+];
+
+/**
+ * The object, whole, unless it is big enough that its known bulk is worth shedding.
+ *
+ * Raw is the default on purpose: one object fits, a reader of it knows Kubernetes, and anything cut
+ * out here is something it cannot ask for again.
+ */
+const sizeDown = (object: KubeObject, omitted: string[]): KubeObject => {
+  let result = object;
+  if (JSON.stringify(result).length <= MAX_OBJECT_BYTES) return result;
+
+  for (const { what, shed } of SHEDDABLE) {
+    const next = shed(result);
+    if (next === result) continue;
+
+    omitted.push(what);
+    result = next;
+    if (JSON.stringify(result).length <= MAX_OBJECT_BYTES) break;
+  }
+  return result;
+};
+
+/**
+ * What may be disclosed of this object, and the list of what that cost.
+ *
+ * `omitted` is never silent: a field absent without explanation reads as a field the cluster does
+ * not have, and "this variable has no value" is a different statement from "we did not show it".
+ */
+export const disclose = (kind: string, object: KubeObject): { resource: KubeObject; omitted: string[] } => {
+  const omitted: string[] = [];
+
+  const dropped = { any: false };
+  const redacted = withoutEnvironmentValues(object, dropped) as KubeObject;
+  if (dropped.any) omitted.push('env values (names kept)');
+
+  return {
+    resource: sizeDown(withoutConfigMapValues(kind, withoutLastApplied(redacted, omitted), omitted), omitted),
+    omitted,
+  };
 };
 
 /**
