@@ -1,4 +1,4 @@
-import type { K8sApiClients } from './api';
+import type { K8sApiClients } from './clients';
 import { describeResource, MAX_EVENTS } from './describe';
 import { resolveTarget } from './resources';
 

@@ -5,7 +5,7 @@
 // service layer should not know that tools exist — nor should it refuse Secrets on their behalf,
 // since a caller that is not a tool may legitimately need to read one.
 
-import { type K8sApiClients, k8sApi } from '../services/k8s/api';
+import { type K8sApiClients, k8sApi } from '../services/k8s/clients';
 import { ALLOWED_KINDS, K8sApiError, type K8sFailureKind } from '../services/k8s/resources';
 import type { MetalK8sSelfConfiguration, ToolContext } from './types';
 

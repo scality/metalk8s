@@ -6,7 +6,7 @@
 // actual reason anyone is describing it. What a caller may show of it is the caller's own business —
 // see mcpTools/disclosure.ts for what the tools withhold.
 
-import type { K8sApiClients } from './api';
+import type { K8sApiClients } from './clients';
 import { eventLastSeen, failureFor, K8sApiError, KINDS, type KubeTarget } from './resources';
 
 /** Whatever the API returned. Only the keys this file touches are named. */

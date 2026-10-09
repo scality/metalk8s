@@ -1,9 +1,9 @@
 import { QueryClient } from 'react-query';
-import { k8sApi } from '../../services/k8s/api';
+import { k8sApi } from '../../services/k8s/clients';
 import type { ToolContext } from '../types';
 import { createDescribeKubeResourceTool } from './describeKubeResourceTool';
 
-jest.mock('../../services/k8s/api', () => ({ k8sApi: jest.fn() }));
+jest.mock('../../services/k8s/clients', () => ({ k8sApi: jest.fn() }));
 
 const readNamespacedPod = jest.fn();
 const listNamespacedEvent = jest.fn();
@@ -109,6 +109,25 @@ describe('describeKubeResource', () => {
 
     expect(result.status).toBe('session_expired');
     expect(k8sApi).not.toHaveBeenCalled();
+  });
+
+  it('withholds what disclose() withholds — the wiring, not the function', async () => {
+    // disclosure.test.ts proves disclose() drops the value. Nothing proved the tool CALLS it: drop
+    // `resource` from the return below, or let `...description` land after it, and the raw object
+    // goes to the model with every test still green.
+    readNamespacedPod.mockReturnValue(
+      ok({
+        metadata: { name: 'web-abc', namespace: 'default' },
+        spec: { containers: [{ name: 'web', env: [{ name: 'PW', value: 'hunter2' }] }] },
+        status: { phase: 'Running' },
+      }),
+    );
+
+    const result = await run({ kind: 'pods', name: 'web-abc', namespace: 'default' });
+
+    expect(JSON.stringify(result)).not.toContain('hunter2');
+    expect(JSON.stringify(result)).toContain('"PW"');
+    expect(result.omitted).toContain('env values (names kept)');
   });
 
   it('keeps an object it may not look at apart from one that is not there', async () => {
