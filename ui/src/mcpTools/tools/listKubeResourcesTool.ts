@@ -1,7 +1,6 @@
 import {
   ALLOWED_KINDS,
   failureFor,
-  K8sApiError,
   type KubeTarget,
   kubeResourcesQuery,
   MAX_ITEMS,
