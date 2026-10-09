@@ -1,6 +1,6 @@
 import { QueryClient } from 'react-query';
 import { k8sApi } from '../../services/k8s/api';
-import { MAX_ITEMS } from '../../services/k8s/resources';
+import { ALLOWED_KINDS, MAX_ITEMS } from '../../services/k8s/resources';
 import type { ToolContext } from '../types';
 import { createListKubeResourcesTool } from './listKubeResourcesTool';
 
@@ -186,7 +186,10 @@ describe('listKubeResources', () => {
   it('names every kind it accepts in its description, so a caller can correct itself', () => {
     const { description, inputSchema } = createListKubeResourcesTool(makeContext());
 
-    expect(description).toContain('pods');
+    // Listed once, on the parameter they are values of — the tool description states the rule
+    // instead of repeating them.
+    expect(inputSchema.properties.kind.description).toContain('pods');
+    expect(description).not.toContain(ALLOWED_KINDS.join(', '));
     // A caller that knows "networking.k8s.io/v1" has to read the description as permission to use
     // it: naming only custom resources there reads as "built-in kinds are out of reach".
     expect(description).toMatch(/built-in ones outside the list/i);

@@ -418,7 +418,7 @@ type CustomResourceDefinition = {
 
 /** group/version, as CustomObjectsApi wants them: two arguments, never a path fragment. */
 const parseApiVersion = (apiVersion: string): { group: string; version: string } => {
-  const parts = apiVersion.split('/');
+  const parts = String(apiVersion).split('/');
   const core = /^v[0-9]+((alpha|beta)[0-9]+)?$/;
   if (parts.length === 1 && core.test(parts[0])) return { group: '', version: parts[0] };
   if (parts.length === 2 && /^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$/.test(parts[0]) && core.test(parts[1]))
@@ -453,7 +453,12 @@ export type KubeTarget =
  * it gets here, because that is its policy and not a property of the cluster.
  */
 export const resolveTarget = (kind: string, apiVersion?: string): KubeTarget => {
-  const spelled = (kind ?? '').trim().toLowerCase();
+  // String(), because nothing guarantees a caller passed one: a number here would otherwise throw
+  // out of a function whose whole job is to refuse bad input politely. Coerced, it reaches the
+  // allowlist and comes back as the kind nobody has, with the list of the ones that exist.
+  const spelled = String(kind ?? '')
+    .trim()
+    .toLowerCase();
   const normalized = ALIASES[spelled] ?? spelled;
   const entry = KINDS[normalized];
 

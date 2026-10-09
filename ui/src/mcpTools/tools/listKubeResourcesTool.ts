@@ -71,7 +71,7 @@ export function createListKubeResourcesTool(context: ToolContext) {
     description:
       'Lists the Kubernetes resources of one kind across the whole cluster: their own spec and ' +
       'status fields, as the API reports them, cut down per kind.\n' +
-      `These need no apiVersion: ${ALLOWED_KINDS.join(', ')}.\n` +
+      'The kinds named on the kind parameter need no apiVersion. ' +
       'Any other kind that lives in an API group is reachable by passing its apiVersion alongside ' +
       'the kind — built-in ones outside the list ("ingresses" with "networking.k8s.io/v1") as much ' +
       'as custom ones ("volumes" with "storage.metalk8s.scality.com/v1alpha1"). If you know the ' +
@@ -110,19 +110,16 @@ export function createListKubeResourcesTool(context: ToolContext) {
     annotations: { readOnlyHint: true },
 
     execute: async ({ kind, apiVersion }: { kind: string; apiVersion?: string }) => {
-      // The schema says kind is required and that both are strings, but a tool is a plain function
-      // and nothing guarantees the host validated either. This is the boundary; it checks — a
-      // number here would otherwise reach kind.trim() and throw straight out of execute.
-      if (typeof kind !== 'string' || !kind) {
-        return refusal(new K8sApiError('not_found', 'A kind is required, as a string.'));
-      }
-      if (apiVersion !== undefined && typeof apiVersion !== 'string') {
-        return refusal(new K8sApiError('malformed', 'apiVersion has to be a string, like "apps/v1".'));
-      }
-
       // Before the kind is even resolved, so that no route to a Secret exists — not the allowlist,
       // not an apiVersion naming the core group, not a CRD that happens to be called "secrets".
-      if (SECRET_KINDS.includes(kind.trim().toLowerCase())) return refusal(secretRefusal());
+      if (
+        SECRET_KINDS.includes(
+          String(kind ?? '')
+            .trim()
+            .toLowerCase(),
+        )
+      )
+        return refusal(secretRefusal());
 
       // Resolved purely: an unknown kind and an apiVersion that is not one both cost nothing and
       // reach no network.
