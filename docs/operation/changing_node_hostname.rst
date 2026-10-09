@@ -71,7 +71,7 @@ Changing the hostname of a MetalK8s node
 
    .. code-block:: shell
 
-      $ kubectl -it exec salt-master-<bootstrap_node_name> -n kube-system -c salt-master bash
+      $ kubectl -it exec salt-master-<bootstrap_node_name> -n kube-system -c salt-master -- bash
 
 #. Delete the now obsolete :term:`Salt Minion` key for the changed Node:
 

@@ -242,6 +242,28 @@ New `.patch` files in the patches directory are automatically picked up.
 5. Check `deploy/manifests.yaml` for correct Jinja templates
 6. Remove backup: `rm -rf <operator>.bak/`
 
+## Kubernetes
+
+1. In `buildchain/buildchain/versions.py`, set `K8S_VERSION_MAJOR`,
+   `K8S_VERSION_MINOR` and `K8S_VERSION_PATCH`. Nothing else to edit for the
+   packages: `kubelet` and `kubectl` are pinned to this version, and the build
+   fetches them from the official Kubernetes RPM repository.
+2. In the same `buildchain/buildchain/versions.py`, update the digests of the
+   control-plane images (`kube-apiserver`, `kube-controller-manager`,
+   `kube-scheduler`, `kube-proxy`):
+   ```gcrane digest registry.k8s.io/$image:v$K8S_VERSION```
+3. Read the changelogs of every minor version crossed, and adapt the salt
+   states to removed flags, removed APIs and changed defaults (kubelet, for
+   one, does not start with an unknown flag).
+4. Check that the `kubectl` commands in `docs/` still work.
+5. Regenerate `KUBE_REMOVED_FEATURE_GATES` and `KUBE_LOCKED_FEATURE_GATES` in
+   `salt/_runners/metalk8s_checks.py`, which the upgrade prechecks use to
+   refuse feature gates the new kube-apiserver no longer accepts. `$FROM` is
+   the Kubernetes version of the previous MetalK8s version, and `$K8S_VERSION` is the new one:
+   ```
+   python3 tools/kube-feature-gates/generate.py $FROM $K8S_VERSION
+   ```
+
 ## Calico
 
 See [BUMPING_CALICO.md](BUMPING_CALICO.md) for the full Calico bump guide.
