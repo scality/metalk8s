@@ -1,10 +1,10 @@
 import { QueryClient } from 'react-query';
-import { k8sApi } from '../../services/k8s/api';
+import { k8sApi } from '../../services/k8s/clients';
 import { ALLOWED_KINDS, MAX_ITEMS } from '../../services/k8s/resources';
 import type { ToolContext } from '../types';
 import { createListKubeResourcesTool } from './listKubeResourcesTool';
 
-jest.mock('../../services/k8s/api', () => ({ k8sApi: jest.fn() }));
+jest.mock('../../services/k8s/clients', () => ({ k8sApi: jest.fn() }));
 
 const listPodForAllNamespaces = jest.fn();
 const listClusterCustomObject = jest.fn();

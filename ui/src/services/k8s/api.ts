@@ -6,6 +6,7 @@ import { StorageV1Api } from '@kubernetes/client-node/dist/gen/api/storageV1Api'
 import { useSelector } from 'react-redux';
 import { useAuth } from '../../containers/PrivateRoute';
 import type { RootState } from '../../ducks/reducer';
+import { k8sApi } from './clients';
 import { Metalk8sV1alpha1VolumeClient } from './Metalk8sVolumeClient.generated';
 
 let config: typeof Config;
@@ -14,36 +15,11 @@ export let customObjects: CustomObjectsApi;
 export let storage: StorageV1Api;
 export let appsV1: AppsV1Api;
 
-export type K8sApiClients = {
-  coreV1: CoreV1Api;
-  customObjects: CustomObjectsApi;
-  storage: StorageV1Api;
-  appsV1: AppsV1Api;
-};
-
 type K8sApiConfig = {
   coreV1: CoreV1Api;
   customObjectsApi: Metalk8sV1alpha1VolumeClient;
   storage: StorageV1Api;
   appsV1: AppsV1Api;
-};
-
-/**
- * Every generated client, for one API URL and one token.
- *
- * Shared with useK8sApiConfig so that callers without React get the same clients — an MCP tool
- * builds this from its own context, where there is no store and no hook to call. The hook holds the
- * React half (redux for the URL, useAuth for the token) and nothing else.
- */
-export const k8sApi = (url: string, token: string): K8sApiClients => {
-  const config = new Config(url, token);
-
-  return {
-    coreV1: config.makeApiClient(CoreV1Api),
-    customObjects: config.makeApiClient(CustomObjectsApi),
-    storage: config.makeApiClient(StorageV1Api),
-    appsV1: config.makeApiClient(AppsV1Api),
-  };
 };
 
 export const useK8sApiConfig = (): K8sApiConfig => {

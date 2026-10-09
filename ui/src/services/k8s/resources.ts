@@ -21,7 +21,7 @@ import type {
   V1PodSpec,
   V1ServiceSpec,
 } from '@kubernetes/client-node';
-import type { K8sApiClients } from './api';
+import type { K8sApiClients } from './clients';
 
 /**
  * What went wrong, in terms a caller can act on rather than an HTTP status it has to interpret.

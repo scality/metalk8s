@@ -1,4 +1,4 @@
-import type { K8sApiClients } from './api';
+import type { K8sApiClients } from './clients';
 import { ALLOWED_KINDS, listResources, MAX_ITEMS, resolveTarget } from './resources';
 
 const makeClients = () =>

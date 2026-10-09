@@ -1,4 +1,4 @@
-import { k8sApi } from '../../services/k8s/api';
+import { k8sApi } from '../../services/k8s/clients';
 import {
   ALLOWED_KINDS,
   failureFor,
