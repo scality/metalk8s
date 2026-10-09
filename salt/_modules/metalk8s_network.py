@@ -126,6 +126,61 @@ def get_mtu_from_ip(ip):
     return int(__salt__["file.read"](f"/sys/class/net/{iface}/mtu"))
 
 
+def _get_iface_from_ip(ip):
+    """
+    Return the name of the first interface holding the given IP, or None
+
+    The interface is resolved live, on purpose: the `ip_interfaces` grain is
+    only computed when the minion daemon starts, which may happen before the
+    interface holding the IP exists (bond, VLAN, ...), and grains are not
+    refreshed automatically afterwards.
+    """
+    if not ip:
+        return None
+
+    ifaces = __salt__["network.ifacestartswith"](ip)
+
+    if not ifaces:
+        log.warning('Unable to get interface for "%s"', ip)
+        return None
+
+    iface = ifaces[0]
+
+    if len(ifaces) > 1:
+        log.warning(
+            'Several interfaces match the IP "%s", %s will be used: %s',
+            ip,
+            iface,
+            ", ".join(ifaces),
+        )
+
+    return iface
+
+
+def get_planes_interfaces():
+    """
+    Return the IP and the interface holding it for each plane
+
+    .. code-block:: python
+
+        {
+            "control_plane": {"ip": "10.200.0.42", "interface": "eth1"},
+            "workload_plane": {"ip": "10.100.0.42", "interface": "eth3"},
+        }
+
+    An `interface` is None when no interface holds the plane IP, so that
+    callers can tell "not resolved" apart from a real interface name.
+    """
+    metalk8s_grains = __grains__.get("metalk8s") or {}
+
+    result = {}
+    for plane in ["control_plane", "workload_plane"]:
+        ip = metalk8s_grains.get(f"{plane}_ip")
+        result[plane] = {"ip": ip, "interface": _get_iface_from_ip(ip)}
+
+    return result
+
+
 def get_listening_processes():
     """
     Get all the listening processes on the local node

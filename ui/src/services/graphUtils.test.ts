@@ -1,23 +1,25 @@
 import {
-  getMultiResourceSeriesForChart,
-  getMultipleSymmetricalSeries,
-  fiterMetricValues,
-  createSymmetricalQuantileColorSet,
-  createColorSet,
-  getTimeFormatForInterval,
-} from './graphUtils';
-import {
+  CHART_COLOR_VALUES,
   lineColor2,
   lineColor3,
   lineColor4,
   lineColor5,
   lineColor6,
   lineColor7,
-  CHART_COLOR_VALUES,
+  SAMPLE_FREQUENCY_LAST_ONE_HOUR,
   SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
-  SAMPLE_FREQUENCY_LAST_ONE_HOUR,
 } from '../constants';
+import {
+  createColorSet,
+  createSymmetricalQuantileColorSet,
+  fiterMetricValues,
+  getMultipleSymmetricalSeries,
+  getMultiResourceSeriesForChart,
+  getNodesInterfacesString,
+  getTimeFormatForInterval,
+} from './graphUtils';
+
 const testPromData = {
   status: 'success',
   data: {
@@ -460,5 +462,33 @@ describe('getTimeFormatForInterval', () => {
   it('returns long-date-without-weekday for unknown interval', () => {
     const result = getTimeFormatForInterval(999);
     expect(result).toBe('long-date-without-weekday');
+  });
+});
+
+describe('getNodesInterfacesString', () => {
+  it('returns the unique interfaces used by every plane', () => {
+    expect(
+      getNodesInterfacesString({
+        'node-01': {
+          controlPlane: { ip: '10.200.0.1', interface: 'vlan-cp' },
+          workloadPlane: { ip: '10.100.0.1', interface: 'vlan-wp' },
+        },
+        'node-02': {
+          controlPlane: { ip: '10.200.0.2', interface: 'vlan-cp' },
+          workloadPlane: { ip: '10.100.0.2', interface: 'vlan-wp' },
+        },
+      }),
+    ).toEqual(['vlan-cp', 'vlan-wp']);
+  });
+
+  it('excludes interfaces that could not be resolved', () => {
+    expect(
+      getNodesInterfacesString({
+        'node-01': {
+          controlPlane: { ip: '10.200.0.1', interface: '' },
+          workloadPlane: { ip: '10.100.0.1', interface: '' },
+        },
+      }),
+    ).toEqual([]);
   });
 });
