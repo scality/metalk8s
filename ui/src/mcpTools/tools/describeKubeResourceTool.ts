@@ -21,8 +21,8 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
       'Describes ONE Kubernetes resource: the object as the cluster holds it, plus the events ' +
       'attached to it.\n' +
       'name must be exact. Get it from listKubeResources rather than guessing it.\n' +
-      'namespace is required for a namespaced kind and refused for a cluster-scoped one ' +
-      '(nodes, persistentvolumes, namespaces) — a wrong one is an error, not a filter.\n' +
+      'namespace is required for a namespaced kind and refused for a cluster-scoped one — a wrong ' +
+      'one is an error, not a filter.\n' +
       "resource is the object itself. The top-level status is this call's own — ok, or why not — " +
       "and never the object's.\n" +
       'omitted names whatever was left out. Environment VALUES are always among them when the ' +
@@ -51,7 +51,7 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
         namespace: {
           type: 'string',
           description:
-            'The namespace the object is in. Required for a namespaced kind; leave it out for nodes, persistentvolumes and namespaces.',
+            'The namespace the object is in. Required for a namespaced kind, and refused for a cluster-scoped one.',
         },
         includeEvents: {
           type: 'boolean',
