@@ -64,6 +64,27 @@ describe('listKubeResources', () => {
   });
 
   it.each([
+    ['signingkeies', 'dex.coreos.com/v1'],
+    ['oauth2clients', 'dex.coreos.com/v1'],
+    ['passwords', 'dex.coreos.com/v1'],
+  ])('refuses %s, which is a Secret under another name', async (kind, apiVersion) => {
+    // Dex runs with storage.type kubernetes, so its OIDC signing keys, client secrets, LDAP bind
+    // config and password hashes live in this group. Refusing the kind `secrets` guards the core
+    // kind and nothing else; the apiVersion route reaches these by name.
+    const result = await run({ kind, apiVersion });
+
+    expect(result.status).toBe('not_authorized');
+    expect(result.message).toMatch(/never listed or read/i);
+    expect(k8sApi).not.toHaveBeenCalled();
+  });
+
+  it('still allows other custom resources in other groups', async () => {
+    listClusterCustomObject.mockReturnValue(ok([{ metadata: { name: 'volume-1' } }]));
+
+    expect((await run({ kind: 'volumes', apiVersion: 'storage.metalk8s.scality.com/v1alpha1' })).status).toBe('ok');
+  });
+
+  it.each([
     ['a kind that is not a string', { kind: 123 }, 'not_found'],
     ['an apiVersion that is not a string', { kind: 'pods', apiVersion: 1 }, 'malformed'],
   ])('refuses %s rather than throwing out of execute', async (_, args, status) => {
