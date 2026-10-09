@@ -111,12 +111,29 @@ describe('describeResource', () => {
 
     await describeResource(clients, resolveTarget('nodes'), { name: 'node-1' });
 
-    // A node has no namespace of its own, so its events cannot be looked for in one.
+    // A node has no namespace of its own, so its events cannot be looked for in one. And no uid:
+    // the kubelet writes a node's own events with involvedObject.uid set to the node NAME, so
+    // filtering on the real uid would keep the node controller's events and drop every Starting,
+    // NodeReady and Rebooted the kubelet recorded. The kind is pinned instead.
     expect(clients.coreV1.listEventForAllNamespaces).toHaveBeenCalledWith(
       undefined,
-      'involvedObject.name=node-1,involvedObject.uid=uid-n',
+      'involvedObject.name=node-1,involvedObject.kind=Node',
     );
     expect(clients.coreV1.listNamespacedEvent).not.toHaveBeenCalled();
+  });
+
+  it('keeps the uid for a namespaced object, where two kinds may share a name', async () => {
+    (clients.coreV1.readNamespacedPod as jest.Mock).mockReturnValue(ok(pod()));
+
+    await describePod();
+
+    expect(clients.coreV1.listNamespacedEvent).toHaveBeenCalledWith(
+      'default',
+      undefined,
+      undefined,
+      undefined,
+      'involvedObject.name=web-abc,involvedObject.uid=uid-1',
+    );
   });
 
   it('still describes the object when the events cannot be read', async () => {

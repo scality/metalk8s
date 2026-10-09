@@ -127,11 +127,21 @@ export const checkDescribeParams = (target: KubeTarget, { name, namespace, inclu
  */
 const readEvents = async (
   clients: K8sApiClients,
+  kind: string,
   name: string,
   namespace: string | undefined,
   uid: string | undefined,
 ) => {
-  const selector = [`involvedObject.name=${name}`, ...(uid ? [`involvedObject.uid=${uid}`] : [])].join(',');
+  // The uid narrows a name that two kinds may share — except on a node, where it would narrow the
+  // answer away. The kubelet records a node's own events (Starting, NodeReady, NodeHasDiskPressure,
+  // Rebooted) with involvedObject.uid set to the node's NAME; only the node controller uses the real
+  // uid. kubectl describe node works around it by searching with ref.UID = node.Name; here the uid
+  // is simply left out and the kind pinned instead, which catches both writers.
+  const byNode = kind === 'nodes';
+  const selector = [
+    `involvedObject.name=${name}`,
+    ...(byNode ? ['involvedObject.kind=Node'] : uid ? [`involvedObject.uid=${uid}`] : []),
+  ].join(',');
 
   const response = namespace
     ? await clients.coreV1.listNamespacedEvent(namespace, undefined, undefined, undefined, selector)
@@ -201,7 +211,7 @@ export const describeResource = async (
 
   if (includeEvents) {
     try {
-      const found = await readEvents(clients, name, namespace, object.metadata.uid);
+      const found = await readEvents(clients, target.kind, name, namespace, object.metadata.uid);
       // Newest first, then cut: the API returns events in etcd key order, so the oldest would
       // otherwise be the ones that survive.
       const ordered = [...found].sort(
