@@ -1,5 +1,4 @@
 import {
-  ALLOWED_KINDS,
   failureFor,
   type KubeTarget,
   kubeResourcesQuery,
