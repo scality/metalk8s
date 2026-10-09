@@ -9,6 +9,7 @@ import {
   MAX_ITEMS,
   resolveTarget,
 } from '../../services/k8s/resources';
+import { discloseList } from '../disclosure';
 import type { MetalK8sSelfConfiguration, ToolContext } from '../types';
 
 /**
@@ -80,6 +81,9 @@ export function createListKubeResourcesTool(context: ToolContext) {
       'If a kind cannot be reached the answer says so and names the ones that can.\n' +
       'The whole cluster comes back, with no namespace or label filter, so read the list and pick ' +
       'from it rather than calling again.\n' +
+      'omitted names whatever was withheld, and is usually empty. Environment VALUES are among them ' +
+      'whenever a row carries containers: a variable listed without one is SET, never report it as ' +
+      'empty or missing.\n' +
       'Managed fields, image digests and container ids are dropped. Beyond those, core-group kinds ' +
       'come through a client generated from Kubernetes 1.13, so fields added since are absent — a ' +
       'missing one of those means unknown, not false. Kinds in an API group arrive exactly as the ' +
@@ -146,9 +150,17 @@ export function createListKubeResourcesTool(context: ToolContext) {
         // successes are cached.
         const list = await context.queryClient.fetchQuery(kubeResourcesQuery(k8sApi(url, token), target));
 
+        // The service hands back what the cluster holds; what may be disclosed of it is decided here.
+        // An allowlisted kind keeps only the spec keys its entry names, which is why no pod template
+        // reaches this — but a kind reached by apiVersion keeps everything it came with, and a
+        // ReplicaSet or an operator's own resource carries one.
+        const { items, omitted } = discloseList(list.items);
+
         return {
           status: 'ok',
           ...list,
+          items,
+          ...(omitted.length > 0 ? { omitted } : {}),
           // No message on a complete answer: a sentence counting the items only restates them. A
           // cut list is the exception — that the ceiling is internal, and that there is nothing to
           // page with, is not in the data anywhere.

@@ -141,6 +141,24 @@ const millis = (value?: Date | string): number => {
 };
 
 /**
+ * One entry. A core-group kind passes the client's own types, so its key lists are checked against
+ * them and a key that is not on V1PodSpec stops compiling — where a list and the real type disagree,
+ * the real type is right. A kind listed through CustomObjectsApi passes none: its JSON is untouched
+ * and carries fields the v1.13 models never declared, which is the point of listing it that way.
+ */
+const kind = <TSpec = never, TStatus = never, TItem = never>(entry: {
+  apiVersion: string;
+  namespaced: boolean;
+  list: (clients: K8sApiClients) => Promise<ListResponse>;
+  fields?: (keyof TItem)[];
+  metadata?: (keyof V1ObjectMeta)[];
+  spec?: (keyof TSpec)[];
+  status?: (keyof TStatus)[];
+  project?: (item: TItem) => KubeResourceItem;
+  newestFirst?: (item: TItem) => number;
+}): KindEntry => entry as unknown as KindEntry;
+
+/**
  * The kinds that can be asked for by name alone, each mapped to the client method that lists it
  * across every namespace and the fields a row keeps.
  *
@@ -160,24 +178,6 @@ const millis = (value?: Date | string): number => {
  * Allowlisted rather than discovery-driven for one reason that matters: it makes excluding Secret a
  * wall rather than a filter.
  */
-/**
- * One entry. A core-group kind passes the client's own types, so its key lists are checked against
- * them and a key that is not on V1PodSpec stops compiling — where a list and the real type disagree,
- * the real type is right. A kind listed through CustomObjectsApi passes none: its JSON is untouched
- * and carries fields the v1.13 models never declared, which is the point of listing it that way.
- */
-const kind = <TSpec = never, TStatus = never, TItem = never>(entry: {
-  apiVersion: string;
-  namespaced: boolean;
-  list: (clients: K8sApiClients) => Promise<ListResponse>;
-  fields?: (keyof TItem)[];
-  metadata?: (keyof V1ObjectMeta)[];
-  spec?: (keyof TSpec)[];
-  status?: (keyof TStatus)[];
-  project?: (item: TItem) => KubeResourceItem;
-  newestFirst?: (item: TItem) => number;
-}): KindEntry => entry as unknown as KindEntry;
-
 export const KINDS: Record<string, KindEntry> = {
   pods: kind<V1PodSpec>({
     apiVersion: 'v1',
@@ -360,19 +360,13 @@ const identity = (object: KubeObject) => ({
   ...(object?.metadata?.deletionTimestamp ? { deletionTimestamp: iso(object.metadata.deletionTimestamp) } : {}),
 });
 
-/**
- * One row: what the object is, and the parts of it this kind keeps.
- *
- * A kind reached by apiVersion has no entry, so it keeps its whole status — there is no list of keys
- * to apply to a resource nobody declared here, and a custom resource's status is where it says
- * whether it is working.
- */
 /** Everything an object carries beyond the identity above, less the noise and the duplication. */
 const beyondIdentity = (object: KubeObject): Record<string, unknown> => {
   const { metadata, apiVersion, kind, ...rest } = object as KubeObject & { apiVersion?: string; kind?: string };
   return withoutNoise(rest) as Record<string, unknown>;
 };
 
+/** One row: what the object is, and the parts of it this kind keeps. */
 const projectItem = (entry: KindEntry | undefined, item: unknown): KubeResourceItem => {
   const object = item as KubeObject;
 

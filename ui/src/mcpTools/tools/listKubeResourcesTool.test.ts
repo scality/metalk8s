@@ -153,6 +153,34 @@ describe('listKubeResources', () => {
     expect(result.message).toMatch(/no way\s+to ask for the rest/i);
   });
 
+  it('withholds env values from a kind that keeps its whole object', async () => {
+    // An allowlisted kind keeps only the spec keys its entry names, so no pod template reaches the
+    // caller. A kind reached by apiVersion keeps everything it came with — and a ReplicaSet, a
+    // ControllerRevision or an operator's own resource carries one, passwords included.
+    listClusterCustomObject.mockReturnValue(
+      ok([
+        {
+          metadata: { name: 'web-rs', namespace: 'default' },
+          spec: { template: { spec: { containers: [{ name: 'web', env: [{ name: 'PW', value: 'hunter2' }] }] } } },
+        },
+      ]),
+    );
+
+    const result = await run({ kind: 'replicasets', apiVersion: 'apps/v1' });
+
+    expect(JSON.stringify(result)).not.toContain('hunter2');
+    expect(JSON.stringify(result)).toContain('"PW"');
+    expect(result.omitted).toEqual(['env values (names kept)']);
+  });
+
+  it('says nothing was withheld when nothing was', async () => {
+    listPodForAllNamespaces.mockReturnValue(
+      ok([{ metadata: { name: 'web', namespace: 'default' }, spec: {}, status: { phase: 'Running' } }]),
+    );
+
+    expect(await run({ kind: 'pods' })).not.toHaveProperty('omitted');
+  });
+
   it('keeps a forbidden list apart from an empty one', async () => {
     listPodForAllNamespaces.mockRejectedValue({ response: { statusCode: 403 } });
 
