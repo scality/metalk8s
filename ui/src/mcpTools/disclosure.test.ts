@@ -1,4 +1,4 @@
-import { MAX_OBJECT_BYTES, objectForModel } from './forModel';
+import { disclose, MAX_OBJECT_BYTES } from './disclosure';
 
 const pod = (overrides: Record<string, unknown> = {}) => ({
   metadata: { name: 'web-abc', namespace: 'default', uid: 'uid-1' },
@@ -7,18 +7,18 @@ const pod = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-describe('objectForModel', () => {
+describe('disclose', () => {
   it('hands an ordinary object straight through', () => {
     const object = pod();
 
-    const { resource, omitted } = objectForModel('pods', object);
+    const { resource, omitted } = disclose('pods', object);
 
     expect(resource).toEqual(object);
     expect(omitted).toEqual([]);
   });
 
   it('keeps env names and drops their values', () => {
-    const { resource, omitted } = objectForModel(
+    const { resource, omitted } = disclose(
       'pods',
       pod({
         spec: {
@@ -69,7 +69,7 @@ describe('objectForModel', () => {
   ])('keeps env values out of %s', (_, body) => {
     // Every kind puts its pod template somewhere different, and reaching for the pod path would
     // have handed a Deployment's env values over in full.
-    const { resource, omitted } = objectForModel('deployments', { metadata: { name: 'thing' }, ...body });
+    const { resource, omitted } = disclose('deployments', { metadata: { name: 'thing' }, ...body });
 
     expect(JSON.stringify(resource)).not.toContain('hunter2');
     expect(JSON.stringify(resource)).toContain('"PW"');
@@ -77,7 +77,7 @@ describe('objectForModel', () => {
   });
 
   it('leaves dates alone while walking the object', () => {
-    const { resource } = objectForModel(
+    const { resource } = disclose(
       'pods',
       pod({ metadata: { name: 'web-abc', creationTimestamp: new Date('2026-10-02T08:11:04Z') } }),
     );
@@ -89,7 +89,7 @@ describe('objectForModel', () => {
   });
 
   it("keeps a ConfigMap's keys and drops its values, as the listing does", () => {
-    const { resource, omitted } = objectForModel('configmaps', {
+    const { resource, omitted } = disclose('configmaps', {
       metadata: { name: 'app-config', namespace: 'default' },
       data: { 'database.url': 'postgres://user:hunter2@db:5432/app' },
     });
@@ -102,7 +102,7 @@ describe('objectForModel', () => {
   });
 
   it('never returns the annotation holding a copy of the applied spec', () => {
-    const { resource, omitted } = objectForModel(
+    const { resource, omitted } = disclose(
       'pods',
       pod({
         metadata: {
@@ -124,7 +124,7 @@ describe('objectForModel', () => {
   });
 
   it('sheds its known bulk only once the object is outsized, and names what it shed', () => {
-    const { resource, omitted } = objectForModel(
+    const { resource, omitted } = disclose(
       'pods',
       pod({
         metadata: {
@@ -142,7 +142,7 @@ describe('objectForModel', () => {
   });
 
   it("sheds a node's image list once that is what makes it outsized", () => {
-    const { resource, omitted } = objectForModel('nodes', {
+    const { resource, omitted } = disclose('nodes', {
       metadata: { name: 'node-1' },
       status: {
         conditions: [{ type: 'Ready', status: 'True' }],
@@ -159,10 +159,7 @@ describe('objectForModel', () => {
   });
 
   it('leaves an object alone when it is under the budget', () => {
-    const { omitted } = objectForModel(
-      'pods',
-      pod({ metadata: { name: 'web', managedFields: [{ manager: 'kubelet' }] } }),
-    );
+    const { omitted } = disclose('pods', pod({ metadata: { name: 'web', managedFields: [{ manager: 'kubelet' }] } }));
 
     expect(JSON.stringify(pod()).length).toBeLessThan(MAX_OBJECT_BYTES);
     expect(omitted).toEqual([]);

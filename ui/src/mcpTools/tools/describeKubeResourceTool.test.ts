@@ -78,7 +78,12 @@ describe('describeKubeResource', () => {
     ['a kind that is not a string', { kind: 7, name: 'web' }, 'not_found'],
     ['a name that is not a string', { kind: 'pods', name: 7 }, 'malformed'],
     ['a namespace that is not a string', { kind: 'pods', name: 'web', namespace: 7 }, 'malformed'],
-    ['an includeEvents that is not a boolean', { kind: 'pods', name: 'web', includeEvents: 'yes' }, 'malformed'],
+    // With no namespace this stopped at the namespace rule and never reached includeEvents at all.
+    [
+      'an includeEvents that is not a boolean',
+      { kind: 'pods', name: 'web', namespace: 'default', includeEvents: 'yes' },
+      'malformed',
+    ],
   ])('refuses %s rather than throwing out of execute', async (_, args, status) => {
     const result = await run(args);
 

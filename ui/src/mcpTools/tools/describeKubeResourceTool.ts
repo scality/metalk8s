@@ -1,6 +1,6 @@
 import { checkDescribeParams, kubeDescriptionQuery, MAX_EVENTS } from '../../services/k8s/describe';
 import { ALLOWED_KINDS, failureFor, resolveTarget } from '../../services/k8s/resources';
-import { objectForModel } from '../forModel';
+import { disclose } from '../disclosure';
 import { isSecretKind, kubeClients, refusal, secretRefusal } from '../kubeTools';
 import type { ToolContext } from '../types';
 
@@ -86,7 +86,7 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
         const target = resolveTarget(kind);
         // Both pure, and both before a connection is opened: an unknown kind, a name that is a path
         // and a namespace on a cluster-scoped kind all cost nothing.
-        checkDescribeParams(target, { name, namespace });
+        checkDescribeParams(target, { name, namespace, includeEvents });
 
         const clients = await kubeClients(context);
 
@@ -94,8 +94,8 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
           kubeDescriptionQuery(clients, target, { name, namespace, includeEvents }),
         );
 
-        // The service hands back what the cluster holds; what a model may see of it is decided here.
-        const { resource, omitted } = objectForModel(target.kind, description.resource);
+        // The service hands back what the cluster holds; what may be disclosed of it is decided here.
+        const { resource, omitted } = disclose(target.kind, description.resource);
 
         return { status: 'ok', ...description, resource, omitted };
       } catch (error) {
