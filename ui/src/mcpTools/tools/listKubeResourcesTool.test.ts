@@ -183,20 +183,18 @@ describe('listKubeResources', () => {
     expect(result.apiVersion).toBe('storage.metalk8s.scality.com/v1alpha1');
   });
 
-  it('names every kind it accepts in its description, so a caller can correct itself', () => {
+  it('names no kinds in its prompt, and leaves the correction to the refusal', () => {
     const { description, inputSchema } = createListKubeResourcesTool(makeContext());
 
-    // Listed once, on the parameter they are values of — the tool description states the rule
-    // instead of repeating them.
-    expect(inputSchema.properties.kind.description).toContain('pods');
+    // Nothing here constrains the kind. A reader of this knows what a Kubernetes resource is called
+    // and what a CRD is; what it cannot know is which of them this cluster serves, and asking is
+    // how it finds out — the refusal carries the kinds that need no apiVersion.
     expect(description).not.toContain(ALLOWED_KINDS.join(', '));
-    // A caller that knows "networking.k8s.io/v1" has to read the description as permission to use
-    // it: naming only custom resources there reads as "built-in kinds are out of reach".
-    expect(description).toMatch(/built-in ones outside the list/i);
-    expect(description).toContain('networking.k8s.io/v1');
-    // The way out of "I do not know this cluster's CRDs": ask it, rather than guess a version.
+    expect(inputSchema.properties.kind).not.toHaveProperty('enum');
+    expect(inputSchema.properties.kind.description).not.toContain('pods');
+    // The way out of not knowing a custom resource's version stays, because it is a mechanism
+    // rather than a constraint.
     expect(description).toMatch(/customresourcedefinitions first/i);
-    expect(description).not.toMatch(/secrets are listed/i);
     expect(inputSchema.required).toEqual(['kind']);
   });
 });
