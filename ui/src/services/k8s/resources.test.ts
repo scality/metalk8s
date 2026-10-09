@@ -502,11 +502,56 @@ describe('listResources', () => {
       'volumes',
     );
     expect(list.apiVersion).toBe('storage.metalk8s.scality.com/v1alpha1');
-    // No entry means no list of keys to apply, so a custom resource keeps its whole status — which
-    // is where a CRD says whether it is working.
-    // No entry means no list of keys to apply, so a custom resource keeps its whole status — which
-    // is where a CRD says whether it is working.
+    // No entry means no list of keys to apply, so a custom resource keeps everything it came with.
     expect(list.items[0]).toEqual({ name: 'volume-1', status: { phase: 'Available' } });
+  });
+
+  it('keeps everything a kind reached by apiVersion came with, not just a status', async () => {
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
+      ok([
+        {
+          apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
+          kind: 'Volume',
+          metadata: { name: 'storage-data-01' },
+          // What this kind is actually about. Guessing at spec/status would have dropped it.
+          spec: { nodeName: 'node-1', storageClassName: 'ssd-ext4', sparseLoopDevice: { size: '10Gi' } },
+          status: { conditions: [{ type: 'Ready', status: 'True' }] },
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('volumes', 'storage.metalk8s.scality.com/v1alpha1'));
+
+    expect(list.items[0]).toEqual({
+      name: 'storage-data-01',
+      spec: { nodeName: 'node-1', storageClassName: 'ssd-ext4', sparseLoopDevice: { size: '10Gi' } },
+      status: { conditions: [{ type: 'Ready', status: 'True' }] },
+    });
+  });
+
+  it('keeps top-level fields for a kind that has no spec at all', async () => {
+    (clients.customObjects.listClusterCustomObject as jest.Mock).mockReturnValue(
+      ok([
+        {
+          apiVersion: 'storage.k8s.io/v1',
+          kind: 'StorageClass',
+          metadata: { name: 'ssd-ext4' },
+          // A StorageClass keeps these at the top level; a row of spec and status would be empty.
+          provisioner: 'rancher.io/local-path',
+          reclaimPolicy: 'Delete',
+          volumeBindingMode: 'WaitForFirstConsumer',
+        },
+      ]),
+    );
+
+    const list = await listResources(clients, resolveTarget('storageclasses', 'storage.k8s.io/v1'));
+
+    expect(list.items[0]).toEqual({
+      name: 'ssd-ext4',
+      provisioner: 'rancher.io/local-path',
+      reclaimPolicy: 'Delete',
+      volumeBindingMode: 'WaitForFirstConsumer',
+    });
   });
 
   it("keeps a custom resource's conditions, which is where most CRDs report health", async () => {

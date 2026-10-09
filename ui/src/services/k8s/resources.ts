@@ -322,6 +322,12 @@ const withoutNoise = (value: unknown): unknown => {
   );
 };
 
+/** `{ status: … }` when there is anything to put there, and nothing at all when there is not. */
+const pickInto = (key: string, source: unknown, keys?: string[]): Record<string, unknown> => {
+  const picked = keys ? pick(source, keys) : (withoutNoise(source) as Record<string, unknown> | undefined);
+  return picked && Object.keys(picked).length > 0 ? { [key]: picked } : {};
+};
+
 const pick = (source: unknown, keys?: string[]): Record<string, unknown> | undefined => {
   if (!keys?.length || !source || typeof source !== 'object') return undefined;
 
@@ -361,23 +367,31 @@ const identity = (object: KubeObject) => ({
  * to apply to a resource nobody declared here, and a custom resource's status is where it says
  * whether it is working.
  */
+/** Everything an object carries beyond the identity above, less the noise and the duplication. */
+const beyondIdentity = (object: KubeObject): Record<string, unknown> => {
+  const { metadata, apiVersion, kind, ...rest } = object as KubeObject & { apiVersion?: string; kind?: string };
+  return withoutNoise(rest) as Record<string, unknown>;
+};
+
 const projectItem = (entry: KindEntry | undefined, item: unknown): KubeResourceItem => {
   const object = item as KubeObject;
-  // Whole, unless the kind named the keys it wants. A status is small and it is the half of an
-  // object that says how it is doing, so listing its keys buys about a hundred bytes and costs a
-  // line per kind to keep in step with the API.
-  const status = entry?.status
-    ? pick(object?.status, entry.status)
-    : (withoutNoise(object?.status) as object | undefined);
 
-  const row = {
-    ...identity(object),
-    ...pick(object, entry?.fields),
-    ...pick(object?.metadata, entry?.metadata),
-    ...(pick(object?.spec, entry?.spec) ? { spec: pick(object?.spec, entry?.spec) } : {}),
-    ...(status && Object.keys(status).length > 0 ? { status } : {}),
-    ...(entry?.project ? entry.project(item as never) : {}),
-  };
+  // A kind reached by apiVersion keeps everything. There is no list of keys to apply to a resource
+  // nobody declared here, and guessing at `spec`/`status` would lose what these kinds are about:
+  // a StorageClass keeps its provisioner and parameters at the top level, not under a spec at all.
+  const row = entry
+    ? {
+        ...identity(object),
+        ...pick(object, entry.fields),
+        ...pick(object?.metadata, entry.metadata),
+        ...(pick(object?.spec, entry.spec) ? { spec: pick(object?.spec, entry.spec) } : {}),
+        // Status whole, unless the kind named the keys it wants. A status is small and it is the
+        // half of an object that says how it is doing, so listing its keys buys about a hundred
+        // bytes and costs a line per kind to keep in step with the API.
+        ...(entry.status ? pickInto('status', object?.status, entry.status) : pickInto('status', object?.status)),
+        ...(entry.project ? entry.project(item as never) : {}),
+      }
+    : { ...identity(object), ...beyondIdentity(object) };
 
   // A key with nothing behind it says nothing, and a cluster-scoped object has no namespace to
   // report. JSON drops these anyway; dropping them here means the object a caller holds is the one
