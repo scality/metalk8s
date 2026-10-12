@@ -163,8 +163,6 @@ jobs:
       - name: Generate and Collect sosreport
         if: always()
         uses: ./.github/actions/sosreport-logs
-        with:
-          NODES_COUNT: "${{ env.NODES_COUNT }}"
       ## }}
 
       ## Generate job result {{

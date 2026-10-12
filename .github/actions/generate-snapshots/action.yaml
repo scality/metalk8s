@@ -25,7 +25,6 @@ runs:
     - name: Disable kubelet on every nodes
       uses: ./.github/actions/run-command-ssh-all-nodes
       with:
-        NODES_COUNT: "${{ inputs.nodes-count }}"
         COMMAND: "sudo systemctl disable kubelet"
     - name: Install dependencies for Openstack
       if: contains('ovh', inputs.cloud)

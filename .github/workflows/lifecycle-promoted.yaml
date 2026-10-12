@@ -91,7 +91,6 @@ jobs:
       - name: Restart kubelet on every nodes
         uses: ./.github/actions/run-command-ssh-all-nodes
         with:
-          NODES_COUNT: "${{ matrix.nodes-count }}"
           COMMAND: "sudo systemctl enable --now kubelet"
       ## }}}
 
@@ -172,8 +171,6 @@ jobs:
       - name: Generate and Collect sosreport
         if: always()
         uses: ./.github/actions/sosreport-logs
-        with:
-          NODES_COUNT: "${{ matrix.nodes-count }}"
       ## }}
 
       ## Generate job result {{

@@ -5,7 +5,7 @@ inputs:
   NODE:
     description: "The node name to untaint"
     required: false
-    default: "bootstrap"
+    default: "node-1"
 
 runs:
   using: "composite"
@@ -13,7 +13,7 @@ runs:
     - name: Untaint node ${{ inputs.NODE }}
       uses: ./.github/actions/run-command-ssh
       with:
-        NODE: bootstrap
+        NODE: node-1
         COMMAND: >
           sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf 
           patch node \"${{ inputs.NODE }}\" --patch '{

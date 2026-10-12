@@ -21,7 +21,7 @@ def run_restore(request, host, ssh_config):
     assert backup_archive, "No BOOTSTRAP_BACKUP_ARCHIVE environment variable defined"
 
     apiserver_node_ip = utils.get_grain(
-        testinfra.get_host("node-1", ssh_config=ssh_config), "metalk8s:control_plane_ip"
+        testinfra.get_host("node-2", ssh_config=ssh_config), "metalk8s:control_plane_ip"
     )
 
     with host.sudo():
