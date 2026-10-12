@@ -7,6 +7,11 @@ operator_sdk_version: v1.42.3
 # patch from the scaffold's go.mod and auto-pins them here.
 go_toolchain: go1.26.9
 k8s_libs: v0.36.5
+# Optional: pins applied on top of the scaffold, needed when k8s_libs
+# is pinned past what operator-sdk scaffolds.
+controller_runtime: v0.24.1
+controller_tools: v0.21.0
+golangci_lint: v2.14.0
 
 apis:
   - version: v1alpha1
