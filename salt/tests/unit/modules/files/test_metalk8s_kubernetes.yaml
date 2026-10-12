@@ -963,6 +963,45 @@ check_object_ready:
         updatedReplicas: 12
     raises: True
     result: "All the Deployment replicas are not yet Ready"
+  # Deployment just created, without any replicas counter in its status
+  - obj:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: my-deploy
+        namespace: default
+        generation: 1
+      spec:
+        replicas: 1
+      status:
+        observedGeneration: 1
+    raises: True
+    result: "All the Deployment replicas are not yet Ready"
+  - obj:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: my-deploy
+        namespace: default
+        generation: 1
+      spec:
+        replicas: 1
+    raises: True
+    result: "All the Deployment replicas are not yet Ready"
+
+  # Deployment scaled down to 0, without any replicas counter in its status
+  - obj:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: my-deploy
+        namespace: default
+        generation: 2
+      spec:
+        replicas: 0
+      status:
+        observedGeneration: 2
+    result: True
 
   # Object with ObservedGeneration no match
   - obj:

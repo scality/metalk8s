@@ -490,10 +490,13 @@ def check_object_ready(*args, **kwargs):
     # NOTE: Only have a specific case for Deployment for the moment
     # but may evolve in the future if we need to check other specific objects
     if obj["kind"] == "Deployment":
+        # Replicas counters are omitted from the status while they are 0,
+        # e.g. on a Deployment that has just been created
+        status = obj.get("status") or {}
         if (
-            obj["status"]["updatedReplicas"] != obj["spec"]["replicas"]
-            or obj["status"]["replicas"] != obj["spec"]["replicas"]
-            or obj["status"]["availableReplicas"] != obj["spec"]["replicas"]
+            status.get("updatedReplicas", 0) != obj["spec"]["replicas"]
+            or status.get("replicas", 0) != obj["spec"]["replicas"]
+            or status.get("availableReplicas", 0) != obj["spec"]["replicas"]
         ):
             raise CommandExecutionError("All the Deployment replicas are not yet Ready")
     else:
