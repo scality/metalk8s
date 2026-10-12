@@ -9,7 +9,7 @@ inputs:
   TARGET_URL:
     description: "The URL to reach the UI"
     required: false
-    default: "https://192.168.1.254:8443"
+    default: "https://172.30.100.254:8443"
   DEST_DIR:
     description: "The target directory on worker to store tests results"
     required: false

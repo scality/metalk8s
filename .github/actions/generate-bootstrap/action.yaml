@@ -55,9 +55,9 @@ runs:
           kind: BootstrapConfiguration
           networks:
             controlPlane:
-              cidr: 192.168.1.0/24
+              cidr: 172.30.100.0/24
             workloadPlane:
-              cidr: 192.168.2.0/24
+              cidr: 172.30.200.0/24
           ca:
             minion: \"node-1\"
           archives:
