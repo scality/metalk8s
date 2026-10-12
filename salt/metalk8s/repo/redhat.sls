@@ -16,13 +16,16 @@
   {%- if not pillar_endpoints | is_list %}
     {%- set pillar_endpoints = [pillar_endpoints] %}
   {%- endif %}
-  {%- for endpoint in pillar_endpoints %}
+  {%- for endpoint in pillar_endpoints if endpoint.get('ready', True) %}
     {%- do repo_base_urls.append("http://" ~
                                 endpoint.ip ~ ":" ~ endpoint.ports.http ~
                                 "/" ~ saltenv ~ "/" ~
                                 grains['os_family'].lower() ~ "/" ~
                                 "$metalk8s_osmajorrelease") %}
   {%- endfor %}
+  {%- if not repo_base_urls %}
+    {{ raise('No Ready repositories endpoint available') }}
+  {%- endif %}
 {%- endif %}
 
 Set metalk8s_osmajorrelease in yum vars:

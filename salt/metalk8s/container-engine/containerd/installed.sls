@@ -6,6 +6,9 @@
 {%- from "metalk8s/map.jinja" import proxies with context %}
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
+{#- Keep the repositories that are not Ready. containerd tries the next host
+    when one fails. Dropping a restarting repository here can leave the node
+    without any registry serving the images it needs. #}
 {%- set registry_eps = [] %}
 {%- set pillar_endpoints = metalk8s.endpoints.repositories %}
 {%- if not pillar_endpoints | is_list %}

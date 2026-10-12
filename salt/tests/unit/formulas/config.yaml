@@ -1183,6 +1183,20 @@ metalk8s:
           os: CentOS/8
         "RHEL 8":
           os: RedHat/8
+        "RHEL 8 with a not Ready repository":
+          os: RedHat/8
+          pillar_overrides:
+            metalk8s:
+              endpoints:
+                repositories:
+                  - ip: 10.0.0.1
+                    ports:
+                      http: 8080
+                    ready: false
+                  - ip: 10.0.0.2
+                    ports:
+                      http: 8080
+                    ready: true
 
   salt:
     master:

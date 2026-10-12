@@ -160,7 +160,12 @@ def read_and_render_yaml_file(source, template, context=None, saltenv="base"):
         return salt.utils.yaml.safe_load(contents)
 
 
-def get_service_endpoints(service, namespace, **kwargs):
+def get_service_endpoints(service, namespace, include_not_ready=False, **kwargs):
+    """Return the endpoints of a Service, sorted by IP.
+
+    Each endpoint has a `ready` key. Endpoints that are not Ready are only
+    returned if `include_not_ready` is set.
+    """
     error_tpl = "Unable to get kubernetes endpoints for {} in namespace {}"
 
     try:
@@ -176,24 +181,37 @@ def get_service_endpoints(service, namespace, **kwargs):
     except CommandExecutionError as exc:
         raise CommandExecutionError(error_tpl.format(service, namespace)) from exc
 
+    addresses_keys = {"addresses": True}
+    if include_not_ready:
+        addresses_keys["notReadyAddresses"] = False
+
     try:
         result = []
 
-        for address in endpoint["subsets"][0]["addresses"]:
-            # Extract hostname, ip and node_name
-            res_ep = {
-                k: v for k, v in address.items() if k in ["hostname", "ip", "node_name"]
-            }
+        for subset in endpoint["subsets"]:
+            ports = {port["name"]: port["port"] for port in subset["ports"]}
 
-            # Add ports info to result dict
-            res_ep["ports"] = {
-                port["name"]: port["port"] for port in endpoint["subsets"][0]["ports"]
-            }
-            result.append(res_ep)
-    except (AttributeError, IndexError, KeyError, TypeError) as exc:
+            for addresses_key, ready in addresses_keys.items():
+                for address in subset.get(addresses_key) or []:
+                    # Extract hostname, ip and node_name
+                    res_ep = {
+                        k: v
+                        for k, v in address.items()
+                        if k in ["hostname", "ip", "node_name"]
+                    }
+
+                    # Add ports and readiness info to result dict
+                    res_ep["ports"] = dict(ports)
+                    res_ep["ready"] = ready
+                    result.append(res_ep)
+    except (AttributeError, KeyError, TypeError) as exc:
         raise CommandExecutionError(error_tpl.format(service, namespace)) from exc
 
-    return result
+    if not result:
+        raise CommandExecutionError(error_tpl.format(service, namespace))
+
+    # Sort to get a stable order whatever the endpoints readiness
+    return sorted(result, key=lambda res_ep: res_ep["ip"])
 
 
 def get_service_ips_and_ports(service, namespace, **kwargs):
