@@ -1,0 +1,70 @@
+name: "destroy the platforms left behind"
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run it every 6 hours, half an hour after the OpenStack cleanup so that
+    # the two do not reach for the cloud at the same time
+    - cron: '30 */6 * * *'
+
+permissions:
+  # id-token is required for S3 OIDC authentication
+  id-token: write
+  contents: read
+  actions: read
+
+jobs:
+  stacks-to-destroy:
+    runs-on: ubuntu-24.04
+    outputs:
+      stacks: ${{ steps.list.outputs.stacks_list }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_MAIN_ACCOUNT_ID }}:role/scality-github-e2e-infrastructure
+          role-session-name: GitHubActions-ListStacks-${{ github.run_id }}
+          aws-region: eu-north-1
+      - name: List the stacks a run left behind
+        id: list
+        uses: scality/platform-spawner@v3
+        with:
+          action: list
+          # NOTE: Longer than a job may run, six hours, and than the time its
+          # destroy job takes to start once it is over. A platform younger
+          # than that may well still be under test.
+          age: 8
+
+  destroy:
+    needs: stacks-to-destroy
+    if: needs.stacks-to-destroy.outputs.stacks != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: ${{ fromJSON(needs.stacks-to-destroy.outputs.stacks) }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Export environment variables for accessing the cloud
+        uses: ./.github/actions/export-cloud-env
+        with:
+          # Pass all "cloud access" secrets, the action will know which ones to export
+          OVH_AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
+          OVH_USERNAME: ${{ secrets.OVH_USERNAME }}
+          OVH_PASSWORD: ${{ secrets.OVH_PASSWORD }}
+          OVH_REGION: ${{ secrets.OVH_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_MAIN_ACCOUNT_ID }}:role/scality-github-e2e-infrastructure
+          role-session-name: GitHubActions-DestroyStack-${{ github.run_id }}
+          aws-region: eu-north-1
+      - name: Destroy ${{ matrix.stack }}
+        # NOTE: The spawner is called here rather than through the destroy
+        # action, which names a stack after a deployment of the current run.
+        # Collecting works the other way around, from names the bucket holds.
+        uses: scality/platform-spawner@v3
+        with:
+          action: destroy
+          stack_name: ${{ matrix.stack }}
