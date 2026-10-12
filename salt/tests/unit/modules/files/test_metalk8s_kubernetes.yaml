@@ -1003,6 +1003,102 @@ check_object_ready:
         observedGeneration: 2
     result: True
 
+  # Webhook configuration injected by cert-manager, with a CA bundle on every
+  # webhook
+  - obj:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: ValidatingWebhookConfiguration
+      metadata:
+        name: my-webhook
+        generation: 2
+        annotations:
+          cert-manager.io/inject-ca-from: my-namespace/my-certificate
+      webhooks:
+        - name: first.my.webhook
+          clientConfig:
+            caBundle: bXktY2EtYnVuZGxl
+        - name: second.my.webhook
+          clientConfig:
+            caBundle: bXktY2EtYnVuZGxl
+    result: True
+
+  # Webhook configuration injected by cert-manager, with a webhook not yet
+  # injected
+  - obj:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: MutatingWebhookConfiguration
+      metadata:
+        name: my-webhook
+        generation: 1
+        annotations:
+          cert-manager.io/inject-ca-from-secret: my-namespace/my-secret
+      webhooks:
+        - name: first.my.webhook
+          clientConfig:
+            caBundle: bXktY2EtYnVuZGxl
+        - name: second.my.webhook
+          clientConfig:
+            service:
+              name: my-service
+    raises: True
+    result: "Some webhooks do not have a CA bundle yet"
+  - obj:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: ValidatingWebhookConfiguration
+      metadata:
+        name: my-webhook
+        generation: 1
+        annotations:
+          cert-manager.io/inject-ca-from: my-namespace/my-certificate
+      webhooks:
+        - name: first.my.webhook
+          clientConfig:
+            caBundle: ""
+    raises: True
+    result: "Some webhooks do not have a CA bundle yet"
+  - obj:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: ValidatingWebhookConfiguration
+      metadata:
+        name: my-webhook
+        generation: 1
+        annotations:
+          cert-manager.io/inject-apiserver-ca: "true"
+      webhooks:
+        - name: first.my.webhook
+          clientConfig:
+            service:
+              name: my-service
+    raises: True
+    result: "Some webhooks do not have a CA bundle yet"
+
+  # Webhook configuration not injected by cert-manager, the API server uses
+  # its system trust roots
+  - obj:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: ValidatingWebhookConfiguration
+      metadata:
+        name: my-webhook
+        generation: 1
+      webhooks:
+        - name: first.my.webhook
+          clientConfig:
+            url: https://my-webhook.example.com/validate
+    result: True
+  - obj:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: MutatingWebhookConfiguration
+      metadata:
+        name: my-webhook
+        generation: 1
+        annotations:
+          cert-manager.io/inject-apiserver-ca: "false"
+      webhooks:
+        - name: first.my.webhook
+          clientConfig:
+            url: https://my-webhook.example.com/mutate
+    result: True
+
   # Object with ObservedGeneration no match
   - obj:
       apiVersion: custom/v1
