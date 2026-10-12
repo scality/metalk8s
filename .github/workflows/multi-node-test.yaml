@@ -371,8 +371,9 @@ jobs:
         if: inputs.generate-snapshots
         uses: ./.github/actions/generate-snapshots
         with:
-          snapshot-name: "metalk8s-${{ env.METALK8S_VERSION }}-${{ inputs.os }}-${{ env.TOTAL_NB_NODES }} nodes"
-          nodes-count: "${{ env.NODES_COUNT }}"
+          name: ${{ env.NAME }}
+          snapshot-name: "cluster-${{ env.METALK8S_VERSION }}-${{ inputs.os }}-${{ env.TOTAL_NB_NODES }}-nodes"
+          aws-account-id: ${{ secrets.AWS_MAIN_ACCOUNT_ID }}
       # }}}
 
       - name: Upload artifacts

@@ -1,23 +1,27 @@
 name: "Generate snapshots"
-description: "Generate VM images in a cloud provider"
+description: "Capture a platform as a snapshot, one image per node"
 
 inputs:
-  snapshot-name:
-    description: "Prefix to add to all VM images generated"
+  # Stack information
+  name:
+    description: "Name of the deployment, unique within the run"
     required: true
-  cloud:
-    description: "Name of the remote cloud to use (available: ovh)"
-    required: false
-    default: "ovh"
+  snapshot-name:
+    description: >-
+      Name the snapshot is taken under, the images it holds being called
+      metalk8s-<snapshot-name>-node-<n>
+    required: true
 
-  nodes-count:
-    description: "The number of nodes (in addition to bootstrap) to snapshot"
+  # AWS credentials
+  # NOTE: Even when the platform lives on OpenStack those are needed, the
+  # stack state lives in an S3 bucket.
+  aws-account-id:
+    description: "The AWS account holding the role to assume"
+    required: true
+  aws-region:
+    description: "The AWS region"
     required: false
-    default: "0"
-  max-retries:
-    description: "Number of retries when creating an image"
-    required: false
-    default: "10"
+    default: "eu-north-1"
 
 runs:
   using: "composite"
@@ -26,26 +30,48 @@ runs:
       uses: ./.github/actions/run-command-ssh-all-nodes
       with:
         COMMAND: "sudo systemctl disable kubelet"
-    - name: Install dependencies for Openstack
-      if: contains('ovh', inputs.cloud)
-      run: |
-        # Wait for apt/dpkg locks to be released (e.g. unattended-upgrades at startup).
-        # DPkg::Lock::Timeout makes apt retry internally instead of failing immediately,
-        # which avoids the TOCTOU race of checking locks externally then calling apt-get.
-        sudo apt-get -o DPkg::Lock::Timeout=600 update && \
-        sudo apt-get -o DPkg::Lock::Timeout=600 install -y python3-pip jq
-        pip3 install --user --upgrade pip
-        pip3 install --user python-openstackclient~=5.8.0 openstacksdk~=1.4.0
+
+    - name: Compute the stack name
+      id: stack
+      uses: ./.github/actions/stack-name
+      with:
+        name: ${{ inputs.name }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/scality-github-e2e-infrastructure
+        role-session-name: GitHubActions-SnapshotCluster-${{ github.run_id }}
+        aws-region: ${{ inputs.aws-region }}
+
+    - name: Snapshot the platform
+      uses: scality/platform-spawner@v3
+      with:
+        action: snapshot
+        stack_name: ${{ steps.stack.outputs.stack-name }}
+        snapshot_name: ${{ inputs.snapshot-name }}
+
+    - name: Wait for the nodes to answer
       shell: bash
-    - name: Generate '${{ inputs.snapshot-name }}' snapshots
-      # NOTE: we're adding ~/.local/bin since that's where pip will install the openstack
-      # client executable
-      run: >-
-        PATH="$PATH:$HOME/.local/bin"
-        ../generate_snapshot.sh
-      working-directory: terraform-snapshot/terraform
-      shell: bash
+      # NOTE: A snapshot stops every node and starts it back, and starting one
+      # back returns as soon as the cloud takes the request, well before sshd
+      # answers. Whoever comes next reaches for the machines over SSH.
       env:
-        MAX_RETRIES: "${{ inputs.max-retries }}"
-        SNAPSHOT_NAME: "${{ inputs.snapshot-name }}"
-        TF_VAR_nodes_count: "${{ inputs.nodes-count }}"
+        MAX_ATTEMPTS: "30"
+        SLEEP_INTERVAL: "10"
+      run: |
+        hosts=$(awk '$1 == "Host" && $2 != "bastion" { print $2 }' ssh_config)
+        for host in $hosts; do
+          for attempt in $(seq "$MAX_ATTEMPTS"); do
+            if ssh -F ssh_config -o ConnectTimeout=10 "$host" true 2>/dev/null; then
+              echo "$host answers"
+              break
+            fi
+            if [ "$attempt" -eq "$MAX_ATTEMPTS" ]; then
+              echo "Error: $host never answered after the snapshot" >&2
+              exit 1
+            fi
+            echo "$host is not back yet [$attempt/$MAX_ATTEMPTS]"
+            sleep "$SLEEP_INTERVAL"
+          done
+        done
