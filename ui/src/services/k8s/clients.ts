@@ -17,17 +17,7 @@ export type K8sApiClients = {
   customObjects: CustomObjectsApi;
   storage: StorageV1Api;
   appsV1: AppsV1Api;
-  /**
-   * A GET whose answer is text rather than JSON.
-   *
-   * Every generated method sets `json: true`, and the browser request layer then does
-   * `response.json()` — so a pod log, which the API serves as text/plain, rejects with a SyntaxError
-   * before any caller sees it. readNamespacedPodLog cannot read a log in a browser at all, and no
-   * argument to it changes that.
-   *
-   * It rejects the way the generated clients do, `{ response: { statusCode }, body }`, so one
-   * failure mapping covers both.
-   */
+  /** A GET whose answer is text rather than JSON, rejecting as the generated clients do. */
   text: (path: string, query?: Record<string, string | number | boolean | undefined>) => Promise<string>;
 };
 
@@ -39,6 +29,12 @@ export type K8sApiClients = {
 export const k8sApi = (url: string, token: string): K8sApiClients => {
   const config = new Config(url, token);
 
+  /**
+   * Every generated method sets `json: true`, and the browser request layer then calls
+   * `response.json()` — so a pod log, served as text/plain, rejects with a SyntaxError carrying no
+   * status code before any caller sees it. readNamespacedPodLog cannot read a log in a browser at
+   * all, and no argument to it changes that.
+   */
   const text = async (path: string, query: Record<string, string | number | boolean | undefined> = {}) => {
     const search = new URLSearchParams();
     for (const [key, value] of Object.entries(query)) if (value !== undefined) search.set(key, String(value));

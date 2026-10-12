@@ -249,30 +249,22 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
     bounded = limitBytes !== undefined ? 'limitBytes' : 'bytes';
   }
 
-  // limitBytes asked for, or the ceiling nobody asked for. checkLogParams has already held the first
-  // under the second.
   const cap = limitBytes ?? MAX_LOG_BYTES;
 
   /**
-   * The cap, applied to whatever is about to be returned, at the end the caller can come back to.
-   *
-   * Reading forward, the caller resumes from `latest`, so dropping the newest lines loses nothing
-   * and dropping the oldest would leave a gap no later call can ask for. Reading the tail there is
-   * nothing to resume, and the end is where a failure is.
+   * The cap, kept at the end the caller can come back to: reading forward that is the start, since
+   * `latest` resumes from there and dropping the oldest would leave a gap; reading the tail it is
+   * the end, where a failure is.
    */
   const cut = (value: string) => {
     if (value.length <= cap) return value;
     bounded = limitBytes !== undefined ? 'limitBytes' : 'bytes';
-
-    // Reading forward, the end is where the bytes ran out. A caller who wants the rest of the line
-    // it stops in reads again from `latest`.
     if (sinceTime) return value.slice(0, cap);
 
-    // A tail starts at a line boundary, so its first line is whole rather than a fragment.
+    // A tail starts at a line boundary, so its first line is whole. When no whole line fits, the
+    // last one comes back over the cap rather than as a fragment with no timestamp on the front.
     const from = value.length - cap;
     const boundary = from > 0 && value[from - 1] === '\n' ? from : value.indexOf('\n', from) + 1;
-    // No whole line fits in the cap, so the last one comes back over it rather than as a fragment
-    // with no timestamp on the front — held to the ceiling, which is what the cap is there to do.
     return value.slice(
       boundary > 0 && boundary < value.length
         ? boundary
