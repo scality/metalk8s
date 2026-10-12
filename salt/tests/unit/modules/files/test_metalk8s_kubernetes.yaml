@@ -404,6 +404,114 @@ replace_object:
         type: LoadBalancer
         healthCheckNodePort: 12345
 
+  # Replace webhook configuration (special case we need to keep the injected
+  # caBundle of webhooks that still exist)
+  - manifest:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: ValidatingWebhookConfiguration
+      metadata:
+        name: my_webhook_configuration
+      webhooks:
+        - name: kept.my.webhook
+          clientConfig:
+            service:
+              name: my_service
+        - name: not-injected.my.webhook
+          clientConfig:
+            service:
+              name: my_service
+        - name: new.my.webhook
+          clientConfig:
+            service:
+              name: my_service
+    old_object:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: ValidatingWebhookConfiguration
+      metadata:
+        name: my_webhook_configuration
+        resourceVersion: "123456"
+      webhooks:
+        - name: kept.my.webhook
+          clientConfig:
+            caBundle: bXktY2EtYnVuZGxl
+            service:
+              name: my_service
+        - name: not-injected.my.webhook
+          clientConfig:
+            service:
+              name: my_service
+        - name: removed.my.webhook
+          clientConfig:
+            caBundle: bXktb3RoZXItY2EtYnVuZGxl
+            service:
+              name: my_service
+    result:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: ValidatingWebhookConfiguration
+      metadata:
+        name: my_webhook_configuration
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+      webhooks:
+        - name: kept.my.webhook
+          clientConfig:
+            caBundle: bXktY2EtYnVuZGxl
+            service:
+              name: my_service
+        - name: not-injected.my.webhook
+          clientConfig:
+            service:
+              name: my_service
+        - name: new.my.webhook
+          clientConfig:
+            service:
+              name: my_service
+
+  # Replace webhook configuration (special case: caBundle set in the manifest
+  # and old_object, keep the manifest one)
+  - manifest:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: MutatingWebhookConfiguration
+      metadata:
+        name: my_webhook_configuration
+      webhooks:
+        - name: my.webhook
+          clientConfig:
+            caBundle: bXktbmV3LWNhLWJ1bmRsZQ==
+            service:
+              name: my_service
+    old_object:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: MutatingWebhookConfiguration
+      metadata:
+        name: my_webhook_configuration
+        resourceVersion: "123456"
+      webhooks:
+        - name: my.webhook
+          clientConfig:
+            caBundle: bXktY2EtYnVuZGxl
+            service:
+              name: my_service
+    result:
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: MutatingWebhookConfiguration
+      metadata:
+        name: my_webhook_configuration
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+      webhooks:
+        - name: my.webhook
+          clientConfig:
+            caBundle: bXktbmV3LWNhLWJ1bmRsZQ==
+            service:
+              name: my_service
+
   # Error when replacing object
   - manifest:
       apiVersion: v1

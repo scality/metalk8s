@@ -226,6 +226,25 @@ def _object_manipulation_function(action):
                     call_kwargs["body"]["spec"]["healthCheckNodePort"] = old_object[
                         "spec"
                     ].get("healthCheckNodePort")
+            # Keep the webhooks `caBundle` if not present in the body.
+            # Something else injects it, e.g. cert-manager. Every call to the
+            # webhook fails until it is injected again.
+            if api.api_version == "admissionregistration.k8s.io/v1" and api.kind in [
+                "MutatingWebhookConfiguration",
+                "ValidatingWebhookConfiguration",
+            ]:
+                old_ca_bundles = {
+                    webhook["name"]: webhook["clientConfig"]["caBundle"]
+                    for webhook in old_object.get("webhooks") or []
+                    if (webhook.get("clientConfig") or {}).get("caBundle")
+                }
+                for webhook in call_kwargs["body"].get("webhooks") or []:
+                    client_config = webhook.setdefault("clientConfig", {})
+                    if (
+                        not client_config.get("caBundle")
+                        and webhook.get("name") in old_ca_bundles
+                    ):
+                        client_config["caBundle"] = old_ca_bundles[webhook["name"]]
 
         log.debug("Running '%s' with: %s", action, call_kwargs)
 
