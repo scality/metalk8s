@@ -90,8 +90,6 @@ jobs:
     # We need to use those specific gcloud runner so that we have
     # known runner IPs
     runs-on: [self-hosted, ubuntu, large, jammy, gcloud]
-    env:
-      SSH_PRIVATE_KEY: "~/.ssh/terraform"
     steps:
       - name: Checkout
         uses: actions/checkout@v6

@@ -89,7 +89,6 @@ jobs:
     # known runner IPs
     runs-on: [self-hosted, ubuntu, large, jammy, gcloud]
     env:
-      SSH_PRIVATE_KEY: "~/.ssh/terraform"
       NODES_COUNT: ${{ inputs.nodes-count }}
     steps:
       - name: Checkout
