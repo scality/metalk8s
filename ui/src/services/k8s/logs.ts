@@ -420,9 +420,14 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
     return { ...base, text, lines: countLines(text), bytes: byteLength(text), latest: cursor(text), bounded };
   }
 
+  // Whole lines only when the server cut the body: the line it stopped inside is read again by the
+  // next call, from `latest`, and counting it here reports one match as two — once as a fragment
+  // and once whole.
+  const searchable = serverCut(body) ? window.slice(0, window.lastIndexOf('\n') + 1) : window;
+
   // The whole window is searched, and only the matches are then capped. Capping first would drop
   // matches without counting them, which is the one thing matchCount exists to rule out.
-  const found = search(window, pattern, params.contextLines ?? 0, params.timestamps !== false);
+  const found = search(searchable, pattern, params.contextLines ?? 0, params.timestamps !== false);
   const text = cut(found.text);
   return {
     ...base,
@@ -431,7 +436,7 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
     matchCount: found.matchCount,
     // A pattern finding nothing in 200 lines is a different fact from finding nothing in the log,
     // and this is what separates them.
-    searched: { lines: countLines(window), bytes: byteLength(window) },
+    searched: { lines: countLines(searchable), bytes: byteLength(searchable) },
     // The window was searched to its end, so that is where reading forward resumes — not the last
     // line that happened to match. Unless the cap took matches out of the text: the end of the
     // window is past those, and resuming there would skip what matchCount has just reported.

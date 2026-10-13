@@ -566,6 +566,37 @@ describe('readPodLogs', () => {
     expect(logs.bounded).toBe('limitBytes');
   });
 
+  it('searches a half-written line the server did not cut', async () => {
+    (clients.text as jest.Mock).mockResolvedValue(
+      '2026-10-06T09:16:30.100Z quiet\n2026-10-06T09:16:31.100Z BOOM still being writ',
+    );
+
+    const logs = await read(clients, { pattern: 'BOOM' });
+
+    // Nothing cut this one: the container is mid-write, the line is all there is, and no later read
+    // will hand it over again.
+    expect(logs.matchCount).toBe(1);
+  });
+
+  it('leaves the line the server cut to the next read, rather than counting it twice', async () => {
+    const body =
+      '2026-10-06T09:16:30.100Z BOOM one\n2026-10-06T09:16:31.100Z quiet\n2026-10-06T09:16:32.100Z BOOM cut he';
+    (clients.text as jest.Mock).mockResolvedValue(body);
+
+    const logs = await read(clients, {
+      sinceTime: '2026-10-06T09:15:00.000Z',
+      pattern: 'BOOM',
+      limitBytes: body.length,
+    });
+
+    // latest resumes before that line, so the next read matches it whole: counting the fragment
+    // here reports one match as two.
+    expect(logs.matchCount).toBe(1);
+    expect(logs.text).not.toContain('cut he');
+    expect(logs.searched).toEqual({ lines: 2, bytes: body.lastIndexOf('\n') + 1 });
+    expect(logs.latest).toBe('2026-10-06T09:16:31.100Z');
+  });
+
   it('resumes after the window it searched, not after the last line that matched', async () => {
     (clients.text as jest.Mock).mockResolvedValue(
       '2026-10-06T09:14:21.882Z BOOM\n2026-10-06T09:15:00.000Z all quiet\n2026-10-06T09:16:30.100Z still quiet\n',
