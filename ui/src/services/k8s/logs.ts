@@ -203,18 +203,26 @@ const lastTimestamp = (text: string): string | null => {
 };
 
 /**
- * Lines after the instant asked for, with the boundary line itself dropped by its exact timestamp
- * rather than by comparison.
+ * Lines written after the instant asked for, to the nanosecond the kubelet wrote.
  *
- * The kubelet writes nanoseconds and Date keeps milliseconds, so `> since` would also drop every
- * line sharing that millisecond — and bursts share one routinely. Those lines would never come back,
- * since the next read starts later still.
+ * Date keeps milliseconds, so comparing on it alone either drops every line sharing the cursor's
+ * millisecond — bursts share one routinely, and nothing would ever return them — or returns the
+ * ones that came before it a second time.
  */
+/** The sub-second digits, padded so two can be compared as text — Date itself keeps milliseconds. */
+const fraction = (timestamp: string) => (/\.(\d+)/.exec(timestamp)?.[1] ?? '').padEnd(9, '0');
+
 const after = (text: string, sinceTime: string): string => {
   const since = new Date(sinceTime).getTime();
+  const sinceFraction = fraction(sinceTime);
   const keep = (line: string) => {
     const match = RFC3339.exec(line);
-    return match ? new Date(match[1]).getTime() >= since && match[1] !== sinceTime : false;
+    if (!match) return false;
+    // Inside the cursor's own millisecond the nanoseconds decide, which is the only thing that can:
+    // dropping the whole millisecond loses the lines after the cursor, and keeping it returns the
+    // ones before. Comparing the instants also settles a cursor written with a +hh:mm offset.
+    const at = new Date(match[1]).getTime();
+    return at > since || (at === since && fraction(match[1]) > sinceFraction);
   };
 
   // Rebuilt with the shape it arrived in. A text not ending in a newline ends in a line the read

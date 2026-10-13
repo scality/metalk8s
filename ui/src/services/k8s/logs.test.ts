@@ -140,6 +140,40 @@ describe('readPodLogs', () => {
     expect(logs.latest).toBeNull();
   });
 
+  it('reads the same instant written with fewer digits as the same instant', async () => {
+    (clients.text as jest.Mock).mockResolvedValue('2026-10-06T09:15:00.10Z the boundary\n');
+
+    // .1 and .10 are one instant. Comparing the digits as they are written makes the second look
+    // later than the first, and the boundary line comes back.
+    const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.1Z' });
+
+    expect(logs.text).toBe('');
+  });
+
+  it('reads forward from a cursor written with an offset', async () => {
+    (clients.text as jest.Mock).mockResolvedValue(
+      '2026-10-06T09:15:00.100000000Z the boundary\n2026-10-06T09:15:02.000000000Z after it\n',
+    );
+
+    // Same instant, written as +02:00: comparing the strings would never see it as the boundary.
+    const logs = await read(clients, { sinceTime: '2026-10-06T11:15:00.100000000+02:00' });
+
+    expect(logs.text).toBe('2026-10-06T09:15:02.000000000Z after it\n');
+  });
+
+  it('does not return a line that came earlier in the cursor own millisecond', async () => {
+    const burst =
+      '2026-10-06T09:15:00.100200300Z first of the burst\n' +
+      '2026-10-06T09:15:00.100745163Z second, where the cursor is\n' +
+      '2026-10-06T09:15:01.000000000Z the only new one\n';
+    (clients.text as jest.Mock).mockResolvedValue(burst);
+
+    const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.100745163Z' });
+
+    // The kubelet serves the whole second again, and both of those have already been read.
+    expect(logs.text).toBe('2026-10-06T09:15:01.000000000Z the only new one\n');
+  });
+
   it('keeps the lines sharing the boundary line millisecond', async () => {
     (clients.text as jest.Mock).mockResolvedValue(
       '2026-10-06T09:15:00.100200300Z the line already read\n' +
