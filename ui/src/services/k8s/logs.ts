@@ -227,13 +227,21 @@ const after = (text: string, sinceTime: string): string => {
   return (kept.length > 0 ? `${kept.join('\n')}\n` : '') + (fragment !== '' && keep(fragment) ? fragment : '');
 };
 
-/** grep -C, over a window already in hand: matching lines plus their neighbours, each line once. */
-const search = (text: string, pattern: string, contextLines: number) => {
+/**
+ * grep -C, over a window already in hand: matching lines plus their neighbours, each line once.
+ *
+ * With timestamps on — the default — every line begins with the one the kubelet put there, so an
+ * anchored pattern like `^panic:` could never match and would answer that the log holds no such
+ * line. Each line is tried both whole and without that prefix, so anchoring works against the
+ * message while a pattern aimed at the timestamp still finds it.
+ */
+const search = (text: string, pattern: string, contextLines: number, timestamped: boolean) => {
   const lines = text.split('\n');
   if (lines[lines.length - 1] === '') lines.pop();
 
   const expression = new RegExp(pattern);
-  const matched = lines.map((line) => expression.test(line));
+  const message = (line: string) => line.replace(RFC3339, '').replace(/^\s/, '');
+  const matched = lines.map((line) => expression.test(line) || (timestamped && expression.test(message(line))));
   const matchCount = matched.filter(Boolean).length;
 
   const keep = new Set<number>();
@@ -414,7 +422,7 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
 
   // The whole window is searched, and only the matches are then capped. Capping first would drop
   // matches without counting them, which is the one thing matchCount exists to rule out.
-  const found = search(window, pattern, params.contextLines ?? 0);
+  const found = search(window, pattern, params.contextLines ?? 0, params.timestamps !== false);
   const text = cut(found.text);
   return {
     ...base,

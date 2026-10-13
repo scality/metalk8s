@@ -507,6 +507,38 @@ describe('readPodLogs', () => {
     expect(logs.searched?.bytes).toBeGreaterThan(window.length);
   });
 
+  it('anchors a pattern to the message, not to the timestamp in front of it', async () => {
+    (clients.text as jest.Mock).mockResolvedValue(
+      '2026-10-06T09:14:21.882Z INFO all is well\n2026-10-06T09:15:00.000Z panic: nil map\n',
+    );
+
+    const logs = await read(clients, { pattern: '^panic:' });
+
+    // Every line starts with the timestamp the kubelet adds, so ^panic: could never match and the
+    // answer would be that the log holds no such line.
+    expect(logs.matchCount).toBe(1);
+    // Matched on the message, returned as the line was written.
+    expect(logs.text).toBe('2026-10-06T09:15:00.000Z panic: nil map\n');
+  });
+
+  it('matches the line as it stands when timestamps are off', async () => {
+    // The container writing its own RFC 3339 prefix: with no kubelet stamp in front, the line as
+    // returned is the line that is matched, and nothing is stripped from it.
+    (clients.text as jest.Mock).mockResolvedValue('2026-10-06T09:15:00.000Z panic: nil map\n');
+
+    const logs = await read(clients, { pattern: '^panic:', timestamps: false });
+
+    expect(logs.matchCount).toBe(0);
+  });
+
+  it('still finds a pattern aimed at the timestamp', async () => {
+    (clients.text as jest.Mock).mockResolvedValue('2026-10-06T09:14:21.882Z one\n2026-10-07T09:15:00.000Z two\n');
+
+    const logs = await read(clients, { pattern: '^2026-10-07' });
+
+    expect(logs.matchCount).toBe(1);
+  });
+
   it('puts the lines around a match in the text, each one once', async () => {
     (clients.text as jest.Mock).mockResolvedValue(
       `${['one', 'two', 'BOOM', 'BOOM again', 'five', 'six'].join('\n')}\n`,
