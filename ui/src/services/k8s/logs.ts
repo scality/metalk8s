@@ -94,8 +94,14 @@ export const checkLogParams = (params: LogParams): { params: LogParams; clamped:
       'tailLines counts back from the end, so combining it with sinceSeconds or sinceTime silently skips the lines in between. Use limitBytes to bound a read that moves forward.',
     );
   }
-  if (params.sinceTime !== undefined && !RFC3339.test(params.sinceTime)) {
-    throw new K8sApiError('malformed', `"${params.sinceTime}" is not an RFC 3339 time.`);
+  if (params.sinceTime !== undefined) {
+    // The expression is anchored at the start only, because it reads timestamps off the front of
+    // log lines. Here the whole string has to be one, and has to be a real instant: "2026-13-45"
+    // has the shape and no date, and the API's 400 for it would be read as a pod with no log.
+    const matched = RFC3339.exec(String(params.sinceTime))?.[1];
+    if (matched !== params.sinceTime || Number.isNaN(Date.parse(params.sinceTime))) {
+      throw new K8sApiError('malformed', `"${params.sinceTime}" is not an RFC 3339 time.`);
+    }
   }
   if (params.pattern !== undefined) {
     try {
@@ -265,39 +271,63 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
   const forward = sinceTime !== undefined || sinceSeconds !== undefined;
   const serverLimit = forward ? (limitBytes ?? MAX_LOG_BYTES) : undefined;
 
-  let body: string;
-  try {
-    // Not readNamespacedPodLog: see K8sApiClients.text. `follow` is never sent — it streams until
-    // the connection closes, and a tool returns once.
-    body = await clients.text(
-      `/api/v1/namespaces/${encodeURIComponent(namespace)}/pods/${encodeURIComponent(pod)}/log`,
-      {
-        container,
-        // For a tail read the server's cap would keep the wrong end, so limitBytes is applied below
-        // instead, against the text in hand.
-        limitBytes: serverLimit,
-        previous,
-        sinceSeconds,
-        // Sent, so that reading forward means every line since that instant rather than the last few
-        // of them. The cut is still made again below: the API's own sinceTime is inclusive.
-        sinceTime,
-        tailLines,
-        // The API defaults this to false; latest is parsed out of the timestamps, so turning it off
-        // would cost the ability to read forward.
-        timestamps: params.timestamps ?? true,
-      },
-    );
-  } catch (error) {
-    throw logFailure(error);
-  }
-
-  if (typeof body !== 'string') {
-    throw new K8sApiError('malformed', 'The Kubernetes API answered with something that is not a log.');
-  }
+  const fetchLog = async (limit?: number) => {
+    let answer: string;
+    try {
+      // Not readNamespacedPodLog: see K8sApiClients.text. `follow` is never sent — it streams until
+      // the connection closes, and a tool returns once.
+      answer = await clients.text(
+        `/api/v1/namespaces/${encodeURIComponent(namespace)}/pods/${encodeURIComponent(pod)}/log`,
+        {
+          container,
+          // For a tail read the server's cap would keep the wrong end, so limitBytes is applied
+          // below instead, against the text in hand.
+          limitBytes: limit,
+          previous,
+          sinceSeconds,
+          // Sent, so that reading forward means every line since that instant rather than the last
+          // few of them. The cut is still made again below: the API's own sinceTime is inclusive.
+          sinceTime,
+          tailLines,
+          // The API defaults this to false; latest is parsed out of the timestamps, so turning it
+          // off would cost the ability to read forward.
+          timestamps: params.timestamps ?? true,
+        },
+      );
+    } catch (error) {
+      throw logFailure(error);
+    }
+    if (typeof answer !== 'string') {
+      throw new K8sApiError('malformed', 'The Kubernetes API answered with something that is not a log.');
+    }
+    return answer;
+  };
 
   // Not re-cut when the lines carry no timestamps to cut on: the server has already applied
   // sinceTime, and filtering text that has none would drop every line of it.
-  const window = sinceTime && params.timestamps !== false ? after(body, sinceTime) : body;
+  const onlyAfterSince = (value: string) =>
+    sinceTime && params.timestamps !== false ? after(value, sinceTime) : value;
+
+  let cappedAt = serverLimit;
+  let body = await fetchLog(cappedAt);
+  let window = onlyAfterSince(body);
+  const serverCut = (value: string) => cappedAt !== undefined && byteLength(value) >= cappedAt;
+
+  /**
+   * sinceTime reaches the kubelet as RFC 3339 seconds — metav1.Time marshals no finer — so a read
+   * forward is served from the start of that whole second, and the cap can be spent entirely on
+   * lines this caller has already seen. Everything then falls to `after`, `latest` comes back
+   * unchanged, and the next read is the same read: a busy container that reads as a quiet one.
+   *
+   * Asking once more for the whole ceiling is the way past it. Beyond that the second itself is
+   * larger than the ceiling, and `bounded` saying bytes is what tells a quiet container from a
+   * window spent before it reached anything new.
+   */
+  if (forward && window === '' && body !== '' && serverCut(body) && (cappedAt ?? 0) < MAX_LOG_BYTES) {
+    cappedAt = MAX_LOG_BYTES;
+    body = await fetchLog(cappedAt);
+    window = onlyAfterSince(body);
+  }
 
   let bounded: LogBound =
     clamped ??
@@ -314,7 +344,7 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
   // is shorter in characters than in bytes, and a missing trailing newline misses a cut that landed
   // on one. Without this, bounded would say sinceTime — everything since that instant, when this is
   // the first page of it.
-  if (serverLimit !== undefined && new TextEncoder().encode(body).length >= serverLimit) {
+  if (serverCut(body)) {
     bounded = limitBytes !== undefined ? 'limitBytes' : 'bytes';
   }
 

@@ -199,6 +199,17 @@ describe('readPodLogs', () => {
     });
   });
 
+  it.each([
+    ['trailing junk after a good instant', '2026-10-06T09:15:00Zjunk'],
+    ['a month and a day that do not exist', '2026-13-45T00:00:00Z'],
+    ['a date with no time at all', '2026-10-06'],
+  ])('refuses %s as a sinceTime', async (_, sinceTime) => {
+    // The API would answer 400, which this tool reads as "there is no log" — so the shape has to
+    // be checked whole, and the instant has to be real.
+    await expect(read(clients, { sinceTime })).rejects.toMatchObject({ status: 'malformed' });
+    expect(clients.text).not.toHaveBeenCalled();
+  });
+
   it('refuses sinceSeconds and sinceTime together, before the request', async () => {
     await expect(read(clients, { sinceSeconds: 60, sinceTime: '2026-10-06T09:15:00.000Z' })).rejects.toMatchObject({
       status: 'malformed',
@@ -331,6 +342,46 @@ describe('readPodLogs', () => {
 
     expect(logs.text).not.toContain('\ufffd');
     expect(new TextEncoder().encode(logs.text).length).toBeLessThanOrEqual(72);
+  });
+
+  describe('when the cap is spent on the second already read', () => {
+    // The kubelet takes sinceTime to the second, so it serves from 09:15:00.000 however fine the
+    // instant asked for was.
+    const already = '2026-10-06T09:15:00.100Z already read\n2026-10-06T09:15:00.200Z also already read\n';
+    const fresh = `${already}2026-10-06T09:15:01.000Z new\n`;
+
+    it('asks again for the ceiling rather than reading as a quiet container', async () => {
+      (clients.text as jest.Mock).mockResolvedValueOnce(already).mockResolvedValueOnce(fresh);
+
+      const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.200Z', limitBytes: already.length });
+
+      expect((clients.text as jest.Mock).mock.calls[1][1].limitBytes).toBe(MAX_LOG_BYTES);
+      expect(logs.text).toBe('2026-10-06T09:15:01.000Z new\n');
+      expect(logs.latest).toBe('2026-10-06T09:15:01.000Z');
+    });
+
+    it('asks once only, when nothing was cut', async () => {
+      (clients.text as jest.Mock).mockResolvedValue(already);
+
+      const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.200Z', limitBytes: 4096 });
+
+      // A genuinely quiet container: the cap was not reached, so there is nothing a second read
+      // would turn up and the cursor stands.
+      expect(clients.text).toHaveBeenCalledTimes(1);
+      expect(logs.text).toBe('');
+      expect(logs.latest).toBe('2026-10-06T09:15:00.200Z');
+    });
+
+    it('asks once only, when the ceiling is already what was asked for', async () => {
+      (clients.text as jest.Mock).mockResolvedValue('x'.repeat(MAX_LOG_BYTES));
+
+      const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.200Z' });
+
+      // The second itself is bigger than the ceiling. bounded is what separates this from quiet.
+      expect(clients.text).toHaveBeenCalledTimes(1);
+      expect(logs.text).toBe('');
+      expect(logs.bounded).toBe('bytes');
+    });
   });
 
   it('keeps the cursor it was given when a read forward finds nothing new', async () => {
