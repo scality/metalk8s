@@ -48,14 +48,30 @@ export const refusal = (error: K8sApiError) => ({
  */
 const SECRET_KINDS = ['secret', 'secrets'];
 
+/**
+ * Groups whose every kind is a Secret under another name.
+ *
+ * Dex runs with `storage.type: kubernetes`, so its OIDC signing keys, OAuth client secrets, LDAP
+ * bind configuration and password hashes are custom resources in this group rather than Secrets.
+ * Refusing the kind guards the core kind and nothing else, and an apiVersion reaches these by name.
+ */
+const SECRET_GROUPS = ['dex.coreos.com'];
+
+const normalise = (value: unknown) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase();
+
+/** The group of an apiVersion, which is empty for a core one — `v1` names no group. */
+const groupOf = (apiVersion?: string) => {
+  const parts = normalise(apiVersion).split('/');
+  return parts.length === 2 ? parts[0] : '';
+};
+
 // String(), for the same reason resolveTarget coerces: a guard that throws on the input it exists to
 // catch is not a guard.
-export const isSecretKind = (kind: string) =>
-  SECRET_KINDS.includes(
-    String(kind ?? '')
-      .trim()
-      .toLowerCase(),
-  );
+export const isSecretKind = (kind: string, apiVersion?: string) =>
+  SECRET_KINDS.includes(normalise(kind)) || SECRET_GROUPS.includes(groupOf(apiVersion));
 
 export const secretRefusal = () =>
   new K8sApiError(

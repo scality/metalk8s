@@ -69,8 +69,9 @@ export function createListKubeResourcesTool(context: ToolContext) {
 
     execute: async ({ kind, apiVersion }: { kind: string; apiVersion?: string }) => {
       // Before the kind is even resolved, so that no route to a Secret exists — not the allowlist,
-      // not an apiVersion naming the core group, not a CRD that happens to be called "secrets".
-      if (isSecretKind(kind)) return refusal(secretRefusal());
+      // not an apiVersion naming the core group, not a CRD that happens to be called "secrets", and
+      // not a group whose custom resources hold what a Secret would.
+      if (isSecretKind(kind, apiVersion)) return refusal(secretRefusal());
 
       try {
         // Resolved purely: an unknown kind and an apiVersion that is not one both cost nothing and
@@ -99,11 +100,11 @@ export function createListKubeResourcesTool(context: ToolContext) {
           // page with, is not in the data anywhere.
           ...(list.truncated
             ? {
-              message:
-                `Only ${list.returned} of the ${list.total} present were returned. There is no way ` +
-                'to ask for the rest: narrow what you are looking for, or say your answer covers ' +
-                'part of the cluster.',
-            }
+                message:
+                  `Only ${list.returned} of the ${list.total} present were returned. There is no way ` +
+                  'to ask for the rest: narrow what you are looking for, or say your answer covers ' +
+                  'part of the cluster.',
+              }
             : {}),
         };
       } catch (error) {
