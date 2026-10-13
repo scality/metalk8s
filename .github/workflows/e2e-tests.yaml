@@ -22,6 +22,11 @@ on:
         required: false
         type: boolean
         default: false
+      run-tests:
+        description: "Whether or not the tests validating the installation should be ran (the cluster is installed either way)"
+        required: false
+        type: boolean
+        default: true
       generate-snapshots:
         description: "Whether or not snapshots should be generated at the end"
         required: false
@@ -62,6 +67,11 @@ on:
         required: false
         type: boolean
         default: false
+      run-tests:
+        description: "Whether or not the tests validating the installation should be ran (the cluster is installed either way)"
+        required: false
+        type: boolean
+        default: true
       generate-snapshots:
         description: "Whether or not snapshots should be generated at the end"
         required: false
@@ -76,6 +86,7 @@ jobs:
       artifacts-url: ${{ inputs.artifacts-url }}
       os: ${{ inputs.os }}
       install-solution: ${{ inputs.install-solution }}
+      run-tests: ${{ inputs.run-tests }}
       generate-snapshots: ${{ inputs.generate-snapshots }}
       enable-debug-when-failure: true
 
@@ -87,5 +98,6 @@ jobs:
       os: ${{ inputs.os }}
       nodes-count: ${{ fromJson(inputs.nodes-count) }}
       install-solution: ${{ inputs.install-solution }}
+      run-tests: ${{ inputs.run-tests }}
       generate-snapshots: ${{ inputs.generate-snapshots }}
       enable-debug-when-failure: true

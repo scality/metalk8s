@@ -32,6 +32,11 @@ on:
         required: false
         type: boolean
         default: false
+      run-tests:
+        description: "Whether or not the tests validating the installation should be ran (the cluster is installed either way)"
+        required: false
+        type: boolean
+        default: true
       generate-snapshots:
         description: "Whether or not snapshots should be generated at the end"
         required: false
@@ -217,24 +222,27 @@ jobs:
       - name: Wait for pods to stabilize
         uses: ./.github/actions/wait-pod-stable
       - name: Prepare bastion to run tests
+        if: inputs.run-tests
         uses: ./.github/actions/prepare-bastion
         with:
           UI_DEPS: ${{ inputs.setup-idp }}
       - name: Extract alerts rules
+        if: inputs.run-tests
         uses: ./.github/actions/get-alert-rules
       - name: Run Solutions CLI tests from Bastion
-        if: inputs.test-solution
+        if: inputs.run-tests && inputs.test-solution
         uses: ./.github/actions/bastion-tests
         with:
           PYTEST_FILTERS: "solution_upgrade"
       - name: Run tests from Bastion
+        if: inputs.run-tests
         uses: ./.github/actions/bastion-tests
         with:
           EXTRA_FILTER: >-
             ${{ inputs.setup-idp && ' ' || 'and not authentication' }}
             ${{ inputs.setup-logging && ' ' || 'and not logging' }}
       - name: Run UI tests from Bastion
-        if: inputs.setup-idp
+        if: inputs.run-tests && inputs.setup-idp
         uses: ./.github/actions/bastion-ui-tests
       # }}}
 

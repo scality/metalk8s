@@ -37,6 +37,11 @@ on:
         required: false
         type: boolean
         default: false
+      run-tests:
+        description: "Whether or not the tests validating the installation should be ran (the cluster is installed either way)"
+        required: false
+        type: boolean
+        default: true
       generate-snapshots:
         description: "Whether or not snapshots should be generated at the end"
         required: false
@@ -214,6 +219,7 @@ jobs:
       - name: Wait for pods to stabilize
         uses: ./.github/actions/wait-pod-stable
       - name: Run tests from Bastion
+        if: inputs.run-tests
         uses: ./.github/actions/bastion-tests
         with:
           PYTEST_FILTERS: "post and ci and not slow"
