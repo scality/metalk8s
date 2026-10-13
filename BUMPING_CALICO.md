@@ -7,19 +7,27 @@ upstream manifest.
 ## 1. Update versions and digests in `buildchain/buildchain/versions.py`
 
 Change `CALICO_VERSION` and update the digests for the three images
-(`calico-cni`, `calico-node`, `calico-kube-controllers`):
+(`calico`, `calico-node`, `calico-third-party-cni-plugins`):
 
 ```python
 CALICO_VERSION: str = "3.X.Y"
 ```
 
-Fetch digests with `gcrane`:
+Fetch digests with `gcrane` (images are pulled from `docker.io/calico`, see
+`CALICO_REPOSITORY` in `constants.py`):
 
 ```sh
-gcrane digest quay.io/calico/cni:v3.X.Y
-gcrane digest quay.io/calico/node:v3.X.Y
-gcrane digest quay.io/calico/kube-controllers:v3.X.Y
+gcrane digest docker.io/calico/calico:v3.X.Y
+gcrane digest docker.io/calico/node:v3.X.Y
+gcrane digest docker.io/calico/third-party-cni-plugins:v3.X.Y
 ```
+
+Since v3.33, Calico ships most components (CNI plugin, IPAM, kube-controllers)
+in the single `calico/calico` image; the former `calico/cni` and
+`calico/kube-controllers` images are no longer published.
+If the set of images changes again, also update `IMGS_PER_REPOSITORY`,
+`REMOTE_NAMES` and the `control-plane` entry of `BOOT_CACHE_VARIANTS` in
+`buildchain/buildchain/image.py`.
 
 ## 2. Discover which patches need to be reapplied
 
@@ -141,6 +149,23 @@ Uncomment `CALICO_IPV4POOL_CIDR` and set it from the pillar:
               value: "{{ networks.pod }}"
 ```
 
+### DaemonSet `calico-node` — readiness probe initial delay
+
+Add `initialDelaySeconds` to the `calico-node` container `readinessProbe`, so
+the first check does not run before BIRD is started:
+
+```yaml
+          readinessProbe:
+            exec:
+              command:
+                ...
+                - --bird-ready
+            # NOTE: Give BIRD time to start before the first readiness check,
+            #       to avoid "BIRD is not ready" warnings on startup
+            initialDelaySeconds: 10
+            periodSeconds: 10
+```
+
 ### DaemonSet `calico-node` — disable usage reporting
 
 Insert after `FELIX_HEALTHENABLED`:
@@ -180,13 +205,13 @@ Restrict the controller to master nodes and add MetalK8s taints:
 ### Image references (all containers)
 
 Replace every hardcoded `quay.io/calico/<name>:vX.Y.Z` with the Jinja
-`build_image_name` macro. There are **5 occurrences** across the DaemonSet
+`build_image_name` macro. There are **6 occurrences** across the DaemonSet
 init containers, main container, and the kube-controllers Deployment:
 
 ```yaml
-image: {{ build_image_name('calico-cni') }}          # 2× (upgrade-ipam, install-cni)
-image: {{ build_image_name('calico-node') }}         # 2× (ebpf-bootstrap, calico-node)
-image: {{ build_image_name('calico-kube-controllers') }}  # 1×
+image: {{ build_image_name('calico') }}                          # 3× (upgrade-ipam, install-cni, calico-kube-controllers)
+image: {{ build_image_name('calico-third-party-cni-plugins') }}  # 1× (cni-plugins)
+image: {{ build_image_name('calico-node') }}                     # 2× (ebpf-bootstrap, calico-node)
 ```
 
 A quick check after applying patches:
@@ -195,5 +220,5 @@ A quick check after applying patches:
 grep -c "quay.io/calico" salt/metalk8s/kubernetes/cni/calico/deployed.sls
 # should output 0
 grep "build_image_name" salt/metalk8s/kubernetes/cni/calico/deployed.sls
-# should list 5 lines
+# should list 6 lines
 ```

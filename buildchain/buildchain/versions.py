@@ -25,7 +25,7 @@ K8S_VERSION_PATCH: str = "7"
 K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
 K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
-CALICO_VERSION: str = "3.32.0"
+CALICO_VERSION: str = "3.33.0"
 SALT_VERSION: str = "3006.27"
 CONTAINERD_VERSION: str = "2.2.5"
 
@@ -110,19 +110,19 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:af26fbe4dd1886ac0efd7bd55cd9027da262e105b137a376522b7c14c3626e4a",
     ),
     Image(
-        name="calico-cni",
+        name="calico",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14",
+        digest="sha256:4ebc20730127bc9e8bf1db5f5a2d8b58cf37fe0e891b3c7b5471992221d213e5",
     ),
     Image(
         name="calico-node",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+        digest="sha256:565d8db3200e443955557f8f28ff44ab8a4a456754bc74a19c4f2f3444af9b1c",
     ),
     Image(
-        name="calico-kube-controllers",
+        name="calico-third-party-cni-plugins",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:adf0ac895796d21bca5383bc81c4cd2614be3a4308085b47857d7999f4cc2b1f",
+        digest="sha256:0f32f48279484c0d6f0e0d0e767b2d0e1a6c6ca34cb3421a61b989d992f3df41",
     ),
     Image(
         name="coredns",

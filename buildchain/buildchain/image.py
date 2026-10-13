@@ -256,9 +256,9 @@ TO_PULL: Dict[str, targets.RemoteImage] = {}
 
 IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.CALICO_REPOSITORY: [
-        "calico-cni",
+        "calico",
         "calico-node",
-        "calico-kube-controllers",
+        "calico-third-party-cni-plugins",
     ],
     constants.COREDNS_REPOSITORY: [
         "coredns",
@@ -331,9 +331,8 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
 }
 
 REMOTE_NAMES: Dict[str, str] = {
-    "calico-cni": "cni",
     "calico-node": "node",
-    "calico-kube-controllers": "kube-controllers",
+    "calico-third-party-cni-plugins": "third-party-cni-plugins",
     "nginx-ingress-controller": "controller",
 }
 
@@ -366,9 +365,9 @@ BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
         "kube-scheduler",
         "coredns",
         "kube-proxy",
-        "calico-cni",
+        "calico",
         "calico-node",
-        "calico-kube-controllers",
+        "calico-third-party-cni-plugins",
     ],
     "worker": [
         "pause",
