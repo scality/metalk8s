@@ -71,6 +71,9 @@ describe('describeKubeResource', () => {
 
     expect(result.status).toBe('not_found');
     expect(result.allowedKinds).toContain('pods');
+    // listKubeResources takes an apiVersion and this tool does not, so repeating its advice here
+    // sends a caller round a turn that ends in this same refusal.
+    expect(result.message).not.toMatch(/apiVersion/i);
     expect(k8sApi).not.toHaveBeenCalled();
   });
 

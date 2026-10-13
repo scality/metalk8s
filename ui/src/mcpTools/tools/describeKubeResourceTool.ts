@@ -1,5 +1,5 @@
 import { checkDescribeParams, kubeDescriptionQuery, MAX_EVENTS } from '../../services/k8s/describe';
-import { ALLOWED_KINDS, failureFor, resolveTarget } from '../../services/k8s/resources';
+import { ALLOWED_KINDS, failureFor, K8sApiError, resolveTarget } from '../../services/k8s/resources';
 import { disclose } from '../disclosure';
 import { isSecretKind, kubeClients, refusal, secretRefusal } from '../kubeTools';
 import type { ToolContext } from '../types';
@@ -14,6 +14,21 @@ import type { ToolContext } from '../types';
  * It runs as the signed-in user, with that user's own token, so the API server enforces that user's
  * RBAC.
  */
+/**
+ * resolveTarget's not_found offers an apiVersion retry, because listKubeResources accepts one. This
+ * tool does not, so a model following that advice spends a turn to arrive at the same answer. The
+ * kinds it can describe are on the refusal already, as allowedKinds.
+ */
+const describableTarget = (kind: string) => {
+  try {
+    return resolveTarget(kind);
+  } catch (error) {
+    const failure = failureFor(error);
+    if (failure.status !== 'not_found') throw failure;
+    throw new K8sApiError('not_found', `"${kind}" is not a kind this tool describes.`);
+  }
+};
+
 export function createDescribeKubeResourceTool(context: ToolContext) {
   return {
     name: 'describeKubeResource',
@@ -83,7 +98,7 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
       try {
         // Purely resolved, so an unknown kind costs no connection. No apiVersion here: describing
         // reads one typed object per kind, which the allowlist is what supplies.
-        const target = resolveTarget(kind);
+        const target = describableTarget(kind);
         // Both pure, and both before a connection is opened: an unknown kind, a name that is a path
         // and a namespace on a cluster-scoped kind all cost nothing.
         checkDescribeParams(target, { name, namespace, includeEvents });
