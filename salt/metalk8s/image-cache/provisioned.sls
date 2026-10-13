@@ -37,6 +37,7 @@ Import the {{ variant }} boot cache from the ISO:
     - cache_path: {{ image_cache.directory }}
     - require:
       - file: Create the image cache directory
+      - metalk8s_package_manager: Install imagecachectl
       # NOTE: The source is read from the mounted ISO. The bootstrap role
       # happens to include the mount before this state, but relying on the
       # include order of another formula is not a dependency.

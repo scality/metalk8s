@@ -35,6 +35,7 @@ Pull the worker boot cache from the registry:
     - plain_http: True
     - require:
       - file: Create the image cache directory
+      - metalk8s_package_manager: Install imagecachectl
 
 # NOTE: Not the ID `provisioned.sls` uses for the same restart. Both SLS can
 # land in one run, and Salt refuses an ID declared twice.

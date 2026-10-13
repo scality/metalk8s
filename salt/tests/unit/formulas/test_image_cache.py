@@ -54,6 +54,8 @@ REQUIRED_GATES = [
 CONFIG_STATE = "Configure containerd image preload"
 
 DIRECTORY_STATE = "Create the image cache directory"
+# The command every fill runs comes from its own package.
+COMMAND_STATE = "Install imagecachectl"
 # The bootstrap node holds the control plane, etcd and workloads, so it gets
 # every variant.
 VARIANTS = ("worker", "control-plane", "etcd")
@@ -273,6 +275,7 @@ def test_provisioning_names_match_the_image_cache_resources(
                 f"/images/metalk8s-boot-cache-{variant}-{version}.tar"
             ), f"'{state_id}' does not read its ISO archive ({case_id})"
             assert args.get("cache_path"), f"'{state_id}' sets no cache ({case_id})"
+            assert COMMAND_STATE in required_states(states, state_id), case_id
 
         checked = True
 
@@ -307,6 +310,7 @@ def test_pull_reads_the_registry_endpoint(
         assert args.get("cache_path"), f"'{PULL_STATE}' sets no cache ({case_id})"
 
         assert DIRECTORY_STATE in required_states(states, PULL_STATE), case_id
+        assert COMMAND_STATE in required_states(states, PULL_STATE), case_id
         assert PULL_STATE in requisite_states(
             states, PULL_IMPORT_STATE, "onchanges"
         ), f"'{PULL_IMPORT_STATE}' does not watch '{PULL_STATE}' ({case_id})"

@@ -483,6 +483,19 @@ PREBUILT_RPMS: Tuple[PrebuiltRPM, ...] = (
             "9": "bc205c2120970f5185bbd2808cb55219141acb311692707249692492b143d954",
         },
     ),
+    # Fills the image cache at bootstrap and at join. A static binary, it
+    # requires nothing.
+    PrebuiltRPM(
+        name="imagecachectl",
+        repo="scality",
+        source="scality/image-cache",
+        tag="v0.1.0-alpha.2",
+        sha256={
+            "8": "31941e9c4019481eea7d07286f6334b2ff778179b75cc39d2414f6f3179260cd",
+            "9": "bfc28af473859468b95beb581aafcf3474aea55ae3bc86fa57a03796007f1fb5",
+        },
+        arch="x86_64",
+    ),
 )
 
 

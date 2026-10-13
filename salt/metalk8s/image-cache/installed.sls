@@ -16,6 +16,11 @@ Install containerd image preload:
       # fresh node from resolving that dependency to another provider.
       - metalk8s_package_manager: Install containerd
 
+Install imagecachectl:
+  {{ pkg_installed('imagecachectl') }}
+    - require:
+      - test: Repositories configured
+
 Configure containerd image preload:
   file.managed:
     - name: /etc/sysconfig/containerd-image-preload
