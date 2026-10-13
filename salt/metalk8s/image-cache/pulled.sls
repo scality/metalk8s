@@ -1,5 +1,6 @@
 {%- from "metalk8s/map.jinja" import image_cache with context %}
 {%- from "metalk8s/map.jinja" import kubelet with context %}
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 {%- from "metalk8s/repo/macro.sls" import build_registry_image_name with context %}
 
@@ -21,6 +22,14 @@
   {{ raise('Missing version information for "' ~ image_name ~ '"') }}
 {%- endif %}
 
+{%- set endpoints = metalk8s.endpoints.repositories %}
+{%- if not endpoints | is_list %}
+  {%- set endpoints = [endpoints] %}
+{%- endif %}
+{%- if not endpoints %}
+  {{ raise('Missing address of the repositories endpoint') }}
+{%- endif %}
+
 include:
   - .installed
 
@@ -29,7 +38,12 @@ Pull the worker boot cache from the registry:
     # NOTE: Must match the ImageCache resource that later owns this
     # directory: `<variant>-<version>`, with dots replaced by dashes.
     - name: worker-{{ image_version | replace('.', '-') }}
-    - source: {{ build_registry_image_name(image_name) }}
+    # NOTE: One reference per registry endpoint, tried in order, as
+    # containerd does: the first endpoint down must not stop the join.
+    - source:
+{%- for endpoint in endpoints %}
+      - {{ build_registry_image_name(image_name, endpoint) }}
+{%- endfor %}
     - cache_path: {{ image_cache.directory }}
     # NOTE: The registry endpoints serve plain HTTP.
     - plain_http: True

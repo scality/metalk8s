@@ -24,52 +24,69 @@ def __virtual__():
     return __virtualname__
 
 
-def imported(name, source, cache_path=None, plain_http=False):
+def imported(name, source, cache_path=None, plain_http=False, timeout=600):
     """
     Import a boot cache image into the cache with `imagecachectl import`.
 
     name
         Name of the cache resource, such as `worker-134-0-0-dev`
     source
-        Path of a docker archive, or an image reference to pull
+        Path of a docker archive, or an image reference to pull. A list is
+        tried in order, until one import succeeds: one reference per registry
+        endpoint, so that an endpoint down does not stop the node.
     cache_path
         Root of the image cache, the `imagecachectl` default if not set
     plain_http
         Talk plain HTTP to the registry
+    timeout
+        Seconds each attempt may take. A registry that accepts the connection
+        and then stops answering would otherwise hold the state forever.
     """
     ret = {"name": name, "result": False, "changes": {}, "comment": ""}
+    sources = [source] if isinstance(source, str) else list(source)
+    if not sources:
+        ret["comment"] = "No source to import from"
+        return ret
 
-    command = ["imagecachectl", "import", "--name", name]
+    flags = []
     if cache_path:
-        command.extend(["--cache-path", cache_path])
+        flags.extend(["--cache-path", cache_path])
     if plain_http:
-        command.append("--plain-http")
-    command.append(source)
+        flags.append("--plain-http")
+    commands = [
+        ["imagecachectl", "import", "--name", name, *flags, src] for src in sources
+    ]
 
     if __opts__["test"]:
         ret["result"] = None
-        ret["comment"] = f"Would run: {' '.join(command)}"
+        ret["comment"] = f"Would run: {' '.join(commands[0])}"
         return ret
 
-    try:
-        out = __salt__["cmd.run_all"](command, python_shell=False)
-    except CommandExecutionError as exc:
-        # Raised when the command cannot start at all, e.g. a missing binary.
-        ret["comment"] = f"Failed to run imagecachectl: {exc}"
+    errors = []
+    for src, command in zip(sources, commands):
+        try:
+            out = __salt__["cmd.run_all"](command, python_shell=False, timeout=timeout)
+        except CommandExecutionError as exc:
+            # Raised when the command cannot start at all, e.g. a missing
+            # binary: another source would not help.
+            ret["comment"] = f"Failed to run imagecachectl: {exc}"
+            return ret
+
+        if out["retcode"] != 0:
+            # The comment reaches the state output, the log reaches the minion
+            # log, which is where a failed deployment gets read from.
+            log.error('Failed to import "%s" from "%s": %s', name, src, out["stderr"])
+            errors.append(
+                f"{src}: imagecachectl exited with code {out['retcode']}: "
+                f"{out['stderr']}"
+            )
+            continue
+
+        ret["result"] = True
+        ret["comment"] = "\n".join(errors + [out["stdout"].strip()])
+        if _ALREADY_HELD not in out["stdout"]:
+            ret["changes"] = {"imported": src}
         return ret
 
-    if out["retcode"] != 0:
-        # The comment reaches the state output, the log reaches the minion
-        # log, which is where a failed deployment gets read from.
-        log.error('Failed to import "%s" from "%s": %s', name, source, out["stderr"])
-        ret["comment"] = (
-            f"imagecachectl exited with code {out['retcode']}: {out['stderr']}"
-        )
-        return ret
-
-    ret["result"] = True
-    ret["comment"] = out["stdout"].strip()
-    if _ALREADY_HELD not in out["stdout"]:
-        ret["changes"] = {"imported": source}
-
+    ret["comment"] = "\n".join(errors)
     return ret

@@ -302,10 +302,16 @@ def test_pull_reads_the_registry_endpoint(
 
         args = _state_args(states, PULL_STATE)
         assert args["name"] == f"worker-{version.replace('.', '-')}", case_id
-        assert re.fullmatch(
-            rf"[0-9.]+:[0-9]+/[^/]+/metalk8s-boot-cache-worker:{re.escape(version)}",
-            args["source"],
-        ), f"unexpected source '{args['source']}' ({case_id})"
+        # One reference per registry endpoint, so the next one is tried when
+        # the first is down.
+        assert isinstance(args["source"], list) and args["source"], case_id
+        if "several endpoints" in case_id:
+            assert len(args["source"]) == 2, case_id
+        for source in args["source"]:
+            assert re.fullmatch(
+                rf"[0-9.]+:[0-9]+/[^/]+/metalk8s-boot-cache-worker:{re.escape(version)}",
+                source,
+            ), f"unexpected source '{source}' ({case_id})"
         assert args.get("plain_http") is True, f"no plain HTTP ({case_id})"
         assert args.get("cache_path"), f"'{PULL_STATE}' sets no cache ({case_id})"
 

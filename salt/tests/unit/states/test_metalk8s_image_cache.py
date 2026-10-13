@@ -17,10 +17,11 @@ class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
     loader_module = metalk8s_image_cache
     loader_module_globals = {"__opts__": {"test": False}}
 
-    def _run(self, out=None, side_effect=None, **kwargs):
+    def _run(self, out=None, side_effect=None, source_override=None, **kwargs):
         run_all = MagicMock(return_value=out, side_effect=side_effect)
+        source = SOURCE if source_override is None else source_override
         with patch.dict(metalk8s_image_cache.__salt__, {"cmd.run_all": run_all}):
-            ret = metalk8s_image_cache.imported("worker-1-0-0", SOURCE, **kwargs)
+            ret = metalk8s_image_cache.imported("worker-1-0-0", source, **kwargs)
         return ret, run_all
 
     def test_virtual(self):
@@ -39,6 +40,7 @@ class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
         run_all.assert_called_once_with(
             ["imagecachectl", "import", "--name", "worker-1-0-0", *flags, SOURCE],
             python_shell=False,
+            timeout=600,
         )
 
     def test_extracted(self):
@@ -71,6 +73,45 @@ class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
         self.assertEqual(ret["changes"], {})
         self.assertIn("code 1", ret["comment"])
         self.assertIn("pull failed", ret["comment"])
+
+    def test_next_source_after_a_failure(self):
+        # The first endpoint is down, the second one answers.
+        run_all = MagicMock(
+            side_effect=[
+                {"retcode": 1, "stdout": "", "stderr": "connection refused"},
+                {
+                    "retcode": 0,
+                    "stdout": "extracted worker-1-0-0 into /x",
+                    "stderr": "",
+                },
+            ]
+        )
+        with patch.dict(metalk8s_image_cache.__salt__, {"cmd.run_all": run_all}):
+            ret = metalk8s_image_cache.imported("worker-1-0-0", ["reg-a/w", "reg-b/w"])
+        self.assertEqual(run_all.call_count, 2)
+        self.assertEqual(run_all.call_args.args[0][-1], "reg-b/w")
+        self.assertTrue(ret["result"])
+        self.assertEqual(ret["changes"], {"imported": "reg-b/w"})
+        self.assertIn("reg-a/w", ret["comment"])
+
+    def test_every_source_failed(self):
+        out = {"retcode": 1, "stdout": "", "stderr": "connection refused"}
+        run_all = MagicMock(return_value=out)
+        with patch.dict(metalk8s_image_cache.__salt__, {"cmd.run_all": run_all}):
+            ret = metalk8s_image_cache.imported("worker-1-0-0", ["reg-a/w", "reg-b/w"])
+        self.assertFalse(ret["result"])
+        # Each endpoint tried is named, for whoever reads the failed deployment.
+        self.assertIn("reg-a/w", ret["comment"])
+        self.assertIn("reg-b/w", ret["comment"])
+
+    def test_no_source(self):
+        ret, run_all = self._run(source_override=[])
+        run_all.assert_not_called()
+        self.assertFalse(ret["result"])
+
+    def test_timeout(self):
+        _, run_all = self._run({"retcode": 0, "stdout": "", "stderr": ""}, timeout=30)
+        self.assertEqual(run_all.call_args.kwargs["timeout"], 30)
 
     def test_cannot_run(self):
         ret, _ = self._run(side_effect=CommandExecutionError("not found"))
