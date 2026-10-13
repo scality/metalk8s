@@ -181,14 +181,19 @@ const bytesOf = (value: string, cap: number, from: 'start' | 'end') => {
 };
 
 /**
- * The last timestamp in the text, which is the last LINE's only when that line is whole.
+ * The last timestamp among the text's WHOLE lines.
  *
- * A read cut mid-line ends on a fragment whose timestamp the regex will not take, and answering
- * null there would say reading forward is unavailable when it plainly is. Resuming from the last
- * complete line reads the cut one again, in full, which is the only way to get the rest of it.
+ * A read cut mid-line keeps that line's timestamp — the prefix comes first and survives the cut —
+ * so taking it would be a cursor pointing at a line held in part. The next read drops that exact
+ * timestamp as the boundary, and the rest of the line goes with it. Resuming from the last complete
+ * line instead reads the cut one again in full, which is the only way to get it at all.
  */
 const lastTimestamp = (text: string): string | null => {
-  const lines = text.split('\n').filter((line) => line.length > 0);
+  const lines = text.split('\n');
+  // Either the empty string after a final newline, or a line the read stopped inside: dropping it
+  // leaves only lines that are whole.
+  lines.pop();
+
   for (let i = lines.length - 1; i >= 0; i--) {
     const match = RFC3339.exec(lines[i]);
     // A guess would be a cursor that silently rereads, which is worse than saying there is none.
@@ -207,11 +212,19 @@ const lastTimestamp = (text: string): string | null => {
  */
 const after = (text: string, sinceTime: string): string => {
   const since = new Date(sinceTime).getTime();
-  const kept = text.split('\n').filter((line) => {
+  const keep = (line: string) => {
     const match = RFC3339.exec(line);
     return match ? new Date(match[1]).getTime() >= since && match[1] !== sinceTime : false;
-  });
-  return kept.length > 0 ? `${kept.join('\n')}\n` : '';
+  };
+
+  // Rebuilt with the shape it arrived in. A text not ending in a newline ends in a line the read
+  // stopped inside, and terminating it here would hide that from lastTimestamp, which would then
+  // hand back a cursor pointing at half a line.
+  const lines = text.split('\n');
+  const fragment = lines.pop() ?? '';
+  const kept = lines.filter(keep);
+
+  return (kept.length > 0 ? `${kept.join('\n')}\n` : '') + (fragment !== '' && keep(fragment) ? fragment : '');
 };
 
 /** grep -C, over a window already in hand: matching lines plus their neighbours, each line once. */

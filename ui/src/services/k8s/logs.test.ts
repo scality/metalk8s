@@ -223,14 +223,28 @@ describe('readPodLogs', () => {
     expect((await read(clients)).latest).toBe('2026-10-06T09:16:30.100Z');
   });
 
-  it('resumes from the last whole line when the read was cut inside one', async () => {
-    // Cut inside the timestamp itself, which is where a fragment stops being readable at all.
-    (clients.text as jest.Mock).mockResolvedValue('2026-10-06T09:16:30.100Z whole\n2026-10-06T09:16');
+  it('does not terminate a line the read stopped inside', async () => {
+    (clients.text as jest.Mock).mockResolvedValue('2026-10-06T09:16:30.100Z whole\n2026-10-06T09:16:31.000Z cut he');
 
     const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.000Z' });
 
-    // null here would say reading forward is unavailable, when reading forward is exactly what
-    // fetches the rest of that line.
+    // Adding a newline here would make the fragment indistinguishable from a line that arrived
+    // complete, and the cursor would be taken from it.
+    expect(logs.text.endsWith('cut he')).toBe(true);
+    expect(logs.lines).toBe(2);
+  });
+
+  it.each([
+    // The common cut: past the timestamp, so the fragment still carries a whole one of its own.
+    ['after the timestamp', '2026-10-06T09:16:31.000Z this line was cut he'],
+    ['inside the timestamp', '2026-10-06T09:16'],
+  ])('resumes from the last whole line when the read was cut %s', async (_, fragment) => {
+    (clients.text as jest.Mock).mockResolvedValue(`2026-10-06T09:16:30.100Z whole\n${fragment}`);
+
+    const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.000Z' });
+
+    // Taking the fragment's own timestamp would make the next read drop that line as its boundary,
+    // and the half never read would go with it.
     expect(logs.latest).toBe('2026-10-06T09:16:30.100Z');
   });
 
