@@ -41,6 +41,11 @@ daemonSetVolumes:
 - name: runlog
   hostPath:
     path: /run/log
+# /etc/machine-id is needed by libsystemd to find the local journal files
+- name: etcmachineid
+  hostPath:
+    path: /etc/machine-id
+    type: File
 # stores all needed certificates for TLS outputs
 - name: certificates
   secret:
@@ -54,6 +59,9 @@ daemonSetVolumeMounts:
   readOnly: true
 - name: runlog
   mountPath: /run/log
+  readOnly: true
+- name: etcmachineid
+  mountPath: /etc/machine-id
   readOnly: true
 - name: certificates
   mountPath: /fluent-bit/etc/tls
