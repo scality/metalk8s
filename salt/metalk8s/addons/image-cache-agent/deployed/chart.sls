@@ -284,6 +284,7 @@ spec:
       - args:
         - --metrics-bind-address=:8443
         - --health-probe-bind-address=:8081
+        - --plain-http
         command:
         - /manager
         env:
@@ -292,7 +293,7 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
         image: '{% endraw -%}{{ build_image_name("image-cache-agent", False) }}{%-
-          raw %}:v0.1.0-alpha.1-61-g6514034'
+          raw %}:v0.1.0-alpha.1-63-g8398955'
         livenessProbe:
           httpGet:
             path: /healthz
