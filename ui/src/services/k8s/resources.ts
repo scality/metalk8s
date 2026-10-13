@@ -49,7 +49,7 @@ export class K8sApiError extends Error {
  * exposes `statusCode` as a getter over the fetch `status`; both are read here, as
  * services/errorhandler already does, so either shape is understood.
  */
-const statusCodeOf = (error: unknown): number | undefined => {
+export const statusCodeOf = (error: unknown): number | undefined => {
   const e = error as {
     response?: { statusCode?: number; status?: number };
     statusCode?: number;

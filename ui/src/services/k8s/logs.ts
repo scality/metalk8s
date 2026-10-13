@@ -9,7 +9,7 @@
 // and there it is left to the server.
 
 import type { K8sApiClients } from './clients';
-import { failureFor, K8sApiError } from './resources';
+import { failureFor, K8sApiError, statusCodeOf } from './resources';
 
 /** Lines, when nothing else bounds the read. kubectl's own default is the whole log. */
 export const DEFAULT_TAIL_LINES = 200;
@@ -95,6 +95,17 @@ export const checkLogParams = (params: LogParams): { params: LogParams; clamped:
     }
   }
 
+  // So that a 400 can be read as "there is no log", never as "you asked wrongly".
+  for (const [name, value] of [
+    ['tailLines', params.tailLines],
+    ['sinceSeconds', params.sinceSeconds],
+    ['limitBytes', params.limitBytes],
+  ] as const) {
+    if (value !== undefined && (typeof value !== 'number' || !Number.isInteger(value) || value < 1)) {
+      throw new K8sApiError('malformed', `${name} is a whole number of at least 1, not "${value}".`);
+    }
+  }
+
   let clamped: LogBound | null = null;
   const tailLines = params.tailLines !== undefined ? Math.min(params.tailLines, MAX_TAIL_LINES) : undefined;
   if (tailLines !== undefined && tailLines !== params.tailLines) clamped = 'tailLines';
@@ -131,12 +142,19 @@ const lastTimestamp = (text: string): string | null => {
   return match ? match[1] : null;
 };
 
-/** Lines strictly after the instant asked for — the boundary line is not repeated. */
+/**
+ * Lines after the instant asked for, with the boundary line itself dropped by its exact timestamp
+ * rather than by comparison.
+ *
+ * The kubelet writes nanoseconds and Date keeps milliseconds, so `> since` would also drop every
+ * line sharing that millisecond — and bursts share one routinely. Those lines would never come back,
+ * since the next read starts later still.
+ */
 const after = (text: string, sinceTime: string): string => {
   const since = new Date(sinceTime).getTime();
   const kept = text.split('\n').filter((line) => {
     const match = RFC3339.exec(line);
-    return match ? new Date(match[1]).getTime() > since : false;
+    return match ? new Date(match[1]).getTime() >= since && match[1] !== sinceTime : false;
   });
   return kept.length > 0 ? `${kept.join('\n')}\n` : '';
 };
@@ -242,10 +260,12 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
           ? 'tailLines'
           : 'default');
 
-  // Every log line ends in a newline, so a body that does not is one the server cut mid-line. The
-  // text below will be under the cap and `cut` will not fire, and bounded would otherwise say
-  // sinceTime — claiming everything since that instant when this is the first page of it.
-  if (forward && body !== '' && !body.endsWith('\n')) {
+  // A body that reaches the limit sent is one the server stopped, and the text below will be under
+  // the cap so `cut` never fires. Measured in bytes, as the server counts them: a log full of `µ`
+  // is shorter in characters than in bytes, and a missing trailing newline misses a cut that landed
+  // on one. Without this, bounded would say sinceTime — everything since that instant, when this is
+  // the first page of it.
+  if (serverLimit !== undefined && new TextEncoder().encode(body).length >= serverLimit) {
     bounded = limitBytes !== undefined ? 'limitBytes' : 'bytes';
   }
 
@@ -300,19 +320,26 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
 };
 
 /**
- * The log endpoint's 400 for `previous` is its own case: it means the container has not restarted,
- * which is a fact about the pod rather than a fault in the request.
+ * A 400 from the log endpoint is the API describing the pod, not refusing the request — every
+ * parameter this tool exposes is checked before the call, so what is left is "there is no log to
+ * give you", and the API says why: a container waiting on its image, one that never restarted, one
+ * still being created. `unavailable` would answer all of those with "the API could not be reached".
  */
 const logFailure = (error: unknown): K8sApiError => {
   const failure = failureFor(error);
-  const body = (error as { body?: { message?: string } })?.body?.message ?? '';
-  if (/previous terminated container/i.test(body)) {
+  const message = (error as { body?: { message?: string } })?.body?.message ?? '';
+
+  // Reworded, because the API's own sentence reads as a fault in the request rather than as the
+  // fact that the container has only ever run once.
+  if (/previous terminated container/i.test(message)) {
     return new K8sApiError(
       'not_found',
       'This container has not restarted, so there is no previous run to read. Its current log is available without previous.',
     );
   }
-  return failure;
+
+  if (statusCodeOf(error) === 400 && message) return new K8sApiError('not_found', message);
+  return message && !failure.detail ? new K8sApiError(failure.status, message) : failure;
 };
 
 /** The same read as a react-query definition, so a panel and a tool share one cache. */

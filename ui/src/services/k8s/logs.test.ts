@@ -95,14 +95,29 @@ describe('readPodLogs', () => {
     expect((clients.text as jest.Mock).mock.calls[0][1].limitBytes).toBe(MAX_LOG_BYTES);
   });
 
-  it('says a read forward was cut when the server stopped it mid-line', async () => {
-    (clients.text as jest.Mock).mockResolvedValue('2026-10-06T09:16:30.100Z one\n2026-10-06T09:16:31.000Z tw');
+  it.each([
+    ['stopped mid-line', '2026-10-06T09:16:30.100Z one\n2026-10-06T09:16:31.000Z t'],
+    // The cut can land on a newline, and a body that ends in one looks complete.
+    ['stopped on a line boundary', '2026-10-06T09:16:30.100Z one\n2026-10-06T09:16:31.00Z tw\n'],
+  ])('says a read forward was cut when the server %s', async (_, body) => {
+    (clients.text as jest.Mock).mockResolvedValue(body);
 
-    const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.000Z' });
+    const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.000Z', limitBytes: body.length });
 
-    // Under the cap in this test, so nothing is trimmed here — but a body that does not end in a
-    // newline is one the server cut, and bounded saying sinceTime would claim it was everything.
-    expect(logs.bounded).toBe('bytes');
+    expect(logs.bounded).toBe('limitBytes');
+  });
+
+  it('counts the server cap in bytes, as the server does', async () => {
+    // Two bytes each, one character each: a body of 30 characters has reached a 40-byte cap.
+    const body = `2026-10-06T09:16:30.100Z ${'µ'.repeat(8)}\n`;
+    (clients.text as jest.Mock).mockResolvedValue(body);
+
+    const logs = await read(clients, {
+      sinceTime: '2026-10-06T09:15:00.000Z',
+      limitBytes: new TextEncoder().encode(body).length,
+    });
+
+    expect(logs.bounded).toBe('limitBytes');
   });
 
   it('does not read a half-written last line as a cut, on a tail the server never capped', async () => {
@@ -123,6 +138,19 @@ describe('readPodLogs', () => {
     // answer an empty log to a pod that is talking.
     expect(logs.text).toBe('one\ntwo\n');
     expect(logs.latest).toBeNull();
+  });
+
+  it('keeps the lines sharing the boundary line millisecond', async () => {
+    (clients.text as jest.Mock).mockResolvedValue(
+      '2026-10-06T09:15:00.100200300Z the line already read\n' +
+        '2026-10-06T09:15:00.100400500Z the line written in the same millisecond\n',
+    );
+
+    const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.100200300Z' });
+
+    // Date keeps milliseconds, so comparing would drop the second line — and nothing would ever
+    // return it, because the next read starts later still.
+    expect(logs.text).toBe('2026-10-06T09:15:00.100400500Z the line written in the same millisecond\n');
   });
 
   it('refuses sinceSeconds and sinceTime together, before the request', async () => {
@@ -220,6 +248,29 @@ describe('readPodLogs', () => {
       status: 'not_found',
       detail: expect.stringMatching(/has not restarted/i),
     });
+  });
+
+  it('passes on what the API said about a container that has not started', async () => {
+    (clients.text as jest.Mock).mockRejectedValue(
+      apiRejection(400, 'container "web" in pod "web-abc" is waiting to start: ImagePullBackOff'),
+    );
+
+    // The commonest reason to read a log while diagnosing. Answering "the Kubernetes API could not
+    // be reached" sends the reader after the cluster instead of after the image.
+    await expect(read(clients)).rejects.toMatchObject({
+      status: 'not_found',
+      detail: expect.stringMatching(/ImagePullBackOff/),
+    });
+  });
+
+  it.each([
+    ['tailLines', { tailLines: 0 }],
+    ['sinceSeconds', { sinceSeconds: -60 }],
+    ['limitBytes', { limitBytes: 1.5 }],
+  ])('refuses a %s the API would answer with a 400 of its own', async (_, params) => {
+    // Every number is checked here, which is what lets a 400 be read as "there is no log".
+    await expect(read(clients, params)).rejects.toMatchObject({ status: 'malformed' });
+    expect(clients.text).not.toHaveBeenCalled();
   });
 
   it('keeps a genuinely empty log distinguishable from every failure', async () => {
