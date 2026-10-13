@@ -69,7 +69,7 @@ jobs:
     steps:
       - name: Checkout
         if: github.event.schedule == matrix.cron
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: "Smart trigger for ${{ matrix.name }}"
         if: github.event.schedule == matrix.cron && matrix.type != 'retry'
         uses: scality/actions/actions-nightly-trigger@1.17.0

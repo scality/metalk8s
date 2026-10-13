@@ -36,7 +36,7 @@ jobs:
       NAME: downgrade-${{ inputs.type }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Install deps
         run: |
           # Wait for apt/dpkg locks to be released (e.g. unattended-upgrades at startup).
