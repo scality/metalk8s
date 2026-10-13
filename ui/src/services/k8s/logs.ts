@@ -174,11 +174,21 @@ const bytesOf = (value: string, cap: number, from: 'start' | 'end') => {
   return decoder.decode(bytes.subarray(start));
 };
 
+/**
+ * The last timestamp in the text, which is the last LINE's only when that line is whole.
+ *
+ * A read cut mid-line ends on a fragment whose timestamp the regex will not take, and answering
+ * null there would say reading forward is unavailable when it plainly is. Resuming from the last
+ * complete line reads the cut one again, in full, which is the only way to get the rest of it.
+ */
 const lastTimestamp = (text: string): string | null => {
   const lines = text.split('\n').filter((line) => line.length > 0);
-  const match = RFC3339.exec(lines[lines.length - 1] ?? '');
-  // A guess here would be a cursor that silently rereads, which is worse than saying there is none.
-  return match ? match[1] : null;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const match = RFC3339.exec(lines[i]);
+    // A guess would be a cursor that silently rereads, which is worse than saying there is none.
+    if (match) return match[1];
+  }
+  return null;
 };
 
 /**
@@ -314,11 +324,16 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
    * The cap, kept at the end the caller can come back to: reading forward that is the start, since
    * `latest` resumes from there and dropping the oldest would leave a gap; reading the tail it is
    * the end, where a failure is.
+   *
+   * The server is sent the same number for a forward read, so this is a second line of defence
+   * rather than the first: it fires only if more arrives than was asked for.
    */
   const cut = (value: string) => {
     if (byteLength(value) <= cap) return value;
     bounded = limitBytes !== undefined ? 'limitBytes' : 'bytes';
-    if (sinceTime) return bytesOf(value, cap, 'start');
+    // sinceSeconds reads forward as much as sinceTime does, and keeping the end of one of those
+    // drops its oldest lines where nothing can ask for them again.
+    if (forward) return bytesOf(value, cap, 'start');
 
     // A tail starts at a line boundary, so its first line is whole. When no whole line fits, the
     // last one comes back over the cap rather than as a fragment with no timestamp on the front.
@@ -360,8 +375,9 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
     // and this is what separates them.
     searched: { lines: countLines(window), bytes: byteLength(window) },
     // The window was searched to its end, so that is where reading forward resumes — not the last
-    // line that happened to match.
-    latest: cursor(window),
+    // line that happened to match. Unless the cap took matches out of the text: the end of the
+    // window is past those, and resuming there would skip what matchCount has just reported.
+    latest: forward && text !== found.text ? cursor(text) : cursor(window),
     bounded,
   };
 };

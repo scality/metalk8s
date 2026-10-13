@@ -166,6 +166,39 @@ describe('readPodLogs', () => {
     expect(clients.text).not.toHaveBeenCalled();
   });
 
+  // The server is sent the same cap, so it should never answer over it. These cover the case where
+  // it does anyway — a proxy that buffers, an older kubelet — because what is dropped then is the
+  // one thing a later call cannot ask for.
+  describe('when more comes back than was asked for', () => {
+    const line = (index: number) => `2026-10-06T09:16:${String(30 + index).padStart(2, '0')}.100Z #${index} BOOM\n`;
+    const over = Array.from({ length: 12 }, (_, i) => line(i)).join('');
+
+    it('keeps the start of a read forward from sinceSeconds, not its end', async () => {
+      (clients.text as jest.Mock).mockResolvedValue(over);
+
+      const logs = await read(clients, { sinceSeconds: 600, limitBytes: 100 });
+
+      // Checking sinceTime rather than forward sends this one down the tail branch, which keeps the
+      // newest lines and leaves the oldest where latest has already moved past them.
+      expect(logs.text.startsWith(line(0))).toBe(true);
+      expect(logs.bounded).toBe('limitBytes');
+    });
+
+    it('resumes from the last match kept, when the cap took the others out', async () => {
+      (clients.text as jest.Mock).mockResolvedValue(over);
+
+      const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.000Z', pattern: 'BOOM', limitBytes: 100 });
+
+      // matchCount says twelve were found; resuming at the end of the window would skip the ones
+      // the cap kept out of the text, and nothing would ever return them.
+      expect(logs.matchCount).toBe(12);
+      // The last line kept, not the end of the window: resuming there would skip the matches the
+      // cap took out, which is what matchCount has just said were found.
+      expect(logs.latest).toBe('2026-10-06T09:16:32.100Z');
+      expect(logs.text).toContain('#0 ');
+    });
+  });
+
   it('refuses sinceSeconds and sinceTime together, before the request', async () => {
     await expect(read(clients, { sinceSeconds: 60, sinceTime: '2026-10-06T09:15:00.000Z' })).rejects.toMatchObject({
       status: 'malformed',
@@ -177,6 +210,17 @@ describe('readPodLogs', () => {
     (clients.text as jest.Mock).mockResolvedValue('2026-10-06T09:14:21.882Z one\n2026-10-06T09:16:30.100Z two\n');
 
     expect((await read(clients)).latest).toBe('2026-10-06T09:16:30.100Z');
+  });
+
+  it('resumes from the last whole line when the read was cut inside one', async () => {
+    // Cut inside the timestamp itself, which is where a fragment stops being readable at all.
+    (clients.text as jest.Mock).mockResolvedValue('2026-10-06T09:16:30.100Z whole\n2026-10-06T09:16');
+
+    const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.000Z' });
+
+    // null here would say reading forward is unavailable, when reading forward is exactly what
+    // fetches the rest of that line.
+    expect(logs.latest).toBe('2026-10-06T09:16:30.100Z');
   });
 
   it('says latest is unavailable rather than guessing at it', async () => {
