@@ -248,6 +248,17 @@ describe('readPodLogs', () => {
     expect(logs.latest).toBe('2026-10-06T09:16:30.100Z');
   });
 
+  it('keeps the cursor when the only line that came back was cut', async () => {
+    // Longer than the ceiling, so there is no second ask that would do better.
+    (clients.text as jest.Mock).mockResolvedValue(`2026-10-06T09:15:01.000Z ${'x'.repeat(MAX_LOG_BYTES)}`);
+
+    const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.200Z' });
+
+    // null would say reading forward is unavailable, and the caller would have nothing left to try.
+    expect(logs.latest).toBe('2026-10-06T09:15:00.200Z');
+    expect(logs.bounded).toBe('bytes');
+  });
+
   it('says latest is unavailable rather than guessing at it', async () => {
     (clients.text as jest.Mock).mockResolvedValue('no timestamp on this line\n');
 
@@ -371,6 +382,20 @@ describe('readPodLogs', () => {
 
       expect((clients.text as jest.Mock).mock.calls[1][1].limitBytes).toBe(MAX_LOG_BYTES);
       expect(logs.text).toBe('2026-10-06T09:15:01.000Z new\n');
+      expect(logs.latest).toBe('2026-10-06T09:15:01.000Z');
+    });
+
+    it('asks again when all that came back was a line it stopped inside', async () => {
+      const partial = `${already}2026-10-06T09:15:01.000Z the start of a long `;
+      (clients.text as jest.Mock)
+        .mockResolvedValueOnce(partial)
+        .mockResolvedValueOnce(`${already}2026-10-06T09:15:01.000Z the start of a long one\n`);
+
+      const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.200Z', limitBytes: partial.length });
+
+      // A window holding one cut line has nothing to resume from either, so stopping here would be
+      // the same dead end one turn later.
+      expect(clients.text).toHaveBeenCalledTimes(2);
       expect(logs.latest).toBe('2026-10-06T09:15:01.000Z');
     });
 

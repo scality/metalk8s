@@ -335,8 +335,11 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
    * Asking once more for the whole ceiling is the way past it. Beyond that the second itself is
    * larger than the ceiling, and `bounded` saying bytes is what tells a quiet container from a
    * window spent before it reached anything new.
+   *
+   * No whole line, rather than no line at all: a window holding one line the read stopped inside
+   * leaves nothing to resume from either, and is the same dead end a turn later.
    */
-  if (forward && window === '' && body !== '' && serverCut(body) && (cappedAt ?? 0) < MAX_LOG_BYTES) {
+  if (forward && !window.includes('\n') && body !== '' && serverCut(body) && (cappedAt ?? 0) < MAX_LOG_BYTES) {
     cappedAt = MAX_LOG_BYTES;
     body = await fetchLog(cappedAt);
     window = onlyAfterSince(body);
@@ -393,11 +396,15 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
   const countLines = (value: string) => (value === '' ? 0 : value.replace(/\n$/, '').split('\n').length);
 
   /**
-   * Where to read on from. A forward read that finds nothing new comes back empty, and answering
-   * null there would tell a caller polling a quiet container that it has lost its place — when the
-   * place it had is still good.
+   * Where to read on from. A forward read that finds no whole line — nothing new at all, or one
+   * line it stopped inside — has not moved, so the place it started from is still the place to
+   * resume. Answering null there would tell a caller polling a quiet container that it has lost its
+   * cursor, and leave a caller that hit a long line with no way forward at all.
+   *
+   * Lines that carry no timestamp are the other case, and that one really is null: there is nothing
+   * to resume from, which is what turning timestamps off costs.
    */
-  const cursor = (value: string) => lastTimestamp(value) ?? (value === '' ? (sinceTime ?? null) : null);
+  const cursor = (value: string) => lastTimestamp(value) ?? (value.includes('\n') ? null : (sinceTime ?? null));
   const base = { pod, namespace, container, ...(previous !== undefined ? { previous } : {}), containers: null };
 
   if (pattern === undefined) {

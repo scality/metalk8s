@@ -69,8 +69,8 @@ export function createGetPodLogsTool(context: ToolContext) {
           // The API has no offset, so "the bytes from here to there" is not askable of any client.
           description:
             'How many bytes to return, in whole lines: the last that many of the window, or the first ' +
-            'that many when reading forward from a since, which is where the next read resumes. A ' +
-            'single line longer than this comes back whole rather than cut.',
+            'that many when reading forward from a since, which is where the next read resumes. ' +
+            'Reading the tail, a single line longer than this comes back whole rather than cut.',
         },
         previous: {
           type: 'boolean',

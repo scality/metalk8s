@@ -111,6 +111,8 @@ describe('getPodLogs', () => {
     expect(description).toMatch(/NOT the same as matching nothing in the log/i);
     expect(description).toContain(`${DEFAULT_TAIL_LINES}`);
     expect(inputSchema.required).toEqual(['pod', 'namespace']);
+    // Unscoped, that claim is false of a read forward: there the server does the cutting.
+    expect(inputSchema.properties.limitBytes.description).toMatch(/Reading the tail, a single line/);
     // follow streams until the connection closes, and a tool returns once.
     expect(inputSchema.properties).not.toHaveProperty('follow');
   });
