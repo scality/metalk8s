@@ -477,10 +477,10 @@ PREBUILT_RPMS: Tuple[PrebuiltRPM, ...] = (
         name="containerd-image-preload",
         repo="scality",
         source="scality/image-cache",
-        tag="v0.1.0-alpha.1",
+        tag="v0.1.0-alpha.2",
         sha256={
-            "8": "b374b74d78c2786c8143e1da2f20bfd46434bc007c42ebb458e87af22a527ad1",
-            "9": "bc205c2120970f5185bbd2808cb55219141acb311692707249692492b143d954",
+            "8": "606bd150f7768823b789b6f02ee916c1442bb8bc3ed12728c38b968ad7af3d19",
+            "9": "31a317ebe27548dddf389ad9dcc954713682ee16176a5639a55e719f75d59bae",
         },
     ),
     # Fills the image cache at bootstrap and at join. A static binary, it
