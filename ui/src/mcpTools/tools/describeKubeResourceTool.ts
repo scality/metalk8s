@@ -5,16 +5,6 @@ import { isSecretKind, kubeClients, refusal, secretRefusal } from '../kubeTools'
 import type { ToolContext } from '../types';
 
 /**
- * READ-ONLY: one object in full, and what the cluster has been saying about it.
- *
- * The follow-up to listKubeResources, which is where the name comes from. That order matters: an
- * exact name is required here, and guessing one is the repeated-call loop the listing exists to
- * prevent.
- *
- * It runs as the signed-in user, with that user's own token, so the API server enforces that user's
- * RBAC.
- */
-/**
  * resolveTarget's not_found offers an apiVersion retry, because listKubeResources accepts one. This
  * tool does not, so a model following that advice spends a turn to arrive at the same answer. The
  * kinds it can describe are on the refusal already, as allowedKinds.
@@ -29,6 +19,16 @@ const describableTarget = (kind: string) => {
   }
 };
 
+/**
+ * READ-ONLY: one object in full, and what the cluster has been saying about it.
+ *
+ * The follow-up to listKubeResources, which is where the name comes from. That order matters: an
+ * exact name is required here, and guessing one is the repeated-call loop the listing exists to
+ * prevent.
+ *
+ * It runs as the signed-in user, with that user's own token, so the API server enforces that user's
+ * RBAC.
+ */
 export function createDescribeKubeResourceTool(context: ToolContext) {
   return {
     name: 'describeKubeResource',
