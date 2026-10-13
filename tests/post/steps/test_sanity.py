@@ -61,6 +61,14 @@ def test_worker_image_cache_filled(host):
     pass
 
 
+@scenario(
+    "../features/sanity.feature",
+    "Every node is synced to the image caches of its roles",
+)
+def test_image_caches_synced(host):
+    pass
+
+
 @scenario("../features/sanity.feature", "StatefulSet has available replicas")
 def test_statefulset_running(host):
     pass
@@ -301,6 +309,41 @@ def check_worker_image_cache(host, ssh_config, k8s_client, version, directory):
         assert not missing, f"no '{sentinel}' on {', '.join(missing)}"
 
     utils.retry(_check_sentinel, times=3, wait=5, name=f"check '{sentinel}'")
+
+
+# The role label each boot cache variant selects, `None` for every node.
+IMAGE_CACHE_ROLES = {
+    "worker": None,
+    "control-plane": "node-role.kubernetes.io/master",
+    "etcd": "node-role.kubernetes.io/etcd",
+}
+
+
+@then("every node is synced to the image caches of its roles")
+def check_image_caches_synced(k8s_client, version):
+    """Check the agent reports each ImageCache of this version synced.
+
+    The agent labels each node it selects with the status of each resource.
+    """
+    suffix = version.replace(".", "-")
+
+    def _check_labels():
+        nodes = k8s_client.resources.get(api_version="v1", kind="Node").get().items
+        assert nodes, "no Kubernetes node to check"
+
+        not_synced = []
+        for node in nodes:
+            labels = node.to_dict()["metadata"].get("labels") or {}
+            for variant, role in IMAGE_CACHE_ROLES.items():
+                if role is not None and role not in labels:
+                    continue
+                key = f"image-cache.scality.com/{variant}-{suffix}"
+                if labels.get(key) != "synced":
+                    not_synced.append(f"{node.metadata.name} ({key}={labels.get(key)})")
+
+        assert not not_synced, f"not synced: {', '.join(not_synced)}"
+
+    utils.retry(_check_labels, times=30, wait=10, name="check image cache labels")
 
 
 def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
