@@ -239,6 +239,62 @@ describe('readPodLogs', () => {
     expect(logs.bounded).toBe('limitBytes');
   });
 
+  it('counts bytes as bytes, and holds a tail to the cap in bytes', async () => {
+    const line = `2026-10-06T09:16:30.100Z duration=2.593µs ${'µ'.repeat(20)}\n`;
+    (clients.text as jest.Mock).mockResolvedValue(Array.from({ length: 20 }, () => line).join(''));
+
+    const logs = await read(clients, { limitBytes: 400 });
+
+    // Counting characters would return about twice the bytes asked for and then report the smaller
+    // number, so the one field that says how much was sent would understate it.
+    expect(logs.bytes).toBe(new TextEncoder().encode(logs.text).length);
+    expect(logs.bytes).toBeLessThanOrEqual(400);
+    expect(logs.text.startsWith('2026-10-06T')).toBe(true);
+  });
+
+  it('cuts a window that is short in characters and long in bytes', async () => {
+    // 153 characters, 303 bytes, over three lines: comparing characters would call this under a
+    // 200-byte cap and hand back every byte of it, saying nothing was cut.
+    const line = `${'µ'.repeat(50)}\n`;
+    (clients.text as jest.Mock).mockResolvedValue(line.repeat(3));
+
+    const logs = await read(clients, { limitBytes: 200 });
+
+    expect(logs.bytes).toBeLessThanOrEqual(200);
+    expect(logs.text).toBe(line);
+    expect(logs.bounded).toBe('limitBytes');
+  });
+
+  it('never cuts a character in half', async () => {
+    const line = `2026-10-06T09:16:30.100Z ${'µ'.repeat(40)}\n`;
+    (clients.text as jest.Mock).mockResolvedValue(line + line);
+
+    // An odd cap lands inside a two-byte character; half of one is not a character at all.
+    const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.000Z', limitBytes: 72 });
+
+    expect(logs.text).not.toContain('\ufffd');
+    expect(new TextEncoder().encode(logs.text).length).toBeLessThanOrEqual(72);
+  });
+
+  it('keeps the cursor it was given when a read forward finds nothing new', async () => {
+    // What a quiet container answers: the boundary line back, and nothing after it.
+    (clients.text as jest.Mock).mockResolvedValue('2026-10-06T09:15:00.000Z the line already read\n');
+
+    const logs = await read(clients, { sinceTime: '2026-10-06T09:15:00.000Z' });
+
+    expect(logs.text).toBe('');
+    // null here would tell a caller polling a quiet pod that it has lost its place.
+    expect(logs.latest).toBe('2026-10-06T09:15:00.000Z');
+  });
+
+  it.each([
+    ['a fraction of a line of context', { contextLines: 1.5 }],
+    ['a context that is not a number', { contextLines: Number.NaN }],
+  ])('refuses %s, which would drop the matches it counted', async (_, params) => {
+    await expect(read(clients, { pattern: 'BOOM', ...params })).rejects.toMatchObject({ status: 'malformed' });
+    expect(clients.text).not.toHaveBeenCalled();
+  });
+
   it('says a container has not restarted rather than coming back empty', async () => {
     (clients.text as jest.Mock).mockRejectedValue(
       apiRejection(400, 'previous terminated container "web" in pod "web-abc" not found'),
@@ -292,6 +348,16 @@ describe('readPodLogs', () => {
     expect(logs.matchCount).toBe(0);
     // Nothing in 2 lines is a different fact from nothing in the log.
     expect(logs.searched).toEqual({ lines: 2, bytes: 73 });
+  });
+
+  it('reports what it searched in bytes too', async () => {
+    const window = `2026-10-06T09:14:21.882Z duration=2.593µs\n`;
+    (clients.text as jest.Mock).mockResolvedValue(window);
+
+    const logs = await read(clients, { pattern: 'nothing here' });
+
+    expect(logs.searched).toEqual({ lines: 1, bytes: new TextEncoder().encode(window).length });
+    expect(logs.searched?.bytes).toBeGreaterThan(window.length);
   });
 
   it('puts the lines around a match in the text, each one once', async () => {

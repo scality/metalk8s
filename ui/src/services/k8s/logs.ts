@@ -95,14 +95,17 @@ export const checkLogParams = (params: LogParams): { params: LogParams; clamped:
     }
   }
 
-  // So that a 400 can be read as "there is no log", never as "you asked wrongly".
-  for (const [name, value] of [
-    ['tailLines', params.tailLines],
-    ['sinceSeconds', params.sinceSeconds],
-    ['limitBytes', params.limitBytes],
+  // The first three so that a 400 can be read as "there is no log", never as "you asked wrongly".
+  // contextLines never reaches the API at all, and a fraction of a line walks search() past every
+  // index it meant to keep, so the matches vanish while matchCount still counts them.
+  for (const [name, value, least] of [
+    ['tailLines', params.tailLines, 1],
+    ['sinceSeconds', params.sinceSeconds, 1],
+    ['limitBytes', params.limitBytes, 1],
+    ['contextLines', params.contextLines, 0],
   ] as const) {
-    if (value !== undefined && (typeof value !== 'number' || !Number.isInteger(value) || value < 1)) {
-      throw new K8sApiError('malformed', `${name} is a whole number of at least 1, not "${value}".`);
+    if (value !== undefined && (typeof value !== 'number' || !Number.isInteger(value) || value < least)) {
+      throw new K8sApiError('malformed', `${name} is a whole number of at least ${least}, not "${value}".`);
     }
   }
 
@@ -133,6 +136,28 @@ const resolveContainer = async (clients: K8sApiClients, pod: string, namespace: 
   // is addressable either way, so its name is offered without being demanded.
   if (containers.length > 1) return { choose: [...containers, ...initContainers] };
   return { container: containers[0] };
+};
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
+/** UTF-8 bytes, as the API counts them: `duration=2.593µs` is 16 characters and 17 bytes. */
+const byteLength = (value: string) => encoder.encode(value).length;
+
+/** The first or last `cap` bytes, never splitting a character in half. */
+const bytesOf = (value: string, cap: number, from: 'start' | 'end') => {
+  const bytes = encoder.encode(value);
+  if (bytes.length <= cap) return value;
+  const continues = (byte: number) => (byte & 0xc0) === 0x80;
+
+  if (from === 'start') {
+    let end = cap;
+    while (end > 0 && continues(bytes[end])) end--;
+    return decoder.decode(bytes.subarray(0, end));
+  }
+  let start = bytes.length - cap;
+  while (start < bytes.length && continues(bytes[start])) start++;
+  return decoder.decode(bytes.subarray(start));
 };
 
 const lastTimestamp = (text: string): string | null => {
@@ -277,27 +302,35 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
    * the end, where a failure is.
    */
   const cut = (value: string) => {
-    if (value.length <= cap) return value;
+    if (byteLength(value) <= cap) return value;
     bounded = limitBytes !== undefined ? 'limitBytes' : 'bytes';
-    if (sinceTime) return value.slice(0, cap);
+    if (sinceTime) return bytesOf(value, cap, 'start');
 
     // A tail starts at a line boundary, so its first line is whole. When no whole line fits, the
     // last one comes back over the cap rather than as a fragment with no timestamp on the front.
-    const from = value.length - cap;
-    const boundary = from > 0 && value[from - 1] === '\n' ? from : value.indexOf('\n', from) + 1;
-    return value.slice(
-      boundary > 0 && boundary < value.length
-        ? boundary
-        : Math.max(value.lastIndexOf('\n', value.length - 2) + 1, value.length - MAX_LOG_BYTES),
-    );
+    const tail = bytesOf(value, cap, 'end');
+    if (value[value.length - tail.length - 1] === '\n') return tail;
+
+    const boundary = tail.indexOf('\n') + 1;
+    if (boundary > 0 && boundary < tail.length) return tail.slice(boundary);
+
+    const lastLine = value.slice(value.lastIndexOf('\n', value.length - 2) + 1);
+    return bytesOf(lastLine, MAX_LOG_BYTES, 'end');
   };
 
   const countLines = (value: string) => (value === '' ? 0 : value.replace(/\n$/, '').split('\n').length);
+
+  /**
+   * Where to read on from. A forward read that finds nothing new comes back empty, and answering
+   * null there would tell a caller polling a quiet container that it has lost its place — when the
+   * place it had is still good.
+   */
+  const cursor = (value: string) => lastTimestamp(value) ?? (value === '' ? (sinceTime ?? null) : null);
   const base = { pod, namespace, container, ...(previous !== undefined ? { previous } : {}), containers: null };
 
   if (pattern === undefined) {
     const text = cut(window);
-    return { ...base, text, lines: countLines(text), bytes: text.length, latest: lastTimestamp(text), bounded };
+    return { ...base, text, lines: countLines(text), bytes: byteLength(text), latest: cursor(text), bounded };
   }
 
   // The whole window is searched, and only the matches are then capped. Capping first would drop
@@ -311,10 +344,10 @@ export const readPodLogs = async (clients: K8sApiClients, raw: LogParams): Promi
     matchCount: found.matchCount,
     // A pattern finding nothing in 200 lines is a different fact from finding nothing in the log,
     // and this is what separates them.
-    searched: { lines: countLines(window), bytes: window.length },
+    searched: { lines: countLines(window), bytes: byteLength(window) },
     // The window was searched to its end, so that is where reading forward resumes — not the last
     // line that happened to match.
-    latest: lastTimestamp(window),
+    latest: cursor(window),
     bounded,
   };
 };
