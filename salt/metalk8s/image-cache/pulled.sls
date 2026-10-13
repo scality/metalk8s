@@ -47,6 +47,9 @@ Pull the worker boot cache from the registry:
     - cache_path: {{ image_cache.directory }}
     # NOTE: The registry endpoints serve plain HTTP.
     - plain_http: True
+    # NOTE: Per endpoint. A registry that accepts the connection and stops
+    # answering would otherwise hold the join forever.
+    - timeout: 600
     - require:
       - file: Create the image cache directory
       - metalk8s_package_manager: Install imagecachectl

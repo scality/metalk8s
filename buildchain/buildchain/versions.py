@@ -472,7 +472,8 @@ PREBUILT_RPMS: Tuple[PrebuiltRPM, ...] = (
     # finished RPM has no spec: declaring them by name here would have `dnf`
     # download an unpinned copy, and reading them off the package makes the
     # download list depend on a file we have yet to fetch. Worth solving on
-    # the second prebuilt package, not for one dependency already on the ISO.
+    # the first prebuilt package that needs more than what the ISO carries:
+    # `imagecachectl`, a static binary, needs nothing.
     PrebuiltRPM(
         name="containerd-image-preload",
         repo="scality",

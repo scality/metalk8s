@@ -276,6 +276,8 @@ def test_provisioning_names_match_the_image_cache_resources(
             ), f"'{state_id}' does not read its ISO archive ({case_id})"
             assert args.get("cache_path"), f"'{state_id}' sets no cache ({case_id})"
             assert COMMAND_STATE in required_states(states, state_id), case_id
+            # Read from the ISO: no registry to hang on.
+            assert "timeout" not in args, f"'{state_id}' has a timeout ({case_id})"
 
         checked = True
 
@@ -313,6 +315,7 @@ def test_pull_reads_the_registry_endpoint(
                 source,
             ), f"unexpected source '{source}' ({case_id})"
         assert args.get("plain_http") is True, f"no plain HTTP ({case_id})"
+        assert args.get("timeout"), f"a pull with no timeout ({case_id})"
         assert args.get("cache_path"), f"'{PULL_STATE}' sets no cache ({case_id})"
 
         assert DIRECTORY_STATE in required_states(states, PULL_STATE), case_id

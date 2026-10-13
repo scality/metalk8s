@@ -40,7 +40,7 @@ class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
         run_all.assert_called_once_with(
             ["imagecachectl", "import", "--name", "worker-1-0-0", *flags, SOURCE],
             python_shell=False,
-            timeout=600,
+            timeout=None,
         )
 
     def test_extracted(self):
@@ -112,6 +112,13 @@ class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
     def test_timeout(self):
         _, run_all = self._run({"retcode": 0, "stdout": "", "stderr": ""}, timeout=30)
         self.assertEqual(run_all.call_args.kwargs["timeout"], 30)
+
+    def test_timeout_reason_kept(self):
+        # Salt reports a timeout on stdout, with an empty stderr.
+        out = {"retcode": 1, "stdout": "Timed out after 600 seconds", "stderr": ""}
+        ret, _ = self._run(out, timeout=600)
+        self.assertFalse(ret["result"])
+        self.assertIn("Timed out", ret["comment"])
 
     def test_cannot_run(self):
         ret, _ = self._run(side_effect=CommandExecutionError("not found"))

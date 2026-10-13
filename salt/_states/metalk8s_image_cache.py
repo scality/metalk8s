@@ -24,7 +24,7 @@ def __virtual__():
     return __virtualname__
 
 
-def imported(name, source, cache_path=None, plain_http=False, timeout=600):
+def imported(name, source, cache_path=None, plain_http=False, timeout=None):
     """
     Import a boot cache image into the cache with `imagecachectl import`.
 
@@ -39,8 +39,9 @@ def imported(name, source, cache_path=None, plain_http=False, timeout=600):
     plain_http
         Talk plain HTTP to the registry
     timeout
-        Seconds each attempt may take. A registry that accepts the connection
-        and then stops answering would otherwise hold the state forever.
+        Seconds each attempt may take, no limit if not set. Set it for a pull:
+        a registry that accepts the connection and then stops answering would
+        otherwise hold the state forever.
     """
     ret = {"name": name, "result": False, "changes": {}, "comment": ""}
     sources = [source] if isinstance(source, str) else list(source)
@@ -59,7 +60,9 @@ def imported(name, source, cache_path=None, plain_http=False, timeout=600):
 
     if __opts__["test"]:
         ret["result"] = None
-        ret["comment"] = f"Would run: {' '.join(commands[0])}"
+        ret["comment"] = "Would run, until one succeeds:\n" + "\n".join(
+            " ".join(command) for command in commands
+        )
         return ret
 
     errors = []
@@ -73,12 +76,14 @@ def imported(name, source, cache_path=None, plain_http=False, timeout=600):
             return ret
 
         if out["retcode"] != 0:
-            # The comment reaches the state output, the log reaches the minion
-            # log, which is where a failed deployment gets read from.
-            log.error('Failed to import "%s" from "%s": %s', name, src, out["stderr"])
+            # Salt reports a timeout on stdout, the command its own errors on
+            # stderr: keep both.
+            output = "\n".join(
+                text for text in (out["stderr"].strip(), out["stdout"].strip()) if text
+            )
+            log.warning('Failed to import "%s" from "%s": %s', name, src, output)
             errors.append(
-                f"{src}: imagecachectl exited with code {out['retcode']}: "
-                f"{out['stderr']}"
+                f"{src}: imagecachectl exited with code {out['retcode']}: {output}"
             )
             continue
 
@@ -88,5 +93,8 @@ def imported(name, source, cache_path=None, plain_http=False, timeout=600):
             ret["changes"] = {"imported": src}
         return ret
 
+    # The comment reaches the state output, the log reaches the minion log,
+    # which is where a failed deployment gets read from.
+    log.error('Failed to import "%s" from every source', name)
     ret["comment"] = "\n".join(errors)
     return ret
