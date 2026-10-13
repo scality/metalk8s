@@ -80,6 +80,20 @@ export const checkLogParams = (params: LogParams): { params: LogParams; clamped:
   if (params.sinceSeconds !== undefined && params.sinceTime !== undefined) {
     throw new K8sApiError('malformed', 'sinceSeconds and sinceTime are alternatives; give one.');
   }
+
+  /**
+   * The API applies both, in this order: the lines after the instant, and then the last N of those.
+   * So the lines between the two are skipped, and `latest` comes back past them — a forward read
+   * that loses its oldest lines and no later call can ask for them again. A cap that keeps the end
+   * cannot be resumed from; limitBytes is the one that bounds a forward read, because the server
+   * applies it from the start of the range.
+   */
+  if (params.tailLines !== undefined && (params.sinceTime !== undefined || params.sinceSeconds !== undefined)) {
+    throw new K8sApiError(
+      'malformed',
+      'tailLines counts back from the end, so combining it with sinceSeconds or sinceTime silently skips the lines in between. Use limitBytes to bound a read that moves forward.',
+    );
+  }
   if (params.sinceTime !== undefined && !RFC3339.test(params.sinceTime)) {
     throw new K8sApiError('malformed', `"${params.sinceTime}" is not an RFC 3339 time.`);
   }

@@ -153,6 +153,19 @@ describe('readPodLogs', () => {
     expect(logs.text).toBe('2026-10-06T09:15:00.100400500Z the line written in the same millisecond\n');
   });
 
+  it.each([
+    ['sinceTime', { sinceTime: '2026-10-06T09:15:00.000Z' }],
+    ['sinceSeconds', { sinceSeconds: 600 }],
+  ])('refuses a line cap on a read forward from %s', async (_, since) => {
+    // The API takes the lines after the instant and then the last N of those, so the lines between
+    // are skipped and latest comes back past them — gone, with no later call able to ask for them.
+    await expect(read(clients, { tailLines: 50, ...since })).rejects.toMatchObject({
+      status: 'malformed',
+      detail: expect.stringMatching(/limitBytes/),
+    });
+    expect(clients.text).not.toHaveBeenCalled();
+  });
+
   it('refuses sinceSeconds and sinceTime together, before the request', async () => {
     await expect(read(clients, { sinceSeconds: 60, sinceTime: '2026-10-06T09:15:00.000Z' })).rejects.toMatchObject({
       status: 'malformed',

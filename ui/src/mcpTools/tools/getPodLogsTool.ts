@@ -51,7 +51,12 @@ export function createGetPodLogsTool(context: ToolContext) {
           type: 'string',
           description: 'Which container. Needed only when the pod has more than one.',
         },
-        tailLines: { type: 'integer', minimum: 1, maximum: MAX_TAIL_LINES, description: 'The last N lines.' },
+        tailLines: {
+          type: 'integer',
+          minimum: 1,
+          maximum: MAX_TAIL_LINES,
+          description: 'The last N lines. Not combined with a since — use limitBytes to bound one of those.',
+        },
         sinceSeconds: { type: 'integer', minimum: 1, description: 'Everything from N seconds ago.' },
         sinceTime: {
           type: 'string',
