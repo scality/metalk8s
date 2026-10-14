@@ -18,8 +18,14 @@ def __virtual__():
 
 
 def ext_pillar(minion_id, pillar, kubeconfig):  # pylint: disable=unused-argument
+    # Keep the repositories that are not Ready. A repository restarting while
+    # the pillar is computed must not vanish from the container engine
+    # configuration. Consumers that need a Ready one filter on `ready`.
     services = {
-        "kube-system": ["salt-master", "repositories"],
+        "kube-system": {
+            "salt-master": {},
+            "repositories": {"include_not_ready": True},
+        },
     }
 
     if not os.path.isfile(kubeconfig):
@@ -33,12 +39,12 @@ def ext_pillar(minion_id, pillar, kubeconfig):  # pylint: disable=unused-argumen
         errors = []
 
         for namespace, services in services.items():
-            for service in services:
+            for service, options in services.items():
                 service_endpoints = []
                 try:
                     service_endpoints = __salt__[
                         "metalk8s_kubernetes.get_service_endpoints"
-                    ](service, namespace, kubeconfig=kubeconfig)
+                    ](service, namespace, kubeconfig=kubeconfig, **options)
                 except CommandExecutionError as exc:
                     errors.append(str(exc))
 
