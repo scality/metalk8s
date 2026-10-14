@@ -1218,6 +1218,20 @@ metalk8s:
           os: Rocky/9
         "RHEL 9":
           os: RedHat/9
+        "RHEL 9 with a not Ready repository":
+          os: RedHat/9
+          pillar_overrides:
+            metalk8s:
+              endpoints:
+                repositories:
+                  - ip: 10.0.0.1
+                    ports:
+                      http: 8080
+                    ready: false
+                  - ip: 10.0.0.2
+                    ports:
+                      http: 8080
+                    ready: true
 
   salt:
     master:
