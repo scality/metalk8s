@@ -3,4 +3,4 @@ body: 'A node joining the cluster now fills its image cache before its kubelet s
 time: 2026-10-07T09:07:44.106821711Z
 custom:
     CommentId: cli
-    Pull: "5135"
+    Pull: "5169"
