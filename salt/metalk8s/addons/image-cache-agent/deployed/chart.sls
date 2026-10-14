@@ -293,7 +293,7 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
         image: '{% endraw -%}{{ build_image_name("image-cache-agent", False) }}{%-
-          raw %}:v0.1.0-alpha.1-63-g8398955'
+          raw %}:v0.1.0-alpha.2'
         livenessProbe:
           httpGet:
             path: /healthz

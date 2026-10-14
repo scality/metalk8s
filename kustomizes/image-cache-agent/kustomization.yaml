@@ -1,14 +1,12 @@
 namespace: metalk8s-image-cache
 
-# TODO(MK8S-166): the ref is the commit the image in versions.py is
-# built from. Move both to the next agent release.
 resources:
-  - github.com/scality/image-cache.git/agent/config/default?ref=83989553ca04bd3f544c963c8e3c12bd0d212e57
+  - github.com/scality/image-cache.git/agent/config/default?ref=v0.1.0-alpha.2
 
 images:
   - name: controller
     newName: '{% endraw -%}{{ build_image_name("image-cache-agent", False) }}{%- raw %}'
-    newTag: v0.1.0-alpha.1-63-g8398955
+    newTag: v0.1.0-alpha.2
 
 patches:
   - path: daemonset_patch.yaml

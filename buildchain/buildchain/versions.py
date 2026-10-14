@@ -336,10 +336,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="image-cache-agent",
-        # TODO(MK8S-166): build of the main commit that merged
-        # scality/image-cache#31. Move to the next agent release.
-        version="v0.1.0-alpha.1-63-g8398955",
-        digest="sha256:011ba625f8e58cd95e0dc38345a6ccdfd9088079735d46849e9492620593a279",
+        version="v0.1.0-alpha.2",
+        digest="sha256:a7f7c2c188acd2820618ff524b7183c27da7ec8cfa1f2878856364ea32c622ad",
     ),
     Image(
         name="node-warden-operator",
