@@ -67,6 +67,10 @@ describe('listKubeResources', () => {
     ['signingkeies', 'dex.coreos.com/v1'],
     ['oauth2clients', 'dex.coreos.com/v1'],
     ['passwords', 'dex.coreos.com/v1'],
+    // The group is matched however it is cased, as the kind already was.
+    ['SigningKeies', 'DEX.CoreOS.com/v1'],
+    // Any kind at all in that group, including one invented to get past a name check.
+    ['whatever-they-add-next', 'dex.coreos.com/v1'],
   ])('refuses %s, which is a Secret under another name', async (kind, apiVersion) => {
     // Dex runs with storage.type kubernetes, so its OIDC signing keys, client secrets, LDAP bind
     // config and password hashes live in this group. Refusing the kind `secrets` guards the core
