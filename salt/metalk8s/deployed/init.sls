@@ -18,4 +18,3 @@ include:
   - metalk8s.addons.alert-tree.deployed
   - metalk8s.addons.crl-operator.deployed
   - metalk8s.addons.disk-management-agent.deployed
-  - metalk8s.addons.image-cache-agent.deployed
