@@ -339,19 +339,6 @@ spec:
       terminationGracePeriodSeconds: 10
       tolerations:
       - effect: NoSchedule
-        key: node-role.kubernetes.io/bootstrap
-        operator: Exists
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/infra
-        operator: Exists
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-        operator: Exists
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/etcd
-        operator: Exists
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/control-plane
         operator: Exists
       volumes:
       - hostPath:
