@@ -748,6 +748,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/roles/minion/init.sls"),
     Path("salt/metalk8s/roles/node/absent.sls"),
     Path("salt/metalk8s/roles/node/init.sls"),
+    Path("salt/metalk8s/roles/registry/init.sls"),
+    Path("salt/metalk8s/roles/registry/absent.sls"),
     Path("salt/metalk8s/salt/master/configured.sls"),
     Path("salt/metalk8s/salt/master/deployed.sls"),
     Path("salt/metalk8s/salt/master/files/master-99-metalk8s.conf.j2"),
