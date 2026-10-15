@@ -16,7 +16,7 @@ runs:
         COMMAND: >
           sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf
           patch clusterconfig main --type=merge --patch '{
-            \"spec\": {\"controlPlane\": {\"ingress\": {\"managedVirtualIP\": {\"address\": \"192.168.1.254\"}}}}
+            \"spec\": {\"controlPlane\": {\"ingress\": {\"managedVirtualIP\": {\"address\": \"172.30.100.254\"}}}}
           }'
     - name: Wait for the Control Plane Ingress Managed VIP to be Ready
       uses: ./.github/actions/run-command-ssh

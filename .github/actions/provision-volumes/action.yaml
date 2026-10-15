@@ -5,7 +5,7 @@ inputs:
   NODE:
     description: "The node to generate the volume on"
     required: false
-    default: "bootstrap"
+    default: "node-1"
   MOUNTPOINT:
     description: "Path to the MetalK8s ISO mountpoint on bootstrap node"
     required: false

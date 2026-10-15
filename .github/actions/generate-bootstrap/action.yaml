@@ -25,12 +25,14 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # NOTE: The platform calls the bootstrap machine node-1, so the cluster
+    # calls it the same, rather than after a hostname nobody can predict.
     - name: Enforce Bootstrap node name
       uses: ./.github/actions/run-command-ssh
       with:
         COMMAND: |
           sudo mkdir -p /etc/salt
-          echo 'bootstrap' | sudo tee /etc/salt/minion_id
+          echo 'node-1' | sudo tee /etc/salt/minion_id
     - name: Create MetalK8s directory
       uses: ./.github/actions/run-command-ssh
       with:
@@ -53,11 +55,11 @@ runs:
           kind: BootstrapConfiguration
           networks:
             controlPlane:
-              cidr: 192.168.1.0/24
+              cidr: 172.30.100.0/24
             workloadPlane:
-              cidr: 192.168.2.0/24
+              cidr: 172.30.200.0/24
           ca:
-            minion: \"bootstrap\"
+            minion: \"node-1\"
           archives:
             - \"\$(readlink -f \"${{ inputs.ARCHIVE }}\")\"
           debug: ${{ inputs.DEBUG }}

@@ -1,0 +1,76 @@
+name: "update-cluster"
+description: "Change a live cluster using Platform Spawner"
+
+inputs:
+  # Stack information
+  name:
+    description: "Name of the deployment, unique within the run"
+    required: true
+
+  # Platform configuration
+  absent-nodes:
+    description: >-
+      Nodes to leave out of the platform, space separated (e.g. node-1). A
+      node left out is destroyed and keeps its addresses. Once out of the
+      list it comes back blank at those addresses, so an empty list brings
+      every node back.
+    required: true
+
+  # AWS credentials
+  # NOTE: Even when the platform lives on OpenStack those are needed, the
+  # stack state lives in an S3 bucket.
+  aws-account-id:
+    description: "The AWS account holding the role to assume"
+    required: true
+  aws-region:
+    description: "The AWS region"
+    required: false
+    default: "eu-north-1"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Compute the stack name
+      id: stack
+      uses: ./.github/actions/stack-name
+      with:
+        name: ${{ inputs.name }}
+
+    - name: Build the stack configuration
+      id: config
+      shell: bash
+      env:
+        ABSENT_NODES: ${{ inputs.absent-nodes }}
+      # NOTE: Only the keys to change. The spawner starts from the
+      # configuration the platform was last deployed with.
+      run: |
+        configuration=$(
+          jq -cn --arg absent_nodes "$ABSENT_NODES" \
+            '{absent_nodes: [$absent_nodes | splits("\\s+") | select(length > 0)]}'
+        )
+        echo "configuration=$configuration" >> "$GITHUB_OUTPUT"
+
+    # NOTE: Assumed again rather than reused from the spawn. An update can
+    # come hours after it, long after the session the spawn opened expired.
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/scality-github-e2e-infrastructure
+        role-session-name: GitHubActions-UpdateCluster-${{ github.run_id }}
+        aws-region: ${{ inputs.aws-region }}
+
+    - name: Update the platform
+      id: update
+      uses: scality/platform-spawner@v3
+      with:
+        action: update
+        stack_name: ${{ steps.stack.outputs.stack-name }}
+        configuration: ${{ steps.config.outputs.configuration }}
+
+outputs:
+  bastion:
+    description: JSON object describing the bastion
+    value: ${{ steps.update.outputs.bastion }}
+  nodes:
+    description: JSON object describing every node of the platform
+    value: ${{ steps.update.outputs.nodes }}
