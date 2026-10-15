@@ -114,7 +114,7 @@ def _salt_cmd_run(host, ssh_config, target, command):
     output = utils.kubectl_exec(
         host,
         ["salt", "--out=txt", f"'{target}'", "cmd.run", f"'{command}'"],
-        "salt-master-{}".format(utils.get_node_name("bootstrap", ssh_config)),
+        "salt-master-{}".format(utils.get_node_name("node-1", ssh_config)),
         container="salt-master",
         namespace="kube-system",
     )
@@ -329,7 +329,7 @@ def test_failover_cp_ingress_vip(host, teardown):
     pass
 
 
-@scenario("../features/ingress.feature", "Change Control Plane Ingress IP to node-1 IP")
+@scenario("../features/ingress.feature", "Change Control Plane Ingress IP to node-2 IP")
 def test_change_cp_ingress_ip(host, teardown):
     pass
 
