@@ -1,6 +1,0 @@
-kind: Fix
-body: Fix intermittent multi-node upgrade failures caused by webhook CA bundle injection and container registry hosts missing a restarting repository
-time: 2026-10-12T12:44:19.254899611Z
-custom:
-    CommentId: "6124502288"
-    Pull: "5156"
