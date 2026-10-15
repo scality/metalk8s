@@ -5,10 +5,6 @@ inputs:
   COMMAND:
     description: "the command to run"
     required: true
-  NODES_COUNT:
-    description: number of nodes
-    required: false
-    default: "0"
   SSH_OPTIONS:
     description: "Additional args passed to ssh"
     required: false
@@ -21,11 +17,11 @@ runs:
     ## that is generated at the runtime.
     - shell: bash
       run: test -f ssh_config
+    ## Every node the platform holds, the bastion aside.
     - name: build hosts list
       shell: bash
       run: |
-        export HOSTS_LIST=""
-        echo "HOSTS_LIST=bootstrap$(seq -s '' --format ' node-%g' 1 ${{ inputs.NODES_COUNT }})" >> $GITHUB_ENV
+        echo "HOSTS_LIST=$(awk '$1 == "Host" && $2 != "bastion" { printf "%s ", $2 }' ssh_config)" >> $GITHUB_ENV
     - name: run the command on all nodes
       shell: bash
       run: |

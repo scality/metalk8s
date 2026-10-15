@@ -14,7 +14,7 @@ runs:
       uses: ./.github/actions/copy-file-ssh
       with:
         NODE_TO:  ""
-        NODE_FROM: "bootstrap"
+        NODE_FROM: "node-1"
         SOURCE_FILE: "/var/tmp/my-backup.tar.gz"
         DESTINATION_FILE: "./"
     - name: Output filename
