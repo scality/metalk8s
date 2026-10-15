@@ -45,7 +45,7 @@ Get metalk8s:control_plane_ip grain:
             'nodes': {
                 '_errors': None,
                 pillar.bootstrap_id: {
-                    'roles': ['bootstrap', 'master', 'etcd', 'ca', 'infra'],
+                    'roles': ['bootstrap', 'master', 'etcd', 'ca', 'infra', 'registry'],
                     'version': version,
                 },
             },
