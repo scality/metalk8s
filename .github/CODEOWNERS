@@ -1,1 +1,21 @@
-* @scality/metalk8s
+# The last matching pattern takes precedence
+
+# Default: anything not matched below
+*                       @scality/platform
+
+# Development
+/.github/               @scality/platform-dev
+/buildchain/            @scality/platform-dev
+/go/                    @scality/platform-dev
+/images/                @scality/platform-dev
+/operator/              @scality/platform-dev
+/packages/              @scality/platform-dev
+/storage-operator/      @scality/platform-dev
+/tests/                 @scality/platform-dev
+/tools/                 @scality/platform-dev
+
+# UI
+/biome.jsonc            @scality/ui
+/images/metalk8s-ui/    @scality/ui
+/shell-ui/              @scality/ui
+/ui/                    @scality/ui
