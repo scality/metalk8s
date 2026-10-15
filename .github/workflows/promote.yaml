@@ -56,3 +56,38 @@ jobs:
       nodes-count: 2
       install-solution: true
       generate-snapshots: true
+
+  # NOTE: The snapshots development/134.0 upgrades from are taken by its own
+  # workflows, on the platforms it spawns and with the names it gives the
+  # nodes, so it is asked for them. Only the version comes from here. Its
+  # tests are skipped, they check what 134 brings. This can be removed once
+  # 133 is no longer an upgrade source.
+  generate-spawner-snapshots:
+    needs:
+      - promote-artifacts
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+    steps:
+      - name: Generate the snapshots development/134.0 spawns back
+        uses: actions/github-script@v9
+        env:
+          ARTIFACTS_URL: ${{ needs.promote-artifacts.outputs.artifact-link }}
+        with:
+          script: |
+            // NOTE: A dispatch takes every input as a string, whatever the
+            // type the workflow declares it with.
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: "e2e-tests.yaml",
+              ref: "development/134.0",
+              inputs: {
+                "artifacts-url": process.env.ARTIFACTS_URL,
+                "os": "rocky-8",
+                "nodes-count": "2",
+                "install-solution": "true",
+                "generate-snapshots": "true",
+                "run-tests": "false",
+              },
+            });
