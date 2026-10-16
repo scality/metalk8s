@@ -512,6 +512,46 @@ replace_object:
             service:
               name: my_service
 
+  # Replace service account token Secret (special case we need to keep the
+  # data filled in by the token controller)
+  - manifest:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: my_token
+        namespace: my_namespace
+        annotations:
+          kubernetes.io/service-account.name: my_service_account
+      type: kubernetes.io/service-account-token
+    old_object:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: my_token
+        namespace: my_namespace
+        annotations:
+          kubernetes.io/service-account.name: my_service_account
+        resourceVersion: "123456"
+      type: kubernetes.io/service-account-token
+      data:
+        token: bXktdG9rZW4=
+    result:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: my_token
+        namespace: my_namespace
+        annotations:
+          kubernetes.io/service-account.name: my_service_account
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+      type: kubernetes.io/service-account-token
+      data:
+        token: bXktdG9rZW4=
+
   # Error when replacing object
   - manifest:
       apiVersion: v1
