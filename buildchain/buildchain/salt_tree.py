@@ -348,6 +348,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/image-cache-agent/deployed/chart.sls"),
     Path("salt/metalk8s/addons/image-cache-agent/deployed/init.sls"),
     Path("salt/metalk8s/addons/image-cache-agent/deployed/namespace.sls"),
+    Path("salt/metalk8s/addons/image-cache-agent/deployed/resources.sls"),
     Path("salt/metalk8s/addons/logging/deployed/init.sls"),
     Path("salt/metalk8s/addons/logging/deployed/namespace.sls"),
     Path("salt/metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml.j2"),

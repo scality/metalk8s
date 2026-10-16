@@ -66,6 +66,22 @@ metalk8s:
                         kind: DexConfig
                         spec: {}
 
+    image-cache-agent:
+      deployed:
+        resources.sls:
+          _cases:
+            "Render from the master (orchestrate)":
+              mode: master
+            "Endpoints as a dict":
+              mode: master
+              pillar_overrides:
+                metalk8s:
+                  endpoints:
+                    repositories:
+                      ip: 10.0.0.2
+                      ports:
+                        http: 8081
+
     logging:
       loki:
         deployed:

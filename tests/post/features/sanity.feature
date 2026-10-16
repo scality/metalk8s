@@ -79,6 +79,9 @@ Feature: Cluster Sanity Checks
     Scenario: The worker image cache is filled on every node
         Then every node holds the worker image cache in '/var/lib/image-cache'
 
+    Scenario: Every node is synced to the image caches of its roles
+        Then every node is synced to the image caches of its roles
+
     @volumes_provisioned
     Scenario Outline: StatefulSet has available replicas
         Then the StatefulSet '<name>' in the '<namespace>' namespace has all desired replicas available
