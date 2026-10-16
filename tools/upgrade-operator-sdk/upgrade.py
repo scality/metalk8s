@@ -67,6 +67,7 @@ _GITHUB_RELEASES_URL: Final = "https://api.github.com/repos/{repo}/releases/late
 _GITHUB_REPO_OPERATOR_SDK: Final = "operator-framework/operator-sdk"
 _URL_GO_RELEASES: Final = "https://go.dev/dl/?mode=json&include=all"
 _URL_GO_MODULE_VERSIONS: Final = "https://proxy.golang.org/{module}/@v/list"
+_URL_GO_MODULE_GOMOD: Final = "https://proxy.golang.org/{module}/@v/{version}.mod"
 
 _HTTP_RETRIES: Final = 3
 
@@ -334,6 +335,55 @@ def reconcile_versions(
         else:
             log_warn(f"  {key}: pinned {pinned} ahead of scaffold {found}, keeping pin")
             cfg[key] = pinned
+
+
+def _minor(version: str) -> str:
+    """Return the `vX.Y` part of a `vX.Y.Z` version, or empty string."""
+    m = re.match(r"(v\d+\.\d+)\.", version)
+    return m.group(1) if m else ""
+
+
+def check_controller_runtime(cfg: dict[str, Any]) -> None:
+    """Warn if controller-runtime does not match the k8s.io libs minor.
+
+    Each controller-runtime release requires one k8s.io minor (read from
+    its go.mod on the module proxy). Run after scaffolding: when
+    `controller_runtime` is not pinned, the scaffold version is checked.
+    Never fails the upgrade -- the result is only logged.
+    """
+    k8s_libs = cfg.get("k8s_libs", "")
+    if not k8s_libs:
+        return
+
+    controller_runtime = cfg.get("controller_runtime", "")
+    if not controller_runtime:
+        gomod = (cfg["operator_dir"] / "go.mod").read_text(encoding=_ENCODING)
+        m = re.search(rf"{re.escape(_CONTROLLER_RUNTIME)}\s+(v\S+)", gomod)
+        if not m:
+            return
+        controller_runtime = m.group(1)
+
+    url = _URL_GO_MODULE_GOMOD.format(
+        module=_CONTROLLER_RUNTIME, version=controller_runtime
+    )
+    try:
+        cr_gomod = _http_get(url).decode(_ENCODING)
+    except (urllib.error.HTTPError, urllib.error.URLError) as e:
+        log_warn(f"Could not fetch {url}: {e}, skipping controller-runtime check")
+        return
+
+    m_k8s = re.search(r"k8s\.io/api\s+(v\S+)", cr_gomod)
+    if not m_k8s:
+        return
+    required = _minor(m_k8s.group(1))
+    if required != _minor(k8s_libs):
+        log_warn(
+            f"  controller-runtime {controller_runtime} requires k8s.io {required}, "
+            f"but k8s_libs is {k8s_libs}: update `controller_runtime` in "
+            f"{cfg['config_file']}"
+        )
+    else:
+        log_info(f"  controller-runtime {controller_runtime} matches k8s.io {required}")
 
 
 def confirm_upgrade(cfg: dict[str, Any]) -> None:
@@ -682,7 +732,8 @@ def generate(cfg: dict[str, Any]) -> None:
     if cfg.get("k8s_libs"):
         go_get += [f"{lib}@{cfg['k8s_libs']}" for lib in _K8S_LIBS]
         log_info(f"Pinning k8s.io libs to {cfg['k8s_libs']}...")
-    # Must match the k8s.io libs minor when they are pinned past the scaffold.
+    # Must match the k8s.io libs minor when they are pinned past the scaffold
+    # (see check_controller_runtime).
     if cfg.get("controller_runtime"):
         go_get.append(f"{_CONTROLLER_RUNTIME}@{cfg['controller_runtime']}")
         log_info(f"Pinning controller-runtime to {cfg['controller_runtime']}...")
@@ -806,6 +857,7 @@ def main() -> None:
         scaffold_project(cfg)  # Phase 2
         detected = detect_latest_patches(cfg)  # Phase 2b
         reconcile_versions(cfg, detected)  # compare & pin
+        check_controller_runtime(cfg)
         log_info(
             f"Using: Go {cfg.get('go_toolchain', 'scaffold')}"
             f", k8s.io {cfg.get('k8s_libs', 'scaffold')}"
