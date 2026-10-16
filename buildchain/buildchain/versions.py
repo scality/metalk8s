@@ -250,6 +250,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
+        name="metalk8s-boot-cache-registry",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
         name="metalk8s-keepalived",
         version=VERSION,
         digest=None,
@@ -323,6 +328,21 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         name="crl-operator",
         version="v1.0.0",
         digest="sha256:86b4198036c1f83f1d9363a1e2ae78015482ca4fe60cd706939b8730c179ac8a",
+    ),
+    Image(
+        name="static-oci-registry",
+        version="v0.1.0-beta.2",
+        digest="sha256:b111237b4d27b40e3d35436eaf83ea0c9e439f504ca745d263ffcdb72ed1c21e",
+    ),
+    Image(
+        name="metalk8s-registry-node-agent",
+        version="v0.0.1-alpha.11",
+        digest="sha256:fabc751cfe67f72978022163337a7d5f7c11117e612f05651c6f4fbee06b4761",
+    ),
+    Image(
+        name="metalk8s-registry-operator",
+        version="v0.0.1-alpha.4",
+        digest="sha256:c582c1593e6a92b29e62d06b7af7ee3bf10e4f7e34cb86deb08795dac23e6844",
     ),
     Image(
         name="disk-management-agent",

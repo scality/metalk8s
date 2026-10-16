@@ -291,6 +291,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/cert-manager/deployed/chart.sls"),
     Path("salt/metalk8s/addons/cert-manager/deployed/init.sls"),
     Path("salt/metalk8s/addons/cert-manager/deployed/namespace.sls"),
+    Path("salt/metalk8s/addons/cert-manager/deployed/monitoring/init.sls"),
+    Path("salt/metalk8s/addons/cert-manager/deployed/monitoring/servicemonitor.sls"),
     Path("salt/metalk8s/addons/crl-operator/deployed/chart.sls"),
     Path("salt/metalk8s/addons/crl-operator/deployed/init.sls"),
     Path("salt/metalk8s/addons/disk-management-agent/deployed/chart.sls"),
@@ -386,6 +388,34 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path(
         "salt/metalk8s/addons/node-problem-detector/deployed/",
         "workload-plane-alerts-rules.sls",
+    ),
+    Path("salt/metalk8s/addons/metalk8s-registry-operator/deployed/chart.sls"),
+    Path("salt/metalk8s/addons/metalk8s-registry-operator/deployed/init.sls"),
+    Path("salt/metalk8s/addons/metalk8s-registry-operator/deployed/namespace.sls"),
+    Path("salt/metalk8s/addons/metalk8s-registry-operator/deployed/registry.sls"),
+    Path(
+        "salt/metalk8s/addons/metalk8s-registry-operator/deployed/",
+        "registry-namespace.sls",
+    ),
+    Path(
+        "salt/metalk8s/addons/metalk8s-registry-operator/deployed/registry-certs/",
+        "init.sls",
+    ),
+    Path(
+        "salt/metalk8s/addons/metalk8s-registry-operator/deployed/registry-certs/",
+        "bootstrap.sls",
+    ),
+    Path(
+        "salt/metalk8s/addons/metalk8s-registry-operator/deployed/registry-certs/",
+        "server.sls",
+    ),
+    Path(
+        "salt/metalk8s/addons/metalk8s-registry-operator/deployed/registry-certs/",
+        "agent.sls",
+    ),
+    Path(
+        "salt/metalk8s/addons/metalk8s-registry-operator/deployed/registry-certs/",
+        "mtls.sls",
     ),
     Path("salt/metalk8s/addons/node-warden-operator/deployed/chart.sls"),
     Path("salt/metalk8s/addons/node-warden-operator/deployed/init.sls"),
@@ -712,6 +742,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/roles/minion/init.sls"),
     Path("salt/metalk8s/roles/node/absent.sls"),
     Path("salt/metalk8s/roles/node/init.sls"),
+    Path("salt/metalk8s/roles/registry/init.sls"),
+    Path("salt/metalk8s/roles/registry/absent.sls"),
     Path("salt/metalk8s/salt/master/configured.sls"),
     Path("salt/metalk8s/salt/master/deployed.sls"),
     Path("salt/metalk8s/salt/master/files/master-99-metalk8s.conf.j2"),
