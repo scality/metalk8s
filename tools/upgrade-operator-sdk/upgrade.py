@@ -67,6 +67,7 @@ _GITHUB_RELEASES_URL: Final = "https://api.github.com/repos/{repo}/releases/late
 _GITHUB_REPO_OPERATOR_SDK: Final = "operator-framework/operator-sdk"
 _URL_GO_RELEASES: Final = "https://go.dev/dl/?mode=json&include=all"
 _URL_GO_MODULE_VERSIONS: Final = "https://proxy.golang.org/{module}/@v/list"
+_URL_GO_MODULE_GOMOD: Final = "https://proxy.golang.org/{module}/@v/{version}.mod"
 
 _HTTP_RETRIES: Final = 3
 
@@ -74,6 +75,13 @@ _HTTP_RETRIES: Final = 3
 _K8S_LIBS: Final = ("k8s.io/api", "k8s.io/apimachinery", "k8s.io/client-go")
 # We only query one module on the proxy — all three share the same version.
 _K8S_LIB_MODULE: Final = _K8S_LIBS[0]
+_CONTROLLER_RUNTIME: Final = "sigs.k8s.io/controller-runtime"
+
+# Scaffold Makefile variables overridable from config.yaml.
+_MAKEFILE_TOOL_PINS: Final = {
+    "controller_tools": "CONTROLLER_TOOLS_VERSION",
+    "golangci_lint": "GOLANGCI_LINT_VERSION",
+}
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -304,7 +312,7 @@ def reconcile_versions(
     - No pin: use detected, log info.
     - Pin < detected: warn (newer available), keep pinned.
     - Pin == detected: all good.
-    - Pin > detected: warn (unusual), use detected.
+    - Pin > detected: warn (ahead of scaffold), keep pinned.
 
     Never modifies the YAML file. Zero interactive input -- CI-safe.
     """
@@ -325,8 +333,57 @@ def reconcile_versions(
             log_warn(f"  {key}: pinned {pinned}, newer {found} available")
             cfg[key] = pinned
         else:
-            log_warn(f"  {key}: pinned {pinned} > detected {found}, using detected")
-            cfg[key] = found
+            log_warn(f"  {key}: pinned {pinned} ahead of scaffold {found}, keeping pin")
+            cfg[key] = pinned
+
+
+def _minor(version: str) -> str:
+    """Return the `vX.Y` part of a `vX.Y.Z` version, or empty string."""
+    m = re.match(r"(v\d+\.\d+)\.", version)
+    return m.group(1) if m else ""
+
+
+def check_controller_runtime(cfg: dict[str, Any]) -> None:
+    """Warn if controller-runtime does not match the k8s.io libs minor.
+
+    Each controller-runtime release requires one k8s.io minor (read from
+    its go.mod on the module proxy). Run after scaffolding: when
+    `controller_runtime` is not pinned, the scaffold version is checked.
+    Never fails the upgrade -- the result is only logged.
+    """
+    k8s_libs = cfg.get("k8s_libs", "")
+    if not k8s_libs:
+        return
+
+    controller_runtime = cfg.get("controller_runtime", "")
+    if not controller_runtime:
+        gomod = (cfg["operator_dir"] / "go.mod").read_text(encoding=_ENCODING)
+        m = re.search(rf"{re.escape(_CONTROLLER_RUNTIME)}\s+(v\S+)", gomod)
+        if not m:
+            return
+        controller_runtime = m.group(1)
+
+    url = _URL_GO_MODULE_GOMOD.format(
+        module=_CONTROLLER_RUNTIME, version=controller_runtime
+    )
+    try:
+        cr_gomod = _http_get(url).decode(_ENCODING)
+    except (urllib.error.HTTPError, urllib.error.URLError) as e:
+        log_warn(f"Could not fetch {url}: {e}, skipping controller-runtime check")
+        return
+
+    m_k8s = re.search(r"k8s\.io/api\s+(v\S+)", cr_gomod)
+    if not m_k8s:
+        return
+    required = _minor(m_k8s.group(1))
+    if required != _minor(k8s_libs):
+        log_warn(
+            f"  controller-runtime {controller_runtime} requires k8s.io {required}, "
+            f"but k8s_libs is {k8s_libs}: update `controller_runtime` in "
+            f"{cfg['config_file']}"
+        )
+    else:
+        log_info(f"  controller-runtime {controller_runtime} matches k8s.io {required}")
 
 
 def confirm_upgrade(cfg: dict[str, Any]) -> None:
@@ -630,7 +687,28 @@ def _substitute_placeholders(cfg: dict[str, Any]) -> None:
         text = makefile.read_text(encoding=_ENCODING)
         if cfg.get("go_toolchain"):
             text = text.replace("__GOTOOLCHAIN__", cfg["go_toolchain"])
+        for key, var in _MAKEFILE_TOOL_PINS.items():
+            if cfg.get(key):
+                text = re.sub(
+                    rf"^{var} \?= .*$",
+                    f"{var} ?= {cfg[key]}",
+                    text,
+                    flags=re.MULTILINE,
+                )
         makefile.write_text(text, encoding=_ENCODING)
+
+    # Builder image follows the Go toolchain, e.g. go1.26.9 -> golang:1.26
+    dockerfile = op_dir / "Dockerfile"
+    m_go = re.match(r"go(\d+\.\d+)", cfg.get("go_toolchain", ""))
+    if dockerfile.exists() and m_go:
+        text = dockerfile.read_text(encoding=_ENCODING)
+        text = re.sub(
+            r"^FROM golang:\S+ AS builder$",
+            f"FROM golang:{m_go.group(1)} AS builder",
+            text,
+            flags=re.MULTILINE,
+        )
+        dockerfile.write_text(text, encoding=_ENCODING)
 
     log_info("Placeholders substituted")
 
@@ -650,10 +728,17 @@ def generate(cfg: dict[str, Any]) -> None:
     if bin_dir.exists():
         shutil.rmtree(bin_dir)
 
+    go_get: list[str] = []
     if cfg.get("k8s_libs"):
-        k8s_get = [f"{lib}@{cfg['k8s_libs']}" for lib in _K8S_LIBS]
+        go_get += [f"{lib}@{cfg['k8s_libs']}" for lib in _K8S_LIBS]
         log_info(f"Pinning k8s.io libs to {cfg['k8s_libs']}...")
-        run(["go", "get", *k8s_get], cfg, cwd=op_dir)
+    # Must match the k8s.io libs minor when they are pinned past the scaffold
+    # (see check_controller_runtime).
+    if cfg.get("controller_runtime"):
+        go_get.append(f"{_CONTROLLER_RUNTIME}@{cfg['controller_runtime']}")
+        log_info(f"Pinning controller-runtime to {cfg['controller_runtime']}...")
+    if go_get:
+        run(["go", "get", *go_get], cfg, cwd=op_dir)
 
     steps: list[tuple[str, list[str]]] = [
         ("go mod tidy...", ["go", "mod", "tidy"]),
@@ -772,9 +857,11 @@ def main() -> None:
         scaffold_project(cfg)  # Phase 2
         detected = detect_latest_patches(cfg)  # Phase 2b
         reconcile_versions(cfg, detected)  # compare & pin
+        check_controller_runtime(cfg)
         log_info(
             f"Using: Go {cfg.get('go_toolchain', 'scaffold')}"
             f", k8s.io {cfg.get('k8s_libs', 'scaffold')}"
+            f", controller-runtime {cfg.get('controller_runtime', 'scaffold')}"
         )
         restore_backup(cfg)  # Phase 3
         adapt_project(cfg)  # Phase 4
