@@ -15,8 +15,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
-    operator.prometheus.io/version: 0.91.0
+    controller-gen.kubebuilder.io/version: v0.22.0
+    operator.prometheus.io/version: 0.94.1
   name: alertmanagerconfigs.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -455,7 +455,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -606,7 +608,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -661,7 +665,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -765,7 +771,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -835,7 +841,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -890,7 +898,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -1185,7 +1195,9 @@ spec:
                                       data to use for the targets.
                                     properties:
                                       key:
-                                        description: The key to select.
+                                        description: |-
+                                          The key to select from the ConfigMap's Data field.
+                                          Keys in the BinaryData field are not currently propagated to container env vars.
                                         type: string
                                       name:
                                         default: ''
@@ -1239,7 +1251,9 @@ spec:
                                       data to use for the targets.
                                     properties:
                                       key:
-                                        description: The key to select.
+                                        description: |-
+                                          The key to select from the ConfigMap's Data field.
+                                          Keys in the BinaryData field are not currently propagated to container env vars.
                                         type: string
                                       name:
                                         default: ''
@@ -1514,7 +1528,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -1665,7 +1681,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -1720,7 +1738,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -1824,7 +1844,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -1894,7 +1914,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -1949,7 +1971,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -2269,7 +2293,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -2420,7 +2446,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -2475,7 +2503,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -2579,7 +2609,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -2649,7 +2679,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -2704,7 +2736,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -3095,7 +3129,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -3246,7 +3282,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -3301,7 +3339,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -3405,7 +3445,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -3475,7 +3515,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -3530,7 +3572,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -3931,7 +3975,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -4082,7 +4128,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -4137,7 +4185,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -4241,7 +4291,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -4311,7 +4361,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -4366,7 +4418,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -4779,7 +4833,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -4930,7 +4986,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -4985,7 +5043,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -5089,7 +5149,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -5159,7 +5219,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -5214,7 +5276,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -5695,7 +5759,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -5846,7 +5912,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -5901,7 +5969,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -6005,7 +6075,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -6075,7 +6145,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -6130,7 +6202,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -6676,7 +6750,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -6827,7 +6903,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -6882,7 +6960,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -6986,7 +7066,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -7056,7 +7136,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -7111,7 +7193,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -7287,6 +7371,12 @@ spec:
                             description: titleLink defines the URL that the title
                               will link to when clicked.
                             type: string
+                          updateMessage:
+                            description: |-
+                              updateMessage enables updating existing Slack messages instead of creating new ones
+                              when alert state changes. Please note that Webhook URLs do not support updates.
+                              It requires Alertmanager >= v0.32.0.
+                            type: boolean
                           username:
                             description: username defines the slack bot user name.
                             minLength: 1
@@ -7471,7 +7561,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -7622,7 +7714,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -7677,7 +7771,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -7781,7 +7877,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -7851,7 +7947,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -7906,7 +8004,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -8057,7 +8157,7 @@ spec:
                               externalId:
                                 description: |-
                                   externalId defines the external ID used when assuming an AWS role. Can only be used with roleArn.
-                                  It requires Prometheus >= v3.11.0 or Alertmanager >= v0.33.0. Currently not supported by Thanos.
+                                  It requires Prometheus >= v3.11.0 or Alertmanager >= v0.34.0. Currently not supported by Thanos.
                                 minLength: 1
                                 type: string
                               profile:
@@ -8126,6 +8226,13 @@ spec:
                               If you don't specify this value, you must specify a value for the PhoneNumber or TargetARN.
                             minLength: 1
                             type: string
+                          useAWSHTTPClient:
+                            description: |-
+                              useAWSHTTPClient forces the AWS SDK's BuildableClient instead of
+                              alertmanager's tracing-wrapped HTTP client. Auto-enabled when AWS_CA_BUNDLE
+                              is set; set explicitly when configuring ca_bundle via shared AWS config.
+                              It requires Alertmanager >= 0.33.0.
+                            type: boolean
                         type: object
                       type: array
                       x-kubernetes-list-type: atomic
@@ -8346,7 +8453,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -8497,7 +8606,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -8552,7 +8663,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -8656,7 +8769,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -8726,7 +8839,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -8781,7 +8896,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -9142,7 +9259,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -9293,7 +9412,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -9348,7 +9469,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -9452,7 +9575,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -9522,7 +9645,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -9577,7 +9702,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -9880,7 +10007,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -10031,7 +10160,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -10086,7 +10217,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -10190,7 +10323,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -10260,7 +10393,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -10315,7 +10450,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -10598,7 +10735,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -10749,7 +10888,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -10804,7 +10945,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -10908,7 +11051,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -10978,7 +11121,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -11033,7 +11178,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -11141,6 +11288,14 @@ spec:
                             format: int32
                             minimum: 0
                             type: integer
+                          payload:
+                            description: |-
+                              payload define custom payload to be sent to the webhook endpoint.
+                              This is an advanced configuration option that allows you
+                              to define a custom payload using Go templates.
+                              It requires Alertmanager >= v0.32.0.
+                            minLength: 1
+                            type: string
                           sendResolved:
                             description: sendResolved defines whether or not to notify
                               about resolved alerts.
@@ -11398,7 +11553,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -11549,7 +11706,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -11604,7 +11763,9 @@ spec:
                                               containing data to use for the targets.
                                             properties:
                                               key:
-                                                description: The key to select.
+                                                description: |-
+                                                  The key to select from the ConfigMap's Data field.
+                                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                                 type: string
                                               name:
                                                 default: ''
@@ -11708,7 +11869,7 @@ spec:
                                   tokenUrl:
                                     description: tokenUrl defines the URL to fetch
                                       the token from.
-                                    minLength: 1
+                                    pattern: ^(http|https)://.+$
                                     type: string
                                 required:
                                 - clientId
@@ -11778,7 +11939,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -11833,7 +11996,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -12204,8 +12369,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
-    operator.prometheus.io/version: 0.91.0
+    controller-gen.kubebuilder.io/version: v0.22.0
+    operator.prometheus.io/version: 0.94.1
   name: alertmanagers.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -13504,7 +13669,9 @@ spec:
                                       data to use for the targets.
                                     properties:
                                       key:
-                                        description: The key to select.
+                                        description: |-
+                                          The key to select from the ConfigMap's Data field.
+                                          Keys in the BinaryData field are not currently propagated to container env vars.
                                         type: string
                                       name:
                                         default: ''
@@ -13653,7 +13820,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -13708,7 +13877,9 @@ spec:
                                           containing data to use for the targets.
                                         properties:
                                           key:
-                                            description: The key to select.
+                                            description: |-
+                                              The key to select from the ConfigMap's Data field.
+                                              Keys in the BinaryData field are not currently propagated to container env vars.
                                             type: string
                                           name:
                                             default: ''
@@ -13811,7 +13982,7 @@ spec:
                               tokenUrl:
                                 description: tokenUrl defines the URL to fetch the
                                   token from.
-                                minLength: 1
+                                pattern: ^(http|https)://.+$
                                 type: string
                             required:
                             - clientId
@@ -13875,7 +14046,9 @@ spec:
                                       data to use for the targets.
                                     properties:
                                       key:
-                                        description: The key to select.
+                                        description: |-
+                                          The key to select from the ConfigMap's Data field.
+                                          Keys in the BinaryData field are not currently propagated to container env vars.
                                         type: string
                                       name:
                                         default: ''
@@ -13929,7 +14102,9 @@ spec:
                                       data to use for the targets.
                                     properties:
                                       key:
-                                        description: The key to select.
+                                        description: |-
+                                          The key to select from the ConfigMap's Data field.
+                                          Keys in the BinaryData field are not currently propagated to container env vars.
                                         type: string
                                       name:
                                         default: ''
@@ -14329,7 +14504,9 @@ spec:
                                       data to use for the targets.
                                     properties:
                                       key:
-                                        description: The key to select.
+                                        description: |-
+                                          The key to select from the ConfigMap's Data field.
+                                          Keys in the BinaryData field are not currently propagated to container env vars.
                                         type: string
                                       name:
                                         default: ''
@@ -14383,7 +14560,9 @@ spec:
                                       data to use for the targets.
                                     properties:
                                       key:
-                                        description: The key to select.
+                                        description: |-
+                                          The key to select from the ConfigMap's Data field.
+                                          Keys in the BinaryData field are not currently propagated to container env vars.
                                         type: string
                                       name:
                                         default: ''
@@ -14597,7 +14776,9 @@ spec:
                             data to use for the targets.
                           properties:
                             key:
-                              description: The key to select.
+                              description: |-
+                                The key to select from the ConfigMap's Data field.
+                                Keys in the BinaryData field are not currently propagated to container env vars.
                               type: string
                             name:
                               default: ''
@@ -14670,6 +14851,19 @@ spec:
                   clusterLabel defines the identifier that uniquely identifies the Alertmanager cluster.
                   You should only set it when the Alertmanager cluster includes Alertmanager instances which are external to this Alertmanager resource. In practice, the addresses of the external instances are provided via the `.spec.additionalPeers` field.
                 type: string
+              clusterPeerName:
+                description: |-
+                  clusterPeerName defines the name that this Alertmanager instance uses to
+                  advertise itself to other cluster peers (the `--cluster.peer-name` flag,
+                  available since Alertmanager v0.30.0).
+                  If not set, the operator defaults to the pod's name (`$(POD_NAME)`),
+                  which is injected via the Kubernetes downward API. Setting this field
+                  lets you override that default with either a literal value or a string
+                  referencing environment variables that are already available in the
+                  Alertmanager container (for example `$(POD_NAME).$(NAMESPACE)`).
+                  / It requires Alertmanager >= 0.30.0.
+                minLength: 1
+                type: string
               clusterPeerTimeout:
                 description: clusterPeerTimeout defines the timeout for cluster peering.
                 pattern: ^(0|(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
@@ -14697,7 +14891,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -14751,7 +14947,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -14865,7 +15063,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -14948,7 +15148,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -15156,7 +15358,9 @@ spec:
                                 description: Selects a key of a ConfigMap.
                                 properties:
                                   key:
-                                    description: The key to select.
+                                    description: |-
+                                      The key to select from the ConfigMap's Data field.
+                                      Keys in the BinaryData field are not currently propagated to container env vars.
                                     type: string
                                   name:
                                     default: ''
@@ -15425,6 +15629,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -15538,6 +15747,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -15620,6 +15834,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -15676,6 +15897,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -15831,6 +16057,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -15887,6 +16120,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -16184,7 +16422,6 @@ spec:
                             procMount denotes the type of proc mount to use for the containers.
                             The default value is Default which uses the container runtime defaults for
                             readonly paths and masked paths.
-                            This requires the ProcMountType feature flag to be enabled.
                             Note that this field cannot be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
@@ -16338,6 +16575,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -16394,6 +16638,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -16533,10 +16782,21 @@ spec:
                         description: VolumeMount describes a mounting of a Volume
                           within a container.
                         properties:
-                          mountPath:
+                          bindMountOptions:
                             description: |-
-                              Path within the container at which the volume should be mounted.  Must
-                              not contain ':'.
+                              bindMountOptions is the list of additional bind mount options to apply when
+                              mounting this volume into the container. Allowed values are noexec,
+                              nodev, and nosuid. These are Linux mount options and have no effect on
+                              Windows nodes.
+                              This field is not supported with image volumes.
+                              This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                            items:
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: set
+                          mountPath:
+                            description: Path within the container at which the volume
+                              should be mounted.
                             type: string
                           mountPropagation:
                             description: |-
@@ -16838,7 +17098,9 @@ spec:
                                 description: Selects a key of a ConfigMap.
                                 properties:
                                   key:
-                                    description: The key to select.
+                                    description: |-
+                                      The key to select from the ConfigMap's Data field.
+                                      Keys in the BinaryData field are not currently propagated to container env vars.
                                     type: string
                                   name:
                                     default: ''
@@ -17107,6 +17369,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -17220,6 +17487,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -17302,6 +17574,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -17358,6 +17637,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -17513,6 +17797,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -17569,6 +17860,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -17866,7 +18162,6 @@ spec:
                             procMount denotes the type of proc mount to use for the containers.
                             The default value is Default which uses the container runtime defaults for
                             readonly paths and masked paths.
-                            This requires the ProcMountType feature flag to be enabled.
                             Note that this field cannot be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
@@ -18020,6 +18315,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -18076,6 +18378,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -18215,10 +18522,21 @@ spec:
                         description: VolumeMount describes a mounting of a Volume
                           within a container.
                         properties:
-                          mountPath:
+                          bindMountOptions:
                             description: |-
-                              Path within the container at which the volume should be mounted.  Must
-                              not contain ':'.
+                              bindMountOptions is the list of additional bind mount options to apply when
+                              mounting this volume into the container. Allowed values are noexec,
+                              nodev, and nosuid. These are Linux mount options and have no effect on
+                              Windows nodes.
+                              This field is not supported with image volumes.
+                              This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                            items:
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: set
+                          mountPath:
+                            description: Path within the container at which the volume
+                              should be mounted.
                             type: string
                           mountPropagation:
                             description: |-
@@ -18620,10 +18938,7 @@ spec:
                       Eligible volumes are in-tree FibreChannel and iSCSI volumes, and all CSI volumes
                       whose CSI driver announces SELinux support by setting spec.seLinuxMount: true in their
                       CSIDriver instance. Other volumes are always re-labelled recursively.
-                      "MountOption" value is allowed only when SELinuxMount feature gate is enabled.
-                      If not specified and SELinuxMount feature gate is enabled, "MountOption" is used.
-                      If not specified and SELinuxMount feature gate is disabled, "MountOption" is used for ReadWriteOncePod volumes
-                      and "Recursive" for all other volumes.
+                      If not specified, "MountOption" is used.
                       This field affects only Pods that have SELinux label set, either in PodSecurityContext or in SecurityContext of all containers.
                       All Pods that use the same volume should use the same seLinuxChangePolicy, otherwise some pods can get stuck in ContainerCreating state.
                       Note that this field cannot be set when spec.os.name is windows.
@@ -18797,6 +19112,18 @@ spec:
                           Must be an empty string (default) or Memory.
                           More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir
                         type: string
+                      mode:
+                        description: |-
+                          mode specifies the permission bits for the emptyDir directory, in numeric
+                          notation (e.g., 0755, 01777). Must be a value between 0000 and 01777.
+                          If not specified, defaults to 0777.
+                          This might be in conflict with other options that affect the file
+                          mode, like fsGroup. If fsGroup is specified, the fsGroup permissions
+                          will override the mode specified here.
+                          This field has no effect on Windows.
+                          This field is alpha and requires EmptyDirVolumeMode featuregate to be enabled.
+                        format: int32
+                        type: integer
                       sizeLimit:
                         anyOf:
                         - type: integer
@@ -18867,8 +19194,8 @@ spec:
                                   * An existing PVC (PersistentVolumeClaim)
                                   If the provisioner or an external controller can support the specified data source,
                                   it will create a new volume based on the contents of the specified data source.
-                                  When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                                  and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                                  dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                                  copied to dataSource when dataSourceRef.namespace is not specified.
                                   If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                                 properties:
                                   apiGroup:
@@ -18913,7 +19240,6 @@ spec:
                                     specified.
                                   * While dataSource only allows local objects, dataSourceRef allows objects
                                     in any namespaces.
-                                  (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                                   (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                                 properties:
                                   apiGroup:
@@ -19126,8 +19452,8 @@ spec:
                               * An existing PVC (PersistentVolumeClaim)
                               If the provisioner or an external controller can support the specified data source,
                               it will create a new volume based on the contents of the specified data source.
-                              When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                              and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                              dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                              copied to dataSource when dataSourceRef.namespace is not specified.
                               If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                             properties:
                               apiGroup:
@@ -19170,7 +19496,6 @@ spec:
                                 specified.
                               * While dataSource only allows local objects, dataSourceRef allows objects
                                 in any namespaces.
-                              (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                               (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                             properties:
                               apiGroup:
@@ -19455,6 +19780,58 @@ spec:
                               currentVolumeAttributesClassName is the current name of the VolumeAttributesClass the PVC is using.
                               When unset, there is no VolumeAttributeClass applied to this PersistentVolumeClaim
                             type: string
+                          healthStatus:
+                            description: |-
+                              healthStatus contains the latest controller-reported health information
+                              for the volume bound to this claim.
+                            properties:
+                              healthConditions:
+                                description: |-
+                                  conditions is the set of adverse conditions reported by
+                                  the CSI controller plugin. An empty list means no adverse condition.
+                                  At most 16 conditions may be reported.
+                                items:
+                                  description: VolumeHealthCondition represents an
+                                    adverse health condition reported for a volume.
+                                  properties:
+                                    message:
+                                      description: |-
+                                        message is a human-readable description.
+                                        Maximum permitted length of a message is 1024 bytes.
+                                      type: string
+                                    reason:
+                                      description: |-
+                                        reason is a brief CamelCase machine-parseable reason.
+                                        Together with status it forms the unique identity of a condition entry.
+                                        Maximum permitted length of a reason is 256 bytes.
+                                      type: string
+                                    status:
+                                      description: |-
+                                        status is the machine-parseable health category.
+                                        Possible values:
+                                        - "Inaccessible": the volume cannot be accessed.
+                                        - "DataLoss": data loss has been detected on the volume.
+                                        - "Degraded": the volume is functioning with reduced capability.
+                                      enum:
+                                      - DataLoss
+                                      - Degraded
+                                      - Inaccessible
+                                      type: string
+                                  required:
+                                  - reason
+                                  - status
+                                  type: object
+                                type: array
+                                x-kubernetes-list-map-keys:
+                                - status
+                                - reason
+                                x-kubernetes-list-type: map
+                              lastTransitionTime:
+                                description: lastTransitionTime is when the current
+                                  set of conditions first appeared.
+                                format: date-time
+                                type: string
+                            type: object
                           modifyVolumeStatus:
                             description: |-
                               ModifyVolumeStatus represents the status object of ControllerModifyVolume operation.
@@ -19767,10 +20144,21 @@ spec:
                   description: VolumeMount describes a mounting of a Volume within
                     a container.
                   properties:
-                    mountPath:
+                    bindMountOptions:
                       description: |-
-                        Path within the container at which the volume should be mounted.  Must
-                        not contain ':'.
+                        bindMountOptions is the list of additional bind mount options to apply when
+                        mounting this volume into the container. Allowed values are noexec,
+                        nodev, and nosuid. These are Linux mount options and have no effect on
+                        Windows nodes.
+                        This field is not supported with image volumes.
+                        This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                      items:
+                        type: string
+                      type: array
+                      x-kubernetes-list-type: set
+                    mountPath:
+                      description: Path within the container at which the volume should
+                        be mounted.
                       type: string
                     mountPropagation:
                       description: |-
@@ -20040,6 +20428,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: |-
                             items if unspecified, each key-value pair in the Data field of the referenced
@@ -20072,6 +20467,13 @@ spec:
                                   May not contain the path element '..'.
                                   May not start with the string '..'.
                                 type: string
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - key
                             - path
@@ -20158,6 +20560,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: Items is a list of downward API volume file
                           items:
@@ -20222,6 +20631,13 @@ spec:
                                 - resource
                                 type: object
                                 x-kubernetes-map-type: atomic
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - path
                             type: object
@@ -20240,6 +20656,18 @@ spec:
                             Must be an empty string (default) or Memory.
                             More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir
                           type: string
+                        mode:
+                          description: |-
+                            mode specifies the permission bits for the emptyDir directory, in numeric
+                            notation (e.g., 0755, 01777). Must be a value between 0000 and 01777.
+                            If not specified, defaults to 0777.
+                            This might be in conflict with other options that affect the file
+                            mode, like fsGroup. If fsGroup is specified, the fsGroup permissions
+                            will override the mode specified here.
+                            This field has no effect on Windows.
+                            This field is alpha and requires EmptyDirVolumeMode featuregate to be enabled.
+                          format: int32
+                          type: integer
                         sizeLimit:
                           anyOf:
                           - type: integer
@@ -20326,8 +20754,8 @@ spec:
                                     * An existing PVC (PersistentVolumeClaim)
                                     If the provisioner or an external controller can support the specified data source,
                                     it will create a new volume based on the contents of the specified data source.
-                                    When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                                    and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                                    dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                                    copied to dataSource when dataSourceRef.namespace is not specified.
                                     If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                                   properties:
                                     apiGroup:
@@ -20372,7 +20800,6 @@ spec:
                                       specified.
                                     * While dataSource only allows local objects, dataSourceRef allows objects
                                       in any namespaces.
-                                    (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                                     (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                                   properties:
                                     apiGroup:
@@ -20732,7 +21159,7 @@ spec:
                         A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message.
                         The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field.
                         The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images.
-                        The volume will be mounted read-only (ro) and non-executable files (noexec).
+                        The volume will be mounted read-only (ro).
                         Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath) before 1.33.
                         The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
                       properties:
@@ -20904,8 +21331,7 @@ spec:
                       description: |-
                         portworxVolume represents a portworx volume attached and mounted on kubelets host machine.
                         Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type
-                        are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate
-                        is on.
+                        are redirected to the pxd.portworx.com CSI driver.
                       properties:
                         fsType:
                           description: |-
@@ -20937,6 +21363,13 @@ spec:
                             This might be in conflict with other options that affect the file
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
+                          type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
                           type: integer
                         sources:
                           description: |-
@@ -21034,6 +21467,13 @@ spec:
                                       Mutually-exclusive with name.  The contents of all selected
                                       ClusterTrustBundles will be unified and deduplicated.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                 required:
                                 - path
                                 type: object
@@ -21074,6 +21514,13 @@ spec:
                                             May not contain the path element '..'.
                                             May not start with the string '..'.
                                           type: string
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - key
                                       - path
@@ -21169,6 +21616,13 @@ spec:
                                           - resource
                                           type: object
                                           x-kubernetes-map-type: atomic
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - path
                                       type: object
@@ -21261,6 +21715,13 @@ spec:
                                     description: Kubelet's generated CSRs will be
                                       addressed to this signer.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                   userAnnotations:
                                     additionalProperties:
                                       type: string
@@ -21317,6 +21778,13 @@ spec:
                                             May not contain the path element '..'.
                                             May not start with the string '..'.
                                           type: string
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - key
                                       - path
@@ -21364,6 +21832,13 @@ spec:
                                       path is the path relative to the mount point of the file to project the
                                       token into.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                 required:
                                 - path
                                 type: object
@@ -21570,6 +22045,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: |-
                             items If unspecified, each key-value pair in the Data field of the referenced
@@ -21602,6 +22084,13 @@ spec:
                                   May not contain the path element '..'.
                                   May not start with the string '..'.
                                 type: string
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - key
                             - path
@@ -21705,6 +22194,7 @@ spec:
                       getConcurrency defines the maximum number of GET requests processed concurrently. This corresponds to the
                       Alertmanager's `--web.get-concurrency` flag.
                     format: int32
+                    minimum: 0
                     type: integer
                   httpConfig:
                     description: httpConfig defines HTTP parameters for web server.
@@ -21765,6 +22255,7 @@ spec:
                       timeout for HTTP requests. This corresponds to the Alertmanager's
                       `--web.timeout` flag.
                     format: int32
+                    minimum: 0
                     type: integer
                   tlsConfig:
                     description: tlsConfig defines the TLS parameters for HTTPS.
@@ -21780,7 +22271,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -21863,7 +22356,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -22069,8 +22564,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
-    operator.prometheus.io/version: 0.91.0
+    controller-gen.kubebuilder.io/version: v0.22.0
+    operator.prometheus.io/version: 0.94.1
   name: podmonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -22131,6 +22626,9 @@ spec:
                       targets.
                       The Prometheus service account must have the `list` and `watch`
                       permissions on the `Nodes` objects.
+                      Node metadata labels are not automatically added to scraped metrics. They are
+                      exposed as `__meta_kubernetes_node_*` labels and can be copied to timeseries
+                      with relabeling configuration.
                     type: boolean
                 type: object
               bodySizeLimit:
@@ -22173,24 +22671,28 @@ spec:
                   that will be kept in memory. 0 means no limit.
                   It requires Prometheus >= v2.47.0.
                 format: int64
+                minimum: 0
                 type: integer
               labelLimit:
                 description: |-
                   labelLimit defines the per-scrape limit on number of labels that will be accepted for a sample.
                   It requires Prometheus >= v2.27.0.
                 format: int64
+                minimum: 0
                 type: integer
               labelNameLengthLimit:
                 description: |-
                   labelNameLengthLimit defines the per-scrape limit on length of labels name that will be accepted for a sample.
                   It requires Prometheus >= v2.27.0.
                 format: int64
+                minimum: 0
                 type: integer
               labelValueLengthLimit:
                 description: |-
                   labelValueLengthLimit defines the per-scrape limit on length of labels value that will be accepted for a sample.
                   It requires Prometheus >= v2.27.0.
                 format: int64
+                minimum: 0
                 type: integer
               namespaceSelector:
                 description: |-
@@ -22215,6 +22717,7 @@ spec:
                   buckets will be merged to stay within the limit.
                   It requires Prometheus >= v2.45.0.
                 format: int64
+                minimum: 0
                 type: integer
               nativeHistogramMinBucketFactor:
                 anyOf:
@@ -22438,6 +22941,7 @@ spec:
                               modulus to take of the hash of the source label values.
                               Only applicable when the action is `HashMod`.
                             format: int64
+                            minimum: 0
                             type: integer
                           regex:
                             description: regex defines the regular expression against
@@ -22497,7 +23001,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -22644,7 +23150,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -22698,7 +23206,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -22800,7 +23310,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -22935,6 +23445,7 @@ spec:
                               modulus to take of the hash of the source label values.
                               Only applicable when the action is `HashMod`.
                             format: int64
+                            minimum: 0
                             type: integer
                           regex:
                             description: regex defines the regular expression against
@@ -23009,7 +23520,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -23063,7 +23576,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -23183,6 +23698,7 @@ spec:
                   sampleLimit defines a per-scrape limit on the number of scraped samples
                   that will be accepted.
                 format: int64
+                minimum: 0
                 type: integer
               scrapeClass:
                 description: scrapeClass defines the scrape class to apply.
@@ -23286,6 +23802,7 @@ spec:
                   targetLimit defines a limit on the number of scraped targets that will
                   be accepted.
                 format: int64
+                minimum: 0
                 type: integer
             required:
             - selector
@@ -23404,8 +23921,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
-    operator.prometheus.io/version: 0.91.0
+    controller-gen.kubebuilder.io/version: v0.22.0
+    operator.prometheus.io/version: 0.94.1
   name: probes.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -23617,24 +24134,28 @@ spec:
                   that will be kept in memory. 0 means no limit.
                   It requires Prometheus >= v2.47.0.
                 format: int64
+                minimum: 0
                 type: integer
               labelLimit:
                 description: |-
                   labelLimit defines the per-scrape limit on number of labels that will be accepted for a sample.
                   Only valid in Prometheus versions 2.27.0 and newer.
                 format: int64
+                minimum: 0
                 type: integer
               labelNameLengthLimit:
                 description: |-
                   labelNameLengthLimit defines the per-scrape limit on length of labels name that will be accepted for a sample.
                   Only valid in Prometheus versions 2.27.0 and newer.
                 format: int64
+                minimum: 0
                 type: integer
               labelValueLengthLimit:
                 description: |-
                   labelValueLengthLimit defines the per-scrape limit on length of labels value that will be accepted for a sample.
                   Only valid in Prometheus versions 2.27.0 and newer.
                 format: int64
+                minimum: 0
                 type: integer
               metricRelabelings:
                 description: metricRelabelings defines the RelabelConfig to apply
@@ -23681,6 +24202,7 @@ spec:
                         modulus to take of the hash of the source label values.
                         Only applicable when the action is `HashMod`.
                       format: int64
+                      minimum: 0
                       type: integer
                     regex:
                       description: regex defines the regular expression against which
@@ -23729,6 +24251,7 @@ spec:
                   buckets will be merged to stay within the limit.
                   It requires Prometheus >= v2.45.0.
                 format: int64
+                minimum: 0
                 type: integer
               nativeHistogramMinBucketFactor:
                 anyOf:
@@ -23756,7 +24279,9 @@ spec:
                           to use for the targets.
                         properties:
                           key:
-                            description: The key to select.
+                            description: |-
+                              The key to select from the ConfigMap's Data field.
+                              Keys in the BinaryData field are not currently propagated to container env vars.
                             type: string
                           name:
                             default: ''
@@ -23903,7 +24428,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -23957,7 +24484,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -24058,7 +24587,7 @@ spec:
                     type: object
                   tokenUrl:
                     description: tokenUrl defines the URL to fetch the token from.
-                    minLength: 1
+                    pattern: ^(http|https)://.+$
                     type: string
                 required:
                 - clientId
@@ -24177,6 +24706,7 @@ spec:
                 description: sampleLimit defines per-scrape limit on number of scraped
                   samples that will be accepted.
                 format: int64
+                minimum: 0
                 type: integer
               scrapeClass:
                 description: scrapeClass defines the scrape class to apply.
@@ -24228,6 +24758,7 @@ spec:
                 description: targetLimit defines a limit on the number of scraped
                   targets that will be accepted.
                 format: int64
+                minimum: 0
                 type: integer
               targets:
                 description: targets defines a set of static or dynamically discovered
@@ -24306,6 +24837,7 @@ spec:
                                 modulus to take of the hash of the source label values.
                                 Only applicable when the action is `HashMod`.
                               format: int64
+                              minimum: 0
                               type: integer
                             regex:
                               description: regex defines the regular expression against
@@ -24449,6 +24981,7 @@ spec:
                                 modulus to take of the hash of the source label values.
                                 Only applicable when the action is `HashMod`.
                               format: int64
+                              minimum: 0
                               type: integer
                             regex:
                               description: regex defines the regular expression against
@@ -24504,7 +25037,9 @@ spec:
                           to use for the targets.
                         properties:
                           key:
-                            description: The key to select.
+                            description: |-
+                              The key to select from the ConfigMap's Data field.
+                              Keys in the BinaryData field are not currently propagated to container env vars.
                             type: string
                           name:
                             default: ''
@@ -24558,7 +25093,9 @@ spec:
                           to use for the targets.
                         properties:
                           key:
-                            description: The key to select.
+                            description: |-
+                              The key to select from the ConfigMap's Data field.
+                              Keys in the BinaryData field are not currently propagated to container env vars.
                             type: string
                           name:
                             default: ''
@@ -24772,8 +25309,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
-    operator.prometheus.io/version: 0.91.0
+    controller-gen.kubebuilder.io/version: v0.22.0
+    operator.prometheus.io/version: 0.94.1
   name: prometheusagents.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -26004,7 +26541,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -26062,7 +26601,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -26296,7 +26837,9 @@ spec:
                                 description: Selects a key of a ConfigMap.
                                 properties:
                                   key:
-                                    description: The key to select.
+                                    description: |-
+                                      The key to select from the ConfigMap's Data field.
+                                      Keys in the BinaryData field are not currently propagated to container env vars.
                                     type: string
                                   name:
                                     default: ''
@@ -26565,6 +27108,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -26678,6 +27226,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -26760,6 +27313,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -26816,6 +27376,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -26971,6 +27536,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -27027,6 +27599,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -27324,7 +27901,6 @@ spec:
                             procMount denotes the type of proc mount to use for the containers.
                             The default value is Default which uses the container runtime defaults for
                             readonly paths and masked paths.
-                            This requires the ProcMountType feature flag to be enabled.
                             Note that this field cannot be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
@@ -27478,6 +28054,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -27534,6 +28117,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -27673,10 +28261,21 @@ spec:
                         description: VolumeMount describes a mounting of a Volume
                           within a container.
                         properties:
-                          mountPath:
+                          bindMountOptions:
                             description: |-
-                              Path within the container at which the volume should be mounted.  Must
-                              not contain ':'.
+                              bindMountOptions is the list of additional bind mount options to apply when
+                              mounting this volume into the container. Allowed values are noexec,
+                              nodev, and nosuid. These are Linux mount options and have no effect on
+                              Windows nodes.
+                              This field is not supported with image volumes.
+                              This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                            items:
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: set
+                          mountPath:
+                            description: Path within the container at which the volume
+                              should be mounted.
                             type: string
                           mountPropagation:
                             description: |-
@@ -27862,6 +28461,7 @@ spec:
                   * Scrape objects with a keepDroppedTargets value less than or equal to enforcedKeepDroppedTargets keep their specific value.
                   * Scrape objects with a keepDroppedTargets value greater than enforcedKeepDroppedTargets are set to enforcedKeepDroppedTargets.
                 format: int64
+                minimum: 0
                 type: integer
               enforcedLabelLimit:
                 description: |-
@@ -27876,6 +28476,7 @@ spec:
                   * Scrape objects with a labelLimit value less than or equal to enforcedLabelLimit keep their specific value.
                   * Scrape objects with a labelLimit value greater than enforcedLabelLimit are set to enforcedLabelLimit.
                 format: int64
+                minimum: 0
                 type: integer
               enforcedLabelNameLengthLimit:
                 description: |-
@@ -27890,6 +28491,7 @@ spec:
                   * Scrape objects with a labelNameLengthLimit value less than or equal to enforcedLabelNameLengthLimit keep their specific value.
                   * Scrape objects with a labelNameLengthLimit value greater than enforcedLabelNameLengthLimit are set to enforcedLabelNameLengthLimit.
                 format: int64
+                minimum: 0
                 type: integer
               enforcedLabelValueLengthLimit:
                 description: |-
@@ -27904,6 +28506,7 @@ spec:
                   * Scrape objects with a labelValueLengthLimit value less than or equal to enforcedLabelValueLengthLimit keep their specific value.
                   * Scrape objects with a labelValueLengthLimit value greater than enforcedLabelValueLengthLimit are set to enforcedLabelValueLengthLimit.
                 format: int64
+                minimum: 0
                 type: integer
               enforcedNamespaceLabel:
                 description: |-
@@ -27932,6 +28535,7 @@ spec:
                   * Scrape objects with a sampleLimit value less than or equal to enforcedSampleLimit keep their specific value.
                   * Scrape objects with a sampleLimit value greater than enforcedSampleLimit are set to enforcedSampleLimit.
                 format: int64
+                minimum: 0
                 type: integer
               enforcedTargetLimit:
                 description: |-
@@ -27947,6 +28551,7 @@ spec:
                   * Scrape objects with a targetLimit value less than or equal to enforcedTargetLimit keep their specific value.
                   * Scrape objects with a targetLimit value greater than enforcedTargetLimit are set to enforcedTargetLimit.
                 format: int64
+                minimum: 0
                 type: integer
               excludedFromEnforcement:
                 description: |-
@@ -28173,7 +28778,9 @@ spec:
                                 description: Selects a key of a ConfigMap.
                                 properties:
                                   key:
-                                    description: The key to select.
+                                    description: |-
+                                      The key to select from the ConfigMap's Data field.
+                                      Keys in the BinaryData field are not currently propagated to container env vars.
                                     type: string
                                   name:
                                     default: ''
@@ -28442,6 +29049,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -28555,6 +29167,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -28637,6 +29254,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -28693,6 +29317,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -28848,6 +29477,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -28904,6 +29540,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -29201,7 +29842,6 @@ spec:
                             procMount denotes the type of proc mount to use for the containers.
                             The default value is Default which uses the container runtime defaults for
                             readonly paths and masked paths.
-                            This requires the ProcMountType feature flag to be enabled.
                             Note that this field cannot be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
@@ -29355,6 +29995,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -29411,6 +30058,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -29550,10 +30202,21 @@ spec:
                         description: VolumeMount describes a mounting of a Volume
                           within a container.
                         properties:
-                          mountPath:
+                          bindMountOptions:
                             description: |-
-                              Path within the container at which the volume should be mounted.  Must
-                              not contain ':'.
+                              bindMountOptions is the list of additional bind mount options to apply when
+                              mounting this volume into the container. Allowed values are noexec,
+                              nodev, and nosuid. These are Linux mount options and have no effect on
+                              Windows nodes.
+                              This field is not supported with image volumes.
+                              This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                            items:
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: set
+                          mountPath:
+                            description: Path within the container at which the volume
+                              should be mounted.
                             type: string
                           mountPropagation:
                             description: |-
@@ -29626,6 +30289,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedKeepDroppedTargets.
                 format: int64
+                minimum: 0
                 type: integer
               labelLimit:
                 description: |-
@@ -29634,6 +30298,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedLabelLimit.
                 format: int64
+                minimum: 0
                 type: integer
               labelNameLengthLimit:
                 description: |-
@@ -29642,6 +30307,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedLabelNameLengthLimit.
                 format: int64
+                minimum: 0
                 type: integer
               labelValueLengthLimit:
                 description: |-
@@ -29650,6 +30316,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedLabelValueLengthLimit.
                 format: int64
+                minimum: 0
                 type: integer
               listenLocal:
                 description: |-
@@ -29747,6 +30414,22 @@ spec:
                       keepIdentifyingResourceAttributes enables adding `service.name`, `service.namespace` and `service.instance.id`
                       resource attributes to the `target_info` metric, on top of converting them into the `instance` and `job` labels.
                       It requires Prometheus >= v3.1.0.
+                    type: boolean
+                  labelNamePreserveMultipleUnderscores:
+                    description: |-
+                      labelNamePreserveMultipleUnderscores enables preserving of multiple consecutive underscores in label names when translation_strategy uses
+                      underscore escaping.
+                      When true (default), multiple consecutive underscores are preserved during label name sanitization.
+                      Notice: This one has no impact if `nameEscapingScheme` is `AllowUTF8`.
+                      It requires Prometheus >= v3.8.0.
+                    type: boolean
+                  labelNameUnderscoreSanitization:
+                    description: |-
+                      labelNameUnderscoreSanitization controls whether to enable prepending of 'key_' to labels starting with '_'.
+                      Reserved labels starting with '__' are not modified.
+                      This is only relevant when translation_strategy uses underscore escaping (e.g., "UnderscoreEscapingWithSuffixes" or "UnderscoreEscapingWithoutSuffixes").
+                      Notice: This one has no impact if `nameEscapingScheme` is `AllowUTF8`.
+                      It requires Prometheus >= v3.8.0.
                     type: boolean
                   promoteAllResourceAttributes:
                     description: |-
@@ -30398,8 +31081,9 @@ spec:
                           minimum: -1
                           type: integer
                         send:
-                          description: send defines whether metric metadata is sent
-                            to the remote storage or not.
+                          description: |-
+                            send defines whether metric metadata is sent to the remote storage or not.
+                            The setting is ignored when Remote Write message's version 2.0 is used.
                           type: boolean
                         sendInterval:
                           description: sendInterval defines how frequently metric
@@ -30436,7 +31120,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -30583,7 +31269,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -30637,7 +31325,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -30739,7 +31429,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -30906,7 +31596,7 @@ spec:
                         externalId:
                           description: |-
                             externalId defines the external ID used when assuming an AWS role. Can only be used with roleArn.
-                            It requires Prometheus >= v3.11.0 or Alertmanager >= v0.33.0. Currently not supported by Thanos.
+                            It requires Prometheus >= v3.11.0 or Alertmanager >= v0.34.0. Currently not supported by Thanos.
                           minLength: 1
                           type: string
                         profile:
@@ -30968,7 +31658,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -31026,7 +31718,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -31184,6 +31878,7 @@ spec:
                               modulus to take of the hash of the source label values.
                               Only applicable when the action is `HashMod`.
                             format: int64
+                            minimum: 0
                             type: integer
                           regex:
                             description: regex defines the regular expression against
@@ -31337,6 +32032,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedSampleLimit.
                 format: int64
+                minimum: 0
                 type: integer
               schedulerName:
                 description: schedulerName defines the scheduler to use for Pod scheduling.
@@ -31363,6 +32059,9 @@ spec:
                             targets.
                             The Prometheus service account must have the `list` and `watch`
                             permissions on the `Nodes` objects.
+                            Node metadata labels are not automatically added to scraped metrics. They are
+                            exposed as `__meta_kubernetes_node_*` labels and can be copied to timeseries
+                            with relabeling configuration.
                           type: boolean
                       type: object
                     authorization:
@@ -31473,6 +32172,7 @@ spec:
                               modulus to take of the hash of the source label values.
                               Only applicable when the action is `HashMod`.
                             format: int64
+                            minimum: 0
                             type: integer
                           regex:
                             description: regex defines the regular expression against
@@ -31563,6 +32263,7 @@ spec:
                               modulus to take of the hash of the source label values.
                               Only applicable when the action is `HashMod`.
                             format: int64
+                            minimum: 0
                             type: integer
                           regex:
                             description: regex defines the regular expression against
@@ -31615,7 +32316,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -31673,7 +32376,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -32058,10 +32763,7 @@ spec:
                       Eligible volumes are in-tree FibreChannel and iSCSI volumes, and all CSI volumes
                       whose CSI driver announces SELinux support by setting spec.seLinuxMount: true in their
                       CSIDriver instance. Other volumes are always re-labelled recursively.
-                      "MountOption" value is allowed only when SELinuxMount feature gate is enabled.
-                      If not specified and SELinuxMount feature gate is enabled, "MountOption" is used.
-                      If not specified and SELinuxMount feature gate is disabled, "MountOption" is used for ReadWriteOncePod volumes
-                      and "Recursive" for all other volumes.
+                      If not specified, "MountOption" is used.
                       This field affects only Pods that have SELinux label set, either in PodSecurityContext or in SecurityContext of all containers.
                       All Pods that use the same volume should use the same seLinuxChangePolicy, otherwise some pods can get stuck in ContainerCreating state.
                       Note that this field cannot be set when spec.os.name is windows.
@@ -32368,6 +33070,7 @@ spec:
                 - message: topology can only be defined when mode is set to 'Topology'
                   rule: '!has(self.topology) || (has(self.mode) && self.mode == ''Topology'')'
               shards:
+                default: 1
                 description: |-
                   shards defines the number of shards to distribute the scraped targets onto.
                   `spec.replicas` multiplied by `spec.shards` is the total number of Pods
@@ -32389,6 +33092,7 @@ spec:
                   You can also disable sharding on a specific target by setting the
                   `__tmp_disable_sharding` label with relabeling configuration. When
                   the label value isn't empty, all Prometheus shards will scrape the target.
+                  Default: 1
                 format: int32
                 type: integer
               storage:
@@ -32411,6 +33115,18 @@ spec:
                           Must be an empty string (default) or Memory.
                           More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir
                         type: string
+                      mode:
+                        description: |-
+                          mode specifies the permission bits for the emptyDir directory, in numeric
+                          notation (e.g., 0755, 01777). Must be a value between 0000 and 01777.
+                          If not specified, defaults to 0777.
+                          This might be in conflict with other options that affect the file
+                          mode, like fsGroup. If fsGroup is specified, the fsGroup permissions
+                          will override the mode specified here.
+                          This field has no effect on Windows.
+                          This field is alpha and requires EmptyDirVolumeMode featuregate to be enabled.
+                        format: int32
+                        type: integer
                       sizeLimit:
                         anyOf:
                         - type: integer
@@ -32481,8 +33197,8 @@ spec:
                                   * An existing PVC (PersistentVolumeClaim)
                                   If the provisioner or an external controller can support the specified data source,
                                   it will create a new volume based on the contents of the specified data source.
-                                  When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                                  and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                                  dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                                  copied to dataSource when dataSourceRef.namespace is not specified.
                                   If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                                 properties:
                                   apiGroup:
@@ -32527,7 +33243,6 @@ spec:
                                     specified.
                                   * While dataSource only allows local objects, dataSourceRef allows objects
                                     in any namespaces.
-                                  (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                                   (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                                 properties:
                                   apiGroup:
@@ -32740,8 +33455,8 @@ spec:
                               * An existing PVC (PersistentVolumeClaim)
                               If the provisioner or an external controller can support the specified data source,
                               it will create a new volume based on the contents of the specified data source.
-                              When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                              and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                              dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                              copied to dataSource when dataSourceRef.namespace is not specified.
                               If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                             properties:
                               apiGroup:
@@ -32784,7 +33499,6 @@ spec:
                                 specified.
                               * While dataSource only allows local objects, dataSourceRef allows objects
                                 in any namespaces.
-                              (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                               (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                             properties:
                               apiGroup:
@@ -33069,6 +33783,58 @@ spec:
                               currentVolumeAttributesClassName is the current name of the VolumeAttributesClass the PVC is using.
                               When unset, there is no VolumeAttributeClass applied to this PersistentVolumeClaim
                             type: string
+                          healthStatus:
+                            description: |-
+                              healthStatus contains the latest controller-reported health information
+                              for the volume bound to this claim.
+                            properties:
+                              healthConditions:
+                                description: |-
+                                  conditions is the set of adverse conditions reported by
+                                  the CSI controller plugin. An empty list means no adverse condition.
+                                  At most 16 conditions may be reported.
+                                items:
+                                  description: VolumeHealthCondition represents an
+                                    adverse health condition reported for a volume.
+                                  properties:
+                                    message:
+                                      description: |-
+                                        message is a human-readable description.
+                                        Maximum permitted length of a message is 1024 bytes.
+                                      type: string
+                                    reason:
+                                      description: |-
+                                        reason is a brief CamelCase machine-parseable reason.
+                                        Together with status it forms the unique identity of a condition entry.
+                                        Maximum permitted length of a reason is 256 bytes.
+                                      type: string
+                                    status:
+                                      description: |-
+                                        status is the machine-parseable health category.
+                                        Possible values:
+                                        - "Inaccessible": the volume cannot be accessed.
+                                        - "DataLoss": data loss has been detected on the volume.
+                                        - "Degraded": the volume is functioning with reduced capability.
+                                      enum:
+                                      - DataLoss
+                                      - Degraded
+                                      - Inaccessible
+                                      type: string
+                                  required:
+                                  - reason
+                                  - status
+                                  type: object
+                                type: array
+                                x-kubernetes-list-map-keys:
+                                - status
+                                - reason
+                                x-kubernetes-list-type: map
+                              lastTransitionTime:
+                                description: lastTransitionTime is when the current
+                                  set of conditions first appeared.
+                                format: date-time
+                                type: string
+                            type: object
                           modifyVolumeStatus:
                             description: |-
                               ModifyVolumeStatus represents the status object of ControllerModifyVolume operation.
@@ -33110,6 +33876,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedTargetLimit.
                 format: int64
+                minimum: 0
                 type: integer
               terminationGracePeriodSeconds:
                 description: |-
@@ -33399,7 +34166,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -33457,7 +34226,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -33572,6 +34343,27 @@ spec:
                   tsdb defines the runtime reloadable configuration of the timeseries database(TSDB).
                   It requires Prometheus >= v2.39.0 or PrometheusAgent >= v2.54.0.
                 properties:
+                  chunkEncoding:
+                    description: |-
+                      chunkEncoding configures per-chunk-type encoding overrides.
+                      It requires Prometheus >= v3.13.0.
+                      Notice: Setting "Xor" is incompatible with --enable-feature=st-storage
+                      (XOR chunks do not store start timestamps).
+                    properties:
+                      floats:
+                        description: |-
+                          floats selects the encoding used for float chunks.
+                          Valid values are "Xor" and "Xor2".
+                          Notice:
+                           * Setting "Xor" is incompatible with --enable-feature=st-storage
+                          (XOR chunks do not store start timestamps).
+                           * Setting "Xor2" automatically adds the `xor2-encoding` feature flag.
+                          It requires Prometheus >= v3.13.0.
+                        enum:
+                        - Xor
+                        - Xor2
+                        type: string
+                    type: object
                   outOfOrderTimeWindow:
                     description: |-
                       outOfOrderTimeWindow defines how old an out-of-order/out-of-bounds sample can be with
@@ -33583,6 +34375,23 @@ spec:
                       It requires Prometheus >= v2.39.0 or PrometheusAgent >= v2.54.0.
                     pattern: ^(0|(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
                     type: string
+                  staleSeriesCompactionThreshold:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: |-
+                      staleSeriesCompactionThreshold configures the trigger point for compacting
+                      stale series from memory into persistent blocks and removing those stale
+                      series from memory.
+                      The threshold is a number between 0.0 and 1.0. It represents the ratio of
+                      stale series in memory to the total series in memory. The stale series
+                      compaction is triggered when this ratio crosses the configured threshold.
+                      It may not trigger the stale series compaction if the usual head compaction
+                      is about to happen soon.
+                      If set to 0, stale series compaction is disabled.
+                      It requires Prometheus >= v3.10.0.
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                 type: object
               updateStrategy:
                 description: |-
@@ -33641,10 +34450,21 @@ spec:
                   description: VolumeMount describes a mounting of a Volume within
                     a container.
                   properties:
-                    mountPath:
+                    bindMountOptions:
                       description: |-
-                        Path within the container at which the volume should be mounted.  Must
-                        not contain ':'.
+                        bindMountOptions is the list of additional bind mount options to apply when
+                        mounting this volume into the container. Allowed values are noexec,
+                        nodev, and nosuid. These are Linux mount options and have no effect on
+                        Windows nodes.
+                        This field is not supported with image volumes.
+                        This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                      items:
+                        type: string
+                      type: array
+                      x-kubernetes-list-type: set
+                    mountPath:
+                      description: Path within the container at which the volume should
+                        be mounted.
                       type: string
                     mountPropagation:
                       description: |-
@@ -33914,6 +34734,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: |-
                             items if unspecified, each key-value pair in the Data field of the referenced
@@ -33946,6 +34773,13 @@ spec:
                                   May not contain the path element '..'.
                                   May not start with the string '..'.
                                 type: string
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - key
                             - path
@@ -34032,6 +34866,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: Items is a list of downward API volume file
                           items:
@@ -34096,6 +34937,13 @@ spec:
                                 - resource
                                 type: object
                                 x-kubernetes-map-type: atomic
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - path
                             type: object
@@ -34114,6 +34962,18 @@ spec:
                             Must be an empty string (default) or Memory.
                             More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir
                           type: string
+                        mode:
+                          description: |-
+                            mode specifies the permission bits for the emptyDir directory, in numeric
+                            notation (e.g., 0755, 01777). Must be a value between 0000 and 01777.
+                            If not specified, defaults to 0777.
+                            This might be in conflict with other options that affect the file
+                            mode, like fsGroup. If fsGroup is specified, the fsGroup permissions
+                            will override the mode specified here.
+                            This field has no effect on Windows.
+                            This field is alpha and requires EmptyDirVolumeMode featuregate to be enabled.
+                          format: int32
+                          type: integer
                         sizeLimit:
                           anyOf:
                           - type: integer
@@ -34200,8 +35060,8 @@ spec:
                                     * An existing PVC (PersistentVolumeClaim)
                                     If the provisioner or an external controller can support the specified data source,
                                     it will create a new volume based on the contents of the specified data source.
-                                    When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                                    and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                                    dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                                    copied to dataSource when dataSourceRef.namespace is not specified.
                                     If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                                   properties:
                                     apiGroup:
@@ -34246,7 +35106,6 @@ spec:
                                       specified.
                                     * While dataSource only allows local objects, dataSourceRef allows objects
                                       in any namespaces.
-                                    (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                                     (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                                   properties:
                                     apiGroup:
@@ -34606,7 +35465,7 @@ spec:
                         A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message.
                         The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field.
                         The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images.
-                        The volume will be mounted read-only (ro) and non-executable files (noexec).
+                        The volume will be mounted read-only (ro).
                         Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath) before 1.33.
                         The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
                       properties:
@@ -34778,8 +35637,7 @@ spec:
                       description: |-
                         portworxVolume represents a portworx volume attached and mounted on kubelets host machine.
                         Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type
-                        are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate
-                        is on.
+                        are redirected to the pxd.portworx.com CSI driver.
                       properties:
                         fsType:
                           description: |-
@@ -34811,6 +35669,13 @@ spec:
                             This might be in conflict with other options that affect the file
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
+                          type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
                           type: integer
                         sources:
                           description: |-
@@ -34908,6 +35773,13 @@ spec:
                                       Mutually-exclusive with name.  The contents of all selected
                                       ClusterTrustBundles will be unified and deduplicated.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                 required:
                                 - path
                                 type: object
@@ -34948,6 +35820,13 @@ spec:
                                             May not contain the path element '..'.
                                             May not start with the string '..'.
                                           type: string
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - key
                                       - path
@@ -35043,6 +35922,13 @@ spec:
                                           - resource
                                           type: object
                                           x-kubernetes-map-type: atomic
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - path
                                       type: object
@@ -35135,6 +36021,13 @@ spec:
                                     description: Kubelet's generated CSRs will be
                                       addressed to this signer.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                   userAnnotations:
                                     additionalProperties:
                                       type: string
@@ -35191,6 +36084,13 @@ spec:
                                             May not contain the path element '..'.
                                             May not start with the string '..'.
                                           type: string
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - key
                                       - path
@@ -35238,6 +36138,13 @@ spec:
                                       path is the path relative to the mount point of the file to project the
                                       token into.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                 required:
                                 - path
                                 type: object
@@ -35444,6 +36351,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: |-
                             items If unspecified, each key-value pair in the Data field of the referenced
@@ -35476,6 +36390,13 @@ spec:
                                   May not contain the path element '..'.
                                   May not start with the string '..'.
                                 type: string
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - key
                             - path
@@ -35657,7 +36578,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -35740,7 +36663,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -36025,8 +36950,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
-    operator.prometheus.io/version: 0.91.0
+    controller-gen.kubebuilder.io/version: v0.22.0
+    operator.prometheus.io/version: 0.94.1
   name: prometheuses.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -37197,6 +38122,7 @@ spec:
                                   modulus to take of the hash of the source label values.
                                   Only applicable when the action is `HashMod`.
                                 format: int64
+                                minimum: 0
                                 type: integer
                               regex:
                                 description: regex defines the regular expression
@@ -37464,6 +38390,7 @@ spec:
                                   modulus to take of the hash of the source label values.
                                   Only applicable when the action is `HashMod`.
                                 format: int64
+                                minimum: 0
                                 type: integer
                               regex:
                                 description: regex defines the regular expression
@@ -37544,7 +38471,7 @@ spec:
                             externalId:
                               description: |-
                                 externalId defines the external ID used when assuming an AWS role. Can only be used with roleArn.
-                                It requires Prometheus >= v3.11.0 or Alertmanager >= v0.33.0. Currently not supported by Thanos.
+                                It requires Prometheus >= v3.11.0 or Alertmanager >= v0.34.0. Currently not supported by Thanos.
                               minLength: 1
                               type: string
                             profile:
@@ -37611,7 +38538,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -37669,7 +38598,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -37977,7 +38908,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -38035,7 +38968,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -38272,7 +39207,9 @@ spec:
                                 description: Selects a key of a ConfigMap.
                                 properties:
                                   key:
-                                    description: The key to select.
+                                    description: |-
+                                      The key to select from the ConfigMap's Data field.
+                                      Keys in the BinaryData field are not currently propagated to container env vars.
                                     type: string
                                   name:
                                     default: ''
@@ -38541,6 +39478,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -38654,6 +39596,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -38736,6 +39683,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -38792,6 +39746,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -38947,6 +39906,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -39003,6 +39969,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -39300,7 +40271,6 @@ spec:
                             procMount denotes the type of proc mount to use for the containers.
                             The default value is Default which uses the container runtime defaults for
                             readonly paths and masked paths.
-                            This requires the ProcMountType feature flag to be enabled.
                             Note that this field cannot be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
@@ -39454,6 +40424,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -39510,6 +40487,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -39649,10 +40631,21 @@ spec:
                         description: VolumeMount describes a mounting of a Volume
                           within a container.
                         properties:
-                          mountPath:
+                          bindMountOptions:
                             description: |-
-                              Path within the container at which the volume should be mounted.  Must
-                              not contain ':'.
+                              bindMountOptions is the list of additional bind mount options to apply when
+                              mounting this volume into the container. Allowed values are noexec,
+                              nodev, and nosuid. These are Linux mount options and have no effect on
+                              Windows nodes.
+                              This field is not supported with image volumes.
+                              This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                            items:
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: set
+                          mountPath:
+                            description: Path within the container at which the volume
+                              should be mounted.
                             type: string
                           mountPropagation:
                             description: |-
@@ -39726,8 +40719,14 @@ spec:
               disableCompaction:
                 description: |-
                   disableCompaction when true, the Prometheus compaction is disabled.
-                  When `spec.thanos.objectStorageConfig` or `spec.objectStorageConfigFile` are defined, the operator automatically
-                  disables block compaction to avoid race conditions during block uploads (as the Thanos documentation recommends).
+                  When `spec.thanos.objectStorageConfig` or `spec.thanos.objectStorageConfigFile` are defined, the operator's
+                  default handling depends on the Prometheus and Thanos sidecar versions:
+                    - With Prometheus < v3.9.0 or a Thanos sidecar < v0.42.0, block compaction is disabled to avoid race
+                      conditions during block uploads (as the Thanos documentation recommends).
+                    - With Prometheus >= v3.9.0 and a Thanos sidecar >= v0.42.0, local compaction is kept enabled and coordinated
+                      with the sidecar through the shipper meta file (`--storage.tsdb.delay-compact-file.path`), so blocks are only
+                      compacted after they have been uploaded.
+                  Setting this field to true always disables local compaction regardless of the versions.
                 type: boolean
               dnsConfig:
                 description: dnsConfig defines the DNS configuration for the pods.
@@ -39854,6 +40853,7 @@ spec:
                   * Scrape objects with a keepDroppedTargets value less than or equal to enforcedKeepDroppedTargets keep their specific value.
                   * Scrape objects with a keepDroppedTargets value greater than enforcedKeepDroppedTargets are set to enforcedKeepDroppedTargets.
                 format: int64
+                minimum: 0
                 type: integer
               enforcedLabelLimit:
                 description: |-
@@ -39868,6 +40868,7 @@ spec:
                   * Scrape objects with a labelLimit value less than or equal to enforcedLabelLimit keep their specific value.
                   * Scrape objects with a labelLimit value greater than enforcedLabelLimit are set to enforcedLabelLimit.
                 format: int64
+                minimum: 0
                 type: integer
               enforcedLabelNameLengthLimit:
                 description: |-
@@ -39882,6 +40883,7 @@ spec:
                   * Scrape objects with a labelNameLengthLimit value less than or equal to enforcedLabelNameLengthLimit keep their specific value.
                   * Scrape objects with a labelNameLengthLimit value greater than enforcedLabelNameLengthLimit are set to enforcedLabelNameLengthLimit.
                 format: int64
+                minimum: 0
                 type: integer
               enforcedLabelValueLengthLimit:
                 description: |-
@@ -39896,6 +40898,7 @@ spec:
                   * Scrape objects with a labelValueLengthLimit value less than or equal to enforcedLabelValueLengthLimit keep their specific value.
                   * Scrape objects with a labelValueLengthLimit value greater than enforcedLabelValueLengthLimit are set to enforcedLabelValueLengthLimit.
                 format: int64
+                minimum: 0
                 type: integer
               enforcedNamespaceLabel:
                 description: |-
@@ -39924,6 +40927,7 @@ spec:
                   * Scrape objects with a sampleLimit value less than or equal to enforcedSampleLimit keep their specific value.
                   * Scrape objects with a sampleLimit value greater than enforcedSampleLimit are set to enforcedSampleLimit.
                 format: int64
+                minimum: 0
                 type: integer
               enforcedTargetLimit:
                 description: |-
@@ -39939,6 +40943,7 @@ spec:
                   * Scrape objects with a targetLimit value less than or equal to enforcedTargetLimit keep their specific value.
                   * Scrape objects with a targetLimit value greater than enforcedTargetLimit are set to enforcedTargetLimit.
                 format: int64
+                minimum: 0
                 type: integer
               evaluationInterval:
                 default: 30s
@@ -40187,7 +41192,9 @@ spec:
                                 description: Selects a key of a ConfigMap.
                                 properties:
                                   key:
-                                    description: The key to select.
+                                    description: |-
+                                      The key to select from the ConfigMap's Data field.
+                                      Keys in the BinaryData field are not currently propagated to container env vars.
                                     type: string
                                   name:
                                     default: ''
@@ -40456,6 +41463,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -40569,6 +41581,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -40651,6 +41668,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -40707,6 +41731,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -40862,6 +41891,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -40918,6 +41954,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -41215,7 +42256,6 @@ spec:
                             procMount denotes the type of proc mount to use for the containers.
                             The default value is Default which uses the container runtime defaults for
                             readonly paths and masked paths.
-                            This requires the ProcMountType feature flag to be enabled.
                             Note that this field cannot be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
@@ -41369,6 +42409,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -41425,6 +42472,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -41564,10 +42616,21 @@ spec:
                         description: VolumeMount describes a mounting of a Volume
                           within a container.
                         properties:
-                          mountPath:
+                          bindMountOptions:
                             description: |-
-                              Path within the container at which the volume should be mounted.  Must
-                              not contain ':'.
+                              bindMountOptions is the list of additional bind mount options to apply when
+                              mounting this volume into the container. Allowed values are noexec,
+                              nodev, and nosuid. These are Linux mount options and have no effect on
+                              Windows nodes.
+                              This field is not supported with image volumes.
+                              This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                            items:
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: set
+                          mountPath:
+                            description: Path within the container at which the volume
+                              should be mounted.
                             type: string
                           mountPropagation:
                             description: |-
@@ -41640,6 +42703,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedKeepDroppedTargets.
                 format: int64
+                minimum: 0
                 type: integer
               labelLimit:
                 description: |-
@@ -41648,6 +42712,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedLabelLimit.
                 format: int64
+                minimum: 0
                 type: integer
               labelNameLengthLimit:
                 description: |-
@@ -41656,6 +42721,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedLabelNameLengthLimit.
                 format: int64
+                minimum: 0
                 type: integer
               labelValueLengthLimit:
                 description: |-
@@ -41664,6 +42730,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedLabelValueLengthLimit.
                 format: int64
+                minimum: 0
                 type: integer
               listenLocal:
                 description: |-
@@ -41753,6 +42820,22 @@ spec:
                       keepIdentifyingResourceAttributes enables adding `service.name`, `service.namespace` and `service.instance.id`
                       resource attributes to the `target_info` metric, on top of converting them into the `instance` and `job` labels.
                       It requires Prometheus >= v3.1.0.
+                    type: boolean
+                  labelNamePreserveMultipleUnderscores:
+                    description: |-
+                      labelNamePreserveMultipleUnderscores enables preserving of multiple consecutive underscores in label names when translation_strategy uses
+                      underscore escaping.
+                      When true (default), multiple consecutive underscores are preserved during label name sanitization.
+                      Notice: This one has no impact if `nameEscapingScheme` is `AllowUTF8`.
+                      It requires Prometheus >= v3.8.0.
+                    type: boolean
+                  labelNameUnderscoreSanitization:
+                    description: |-
+                      labelNameUnderscoreSanitization controls whether to enable prepending of 'key_' to labels starting with '_'.
+                      Reserved labels starting with '__' are not modified.
+                      This is only relevant when translation_strategy uses underscore escaping (e.g., "UnderscoreEscapingWithSuffixes" or "UnderscoreEscapingWithoutSuffixes").
+                      Notice: This one has no impact if `nameEscapingScheme` is `AllowUTF8`.
+                      It requires Prometheus >= v3.8.0.
                     type: boolean
                   promoteAllResourceAttributes:
                     description: |-
@@ -42356,7 +43439,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -42503,7 +43588,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -42557,7 +43644,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -42659,7 +43748,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -42737,7 +43826,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -42795,7 +43886,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -42903,7 +43996,10 @@ spec:
                           type: string
                       type: object
                     url:
-                      description: url defines the URL of the endpoint to query from.
+                      description: |-
+                        url defines the URL of the endpoint to query from.
+                        It must use the HTTP or HTTPS scheme.
+                      pattern: ^(http|https)://.+$
                       type: string
                   required:
                   - url
@@ -43188,8 +44284,9 @@ spec:
                           minimum: -1
                           type: integer
                         send:
-                          description: send defines whether metric metadata is sent
-                            to the remote storage or not.
+                          description: |-
+                            send defines whether metric metadata is sent to the remote storage or not.
+                            The setting is ignored when Remote Write message's version 2.0 is used.
                           type: boolean
                         sendInterval:
                           description: sendInterval defines how frequently metric
@@ -43226,7 +44323,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -43373,7 +44472,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -43427,7 +44528,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -43529,7 +44632,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -43696,7 +44799,7 @@ spec:
                         externalId:
                           description: |-
                             externalId defines the external ID used when assuming an AWS role. Can only be used with roleArn.
-                            It requires Prometheus >= v3.11.0 or Alertmanager >= v0.33.0. Currently not supported by Thanos.
+                            It requires Prometheus >= v3.11.0 or Alertmanager >= v0.34.0. Currently not supported by Thanos.
                           minLength: 1
                           type: string
                         profile:
@@ -43758,7 +44861,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -43816,7 +44921,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -43974,6 +45081,7 @@ spec:
                               modulus to take of the hash of the source label values.
                               Only applicable when the action is `HashMod`.
                             format: int64
+                            minimum: 0
                             type: integer
                           regex:
                             description: regex defines the regular expression against
@@ -44103,9 +45211,22 @@ spec:
               retention:
                 description: |-
                   retention defines how long to retain the Prometheus data.
-                  Default: "24h" if `spec.retention` and `spec.retentionSize` are empty.
+                  Default: "24h" if `spec.retention`, `spec.retentionSize` and
+                  `spec.retentionPercentage` are empty.
                 pattern: ^(0|(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
                 type: string
+              retentionPercentage:
+                anyOf:
+                - type: integer
+                - type: string
+                description: |-
+                  retentionPercentage defines the maximum percentage of the data volume's
+                  capacity used by the Prometheus data.
+                  The value is a number between 0 and 100. If set to 0, percentage-based
+                  retention is disabled.
+                  It requires Prometheus >= v3.11.0 and is ignored by older versions.
+                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                x-kubernetes-int-or-string: true
               retentionSize:
                 description: retentionSize defines the maximum number of bytes used
                   by the Prometheus data.
@@ -44269,6 +45390,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedSampleLimit.
                 format: int64
+                minimum: 0
                 type: integer
               schedulerName:
                 description: schedulerName defines the scheduler to use for Pod scheduling.
@@ -44295,6 +45417,9 @@ spec:
                             targets.
                             The Prometheus service account must have the `list` and `watch`
                             permissions on the `Nodes` objects.
+                            Node metadata labels are not automatically added to scraped metrics. They are
+                            exposed as `__meta_kubernetes_node_*` labels and can be copied to timeseries
+                            with relabeling configuration.
                           type: boolean
                       type: object
                     authorization:
@@ -44405,6 +45530,7 @@ spec:
                               modulus to take of the hash of the source label values.
                               Only applicable when the action is `HashMod`.
                             format: int64
+                            minimum: 0
                             type: integer
                           regex:
                             description: regex defines the regular expression against
@@ -44495,6 +45621,7 @@ spec:
                               modulus to take of the hash of the source label values.
                               Only applicable when the action is `HashMod`.
                             format: int64
+                            minimum: 0
                             type: integer
                           regex:
                             description: regex defines the regular expression against
@@ -44547,7 +45674,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -44605,7 +45734,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -44990,10 +46121,7 @@ spec:
                       Eligible volumes are in-tree FibreChannel and iSCSI volumes, and all CSI volumes
                       whose CSI driver announces SELinux support by setting spec.seLinuxMount: true in their
                       CSIDriver instance. Other volumes are always re-labelled recursively.
-                      "MountOption" value is allowed only when SELinuxMount feature gate is enabled.
-                      If not specified and SELinuxMount feature gate is enabled, "MountOption" is used.
-                      If not specified and SELinuxMount feature gate is disabled, "MountOption" is used for ReadWriteOncePod volumes
-                      and "Recursive" for all other volumes.
+                      If not specified, "MountOption" is used.
                       This field affects only Pods that have SELinux label set, either in PodSecurityContext or in SecurityContext of all containers.
                       All Pods that use the same volume should use the same seLinuxChangePolicy, otherwise some pods can get stuck in ContainerCreating state.
                       Note that this field cannot be set when spec.os.name is windows.
@@ -45261,10 +46389,7 @@ spec:
               shardRetentionPolicy:
                 description: |-
                   shardRetentionPolicy defines the retention policy for the Prometheus shards.
-                  (Alpha) Using this field requires the 'PrometheusShardRetentionPolicy' feature gate to be enabled.
-                  The final goals for this feature can be seen at https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/proposals/202310-shard-autoscaling.md#graceful-scale-down-of-prometheus-servers,
-                  however, the feature is not yet fully implemented in this PR. The limitation being:
-                  * Retention duration is not settable, for now, shards are retained forever.
+                  (Beta) Using this mode requires the `PrometheusShardRetentionPolicy` feature gate (enabled by default).
                 properties:
                   retain:
                     description: |-
@@ -45340,6 +46465,7 @@ spec:
                 - message: topology can only be defined when mode is set to 'Topology'
                   rule: '!has(self.topology) || (has(self.mode) && self.mode == ''Topology'')'
               shards:
+                default: 1
                 description: |-
                   shards defines the number of shards to distribute the scraped targets onto.
                   `spec.replicas` multiplied by `spec.shards` is the total number of Pods
@@ -45361,6 +46487,7 @@ spec:
                   You can also disable sharding on a specific target by setting the
                   `__tmp_disable_sharding` label with relabeling configuration. When
                   the label value isn't empty, all Prometheus shards will scrape the target.
+                  Default: 1
                 format: int32
                 type: integer
               storage:
@@ -45383,6 +46510,18 @@ spec:
                           Must be an empty string (default) or Memory.
                           More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir
                         type: string
+                      mode:
+                        description: |-
+                          mode specifies the permission bits for the emptyDir directory, in numeric
+                          notation (e.g., 0755, 01777). Must be a value between 0000 and 01777.
+                          If not specified, defaults to 0777.
+                          This might be in conflict with other options that affect the file
+                          mode, like fsGroup. If fsGroup is specified, the fsGroup permissions
+                          will override the mode specified here.
+                          This field has no effect on Windows.
+                          This field is alpha and requires EmptyDirVolumeMode featuregate to be enabled.
+                        format: int32
+                        type: integer
                       sizeLimit:
                         anyOf:
                         - type: integer
@@ -45453,8 +46592,8 @@ spec:
                                   * An existing PVC (PersistentVolumeClaim)
                                   If the provisioner or an external controller can support the specified data source,
                                   it will create a new volume based on the contents of the specified data source.
-                                  When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                                  and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                                  dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                                  copied to dataSource when dataSourceRef.namespace is not specified.
                                   If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                                 properties:
                                   apiGroup:
@@ -45499,7 +46638,6 @@ spec:
                                     specified.
                                   * While dataSource only allows local objects, dataSourceRef allows objects
                                     in any namespaces.
-                                  (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                                   (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                                 properties:
                                   apiGroup:
@@ -45712,8 +46850,8 @@ spec:
                               * An existing PVC (PersistentVolumeClaim)
                               If the provisioner or an external controller can support the specified data source,
                               it will create a new volume based on the contents of the specified data source.
-                              When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                              and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                              dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                              copied to dataSource when dataSourceRef.namespace is not specified.
                               If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                             properties:
                               apiGroup:
@@ -45756,7 +46894,6 @@ spec:
                                 specified.
                               * While dataSource only allows local objects, dataSourceRef allows objects
                                 in any namespaces.
-                              (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                               (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                             properties:
                               apiGroup:
@@ -46041,6 +47178,58 @@ spec:
                               currentVolumeAttributesClassName is the current name of the VolumeAttributesClass the PVC is using.
                               When unset, there is no VolumeAttributeClass applied to this PersistentVolumeClaim
                             type: string
+                          healthStatus:
+                            description: |-
+                              healthStatus contains the latest controller-reported health information
+                              for the volume bound to this claim.
+                            properties:
+                              healthConditions:
+                                description: |-
+                                  conditions is the set of adverse conditions reported by
+                                  the CSI controller plugin. An empty list means no adverse condition.
+                                  At most 16 conditions may be reported.
+                                items:
+                                  description: VolumeHealthCondition represents an
+                                    adverse health condition reported for a volume.
+                                  properties:
+                                    message:
+                                      description: |-
+                                        message is a human-readable description.
+                                        Maximum permitted length of a message is 1024 bytes.
+                                      type: string
+                                    reason:
+                                      description: |-
+                                        reason is a brief CamelCase machine-parseable reason.
+                                        Together with status it forms the unique identity of a condition entry.
+                                        Maximum permitted length of a reason is 256 bytes.
+                                      type: string
+                                    status:
+                                      description: |-
+                                        status is the machine-parseable health category.
+                                        Possible values:
+                                        - "Inaccessible": the volume cannot be accessed.
+                                        - "DataLoss": data loss has been detected on the volume.
+                                        - "Degraded": the volume is functioning with reduced capability.
+                                      enum:
+                                      - DataLoss
+                                      - Degraded
+                                      - Inaccessible
+                                      type: string
+                                  required:
+                                  - reason
+                                  - status
+                                  type: object
+                                type: array
+                                x-kubernetes-list-map-keys:
+                                - status
+                                - reason
+                                x-kubernetes-list-type: map
+                              lastTransitionTime:
+                                description: lastTransitionTime is when the current
+                                  set of conditions first appeared.
+                                format: date-time
+                                type: string
+                            type: object
                           modifyVolumeStatus:
                             description: |-
                               ModifyVolumeStatus represents the status object of ControllerModifyVolume operation.
@@ -46086,6 +47275,7 @@ spec:
                   Note that the global limit only applies to scrape objects that don't specify an explicit limit value.
                   If you want to enforce a maximum limit for all scrape objects, refer to enforcedTargetLimit.
                 format: int64
+                minimum: 0
                 type: integer
               terminationGracePeriodSeconds:
                 description: |-
@@ -46168,7 +47358,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -46226,7 +47418,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -46564,10 +47758,21 @@ spec:
                       description: VolumeMount describes a mounting of a Volume within
                         a container.
                       properties:
-                        mountPath:
+                        bindMountOptions:
                           description: |-
-                            Path within the container at which the volume should be mounted.  Must
-                            not contain ':'.
+                            bindMountOptions is the list of additional bind mount options to apply when
+                            mounting this volume into the container. Allowed values are noexec,
+                            nodev, and nosuid. These are Linux mount options and have no effect on
+                            Windows nodes.
+                            This field is not supported with image volumes.
+                            This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                          items:
+                            type: string
+                          type: array
+                          x-kubernetes-list-type: set
+                        mountPath:
+                          description: Path within the container at which the volume
+                            should be mounted.
                           type: string
                         mountPropagation:
                           description: |-
@@ -46898,7 +48103,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -46956,7 +48163,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -47071,6 +48280,27 @@ spec:
                   tsdb defines the runtime reloadable configuration of the timeseries database(TSDB).
                   It requires Prometheus >= v2.39.0 or PrometheusAgent >= v2.54.0.
                 properties:
+                  chunkEncoding:
+                    description: |-
+                      chunkEncoding configures per-chunk-type encoding overrides.
+                      It requires Prometheus >= v3.13.0.
+                      Notice: Setting "Xor" is incompatible with --enable-feature=st-storage
+                      (XOR chunks do not store start timestamps).
+                    properties:
+                      floats:
+                        description: |-
+                          floats selects the encoding used for float chunks.
+                          Valid values are "Xor" and "Xor2".
+                          Notice:
+                           * Setting "Xor" is incompatible with --enable-feature=st-storage
+                          (XOR chunks do not store start timestamps).
+                           * Setting "Xor2" automatically adds the `xor2-encoding` feature flag.
+                          It requires Prometheus >= v3.13.0.
+                        enum:
+                        - Xor
+                        - Xor2
+                        type: string
+                    type: object
                   outOfOrderTimeWindow:
                     description: |-
                       outOfOrderTimeWindow defines how old an out-of-order/out-of-bounds sample can be with
@@ -47082,6 +48312,23 @@ spec:
                       It requires Prometheus >= v2.39.0 or PrometheusAgent >= v2.54.0.
                     pattern: ^(0|(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
                     type: string
+                  staleSeriesCompactionThreshold:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: |-
+                      staleSeriesCompactionThreshold configures the trigger point for compacting
+                      stale series from memory into persistent blocks and removing those stale
+                      series from memory.
+                      The threshold is a number between 0.0 and 1.0. It represents the ratio of
+                      stale series in memory to the total series in memory. The stale series
+                      compaction is triggered when this ratio crosses the configured threshold.
+                      It may not trigger the stale series compaction if the usual head compaction
+                      is about to happen soon.
+                      If set to 0, stale series compaction is disabled.
+                      It requires Prometheus >= v3.10.0.
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                 type: object
               updateStrategy:
                 description: |-
@@ -47140,10 +48387,21 @@ spec:
                   description: VolumeMount describes a mounting of a Volume within
                     a container.
                   properties:
-                    mountPath:
+                    bindMountOptions:
                       description: |-
-                        Path within the container at which the volume should be mounted.  Must
-                        not contain ':'.
+                        bindMountOptions is the list of additional bind mount options to apply when
+                        mounting this volume into the container. Allowed values are noexec,
+                        nodev, and nosuid. These are Linux mount options and have no effect on
+                        Windows nodes.
+                        This field is not supported with image volumes.
+                        This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                      items:
+                        type: string
+                      type: array
+                      x-kubernetes-list-type: set
+                    mountPath:
+                      description: Path within the container at which the volume should
+                        be mounted.
                       type: string
                     mountPropagation:
                       description: |-
@@ -47413,6 +48671,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: |-
                             items if unspecified, each key-value pair in the Data field of the referenced
@@ -47445,6 +48710,13 @@ spec:
                                   May not contain the path element '..'.
                                   May not start with the string '..'.
                                 type: string
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - key
                             - path
@@ -47531,6 +48803,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: Items is a list of downward API volume file
                           items:
@@ -47595,6 +48874,13 @@ spec:
                                 - resource
                                 type: object
                                 x-kubernetes-map-type: atomic
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - path
                             type: object
@@ -47613,6 +48899,18 @@ spec:
                             Must be an empty string (default) or Memory.
                             More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir
                           type: string
+                        mode:
+                          description: |-
+                            mode specifies the permission bits for the emptyDir directory, in numeric
+                            notation (e.g., 0755, 01777). Must be a value between 0000 and 01777.
+                            If not specified, defaults to 0777.
+                            This might be in conflict with other options that affect the file
+                            mode, like fsGroup. If fsGroup is specified, the fsGroup permissions
+                            will override the mode specified here.
+                            This field has no effect on Windows.
+                            This field is alpha and requires EmptyDirVolumeMode featuregate to be enabled.
+                          format: int32
+                          type: integer
                         sizeLimit:
                           anyOf:
                           - type: integer
@@ -47699,8 +48997,8 @@ spec:
                                     * An existing PVC (PersistentVolumeClaim)
                                     If the provisioner or an external controller can support the specified data source,
                                     it will create a new volume based on the contents of the specified data source.
-                                    When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                                    and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                                    dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                                    copied to dataSource when dataSourceRef.namespace is not specified.
                                     If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                                   properties:
                                     apiGroup:
@@ -47745,7 +49043,6 @@ spec:
                                       specified.
                                     * While dataSource only allows local objects, dataSourceRef allows objects
                                       in any namespaces.
-                                    (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                                     (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                                   properties:
                                     apiGroup:
@@ -48105,7 +49402,7 @@ spec:
                         A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message.
                         The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field.
                         The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images.
-                        The volume will be mounted read-only (ro) and non-executable files (noexec).
+                        The volume will be mounted read-only (ro).
                         Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath) before 1.33.
                         The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
                       properties:
@@ -48277,8 +49574,7 @@ spec:
                       description: |-
                         portworxVolume represents a portworx volume attached and mounted on kubelets host machine.
                         Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type
-                        are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate
-                        is on.
+                        are redirected to the pxd.portworx.com CSI driver.
                       properties:
                         fsType:
                           description: |-
@@ -48310,6 +49606,13 @@ spec:
                             This might be in conflict with other options that affect the file
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
+                          type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
                           type: integer
                         sources:
                           description: |-
@@ -48407,6 +49710,13 @@ spec:
                                       Mutually-exclusive with name.  The contents of all selected
                                       ClusterTrustBundles will be unified and deduplicated.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                 required:
                                 - path
                                 type: object
@@ -48447,6 +49757,13 @@ spec:
                                             May not contain the path element '..'.
                                             May not start with the string '..'.
                                           type: string
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - key
                                       - path
@@ -48542,6 +49859,13 @@ spec:
                                           - resource
                                           type: object
                                           x-kubernetes-map-type: atomic
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - path
                                       type: object
@@ -48634,6 +49958,13 @@ spec:
                                     description: Kubelet's generated CSRs will be
                                       addressed to this signer.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                   userAnnotations:
                                     additionalProperties:
                                       type: string
@@ -48690,6 +50021,13 @@ spec:
                                             May not contain the path element '..'.
                                             May not start with the string '..'.
                                           type: string
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - key
                                       - path
@@ -48737,6 +50075,13 @@ spec:
                                       path is the path relative to the mount point of the file to project the
                                       token into.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                 required:
                                 - path
                                 type: object
@@ -48943,6 +50288,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: |-
                             items If unspecified, each key-value pair in the Data field of the referenced
@@ -48975,6 +50327,13 @@ spec:
                                   May not contain the path element '..'.
                                   May not start with the string '..'.
                                 type: string
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - key
                             - path
@@ -49156,7 +50515,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -49239,7 +50600,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -49497,8 +50860,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
-    operator.prometheus.io/version: 0.91.0
+    controller-gen.kubebuilder.io/version: v0.22.0
+    operator.prometheus.io/version: 0.94.1
   name: prometheusrules.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -49760,8 +51123,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
-    operator.prometheus.io/version: 0.91.0
+    controller-gen.kubebuilder.io/version: v0.22.0
+    operator.prometheus.io/version: 0.94.1
   name: scrapeconfigs.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -50018,7 +51381,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -50165,7 +51530,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -50219,7 +51586,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -50321,7 +51690,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -50413,7 +51782,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -50467,7 +51838,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -50806,7 +52179,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -50953,7 +52328,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -51007,7 +52384,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -51109,7 +52488,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -51193,6 +52572,7 @@ spec:
                       description: services defines a list of services for which targets
                         are retrieved. If omitted, all services are scraped.
                       items:
+                        minLength: 1
                         type: string
                       type: array
                       x-kubernetes-list-type: set
@@ -51207,6 +52587,7 @@ spec:
                         tags defines an optional list of tags used to filter nodes for a given service. Services must contain all tags in the list.
                         Starting with Consul 1.14, it is recommended to use `filter` with the `ServiceTags` selector instead.
                       items:
+                        minLength: 1
                         type: string
                       type: array
                       x-kubernetes-list-type: set
@@ -51223,7 +52604,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -51277,7 +52660,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -51484,7 +52869,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -51631,7 +53018,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -51685,7 +53074,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -51787,7 +53178,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -51862,7 +53253,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -51916,7 +53309,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -52205,7 +53600,6 @@ spec:
                       type: boolean
                     host:
                       description: host defines the address of the docker daemon.
-                      minLength: 1
                       pattern: ^[a-zA-Z][a-zA-Z0-9+.-]*://.+$
                       type: string
                     hostNetworkingHost:
@@ -52240,7 +53634,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -52387,7 +53783,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -52441,7 +53839,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -52543,7 +53943,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -52618,7 +54018,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -52672,7 +54074,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -52942,7 +54346,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -53089,7 +54495,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -53143,7 +54551,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -53245,7 +54655,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -53329,7 +54739,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -53383,7 +54795,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -53674,7 +55088,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -53728,7 +55144,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -53969,7 +55387,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -54116,7 +55536,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -54170,7 +55592,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -54272,7 +55696,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -54345,7 +55769,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -54399,7 +55825,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -54738,7 +56166,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -54885,7 +56315,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -54939,7 +56371,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -55041,7 +56475,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -55107,9 +56541,7 @@ spec:
                       description: role defines the Hetzner role of entities that
                         should be discovered.
                       enum:
-                      - hcloud
                       - Hcloud
-                      - robot
                       - Robot
                       type: string
                     tlsConfig:
@@ -55125,7 +56557,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -55179,7 +56613,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -55425,7 +56861,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -55572,7 +57010,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -55626,7 +57066,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -55728,7 +57170,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -55796,7 +57238,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -55850,7 +57294,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -56036,7 +57482,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -56183,7 +57631,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -56237,7 +57687,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -56339,7 +57791,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -56414,7 +57866,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -56468,7 +57922,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -56586,6 +58042,7 @@ spec:
                   that will be kept in memory. 0 means no limit.
                   It requires Prometheus >= v2.47.0.
                 format: int64
+                minimum: 0
                 type: integer
               kubernetesSDConfigs:
                 description: kubernetesSDConfigs defines a list of Kubernetes service
@@ -56729,6 +58186,7 @@ spec:
                             names defines a list of namespaces where to watch for resources.
                             If empty and `ownNamespace` isn't true, Prometheus watches for resources in all namespaces.
                           items:
+                            minLength: 1
                             type: string
                           type: array
                           x-kubernetes-list-type: set
@@ -56759,7 +58217,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -56906,7 +58366,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -56960,7 +58422,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -57062,7 +58526,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -57174,7 +58638,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -57228,7 +58694,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -57472,7 +58940,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -57619,7 +59089,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -57673,7 +59145,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -57775,7 +59249,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -57848,7 +59322,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -57902,7 +59378,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -58010,18 +59488,21 @@ spec:
                   labelLimit defines the per-scrape limit on number of labels that will be accepted for a sample.
                   Only valid in Prometheus versions 2.27.0 and newer.
                 format: int64
+                minimum: 0
                 type: integer
               labelNameLengthLimit:
                 description: |-
                   labelNameLengthLimit defines the per-scrape limit on length of labels name that will be accepted for a sample.
                   Only valid in Prometheus versions 2.27.0 and newer.
                 format: int64
+                minimum: 0
                 type: integer
               labelValueLengthLimit:
                 description: |-
                   labelValueLengthLimit defines the per-scrape limit on length of labels value that will be accepted for a sample.
                   Only valid in Prometheus versions 2.27.0 and newer.
                 format: int64
+                minimum: 0
                 type: integer
               lightSailSDConfigs:
                 description: lightSailSDConfigs defines a list of Lightsail service
@@ -58183,7 +59664,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -58330,7 +59813,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -58384,7 +59869,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -58486,7 +59973,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -58594,7 +60081,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -58648,7 +60137,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -58823,7 +60314,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -58970,7 +60463,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -59024,7 +60519,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -59126,7 +60623,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -59210,7 +60707,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -59264,7 +60763,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -59410,6 +60911,7 @@ spec:
                         modulus to take of the hash of the source label values.
                         Only applicable when the action is `HashMod`.
                       format: int64
+                      minimum: 0
                       type: integer
                     regex:
                       description: regex defines the regular expression against which
@@ -59476,6 +60978,7 @@ spec:
                   buckets will be merged to stay within the limit.
                   It requires Prometheus >= v2.45.0.
                 format: int64
+                minimum: 0
                 type: integer
               nativeHistogramMinBucketFactor:
                 anyOf:
@@ -59635,7 +61138,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -59782,7 +61287,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -59836,7 +61343,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -59938,7 +61447,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -60024,7 +61533,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -60078,7 +61589,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -60195,7 +61708,9 @@ spec:
                           to use for the targets.
                         properties:
                           key:
-                            description: The key to select.
+                            description: |-
+                              The key to select from the ConfigMap's Data field.
+                              Keys in the BinaryData field are not currently propagated to container env vars.
                             type: string
                           name:
                             default: ''
@@ -60342,7 +61857,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -60396,7 +61913,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -60497,7 +62016,7 @@ spec:
                     type: object
                   tokenUrl:
                     description: tokenUrl defines the URL to fetch the token from.
-                    minLength: 1
+                    pattern: ^(http|https)://.+$
                     type: string
                 required:
                 - clientId
@@ -60560,11 +62079,8 @@ spec:
                         to connect to.
                       enum:
                       - Public
-                      - public
                       - Admin
-                      - admin
                       - Internal
-                      - internal
                       type: string
                     domainID:
                       description: domainID defines The OpenStack domainID.
@@ -60660,7 +62176,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -60714,7 +62232,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -61111,7 +62631,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -61258,7 +62780,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -61312,7 +62836,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -61414,7 +62940,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -61495,7 +63021,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -61549,7 +63077,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -61706,6 +63236,7 @@ spec:
                         modulus to take of the hash of the source label values.
                         Only applicable when the action is `HashMod`.
                       format: int64
+                      minimum: 0
                       type: integer
                     regex:
                       description: regex defines the regular expression against which
@@ -61747,6 +63278,7 @@ spec:
                 description: sampleLimit defines per-scrape limit on number of scraped
                   samples that will be accepted.
                 format: int64
+                minimum: 0
                 type: integer
               scalewaySDConfigs:
                 description: scalewaySDConfigs defines a list of Scaleway instances
@@ -61900,7 +63432,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -61954,7 +63488,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -62158,6 +63694,7 @@ spec:
                 description: targetLimit defines a limit on the number of scraped
                   targets that will be accepted.
                 format: int64
+                minimum: 0
                 type: integer
               tlsConfig:
                 description: tlsConfig defines the TLS configuration to use on every
@@ -62172,7 +63709,9 @@ spec:
                           to use for the targets.
                         properties:
                           key:
-                            description: The key to select.
+                            description: |-
+                              The key to select from the ConfigMap's Data field.
+                              Keys in the BinaryData field are not currently propagated to container env vars.
                             type: string
                           name:
                             default: ''
@@ -62226,7 +63765,9 @@ spec:
                           to use for the targets.
                         properties:
                           key:
-                            description: The key to select.
+                            description: |-
+                              The key to select from the ConfigMap's Data field.
+                              Keys in the BinaryData field are not currently propagated to container env vars.
                             type: string
                           name:
                             default: ''
@@ -62451,8 +63992,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
-    operator.prometheus.io/version: 0.91.0
+    controller-gen.kubebuilder.io/version: v0.22.0
+    operator.prometheus.io/version: 0.94.1
   name: servicemonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -62514,6 +64055,9 @@ spec:
                       targets.
                       The Prometheus service account must have the `list` and `watch`
                       permissions on the `Nodes` objects.
+                      Node metadata labels are not automatically added to scraped metrics. They are
+                      exposed as `__meta_kubernetes_node_*` labels and can be copied to timeseries
+                      with relabeling configuration.
                     type: boolean
                 type: object
               bodySizeLimit:
@@ -62747,6 +64291,7 @@ spec:
                               modulus to take of the hash of the source label values.
                               Only applicable when the action is `HashMod`.
                             format: int64
+                            minimum: 0
                             type: integer
                           regex:
                             description: regex defines the regular expression against
@@ -62806,7 +64351,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -62953,7 +64500,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -63007,7 +64556,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -63109,7 +64660,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -63130,7 +64681,8 @@ spec:
                       type: string
                     port:
                       description: |-
-                        port defines the name of the Service port which this endpoint refers to.
+                        port defines the name of the Service port which this endpoint refers to
+                        (e.g. `.spec.ports[].name`).
                         It takes precedence over `targetPort`.
                       type: string
                     proxyConnectHeader:
@@ -63224,6 +64776,7 @@ spec:
                               modulus to take of the hash of the source label values.
                               Only applicable when the action is `HashMod`.
                             format: int64
+                            minimum: 0
                             type: integer
                           regex:
                             description: regex defines the regular expression against
@@ -63282,8 +64835,10 @@ spec:
                       - type: integer
                       - type: string
                       description: |-
-                        targetPort defines the name or number of the target port of the `Pod` object behind the
-                        Service. The port must be specified with the container's port property.
+                        targetPort defines the name or number of a container port on Pods selected
+                        by the Service.
+                        If a name, it matches against `.spec.containers[].ports[].name` of the Pods.
+                        If a number, it matches against `.spec.containers[].ports[].containerPort` of the Pods.
                       x-kubernetes-int-or-string: true
                     tlsConfig:
                       description: tlsConfig defines TLS configuration used by the
@@ -63298,7 +64853,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -63356,7 +64913,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -63500,24 +65059,28 @@ spec:
                   that will be kept in memory. 0 means no limit.
                   It requires Prometheus >= v2.47.0.
                 format: int64
+                minimum: 0
                 type: integer
               labelLimit:
                 description: |-
                   labelLimit defines the per-scrape limit on number of labels that will be accepted for a sample.
                   It requires Prometheus >= v2.27.0.
                 format: int64
+                minimum: 0
                 type: integer
               labelNameLengthLimit:
                 description: |-
                   labelNameLengthLimit defines the per-scrape limit on length of labels name that will be accepted for a sample.
                   It requires Prometheus >= v2.27.0.
                 format: int64
+                minimum: 0
                 type: integer
               labelValueLengthLimit:
                 description: |-
                   labelValueLengthLimit defines the per-scrape limit on length of labels value that will be accepted for a sample.
                   It requires Prometheus >= v2.27.0.
                 format: int64
+                minimum: 0
                 type: integer
               namespaceSelector:
                 description: |-
@@ -63542,6 +65105,7 @@ spec:
                   buckets will be merged to stay within the limit.
                   It requires Prometheus >= v2.45.0.
                 format: int64
+                minimum: 0
                 type: integer
               nativeHistogramMinBucketFactor:
                 anyOf:
@@ -63565,6 +65129,7 @@ spec:
                   sampleLimit defines a per-scrape limit on the number of scraped samples
                   that will be accepted.
                 format: int64
+                minimum: 0
                 type: integer
               scrapeClass:
                 description: scrapeClass defines the scrape class to apply.
@@ -63685,6 +65250,7 @@ spec:
                   targetLimit defines a limit on the number of scraped targets that will
                   be accepted.
                 format: int64
+                minimum: 0
                 type: integer
             required:
             - endpoints
@@ -63804,8 +65370,8 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
-    operator.prometheus.io/version: 0.91.0
+    controller-gen.kubebuilder.io/version: v0.22.0
+    operator.prometheus.io/version: 0.94.1
   name: thanosrulers.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
@@ -64982,7 +66548,9 @@ spec:
                                 description: Selects a key of a ConfigMap.
                                 properties:
                                   key:
-                                    description: The key to select.
+                                    description: |-
+                                      The key to select from the ConfigMap's Data field.
+                                      Keys in the BinaryData field are not currently propagated to container env vars.
                                     type: string
                                   name:
                                     default: ''
@@ -65251,6 +66819,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -65364,6 +66937,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -65446,6 +67024,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -65502,6 +67087,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -65657,6 +67247,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -65713,6 +67310,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -66010,7 +67612,6 @@ spec:
                             procMount denotes the type of proc mount to use for the containers.
                             The default value is Default which uses the container runtime defaults for
                             readonly paths and masked paths.
-                            This requires the ProcMountType feature flag to be enabled.
                             Note that this field cannot be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
@@ -66164,6 +67765,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -66220,6 +67828,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -66359,10 +67972,21 @@ spec:
                         description: VolumeMount describes a mounting of a Volume
                           within a container.
                         properties:
-                          mountPath:
+                          bindMountOptions:
                             description: |-
-                              Path within the container at which the volume should be mounted.  Must
-                              not contain ':'.
+                              bindMountOptions is the list of additional bind mount options to apply when
+                              mounting this volume into the container. Allowed values are noexec,
+                              nodev, and nosuid. These are Linux mount options and have no effect on
+                              Windows nodes.
+                              This field is not supported with image volumes.
+                              This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                            items:
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: set
+                          mountPath:
+                            description: Path within the container at which the volume
+                              should be mounted.
                             type: string
                           mountPropagation:
                             description: |-
@@ -66572,7 +68196,9 @@ spec:
                           to use for the targets.
                         properties:
                           key:
-                            description: The key to select.
+                            description: |-
+                              The key to select from the ConfigMap's Data field.
+                              Keys in the BinaryData field are not currently propagated to container env vars.
                             type: string
                           name:
                             default: ''
@@ -66630,7 +68256,9 @@ spec:
                           to use for the targets.
                         properties:
                           key:
-                            description: The key to select.
+                            description: |-
+                              The key to select from the ConfigMap's Data field.
+                              Keys in the BinaryData field are not currently propagated to container env vars.
                             type: string
                           name:
                             default: ''
@@ -66902,7 +68530,9 @@ spec:
                                 description: Selects a key of a ConfigMap.
                                 properties:
                                   key:
-                                    description: The key to select.
+                                    description: |-
+                                      The key to select from the ConfigMap's Data field.
+                                      Keys in the BinaryData field are not currently propagated to container env vars.
                                     type: string
                                   name:
                                     default: ''
@@ -67171,6 +68801,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -67284,6 +68919,11 @@ spec:
                                     Number must be in the range 1 to 65535.
                                     Name must be an IANA_SVC_NAME.
                                   x-kubernetes-int-or-string: true
+                                protocol:
+                                  description: |-
+                                    Protocol selects the wire protocol for the probe connection.
+                                    Nil defaults to HTTP/1.1.
+                                  type: string
                                 scheme:
                                   description: |-
                                     Scheme to use for connecting to the host.
@@ -67366,6 +69006,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -67422,6 +69069,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -67577,6 +69229,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -67633,6 +69292,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -67930,7 +69594,6 @@ spec:
                             procMount denotes the type of proc mount to use for the containers.
                             The default value is Default which uses the container runtime defaults for
                             readonly paths and masked paths.
-                            This requires the ProcMountType feature flag to be enabled.
                             Note that this field cannot be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
@@ -68084,6 +69747,13 @@ spec:
                         grpc:
                           description: GRPC specifies a GRPC HealthCheckRequest.
                           properties:
+                            mode:
+                              description: |-
+                                mode specifies the connection mode for the gRPC health probe.
+                                Set to "TLS" to use TLS without certificate verification.
+                                Set to "Plaintext" to use a plaintext (insecure) connection explicitly.
+                                If not specified, the probe uses a plaintext (insecure) connection.
+                              type: string
                             port:
                               description: Port number of the gRPC service. Number
                                 must be in the range 1 to 65535.
@@ -68140,6 +69810,11 @@ spec:
                                 Number must be in the range 1 to 65535.
                                 Name must be an IANA_SVC_NAME.
                               x-kubernetes-int-or-string: true
+                            protocol:
+                              description: |-
+                                Protocol selects the wire protocol for the probe connection.
+                                Nil defaults to HTTP/1.1.
+                              type: string
                             scheme:
                               description: |-
                                 Scheme to use for connecting to the host.
@@ -68279,10 +69954,21 @@ spec:
                         description: VolumeMount describes a mounting of a Volume
                           within a container.
                         properties:
-                          mountPath:
+                          bindMountOptions:
                             description: |-
-                              Path within the container at which the volume should be mounted.  Must
-                              not contain ':'.
+                              bindMountOptions is the list of additional bind mount options to apply when
+                              mounting this volume into the container. Allowed values are noexec,
+                              nodev, and nosuid. These are Linux mount options and have no effect on
+                              Windows nodes.
+                              This field is not supported with image volumes.
+                              This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                            items:
+                              type: string
+                            type: array
+                            x-kubernetes-list-type: set
+                          mountPath:
+                            description: Path within the container at which the volume
+                              should be mounted.
                             type: string
                           mountPropagation:
                             description: |-
@@ -68832,8 +70518,9 @@ spec:
                           minimum: -1
                           type: integer
                         send:
-                          description: send defines whether metric metadata is sent
-                            to the remote storage or not.
+                          description: |-
+                            send defines whether metric metadata is sent to the remote storage or not.
+                            The setting is ignored when Remote Write message's version 2.0 is used.
                           type: boolean
                         sendInterval:
                           description: sendInterval defines how frequently metric
@@ -68870,7 +70557,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -69017,7 +70706,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -69071,7 +70762,9 @@ spec:
                                     data to use for the targets.
                                   properties:
                                     key:
-                                      description: The key to select.
+                                      description: |-
+                                        The key to select from the ConfigMap's Data field.
+                                        Keys in the BinaryData field are not currently propagated to container env vars.
                                       type: string
                                     name:
                                       default: ''
@@ -69173,7 +70866,7 @@ spec:
                         tokenUrl:
                           description: tokenUrl defines the URL to fetch the token
                             from.
-                          minLength: 1
+                          pattern: ^(http|https)://.+$
                           type: string
                       required:
                       - clientId
@@ -69340,7 +71033,7 @@ spec:
                         externalId:
                           description: |-
                             externalId defines the external ID used when assuming an AWS role. Can only be used with roleArn.
-                            It requires Prometheus >= v3.11.0 or Alertmanager >= v0.33.0. Currently not supported by Thanos.
+                            It requires Prometheus >= v3.11.0 or Alertmanager >= v0.34.0. Currently not supported by Thanos.
                           minLength: 1
                           type: string
                         profile:
@@ -69402,7 +71095,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -69460,7 +71155,9 @@ spec:
                                 data to use for the targets.
                               properties:
                                 key:
-                                  description: The key to select.
+                                  description: |-
+                                    The key to select from the ConfigMap's Data field.
+                                    Keys in the BinaryData field are not currently propagated to container env vars.
                                   type: string
                                 name:
                                   default: ''
@@ -69618,6 +71315,7 @@ spec:
                               modulus to take of the hash of the source label values.
                               Only applicable when the action is `HashMod`.
                             format: int64
+                            minimum: 0
                             type: integer
                           regex:
                             description: regex defines the regular expression against
@@ -69961,10 +71659,7 @@ spec:
                       Eligible volumes are in-tree FibreChannel and iSCSI volumes, and all CSI volumes
                       whose CSI driver announces SELinux support by setting spec.seLinuxMount: true in their
                       CSIDriver instance. Other volumes are always re-labelled recursively.
-                      "MountOption" value is allowed only when SELinuxMount feature gate is enabled.
-                      If not specified and SELinuxMount feature gate is enabled, "MountOption" is used.
-                      If not specified and SELinuxMount feature gate is disabled, "MountOption" is used for ReadWriteOncePod volumes
-                      and "Recursive" for all other volumes.
+                      If not specified, "MountOption" is used.
                       This field affects only Pods that have SELinux label set, either in PodSecurityContext or in SecurityContext of all containers.
                       All Pods that use the same volume should use the same seLinuxChangePolicy, otherwise some pods can get stuck in ContainerCreating state.
                       Note that this field cannot be set when spec.os.name is windows.
@@ -70130,6 +71825,18 @@ spec:
                           Must be an empty string (default) or Memory.
                           More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir
                         type: string
+                      mode:
+                        description: |-
+                          mode specifies the permission bits for the emptyDir directory, in numeric
+                          notation (e.g., 0755, 01777). Must be a value between 0000 and 01777.
+                          If not specified, defaults to 0777.
+                          This might be in conflict with other options that affect the file
+                          mode, like fsGroup. If fsGroup is specified, the fsGroup permissions
+                          will override the mode specified here.
+                          This field has no effect on Windows.
+                          This field is alpha and requires EmptyDirVolumeMode featuregate to be enabled.
+                        format: int32
+                        type: integer
                       sizeLimit:
                         anyOf:
                         - type: integer
@@ -70200,8 +71907,8 @@ spec:
                                   * An existing PVC (PersistentVolumeClaim)
                                   If the provisioner or an external controller can support the specified data source,
                                   it will create a new volume based on the contents of the specified data source.
-                                  When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                                  and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                                  dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                                  copied to dataSource when dataSourceRef.namespace is not specified.
                                   If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                                 properties:
                                   apiGroup:
@@ -70246,7 +71953,6 @@ spec:
                                     specified.
                                   * While dataSource only allows local objects, dataSourceRef allows objects
                                     in any namespaces.
-                                  (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                                   (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                                 properties:
                                   apiGroup:
@@ -70459,8 +72165,8 @@ spec:
                               * An existing PVC (PersistentVolumeClaim)
                               If the provisioner or an external controller can support the specified data source,
                               it will create a new volume based on the contents of the specified data source.
-                              When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                              and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                              dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                              copied to dataSource when dataSourceRef.namespace is not specified.
                               If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                             properties:
                               apiGroup:
@@ -70503,7 +72209,6 @@ spec:
                                 specified.
                               * While dataSource only allows local objects, dataSourceRef allows objects
                                 in any namespaces.
-                              (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                               (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                             properties:
                               apiGroup:
@@ -70788,6 +72493,58 @@ spec:
                               currentVolumeAttributesClassName is the current name of the VolumeAttributesClass the PVC is using.
                               When unset, there is no VolumeAttributeClass applied to this PersistentVolumeClaim
                             type: string
+                          healthStatus:
+                            description: |-
+                              healthStatus contains the latest controller-reported health information
+                              for the volume bound to this claim.
+                            properties:
+                              healthConditions:
+                                description: |-
+                                  conditions is the set of adverse conditions reported by
+                                  the CSI controller plugin. An empty list means no adverse condition.
+                                  At most 16 conditions may be reported.
+                                items:
+                                  description: VolumeHealthCondition represents an
+                                    adverse health condition reported for a volume.
+                                  properties:
+                                    message:
+                                      description: |-
+                                        message is a human-readable description.
+                                        Maximum permitted length of a message is 1024 bytes.
+                                      type: string
+                                    reason:
+                                      description: |-
+                                        reason is a brief CamelCase machine-parseable reason.
+                                        Together with status it forms the unique identity of a condition entry.
+                                        Maximum permitted length of a reason is 256 bytes.
+                                      type: string
+                                    status:
+                                      description: |-
+                                        status is the machine-parseable health category.
+                                        Possible values:
+                                        - "Inaccessible": the volume cannot be accessed.
+                                        - "DataLoss": data loss has been detected on the volume.
+                                        - "Degraded": the volume is functioning with reduced capability.
+                                      enum:
+                                      - DataLoss
+                                      - Degraded
+                                      - Inaccessible
+                                      type: string
+                                  required:
+                                  - reason
+                                  - status
+                                  type: object
+                                type: array
+                                x-kubernetes-list-map-keys:
+                                - status
+                                - reason
+                                x-kubernetes-list-type: map
+                              lastTransitionTime:
+                                description: lastTransitionTime is when the current
+                                  set of conditions first appeared.
+                                format: date-time
+                                type: string
+                            type: object
                           modifyVolumeStatus:
                             description: |-
                               ModifyVolumeStatus represents the status object of ControllerModifyVolume operation.
@@ -71132,10 +72889,21 @@ spec:
                   description: VolumeMount describes a mounting of a Volume within
                     a container.
                   properties:
-                    mountPath:
+                    bindMountOptions:
                       description: |-
-                        Path within the container at which the volume should be mounted.  Must
-                        not contain ':'.
+                        bindMountOptions is the list of additional bind mount options to apply when
+                        mounting this volume into the container. Allowed values are noexec,
+                        nodev, and nosuid. These are Linux mount options and have no effect on
+                        Windows nodes.
+                        This field is not supported with image volumes.
+                        This is an alpha field and requires enabling the VolumeBindMountOptions feature gate.
+                      items:
+                        type: string
+                      type: array
+                      x-kubernetes-list-type: set
+                    mountPath:
+                      description: Path within the container at which the volume should
+                        be mounted.
                       type: string
                     mountPropagation:
                       description: |-
@@ -71404,6 +73172,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: |-
                             items if unspecified, each key-value pair in the Data field of the referenced
@@ -71436,6 +73211,13 @@ spec:
                                   May not contain the path element '..'.
                                   May not start with the string '..'.
                                 type: string
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - key
                             - path
@@ -71522,6 +73304,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: Items is a list of downward API volume file
                           items:
@@ -71586,6 +73375,13 @@ spec:
                                 - resource
                                 type: object
                                 x-kubernetes-map-type: atomic
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - path
                             type: object
@@ -71604,6 +73400,18 @@ spec:
                             Must be an empty string (default) or Memory.
                             More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir
                           type: string
+                        mode:
+                          description: |-
+                            mode specifies the permission bits for the emptyDir directory, in numeric
+                            notation (e.g., 0755, 01777). Must be a value between 0000 and 01777.
+                            If not specified, defaults to 0777.
+                            This might be in conflict with other options that affect the file
+                            mode, like fsGroup. If fsGroup is specified, the fsGroup permissions
+                            will override the mode specified here.
+                            This field has no effect on Windows.
+                            This field is alpha and requires EmptyDirVolumeMode featuregate to be enabled.
+                          format: int32
+                          type: integer
                         sizeLimit:
                           anyOf:
                           - type: integer
@@ -71690,8 +73498,8 @@ spec:
                                     * An existing PVC (PersistentVolumeClaim)
                                     If the provisioner or an external controller can support the specified data source,
                                     it will create a new volume based on the contents of the specified data source.
-                                    When the AnyVolumeDataSource feature gate is enabled, dataSource contents will be copied to dataSourceRef,
-                                    and dataSourceRef contents will be copied to dataSource when dataSourceRef.namespace is not specified.
+                                    dataSource contents will be copied to dataSourceRef, and dataSourceRef contents will be
+                                    copied to dataSource when dataSourceRef.namespace is not specified.
                                     If the namespace is specified, then dataSourceRef will not be copied to dataSource.
                                   properties:
                                     apiGroup:
@@ -71736,7 +73544,6 @@ spec:
                                       specified.
                                     * While dataSource only allows local objects, dataSourceRef allows objects
                                       in any namespaces.
-                                    (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
                                     (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
                                   properties:
                                     apiGroup:
@@ -72096,7 +73903,7 @@ spec:
                         A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message.
                         The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field.
                         The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images.
-                        The volume will be mounted read-only (ro) and non-executable files (noexec).
+                        The volume will be mounted read-only (ro).
                         Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath) before 1.33.
                         The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
                       properties:
@@ -72268,8 +74075,7 @@ spec:
                       description: |-
                         portworxVolume represents a portworx volume attached and mounted on kubelets host machine.
                         Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type
-                        are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate
-                        is on.
+                        are redirected to the pxd.portworx.com CSI driver.
                       properties:
                         fsType:
                           description: |-
@@ -72301,6 +74107,13 @@ spec:
                             This might be in conflict with other options that affect the file
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
+                          type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
                           type: integer
                         sources:
                           description: |-
@@ -72398,6 +74211,13 @@ spec:
                                       Mutually-exclusive with name.  The contents of all selected
                                       ClusterTrustBundles will be unified and deduplicated.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                 required:
                                 - path
                                 type: object
@@ -72438,6 +74258,13 @@ spec:
                                             May not contain the path element '..'.
                                             May not start with the string '..'.
                                           type: string
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - key
                                       - path
@@ -72533,6 +74360,13 @@ spec:
                                           - resource
                                           type: object
                                           x-kubernetes-map-type: atomic
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - path
                                       type: object
@@ -72625,6 +74459,13 @@ spec:
                                     description: Kubelet's generated CSRs will be
                                       addressed to this signer.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                   userAnnotations:
                                     additionalProperties:
                                       type: string
@@ -72681,6 +74522,13 @@ spec:
                                             May not contain the path element '..'.
                                             May not start with the string '..'.
                                           type: string
+                                        user:
+                                          description: |-
+                                            user is Optional: The owner UID of the created file.
+                                            If specified, the item-level user field takes precedence over defaultUser.
+                                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                          format: int64
+                                          type: integer
                                       required:
                                       - key
                                       - path
@@ -72728,6 +74576,13 @@ spec:
                                       path is the path relative to the mount point of the file to project the
                                       token into.
                                     type: string
+                                  user:
+                                    description: |-
+                                      user is Optional: The owner UID of the created file.
+                                      If specified, the item-level user field takes precedence over defaultUser.
+                                      (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                    format: int64
+                                    type: integer
                                 required:
                                 - path
                                 type: object
@@ -72934,6 +74789,13 @@ spec:
                             mode, like fsGroup, and the result can be other mode bits set.
                           format: int32
                           type: integer
+                        defaultUser:
+                          description: |-
+                            defaultUser is Optional: The owner UID of the created files by default.
+                            The defaultUser field is only used as a fallback when the item-level user field is unset.
+                            (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                          format: int64
+                          type: integer
                         items:
                           description: |-
                             items If unspecified, each key-value pair in the Data field of the referenced
@@ -72966,6 +74828,13 @@ spec:
                                   May not contain the path element '..'.
                                   May not start with the string '..'.
                                 type: string
+                              user:
+                                description: |-
+                                  user is Optional: The owner UID of the created file.
+                                  If specified, the item-level user field takes precedence over defaultUser.
+                                  (Alpha) This field requires the AtomicWriteVolumeUserFields feature gate to be enabled.
+                                format: int64
+                                type: integer
                             required:
                             - key
                             - path
@@ -73132,7 +75001,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -73215,7 +75086,9 @@ spec:
                               data to use for the targets.
                             properties:
                               key:
-                                description: The key to select.
+                                description: |-
+                                  The key to select from the ConfigMap's Data field.
+                                  Keys in the BinaryData field are not currently propagated to container env vars.
                                 type: string
                               name:
                                 default: ''
@@ -73416,8 +75289,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
-    helm.sh/chart: grafana-12.4.8
+    app.kubernetes.io/version: 13.2.4
+    helm.sh/chart: grafana-14.0.0
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 ---
@@ -73431,8 +75304,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.1
-    helm.sh/chart: kube-state-metrics-7.5.1
+    app.kubernetes.io/version: 2.20.0
+    helm.sh/chart: kube-state-metrics-8.6.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -73448,8 +75321,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.11.1
-    helm.sh/chart: prometheus-node-exporter-4.55.0
+    app.kubernetes.io/version: 1.12.1
+    helm.sh/chart: prometheus-node-exporter-4.60.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-node-exporter
@@ -73466,8 +75339,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -73485,8 +75358,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -73504,8 +75377,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -73523,11 +75396,32 @@ metadata:
     app.kubernetes.io/component: admin-secret
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
-    helm.sh/chart: grafana-12.4.8
+    app.kubernetes.io/version: 13.2.4
+    helm.sh/chart: grafana-14.0.0
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  annotations:
+    kubernetes.io/service-account.name: prometheus-operator-prometheus
+  labels:
+    app: prometheus-operator-prometheus
+    app.kubernetes.io/component: prometheus
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator-prometheus
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-prometheus-token
+  namespace: metalk8s-monitoring
+type: kubernetes.io/service-account-token
 ---
 apiVersion: v1
 data:
@@ -73548,8 +75442,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
-    helm.sh/chart: grafana-12.4.8
+    app.kubernetes.io/version: 13.2.4
+    helm.sh/chart: grafana-14.0.0
   name: prometheus-operator-grafana-config-dashboards
   namespace: metalk8s-monitoring
 ---
@@ -73574,8 +75468,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_datasource: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -73586,19 +75480,19 @@ metadata:
 apiVersion: v1
 data:
   alertmanager-overview.json: '{"graphTooltip":1,"panels":[{"collapsed":false,"gridPos":{"h":1,"w":24,"x":0,"y":0},"id":1,"panels":[],"title":"Alerts","type":"row"},{"datasource":{"type":"prometheus","uid":"$datasource"},"description":"current
-    set of alerts stored in the Alertmanager","fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","stacking":{"mode":"normal"}},"unit":"none"}},"gridPos":{"h":7,"w":12,"x":0,"y":1},"id":2,"options":{"legend":{"showLegend":false},"tooltip":{"mode":"multi"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"$datasource"},"expr":"sum(alertmanager_alerts{namespace=~\"$namespace\",service=~\"$service\"})
+    set of alerts stored in the Alertmanager","fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","stacking":{"mode":"normal"}},"unit":"none"}},"gridPos":{"h":7,"w":12,"x":0,"y":1},"id":2,"options":{"legend":{"showLegend":false},"tooltip":{"mode":"multi"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"$datasource"},"expr":"sum(alertmanager_alerts{namespace=~\"$namespace\",service=~\"$service\"})
     by (namespace,service,instance)","intervalFactor":2,"legendFormat":"{{instance}}"}],"title":"Alerts","type":"timeseries"},{"datasource":{"type":"prometheus","uid":"$datasource"},"description":"rate
-    of successful and invalid alerts received by the Alertmanager","fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","stacking":{"mode":"normal"}},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":12,"y":1},"id":3,"options":{"legend":{"showLegend":false},"tooltip":{"mode":"multi"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"$datasource"},"expr":"sum(rate(alertmanager_alerts_received_total{namespace=~\"$namespace\",service=~\"$service\"}[$__rate_interval]))
+    of successful and invalid alerts received by the Alertmanager","fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","stacking":{"mode":"normal"}},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":12,"y":1},"id":3,"options":{"legend":{"showLegend":false},"tooltip":{"mode":"multi"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"$datasource"},"expr":"sum(rate(alertmanager_alerts_received_total{namespace=~\"$namespace\",service=~\"$service\"}[$__rate_interval]))
     by (namespace,service,instance)","intervalFactor":2,"legendFormat":"{{instance}}
     Received"},{"datasource":{"type":"prometheus","uid":"$datasource"},"expr":"sum(rate(alertmanager_alerts_invalid_total{namespace=~\"$namespace\",service=~\"$service\"}[$__rate_interval]))
     by (namespace,service,instance)","intervalFactor":2,"legendFormat":"{{instance}}
     Invalid"}],"title":"Alerts receive rate","type":"timeseries"},{"collapsed":false,"gridPos":{"h":1,"w":24,"x":0,"y":8},"id":4,"panels":[],"title":"Notifications","type":"row"},{"datasource":{"type":"prometheus","uid":"$datasource"},"description":"rate
-    of successful and invalid notifications sent by the Alertmanager","fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","stacking":{"mode":"normal"}},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":9},"id":5,"options":{"legend":{"showLegend":false},"tooltip":{"mode":"multi"}},"pluginVersion":"v11.4.0","repeat":"integration","targets":[{"datasource":{"type":"prometheus","uid":"$datasource"},"expr":"sum(rate(alertmanager_notifications_total{namespace=~\"$namespace\",service=~\"$service\",
+    of successful and invalid notifications sent by the Alertmanager","fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","stacking":{"mode":"normal"}},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":9},"id":5,"options":{"legend":{"showLegend":false},"tooltip":{"mode":"multi"}},"pluginVersion":"v13.0.0","repeat":"integration","targets":[{"datasource":{"type":"prometheus","uid":"$datasource"},"expr":"sum(rate(alertmanager_notifications_total{namespace=~\"$namespace\",service=~\"$service\",
     integration=\"$integration\"}[$__rate_interval])) by (integration,namespace,service,instance)","intervalFactor":2,"legendFormat":"{{instance}}
     Total"},{"datasource":{"type":"prometheus","uid":"$datasource"},"expr":"sum(rate(alertmanager_notifications_failed_total{namespace=~\"$namespace\",service=~\"$service\",
     integration=\"$integration\"}[$__rate_interval])) by (integration,namespace,service,instance)","intervalFactor":2,"legendFormat":"{{instance}}
     Failed"}],"title":"$integration: Notifications Send Rate","type":"timeseries"},{"datasource":{"type":"prometheus","uid":"$datasource"},"description":"latency
-    of notifications sent by the Alertmanager","fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","stacking":{"mode":"normal"}},"unit":"s"}},"gridPos":{"h":7,"w":12,"x":12,"y":9},"id":6,"options":{"legend":{"showLegend":false},"tooltip":{"mode":"multi"}},"pluginVersion":"v11.4.0","repeat":"integration","targets":[{"datasource":{"type":"prometheus","uid":"$datasource"},"expr":"histogram_quantile(0.99,\n  sum(rate(alertmanager_notification_latency_seconds_bucket{namespace=~\"$namespace\",service=~\"$service\",
+    of notifications sent by the Alertmanager","fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","stacking":{"mode":"normal"}},"unit":"s"}},"gridPos":{"h":7,"w":12,"x":12,"y":9},"id":6,"options":{"legend":{"showLegend":false},"tooltip":{"mode":"multi"}},"pluginVersion":"v13.0.0","repeat":"integration","targets":[{"datasource":{"type":"prometheus","uid":"$datasource"},"expr":"histogram_quantile(0.99,\n  sum(rate(alertmanager_notification_latency_seconds_bucket{namespace=~\"$namespace\",service=~\"$service\",
     integration=\"$integration\"}[$__rate_interval])) by (le,namespace,service,instance)\n)\n","intervalFactor":2,"legendFormat":"{{instance}}
     99th Percentile"},{"datasource":{"type":"prometheus","uid":"$datasource"},"expr":"histogram_quantile(0.50,\n  sum(rate(alertmanager_notification_latency_seconds_bucket{namespace=~\"$namespace\",service=~\"$service\",
     integration=\"$integration\"}[$__rate_interval])) by (le,namespace,service,instance)\n)\n","intervalFactor":2,"legendFormat":"{{instance}}
@@ -73620,8 +75514,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -73635,63 +75529,63 @@ data:
     Mixed --"},"description":"The SLO (service level objective) and other metrics
     displayed on this dashboard are for informational purposes only.","gridPos":{"h":2,"w":24,"x":0,"y":0},"id":1,"options":{"content":"The
     SLO (service level objective) and other metrics displayed on this dashboard are
-    for informational purposes only."},"pluginVersion":"v11.4.0","title":"Notice","type":"text"},{"datasource":{"type":"datasource","uid":"--
+    for informational purposes only."},"pluginVersion":"v13.0.0","title":"Notice","type":"text"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"description":"How many percent of requests (both read and write) in
-    30 days have been answered successfully and fast enough?","fieldConfig":{"defaults":{"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":8,"x":0,"y":2},"id":2,"interval":"1m","pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"apiserver_request:availability30d{verb=\"all\",
+    30 days have been answered successfully and fast enough?","fieldConfig":{"defaults":{"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":8,"x":0,"y":2},"id":2,"interval":"1m","pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"apiserver_request:availability30d{verb=\"all\",
     cluster=\"$cluster\"}"}],"title":"Availability (30d) > 99.000%","type":"stat"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"description":"How much error budget is left looking at our 99.000%
-    availability guarantee?","fieldConfig":{"defaults":{"custom":{"fillOpacity":100},"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":16,"x":8,"y":2},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"100
+    availability guarantee?","fieldConfig":{"defaults":{"custom":{"fillOpacity":100},"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":16,"x":8,"y":2},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"100
     * (apiserver_request:availability30d{verb=\"all\", cluster=\"$cluster\"} - 0.990000)","legendFormat":"error
     budget"}],"title":"Error Budget (30d) > 99.000%","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"description":"How many percent of read requests (LIST,GET) in 30 days
-    have been answered successfully and fast enough?","fieldConfig":{"defaults":{"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":6,"x":0,"y":9},"id":4,"interval":"1m","pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"apiserver_request:availability30d{verb=\"read\",
+    have been answered successfully and fast enough?","fieldConfig":{"defaults":{"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":6,"x":0,"y":9},"id":4,"interval":"1m","pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"apiserver_request:availability30d{verb=\"read\",
     cluster=\"$cluster\"}"}],"title":"Read Availability (30d)","type":"stat"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"description":"How many read requests (LIST,GET) per second do the
-    apiservers get by code?","fieldConfig":{"defaults":{"custom":{"fillOpacity":100,"stacking":{"mode":"normal"}},"unit":"reqps"},"overrides":[{"matcher":{"id":"byRegexp","options":"/2../i"},"properties":[{"id":"color","value":"#56A64B"}]},{"matcher":{"id":"byRegexp","options":"/3../i"},"properties":[{"id":"color","value":"#F2CC0C"}]},{"matcher":{"id":"byRegexp","options":"/4../i"},"properties":[{"id":"color","value":"#3274D9"}]},{"matcher":{"id":"byRegexp","options":"/5../i"},"properties":[{"id":"color","value":"#E02F44"}]}]},"gridPos":{"h":7,"w":6,"x":6,"y":9},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    apiservers get by code?","fieldConfig":{"defaults":{"custom":{"fillOpacity":100,"stacking":{"mode":"normal"}},"unit":"reqps"},"overrides":[{"matcher":{"id":"byRegexp","options":"/2../i"},"properties":[{"id":"color","value":"#56A64B"}]},{"matcher":{"id":"byRegexp","options":"/3../i"},"properties":[{"id":"color","value":"#F2CC0C"}]},{"matcher":{"id":"byRegexp","options":"/4../i"},"properties":[{"id":"color","value":"#3274D9"}]},{"matcher":{"id":"byRegexp","options":"/5../i"},"properties":[{"id":"color","value":"#E02F44"}]}]},"gridPos":{"h":7,"w":6,"x":6,"y":9},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (code) (code_resource:apiserver_request_total:rate5m{verb=\"read\", cluster=\"$cluster\"})","legendFormat":"{{
     code }}"}],"title":"Read SLI - Requests","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"description":"How many percent of read requests (LIST,GET) per second
-    are returned with errors (5xx)?","fieldConfig":{"defaults":{"min":0,"unit":"percentunit"}},"gridPos":{"h":7,"w":6,"x":12,"y":9},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    are returned with errors (5xx)?","fieldConfig":{"defaults":{"min":0,"unit":"percentunit"}},"gridPos":{"h":7,"w":6,"x":12,"y":9},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (resource) (code_resource:apiserver_request_total:rate5m{verb=\"read\",code=~\"5..\",
     cluster=\"$cluster\"}) / sum by (resource) (code_resource:apiserver_request_total:rate5m{verb=\"read\",
     cluster=\"$cluster\"})","legendFormat":"{{ resource }}"}],"title":"Read SLI -
     Errors","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
     --"},"description":"How many seconds is the 99th percentile for reading (LIST|GET)
-    a given resource?","fieldConfig":{"defaults":{"unit":"s"}},"gridPos":{"h":7,"w":6,"x":18,"y":9},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"cluster_quantile:apiserver_request_sli_duration_seconds:histogram_quantile{verb=\"read\",
+    a given resource?","fieldConfig":{"defaults":{"unit":"s"}},"gridPos":{"h":7,"w":6,"x":18,"y":9},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"cluster_quantile:apiserver_request_sli_duration_seconds:histogram_quantile{verb=\"read\",
     cluster=\"$cluster\"}","legendFormat":"{{ resource }}"}],"title":"Read SLI - Duration","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"description":"How many percent of write requests (POST|PUT|PATCH|DELETE)
-    in 30 days have been answered successfully and fast enough?","fieldConfig":{"defaults":{"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":6,"x":0,"y":16},"id":8,"interval":"1m","pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"apiserver_request:availability30d{verb=\"write\",
+    in 30 days have been answered successfully and fast enough?","fieldConfig":{"defaults":{"decimals":3,"unit":"percentunit"}},"gridPos":{"h":7,"w":6,"x":0,"y":16},"id":8,"interval":"1m","pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"apiserver_request:availability30d{verb=\"write\",
     cluster=\"$cluster\"}"}],"title":"Write Availability (30d)","type":"stat"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"description":"How many write requests (POST|PUT|PATCH|DELETE) per
-    second do the apiservers get by code?","fieldConfig":{"defaults":{"custom":{"fillOpacity":100,"stacking":{"mode":"normal"}},"unit":"reqps"},"overrides":[{"matcher":{"id":"byRegexp","options":"/2../i"},"properties":[{"id":"color","value":"#56A64B"}]},{"matcher":{"id":"byRegexp","options":"/3../i"},"properties":[{"id":"color","value":"#F2CC0C"}]},{"matcher":{"id":"byRegexp","options":"/4../i"},"properties":[{"id":"color","value":"#3274D9"}]},{"matcher":{"id":"byRegexp","options":"/5../i"},"properties":[{"id":"color","value":"#E02F44"}]}]},"gridPos":{"h":7,"w":6,"x":6,"y":16},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    second do the apiservers get by code?","fieldConfig":{"defaults":{"custom":{"fillOpacity":100,"stacking":{"mode":"normal"}},"unit":"reqps"},"overrides":[{"matcher":{"id":"byRegexp","options":"/2../i"},"properties":[{"id":"color","value":"#56A64B"}]},{"matcher":{"id":"byRegexp","options":"/3../i"},"properties":[{"id":"color","value":"#F2CC0C"}]},{"matcher":{"id":"byRegexp","options":"/4../i"},"properties":[{"id":"color","value":"#3274D9"}]},{"matcher":{"id":"byRegexp","options":"/5../i"},"properties":[{"id":"color","value":"#E02F44"}]}]},"gridPos":{"h":7,"w":6,"x":6,"y":16},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (code) (code_resource:apiserver_request_total:rate5m{verb=\"write\", cluster=\"$cluster\"})","legendFormat":"{{
     code }}"}],"title":"Write SLI - Requests","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"description":"How many percent of write requests (POST|PUT|PATCH|DELETE)
-    per second are returned with errors (5xx)?","fieldConfig":{"defaults":{"min":0,"unit":"percentunit"}},"gridPos":{"h":7,"w":6,"x":12,"y":16},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    per second are returned with errors (5xx)?","fieldConfig":{"defaults":{"min":0,"unit":"percentunit"}},"gridPos":{"h":7,"w":6,"x":12,"y":16},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (resource) (code_resource:apiserver_request_total:rate5m{verb=\"write\",code=~\"5..\",
     cluster=\"$cluster\"}) / sum by (resource) (code_resource:apiserver_request_total:rate5m{verb=\"write\",
     cluster=\"$cluster\"})","legendFormat":"{{ resource }}"}],"title":"Write SLI -
     Errors","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
     --"},"description":"How many seconds is the 99th percentile for writing (POST|PUT|PATCH|DELETE)
-    a given resource?","fieldConfig":{"defaults":{"unit":"s"}},"gridPos":{"h":7,"w":6,"x":18,"y":16},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"cluster_quantile:apiserver_request_sli_duration_seconds:histogram_quantile{verb=\"write\",
+    a given resource?","fieldConfig":{"defaults":{"unit":"s"}},"gridPos":{"h":7,"w":6,"x":18,"y":16},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"cluster_quantile:apiserver_request_sli_duration_seconds:histogram_quantile{verb=\"write\",
     cluster=\"$cluster\"}","legendFormat":"{{ resource }}"}],"title":"Write SLI -
     Duration","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"min":0,"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":23},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":false},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(workqueue_adds_total{job=\"apiserver\",
+    --"},"fieldConfig":{"defaults":{"min":0,"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":23},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":false},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(workqueue_adds_total{job=\"apiserver\",
     instance=~\"$instance\", cluster=\"$cluster\"}[$__rate_interval])) by (instance,
     name)","legendFormat":"{{instance}} {{name}}"}],"title":"Work Queue Add Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"min":0,"unit":"short"}},"gridPos":{"h":7,"w":12,"x":12,"y":23},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":false},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(workqueue_depth{job=\"apiserver\",
+    Mixed --"},"fieldConfig":{"defaults":{"min":0,"unit":"short"}},"gridPos":{"h":7,"w":12,"x":12,"y":23},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":false},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(workqueue_depth{job=\"apiserver\",
     instance=~\"$instance\", cluster=\"$cluster\"}[$__rate_interval])) by (instance,
     name)","legendFormat":"{{instance}} {{name}}"}],"title":"Work Queue Depth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"min":0,"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":30},"id":14,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"min":0,"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":30},"id":14,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(workqueue_queue_duration_seconds_bucket{job=\"apiserver\", instance=~\"$instance\",
     cluster=\"$cluster\"}[$__rate_interval])) by (instance, name, le))","legendFormat":"{{instance}}
     {{name}}"}],"title":"Work Queue Latency","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"}},"gridPos":{"h":7,"w":8,"x":0,"y":37},"id":15,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"process_resident_memory_bytes{job=\"apiserver\",instance=~\"$instance\",
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"}},"gridPos":{"h":7,"w":8,"x":0,"y":37},"id":15,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"process_resident_memory_bytes{job=\"apiserver\",instance=~\"$instance\",
     cluster=\"$cluster\"}","legendFormat":"{{instance}}"}],"title":"Memory","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"min":0,"unit":"short"}},"gridPos":{"h":7,"w":8,"x":8,"y":37},"id":16,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"rate(process_cpu_seconds_total{job=\"apiserver\",instance=~\"$instance\",
+    Mixed --"},"fieldConfig":{"defaults":{"min":0,"unit":"short"}},"gridPos":{"h":7,"w":8,"x":8,"y":37},"id":16,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"rate(process_cpu_seconds_total{job=\"apiserver\",instance=~\"$instance\",
     cluster=\"$cluster\"}[$__rate_interval])","legendFormat":"{{instance}}"}],"title":"CPU
     usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"unit":"short"}},"gridPos":{"h":7,"w":8,"x":16,"y":37},"id":17,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"go_goroutines{job=\"apiserver\",instance=~\"$instance\",
+    --"},"fieldConfig":{"defaults":{"unit":"short"}},"gridPos":{"h":7,"w":8,"x":16,"y":37},"id":17,"interval":"1m","options":{"legend":{"asTable":true,"placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"go_goroutines{job=\"apiserver\",instance=~\"$instance\",
     cluster=\"$cluster\"}","legendFormat":"{{instance}}"}],"title":"Goroutines","type":"timeseries"}],"refresh":"10s","schemaVersion":39,"tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     source","name":"datasource","query":"prometheus","regex":"","type":"datasource"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"hide":2,"label":"cluster","name":"cluster","query":"label_values(up{job=\"apiserver\"},
     cluster)","refresh":2,"sort":1,"type":"query","allValue":".*"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"hide":0,"includeAll":true,"name":"instance","query":"label_values(up{job=\"apiserver\",
@@ -73706,8 +75600,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -73718,18 +75612,18 @@ metadata:
 apiVersion: v1
 data:
   cluster-total.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (namespace) (\n    (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Received","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":0},"id":2,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":0},"id":2,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (namespace) (\n    (8 * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Transmitted","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bits/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Namespace"},"properties":[{"id":"links","value":[{"title":"Drill
-    down","url":"/d/8b7a8b326d7a6f1f04244066368c67af?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    down","url":"/d/8b7a8b326d7a6f1f04244066368c67af?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (namespace) (\n    (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
@@ -73762,51 +75656,51 @@ data:
     #A":"Rx Bits","Value #B":"Tx Bits","Value #C":"Rx Bits (Avg)","Value #D":"Tx Bits
     (Avg)","Value #E":"Rx Packets","Value #F":"Tx Packets","Value #G":"Rx Packets
     Dropped","Value #H":"Tx Packets Dropped","namespace":"Namespace"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":18},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"avg
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":18},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"avg
     by (namespace) (\n    (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Average
     Rate of Bits Received","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":18},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"avg
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":18},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"avg
     by (namespace) (\n    (8 * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Average
     Rate of Bits Transmitted","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":27},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":27},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (namespace) (\n    (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Receive
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":27},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":27},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (namespace) (\n    (8 * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Transmit
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":36},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":36},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (namespace) (\n    rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Rate
     of Received Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":36},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":36},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (namespace) (\n    rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Rate
     of Transmitted Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":45},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":45},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (namespace) (\n    rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Rate
     of Received Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":45},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":45},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (namespace) (\n    rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\",cluster=\"$cluster\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Rate
     of Transmitted Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"percentunit"}},"gridPos":{"h":9,"w":12,"x":0,"y":54},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"percentunit"}},"gridPos":{"h":9,"w":12,"x":0,"y":54},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (instance) (\n    rate(node_netstat_Tcp_RetransSegs{cluster=\"$cluster\"}[$__rate_interval])
     / rate(node_netstat_Tcp_OutSegs{cluster=\"$cluster\"}[$__rate_interval])\n)\n","legendFormat":"__auto"}],"title":"Rate
     of TCP Retransmits out of all sent segments","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"percentunit"}},"gridPos":{"h":9,"w":12,"x":12,"y":54},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"percentunit"}},"gridPos":{"h":9,"w":12,"x":12,"y":54},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (instance) (\n    rate(node_netstat_TcpExt_TCPSynRetrans{cluster=\"$cluster\"}[$__rate_interval])
     / rate(node_netstat_Tcp_RetransSegs{cluster=\"$cluster\"}[$__rate_interval])\n)\n","legendFormat":"__auto"}],"title":"Rate
     of TCP SYN Retransmits out of all retransmits","type":"timeseries"}],"refresh":"10s","schemaVersion":39,"tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
@@ -73822,8 +75716,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -73834,40 +75728,40 @@ metadata:
 apiVersion: v1
 data:
   controller-manager.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(up{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(up{cluster=\"$cluster\",
     job=\"kube-controller-manager\"})","instant":true}],"title":"Up","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":20,"x":4,"y":0},"id":2,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(workqueue_adds_total{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":20,"x":4,"y":0},"id":2,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(workqueue_adds_total{cluster=\"$cluster\",
     job=\"kube-controller-manager\", instance=~\"$instance\"}[$__rate_interval]))
     by (cluster, instance, name)","legendFormat":"{{cluster}} {{instance}} {{name}}"}],"title":"Work
     Queue Add Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(workqueue_depth{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(workqueue_depth{cluster=\"$cluster\",
     job=\"kube-controller-manager\", instance=~\"$instance\"}[$__rate_interval]))
     by (cluster, instance, name)","legendFormat":"{{cluster}} {{instance}} {{name}}"}],"title":"Work
     Queue Depth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(workqueue_queue_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\",
     instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance, name, le))","legendFormat":"{{cluster}}
     {{instance}} {{name}}"}],"title":"Work Queue Latency","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":8,"x":0,"y":21},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{job=\"kube-controller-manager\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":8,"x":0,"y":21},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{job=\"kube-controller-manager\",
     instance=~\"$instance\",code=~\"2..\"}[$__rate_interval]))","legendFormat":"2xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{job=\"kube-controller-manager\",
     instance=~\"$instance\",code=~\"3..\"}[$__rate_interval]))","legendFormat":"3xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{job=\"kube-controller-manager\",
     instance=~\"$instance\",code=~\"4..\"}[$__rate_interval]))","legendFormat":"4xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{job=\"kube-controller-manager\",
     instance=~\"$instance\",code=~\"5..\"}[$__rate_interval]))","legendFormat":"5xx"}],"title":"Kube
     API Request Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":16,"x":8,"y":21},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":16,"x":8,"y":21},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\",
     instance=~\"$instance\", verb=\"POST\"}[$__rate_interval])) by (verb, le))","legendFormat":"{{verb}}"}],"title":"Post
     Request Latency 99th Quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\",
     instance=~\"$instance\", verb=\"GET\"}[$__rate_interval])) by (verb, le))","legendFormat":"{{verb}}"}],"title":"Get
     Request Latency 99th Quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":8,"x":0,"y":35},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"process_resident_memory_bytes{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":8,"x":0,"y":35},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"process_resident_memory_bytes{cluster=\"$cluster\",
     job=\"kube-controller-manager\",instance=~\"$instance\"}","legendFormat":"{{instance}}"}],"title":"Memory","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":8,"y":35},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"rate(process_cpu_seconds_total{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":8,"y":35},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"rate(process_cpu_seconds_total{cluster=\"$cluster\",
     job=\"kube-controller-manager\",instance=~\"$instance\"}[$__rate_interval])","legendFormat":"{{instance}}"}],"title":"CPU
     usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":16,"y":35},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"go_goroutines{cluster=\"$cluster\",
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":16,"y":35},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"go_goroutines{cluster=\"$cluster\",
     job=\"kube-controller-manager\",instance=~\"$instance\"}","legendFormat":"{{instance}}"}],"title":"Goroutines","type":"timeseries"}],"refresh":"10s","schemaVersion":39,"tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     source","name":"datasource","query":"prometheus","regex":"","type":"datasource"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"hide":2,"label":"cluster","name":"cluster","query":"label_values(up{job=\"kube-controller-manager\"},
     cluster)","refresh":2,"sort":1,"type":"query","allValue":".*"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"hide":0,"includeAll":true,"label":"instance","name":"instance","query":"label_values(up{cluster=\"$cluster\",
@@ -73882,8 +75776,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74445,8 +76339,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74488,8 +76382,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74597,8 +76491,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74609,28 +76503,28 @@ metadata:
 apiVersion: v1
 data:
   k8s-resources-cluster.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"cluster:node_cpu:ratio_rate5m{cluster=\"$cluster\"}","instant":true}],"title":"CPU
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"cluster:node_cpu:ratio_rate5m{cluster=\"$cluster\"}","instant":true}],"title":"CPU
     Utilisation","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":4,"y":0},"id":2,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(namespace_cpu:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"})
+    --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":4,"y":0},"id":2,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(namespace_cpu:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"})
     / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\",cluster=\"$cluster\"})","instant":true}],"title":"CPU
     Requests Commitment","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":8,"y":0},"id":3,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(namespace_cpu:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"})
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":8,"y":0},"id":3,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(namespace_cpu:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"})
     / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\",cluster=\"$cluster\"})","instant":true}],"title":"CPU
     Limits Commitment","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":12,"y":0},"id":4,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"1
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":12,"y":0},"id":4,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"1
     - sum(:node_memory_MemAvailable_bytes:sum{cluster=\"$cluster\"}) / sum(node_memory_MemTotal_bytes{job=\"node-exporter\",cluster=\"$cluster\"})","instant":true}],"title":"Memory
     Utilisation","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":16,"y":0},"id":5,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(namespace_memory:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"})
+    --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":16,"y":0},"id":5,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(namespace_memory:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"})
     / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\",cluster=\"$cluster\"})","instant":true}],"title":"Memory
     Requests Commitment","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":20,"y":0},"id":6,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(namespace_memory:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"})
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":20,"y":0},"id":6,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(namespace_memory:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"})
     / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\",cluster=\"$cluster\"})","instant":true}],"title":"Memory
     Limits Commitment","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true}}},"gridPos":{"h":6,"w":24,"x":0,"y":6},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true}}},"gridPos":{"h":6,"w":24,"x":0,"y":6},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\"}))
     by (namespace)","legendFormat":"__auto"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Namespace"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":12},"id":8,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_owner{job=\"kube-state-metrics\",
+    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":12},"id":8,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_owner{job=\"kube-state-metrics\",
     cluster=\"$cluster\"}) by (namespace)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"count(avg(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\"})
     by (workload, namespace)) by (namespace)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\"}))
@@ -74649,7 +76543,7 @@ data:
     #F":13,"Value #G":14,"namespace":7},"renameByName":{"Value #A":"Pods","Value #B":"Workloads","Value
     #C":"CPU Usage","Value #D":"CPU Requests","Value #E":"CPU Requests %","Value #F":"CPU
     Limits","Value #G":"CPU Limits %","namespace":"Namespace"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":6,"w":24,"x":0,"y":18},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":6,"w":24,"x":0,"y":18},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_rss{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", container!=\"\"})) by
     (namespace)","legendFormat":"__auto"}],"title":"Memory","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
@@ -74657,7 +76551,7 @@ data:
     Usage"},"properties":[{"id":"unit","value":"bytes"}]},{"matcher":{"id":"byName","options":"Memory
     Requests"},"properties":[{"id":"unit","value":"bytes"}]},{"matcher":{"id":"byName","options":"Memory
     Limits"},"properties":[{"id":"unit","value":"bytes"}]},{"matcher":{"id":"byName","options":"Namespace"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":24},"id":10,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_owner{job=\"kube-state-metrics\",
+    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":24},"id":10,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_owner{job=\"kube-state-metrics\",
     cluster=\"$cluster\"}) by (namespace)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"count(avg(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\"})
     by (workload, namespace)) by (namespace)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_rss{job=\"kubelet\",
@@ -74681,7 +76575,7 @@ data:
     #C":"Memory Usage","Value #D":"Memory Requests","Value #E":"Memory Requests %","Value
     #F":"Memory Limits","Value #G":"Memory Limits %","namespace":"Namespace"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bandwidth/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Namespace"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":30},"id":11,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":30},"id":11,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
@@ -74701,47 +76595,47 @@ data:
     #C":"Rate of Received Packets","Value #D":"Rate of Transmitted Packets","Value
     #E":"Rate of Received Packets Dropped","Value #F":"Rate of Transmitted Packets
     Dropped","namespace":"Namespace"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":6,"w":24,"x":0,"y":36},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":6,"w":24,"x":0,"y":36},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)","legendFormat":"__auto"}],"title":"Receive
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":6,"w":24,"x":0,"y":42},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":6,"w":24,"x":0,"y":42},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)","legendFormat":"__auto"}],"title":"Transmit
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":6,"w":24,"x":0,"y":48},"id":14,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"avg((8
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":6,"w":24,"x":0,"y":48},"id":14,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"avg((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)","legendFormat":"__auto"}],"title":"Average
     Container Bandwidth by Namespace: Received","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":6,"w":24,"x":0,"y":54},"id":15,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"avg((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":6,"w":24,"x":0,"y":54},"id":15,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"avg((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)","legendFormat":"__auto"}],"title":"Average
     Container Bandwidth by Namespace: Transmitted","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":6,"w":24,"x":0,"y":60},"id":16,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":6,"w":24,"x":0,"y":60},"id":16,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))
     by (namespace)","legendFormat":"__auto"}],"title":"Rate of Received Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":6,"w":24,"x":0,"y":66},"id":17,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":6,"w":24,"x":0,"y":66},"id":17,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))
     by (namespace)","legendFormat":"__auto"}],"title":"Rate of Transmitted Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":6,"w":24,"x":0,"y":72},"id":18,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":6,"w":24,"x":0,"y":72},"id":18,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))
     by (namespace)","legendFormat":"__auto"}],"title":"Rate of Received Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":6,"w":24,"x":0,"y":78},"id":19,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":6,"w":24,"x":0,"y":78},"id":19,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))
     by (namespace)","legendFormat":"__auto"}],"title":"Rate of Transmitted Packets
     Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"iops"}},"gridPos":{"h":6,"w":24,"x":0,"y":84},"id":20,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"ceil(sum
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"iops"}},"gridPos":{"h":6,"w":24,"x":0,"y":84},"id":20,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"ceil(sum
     by(namespace) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     container!=\"\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     cluster=\"$cluster\", namespace!=\"\"}[$__rate_interval]) + rate(container_fs_writes_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\", namespace!=\"\"}[$__rate_interval])))","legendFormat":"__auto"}],"title":"IOPS(Reads+Writes)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"Bps"}},"gridPos":{"h":6,"w":24,"x":0,"y":90},"id":21,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"Bps"}},"gridPos":{"h":6,"w":24,"x":0,"y":90},"id":21,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by(namespace) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     container!=\"\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     cluster=\"$cluster\", namespace!=\"\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\", namespace!=\"\"}[$__rate_interval]))","legendFormat":"__auto"}],"title":"ThroughPut(Read+Write)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/IOPS/"},"properties":[{"id":"unit","value":"iops"}]},{"matcher":{"id":"byRegexp","options":"/Throughput/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byName","options":"Namespace"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":96},"id":22,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    down to pods","url":"/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":96},"id":22,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by(namespace) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     container!=\"\", cluster=\"$cluster\", namespace!=\"\"}[$__rate_interval]))","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
@@ -74783,8 +76677,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74795,28 +76689,28 @@ metadata:
 apiVersion: v1
 data:
   k8s-resources-multicluster.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":3,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(cluster:node_cpu:ratio_rate5m)
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":3,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(cluster:node_cpu:ratio_rate5m)
     / count(cluster:node_cpu:ratio_rate5m)","instant":true}],"title":"CPU Utilisation","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":4,"y":0},"id":2,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":4,"y":0},"id":2,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     resource=\"cpu\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",
     resource=\"cpu\"})","instant":true}],"title":"CPU Requests Commitment","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":8,"y":0},"id":3,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\",
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":8,"y":0},"id":3,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\",
     resource=\"cpu\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",
     resource=\"cpu\"})","instant":true}],"title":"CPU Limits Commitment","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":12,"y":0},"id":4,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"1
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":12,"y":0},"id":4,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"1
     - sum(:node_memory_MemAvailable_bytes:sum) / sum(node_memory_MemTotal_bytes{job=\"node-exporter\"})","instant":true}],"title":"Memory
     Utilisation","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":16,"y":0},"id":5,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
+    --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":16,"y":0},"id":5,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     resource=\"memory\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",
     resource=\"memory\"})","instant":true}],"title":"Memory Requests Commitment","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":20,"y":0},"id":6,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\",
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":4,"x":20,"y":0},"id":6,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\",
     resource=\"memory\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",
     resource=\"memory\"})","instant":true}],"title":"Memory Limits Commitment","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"}}},"gridPos":{"h":7,"w":24,"x":0,"y":1},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"}}},"gridPos":{"h":7,"w":24,"x":0,"y":1},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m))
     by (cluster)","legendFormat":"__auto"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Cluster"},"properties":[{"id":"links","value":[{"title":"Drill
-    down","url":"/d/efa86fd1d0c121a26444b636a3f509a8?${datasource:queryparam}&var-cluster=${__data.fields.Cluster}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":2},"id":8,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down","url":"/d/efa86fd1d0c121a26444b636a3f509a8?${datasource:queryparam}&var-cluster=${__data.fields.Cluster}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":2},"id":8,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m))
     by (cluster)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     resource=\"cpu\"}) by (cluster)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
@@ -74833,12 +76727,12 @@ data:
     #C":8,"Value #D":9,"Value #E":10,"cluster":5},"renameByName":{"Value #A":"CPU
     Usage","Value #B":"CPU Requests","Value #C":"CPU Requests %","Value #D":"CPU Limits","Value
     #E":"CPU Limits %","cluster":"Cluster"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bytes"}},"gridPos":{"h":7,"w":24,"x":0,"y":3},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bytes"}},"gridPos":{"h":7,"w":24,"x":0,"y":3},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_rss{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", container!=\"\"})) by (cluster)","legendFormat":"__auto"}],"title":"Memory
     Usage (w/o cache)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Cluster"},"properties":[{"id":"links","value":[{"title":"Drill
-    down","url":"/d/efa86fd1d0c121a26444b636a3f509a8?${datasource:queryparam}&var-cluster=${__data.fields.Cluster}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":4},"id":10,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down","url":"/d/efa86fd1d0c121a26444b636a3f509a8?${datasource:queryparam}&var-cluster=${__data.fields.Cluster}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":4},"id":10,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_rss{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", container!=\"\"})) by (cluster)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     resource=\"memory\"}) by (cluster)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
@@ -74866,8 +76760,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -74878,29 +76772,29 @@ metadata:
 apiVersion: v1
 data:
   k8s-resources-namespace.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":6,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":6,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     namespace=\"$namespace\"})) / sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"})","instant":true}],"title":"CPU
     Utilisation (from requests)","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":6,"x":6,"y":0},"id":2,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":6,"x":6,"y":0},"id":2,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     namespace=\"$namespace\"})) / sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\",
     cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"})","instant":true}],"title":"CPU
     Utilisation (from limits)","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":6,"x":12,"y":0},"id":3,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":6,"x":12,"y":0},"id":3,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\",
     image!=\"\"})) / sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"})","instant":true}],"title":"Memory
     Utilisation (from requests)","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":6,"x":18,"y":0},"id":4,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"percentunit"}},"gridPos":{"h":3,"w":6,"x":18,"y":0},"id":4,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\",
     image!=\"\"})) / sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\",
     cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"})","instant":true}],"title":"Memory
     Utilisation (from limits)","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true}},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true}},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     namespace=\"$namespace\"})) by (pod)","legendFormat":"__auto"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"scalar(max(kube_resourcequota{cluster=\"$cluster\",
     namespace=\"$namespace\", type=\"hard\",resource=\"requests.cpu\"}))","legendFormat":"quota
@@ -74908,7 +76802,7 @@ data:
     namespace=\"$namespace\", type=\"hard\",resource=\"limits.cpu\"}))","legendFormat":"quota
     - limits"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":6,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":6,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     namespace=\"$namespace\"})) by (pod)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\",
@@ -74927,7 +76821,7 @@ data:
     #C":8,"Value #D":9,"Value #E":10,"pod":5},"renameByName":{"Value #A":"CPU Usage","Value
     #B":"CPU Requests","Value #C":"CPU Requests %","Value #D":"CPU Limits","Value
     #E":"CPU Limits %","pod":"Pod"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
     container!=\"\", image!=\"\"})) by (pod)","legendFormat":"__auto"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"scalar(max(kube_resourcequota{cluster=\"$cluster\",
@@ -74936,7 +76830,7 @@ data:
     namespace=\"$namespace\", type=\"hard\",resource=\"limits.memory\"}))","legendFormat":"quota
     - limits"}],"title":"Memory Usage (w/o cache)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":8,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":8,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
     container!=\"\", image!=\"\"})) by (pod)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
@@ -74969,7 +76863,7 @@ data:
     #D":"Memory Limits","Value #E":"Memory Limits %","Value #F":"Memory Usage (RSS)","Value
     #G":"Memory Usage (Cache)","Value #H":"Memory Usage (Swap)","pod":"Pod"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bandwidth/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":35},"id":9,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":35},"id":9,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))) by (pod)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
@@ -74989,36 +76883,36 @@ data:
     #C":"Rate of Received Packets","Value #D":"Rate of Transmitted Packets","Value
     #E":"Rate of Received Packets Dropped","Value #F":"Rate of Transmitted Packets
     Dropped","pod":"Pod"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":42},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":42},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])))
     by (pod)","legendFormat":"__auto"}],"title":"Receive Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":42},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":42},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])))
     by (pod)","legendFormat":"__auto"}],"title":"Transmit Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":49},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":49},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))
     by (pod)","legendFormat":"__auto"}],"title":"Rate of Received Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":49},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":49},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))
     by (pod)","legendFormat":"__auto"}],"title":"Rate of Transmitted Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":56},"id":14,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":56},"id":14,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))
     by (pod)","legendFormat":"__auto"}],"title":"Rate of Received Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":56},"id":15,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":56},"id":15,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))
     by (pod)","legendFormat":"__auto"}],"title":"Rate of Transmitted Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"iops"}},"gridPos":{"h":7,"w":12,"x":0,"y":63},"id":16,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"ceil(sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"iops"}},"gridPos":{"h":7,"w":12,"x":0,"y":63},"id":16,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"ceil(sum
     by(pod) (rate(container_fs_reads_total{container!=\"\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]) + rate(container_fs_writes_total{container!=\"\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])))","legendFormat":"__auto"}],"title":"IOPS(Reads+Writes)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"Bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":63},"id":17,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"Bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":63},"id":17,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by(pod) (rate(container_fs_reads_bytes_total{container!=\"\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{container!=\"\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))","legendFormat":"__auto"}],"title":"ThroughPut(Read+Write)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/IOPS/"},"properties":[{"id":"unit","value":"iops"}]},{"matcher":{"id":"byRegexp","options":"/Throughput/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":70},"id":18,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":70},"id":18,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by(pod) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
@@ -75063,8 +76957,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -75077,7 +76971,7 @@ data:
   k8s-resources-node.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true,"stacking":{"mode":"normal"}}},"overrides":[{"matcher":{"id":"byName","options":"max
     capacity"},"properties":[{"id":"color","value":{"fixedColor":"red","mode":"fixed"}},{"id":"custom.stacking","value":{"mode":"none"}},{"id":"custom.hideFrom","value":{"legend":false,"tooltip":true,"viz":false}},{"id":"custom.lineStyle","value":{"dash":[10,10],"fill":"dash"}}]},{"matcher":{"id":"byName","options":"max
-    allocatable"},"properties":[{"id":"color","value":{"fixedColor":"super-light-red","mode":"fixed"}},{"id":"custom.stacking","value":{"mode":"none"}},{"id":"custom.hideFrom","value":{"legend":false,"tooltip":true,"viz":false}},{"id":"custom.lineStyle","value":{"dash":[10,10],"fill":"dash"}},{"id":"custom.fillOpacity","value":0}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_node_status_capacity{cluster=\"$cluster\",
+    allocatable"},"properties":[{"id":"color","value":{"fixedColor":"super-light-red","mode":"fixed"}},{"id":"custom.stacking","value":{"mode":"none"}},{"id":"custom.hideFrom","value":{"legend":false,"tooltip":true,"viz":false}},{"id":"custom.lineStyle","value":{"dash":[10,10],"fill":"dash"}},{"id":"custom.fillOpacity","value":0}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_node_status_capacity{cluster=\"$cluster\",
     job=\"kube-state-metrics\", node=~\"$node\", resource=\"cpu\"})","legendFormat":"max
     capacity"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_node_status_allocatable{cluster=\"$cluster\",
     job=\"kube-state-metrics\", node=~\"$node\", resource=\"cpu\"})","legendFormat":"max
@@ -75085,7 +76979,7 @@ data:
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     node=~\"$node\"})) by (pod)","legendFormat":"{{pod}}"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":6},"id":2,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":6},"id":2,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     node=~\"$node\"})) by (pod)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\",
@@ -75103,7 +76997,7 @@ data:
     Limits","Value #E":"CPU Limits %","pod":"Pod"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true,"stacking":{"mode":"normal"}},"unit":"bytes"},"overrides":[{"matcher":{"id":"byName","options":"max
     capacity"},"properties":[{"id":"color","value":{"fixedColor":"red","mode":"fixed"}},{"id":"custom.stacking","value":{"mode":"none"}},{"id":"custom.hideFrom","value":{"legend":false,"tooltip":true,"viz":false}},{"id":"custom.lineStyle","value":{"dash":[10,10],"fill":"dash"}}]},{"matcher":{"id":"byName","options":"max
-    allocatable"},"properties":[{"id":"color","value":{"fixedColor":"super-light-red","mode":"fixed"}},{"id":"custom.stacking","value":{"mode":"none"}},{"id":"custom.hideFrom","value":{"legend":false,"tooltip":true,"viz":false}},{"id":"custom.lineStyle","value":{"dash":[10,10],"fill":"dash"}},{"id":"custom.fillOpacity","value":0}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":12},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_node_status_capacity{cluster=\"$cluster\",
+    allocatable"},"properties":[{"id":"color","value":{"fixedColor":"super-light-red","mode":"fixed"}},{"id":"custom.stacking","value":{"mode":"none"}},{"id":"custom.hideFrom","value":{"legend":false,"tooltip":true,"viz":false}},{"id":"custom.lineStyle","value":{"dash":[10,10],"fill":"dash"}},{"id":"custom.fillOpacity","value":0}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":12},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_node_status_capacity{cluster=\"$cluster\",
     job=\"kube-state-metrics\", node=~\"$node\", resource=\"memory\"})","legendFormat":"max
     capacity"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_node_status_allocatable{cluster=\"$cluster\",
     job=\"kube-state-metrics\", node=~\"$node\", resource=\"memory\"})","legendFormat":"max
@@ -75113,7 +77007,7 @@ data:
     Usage (w/cache)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true,"stacking":{"mode":"normal"}},"unit":"bytes"},"overrides":[{"matcher":{"id":"byName","options":"max
     capacity"},"properties":[{"id":"color","value":{"fixedColor":"red","mode":"fixed"}},{"id":"custom.stacking","value":{"mode":"none"}},{"id":"custom.hideFrom","value":{"legend":false,"tooltip":true,"viz":false}},{"id":"custom.lineStyle","value":{"dash":[10,10],"fill":"dash"}}]},{"matcher":{"id":"byName","options":"max
-    allocatable"},"properties":[{"id":"color","value":{"fixedColor":"super-light-red","mode":"fixed"}},{"id":"custom.stacking","value":{"mode":"none"}},{"id":"custom.hideFrom","value":{"legend":false,"tooltip":true,"viz":false}},{"id":"custom.lineStyle","value":{"dash":[10,10],"fill":"dash"}},{"id":"custom.fillOpacity","value":0}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":18},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_node_status_capacity{cluster=\"$cluster\",
+    allocatable"},"properties":[{"id":"color","value":{"fixedColor":"super-light-red","mode":"fixed"}},{"id":"custom.stacking","value":{"mode":"none"}},{"id":"custom.hideFrom","value":{"legend":false,"tooltip":true,"viz":false}},{"id":"custom.lineStyle","value":{"dash":[10,10],"fill":"dash"}},{"id":"custom.fillOpacity","value":0}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":18},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_node_status_capacity{cluster=\"$cluster\",
     job=\"kube-state-metrics\", node=~\"$node\", resource=\"memory\"})","legendFormat":"max
     capacity"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_node_status_allocatable{cluster=\"$cluster\",
     job=\"kube-state-metrics\", node=~\"$node\", resource=\"memory\"})","legendFormat":"max
@@ -75122,7 +77016,7 @@ data:
     node=~\"$node\", container!=\"\"})) by (pod)","legendFormat":"{{pod}}"}],"title":"Memory
     Usage (w/o cache)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":24},"id":5,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":6,"w":24,"x":0,"y":24},"id":5,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_memory_working_set_bytes{cluster=\"$cluster\",
     node=~\"$node\",container!=\"\"})) by (pod)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\",
@@ -75162,8 +77056,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -75173,20 +77067,64 @@ metadata:
 ---
 apiVersion: v1
 data:
+  k8s-resources-nodes-overview.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":0,"showPoints":"never","spanNulls":true},"decimals":0,"unit":"short"},"overrides":[{"matcher":{"id":"byName","options":"pods"},"properties":[{"id":"custom.axisPlacement","value":"right"},{"id":"custom.axisSoftMin","value":0}]}]},"gridPos":{"h":8,"w":24,"x":0,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"count(kube_node_info{cluster=\"$cluster\",
+    job=\"kube-state-metrics\"})","legendFormat":"nodes"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kubelet_running_pods{cluster=\"$cluster\",
+    job=\"kubelet\", metrics_path=\"/metrics\"})","legendFormat":"pods"}],"title":"Node
+    & Pod Count","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":8,"w":24,"x":0,"y":8},"id":2,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_node_status_allocatable{cluster=\"$cluster\",
+    job=\"kube-state-metrics\", resource=\"cpu\"})","legendFormat":"allocatable"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\"})","legendFormat":"requests"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\"})","legendFormat":"usage"}],"title":"CPU
+    Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":8,"w":24,"x":0,"y":16},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kube_node_status_allocatable{cluster=\"$cluster\",
+    job=\"kube-state-metrics\", resource=\"memory\"})","legendFormat":"allocatable"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\"})","legendFormat":"requests"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(node_namespace_pod_container:container_memory_working_set_bytes{cluster=\"$cluster\",
+    container!=\"\"})","legendFormat":"usage"}],"title":"Memory Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"percentunit"}},"gridPos":{"h":8,"w":24,"x":0,"y":24},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    by (node) (node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\"})\n/\nsum
+    by (node) (kube_node_status_allocatable{cluster=\"$cluster\", job=\"kube-state-metrics\",
+    resource=\"cpu\"})\n","legendFormat":"{{node}}"}],"title":"CPU Utilization per
+    Node","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"percentunit"}},"gridPos":{"h":8,"w":24,"x":0,"y":32},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    by (node) (node_namespace_pod_container:container_memory_working_set_bytes{cluster=\"$cluster\",
+    container!=\"\"})\n/\nsum by (node) (kube_node_status_allocatable{cluster=\"$cluster\",
+    job=\"kube-state-metrics\", resource=\"memory\"})\n","legendFormat":"{{node}}"}],"title":"Memory
+    Utilization per Node","type":"timeseries"}],"refresh":"10s","schemaVersion":39,"tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
+    source","name":"datasource","query":"prometheus","regex":"","type":"datasource"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"hide":2,"label":"cluster","name":"cluster","query":"label_values(up{job=\"kube-state-metrics\"},
+    cluster)","refresh":2,"sort":1,"type":"query","allValue":".*"}]},"time":{"from":"now-6h","to":"now"},"timezone":
+    "utc","title":"Kubernetes / Compute Resources / Nodes Overview","uid":"058020e04168bfdea0c52269cb699df2"}'
+kind: ConfigMap
+metadata:
+  annotations: {}
+  labels:
+    app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator-grafana
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
+    grafana_dashboard: '1'
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-k8s-resources-nodes-overview
+  namespace: metalk8s-monitoring
+---
+apiVersion: v1
+data:
   k8s-resources-pod.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true}},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true}},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{namespace=\"$namespace\",
     pod=\"$pod\", cluster=\"$cluster\", container!=\"\"})) by (container)","legendFormat":"__auto"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"cpu\"}\n)\n","legendFormat":"requests"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    kube_pod_container_resource_limits{job=\"kube-state-metrics\",
     cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"cpu\"}\n)\n","legendFormat":"limits"}],"title":"CPU
     Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"axisColorMode":"thresholds","axisSoftMax":1,"axisSoftMin":0,"fillOpacity":10,"showPoints":"never","spanNulls":true,"thresholdsStyle":{"mode":"dashed+area"}},"unit":"percentunit"},"overrides":[{"matcher":{"id":"byFrameRefID","options":"A"},"properties":[{"id":"thresholds","value":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":0.25}]}},{"id":"color","value":{"mode":"thresholds","seriesBy":"lastNotNull"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":2,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(increase(container_cpu_cfs_throttled_periods_total{job=\"kubelet\",
+    --"},"fieldConfig":{"defaults":{"custom":{"axisColorMode":"thresholds","axisSoftMax":1,"axisSoftMin":0,"fillOpacity":10,"showPoints":"never","spanNulls":true,"thresholdsStyle":{"mode":"dashed+area"}},"unit":"percentunit"},"overrides":[{"matcher":{"id":"byFrameRefID","options":"A"},"properties":[{"id":"thresholds","value":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":0.25}]}},{"id":"color","value":{"mode":"thresholds","seriesBy":"lastNotNull"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":2,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(increase(container_cpu_cfs_throttled_periods_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\",
     cluster=\"$cluster\"}[$__rate_interval])) by (container) /sum(increase(container_cpu_cfs_periods_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\",
     cluster=\"$cluster\"}[$__rate_interval])) by (container)","legendFormat":"__auto"}],"title":"CPU
     Throttling","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":3,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":3,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{namespace=\"$namespace\",
     pod=\"$pod\", cluster=\"$cluster\", container!=\"\"})) by (container)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\",
@@ -75207,14 +77145,14 @@ data:
     #C":8,"Value #D":9,"Value #E":10,"container":5},"renameByName":{"Value #A":"CPU
     Usage","Value #B":"CPU Requests","Value #C":"CPU Requests %","Value #D":"CPU Limits","Value
     #E":"CPU Limits %","container":"Container"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
     pod=\"$pod\", container!=\"\", image!=\"\"})) by (container)","legendFormat":"__auto"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    kube_pod_container_resource_requests{job=\"kube-state-metrics\",
     cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"memory\"}\n)\n","legendFormat":"requests"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    kube_pod_container_resource_limits{job=\"kube-state-metrics\",
     cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"memory\"}\n)\n","legendFormat":"limits"}],"title":"Memory
     Usage (WSS)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":5,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":5,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
     pod=\"$pod\", container!=\"\", image!=\"\"})) by (container)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(max
@@ -75249,31 +77187,31 @@ data:
     #A":"Memory Usage","Value #B":"Memory Requests","Value #C":"Memory Requests %","Value
     #D":"Memory Limits","Value #E":"Memory Limits %","Value #F":"Memory Usage (RSS)","Value
     #G":"Memory Usage (Cache)","Value #H":"Memory Usage (Swap)","container":"Container"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":35},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":35},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])))
     by (pod)","legendFormat":"__auto"}],"title":"Receive Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":35},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":35},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])))
     by (pod)","legendFormat":"__auto"}],"title":"Transmit Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":42},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":42},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval])) by (pod)","legendFormat":"__auto"}],"title":"Rate
     of Received Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":42},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":42},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval])) by (pod)","legendFormat":"__auto"}],"title":"Rate
     of Transmitted Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":49},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":49},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval])) by (pod)","legendFormat":"__auto"}],"title":"Rate
     of Received Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":49},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":49},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval])) by (pod)","legendFormat":"__auto"}],"title":"Rate
     of Transmitted Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"iops"}},"gridPos":{"h":7,"w":12,"x":0,"y":56},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"ceil(sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"iops"}},"gridPos":{"h":7,"w":12,"x":0,"y":56},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"ceil(sum
     by(pod) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])))","legendFormat":"Reads"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"ceil(sum
@@ -75281,7 +77219,7 @@ data:
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])))","legendFormat":"Writes"}],"title":"IOPS
     (Pod)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"Bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":56},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"Bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":56},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by(pod) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval]))","legendFormat":"Reads"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
@@ -75289,19 +77227,19 @@ data:
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval]))","legendFormat":"Writes"}],"title":"ThroughPut
     (Pod)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"iops"}},"gridPos":{"h":7,"w":12,"x":0,"y":63},"id":14,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"ceil(sum
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"iops"}},"gridPos":{"h":7,"w":12,"x":0,"y":63},"id":14,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"ceil(sum
     by(container) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval])
     + rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval])))","legendFormat":"__auto"}],"title":"IOPS
     (Containers)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"Bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":63},"id":15,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"Bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":63},"id":15,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by(container) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval])
     + rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))","legendFormat":"__auto"}],"title":"ThroughPut
     (Containers)","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/IOPS/"},"properties":[{"id":"unit","value":"iops"}]},{"matcher":{"id":"byRegexp","options":"/Throughput/"},"properties":[{"id":"unit","value":"Bps"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":70},"id":16,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/IOPS/"},"properties":[{"id":"unit","value":"iops"}]},{"matcher":{"id":"byRegexp","options":"/Throughput/"},"properties":[{"id":"unit","value":"Bps"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":70},"id":16,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by(container) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
@@ -75346,8 +77284,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -75358,14 +77296,14 @@ metadata:
 apiVersion: v1
 data:
   k8s-resources-workload.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true}}},"gridPos":{"h":7,"w":24,"x":0,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true}}},"gridPos":{"h":7,"w":24,"x":0,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     namespace=\"$namespace\"})\n  * on(cluster, namespace, pod)\n    group_left(workload,
     workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}\n)
     by (pod)\n","legendFormat":"__auto"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":2,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":2,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     namespace=\"$namespace\"})\n  * on(cluster, namespace, pod)\n    group_left(workload,
     workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -75404,14 +77342,14 @@ data:
     #C":8,"Value #D":9,"Value #E":10,"pod":5},"renameByName":{"Value #A":"CPU Usage","Value
     #B":"CPU Requests","Value #C":"CPU Requests %","Value #D":"CPU Limits","Value
     #E":"CPU Limits %","pod":"Pod"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{cluster=\"$cluster\",
     namespace=\"$namespace\", container!=\"\", image!=\"\"})\n  * on(cluster, namespace,
     pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"}\n)
     by (pod)\n","legendFormat":"__auto"}],"title":"Memory Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":4,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":4,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{cluster=\"$cluster\",
     namespace=\"$namespace\", container!=\"\", image!=\"\"})\n  * on(cluster, namespace,
     pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -75451,7 +77389,7 @@ data:
     Usage","Value #B":"Memory Requests","Value #C":"Memory Requests %","Value #D":"Memory
     Limits","Value #E":"Memory Limits %","pod":"Pod"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bandwidth/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":5,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
+    down to pods","url":"/d/6581e46e4e5c7ba40a07646395ef7b23?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":5,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -75485,48 +77423,48 @@ data:
     #C":"Rate of Received Packets","Value #D":"Rate of Transmitted Packets","Value
     #E":"Rate of Received Packets Dropped","Value #F":"Rate of Transmitted Packets
     Dropped","pod":"Pod"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":35},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":35},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"})
     by (pod))\n","legendFormat":"__auto"}],"title":"Receive Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":35},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":35},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"})
     by (pod))\n","legendFormat":"__auto"}],"title":"Transmit Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":42},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(avg((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":42},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(avg((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"})
     by (pod))\n","legendFormat":"__auto"}],"title":"Average Container Bandwidth by
     Pod: Received","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":42},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(avg((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":42},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(avg((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"})
     by (pod))\n","legendFormat":"__auto"}],"title":"Average Container Bandwidth by
     Pod: Transmitted","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":49},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_receive_packets_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":49},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_receive_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"})
     by (pod))\n","legendFormat":"__auto"}],"title":"Rate of Received Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":49},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":49},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"})
     by (pod))\n","legendFormat":"__auto"}],"title":"Rate of Transmitted Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":56},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":56},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"})
     by (pod))\n","legendFormat":"__auto"}],"title":"Rate of Received Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":56},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":56},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\"$workload\", workload_type=~\"$type\"})
@@ -75546,8 +77484,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -75558,7 +77496,7 @@ metadata:
 apiVersion: v1
 data:
   k8s-resources-workloads-namespace.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true}},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n  max
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true}},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n  max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     namespace=\"$namespace\"})\n* on(cluster, namespace, pod)\n  group_left(workload,
     workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -75570,7 +77508,7 @@ data:
     - limits"}],"title":"CPU Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Workload"},"properties":[{"id":"links","value":[{"title":"Drill
     down to workloads","url":"/d/a164a7f0339f99e89cea5cb47e9be617?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]},{"matcher":{"id":"byName","options":"Running
-    Pods"},"properties":[{"id":"unit","value":"none"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":2,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"count(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
+    Pods"},"properties":[{"id":"unit","value":"none"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":7},"id":2,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"count(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload_type=~\"$type\"}) by (workload, workload_type)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n  max
     by (cluster, namespace, pod, container)(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{cluster=\"$cluster\",
     namespace=\"$namespace\"})\n* on(cluster, namespace, pod)\n  group_left(workload,
@@ -75610,7 +77548,7 @@ data:
     Pods","Value #B":"CPU Usage","Value #C":"CPU Requests","Value #D":"CPU Requests
     %","Value #E":"CPU Limits","Value #F":"CPU Limits %","workload":"Workload","workload_type
     1":"Type"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"},"overrides":[{"matcher":{"id":"byFrameRefID","options":"B"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"red","mode":"fixed"}}]},{"matcher":{"id":"byFrameRefID","options":"C"},"properties":[{"id":"custom.lineStyle","value":{"fill":"dash"}},{"id":"custom.lineWidth","value":2},{"id":"color","value":{"fixedColor":"orange","mode":"fixed"}}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
     container!=\"\", image!=\"\"})\n  * on(cluster, namespace, pod)\n    group_left(workload,
@@ -75623,7 +77561,7 @@ data:
     - limits"}],"title":"Memory Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[{"matcher":{"id":"byRegexp","options":"/%/"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Workload"},"properties":[{"id":"links","value":[{"title":"Drill
     down to workloads","url":"/d/a164a7f0339f99e89cea5cb47e9be617?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]},{"matcher":{"id":"byName","options":"Running
-    Pods"},"properties":[{"id":"unit","value":"none"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":4,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"count(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
+    Pods"},"properties":[{"id":"unit","value":"none"}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":4,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"count(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload_type=~\"$type\"}) by (workload, workload_type)","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(\n    max
     by (cluster, namespace, pod, container)(container_memory_working_set_bytes{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
@@ -75667,7 +77605,7 @@ data:
     Requests %","Value #E":"Memory Limits","Value #F":"Memory Limits %","workload":"Workload","workload_type
     1":"Type"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"-- Mixed
     --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bandwidth/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Workload"},"properties":[{"id":"links","value":[{"title":"Drill
-    down to workloads","url":"/d/a164a7f0339f99e89cea5cb47e9be617?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":5,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
+    down to workloads","url":"/d/a164a7f0339f99e89cea5cb47e9be617?${datasource:queryparam}&var-cluster=$cluster&var-namespace=$namespace&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]}]},"gridPos":{"h":7,"w":24,"x":0,"y":28},"id":5,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
@@ -75696,46 +77634,46 @@ data:
     #C":"Rate of Received Packets","Value #D":"Rate of Transmitted Packets","Value
     #E":"Rate of Received Packets Dropped","Value #F":"Rate of Transmitted Packets
     Dropped","workload":"Workload"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":35},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":35},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Receive
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":35},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":35},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Transmit
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":42},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(avg((8
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":0,"y":42},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(avg((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Average
     Container Bandwidth by Workload: Received","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":42},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(avg((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":7,"w":12,"x":12,"y":42},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(avg((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Average
     Container Bandwidth by Workload: Transmitted","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":49},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_receive_packets_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":49},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_receive_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Rate
     of Received Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":49},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":49},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Rate
     of Transmitted Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":56},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":0,"y":56},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Rate
     of Received Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":56},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":7,"w":12,"x":12,"y":56},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",
     namespace=\"$namespace\", workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Rate
@@ -75754,8 +77692,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -75766,97 +77704,97 @@ metadata:
 apiVersion: v1
 data:
   kubelet.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kubelet_node_name{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kubelet_node_name{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\"})","instant":true}],"title":"Running
-    Kubelets","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":4,"y":0},"id":2,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kubelet_running_pods{cluster=\"$cluster\",
+    Kubelets","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":4,"y":0},"id":2,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kubelet_running_pods{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"})","instant":true}],"title":"Running
-    Pods","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":8,"y":0},"id":3,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kubelet_running_containers{cluster=\"$cluster\",
+    Pods","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":8,"y":0},"id":3,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(kubelet_running_containers{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", container_state=\"running\", instance=~\"$instance\"})","instant":true}],"title":"Running
     Containers","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":12,"y":0},"id":4,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(volume_manager_total_volumes{cluster=\"$cluster\",
+    --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":12,"y":0},"id":4,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(volume_manager_total_volumes{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\", state=\"actual_state_of_world\"})","instant":true}],"title":"Actual
     Volume Count","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":16,"y":0},"id":5,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(volume_manager_total_volumes{cluster=\"$cluster\",
+    --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":16,"y":0},"id":5,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(volume_manager_total_volumes{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\",state=\"desired_state_of_world\"})","instant":true}],"title":"Desired
     Volume Count","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":20,"y":0},"id":6,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_node_config_error{cluster=\"$cluster\",
+    --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":20,"y":0},"id":6,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_node_config_error{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval]))","instant":true}],"title":"Config
     Error Count","type":"stat"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":7},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_runtime_operations_total{cluster=\"$cluster\",job=\"kubelet\",
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":7},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_runtime_operations_total{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (operation_type,
     instance)","legendFormat":"{{instance}} {{operation_type}}"}],"title":"Operation
     Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":12,"y":7},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_runtime_operations_errors_total{cluster=\"$cluster\",job=\"kubelet\",
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":12,"y":7},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_runtime_operations_errors_total{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance,
     operation_type)","legendFormat":"{{instance}} {{operation_type}}"}],"title":"Operation
     Error Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(kubelet_runtime_operations_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance,
     operation_type, le))","legendFormat":"{{instance}} {{operation_type}}"}],"title":"Operation
     Duration 99th quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":21},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_pod_start_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":21},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_pod_start_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance)","legendFormat":"{{instance}}
     pod"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_pod_worker_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance)","legendFormat":"{{instance}}
     worker"}],"title":"Pod Start Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":12,"x":12,"y":21},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":12,"x":12,"y":21},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(kubelet_pod_start_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance,
     le))","legendFormat":"{{instance}} pod"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(kubelet_pod_worker_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance,
     le))","legendFormat":"{{instance}} worker"}],"title":"Pod Start Duration","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":28},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(storage_operation_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":28},"id":12,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(storage_operation_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance,
     operation_name, volume_plugin)","legendFormat":"{{instance}} {{operation_name}}
     {{volume_plugin}}"}],"title":"Storage Operation Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":12,"y":28},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(storage_operation_errors_total{cluster=\"$cluster\",job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":12,"y":28},"id":13,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(storage_operation_errors_total{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance,
     operation_name, volume_plugin)","legendFormat":"{{instance}} {{operation_name}}
     {{volume_plugin}}"}],"title":"Storage Operation Error Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":35},"id":14,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":35},"id":14,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(storage_operation_duration_seconds_bucket{cluster=\"$cluster\", job=\"kubelet\",
     metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval])) by (instance,
     operation_name, volume_plugin, le))","legendFormat":"{{instance}} {{operation_name}}
     {{volume_plugin}}"}],"title":"Storage Operation Duration 99th quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":42},"id":15,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_cgroup_manager_duration_seconds_count{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":42},"id":15,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_cgroup_manager_duration_seconds_count{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval]))
     by (instance, operation_type)","legendFormat":"{{operation_type}}"}],"title":"Cgroup
     manager operation rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":12,"x":12,"y":42},"id":16,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":12,"x":12,"y":42},"id":16,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(kubelet_cgroup_manager_duration_seconds_bucket{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval]))
     by (instance, operation_type, le))","legendFormat":"{{instance}} {{operation_type}}"}],"title":"Cgroup
     manager 99th quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":49},"id":17,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_pleg_relist_duration_seconds_count{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":49},"id":17,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubelet_pleg_relist_duration_seconds_count{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval]))
     by (instance)","legendFormat":"{{instance}}"}],"title":"PLEG relist rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":12,"x":12,"y":49},"id":18,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":12,"x":12,"y":49},"id":18,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(kubelet_pleg_relist_interval_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance,
     le))","legendFormat":"{{instance}}"}],"title":"PLEG relist interval","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":56},"id":19,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":56},"id":19,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(kubelet_pleg_relist_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance,
     le))","legendFormat":"{{instance}}"}],"title":"PLEG relist duration","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":24,"x":0,"y":63},"id":20,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":24,"x":0,"y":63},"id":20,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"2..\"}[$__rate_interval]))","legendFormat":"2xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"3..\"}[$__rate_interval]))","legendFormat":"3xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"4..\"}[$__rate_interval]))","legendFormat":"4xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"5..\"}[$__rate_interval]))","legendFormat":"5xx"}],"title":"RPC
     rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":70},"id":21,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":70},"id":21,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval])) by (instance,
     verb, le))","legendFormat":"{{instance}} {{verb}}"}],"title":"Request duration
     99th quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":8,"x":0,"y":77},"id":22,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"process_resident_memory_bytes{cluster=\"$cluster\",job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":8,"x":0,"y":77},"id":22,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"process_resident_memory_bytes{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}","legendFormat":"{{instance}}"}],"title":"Memory","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":8,"y":77},"id":23,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"rate(process_cpu_seconds_total{cluster=\"$cluster\",job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":8,"y":77},"id":23,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"rate(process_cpu_seconds_total{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])","legendFormat":"{{instance}}"}],"title":"CPU
     usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":16,"y":77},"id":24,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"go_goroutines{cluster=\"$cluster\",job=\"kubelet\",
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":16,"y":77},"id":24,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"go_goroutines{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}","legendFormat":"{{instance}}"}],"title":"Goroutines","type":"timeseries"}],"refresh":"10s","schemaVersion":39,"tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     source","name":"datasource","query":"prometheus","regex":"","type":"datasource"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"hide":2,"label":"cluster","name":"cluster","query":"label_values(up{job=\"kubelet\",
     metrics_path=\"/metrics\"}, cluster)","refresh":2,"sort":1,"type":"query","allValue":".*"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"hide":0,"includeAll":true,"label":"instance","name":"instance","query":"label_values(up{job=\"kubelet\",
@@ -75871,8 +77809,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -75883,18 +77821,18 @@ metadata:
 apiVersion: v1
 data:
   namespace-by-pod.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"displayName":"$namespace","max":10000000000,"min":0,"thresholds":{"steps":[{"color":"dark-green","index":0,"value":null},{"color":"dark-yellow","index":1,"value":5000000000},{"color":"dark-red","index":2,"value":7000000000}]},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":0},"id":1,"interval":"1m","pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"displayName":"$namespace","max":10000000000,"min":0,"thresholds":{"steps":[{"color":"dark-green","index":0,"value":null},{"color":"dark-yellow","index":1,"value":5000000000},{"color":"dark-red","index":2,"value":7000000000}]},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":0},"id":1,"interval":"1m","pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     (\n    (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Received","type":"gauge"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"displayName":"$namespace","max":10000000000,"min":0,"thresholds":{"steps":[{"color":"dark-green","index":0,"value":null},{"color":"dark-yellow","index":1,"value":5000000000},{"color":"dark-red","index":2,"value":7000000000}]},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":0},"id":2,"interval":"1m","pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"displayName":"$namespace","max":10000000000,"min":0,"thresholds":{"steps":[{"color":"dark-green","index":0,"value":null},{"color":"dark-yellow","index":1,"value":5000000000},{"color":"dark-red","index":2,"value":7000000000}]},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":0},"id":2,"interval":"1m","pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     (\n    (8 * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Transmitted","type":"gauge"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bandwidth/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Pod"},"properties":[{"id":"links","value":[{"title":"Drill
-    down","url":"/d/7a18067ce943a40ae25454675c19ff5c?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${namespace}&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    down","url":"/d/7a18067ce943a40ae25454675c19ff5c?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${namespace}&var-pod=${__data.fields.Pod}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (pod) (\n    (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n)\n","format":"table","instant":true},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
@@ -75921,32 +77859,32 @@ data:
     #C":"Rate of Received Packets","Value #D":"Rate of Transmitted Packets","Value
     #E":"Rate of Received Packets Dropped","Value #F":"Rate of Transmitted Packets
     Dropped","pod":"Pod"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":18},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":18},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (pod) (\n    (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Receive
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":18},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":18},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (pod) (\n    (8 * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Transmit
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":27},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":27},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (pod) (\n    rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval])\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Rate
     of Received Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":27},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":27},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (pod) (\n    rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval])\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Rate
     of Transmitted Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":36},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":36},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (pod) (\n    rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace!=\"\"}[$__rate_interval])\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Rate
     of Received Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":36},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":36},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     by (pod) (\n    rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval])\n  *
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n)\n","legendFormat":"__auto"}],"title":"Rate
@@ -75964,8 +77902,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -75976,14 +77914,14 @@ metadata:
 apiVersion: v1
 data:
   namespace-by-workload.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":0},"id":1,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":0},"id":1,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
     * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n*
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n*
     on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Received","type":"bargauge"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":0},"id":2,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":0},"id":2,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
     * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n*
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n*
@@ -75991,7 +77929,7 @@ data:
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Transmitted","type":"bargauge"},{"datasource":{"type":"datasource","uid":"--
     Mixed --"},"fieldConfig":{"overrides":[{"matcher":{"id":"byRegexp","options":"/Bits/"},"properties":[{"id":"unit","value":"bps"}]},{"matcher":{"id":"byRegexp","options":"/Packets/"},"properties":[{"id":"unit","value":"pps"}]},{"matcher":{"id":"byName","options":"Workload"},"properties":[{"id":"links","value":[{"title":"Drill
-    down","url":"/d/728bf77cc1166d2f3133bf25846876cc?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${namespace}&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(\n  sum
+    down","url":"/d/728bf77cc1166d2f3133bf25846876cc?${datasource:queryparam}&var-cluster=${cluster}&var-namespace=${namespace}&var-type=${__data.fields.Type}&var-workload=${__data.fields.Workload}"}]}]}]},"gridPos":{"h":9,"w":24,"x":0,"y":9},"id":3,"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(\n  sum
     by (workload, workload_type) (\n    sum by (cluster, namespace, pod) (8 * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n    *
     on (cluster, namespace, pod)\n    topk by (cluster, namespace, pod) (\n      1,\n      max
     by (cluster, namespace, pod) (kube_pod_info{cluster=\"$cluster\",namespace=\"$namespace\",host_network=\"false\"})\n    )\n    *
@@ -76044,53 +77982,53 @@ data:
     Bits","Value #B":"Tx Bits","Value #C":"Rx Bits (Avg)","Value #D":"Tx Bits (Avg)","Value
     #E":"Rx Packets","Value #F":"Tx Packets","Value #G":"Rx Packets Dropped","Value
     #H":"Tx Packets Dropped","workload":"Workload","workload_type 1":"Type"}}}],"type":"table"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":18},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":18},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
     * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n*
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n*
     on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Receive
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":18},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":18},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
     * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n*
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n*
     on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Transmit
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":27},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(avg((8
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":27},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(avg((8
     * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n*
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n*
     on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Average
     Container Bandwidth by Workload: Received","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":27},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(avg((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":27},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(avg((8
     * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))\n*
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n*
     on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Average
     Container Bandwidth by Workload: Transmitted","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":36},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n*
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":36},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n*
     on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Rate
     of Received Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":36},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n*
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":36},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n*
     on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Rate
     of Transmitted Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":45},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n*
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":45},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n*
     on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","legendFormat":"__auto"}],"title":"Rate
     of Received Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":45},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n*
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":45},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])\n*
     on (cluster,namespace,pod) group_left ()\n    topk by (cluster,namespace,pod)
     (\n      1,\n      max by (cluster,namespace,pod) (kube_pod_info{host_network=\"false\"})\n    )\n*
     on (cluster,namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
@@ -76110,8 +78048,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -76171,7 +78109,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76218,7 +78156,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76278,7 +78216,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76325,7 +78263,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76399,7 +78337,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76468,7 +78406,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76536,7 +78474,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76583,7 +78521,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76643,7 +78581,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76703,8 +78641,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -76764,7 +78702,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76811,7 +78749,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76871,7 +78809,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76918,7 +78856,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -76992,7 +78930,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77061,7 +78999,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77129,7 +79067,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77176,7 +79114,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77236,7 +79174,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77307,8 +79245,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -77366,7 +79304,7 @@ data:
                         "mode": "multi"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77408,7 +79346,7 @@ data:
                         "mode": "multi"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77488,7 +79426,7 @@ data:
                         "mode": "multi"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77560,7 +79498,7 @@ data:
                     "y": 9
                 },
                 "id": 6,
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77638,7 +79576,7 @@ data:
                         "mode": "multi"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77779,7 +79717,7 @@ data:
                     "y": 19
                 },
                 "id": 9,
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77929,7 +79867,7 @@ data:
                         "mode": "multi"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -77971,7 +79909,7 @@ data:
                         "mode": "multi"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -78043,8 +79981,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -78055,7 +79993,7 @@ metadata:
 apiVersion: v1
 data:
   persistentvolumesusage.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":18,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(\n  sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":18,"y":0},"id":1,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(\n  sum
     without(instance, node) (topk(1, (kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})))\n  -\n  sum
     without(instance, node) (topk(1, (kubelet_volume_stats_available_bytes{cluster=\"$cluster\",
@@ -78064,14 +80002,14 @@ data:
     without(instance, node) (topk(1, (kubelet_volume_stats_available_bytes{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})))\n","legendFormat":"Free
     Space"}],"title":"Volume Space Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"color":{"mode":"thresholds"},"max":100,"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":0},{"color":"orange","value":80},{"color":"red","value":90}]},"unit":"percent"}},"gridPos":{"h":7,"w":6,"x":18,"y":0},"id":2,"interval":"1m","pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"max
+    Mixed --"},"fieldConfig":{"defaults":{"color":{"mode":"thresholds"},"max":100,"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":0},{"color":"orange","value":80},{"color":"red","value":90}]},"unit":"percent"}},"gridPos":{"h":7,"w":6,"x":18,"y":0},"id":2,"interval":"1m","pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"max
     without(instance,node) (\n(\n  topk(1, kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n  -\n  topk(1,
     kubelet_volume_stats_available_bytes{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\",
     namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n)\n/\ntopk(1, kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n*
     100)\n","instant":true}],"title":"Volume Space Usage","type":"gauge"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"none"}},"gridPos":{"h":7,"w":18,"y":7},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"none"}},"gridPos":{"h":7,"w":18,"y":7},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum
     without(instance, node) (topk(1, (kubelet_volume_stats_inodes_used{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})))","legendFormat":"Used
     inodes"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"(\n  sum
@@ -78080,7 +80018,7 @@ data:
     without(instance, node) (topk(1, (kubelet_volume_stats_inodes_used{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})))\n)\n","legendFormat":"Free
     inodes"}],"title":"Volume inodes Usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"color":{"mode":"thresholds"},"max":100,"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":0},{"color":"orange","value":80},{"color":"red","value":90}]},"unit":"percent"}},"gridPos":{"h":7,"w":6,"x":18,"y":7},"id":4,"interval":"1m","pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"max
+    Mixed --"},"fieldConfig":{"defaults":{"color":{"mode":"thresholds"},"max":100,"min":0,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":0},{"color":"orange","value":80},{"color":"red","value":90}]},"unit":"percent"}},"gridPos":{"h":7,"w":6,"x":18,"y":7},"id":4,"interval":"1m","pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"max
     without(instance,node) (\ntopk(1, kubelet_volume_stats_inodes_used{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n/\ntopk(1,
     kubelet_volume_stats_inodes{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\",
@@ -78100,8 +80038,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -78112,32 +80050,32 @@ metadata:
 apiVersion: v1
 data:
   pod-total.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"displayName":"$pod","max":10000000000,"min":0,"thresholds":{"steps":[{"color":"dark-green","index":0,"value":null},{"color":"dark-yellow","index":1,"value":5000000000},{"color":"dark-red","index":2,"value":7000000000}]},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":0},"id":1,"interval":"1m","pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"displayName":"$pod","max":10000000000,"min":0,"thresholds":{"steps":[{"color":"dark-green","index":0,"value":null},{"color":"dark-yellow","index":1,"value":5000000000},{"color":"dark-red","index":2,"value":7000000000}]},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":0},"id":1,"interval":"1m","pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval])))","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Received","type":"gauge"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"displayName":"$pod","max":10000000000,"min":0,"thresholds":{"steps":[{"color":"dark-green","index":0,"value":null},{"color":"dark-yellow","index":1,"value":5000000000},{"color":"dark-red","index":2,"value":7000000000}]},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":0},"id":2,"interval":"1m","pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"displayName":"$pod","max":10000000000,"min":0,"thresholds":{"steps":[{"color":"dark-green","index":0,"value":null},{"color":"dark-yellow","index":1,"value":5000000000},{"color":"dark-red","index":2,"value":7000000000}]},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":0},"id":2,"interval":"1m","pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval])))","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Transmitted","type":"gauge"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":9},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":9},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval]))) by (pod)","legendFormat":"__auto"}],"title":"Receive
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":9},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
+    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":9},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum((8
     * rate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval]))) by (pod)","legendFormat":"__auto"}],"title":"Transmit
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":18},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\",
+    --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":18},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval])) by (pod)","legendFormat":"__auto"}],"title":"Rate
     of Received Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":18},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":18},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval])) by (pod)","legendFormat":"__auto"}],"title":"Rate
     of Transmitted Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":27},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":27},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval])) by (pod)","legendFormat":"__auto"}],"title":"Rate
     of Received Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":27},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"showPoints":"never"},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":27},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval])) by (pod)","legendFormat":"__auto"}],"title":"Rate
     of Transmitted Packets Dropped","type":"timeseries"}],"refresh":"10s","schemaVersion":39,"tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     source","name":"datasource","query":"prometheus","regex":"","type":"datasource"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"hide":2,"label":"cluster","name":"cluster","query":"label_values(up{job=\"kubelet\",
@@ -78154,8 +80092,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -78366,7 +80304,7 @@ data:
                     "y": 1
                 },
                 "id": 2,
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -78433,7 +80371,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -78480,7 +80418,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -78536,7 +80474,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -78583,7 +80521,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -78666,7 +80604,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -78726,7 +80664,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -78773,7 +80711,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -78833,7 +80771,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -78880,7 +80818,7 @@ data:
                         "sort": "desc"
                     }
                 },
-                "pluginVersion": "v11.4.0",
+                "pluginVersion": "v13.0.0",
                 "targets": [
                     {
                         "datasource": {
@@ -78993,8 +80931,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -79005,42 +80943,42 @@ metadata:
 apiVersion: v1
 data:
   proxy.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(up{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(up{cluster=\"$cluster\",
     job=\"kube-proxy\"})","instant":true}],"title":"Up","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":10,"x":4,"y":0},"id":2,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubeproxy_sync_proxy_rules_duration_seconds_count{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":10,"x":4,"y":0},"id":2,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubeproxy_sync_proxy_rules_duration_seconds_count{cluster=\"$cluster\",
     job=\"kube-proxy\", instance=~\"$instance\"}[$__rate_interval]))","legendFormat":"rate"}],"title":"Rules
     Sync Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":10,"x":14,"y":0},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,rate(kubeproxy_sync_proxy_rules_duration_seconds_bucket{cluster=\"$cluster\",
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":10,"x":14,"y":0},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,rate(kubeproxy_sync_proxy_rules_duration_seconds_bucket{cluster=\"$cluster\",
     job=\"kube-proxy\", instance=~\"$instance\"}[$__rate_interval]))","legendFormat":"{{instance}}"}],"title":"Rules
     Sync Latency 99th Quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":7},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubeproxy_network_programming_duration_seconds_count{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":12,"x":0,"y":7},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(kubeproxy_network_programming_duration_seconds_count{cluster=\"$cluster\",
     job=\"kube-proxy\", instance=~\"$instance\"}[$__rate_interval]))","legendFormat":"rate"}],"title":"Network
     Programming Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":12,"x":12,"y":7},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":12,"x":12,"y":7},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(kubeproxy_network_programming_duration_seconds_bucket{cluster=\"$cluster\",
     job=\"kube-proxy\", instance=~\"$instance\"}[$__rate_interval])) by (instance,
     le))","legendFormat":"{{instance}}"}],"title":"Network Programming Latency 99th
     Quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":8,"x":0,"y":14},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kube-proxy\",
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":8,"x":0,"y":14},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kube-proxy\",
     instance=~\"$instance\",code=~\"2..\"}[$__rate_interval]))","legendFormat":"2xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kube-proxy\",
     instance=~\"$instance\",code=~\"3..\"}[$__rate_interval]))","legendFormat":"3xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kube-proxy\",
     instance=~\"$instance\",code=~\"4..\"}[$__rate_interval]))","legendFormat":"4xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kube-proxy\",
     instance=~\"$instance\",code=~\"5..\"}[$__rate_interval]))","legendFormat":"5xx"}],"title":"Kube
     API Request Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":16,"x":8,"y":14},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":16,"x":8,"y":14},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-proxy\",instance=~\"$instance\",verb=\"POST\"}[$__rate_interval]))
     by (verb, le))","legendFormat":"{{verb}}"}],"title":"Post Request Latency 99th
     Quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":21},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-proxy\",
     instance=~\"$instance\", verb=\"GET\"}[$__rate_interval])) by (verb, le))","legendFormat":"{{verb}}"}],"title":"Get
     Request Latency 99th Quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":8,"x":0,"y":28},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"process_resident_memory_bytes{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":8,"x":0,"y":28},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"process_resident_memory_bytes{cluster=\"$cluster\",
     job=\"kube-proxy\",instance=~\"$instance\"}","legendFormat":"{{instance}}"}],"title":"Memory","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":8,"y":28},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"rate(process_cpu_seconds_total{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":8,"y":28},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"rate(process_cpu_seconds_total{cluster=\"$cluster\",
     job=\"kube-proxy\",instance=~\"$instance\"}[$__rate_interval])","legendFormat":"{{instance}}"}],"title":"CPU
     usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":16,"y":28},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"go_goroutines{cluster=\"$cluster\",
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":16,"y":28},"id":11,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"go_goroutines{cluster=\"$cluster\",
     job=\"kube-proxy\",instance=~\"$instance\"}","legendFormat":"{{instance}}"}],"title":"Goroutines","type":"timeseries"}],"refresh":"10s","schemaVersion":39,"tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     source","name":"datasource","query":"prometheus","regex":"","type":"datasource"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"hide":2,"label":"cluster","name":"cluster","query":"label_values(up{job=\"kube-proxy\"},
     cluster)","refresh":2,"sort":1,"type":"query","allValue":".*"},{"allValue":".+","datasource":{"type":"prometheus","uid":"${datasource}"},"hide":0,"includeAll":true,"label":"instance","name":"instance","query":"label_values(up{job=\"kube-proxy\",
@@ -79055,8 +80993,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -79067,9 +81005,9 @@ metadata:
 apiVersion: v1
 data:
   scheduler.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(up{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"unit":"none"}},"gridPos":{"h":7,"w":4,"x":0,"y":0},"id":1,"interval":"1m","options":{"colorMode":"none"},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(up{cluster=\"$cluster\",
     job=\"kube-scheduler\"})","instant":true}],"title":"Up","type":"stat"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":10,"x":4,"y":0},"id":2,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(scheduler_scheduling_attempt_duration_seconds_count{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":10,"x":4,"y":0},"id":2,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(scheduler_scheduling_attempt_duration_seconds_count{cluster=\"$cluster\",
     job=\"kube-scheduler\", instance=~\"$instance\"}[$__rate_interval])) by (cluster,
     instance)","legendFormat":"{{cluster}} {{instance}} e2e"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(scheduler_pod_scheduling_sli_duration_seconds_count{cluster=\"$cluster\",
     job=\"kube-scheduler\", instance=~\"$instance\"}[$__rate_interval])) by (cluster,
@@ -79079,7 +81017,7 @@ data:
     job=\"kube-scheduler\", instance=~\"$instance\"}[$__rate_interval])) by (cluster,
     instance)","legendFormat":"{{cluster}} {{instance}} volume"}],"title":"Scheduling
     Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":10,"x":14,"y":0},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":10,"x":14,"y":0},"id":3,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(scheduler_scheduling_attempt_duration_seconds_bucket{cluster=\"$cluster\",
     job=\"kube-scheduler\",instance=~\"$instance\"}[$__rate_interval])) by (cluster,
     instance, le))","legendFormat":"{{cluster}} {{instance}} e2e"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
@@ -79093,26 +81031,26 @@ data:
     job=\"kube-scheduler\",instance=~\"$instance\"}[$__rate_interval])) by (cluster,
     instance, le))","legendFormat":"{{cluster}} {{instance}} volume"}],"title":"Scheduling
     latency 99th Quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":8,"x":0,"y":7},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":8,"x":0,"y":7},"id":4,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",
     job=\"kube-scheduler\", instance=~\"$instance\",code=~\"2..\"}[$__rate_interval]))","legendFormat":"2xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",
     job=\"kube-scheduler\", instance=~\"$instance\",code=~\"3..\"}[$__rate_interval]))","legendFormat":"3xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",
     job=\"kube-scheduler\", instance=~\"$instance\",code=~\"4..\"}[$__rate_interval]))","legendFormat":"4xx"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sum(rate(rest_client_requests_total{cluster=\"$cluster\",
     job=\"kube-scheduler\", instance=~\"$instance\",code=~\"5..\"}[$__rate_interval]))","legendFormat":"5xx"}],"title":"Kube
     API Request Rate","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":16,"x":8,"y":7},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"ops"}},"gridPos":{"h":7,"w":16,"x":8,"y":7},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\",
     instance=~\"$instance\", verb=\"POST\"}[$__rate_interval])) by (verb, le))","legendFormat":"{{verb}}"}],"title":"Post
     Request Latency 99th Quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"s"}},"gridPos":{"h":7,"w":24,"x":0,"y":14},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"histogram_quantile(0.99,
     sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\",
     instance=~\"$instance\", verb=\"GET\"}[$__rate_interval])) by (verb, le))","legendFormat":"{{verb}}"}],"title":"Get
     Request Latency 99th Quantile","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":8,"x":0,"y":21},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"process_resident_memory_bytes{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bytes"}},"gridPos":{"h":7,"w":8,"x":0,"y":21},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"process_resident_memory_bytes{cluster=\"$cluster\",
     job=\"kube-scheduler\", instance=~\"$instance\"}","legendFormat":"{{instance}}"}],"title":"Memory","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":8,"y":21},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"rate(process_cpu_seconds_total{cluster=\"$cluster\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":8,"y":21},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"rate(process_cpu_seconds_total{cluster=\"$cluster\",
     job=\"kube-scheduler\", instance=~\"$instance\"}[$__rate_interval])","legendFormat":"{{instance}}"}],"title":"CPU
     usage","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":16,"y":21},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"go_goroutines{cluster=\"$cluster\",
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"short"}},"gridPos":{"h":7,"w":8,"x":16,"y":21},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"go_goroutines{cluster=\"$cluster\",
     job=\"kube-scheduler\",instance=~\"$instance\"}","legendFormat":"{{instance}}"}],"title":"Goroutines","type":"timeseries"}],"refresh":"10s","schemaVersion":39,"tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     source","name":"datasource","query":"prometheus","regex":"","type":"datasource"},{"datasource":{"type":"prometheus","uid":"${datasource}"},"hide":2,"label":"cluster","name":"cluster","query":"label_values(up{job=\"kube-scheduler\"},
     cluster)","refresh":2,"sort":1,"type":"query","allValue":".*"},{"allValue":".+","datasource":{"type":"prometheus","uid":"${datasource}"},"hide":0,"includeAll":true,"label":"instance","name":"instance","query":"label_values(up{job=\"kube-scheduler\",
@@ -79127,8 +81065,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -79139,58 +81077,58 @@ metadata:
 apiVersion: v1
 data:
   workload-total.json: '{"editable":true,"links":[{"asDropdown":true,"includeVars":true,"keepTime":true,"tags":["kubernetes-mixin"],"targetBlank":false,"title":"Kubernetes","type":"dashboards"}],"panels":[{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":0},"id":1,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":0},"id":1,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\",
     workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Received","type":"bargauge"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":0},"id":2,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":0},"id":2,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\",
     workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n","legendFormat":"__auto"}],"title":"Current
     Rate of Bits Transmitted","type":"bargauge"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":9},"id":3,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(avg((8
+    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":9},"id":3,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(avg((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\",
     workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n","legendFormat":"__auto"}],"title":"Average
     Rate of Bits Received","type":"bargauge"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":9},"id":4,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(avg((8
+    Mixed --"},"fieldConfig":{"defaults":{"color":{"fixedColor":"green","mode":"fixed"},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":9},"id":4,"interval":"1m","options":{"displayMode":"basic","showUnfilled":false},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(avg((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\",
     workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n","legendFormat":"__auto"}],"title":"Average
     Rate of Bits Transmitted","type":"bargauge"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":18},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":0,"y":18},"id":5,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
     * rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\",
     workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n","legendFormat":"__auto"}],"title":"Receive
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":18},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"bps"}},"gridPos":{"h":9,"w":12,"x":12,"y":18},"id":6,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum((8
     * rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval]))\n* on (cluster,
     namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\",
     workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n","legendFormat":"__auto"}],"title":"Transmit
     Bandwidth","type":"timeseries"},{"datasource":{"type":"datasource","uid":"-- Mixed
-    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":27},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_receive_packets_total{job=\"kubelet\",
+    --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":27},"id":7,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_receive_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\",
     workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n","legendFormat":"__auto"}],"title":"Rate
     of Received Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":27},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":27},"id":8,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_transmit_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\",
     workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n","legendFormat":"__auto"}],"title":"Rate
     of Transmitted Packets","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":36},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":0,"y":36},"id":9,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_receive_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\",
     workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n","legendFormat":"__auto"}],"title":"Rate
     of Received Packets Dropped","type":"timeseries"},{"datasource":{"type":"datasource","uid":"--
-    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":36},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v11.4.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
+    Mixed --"},"fieldConfig":{"defaults":{"custom":{"fillOpacity":10,"showPoints":"never","spanNulls":true},"unit":"pps"}},"gridPos":{"h":9,"w":12,"x":12,"y":36},"id":10,"interval":"1m","options":{"legend":{"asTable":true,"calcs":["lastNotNull"],"displayMode":"table","placement":"right","showLegend":true},"tooltip":{"mode":"single"}},"pluginVersion":"v13.0.0","targets":[{"datasource":{"type":"prometheus","uid":"${datasource}"},"expr":"sort_desc(sum(rate(container_network_transmit_packets_dropped_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$__rate_interval])\n*
     on (cluster, namespace, pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\",
     workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n","legendFormat":"__auto"}],"title":"Rate
@@ -79210,8 +81148,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -79225,8 +81163,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
-    helm.sh/chart: grafana-12.4.8
+    app.kubernetes.io/version: 13.2.4
+    helm.sh/chart: grafana-14.0.0
   name: prometheus-operator-grafana-clusterrole
   namespace: metalk8s-monitoring
 rules:
@@ -79249,8 +81187,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.1
-    helm.sh/chart: kube-state-metrics-7.5.1
+    app.kubernetes.io/version: 2.20.0
+    helm.sh/chart: kube-state-metrics-8.6.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -79463,8 +81401,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79475,43 +81413,78 @@ rules:
   - monitoring.coreos.com
   resources:
   - alertmanagers
-  - alertmanagers/finalizers
-  - alertmanagers/status
-  - alertmanagerconfigs
-  - prometheuses
-  - prometheuses/finalizers
-  - prometheuses/status
   - prometheusagents
-  - prometheusagents/finalizers
-  - prometheusagents/status
+  - prometheuses
   - thanosrulers
-  - thanosrulers/finalizers
-  - thanosrulers/status
-  - scrapeconfigs
-  - scrapeconfigs/status
-  - servicemonitors
-  - servicemonitors/status
-  - podmonitors
-  - podmonitors/status
-  - probes
-  - probes/status
-  - prometheusrules
-  - prometheusrules/status
   verbs:
-  - '*'
+  - patch
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - alertmanagers/status
+  - podmonitors/status
+  - probes/status
+  - prometheuses/status
+  - prometheusagents/status
+  - prometheusrules/status
+  - scrapeconfigs/status
+  - servicemonitors/status
+  - thanosrulers/status
+  verbs:
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - alertmanagers/finalizers
+  - prometheusagents/finalizers
+  - prometheuses/finalizers
+  - thanosrulers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - alertmanagers
+  - alertmanagerconfigs
+  - podmonitors
+  - probes
+  - prometheusagents
+  - prometheuses
+  - prometheusrules
+  - servicemonitors
+  - scrapeconfigs
+  - thanosrulers
+  verbs:
+  - get
+  - list
+  - watch
 - apiGroups:
   - apps
   resources:
   - statefulsets
   verbs:
-  - '*'
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
 - apiGroups:
   - ''
   resources:
   - configmaps
   - secrets
   verbs:
-  - '*'
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
 - apiGroups:
   - ''
   resources:
@@ -79588,8 +81561,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79636,8 +81609,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
-    helm.sh/chart: grafana-12.4.8
+    app.kubernetes.io/version: 13.2.4
+    helm.sh/chart: grafana-14.0.0
   name: prometheus-operator-grafana-clusterrolebinding
   namespace: metalk8s-monitoring
 roleRef:
@@ -79658,8 +81631,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.1
-    helm.sh/chart: kube-state-metrics-7.5.1
+    app.kubernetes.io/version: 2.20.0
+    helm.sh/chart: kube-state-metrics-8.6.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -79683,8 +81656,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79708,8 +81681,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79730,8 +81703,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
-    helm.sh/chart: grafana-12.4.8
+    app.kubernetes.io/version: 13.2.4
+    helm.sh/chart: grafana-14.0.0
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 spec:
@@ -79755,8 +81728,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.1
-    helm.sh/chart: kube-state-metrics-7.5.1
+    app.kubernetes.io/version: 2.20.0
+    helm.sh/chart: kube-state-metrics-8.6.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -79775,16 +81748,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    prometheus.io/scrape: 'true'
   labels:
     app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.11.1
-    helm.sh/chart: prometheus-node-exporter-4.55.0
+    app.kubernetes.io/version: 1.12.1
+    helm.sh/chart: prometheus-node-exporter-4.60.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -79810,8 +81781,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -79843,8 +81814,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     jobLabel: coredns
     metalk8s.scality.com/monitor: ''
@@ -79870,8 +81841,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     jobLabel: kube-controller-manager
     metalk8s.scality.com/monitor: ''
@@ -79898,8 +81869,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     jobLabel: kube-etcd
     metalk8s.scality.com/monitor: ''
@@ -79926,8 +81897,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     jobLabel: kube-proxy
     metalk8s.scality.com/monitor: ''
@@ -79954,8 +81925,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     jobLabel: kube-scheduler
     metalk8s.scality.com/monitor: ''
@@ -79983,8 +81954,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80009,8 +81980,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80042,8 +82013,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-thanos-discovery
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80072,8 +82043,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.11.1
-    helm.sh/chart: prometheus-node-exporter-4.55.0
+    app.kubernetes.io/version: 1.12.1
+    helm.sh/chart: prometheus-node-exporter-4.60.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-node-exporter
@@ -80094,8 +82065,7 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-node-exporter
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 1.11.1
-        helm.sh/chart: prometheus-node-exporter-4.55.0
+        app.kubernetes.io/version: 1.12.1
         heritage: metalk8s
         jobLabel: node-exporter
         release: prometheus-operator
@@ -80130,7 +82100,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: status.hostIP
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("node-exporter", False, False) }}{%- raw %}:v1.11.1-distroless
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("node-exporter", False, False) }}{%- raw %}:v1.12.1-distroless
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -80210,8 +82180,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
-    helm.sh/chart: grafana-12.4.8
+    app.kubernetes.io/version: 13.2.4
+    helm.sh/chart: grafana-14.0.0
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 spec:
@@ -80235,8 +82205,8 @@ spec:
       labels:
         app.kubernetes.io/instance: prometheus-operator
         app.kubernetes.io/name: grafana
-        app.kubernetes.io/version: 13.0.2
-        helm.sh/chart: grafana-12.4.8
+        app.kubernetes.io/version: 13.2.4
+        helm.sh/chart: grafana-14.0.0
     spec:
       automountServiceAccountToken: true
       containers:
@@ -80269,7 +82239,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/dashboards/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:2.7.3
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:2.14.1
         imagePullPolicy: IfNotPresent
         name: grafana-sc-dashboard
         securityContext:
@@ -80277,6 +82247,7 @@ spec:
           capabilities:
             drop:
             - ALL
+          readOnlyRootFilesystem: true
           seccompProfile:
             type: RuntimeDefault
         volumeMounts:
@@ -80307,7 +82278,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/datasources/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:2.7.3
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:2.14.1
         imagePullPolicy: IfNotPresent
         name: grafana-sc-datasources
         securityContext:
@@ -80315,6 +82286,7 @@ spec:
           capabilities:
             drop:
             - ALL
+          readOnlyRootFilesystem: true
           seccompProfile:
             type: RuntimeDefault
         volumeMounts:
@@ -80345,7 +82317,7 @@ spec:
           value: /etc/grafana/provisioning
         - name: GF_UNIFIED_STORAGE_INDEX_PATH
           value: /var/lib/grafana-search/bleve
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:13.0.2
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:13.2.4-distroless
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -80378,9 +82350,12 @@ spec:
             drop:
             - ALL
           privileged: false
+          readOnlyRootFilesystem: true
           seccompProfile:
             type: RuntimeDefault
         volumeMounts:
+        - mountPath: /tmp
+          name: tmp
         - mountPath: /etc/grafana/grafana.ini
           name: config
           subPath: grafana.ini
@@ -80413,6 +82388,8 @@ spec:
         key: node-role.kubernetes.io/infra
         operator: Exists
       volumes:
+      - emptyDir: {}
+        name: tmp
       - configMap:
           name: prometheus-operator-grafana
         name: config
@@ -80437,8 +82414,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.1
-    helm.sh/chart: kube-state-metrics-7.5.1
+    app.kubernetes.io/version: 2.20.0
+    helm.sh/chart: kube-state-metrics-8.6.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -80460,8 +82437,7 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: kube-state-metrics
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 2.19.1
-        helm.sh/chart: kube-state-metrics-7.5.1
+        app.kubernetes.io/version: 2.20.0
         heritage: metalk8s
         release: prometheus-operator
     spec:
@@ -80471,12 +82447,11 @@ spec:
         - --port=8080
         - --resources=certificatesigningrequests,configmaps,cronjobs,daemonsets,deployments,endpointslices,horizontalpodautoscalers,ingresses,jobs,leases,limitranges,mutatingwebhookconfigurations,namespaces,networkpolicies,nodes,persistentvolumeclaims,persistentvolumes,poddisruptionbudgets,pods,replicasets,replicationcontrollers,resourcequotas,secrets,services,statefulsets,storageclasses,validatingwebhookconfigurations,volumeattachments
         - --metric-labels-allowlist=persistentvolumeclaims=[excluded-from-alerts]
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("kube-state-metrics", False, False) }}{%- raw %}:v2.19.1
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("kube-state-metrics", False, False) }}{%- raw %}:v2.20.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
           httpGet:
-            httpHeaders: null
             path: /livez
             port: http
             scheme: HTTP
@@ -80493,7 +82468,6 @@ spec:
         readinessProbe:
           failureThreshold: 3
           httpGet:
-            httpHeaders: null
             path: /readyz
             port: metrics
             scheme: HTTP
@@ -80538,8 +82512,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80561,8 +82535,8 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-operator-operator
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 86.3.1
-        chart: kube-prometheus-stack-86.3.1
+        app.kubernetes.io/version: 92.10.0
+        chart: kube-prometheus-stack-92.10.0
         heritage: metalk8s
         metalk8s.scality.com/monitor: ''
         release: prometheus-operator
@@ -80574,19 +82548,19 @@ spec:
         - --kubelet-endpoints=true
         - --kubelet-endpointslice=false
         - --localhost=127.0.0.1
-        - --prometheus-config-reloader={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-config-reloader", False, False) }}{%- raw %}:v0.91.0
+        - --prometheus-config-reloader={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-config-reloader", False, False) }}{%- raw %}:v0.94.1
         - --config-reloader-cpu-request=0
         - --config-reloader-cpu-limit=0
         - --config-reloader-memory-request=0
         - --config-reloader-memory-limit=0
-        - --thanos-default-base-image={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("thanos", False, False) }}{%- raw %}:v0.41.0
-        - --secret-field-selector=type!=kubernetes.io/dockercfg,type!=kubernetes.io/service-account-token,type!=helm.sh/release.v1
+        - --thanos-default-base-image={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("thanos", False, False) }}{%- raw %}:v0.42.4
+        - --secret-field-selector=type!=kubernetes.io/dockercfg,type!=helm.sh/release.v1
         - --web.enable-tls=false
         - --web.listen-address=:8080
         env:
         - name: GOGC
           value: '30'
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-operator", False, False) }}{%- raw %}:v0.91.0
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-operator", False, False) }}{%- raw %}:v0.94.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -80621,6 +82595,7 @@ spec:
           readOnlyRootFilesystem: true
         volumeMounts: null
       nodeSelector:
+        kubernetes.io/os: linux
         node-role.kubernetes.io/infra: ''
       securityContext:
         fsGroup: 65534
@@ -80648,8 +82623,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
-    helm.sh/chart: grafana-12.4.8
+    app.kubernetes.io/version: 13.2.4
+    helm.sh/chart: grafana-14.0.0
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 spec:
@@ -80675,8 +82650,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80703,13 +82678,13 @@ spec:
   alertmanagerConfigSelector: {}
   automountServiceAccountToken: true
   externalUrl: {% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}{%- raw %}
-  hostNetwork: false
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("alertmanager", False, False) }}{%- raw %}:v0.33.0
+  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("alertmanager", False, False) }}{%- raw %}:v0.34.1
   imagePullPolicy: IfNotPresent
   listenLocal: false
   logFormat: logfmt
   logLevel: info
   nodeSelector:
+    kubernetes.io/os: linux
     node-role.kubernetes.io/infra: ''
   paused: false
   podMetadata:
@@ -80750,7 +82725,7 @@ spec:
   - effect: NoSchedule
     key: node-role.kubernetes.io/infra
     operator: Exists
-  version: v0.33.0
+  version: v0.34.1
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
@@ -80761,8 +82736,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -80797,12 +82772,13 @@ spec:
   enableOTLPReceiver: false
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
   hostNetwork: false
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v3.12.0-distroless
+  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v3.15.0-distroless
   imagePullPolicy: IfNotPresent
   listenLocal: false
   logFormat: logfmt
   logLevel: info
   nodeSelector:
+    kubernetes.io/os: linux
     node-role.kubernetes.io/infra: ''
   paused: false
   podMonitorNamespaceSelector: {}
@@ -80863,7 +82839,7 @@ spec:
     operator: Exists
   tsdb:
     outOfOrderTimeWindow: 0s
-  version: v3.12.0-distroless
+  version: v3.15.0-distroless
   walCompression: true
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -80875,8 +82851,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81026,6 +83002,19 @@ spec:
       for: 5m
       labels:
         severity: critical
+    - alert: AlertmanagerClusterFailedPeers
+      annotations:
+        description: Alertmanager {{ $labels.namespace }}/{{ $labels.pod}} has {{
+          $value }} failed peers in the {{$labels.job}} cluster.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerclusterfailedpeers
+        summary: An Alertmanager instance has failed peers in the cluster.
+      expr: |-
+        # Without max_over_time, failed scrapes could create false negatives, see
+        # https://www.robustperception.io/alerting-on-gauges-in-prometheus-2-0 for details.
+        max_over_time(alertmanager_cluster_failed_peers{job="prometheus-operator-alertmanager",container="alertmanager",namespace="metalk8s-monitoring"}[5m]) > 0
+      for: 15m
+      labels:
+        severity: warning
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -81036,8 +83025,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81069,8 +83058,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81084,6 +83073,7 @@ spec:
       annotations:
         description: 'etcd cluster "{{ $labels.job }}": members are down ({{ $value
           }}).'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdmembersdown
         summary: etcd cluster members are down.
       expr: |-
         max without (endpoint) (
@@ -81101,6 +83091,7 @@ spec:
       annotations:
         description: 'etcd cluster "{{ $labels.job }}": insufficient members ({{ $value
           }}).'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdinsufficientmembers
         summary: etcd cluster has insufficient number of members.
       expr: sum(up{job=~".*etcd.*"} == bool 1) without (instance, pod) < ((count(up{job=~".*etcd.*"})
         without (instance, pod) + 1) / 2)
@@ -81111,6 +83102,7 @@ spec:
       annotations:
         description: 'etcd cluster "{{ $labels.job }}": member {{ $labels.instance
           }} has no leader.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdnoleader
         summary: etcd cluster has no leader.
       expr: etcd_server_has_leader{job=~".*etcd.*"} == 0
       for: 1m
@@ -81122,6 +83114,7 @@ spec:
           within the last 15 minutes. Frequent elections may be a sign of insufficient
           resources, high network latency, or disruptions by other components and
           should be investigated.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighnumberofleaderchanges
         summary: etcd cluster has high number of leader changes.
       expr: increase((max without (instance, pod) (etcd_server_leader_changes_seen_total{job=~".*etcd.*"})
         or 0*absent(etcd_server_leader_changes_seen_total{job=~".*etcd.*"}))[15m:1m])
@@ -81134,6 +83127,7 @@ spec:
         description: 'etcd cluster "{{ $labels.job }}": {{ $value }}% of requests
           for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance
           }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighnumberoffailedgrpcrequests
         summary: etcd cluster has high number of failed grpc requests.
       expr: |-
         100 * sum(rate(grpc_server_handled_total{job=~".*etcd.*", grpc_code=~"Unknown|FailedPrecondition|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded"}[5m])) without (grpc_type, grpc_code)
@@ -81148,6 +83142,7 @@ spec:
         description: 'etcd cluster "{{ $labels.job }}": {{ $value }}% of requests
           for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance
           }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighnumberoffailedgrpcrequests
         summary: etcd cluster has high number of failed grpc requests.
       expr: |-
         100 * sum(rate(grpc_server_handled_total{job=~".*etcd.*", grpc_code=~"Unknown|FailedPrecondition|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded"}[5m])) without (grpc_type, grpc_code)
@@ -81162,6 +83157,7 @@ spec:
         description: 'etcd cluster "{{ $labels.job }}": 99th percentile of gRPC requests
           is {{ $value }}s on etcd instance {{ $labels.instance }} for {{ $labels.grpc_method
           }} method.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdgrpcrequestsslow
         summary: etcd grpc requests are slow
       expr: |-
         histogram_quantile(0.99, sum(rate(grpc_server_handling_seconds_bucket{job=~".*etcd.*", grpc_method!="Defragment", grpc_type="unary"}[5m])) without(grpc_type))
@@ -81174,6 +83170,7 @@ spec:
         description: 'etcd cluster "{{ $labels.job }}": member communication with
           {{ $labels.To }} is taking {{ $value }}s on etcd instance {{ $labels.instance
           }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdmembercommunicationslow
         summary: etcd cluster member communication is slow.
       expr: |-
         histogram_quantile(0.99, rate(etcd_network_peer_round_trip_time_seconds_bucket{job=~".*etcd.*"}[5m]))
@@ -81185,6 +83182,7 @@ spec:
       annotations:
         description: 'etcd cluster "{{ $labels.job }}": {{ $value }} proposal failures
           within the last 30 minutes on etcd instance {{ $labels.instance }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighnumberoffailedproposals
         summary: etcd cluster has high number of proposal failures.
       expr: rate(etcd_server_proposals_failed_total{job=~".*etcd.*"}[15m]) > 5
       for: 15m
@@ -81194,6 +83192,7 @@ spec:
       annotations:
         description: 'etcd cluster "{{ $labels.job }}": 99th percentile fsync durations
           are {{ $value }}s on etcd instance {{ $labels.instance }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighfsyncdurations
         summary: etcd cluster 99th percentile fsync durations are too high.
       expr: |-
         histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket{job=~".*etcd.*"}[5m]))
@@ -81205,6 +83204,7 @@ spec:
       annotations:
         description: 'etcd cluster "{{ $labels.job }}": 99th percentile fsync durations
           are {{ $value }}s on etcd instance {{ $labels.instance }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighfsyncdurations
         summary: etcd cluster 99th percentile fsync durations are too high.
       expr: |-
         histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket{job=~".*etcd.*"}[5m]))
@@ -81216,6 +83216,7 @@ spec:
       annotations:
         description: 'etcd cluster "{{ $labels.job }}": 99th percentile commit durations
           {{ $value }}s on etcd instance {{ $labels.instance }}.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdhighcommitdurations
         summary: etcd cluster 99th percentile commit durations are too high.
       expr: |-
         histogram_quantile(0.99, rate(etcd_disk_backend_commit_duration_seconds_bucket{job=~".*etcd.*"}[5m]))
@@ -81228,6 +83229,7 @@ spec:
         description: 'etcd cluster "{{ $labels.job }}": database size exceeds the
           defined quota on etcd instance {{ $labels.instance }}, please defrag or
           increase the quota as the writes to etcd will be disabled when it is full.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcddatabasequotalowspace
         summary: etcd cluster database is running full.
       expr: (last_over_time(etcd_mvcc_db_total_size_in_bytes{job=~".*etcd.*"}[5m])
         / last_over_time(etcd_server_quota_backend_bytes{job=~".*etcd.*"}[5m]))*100
@@ -81241,6 +83243,7 @@ spec:
           disk space in the next four hours, based on write observations within the
           past four hours on etcd instance {{ $labels.instance }}, please check as
           it might be disruptive.'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/etcd/etcdexcessivedatabasegrowth
         summary: etcd cluster database growing very fast.
       expr: predict_linear(etcd_mvcc_db_total_size_in_bytes{job=~".*etcd.*"}[4h],
         4*60*60) > etcd_server_quota_backend_bytes{job=~".*etcd.*"}
@@ -81257,8 +83260,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81319,8 +83322,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81354,8 +83357,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81381,8 +83384,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81408,8 +83411,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81435,8 +83438,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81462,8 +83465,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81551,8 +83554,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81697,8 +83700,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81821,8 +83824,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -81836,29 +83839,55 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[1d]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[5m]))
             -
             (
               (
-                sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le=~"1(\\.0)?"}[1d]))
+                sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le=~"1(\\.0)?"}[5m]))
                 or
                 vector(0)
               )
               +
-              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le=~"5(\\.0)?"}[1d]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le=~"5(\\.0)?"}[5m]))
               +
-              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le=~"30(\\.0)?"}[1d]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le=~"30(\\.0)?"}[5m]))
             )
           )
           +
           # errors
-          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET",code=~"5.."}[1d]))
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET",code=~"5.."}[5m]))
         )
-        /
-        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[1d]))
       labels:
         verb: read
-      record: apiserver_request:burnrate1d
+      record: cluster_verb:apiserver_request_sli_bad_events:rate5m
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[5m]))
+            -
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le=~"1(\\.0)?"}[5m]))
+          )
+          +
+          # errors
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[5m]))
+        )
+      labels:
+        verb: write
+      record: cluster_verb:apiserver_request_sli_bad_events:rate5m
+    - expr: sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[5m]))
+      labels:
+        verb: read
+      record: cluster_verb:apiserver_request_sli_events:rate5m
+    - expr: sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[5m]))
+      labels:
+        verb: write
+      record: cluster_verb:apiserver_request_sli_events:rate5m
+    - expr: |-
+        cluster_verb:apiserver_request_sli_bad_events:rate5m
+        /
+        cluster_verb:apiserver_request_sli_events:rate5m
+      record: apiserver_request:burnrate5m
     - expr: |-
         (
           (
@@ -81885,6 +83914,23 @@ spec:
         sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[1h]))
       labels:
         verb: read
+      record: apiserver_request:burnrate1h
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[1h]))
+            -
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le=~"1(\\.0)?"}[1h]))
+          )
+          +
+          # errors
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[1h]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[1h]))
+      labels:
+        verb: write
       record: apiserver_request:burnrate1h
     - expr: |-
         (
@@ -81917,6 +83963,23 @@ spec:
         (
           (
             # too slow
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[2h]))
+            -
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le=~"1(\\.0)?"}[2h]))
+          )
+          +
+          # errors
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[2h]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[2h]))
+      labels:
+        verb: write
+      record: apiserver_request:burnrate2h
+    - expr: |-
+        (
+          (
+            # too slow
             sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[30m]))
             -
             (
@@ -81944,56 +84007,19 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[3d]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[30m]))
             -
-            (
-              (
-                sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le=~"1(\\.0)?"}[3d]))
-                or
-                vector(0)
-              )
-              +
-              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le=~"5(\\.0)?"}[3d]))
-              +
-              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le=~"30(\\.0)?"}[3d]))
-            )
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le=~"1(\\.0)?"}[30m]))
           )
           +
           # errors
-          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET",code=~"5.."}[3d]))
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[30m]))
         )
         /
-        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[3d]))
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[30m]))
       labels:
-        verb: read
-      record: apiserver_request:burnrate3d
-    - expr: |-
-        (
-          (
-            # too slow
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[5m]))
-            -
-            (
-              (
-                sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le=~"1(\\.0)?"}[5m]))
-                or
-                vector(0)
-              )
-              +
-              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le=~"5(\\.0)?"}[5m]))
-              +
-              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le=~"30(\\.0)?"}[5m]))
-            )
-          )
-          +
-          # errors
-          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET",code=~"5.."}[5m]))
-        )
-        /
-        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[5m]))
-      labels:
-        verb: read
-      record: apiserver_request:burnrate5m
+        verb: write
+      record: apiserver_request:burnrate30m
     - expr: |-
         (
           (
@@ -82025,107 +84051,12 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[1d]))
-            -
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le=~"1(\\.0)?"}[1d]))
-          )
-          +
-          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[1d]))
-        )
-        /
-        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[1d]))
-      labels:
-        verb: write
-      record: apiserver_request:burnrate1d
-    - expr: |-
-        (
-          (
-            # too slow
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[1h]))
-            -
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le=~"1(\\.0)?"}[1h]))
-          )
-          +
-          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[1h]))
-        )
-        /
-        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[1h]))
-      labels:
-        verb: write
-      record: apiserver_request:burnrate1h
-    - expr: |-
-        (
-          (
-            # too slow
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[2h]))
-            -
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le=~"1(\\.0)?"}[2h]))
-          )
-          +
-          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[2h]))
-        )
-        /
-        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[2h]))
-      labels:
-        verb: write
-      record: apiserver_request:burnrate2h
-    - expr: |-
-        (
-          (
-            # too slow
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[30m]))
-            -
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le=~"1(\\.0)?"}[30m]))
-          )
-          +
-          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[30m]))
-        )
-        /
-        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[30m]))
-      labels:
-        verb: write
-      record: apiserver_request:burnrate30m
-    - expr: |-
-        (
-          (
-            # too slow
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[3d]))
-            -
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le=~"1(\\.0)?"}[3d]))
-          )
-          +
-          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[3d]))
-        )
-        /
-        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[3d]))
-      labels:
-        verb: write
-      record: apiserver_request:burnrate3d
-    - expr: |-
-        (
-          (
-            # too slow
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[5m]))
-            -
-            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le=~"1(\\.0)?"}[5m]))
-          )
-          +
-          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[5m]))
-        )
-        /
-        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[5m]))
-      labels:
-        verb: write
-      record: apiserver_request:burnrate5m
-    - expr: |-
-        (
-          (
-            # too slow
             sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[6h]))
             -
             sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le=~"1(\\.0)?"}[6h]))
           )
           +
+          # errors
           sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[6h]))
         )
         /
@@ -82133,6 +84064,16 @@ spec:
       labels:
         verb: write
       record: apiserver_request:burnrate6h
+    - expr: |-
+        avg_over_time(cluster_verb:apiserver_request_sli_bad_events:rate5m[1d])
+        /
+        avg_over_time(cluster_verb:apiserver_request_sli_events:rate5m[1d])
+      record: apiserver_request:burnrate1d
+    - expr: |-
+        avg_over_time(cluster_verb:apiserver_request_sli_bad_events:rate5m[3d])
+        /
+        avg_over_time(cluster_verb:apiserver_request_sli_events:rate5m[3d])
+      record: apiserver_request:burnrate3d
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -82143,8 +84084,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82176,8 +84117,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82257,8 +84198,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82282,8 +84223,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82319,8 +84260,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82385,8 +84326,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82462,8 +84403,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82513,8 +84454,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -82556,6 +84497,8 @@ spec:
             1, max by (namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!="Job"})
           )
         ) > 0
+        unless on (namespace, pod, cluster)
+        kube_pod_status_reason{job="kube-state-metrics", namespace=~".*", reason="SchedulingGated"} == 1
       for: 15m
       labels:
         severity: warning
@@ -82797,6 +84740,9 @@ spec:
           kube_poddisruptionbudget_status_current_healthy{job="kube-state-metrics", namespace=~".*"}
         )
         > 0
+        and
+        kube_poddisruptionbudget_status_expected_pods{job="kube-state-metrics", namespace=~".*"}
+        > 0
       for: 15m
       labels:
         severity: warning
@@ -82810,8 +84756,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83027,8 +84973,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83155,8 +85101,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83258,8 +85204,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83299,8 +85245,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83338,8 +85284,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83567,8 +85513,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83607,8 +85553,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83654,8 +85600,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83757,8 +85703,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83869,8 +85815,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83900,8 +85846,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -83957,8 +85903,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84073,8 +86019,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84415,8 +86361,8 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
-    helm.sh/chart: grafana-12.4.8
+    app.kubernetes.io/version: 13.2.4
+    helm.sh/chart: grafana-14.0.0
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-grafana
@@ -84445,8 +86391,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.1
-    helm.sh/chart: kube-state-metrics-7.5.1
+    app.kubernetes.io/version: 2.20.0
+    helm.sh/chart: kube-state-metrics-8.6.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84471,8 +86417,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.11.1
-    helm.sh/chart: prometheus-node-exporter-4.55.0
+    app.kubernetes.io/version: 1.12.1
+    helm.sh/chart: prometheus-node-exporter-4.60.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84499,8 +86445,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84531,8 +86477,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84540,7 +86486,11 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+  - authorization:
+      credentials:
+        key: token
+        name: prometheus-operator-prometheus-token
+      type: Bearer
     port: http-metrics
   jobLabel: jobLabel
   namespaceSelector:
@@ -84560,8 +86510,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-apiserver
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84569,7 +86519,11 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+  - authorization:
+      credentials:
+        key: token
+        name: prometheus-operator-prometheus-token
+      type: Bearer
     metricRelabelings:
     - action: drop
       regex: (etcd_request|apiserver_request_slo|apiserver_request_sli|apiserver_request)_duration_seconds_bucket;(0\.15|0\.2|0\.3|0\.35|0\.4|0\.45|0\.6|0\.7|0\.8|0\.9|1\.25|1\.5|1\.75|2|3|3\.5|4|4\.5|6|7|8|9|15|20|40|45|50)(\.0)?
@@ -84579,7 +86533,10 @@ spec:
     port: https
     scheme: https
     tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      ca:
+        configMap:
+          key: ca.crt
+          name: kube-root-ca.crt
       insecureSkipVerify: false
       serverName: kubernetes
   jobLabel: component
@@ -84600,8 +86557,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84609,11 +86566,18 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+  - authorization:
+      credentials:
+        key: token
+        name: prometheus-operator-prometheus-token
+      type: Bearer
     port: http-metrics
     scheme: https
     tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      ca:
+        configMap:
+          key: ca.crt
+          name: kube-root-ca.crt
       insecureSkipVerify: true
   jobLabel: jobLabel
   namespaceSelector:
@@ -84633,8 +86597,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84642,7 +86606,11 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+  - authorization:
+      credentials:
+        key: token
+        name: prometheus-operator-prometheus-token
+      type: Bearer
     port: http-metrics
   jobLabel: jobLabel
   namespaceSelector:
@@ -84662,8 +86630,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84671,7 +86639,11 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+  - authorization:
+      credentials:
+        key: token
+        name: prometheus-operator-prometheus-token
+      type: Bearer
     port: http-metrics
   jobLabel: jobLabel
   namespaceSelector:
@@ -84691,8 +86663,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84700,11 +86672,18 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+  - authorization:
+      credentials:
+        key: token
+        name: prometheus-operator-prometheus-token
+      type: Bearer
     port: http-metrics
     scheme: https
     tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      ca:
+        configMap:
+          key: ca.crt
+          name: kube-root-ca.crt
       insecureSkipVerify: true
   jobLabel: jobLabel
   namespaceSelector:
@@ -84724,8 +86703,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kubelet
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84735,7 +86714,11 @@ spec:
   attachMetadata:
     node: false
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+  - authorization:
+      credentials:
+        key: token
+        name: prometheus-operator-prometheus-token
+      type: Bearer
     honorLabels: true
     honorTimestamps: true
     metricRelabelings:
@@ -84753,9 +86736,16 @@ spec:
     scheme: https
     scrapeTimeout: {% endraw -%}{{ prometheus.spec.config.serviceMonitor.kubelet.scrapeTimeout }}{%- raw %}
     tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      ca:
+        configMap:
+          key: ca.crt
+          name: kube-root-ca.crt
       insecureSkipVerify: true
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+  - authorization:
+      credentials:
+        key: token
+        name: prometheus-operator-prometheus-token
+      type: Bearer
     honorLabels: true
     honorTimestamps: true
     interval: 10s
@@ -84790,10 +86780,17 @@ spec:
     scheme: https
     scrapeTimeout: {% endraw -%}{{ prometheus.spec.config.serviceMonitor.kubelet.scrapeTimeout }}{%- raw %}
     tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      ca:
+        configMap:
+          key: ca.crt
+          name: kube-root-ca.crt
       insecureSkipVerify: true
     trackTimestampsStaleness: true
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+  - authorization:
+      credentials:
+        key: token
+        name: prometheus-operator-prometheus-token
+      type: Bearer
     honorLabels: true
     honorTimestamps: true
     path: /metrics/probes
@@ -84806,7 +86803,10 @@ spec:
     scheme: https
     scrapeTimeout: {% endraw -%}{{ prometheus.spec.config.serviceMonitor.kubelet.scrapeTimeout }}{%- raw %}
     tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      ca:
+        configMap:
+          key: ca.crt
+          name: kube-root-ca.crt
       insecureSkipVerify: true
   jobLabel: k8s-app
   namespaceSelector:
@@ -84827,8 +86827,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -84855,8 +86855,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 86.3.1
-    chart: kube-prometheus-stack-86.3.1
+    app.kubernetes.io/version: 92.10.0
+    chart: kube-prometheus-stack-92.10.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator

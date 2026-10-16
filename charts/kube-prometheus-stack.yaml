@@ -228,7 +228,8 @@ grafana:
     # Override default checksum as we want to manage it with salt
     checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap", apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana", path="data:grafana.ini")'
 
-  replicas: '__var__(grafana.spec.deployment.replicas)'
+  # NOTE: replicas is set with a `--patch` in the codegen task, the Grafana
+  #       chart schema only accepts an integer here
 
   ingress:
     enabled: true
@@ -307,7 +308,6 @@ kubeScheduler:
     targetPort: 10259
   serviceMonitor:
     https: true
-    insecureSkipVerify: true
 
 kubeControllerManager:
   service:
@@ -315,7 +315,6 @@ kubeControllerManager:
     targetPort: 10257
   serviceMonitor:
     https: true
-    insecureSkipVerify: true
 
 kubelet:
   serviceMonitor:
