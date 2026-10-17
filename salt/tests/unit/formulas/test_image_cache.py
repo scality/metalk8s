@@ -173,6 +173,33 @@ def test_import_follows_the_provisioning(
 
 
 @pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [IMAGE_CACHE_PROVISIONED], indirect=True)
+def test_no_provisioning_without_the_boot_cache(
+    rendered_states: RenderedStates,
+) -> None:
+    """Check an ISO built without the boot cache image skips the provisioning.
+
+    Such an ISO lists no version for the image. Raising would stop the
+    bootstrap before the kubelet starts, so the formula must render its
+    no-op state instead.
+    """
+    checked = False
+
+    for case_id, states in rendered_states:
+        if "Without the boot cache on the ISO" not in case_id:
+            continue
+
+        assert (
+            PROVISION_STATE not in states
+        ), f"'{PROVISION_STATE}' renders with no boot cache image ({case_id})"
+        assert NO_PROVISION_STATE in states, f"no '{NO_PROVISION_STATE}' ({case_id})"
+
+        checked = True
+
+    assert checked, "no rendering case leaves the boot cache out of the ISO"
+
+
+@pytest.mark.formulas
 @pytest.mark.parametrize("template_path", [IMAGE_CACHE_INSTALLED], indirect=True)
 def test_preload_reads_the_configured_cache_directory(
     rendered_states: RenderedStates,

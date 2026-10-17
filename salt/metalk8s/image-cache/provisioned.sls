@@ -13,15 +13,16 @@
 
     Only the control plane variant is handled here. The worker and registry
     variants land with MK8S-380 and MK8S-394, which is also where picking a
-    variant per node role belongs. #}
+    variant per node role belongs.
 
-{%- if kubelet.container_engine == 'containerd' %}
+    The boot cache images are only on an ISO built with `WITH_BOOT_CACHE`,
+    and only such an ISO lists a version for them: without one there is
+    nothing to provision, and the node boots as it did before the cache. #}
 
 {%- set image_name = 'metalk8s-boot-cache-control-plane' %}
 {%- set image_version = repo.images.get(image_name, {}).get('version') %}
-{%- if not image_version %}
-  {{ raise('Missing version information for "' ~ image_name ~ '"') }}
-{%- endif %}
+
+{%- if kubelet.container_engine == 'containerd' and image_version %}
 
 {%- set archives = salt.metalk8s.get_archives() %}
 

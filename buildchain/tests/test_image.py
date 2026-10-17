@@ -37,10 +37,28 @@ class TestBootCacheVariants:
             missing = [name for name in members if name not in image.TO_PULL]
             assert not missing, f"variant {variant} lists unknown images: {missing}"
 
-    def test_every_variant_is_built(self) -> None:
-        built = {img.name for img in image.TO_BUILD}
+    def test_shipped_variants_follow_the_build_option(self) -> None:
+        expected = image.BOOT_CACHE_VARIANTS if config.WITH_BOOT_CACHE else {}
+        assert image.SHIPPED_BOOT_CACHE_VARIANTS == expected
+
+    def test_only_shipped_variants_are_built(self) -> None:
+        built = {
+            img.name
+            for img in image.TO_BUILD
+            if img.name.startswith("metalk8s-boot-cache-")
+        }
+        assert built == {
+            f"metalk8s-boot-cache-{variant}"
+            for variant in image.SHIPPED_BOOT_CACHE_VARIANTS
+        }
+
+    def test_unshipped_variants_are_listed(self) -> None:
+        # `salt_tree` drops these from `versions.json`, so that the Salt states
+        # skip the provisioning on an ISO that does not carry them.
         for variant in image.BOOT_CACHE_VARIANTS:
-            assert f"metalk8s-boot-cache-{variant}" in built
+            name = f"metalk8s-boot-cache-{variant}"
+            unshipped = variant not in image.SHIPPED_BOOT_CACHE_VARIANTS
+            assert (name in image.UNSHIPPED_BOOT_CACHE_IMAGES) == unshipped
 
     def test_variant_versions_are_declared(self) -> None:
         # The version listing feeds the Salt `repo.images` map: a boot cache
@@ -136,12 +154,9 @@ class TestBootCacheContextTask:
 class TestBootCacheImage:
     @staticmethod
     def image_of(variant: str) -> Any:
-        (img,) = (
-            img
-            for img in image.TO_BUILD
-            if img.name == f"metalk8s-boot-cache-{variant}"
-        )
-        return img
+        # Built from its definition rather than looked up in `TO_BUILD`, which
+        # only holds the shipped variants.
+        return image._boot_cache_image(variant)
 
     @variants
     def test_waits_for_its_context(self, variant: str) -> None:
