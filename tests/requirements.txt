@@ -376,9 +376,9 @@ kubernetes==33.1.0 \
     --hash=sha256:544de42b24b64287f7e0aa9513c93cb503f7f40eea39b20f66810011a86eabc5 \
     --hash=sha256:f64d829843a54c251061a8e7a14523b521f2dc5c896cf6d65ccf348648a88993
     # via -r tests/requirements.in
-mako==1.3.11 \
-    --hash=sha256:071eb4ab4c5010443152255d77db7faa6ce5916f35226eb02dc34479b6858069 \
-    --hash=sha256:e372c6e333cf004aa736a15f425087ec977e1fcbd2966aae7f17c8dc1da27a77
+mako==1.4.2 \
+    --hash=sha256:7227a060ee3af55a493af61d73d6beef13044b81dba9586736c13945f09464ce \
+    --hash=sha256:e70a2a4308952b33a21208bfd6725da79fae5a8c224578f8cfdeb60e5ace03df
     # via pytest-bdd
 markupsafe==3.0.3 \
     --hash=sha256:0303439a41979d9e74d18ff5e2dd8c43ed6c6001fd40e5bf2e43f7bd9bbc523f \
