@@ -331,18 +331,18 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="static-oci-registry",
-        version="v0.1.0-beta.2",
-        digest="sha256:b111237b4d27b40e3d35436eaf83ea0c9e439f504ca745d263ffcdb72ed1c21e",
+        version="v0.1.0-beta.4",
+        digest="sha256:e23d0050707295c24a09401abb19ae3f0b446217d4270beca99237e845b517b9",
     ),
     Image(
         name="metalk8s-registry-node-agent",
-        version="v0.0.1-alpha.11",
-        digest="sha256:fabc751cfe67f72978022163337a7d5f7c11117e612f05651c6f4fbee06b4761",
+        version="v0.0.1-alpha.14",
+        digest="sha256:ebd7cbe53e37a01c4dd0528970825dccb8fbac1962088626f1d7c8d1cdac3b7f",
     ),
     Image(
         name="metalk8s-registry-operator",
-        version="v0.0.1-alpha.4",
-        digest="sha256:c582c1593e6a92b29e62d06b7af7ee3bf10e4f7e34cb86deb08795dac23e6844",
+        version="v0.0.1-alpha.5",
+        digest="sha256:c4dd6c257aa8da3df8b0165b638ec33c3f4612b7b3392acba2205d28e466a6a6",
     ),
     Image(
         name="disk-management-agent",
