@@ -124,6 +124,7 @@ const config: Configuration = {
         './AlertsNavbarUpdater': './src/components/AlertNavbarUpdaterComponent.tsx',
         './Metalk8sLocalVolumeProvider': './src/services/k8s/Metalk8sLocalVolumeProvider.ts',
         './PlatformGlobalHealthBarFederated': './src/components/PlatformGlobalHealthBarFederated.tsx',
+        './MCPTools': './src/mcpTools/index.ts',
       },
       remotes: !isProduction
         ? {

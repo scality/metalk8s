@@ -12,7 +12,7 @@ Feature: Monitoring is up and running
         And we have 1 running pod labeled 'app.kubernetes.io/name=grafana' in namespace 'metalk8s-monitoring'
         And we have 1 running pod labeled 'app.kubernetes.io/name=kube-state-metrics' in namespace 'metalk8s-monitoring'
         And we have 1 running pod labeled 'app.kubernetes.io/name=prometheus-adapter' in namespace 'metalk8s-monitoring'
-        And we have 1 running pod labeled 'app.kubernetes.io/name=prometheus-node-exporter' in namespace 'metalk8s-monitoring' on node 'bootstrap'
+        And we have 1 running pod labeled 'app.kubernetes.io/name=prometheus-node-exporter' in namespace 'metalk8s-monitoring' on node 'node-1'
 
     Scenario: Monitored components statuses
         Given the Kubernetes API is available

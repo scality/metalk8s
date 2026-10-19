@@ -1,4 +1,5 @@
 import json
+import shlex
 
 import kubernetes.client
 from kubernetes.client.rest import ApiException
@@ -50,6 +51,13 @@ def test_package_installed(host):
     "../features/sanity.feature", "Systemd unit is enabled and running on every node"
 )
 def test_systemd_unit_running(host):
+    pass
+
+
+@scenario(
+    "../features/sanity.feature", "The worker image cache is filled on every node"
+)
+def test_worker_image_cache_filled(host):
     pass
 
 
@@ -274,6 +282,27 @@ def check_systemd_unit_running(host, ssh_config, k8s_client, name):
     utils.retry(_check_unit, times=3, wait=5, name=f"check systemd unit '{name}'")
 
 
+@then(parsers.parse("every node holds the worker image cache in '{directory}'"))
+def check_worker_image_cache(host, ssh_config, k8s_client, version, directory):
+    """Check every node holds the worker boot cache of this version.
+
+    The bootstrap node reads it from the ISO, a joining node pulls it from
+    the registry. Both write the same directory, named after the ImageCache
+    resource, with the sentinel `imagecachectl` writes last.
+    """
+    sentinel = f"{directory}/worker-{version.replace('.', '-')}/.image-cache-agent.json"
+
+    def _check_sentinel():
+        results = _salt_on_every_node(
+            host, ssh_config, k8s_client, "file.file_exists", sentinel
+        )
+
+        missing = sorted(node for node, found in results.items() if found is not True)
+        assert not missing, f"no '{sentinel}' on {', '.join(missing)}"
+
+    utils.retry(_check_sentinel, times=3, wait=5, name=f"check '{sentinel}'")
+
+
 def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
     """Run a Salt execution function on every node, return the result per node.
 
@@ -286,7 +315,17 @@ def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
     )
     assert nodes, "no Kubernetes node to check"
 
-    command = ["salt", "--static", "--out=json", "-L", ",".join(nodes), function, *args]
+    # Quoted: the command is joined into one shell line before it runs, so an
+    # argument could otherwise be split or glob expanded on the way.
+    command = [
+        "salt",
+        "--static",
+        "--out=json",
+        "-L",
+        ",".join(nodes),
+        function,
+        *(shlex.quote(arg) for arg in args),
+    ]
     results = json.loads(utils.run_salt_command(host, command, ssh_config).stdout)
 
     silent = sorted(set(nodes) - set(results))

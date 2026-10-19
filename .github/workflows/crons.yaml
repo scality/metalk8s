@@ -66,10 +66,14 @@ jobs:
             branch: "development/134.0"
             workflow: "nightly.yaml"
             type: "retry"
+            # NOTE: The old branch still spawns through Terraform, under the
+            # step name it had then. Drop this once the old branch spawns
+            # through the platform spawner too.
+            step-name: "Spawn cluster with Terraform"
     steps:
       - name: Checkout
         if: github.event.schedule == matrix.cron
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: "Smart trigger for ${{ matrix.name }}"
         if: github.event.schedule == matrix.cron && matrix.type != 'retry'
         uses: scality/actions/actions-nightly-trigger@1.17.0
@@ -84,7 +88,7 @@ jobs:
         with:
           branch: ${{ matrix.branch }}
           workflow: ${{ matrix.workflow }}
-          step-name: "Spawn cluster with Terraform"
+          step-name: ${{ matrix.step-name || 'Spawn cluster' }}
           max-retries: ${{ env.MAX_RETRIES }}
           retry-mode: "failed-only"
           access_token: ${{ secrets.GITHUB_TOKEN }}
