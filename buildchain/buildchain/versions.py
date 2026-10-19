@@ -296,8 +296,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="loki",
-        version="3.6.7",
-        digest="sha256:3c8fd3570dd9219951a60d3f919c7f31923d10baee578b77bc26c4a0b32d092d",
+        # Use the Loki image tag pinned in the chart values (`loki.image.tag`),
+        # not the chart appVersion, which follows the Grafana Enterprise Logs
+        # image (e.g. chart 7.3.0 has appVersion 3.6.12 but pins Loki 3.6.11)
+        version="3.6.11",
+        digest="sha256:44148ad243c07957113baea950ee5ba9b0c8eff8d7e38ff3cc1c0af705790945",
     ),
     Image(
         name="fluent-bit",
