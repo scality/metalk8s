@@ -86486,12 +86486,7 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   endpoints:
-  - authorization:
-      credentials:
-        key: token
-        name: prometheus-operator-prometheus-token
-      type: Bearer
-    port: http-metrics
+  - port: http-metrics
   jobLabel: jobLabel
   namespaceSelector:
     matchNames:
@@ -86606,12 +86601,7 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   endpoints:
-  - authorization:
-      credentials:
-        key: token
-        name: prometheus-operator-prometheus-token
-      type: Bearer
-    port: http-metrics
+  - port: http-metrics
   jobLabel: jobLabel
   namespaceSelector:
     matchNames:
@@ -86639,12 +86629,7 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   endpoints:
-  - authorization:
-      credentials:
-        key: token
-        name: prometheus-operator-prometheus-token
-      type: Bearer
-    port: http-metrics
+  - port: http-metrics
   jobLabel: jobLabel
   namespaceSelector:
     matchNames:

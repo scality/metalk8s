@@ -297,10 +297,23 @@ prometheus-node-exporter:
       effect: NoExecute
       operator: Exists
 
+# NOTE: etcd, kube-proxy and CoreDNS metrics are scraped over plain HTTP and
+#       do not check the token, so do not send them the long-lived Prometheus
+#       service account token
 kubeEtcd:
   service:
     port: 2381
     targetPort: 2381
+  serviceMonitor:
+    authorization: null
+
+kubeProxy:
+  serviceMonitor:
+    authorization: null
+
+coreDns:
+  serviceMonitor:
+    authorization: null
 
 kubeScheduler:
   service:
