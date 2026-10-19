@@ -1,12 +1,6 @@
 name: "Sosreport logs"
 description: "Generate and retrieve sosreport logs"
 
-inputs:
-  NODES_COUNT:
-    description: number of nodes
-    required: false
-    default: "0"
-
 runs:
   using: composite
   steps:
@@ -14,15 +8,15 @@ runs:
     ## that is generated at the runtime.
     - shell: bash
       run: test -f ssh_config
+    ## Every node the platform holds, the bastion aside.
     - name: build hosts list
       shell: bash
       run: |
-        export HOSTS_LIST=""
-        echo "HOSTS_LIST=bootstrap$(seq -s '' --format ' node-%g' 1 ${{ inputs.NODES_COUNT }})" >> $GITHUB_ENV
+        echo "HOSTS_LIST=$(awk '$1 == "Host" && $2 != "bastion" { printf "%s ", $2 }' ssh_config)" >> $GITHUB_ENV
     ## Why a host has no sosreport matters more than how many do:
     ##
     ##   - unreachable over ssh: expected. This action runs with `if: always()`,
-    ##     and `bootstrap-restore` destroys the Bootstrap node on purpose --
+    ##     and `bootstrap-restore` destroys the Bootstrap node (node-1) on purpose --
     ##     precisely when the surviving nodes' logs are worth having. Warn and
     ##     move on.
     ##   - reachable, but its sosreport could not be generated or collected: the

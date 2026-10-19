@@ -12,7 +12,7 @@ inputs:
   NODE_TO:
     description: "remote node name to copy to"
     required: false
-    default: "bootstrap"
+    default: "node-1"
   NODE_FROM:
     description: "remote node name to copy from"
     required: false

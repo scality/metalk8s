@@ -17,6 +17,8 @@ export type K8sApiClients = {
   customObjects: CustomObjectsApi;
   storage: StorageV1Api;
   appsV1: AppsV1Api;
+  /** A GET whose answer is text rather than JSON, rejecting as the generated clients do. */
+  text: (path: string, query?: Record<string, string | number | boolean | undefined>) => Promise<string>;
 };
 
 /**
@@ -27,7 +29,36 @@ export type K8sApiClients = {
 export const k8sApi = (url: string, token: string): K8sApiClients => {
   const config = new Config(url, token);
 
+  /**
+   * Every generated method sets `json: true`, and the browser request layer then calls
+   * `response.json()` — so a pod log, served as text/plain, rejects with a SyntaxError carrying no
+   * status code before any caller sees it. readNamespacedPodLog cannot read a log in a browser at
+   * all, and no argument to it changes that.
+   */
+  const text = async (path: string, query: Record<string, string | number | boolean | undefined> = {}) => {
+    const search = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) if (value !== undefined) search.set(key, String(value));
+    // `.size` is newer than the browsers this UI supports, and reads as empty where it is missing.
+    const suffix = search.toString();
+
+    const response = await fetch(`${url}${path}${suffix ? `?${suffix}` : ''}`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    const body = await response.text();
+
+    if (!response.ok) {
+      let parsed: unknown = body;
+      // The API answers errors as JSON even here, which is what carries the message a caller needs.
+      try {
+        parsed = JSON.parse(body);
+      } catch {}
+      throw { response: { statusCode: response.status }, body: parsed };
+    }
+    return body;
+  };
+
   return {
+    text,
     coreV1: config.makeApiClient(CoreV1Api),
     customObjects: config.makeApiClient(CustomObjectsApi),
     storage: config.makeApiClient(StorageV1Api),
