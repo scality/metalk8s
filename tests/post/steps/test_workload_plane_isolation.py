@@ -392,7 +392,7 @@ def _pick_wp_node(k8s_client, ssh_config, keep_prometheus=True):
     the node, which would evict Prometheus); a blip never taints, so it can cut
     any node -- which is what lets the single-node case work.
     """
-    bootstrap = utils.get_node_name("bootstrap", ssh_config)
+    bootstrap = utils.get_node_name("node-1", ssh_config)
     node_names = [node.metadata.name for node in _all_nodes(k8s_client)]
     if keep_prometheus:
         prometheus = _prometheus_nodes(k8s_client)

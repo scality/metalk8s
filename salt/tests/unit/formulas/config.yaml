@@ -269,6 +269,33 @@ metalk8s:
             kubelet:
               container_engine: ""
 
+    pulled.sls:
+      _cases:
+        "Containerd, endpoints as a list (default)": {}
+        "Containerd, endpoints as a dict":
+          pillar_overrides:
+            metalk8s:
+              endpoints:
+                repositories:
+                  ip: 10.0.0.2
+                  ports:
+                    http: 8081
+        "Containerd, several endpoints":
+          pillar_overrides:
+            metalk8s:
+              endpoints:
+                repositories:
+                  - ip: 10.0.0.2
+                    ports:
+                      http: 8080
+                  - ip: 10.0.0.3
+                    ports:
+                      http: 8080
+        "Without any container engine":
+          pillar_overrides:
+            kubelet:
+              container_engine: ""
+
   kubernetes:
     apiserver:
       files:
@@ -1218,6 +1245,20 @@ metalk8s:
           os: Rocky/9
         "RHEL 9":
           os: RedHat/9
+        "RHEL 9 with a not Ready repository":
+          os: RedHat/9
+          pillar_overrides:
+            metalk8s:
+              endpoints:
+                repositories:
+                  - ip: 10.0.0.1
+                    ports:
+                      http: 8080
+                    ready: false
+                  - ip: 10.0.0.2
+                    ports:
+                      http: 8080
+                    ready: true
 
   salt:
     master:

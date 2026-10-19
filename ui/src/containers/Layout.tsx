@@ -16,7 +16,7 @@ import {
   useShellAlerts,
   useShellHooks,
 } from '@scality/module-federation';
-import { useDiscoveredViews } from './ConfigProvider';
+import { useVirtualMachinesView } from './useVirtualMachinesView';
 
 const ConfigureAlerting = lazy(() => import('../alert-configuration/ConfigureAlerting'));
 const NodeCreateForm = lazy(() => import('./NodeCreateForm'));
@@ -94,13 +94,9 @@ const Layout = () => {
 
   const hideSideBar = doesRouteMatch(routeWithoutSideBars);
 
-  const discoveredViews = useDiscoveredViews();
   const shellHooks = useShellHooks();
   const shellAlerts = useShellAlerts();
-  const vmView = discoveredViews.find(
-    (view): view is Extract<typeof view, { isFederated: true }> =>
-      view.isFederated && view.app.kind === 'vm-management-ui',
-  );
+  const vmView = useVirtualMachinesView();
 
   const sidebarConfig = {
     onToggleClick: toggleSideMenu,

@@ -245,6 +245,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
+        name="metalk8s-boot-cache-etcd",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
         name="metalk8s-boot-cache-worker",
         version=VERSION,
         digest=None,
@@ -336,6 +341,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         name="file-reflector",
         version="v0.2.0",
         digest="sha256:97f14f857ebef1b421ad2799e6fba77c9b0cebcfc19f0b726344e322a4f7ead5",
+    ),
+    Image(
+        name="image-cache-agent",
+        version="v0.1.0-alpha.2",
+        digest="sha256:a7f7c2c188acd2820618ff524b7183c27da7ec8cfa1f2878856364ea32c622ad",
     ),
     Image(
         name="node-warden-operator",
@@ -470,16 +480,30 @@ PREBUILT_RPMS: Tuple[PrebuiltRPM, ...] = (
     # finished RPM has no spec: declaring them by name here would have `dnf`
     # download an unpinned copy, and reading them off the package makes the
     # download list depend on a file we have yet to fetch. Worth solving on
-    # the second prebuilt package, not for one dependency already on the ISO.
+    # the first prebuilt package that needs more than what the ISO carries:
+    # `imagecachectl`, a static binary, needs nothing.
     PrebuiltRPM(
         name="containerd-image-preload",
         repo="scality",
         source="scality/image-cache",
-        tag="v0.1.0-alpha.1",
+        tag="v0.1.0-alpha.2",
         sha256={
-            "8": "b374b74d78c2786c8143e1da2f20bfd46434bc007c42ebb458e87af22a527ad1",
-            "9": "bc205c2120970f5185bbd2808cb55219141acb311692707249692492b143d954",
+            "8": "606bd150f7768823b789b6f02ee916c1442bb8bc3ed12728c38b968ad7af3d19",
+            "9": "31a317ebe27548dddf389ad9dcc954713682ee16176a5639a55e719f75d59bae",
         },
+    ),
+    # Fills the image cache at bootstrap and at join. A static binary, it
+    # requires nothing.
+    PrebuiltRPM(
+        name="imagecachectl",
+        repo="scality",
+        source="scality/image-cache",
+        tag="v0.1.0-alpha.2",
+        sha256={
+            "8": "31941e9c4019481eea7d07286f6334b2ff778179b75cc39d2414f6f3179260cd",
+            "9": "bfc28af473859468b95beb581aafcf3474aea55ae3bc86fa57a03796007f1fb5",
+        },
+        arch="x86_64",
     ),
 )
 

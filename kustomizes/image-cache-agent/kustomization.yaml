@@ -1,0 +1,23 @@
+namespace: metalk8s-image-cache
+
+resources:
+  - github.com/scality/image-cache.git/agent/config/default?ref=v0.1.0-alpha.2
+
+images:
+  - name: controller
+    newName: '{% endraw -%}{{ build_image_name("image-cache-agent", False) }}{%- raw %}'
+    newTag: v0.1.0-alpha.2
+
+patches:
+  - path: daemonset_patch.yaml
+    target:
+      kind: DaemonSet
+  - path: delete_ns.yaml
+  # The MetalK8s registry serves plain HTTP, and the agent only falls back
+  # to it by itself for a private IP literal.
+  - target:
+      kind: DaemonSet
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --plain-http

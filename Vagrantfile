@@ -136,7 +136,7 @@ networks:
   workloadPlane:
     cidr: #{WORKLOAD_PLANE_IP}/#{prefixlen(WORKLOAD_PLANE_NETMASK)}
 ca:
-  minion: bootstrap
+  minion: node-1
 archives:
   - /srv/scality/metalk8s-$VERSION
 debug: #{DEBUG}
@@ -198,7 +198,7 @@ def declare_bootstrap(machine, os_data)
   machine.vm.box = os_data[:name]
   machine.vm.box_version = os_data[:version]
 
-  machine.vm.hostname = "bootstrap"
+  machine.vm.hostname = "node-1"
   machine.vm.provider "virtualbox" do |v|
     v.memory = 4086
     v.customize ["modifyvm", :id, "--audio", "none"]
@@ -312,7 +312,7 @@ Vagrant.configure("2") do |config|
     nic_type: 'virtio',
     **WORKLOAD_PLANE_NETWORK
 
-  config.vm.define :bootstrap, primary: true do |machine|
+  config.vm.define "node-1", primary: true do |machine|
     declare_bootstrap machine, os_data[:centos]
   end
 

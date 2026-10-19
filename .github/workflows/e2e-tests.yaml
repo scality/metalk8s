@@ -7,6 +7,11 @@ on:
         description: "Artifacts URL"
         required: true
         type: string
+      os:
+        description: "The OS to use"
+        required: false
+        type: string
+        default: "rocky-9"
       nodes-count:
         description: "Number of extra node to spawn for multi-node"
         required: false
@@ -17,6 +22,11 @@ on:
         required: false
         type: boolean
         default: false
+      run-tests:
+        description: "Whether or not the tests validating the installation should be ran (the cluster is installed either way)"
+        required: false
+        type: boolean
+        default: true
       generate-snapshots:
         description: "Whether or not snapshots should be generated at the end"
         required: false
@@ -42,6 +52,11 @@ on:
         description: "Artifacts URL"
         required: true
         type: string
+      os:
+        description: "The OS to use"
+        required: false
+        type: string
+        default: "rocky-9"
       nodes-count:
         description: "Number of extra node to spawn for multi-node"
         required: false
@@ -52,6 +67,11 @@ on:
         required: false
         type: boolean
         default: false
+      run-tests:
+        description: "Whether or not the tests validating the installation should be ran (the cluster is installed either way)"
+        required: false
+        type: boolean
+        default: true
       generate-snapshots:
         description: "Whether or not snapshots should be generated at the end"
         required: false
@@ -64,7 +84,9 @@ jobs:
     secrets: inherit
     with:
       artifacts-url: ${{ inputs.artifacts-url }}
+      os: ${{ inputs.os }}
       install-solution: ${{ inputs.install-solution }}
+      run-tests: ${{ inputs.run-tests }}
       generate-snapshots: ${{ inputs.generate-snapshots }}
       enable-debug-when-failure: true
 
@@ -73,7 +95,9 @@ jobs:
     secrets: inherit
     with:
       artifacts-url: ${{ inputs.artifacts-url }}
+      os: ${{ inputs.os }}
       nodes-count: ${{ fromJson(inputs.nodes-count) }}
       install-solution: ${{ inputs.install-solution }}
+      run-tests: ${{ inputs.run-tests }}
       generate-snapshots: ${{ inputs.generate-snapshots }}
       enable-debug-when-failure: true

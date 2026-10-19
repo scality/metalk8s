@@ -226,6 +226,25 @@ def _object_manipulation_function(action):
                     call_kwargs["body"]["spec"]["healthCheckNodePort"] = old_object[
                         "spec"
                     ].get("healthCheckNodePort")
+            # Keep the webhooks `caBundle` if not present in the body.
+            # Something else injects it, e.g. cert-manager. Every call to the
+            # webhook fails until it is injected again.
+            if api.api_version == "admissionregistration.k8s.io/v1" and api.kind in [
+                "MutatingWebhookConfiguration",
+                "ValidatingWebhookConfiguration",
+            ]:
+                old_ca_bundles = {
+                    webhook["name"]: webhook["clientConfig"]["caBundle"]
+                    for webhook in old_object.get("webhooks") or []
+                    if (webhook.get("clientConfig") or {}).get("caBundle")
+                }
+                for webhook in call_kwargs["body"].get("webhooks") or []:
+                    client_config = webhook.setdefault("clientConfig", {})
+                    if (
+                        not client_config.get("caBundle")
+                        and webhook.get("name") in old_ca_bundles
+                    ):
+                        client_config["caBundle"] = old_ca_bundles[webhook["name"]]
 
         log.debug("Running '%s' with: %s", action, call_kwargs)
 
@@ -446,9 +465,24 @@ def get_object_digest(
     return __salt__.hashutil.digest(str(obj), checksum=checksum)
 
 
+def _has_ca_injected_by_cert_manager(obj):
+    """Tell whether cert-manager cainjector injects the CA bundle of `obj`."""
+    annotations = obj["metadata"].get("annotations") or {}
+    return (
+        "cert-manager.io/inject-ca-from" in annotations
+        or "cert-manager.io/inject-ca-from-secret" in annotations
+        or annotations.get("cert-manager.io/inject-apiserver-ca") == "true"
+    )
+
+
 def check_object_ready(*args, **kwargs):
     """
     Check that an Object is Ready, depending on object Kind
+
+    A Mutating or ValidatingWebhookConfiguration has no status. When
+    cert-manager injects its CA bundle, it is considered Ready once every
+    webhook has one. Otherwise, it is Ready right away: without a CA bundle,
+    the API server verifies the webhooks with its system trust roots.
 
     CLI Examples:
 
@@ -456,6 +490,7 @@ def check_object_ready(*args, **kwargs):
 
         salt-call metalk8s_kubernetes.check_object_ready kind="Pod" apiVersion="v1" name="my-pod"
         salt-call metalk8s_kubernetes.check_object_ready kind="Deployment" apiVersion="apps/v1" name="my-deploy" namespace="kube-system"
+        salt-call metalk8s_kubernetes.check_object_ready kind="ValidatingWebhookConfiguration" apiVersion="admissionregistration.k8s.io/v1" name="my-webhook"
     """
     obj = get_object(*args, **kwargs)
 
@@ -468,15 +503,27 @@ def check_object_ready(*args, **kwargs):
     ):
         raise CommandExecutionError("Object has not been updated yet")
 
-    # NOTE: Only have a specific case for Deployment for the moment
-    # but may evolve in the future if we need to check other specific objects
+    # NOTE: Only some kinds have a specific case. Any other object is expected
+    # to have a Ready condition.
     if obj["kind"] == "Deployment":
+        # Replicas counters are omitted from the status while they are 0,
+        # e.g. on a Deployment that has just been created
+        status = obj.get("status") or {}
         if (
-            obj["status"]["updatedReplicas"] != obj["spec"]["replicas"]
-            or obj["status"]["replicas"] != obj["spec"]["replicas"]
-            or obj["status"]["availableReplicas"] != obj["spec"]["replicas"]
+            status.get("updatedReplicas", 0) != obj["spec"]["replicas"]
+            or status.get("replicas", 0) != obj["spec"]["replicas"]
+            or status.get("availableReplicas", 0) != obj["spec"]["replicas"]
         ):
             raise CommandExecutionError("All the Deployment replicas are not yet Ready")
+    elif obj["kind"] in [
+        "MutatingWebhookConfiguration",
+        "ValidatingWebhookConfiguration",
+    ]:
+        if _has_ca_injected_by_cert_manager(obj) and not all(
+            (webhook.get("clientConfig") or {}).get("caBundle")
+            for webhook in obj.get("webhooks") or []
+        ):
+            raise CommandExecutionError("Some webhooks do not have a CA bundle yet")
     else:
         try:
             condition = next(

@@ -37,8 +37,8 @@ Official documentation: @@DOC_URL@@
 - Create two private network in the OpenStack cluster with port security
   disabled, and a subnet in each:
 
-  * Control-plane network: 192.168.1.0/24
-  * Workload-plane network: 192.168.2.0/24
+  * Control-plane network: 172.30.100.0/24
+  * Workload-plane network: 172.30.200.0/24
 
 - Create VM instances using the CentOS 7.9 image, and attach each of them to a
   public network (for internet access) and the two private networks.
@@ -90,9 +90,9 @@ steps:
   kind: BootstrapConfiguration
   networks:
     controlPlane:
-        cidr: 192.168.1.0/24
+        cidr: 172.30.100.0/24
     workloadPlane:
-        cidr: 192.168.2.0/24
+        cidr: 172.30.200.0/24
     portmap:
         cidr: 0.0.0.0/0
     nodeport:
