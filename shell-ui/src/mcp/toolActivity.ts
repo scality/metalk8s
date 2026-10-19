@@ -43,17 +43,22 @@ type NativeModelContext = {
  * The binding refusing the arguments, rather than a tool failing: the conversion never reached a
  * tool, so another shape — or the page engine — can still run it.
  *
- * Both of Chrome's messages, because the live versions disagree about the shape. Up to 154 it takes
+ * Both of Chrome's reasons, because the live versions disagree about the shape. Up to 154 it takes
  * a JSON string and answers an object with "Failed to parse input arguments"; from 155 it takes an
  * object and answers a string with "invalid input object". The origin trial covers 149-156, so both
  * are in the field.
  *
- * Matched on the message rather than the error class, since the conversion may surface as a
+ * The reasons only — never the "Failed to execute … on 'ModelContext'" that precedes them, which is
+ * the prefix Chrome puts on every exception leaving this method, a tool's own included. Matching it
+ * would read a tool that ran and threw as a refusal, retry it, and run it a second time.
+ *
+ * Read off the message rather than the error class, since the conversion may surface as a
  * TypeError, a DOMException or an UnknownError depending on where it fails.
  */
 const isInputRefusal = (error: unknown) =>
-  error instanceof Error &&
-  /Failed to execute 'executeTool' on 'ModelContext'|Failed to parse input arguments/.test(error.message);
+  /invalid input object|Failed to parse input arguments/.test(
+    String((error as { message?: unknown })?.message ?? error),
+  );
 
 /**
  * `callTool` takes ONE object — `{ name, arguments }`, the shape MCP puts on the wire. Its signature

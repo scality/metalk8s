@@ -105,6 +105,37 @@ describe('rerouteThroughNative', () => {
     expect(textOf(result)).toBe('the bucket is not empty');
   });
 
+  it('reads the reason off a rejection that is not an Error', async () => {
+    // The relay rejects with a plain `{ message }` on some paths, and String()-ing that object
+    // alone yields "[object Object]" — a refusal nobody would recognise, and no retry.
+    const { polyfill, nativeCalls } = polyfillWith(['listBuckets'], async ({ args }) => {
+      if (typeof args === 'string') return '"made it"';
+      throw { message: 'Failed to parse input arguments' };
+    });
+    rerouteThroughNative(polyfill);
+
+    const result = await polyfill.callTool({ name: 'listBuckets' });
+
+    expect(nativeCalls).toHaveLength(2);
+    expect(textOf(result)).toBe('made it');
+  });
+
+  it('does not read a tool failure wearing the binding prefix as a refusal', async () => {
+    // Chrome puts "Failed to execute … on 'ModelContext'" in front of everything that leaves this
+    // method, a tool's own exception included. Taking that as a refusal would retry the call, be
+    // refused on the second shape, fall back to the page — and delete the bucket twice.
+    const { polyfill, inPageCalls, nativeCalls } = polyfillWith(['deleteBucket'], async () => {
+      throw new Error("Failed to execute 'executeTool' on 'ModelContext': the bucket is not empty");
+    });
+    rerouteThroughNative(polyfill);
+
+    const result = await polyfill.callTool({ name: 'deleteBucket', arguments: { Bucket: 'b1' } });
+
+    expect(nativeCalls).toHaveLength(1);
+    expect(inPageCalls).toEqual([]);
+    expect(result.isError).toBe(true);
+  });
+
   it('runs the tool in the page when neither shape is taken', async () => {
     // A third signature nobody has seen yet. Tracing is worth losing; the tools are not.
     const { polyfill, inPageCalls, nativeCalls } = polyfillWith(['listBuckets'], async () => {
