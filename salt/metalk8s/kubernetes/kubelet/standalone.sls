@@ -30,6 +30,11 @@ Create kubelet service environment file:
           hostname-override: {{ grains['id'] }}
           cgroup-driver: systemd
           v: {{ 2 if metalk8s.debug else 0 }}
+{%- if grains['os_family'] == 'RedHat' and grains['osmajorrelease'] | int == 8 %}
+          # The standalone kubelet does not read config.yaml, so failCgroupV1
+          # must also be passed as a flag for the bootstrap to start on EL8
+          fail-cgroupv1: "false"
+{%- endif %}
     - require:
       - metalk8s_package_manager: Install kubelet
     - watch_in:
