@@ -383,7 +383,7 @@ BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
         "kube-proxy",
         "alpine",
         # The calico-node init containers write the CNI config and plugins;
-        # `calico` also runs calico-kube-controllers.
+        # `calico` also runs `calico-kube-controllers`.
         "calico",
         "calico-third-party-cni-plugins",
         "calico-node",
