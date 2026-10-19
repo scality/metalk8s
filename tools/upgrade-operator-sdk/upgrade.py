@@ -259,6 +259,16 @@ def _latest_k8s_patch(base_version: str) -> str:
     return max(candidates, key=_patch_num)
 
 
+def _latest_pinned_patch(key: str, pinned: str) -> str:
+    """Return the latest patch of the *pinned* minor, or empty string."""
+    if key == "go_toolchain":
+        m = re.match(r"go(\d+\.\d+)\.", pinned)
+        return _latest_go_patch(m.group(1)) if m else ""
+    if key == "k8s_libs":
+        return _latest_k8s_patch(pinned)
+    return ""
+
+
 def detect_latest_patches(cfg: dict[str, Any]) -> dict[str, str]:
     """Read the scaffold go.mod and resolve latest patch versions.
 
@@ -317,7 +327,8 @@ def reconcile_versions(
     - No pin: use detected, log info.
     - Pin < detected: warn (newer available), keep pinned.
     - Pin == detected: all good.
-    - Pin > detected: warn (ahead of scaffold), keep pinned.
+    - Pin > detected: warn (ahead of scaffold), keep pinned, and warn if
+      a newer patch of the pinned minor is available.
 
     Never modifies the YAML file. Zero interactive input -- CI-safe.
     """
@@ -339,6 +350,10 @@ def reconcile_versions(
             cfg[key] = pinned
         else:
             log_warn(f"  {key}: pinned {pinned} ahead of scaffold {found}, keeping pin")
+            # The scaffold minor was looked up, check the pinned one too.
+            latest = _latest_pinned_patch(key, pinned)
+            if latest and _version_tuple(latest) > _version_tuple(pinned):
+                log_warn(f"  {key}: pinned {pinned}, newer {latest} available")
             cfg[key] = pinned
 
 
