@@ -31,11 +31,23 @@ type RegisteredTool = { name: string };
 
 type NativeModelContext = {
   getTools: () => RegisteredTool[] | Promise<RegisteredTool[]>;
-  // Takes the handle getTools() hands back — not a name — and the arguments as a JSON *string*.
+  // Takes the handle getTools() hands back — not a name — and the arguments as an object. Chrome
+  // took a JSON string here until 155 and a dictionary after it; the result is still a JSON string.
   // Resolves to null when there is no result to report: @mcp-b/global's own shim path answers null
   // for a tool that returns nothing or whose call was cut short by navigation.
-  executeTool: (tool: RegisteredTool, args: string) => Promise<string | null>;
+  executeTool: (tool: RegisteredTool, args: Record<string, unknown>) => Promise<string | null>;
 };
+
+/**
+ * The binding refusing the call, rather than a tool failing: nothing ran, so the page engine still
+ * can run it. This is what a signature drift looks like from here — Chrome changed `executeTool`'s
+ * arguments from a JSON string to an object, and every traced call failed on the conversion.
+ *
+ * Matched on the message rather than the error class, since a binding may raise TypeError or
+ * DOMException depending on where the conversion fails.
+ */
+const isBindingRefusal = (error: unknown) =>
+  error instanceof Error && /Failed to execute 'executeTool' on 'ModelContext'/.test(error.message);
 
 /**
  * `callTool` takes ONE object — `{ name, arguments }`, the shape MCP puts on the wire. Its signature
@@ -115,7 +127,16 @@ export const rerouteThroughNative = (polyfill: PolyfilledModelContext): boolean 
       // Executed once, here — never alongside the original path. This route carries every app's
       // mutating tools (deleteBucket, putObject) as well as the read-only ones, so running both
       // engines "to compare" would perform the operation twice.
-      const text = await native.executeTool(handle, JSON.stringify(params.arguments ?? {}));
+      let text: string | null;
+      try {
+        text = await native.executeTool(handle, params.arguments ?? {});
+      } catch (error) {
+        // Only when nothing ran. Falling back on any failure would re-run a mutating tool that had
+        // already done its work, which is the one thing this route must never do.
+        if (!isBindingRefusal(error)) throw error;
+        console.warn(`${TAG} native executeTool refused the call; running it in the page`, error);
+        return executeInPage(params);
+      }
 
       // No result to report — a tool that returned nothing, or a call navigation cut short.
       // `String(null)` would otherwise answer a cheerful `"null"` with isError: false.
