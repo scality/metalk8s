@@ -69,3 +69,7 @@ spec:
     enabled: true
     ignorePaths:
       - {{ repo.registry_endpoint }} # This one is still handled by salt until the migration to the new registry is fully completed
+  monitoring:
+    enabled: true
+    prometheusLabels:
+      metalk8s.scality.com/monitor: ""

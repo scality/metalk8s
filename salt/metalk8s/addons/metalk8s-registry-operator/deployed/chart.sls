@@ -14,6 +14,8 @@ spec:
     kind: MirrorConfig
     listKind: MirrorConfigList
     plural: mirrorconfigs
+    shortNames:
+    - mco
     singular: mirrorconfig
   scope: Namespaced
   versions:
@@ -156,6 +158,8 @@ spec:
     kind: Registry
     listKind: RegistryList
     plural: registries
+    shortNames:
+    - reg
     singular: registry
   scope: Cluster
   versions:
@@ -432,6 +436,21 @@ spec:
                 required:
                 - enabled
                 type: object
+              monitoring:
+                description: Monitoring controls the deployment of the ServiceMonitor.
+                properties:
+                  enabled:
+                    default: false
+                    description: Enabled controls whether the ServiceMonitor is deployed.
+                    type: boolean
+                  prometheusLabels:
+                    additionalProperties:
+                      type: string
+                    description: Labels Prometheus will use to select the ServiceMonitor.
+                    type: object
+                required:
+                - enabled
+                type: object
               namespace:
                 description: Namespace where the registry resources are deployed,
                   defaults to "metalk8s-registry-system".
@@ -450,6 +469,10 @@ spec:
                 x-kubernetes-validations:
                 - message: Value is immutable
                   rule: self == oldSelf
+              priorityClassName:
+                description: PriorityClassName for the Registry Node Agent and Registry
+                  Server pods.
+                type: string
               server:
                 description: Server is the specification of the registry server.
                 properties:
@@ -524,6 +547,47 @@ spec:
                 x-kubernetes-validations:
                 - message: Value is immutable
                   rule: self == oldSelf
+              tolerations:
+                description: Tolerations for the Registry Node Agent and Registry
+                  Server pods.
+                items:
+                  description: |-
+                    The pod this Toleration is attached to tolerates any taint that matches
+                    the triple <key,value,effect> using the matching operator <operator>.
+                  properties:
+                    effect:
+                      description: |-
+                        Effect indicates the taint effect to match. Empty means match all taint effects.
+                        When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute.
+                      type: string
+                    key:
+                      description: |-
+                        Key is the taint key that the toleration applies to. Empty means match all taint keys.
+                        If the key is empty, operator must be Exists; this combination means to match all values and all keys.
+                      type: string
+                    operator:
+                      description: |-
+                        Operator represents a key's relationship to the value.
+                        Valid operators are Exists, Equal, Lt, and Gt. Defaults to Equal.
+                        Exists is equivalent to wildcard for value, so that a pod can
+                        tolerate all taints of a particular category.
+                        Lt and Gt perform numeric comparisons (requires feature gate TaintTolerationComparisonOperators).
+                      type: string
+                    tolerationSeconds:
+                      description: |-
+                        TolerationSeconds represents the period of time the toleration (which must be
+                        of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default,
+                        it is not set, which means tolerate the taint forever (do not evict). Zero and
+                        negative values will be treated as 0 (evict immediately) by the system.
+                      format: int64
+                      type: integer
+                    value:
+                      description: |-
+                        Value is the taint value the toleration matches to.
+                        If the operator is Exists, the value should be empty, otherwise just a regular string.
+                      type: string
+                  type: object
+                type: array
             required:
             - agent
             - nodeSelector
@@ -697,6 +761,8 @@ spec:
     kind: SolutionArchive
     listKind: SolutionArchiveList
     plural: solutionarchives
+    shortNames:
+    - soa
     singular: solutionarchive
   scope: Cluster
   versions:
@@ -1088,6 +1154,18 @@ rules:
   - delete
   - update
 - apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - rbac.authorization.k8s.io
   resources:
   - clusterrolebindings
@@ -1454,7 +1532,7 @@ spec:
         command:
         - /manager
         image: '{% endraw -%}{{ build_image_name("metalk8s-registry-operator", False)
-          }}{%- raw %}:v0.0.1-alpha.4'
+          }}{%- raw %}:v0.0.1-alpha.6'
         livenessProbe:
           httpGet:
             path: /healthz
@@ -1505,6 +1583,9 @@ spec:
         operator: Exists
       - effect: NoSchedule
         key: node-role.kubernetes.io/master
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/etcd
         operator: Exists
       volumes:
       - name: webhook-certs
