@@ -31,23 +31,29 @@ type RegisteredTool = { name: string };
 
 type NativeModelContext = {
   getTools: () => RegisteredTool[] | Promise<RegisteredTool[]>;
-  // Takes the handle getTools() hands back — not a name — and the arguments as an object. Chrome
-  // took a JSON string here until 155 and a dictionary after it; the result is still a JSON string.
+  // Takes the handle getTools() hands back — not a name. The arguments go as an object from Chrome
+  // 155 and as a JSON string up to 154, which is why both shapes are declared; the result is a JSON
+  // string either way.
   // Resolves to null when there is no result to report: @mcp-b/global's own shim path answers null
   // for a tool that returns nothing or whose call was cut short by navigation.
-  executeTool: (tool: RegisteredTool, args: Record<string, unknown>) => Promise<string | null>;
+  executeTool: (tool: RegisteredTool, args: Record<string, unknown> | string) => Promise<string | null>;
 };
 
 /**
- * The binding refusing the call, rather than a tool failing: nothing ran, so the page engine still
- * can run it. This is what a signature drift looks like from here — Chrome changed `executeTool`'s
- * arguments from a JSON string to an object, and every traced call failed on the conversion.
+ * The binding refusing the arguments, rather than a tool failing: the conversion never reached a
+ * tool, so another shape — or the page engine — can still run it.
  *
- * Matched on the message rather than the error class, since a binding may raise TypeError or
- * DOMException depending on where the conversion fails.
+ * Both of Chrome's messages, because the live versions disagree about the shape. Up to 154 it takes
+ * a JSON string and answers an object with "Failed to parse input arguments"; from 155 it takes an
+ * object and answers a string with "invalid input object". The origin trial covers 149-156, so both
+ * are in the field.
+ *
+ * Matched on the message rather than the error class, since the conversion may surface as a
+ * TypeError, a DOMException or an UnknownError depending on where it fails.
  */
-const isBindingRefusal = (error: unknown) =>
-  error instanceof Error && /Failed to execute 'executeTool' on 'ModelContext'/.test(error.message);
+const isInputRefusal = (error: unknown) =>
+  error instanceof Error &&
+  /Failed to execute 'executeTool' on 'ModelContext'|Failed to parse input arguments/.test(error.message);
 
 /**
  * `callTool` takes ONE object — `{ name, arguments }`, the shape MCP puts on the wire. Its signature
@@ -127,15 +133,23 @@ export const rerouteThroughNative = (polyfill: PolyfilledModelContext): boolean 
       // Executed once, here — never alongside the original path. This route carries every app's
       // mutating tools (deleteBucket, putObject) as well as the read-only ones, so running both
       // engines "to compare" would perform the operation twice.
+      // The shape Chrome has taken since 155, tried first because it is the one that lasts.
       let text: string | null;
       try {
         text = await native.executeTool(handle, params.arguments ?? {});
       } catch (error) {
-        // Only when nothing ran. Falling back on any failure would re-run a mutating tool that had
-        // already done its work, which is the one thing this route must never do.
-        if (!isBindingRefusal(error)) throw error;
-        console.warn(`${TAG} native executeTool refused the call; running it in the page`, error);
-        return executeInPage(params);
+        // Retried, or re-routed, only when nothing ran. Doing either after a tool had already done
+        // its work would perform a mutating call twice, which this route must never do.
+        if (!isInputRefusal(error)) throw error;
+        try {
+          // What 154 and earlier take. A refusal of one shape cannot have run the tool, so this
+          // repeats nothing.
+          text = await native.executeTool(handle, JSON.stringify(params.arguments ?? {}));
+        } catch (retryError) {
+          if (!isInputRefusal(retryError)) throw retryError;
+          console.warn(`${TAG} native executeTool took neither shape; running it in the page`, retryError);
+          return executeInPage(params);
+        }
       }
 
       // No result to report — a tool that returned nothing, or a call navigation cut short.

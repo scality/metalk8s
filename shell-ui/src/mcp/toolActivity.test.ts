@@ -69,9 +69,44 @@ describe('rerouteThroughNative', () => {
     expect(nativeCalls).toEqual([{ name: 'listBuckets', args: {} }]);
   });
 
-  it('runs the tool in the page when the binding refuses the call', async () => {
-    // What a signature drift looks like from here: Chrome took a JSON string until 155 and an
-    // object after it, and a refused conversion took every traced tool offline.
+  it('sends the JSON string a Chrome before 155 asks for, and only then', async () => {
+    // Up to 154 the object is refused with this message, and the tool never runs. The arguments
+    // have to survive that hop too: the whole point of the retry is the second shape working.
+    const { polyfill, nativeCalls, inPageCalls } = polyfillWith(['createBucket'], async ({ args }) =>
+      typeof args === 'string' ? '"made it"' : Promise.reject(new Error('Failed to parse input arguments')),
+    );
+    rerouteThroughNative(polyfill);
+
+    const result = await polyfill.callTool({ name: 'createBucket', arguments: { Bucket: 'b1' } });
+
+    expect(nativeCalls).toEqual([
+      { name: 'createBucket', args: { Bucket: 'b1' } },
+      { name: 'createBucket', args: '{"Bucket":"b1"}' },
+    ]);
+    expect(inPageCalls).toEqual([]);
+    expect(textOf(result)).toBe('made it');
+  });
+
+  it('does not re-run a tool that failed on the second shape either', async () => {
+    // The object was refused, so the string ran the tool — and the tool threw. Falling back to the
+    // page here would delete the bucket a second time.
+    const { polyfill, inPageCalls, nativeCalls } = polyfillWith(['deleteBucket'], async ({ args }) => {
+      throw new Error(
+        typeof args === 'string' ? 'the bucket is not empty' : 'Failed to parse input arguments',
+      );
+    });
+    rerouteThroughNative(polyfill);
+
+    const result = await polyfill.callTool({ name: 'deleteBucket', arguments: { Bucket: 'b1' } });
+
+    expect(nativeCalls).toHaveLength(2);
+    expect(inPageCalls).toEqual([]);
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toBe('the bucket is not empty');
+  });
+
+  it('runs the tool in the page when neither shape is taken', async () => {
+    // A third signature nobody has seen yet. Tracing is worth losing; the tools are not.
     const { polyfill, inPageCalls, nativeCalls } = polyfillWith(['listBuckets'], async () => {
       throw new TypeError(
         "Failed to execute 'executeTool' on 'ModelContext': invalid input object: value is not an object",
@@ -81,21 +116,22 @@ describe('rerouteThroughNative', () => {
 
     const result = await polyfill.callTool({ name: 'listBuckets' });
 
-    expect(nativeCalls).toHaveLength(1);
+    expect(nativeCalls).toHaveLength(2);
     expect(inPageCalls).toEqual([{ name: 'listBuckets', args: {} }]);
     expect(textOf(result)).toBe('from the page');
   });
 
   it('does not re-run a tool that failed after it had already run', async () => {
-    // The tool itself threw, so it may well have done its work. Running it again in the page would
-    // make a mutating call twice, which is the one thing this route must never do.
-    const { polyfill, inPageCalls } = polyfillWith(['deleteBucket'], async () => {
+    // The tool itself threw, so it may well have done its work. Retrying the other shape, or
+    // running it again in the page, would make a mutating call twice.
+    const { polyfill, inPageCalls, nativeCalls } = polyfillWith(['deleteBucket'], async () => {
       throw new Error('the bucket is not empty');
     });
     rerouteThroughNative(polyfill);
 
     const result = await polyfill.callTool({ name: 'deleteBucket', arguments: { Bucket: 'b1' } });
 
+    expect(nativeCalls).toHaveLength(1);
     expect(inPageCalls).toEqual([]);
     expect(result.isError).toBe(true);
     expect(textOf(result)).toBe('the bucket is not empty');
