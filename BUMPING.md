@@ -83,10 +83,16 @@ REPO_NAME=prometheus-community
 REPO_URL=https://prometheus-community.github.io/helm-charts
 ```
 
-NB: thanos chart is updated at the same time
+NB: thanos chart is updated at the same time. The Thanos image tag is not
+taken from the chart, it is pinned in `charts/thanos.yaml` (`image.tag`), to
+keep in sync with `buildchain/buildchain/versions.py`.
 
 After the first failed build, rules.json and alerting_rules.json from
 `$ARTIFACTS_URL/alert_rules` and place them in `tools/rule_extractor` folder.
+
+If the chart adds or removes Grafana dashboards, update
+`tests/post/steps/files/grafana_dashboard_uids.json` (title and `uid` of each
+dashboard), otherwise the post-install tests fail.
 
 **k8s-sidecar cross-dependency**: kube-prometheus-stack bundles `k8s-sidecar`
 (the Grafana sidecar for dashboard/datasource discovery). The Loki chart also
