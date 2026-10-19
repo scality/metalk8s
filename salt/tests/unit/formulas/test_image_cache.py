@@ -27,6 +27,7 @@ from tests.unit.formulas.fixtures.rendered import (
 IMAGE_CACHE_INSTALLED = Path("metalk8s/image-cache/installed.sls")
 IMAGE_CACHE_PROVISIONED = Path("metalk8s/image-cache/provisioned.sls")
 IMAGE_CACHE_PULLED = Path("metalk8s/image-cache/pulled.sls")
+IMAGE_CACHE_RESOURCES = Path("metalk8s/addons/image-cache-agent/deployed/resources.sls")
 BOOTSTRAP_LOCAL = Path("metalk8s/roles/bootstrap/local.sls")
 NODE_ROLE = Path("metalk8s/roles/node/init.sls")
 
@@ -282,6 +283,44 @@ def test_provisioning_names_match_the_image_cache_resources(
         checked = True
 
     assert checked, "no rendering case provisions the cache, the names went unchecked"
+
+
+# The node role label each variant selects, `None` for every node.
+RESOURCE_NODE_SELECTORS = {
+    "worker": None,
+    "control-plane": {"node-role.kubernetes.io/master": ""},
+    "etcd": {"node-role.kubernetes.io/etcd": ""},
+}
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [IMAGE_CACHE_RESOURCES], indirect=True)
+def test_image_cache_resources_adopt_the_provisioned_cache(
+    rendered_states: RenderedStates, metalk8s_versions: Any
+) -> None:
+    """Check each ImageCache is named after the directory `imagecachectl` fills.
+
+    Same name as in `test_provisioning_names_match_the_image_cache_resources`,
+    or the agent pulls the variant again next to the copy already there. The
+    source names the endpoint address: the agent does not go through containerd.
+    """
+    for case_id, states in rendered_states:
+        for variant, node_selector in RESOURCE_NODE_SELECTORS.items():
+            version = metalk8s_versions["images"][f"metalk8s-boot-cache-{variant}"][
+                "version"
+            ]
+            manifest = _state_args(states, f"Create the {variant} ImageCache")[
+                "manifest"
+            ]
+            assert manifest["metadata"]["name"] == (
+                f"{variant}-{version.replace('.', '-')}"
+            ), case_id
+            assert manifest["spec"].get("nodeSelector") == node_selector, case_id
+            assert re.fullmatch(
+                rf"[0-9.]+:[0-9]+/[^/]+/metalk8s-boot-cache-{variant}:"
+                rf"{re.escape(version)}",
+                manifest["spec"]["source"],
+            ), f"unexpected source '{manifest['spec']['source']}' ({case_id})"
 
 
 @pytest.mark.formulas
