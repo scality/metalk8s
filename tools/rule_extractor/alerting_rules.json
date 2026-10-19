@@ -342,6 +342,12 @@
         "severity": "critical"
     },
     {
+        "message": "An Alertmanager instance has failed peers in the cluster.",
+        "name": "AlertmanagerClusterFailedPeers",
+        "query": "max_over_time(alertmanager_cluster_failed_peers{container=\"alertmanager\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
+        "severity": "warning"
+    },
+    {
         "message": "All Alertmanager instances in a cluster failed to send notifications to a critical integration.",
         "name": "AlertmanagerClusterFailedToSendAlerts",
         "query": "min by (namespace, service, integration) (rate(alertmanager_notifications_failed_total{container=\"alertmanager\",integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[15m]) / ignoring (reason) group_left () rate(alertmanager_notifications_total{container=\"alertmanager\",integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[15m]) > 0) > 0.01",
@@ -590,7 +596,7 @@
     {
         "message": "PDB does not have enough healthy pods.",
         "name": "KubePdbNotEnoughHealthyPods",
-        "query": "(kube_poddisruptionbudget_status_desired_healthy{job=\"kube-state-metrics\",namespace=~\".*\"} - kube_poddisruptionbudget_status_current_healthy{job=\"kube-state-metrics\",namespace=~\".*\"}) > 0",
+        "query": "(kube_poddisruptionbudget_status_desired_healthy{job=\"kube-state-metrics\",namespace=~\".*\"} - kube_poddisruptionbudget_status_current_healthy{job=\"kube-state-metrics\",namespace=~\".*\"}) > 0 and kube_poddisruptionbudget_status_expected_pods{job=\"kube-state-metrics\",namespace=~\".*\"} > 0",
         "severity": "warning"
     },
     {
@@ -602,7 +608,7 @@
     {
         "message": "Pod has been in a non-ready state for more than 15 minutes.",
         "name": "KubePodNotReady",
-        "query": "sum by (namespace, pod, job, cluster) (max by (namespace, pod, job, cluster) (kube_pod_status_phase{job=\"kube-state-metrics\",namespace=~\".*\",phase=~\"Pending|Unknown\"} or (kube_pod_status_phase{job=\"kube-state-metrics\",namespace=~\".*\",phase=\"Running\"} == 1 and on (namespace, pod, cluster) kube_pod_status_ready{condition=\"true\",job=\"kube-state-metrics\",namespace=~\".*\"} == 0)) * on (namespace, pod, cluster) group_left () topk by (namespace, pod, cluster) (1, max by (namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!=\"Job\"}))) > 0",
+        "query": "sum by (namespace, pod, job, cluster) (max by (namespace, pod, job, cluster) (kube_pod_status_phase{job=\"kube-state-metrics\",namespace=~\".*\",phase=~\"Pending|Unknown\"} or (kube_pod_status_phase{job=\"kube-state-metrics\",namespace=~\".*\",phase=\"Running\"} == 1 and on (namespace, pod, cluster) kube_pod_status_ready{condition=\"true\",job=\"kube-state-metrics\",namespace=~\".*\"} == 0)) * on (namespace, pod, cluster) group_left () topk by (namespace, pod, cluster) (1, max by (namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!=\"Job\"}))) > 0 unless on (namespace, pod, cluster) kube_pod_status_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"SchedulingGated\"} == 1",
         "severity": "warning"
     },
     {
@@ -702,18 +708,6 @@
         "severity": "warning"
     },
     {
-        "message": "Kubernetes API server client is experiencing errors.",
-        "name": "KubeClientErrors",
-        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{job=\"apiserver\"}[5m]))) > 0.01",
-        "severity": "warning"
-    },
-    {
-        "message": "Different semantic versions of Kubernetes components running.",
-        "name": "KubeVersionMismatch",
-        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
-        "severity": "warning"
-    },
-    {
         "message": "Target disappeared from Prometheus target discovery.",
         "name": "KubeAPIDown",
         "query": "absent(up{job=\"apiserver\"})",
@@ -753,6 +747,18 @@
         "message": "Client certificate is about to expire.",
         "name": "KubeClientCertificateExpiration",
         "query": "histogram_quantile(0.01, sum without (namespace, service, endpoint) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 604800 and on (job, cluster, instance) apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Kubernetes API server client is experiencing errors.",
+        "name": "KubeClientErrors",
+        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{job=\"apiserver\"}[5m]))) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "Different semantic versions of Kubernetes components running.",
+        "name": "KubeVersionMismatch",
+        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
         "severity": "warning"
     },
     {
