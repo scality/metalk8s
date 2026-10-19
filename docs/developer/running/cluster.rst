@@ -24,7 +24,7 @@ This command will start a virtual machine (using VirtualBox) and:
   bootstrap node
 
 After executing this command, you have a MetalK8s bootstrap node up and running
-and you can connect to it by using ``vagrant ssh bootstrap``.
+and you can connect to it by using ``vagrant ssh node-1``.
 
 Note that you can extend your cluster by spawning extra nodes (up to 9 are
 already pre-defined in the provided ``Vagrantfile``) by running

@@ -23,6 +23,9 @@ runs:
         COMMAND: |
           mkdir -p alert_rules/
           python3.12 metalk8s/tools/rule_extractor/rule_extractor.py -i ${{ steps.cp_ingress_ip.outputs.RESULT }} -t rules -o alert_rules/
+    - name: "Create the destination directory"
+      shell: bash
+      run: mkdir -p artifacts
     - name: "Retrieve alert rules"
       uses: ./.github/actions/copy-file-ssh
       with:

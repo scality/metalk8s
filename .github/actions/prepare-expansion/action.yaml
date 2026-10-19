@@ -20,7 +20,7 @@ runs:
     - name: Copy the private key to the Bootstrap node
       uses: ./.github/actions/copy-file-ssh
       with:
-        NODE_TO: bootstrap
+        NODE_TO: node-1
         SOURCE_FILE: bastion
     - name: Move the private key to the MetalK8s PKI directory on Bootstrap node
       uses: ./.github/actions/run-command-ssh

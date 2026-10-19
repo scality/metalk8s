@@ -181,7 +181,7 @@ jobs:
               f.write(f"body<<{delim}\n{body}\n{delim}\n")
           PY
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # Persist the app-token as an http.extraheader auth on the
           # local git config. The push step below uses `--force-with-lease`

@@ -5,11 +5,11 @@ inputs:
   node-to-remove:
     description: "The name of the node to remove"
     required: false
-    default: "bootstrap"
+    default: "node-1"
   from-node:
     description: "The node to use to do the removal"
     required: false
-    default: "node-1"
+    default: "node-2"
 
 runs:
   using: "composite"

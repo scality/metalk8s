@@ -551,7 +551,7 @@ def etcdctl(k8s_client, command, ssh_config):
     # ease the execution of command in a Pod
     client = kubernetes.client.CoreV1Api(api_client=k8s_client.client)
 
-    name = "etcd-{}".format(utils.get_node_name("bootstrap", ssh_config))
+    name = "etcd-{}".format(utils.get_node_name("node-1", ssh_config))
 
     etcd_command = [
         "etcdctl",
