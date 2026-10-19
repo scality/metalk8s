@@ -953,6 +953,15 @@ metalk8s:
                   <<: *base_context_solution_operator_files
 
     upgrade:
+      salt-minions.sls:
+        _cases:
+          "Single-node cluster":
+            mode: master
+            architecture: single-node
+          "Compact cluster":
+            mode: master
+            architecture: compact
+
       init.sls:
         _cases:
           "Single node cluster":
@@ -1077,6 +1086,30 @@ metalk8s:
             architecture: extended
             _subcases: *upgrade_subcases
 
+      pre.sls:
+        _cases:
+          "Single node cluster":
+            architecture: single-node
+            _subcases:
+              "Destination matches (default)": {}
+              "Destination is higher than node version":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+              # The upgrade skips this node, so it must not be drained
+              # either: nothing would uncordon it
+              "Node already completed the destination":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+                    nodes:
+                      bootstrap:
+                        version: 2.9.0
+                        version_applied: 2.9.0
+
+          "Compact cluster":
+            architecture: compact
+
       precheck.sls:
         _cases:
           "Saltenv matches destination version (default)":
@@ -1185,6 +1218,20 @@ metalk8s:
           os: Rocky/9
         "RHEL 9":
           os: RedHat/9
+        "RHEL 9 with a not Ready repository":
+          os: RedHat/9
+          pillar_overrides:
+            metalk8s:
+              endpoints:
+                repositories:
+                  - ip: 10.0.0.1
+                    ports:
+                      http: 8080
+                    ready: false
+                  - ip: 10.0.0.2
+                    ports:
+                      http: 8080
+                    ready: true
 
   salt:
     master:

@@ -70,13 +70,13 @@ def task__vagrant_snapshot() -> types.TaskDict:
         )
         return config.VAGRANT_SNAPSHOT_NAME in snapshots.decode("utf-8")
 
-    vagranthalt = [config.ExtCommand.VAGRANT.value, "halt", "bootstrap"]
+    vagranthalt = [config.ExtCommand.VAGRANT.value, "halt", "node-1"]
     vagrantsnap = [
         config.ExtCommand.VAGRANT.value,
         "snapshot",
         "save",
         "--force",
-        "bootstrap",
+        "node-1",
         config.VAGRANT_SNAPSHOT_NAME,
     ]
 
@@ -94,7 +94,7 @@ def task_vagrant_restore() -> types.TaskDict:
         config.ExtCommand.VAGRANT.value,
         "snapshot",
         "restore",
-        "bootstrap",
+        "node-1",
         config.VAGRANT_SNAPSHOT_NAME,
     ]
 

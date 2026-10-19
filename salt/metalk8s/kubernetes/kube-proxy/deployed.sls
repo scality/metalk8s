@@ -169,7 +169,9 @@ Deploy kube-proxy (DaemonSet):
                 - >-
                   sed "s/@HOST_IP@/$HOST_IP/g"
                   /var/lib/kube-proxy/config.conf > /etc/kube-proxy/config.conf
-                image: {{ build_image_name("metalk8s-utils") }}
+                # NOTE: alpine (busybox sh and sed) is enough here, no need for the
+                # much larger metalk8s-utils image.
+                image: {{ build_image_name("alpine") }}
                 env:
                 - name: HOST_IP
                   valueFrom:

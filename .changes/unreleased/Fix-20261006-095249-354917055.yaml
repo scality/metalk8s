@@ -1,0 +1,6 @@
+kind: Fix
+body: the webmcp tool calls are registered in the tool activity of devtool
+time: 2026-10-06T09:52:49.354917055Z
+custom:
+    CommentId: "6013743878"
+    Pull: "5147"

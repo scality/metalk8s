@@ -220,3 +220,30 @@ Reconfigure control plane Ingress:
   - saltenv: {{ saltenv }}
   - require:
     - salt: Deploy Kubernetes objects
+
+{#- Record the version this node completed, as `deploy_node` does for every other
+    node. Without it, the first upgrade trusts nothing but the label, and deploys
+    this node again even when it already runs the destination. #}
+Mark node {{ pillar.bootstrap_id }} as running {{ version }}:
+  metalk8s_kubernetes.object_updated:
+    - name: {{ pillar.bootstrap_id }}
+    - kind: Node
+    - apiVersion: v1
+    - patch:
+        metadata:
+          annotations:
+            metalk8s.scality.com/version-in-progress: null
+            metalk8s.scality.com/version-applied: "{{ version }}"
+    {#- Reconfiguring the Control Plane Ingress just restarted the API server on
+        this node, so give this write a few tries before it fails the whole
+        thing #}
+    - retry:
+        attempts: 5
+        interval: 30
+    {#- Only record the version once the whole bootstrap succeeded. Each of these
+        states ends a branch of this orchestrate. Together they require every
+        other state #}
+    - require:
+      - salt: Update mine from bootstrap minion
+      - salt: Reconfigure control plane Ingress
+      - metalk8s_kubernetes: Store MetalK8s version in annotations

@@ -8,7 +8,7 @@ inputs:
   NODE:
     description: "the node where to run the command"
     required: false
-    default: "bootstrap"
+    default: "node-1"
   CAPTURE_RESULT:
     description: "whether or not to capture command output, if defined will set a RESULT step output"
     required: false

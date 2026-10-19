@@ -69,7 +69,7 @@ def pull_metalk8s_utils(host, context, ssh_config, utils_image, node_name):
 @when(parsers.parse("we set up repositories on '{node_name}'"))
 def set_up_repo(context, host, ssh_config, version, node_name):
     node = testinfra.get_host(node_name, ssh_config=ssh_config)
-    bootstrap = testinfra.get_host("bootstrap", ssh_config=ssh_config)
+    bootstrap = testinfra.get_host("node-1", ssh_config=ssh_config)
 
     with bootstrap.sudo():
         cmd_ret = bootstrap.run("ls /etc/metalk8s/solutions.yaml")

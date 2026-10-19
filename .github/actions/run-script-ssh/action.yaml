@@ -16,7 +16,7 @@ inputs:
   NODE:
     description: "the remote node name"
     required: false
-    default: "bootstrap"
+    default: "node-1"
 
 runs:
   using: composite

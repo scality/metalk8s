@@ -1,0 +1,6 @@
+kind: Fix
+body: Run the kube-proxy init container on `alpine` instead of the much larger `metalk8s-utils` image
+time: 2026-10-07T15:04:48.212885245Z
+custom:
+    CommentId: "6040799447"
+    Pull: "5150"

@@ -172,6 +172,7 @@ get_service_endpoints:
           requestserver: 4506
           publisher: 4505
           api: 4507
+        ready: true
 
   # 2. Multiple addresses for an endpoint
   - obj:
@@ -236,11 +237,13 @@ get_service_endpoints:
         hostname: null
         ports:
           http: 8080
+        ready: true
       - ip: 10.21.22.23
         node_name: my-second-node
         hostname: null
         ports:
           http: 8080
+        ready: true
 
   # 3. Error when getting the Endpoint object
   - obj: False
@@ -276,6 +279,91 @@ get_service_endpoints:
         self_link: /api/v1/namespaces/kube-system/endpoints/kube-scheduler
         uid: fad86410-00d9-43c2-b91c-8288b18b0337
       subsets: null
+    raises: True
+    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace"
+
+  # 6. Not Ready addresses are skipped by default
+  - obj: &endpoints_with_not_ready
+      apiVersion: v1
+      kind: Endpoints
+      metadata:
+        name: repositories
+        namespace: kube-system
+      subsets:
+        - addresses:
+            - ip: 10.21.22.23
+              nodeName: my-second-node
+          notReadyAddresses:
+            - ip: 10.11.12.13
+              nodeName: my-node
+          ports:
+            - name: http
+              port: 8080
+              protocol: TCP
+    result:
+      - ip: 10.21.22.23
+        ports:
+          http: 8080
+        ready: true
+
+  # 7. Not Ready addresses are returned on demand, sorted by IP with the
+  # Ready ones
+  - obj: *endpoints_with_not_ready
+    include_not_ready: true
+    result:
+      - ip: 10.11.12.13
+        ports:
+          http: 8080
+        ready: false
+      - ip: 10.21.22.23
+        ports:
+          http: 8080
+        ready: true
+
+  # 8. Addresses from every subset, each with the ports of its subset
+  - obj:
+      apiVersion: v1
+      kind: Endpoints
+      metadata:
+        name: my_service
+        namespace: my_namespace
+      subsets:
+        - addresses:
+            - ip: 10.31.32.33
+          ports:
+            - name: http
+              port: 8080
+              protocol: TCP
+        - addresses:
+            - ip: 10.11.12.13
+          ports:
+            - name: http
+              port: 8081
+              protocol: TCP
+    result:
+      - ip: 10.11.12.13
+        ports:
+          http: 8081
+        ready: true
+      - ip: 10.31.32.33
+        ports:
+          http: 8080
+        ready: true
+
+  # 9. Endpoint with only not Ready addresses
+  - obj:
+      apiVersion: v1
+      kind: Endpoints
+      metadata:
+        name: my_service
+        namespace: my_namespace
+      subsets:
+        - notReadyAddresses:
+            - ip: 10.11.12.13
+          ports:
+            - name: http
+              port: 8080
+              protocol: TCP
     raises: True
     result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace"
 

@@ -32,7 +32,7 @@ kind: Volume
 metadata:
   name: {name}
 spec:
-  nodeName: bootstrap
+  nodeName: node-1
   storageClassName: metalk8s
   sparseLoopDevice:
     size: 10Gi

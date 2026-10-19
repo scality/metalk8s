@@ -144,7 +144,7 @@ def kubectl_exec(host, command, pod, kubeconfig="/etc/kubernetes/admin.conf", **
 def run_salt_command(host, command, ssh_config):
     """Run a command inside the salt-master container."""
 
-    pod = "salt-master-{}".format(get_node_name("bootstrap", ssh_config))
+    pod = "salt-master-{}".format(get_node_name("node-1", ssh_config))
 
     output = kubectl_exec(
         host, command, pod, container="salt-master", namespace="kube-system"
