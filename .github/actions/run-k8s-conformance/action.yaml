@@ -51,7 +51,7 @@ runs:
       uses: ./.github/actions/copy-file-ssh
       with:
         NODE_TO:  ""
-        NODE_FROM: "bootstrap"
+        NODE_FROM: "node-1"
         SOURCE_FILE: "sonobuoy_result.tar.gz"
         DESTINATION_FILE: "${{ env.result_dir }}/"
     - name: Extract conformance tests result

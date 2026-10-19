@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: not-important
+spec:
+  template:
+    spec:
+      # Run on every node, whatever NoSchedule taints it carries.
+      tolerations:
+      - operator: "Exists"
+        effect: "NoSchedule"

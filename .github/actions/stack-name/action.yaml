@@ -1,0 +1,31 @@
+name: "stack-name"
+description: "Name the stack a platform lives in"
+
+inputs:
+  name:
+    description: "Name of the deployment, unique within the run"
+    required: true
+
+outputs:
+  stack-name:
+    description: "Name of the stack holding the platform"
+    value: ${{ steps.compute.outputs.name }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Compute the stack name
+      id: compute
+      shell: bash
+      # NOTE: Spawning, snapshotting and destroying a platform happen from
+      # different jobs of the same run, and all three have to arrive at the
+      # same name from the one the caller knows the deployment by.
+      env:
+        NAME: ${{ inputs.name }}
+      run: |
+        name="${GITHUB_WORKFLOW}-${GITHUB_RUN_NUMBER}-${NAME}"
+        # NOTE: Workflow and deployment names can hold spaces, and a stack
+        # name cannot. The spawner replaces them on its way in, so replacing
+        # them here is what keeps the name handed out equal to the name the
+        # stack answers to.
+        echo "name=${name// /-}" >> "$GITHUB_OUTPUT"

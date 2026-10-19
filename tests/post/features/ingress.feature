@@ -113,8 +113,8 @@ Feature: Ingress
         And pods with label 'app.kubernetes.io/name=metalk8s-operator' are 'Ready'
         And '{wp_ingress_vips}' Workload Plane VIPs are configured in the ClusterConfig 'test-vip-4' pool
         When we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
-        And we stop the node 'node-1' Workload Plane Ingress
-        Then the '{wp_ingress_vips}' IPs should no longer sit on the node 'node-1'
+        And we stop the node 'node-2' Workload Plane Ingress
+        Then the '{wp_ingress_vips}' IPs should no longer sit on the node 'node-2'
         And an HTTP request on port 80 on '{wp_ingress_vips}' IPs returns 200 'OK'
         And the server should respond with shell-ui index
 
@@ -128,16 +128,16 @@ Feature: Ingress
         And we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
 
     @authentication
-    Scenario: Change Control Plane Ingress IP to node-1 IP
+    Scenario: Change Control Plane Ingress IP to node-2 IP
         Given the Kubernetes API is available
         And we are on a multi node cluster
         And the Control Plane Ingress is not exposed on a VIP
         And pods with label 'app.kubernetes.io/name=ingress-nginx' are 'Ready'
-        When we update the ClusterConfig to set the Control Plane Ingress IP to node 'node-1' IP
+        When we update the ClusterConfig to set the Control Plane Ingress IP to node 'node-2' IP
         And we wait for the ClusterConfig to be 'Ready'
         And we wait for the rollout of 'daemonset/ingress-nginx-control-plane-controller' in namespace 'metalk8s-ingress' to complete
         And we wait for the rollout of 'deploy/dex' in namespace 'metalk8s-auth' to complete
-        Then the control plane ingress IP is equal to node 'node-1' IP
+        Then the control plane ingress IP is equal to node 'node-2' IP
         And we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
 
     @authentication

@@ -1,5 +1,11 @@
 name: Multi Node test
 
+permissions:
+  # id-token is required for S3 OIDC authentication
+  id-token: write
+  contents: read
+  actions: read
+
 on:
   workflow_call:
     inputs:
@@ -31,6 +37,11 @@ on:
         required: false
         type: boolean
         default: false
+      run-tests:
+        description: "Whether or not the tests validating the installation should be ran (the cluster is installed either way)"
+        required: false
+        type: boolean
+        default: true
       generate-snapshots:
         description: "Whether or not snapshots should be generated at the end"
         required: false
@@ -83,11 +94,10 @@ jobs:
     # known runner IPs
     runs-on: [self-hosted, ubuntu, large, jammy, gcloud]
     env:
-      SSH_PRIVATE_KEY: "~/.ssh/terraform"
       NODES_COUNT: ${{ inputs.nodes-count }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Install deps
         run: |
           # Wait for apt/dpkg locks to be released (e.g. unattended-upgrades at startup).
@@ -114,27 +124,18 @@ jobs:
           OVH_USERNAME: ${{secrets.OVH_USERNAME }}
           OVH_PASSWORD: ${{ secrets.OVH_PASSWORD }}
           OVH_REGION: ${{ secrets.OVH_REGION }}
-      - name: Spawn cluster with Terraform
+      - name: Spawn cluster
         uses: ./.github/actions/spawn-cluster
         with:
           # Parameters
-          OS: ${{ inputs.os }}
-          NAME: ${{ env.NAME }}
-          NODES_COUNT: ${{ env.NODES_COUNT }}
+          name: ${{ env.NAME }}
+          os: ${{ inputs.os }}
+          nodes-count: ${{ env.NODES_COUNT }}
+          authorized-cidrs: ${{ vars.AUTHORIZED_CIDRS }}
           # Secrets
-          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
-          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
-          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
-          AUTHORIZED_CIDRS: ${{ vars.AUTHORIZED_CIDRS }}
-      - name: Save Terraform context
-        if: always()
-        uses: ./.github/actions/save-terraform-context
-        with:
-          NAME: ${{ env.NAME }}
-          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
-          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
-      - name: Copy SSH config to current directory
-        run: cp terraform-snapshot/terraform/ssh_config ./
+          aws-account-id: ${{ secrets.AWS_MAIN_ACCOUNT_ID }}
+          artifacts-user: ${{ secrets.ARTIFACTS_USER }}
+          artifacts-password: ${{ secrets.ARTIFACTS_PASSWORD }}
       ## }}}
 
       # Install {{{
@@ -169,11 +170,11 @@ jobs:
       - name: Run expansion tests from Bastion
         uses: ./.github/actions/bastion-tests
         with:
-          PYTEST_FILTERS: "install and ci and multinodes and not node$((${{ env.NODES_COUNT }} + 1))"
+          PYTEST_FILTERS: "install and ci and multinodes and not node$((${{ env.NODES_COUNT }} + 2))"
       - name: Provision volumes
         uses: ./.github/actions/provision-volumes
         with:
-          NODE: "node-1"
+          NODE: "node-2"
       # }}}
 
       # Install solutions (if enabled) {{{
@@ -204,20 +205,21 @@ jobs:
       # }}}
 
       # Tests {{{
-      - name: Copy MetalK8s ISO to the node-1
+      - name: Copy MetalK8s ISO to the node-2
         uses: ./.github/actions/copy-file-ssh
         with:
           SOURCE_FILE: "metalk8s.iso"
-          NODE_TO: "node-1"
-      - name: Copy Solution ISO to the node-1
+          NODE_TO: "node-2"
+      - name: Copy Solution ISO to the node-2
         if: inputs.install-solution
         uses: ./.github/actions/copy-file-ssh
         with:
           SOURCE_FILE: "${{ steps.solution.outputs.filename }}"
-          NODE_TO: "node-1"
+          NODE_TO: "node-2"
       - name: Wait for pods to stabilize
         uses: ./.github/actions/wait-pod-stable
       - name: Run tests from Bastion
+        if: inputs.run-tests
         uses: ./.github/actions/bastion-tests
         with:
           PYTEST_FILTERS: "post and ci and not slow"
@@ -228,61 +230,37 @@ jobs:
         if: inputs.bootstrap-restore
         id: backup
         uses: ./.github/actions/retrieve-backup
+      ## The machine goes, its addresses stay, which is what lets a new one
+      ## come back exactly where the Bootstrap node was.
       - name: Destroy the Bootstrap node
         if: inputs.bootstrap-restore
-        uses: ./.github/actions/destroy-cluster
+        uses: ./.github/actions/update-cluster
         with:
           # Parameters
-          NAME: ${{ env.NAME }}
-          args: -target openstack_compute_instance_v2.bootstrap
+          name: ${{ env.NAME }}
+          absent-nodes: node-1
           # Secrets
-          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
-      - name: Save Terraform context after Bootstrap destroy
-        if: inputs.bootstrap-restore
-        uses: ./.github/actions/save-terraform-context
-        with:
-          NAME: ${{ env.NAME }}
-          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
-          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          aws-account-id: ${{ secrets.AWS_MAIN_ACCOUNT_ID }}
       - name: Remove the Bootstrap node from the cluster
         if: inputs.bootstrap-restore
         uses: ./.github/actions/remove-node
       - name: Create a new bootstrap node
         if: inputs.bootstrap-restore
-        uses: ./.github/actions/spawn-cluster
+        uses: ./.github/actions/update-cluster
         with:
           # Parameters
-          OS: ${{ inputs.os }}
-          NAME: ${{ env.NAME }}
-          NODES_COUNT: ${{ env.NODES_COUNT }}
-          skip-prepare: "true"
-          args: >-
-            -refresh
-            -target openstack_compute_instance_v2.bootstrap
-            -target null_resource.copy_bastion_pub_to_bootstrap
-            -target null_resource.ssh_config
+          name: ${{ env.NAME }}
+          absent-nodes: ""
           # Secrets
-          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
-          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
-          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
-      - name: Save Terraform context after Bootstrap re-creation
-        if: inputs.bootstrap-restore
-        uses: ./.github/actions/save-terraform-context
-        with:
-          NAME: ${{ env.NAME }}
-          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
-          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
-      - name: Copy the new SSH config to current directory
-        if: inputs.bootstrap-restore
-        run: cp terraform-snapshot/terraform/ssh_config ./
+          aws-account-id: ${{ secrets.AWS_MAIN_ACCOUNT_ID }}
       ## The initial Bootstrap node got its Salt minion ID pinned to
-      ## "bootstrap" by the generate-bootstrap action, and that is the name its
+      ## "node-1" by the generate-bootstrap action, and that is the name its
       ## Kubernetes Node object carries. The node we just re-created is a fresh
       ## machine with no /etc/salt/minion_id, so Salt would fall back to its
       ## hostname, and `restore.sh` deploys the node under `grains.get id` --
       ## the restored Bootstrap would come back as
-      ## "metalk8s-<...>-bootstrap" instead of "bootstrap", next to the
-      ## "bootstrap" Node object the backup restores. Pin the ID again so the
+      ## "metalk8s-<...>-node-1" instead of "node-1", next to the
+      ## "node-1" Node object the backup restores. Pin the ID again so the
       ## restored cluster matches the one that was backed up, the way it does
       ## on a real platform where the hostname never changed.
       - name: Enforce the Bootstrap node name before restoring
@@ -291,7 +269,7 @@ jobs:
         with:
           COMMAND: |
             sudo mkdir -p /etc/salt
-            echo 'bootstrap' | sudo tee /etc/salt/minion_id
+            echo 'node-1' | sudo tee /etc/salt/minion_id
       - name: Copy the backup archive to the new Bootstrap node
         if: inputs.bootstrap-restore
         uses: ./.github/actions/copy-file-ssh
@@ -353,8 +331,6 @@ jobs:
       - name: Generate and Collect sosreport
         if: always()
         uses: ./.github/actions/sosreport-logs
-        with:
-          NODES_COUNT: "${{ env.NODES_COUNT }}"
 
       ## Generate job result {{
       - name: Generate Job result
@@ -376,8 +352,9 @@ jobs:
         if: inputs.generate-snapshots
         uses: ./.github/actions/generate-snapshots
         with:
-          snapshot-name: "metalk8s-${{ env.METALK8S_VERSION }}-${{ inputs.os }}-${{ env.TOTAL_NB_NODES }} nodes"
-          nodes-count: "${{ env.NODES_COUNT }}"
+          name: ${{ env.NAME }}
+          snapshot-name: "cluster-${{ env.METALK8S_VERSION }}-${{ inputs.os }}-${{ env.TOTAL_NB_NODES }}-nodes"
+          aws-account-id: ${{ secrets.AWS_MAIN_ACCOUNT_ID }}
       # }}}
 
       - name: Upload artifacts
@@ -402,15 +379,7 @@ jobs:
     if: always()
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - name: Get artifacts URL
-        uses: scality/action-artifacts@v4
-        id: artifacts
-        with:
-          method: setup
-          url: https://artifacts.scality.net
-          user: ${{ secrets.ARTIFACTS_USER }}
-          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+        uses: actions/checkout@v7
       - name: Export environment variables for accessing the cloud
         uses: ./.github/actions/export-cloud-env
         with:
@@ -419,13 +388,10 @@ jobs:
           OVH_USERNAME: ${{secrets.OVH_USERNAME }}
           OVH_PASSWORD: ${{ secrets.OVH_PASSWORD }}
           OVH_REGION: ${{ secrets.OVH_REGION }}
-      - name: Destroy cluster with Terraform
+      - name: Destroy cluster
         uses: ./.github/actions/destroy-cluster
         with:
           # Parameters
-          ARTIFACTS_URL: ${{ steps.artifacts.outputs.link }}
-          NAME: ${{ env.NAME }}
+          name: ${{ env.NAME }}
           # Secrets
-          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
-          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
-          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          aws-account-id: ${{ secrets.AWS_MAIN_ACCOUNT_ID }}

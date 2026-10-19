@@ -60,6 +60,7 @@ Feature: Cluster Sanity Checks
         | metalk8s-monitoring         | prometheus-operator-prometheus-node-exporter |
         | metalk8s-monitoring         | node-problem-detector                        |
         | metalk8s-storage-management | disk-management-agent-controller-manager     |
+        | metalk8s-image-cache        | image-cache-agent-controller-manager         |
 
     Scenario Outline: Package is installed on every node
         Then the package '<name>' is installed on every node
@@ -74,6 +75,9 @@ Feature: Cluster Sanity Checks
         Examples:
         | name                           |
         | containerd-image-preload.timer |
+
+    Scenario: The worker image cache is filled on every node
+        Then every node holds the worker image cache in '/var/lib/image-cache'
 
     @volumes_provisioned
     Scenario Outline: StatefulSet has available replicas

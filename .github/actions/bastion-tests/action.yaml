@@ -13,11 +13,11 @@ inputs:
   CONTROL_PLANE_INGRESS_VIP:
     description: "Virtual IP to use to test to reconfigure the Control Plane Ingress"
     required: false
-    default: "192.168.1.253"
+    default: "172.30.100.253"
   WORKLOAD_PLANE_INGRESS_VIPS:
     description: "Virtual IPs to use to test to reconfigure the Workload Plane Ingress"
     required: false
-    default: "192.168.2.200,192.168.2.201,192.168.2.202,192.168.2.203,192.168.2.204"
+    default: "172.30.200.200,172.30.200.201,172.30.200.202,172.30.200.203,172.30.200.204"
   BOOTSTRAP_BACKUP_ARCHIVE:
     description: "Path to the bootstrap backup archive"
     required: false

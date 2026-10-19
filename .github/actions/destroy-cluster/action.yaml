@@ -1,119 +1,41 @@
 name: "destroy-cluster"
-description: "Destroy cluster using Terraform"
+description: "Destroy a cluster using Platform Spawner"
 
 inputs:
-  # Access credentials
-  GIT_ACCESS_TOKEN:
-    description: "A Github PAT"
-    required: true
-  ARTIFACTS_USER:
-    description: "Scality Artifacts username"
-    required: false
-  ARTIFACTS_PASSWORD:
-    description: "Scality Artifacts password"
-    required: false
-
-  # Tooling configuration
-  TERRAFORM_VERSION:
-    description: "Terraform version to use"
-    required: false
-    default: "1.11.4"
-  TERRAFORM_SNAPSHOT_TAG:
-    description: "Tag to checkout for the scality/terraform-snapshot repository"
-    required: false
-    default: "0.18.0"
-
-  # Cloud configuration
-  CLOUD:
-    description: "Name of the remote cloud to use (available: ovh)"
-    required: false
-    default: "ovh"
-
-  # Spawn configuration
-  ARTIFACTS_URL:
-    description: Full URL to the saved Terraform context (if empty consider that context already there)
-    required: false
-  NAME:
-    description: "Name of the deployment (used in artifacts and the VM names prefix)"
+  # Stack information
+  name:
+    description: "Name of the deployment, unique within the run"
     required: true
 
-  args:
-    description: Specific arguments to add to the destroy command
+  # AWS credentials
+  # NOTE: Even when the platform was spawned on OpenStack those are needed,
+  # the stack state lives in an S3 bucket.
+  aws-account-id:
+    description: "The AWS account holding the role to assume"
+    required: true
+  aws-region:
+    description: "The AWS region"
     required: false
-    default: ""
+    default: "eu-north-1"
 
 runs:
   using: "composite"
   steps:
-    - name: Checkout terraform-snapshot
-      if: inputs.ARTIFACTS_URL
-      uses: actions/checkout@v6
+    - name: Compute the stack name
+      id: stack
+      uses: ./.github/actions/stack-name
       with:
-        repository: scality/terraform-snapshot
-        path: terraform-snapshot
-        token: ${{ inputs.GIT_ACCESS_TOKEN }}
-        ref: "${{ inputs.TERRAFORM_SNAPSHOT_TAG }}"
-    - name: Install tools
-      if: inputs.ARTIFACTS_URL
-      shell: bash
-      run: |
-        # Wait for apt/dpkg locks to be released (e.g. unattended-upgrades at startup).
-        # DPkg::Lock::Timeout makes apt retry internally instead of failing immediately,
-        # which avoids the TOCTOU race of checking locks externally then calling apt-get.
-        sudo apt-get -o DPkg::Lock::Timeout=600 update && \
-        sudo apt-get -o DPkg::Lock::Timeout=600 install -y unzip
-    - name: Install node
-      if: inputs.ARTIFACTS_URL
-      uses: actions/setup-node@v6
+        name: ${{ inputs.name }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v6
       with:
-        node-version: "14"
-    - name: Install Terraform
-      if: inputs.ARTIFACTS_URL
-      uses: hashicorp/setup-terraform@v4
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/scality-github-e2e-infrastructure
+        role-session-name: GitHubActions-DestroyCluster-${{ github.run_id }}
+        aws-region: ${{ inputs.aws-region }}
+
+    - name: Destroy the platform
+      uses: scality/platform-spawner@v3
       with:
-        terraform_version: ${{ inputs.TERRAFORM_VERSION }}
-        terraform_wrapper: false
-    - name: Retrieve Terraform context and SSH keys
-      if: inputs.ARTIFACTS_URL
-      working-directory: terraform-snapshot/terraform/
-      shell: bash
-      run: |
-        curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          "${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/context.tar.gz"
-        curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          "${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/terraform"
-        curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          "${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/terraform.pub"
-        curl -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          "${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/ssh_config"
-    - name: Unpack Terraform context and move SSH keys
-      if: inputs.ARTIFACTS_URL
-      working-directory: terraform-snapshot/terraform/
-      shell: bash
-      run: |
-        tar -xvf context.tar.gz
-        mkdir -p ~/.ssh
-        mv terraform terraform.pub ~/.ssh/
-    - name: Validate Terraform context
-      working-directory: terraform-snapshot/terraform/
-      shell: bash
-      run: terraform validate
-    - name: Destroy cluster with Terraform
-      working-directory: terraform-snapshot/terraform/
-      shell: bash
-      env:
-        TF_VAR_cloud: ${{ inputs.CLOUD }}
-        TF_VAR_flavors_map: '{ ovh = { default = "d2-8", bastion = "b3-16" } }'
-        MAX_RETRIES: "20"
-      run: |
-        for try in $(seq 1 ${MAX_RETRIES}); do
-          if terraform destroy -auto-approve ${{ inputs.args }}; then
-            break
-          elif [ $try -lt $MAX_RETRIES ]; then
-            sleep 30
-          else
-            echo "Error: unable to destroy openstack virtual infra after" \
-                 "$MAX_RETRIES tries" >&2
-            exit 1
-          fi
-        done
+        action: destroy
+        stack_name: ${{ steps.stack.outputs.stack-name }}
