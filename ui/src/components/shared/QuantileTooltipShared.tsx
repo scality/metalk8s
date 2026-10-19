@@ -51,7 +51,7 @@ export type SymmetricalQuantileData = {
 };
 
 // Payload transformation functions
-export const transformRegularPayload = (payload: any[], label: string | number): RegularQuantileData | null => {
+export const transformRegularPayload = (payload: readonly any[], label: string | number): RegularQuantileData | null => {
   if (!payload || !payload.length) return null;
 
   const q90Item = payload.find((item) => item.name === 'Q90' || item.dataKey === 'Q90');
@@ -68,7 +68,7 @@ export const transformRegularPayload = (payload: any[], label: string | number):
 };
 
 export const transformSymmetricalPayload = (
-  payload: any[],
+  payload: readonly any[],
   label: string | number,
   metricPrefixAbove: string,
   metricPrefixBelow: string,
