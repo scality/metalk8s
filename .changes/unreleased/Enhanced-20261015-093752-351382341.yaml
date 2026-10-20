@@ -1,8 +1,0 @@
-kind: Enhanced
-body: |-
-    Bump calico to 3.33.0
-    calico-cni/calico-kube-controllers images were replaced by calico and calico-third-party-cni-plugins
-time: 2026-10-15T09:37:52.351382341Z
-custom:
-    CommentId: "6149222307"
-    Pull: "5165"
