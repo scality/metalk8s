@@ -543,3 +543,35 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertEqual(
                     metalk8s_kubernetes.check_object_ready(**kwargs), result
                 )
+
+    @parameterized.expand(
+        param.explicit(kwargs=test_case)
+        for test_case in YAML_TESTS_CASES["check_image_caches_synced"]
+    )
+    def test_check_image_caches_synced(self, node, caches, names, result, raises=False):
+        """
+        Tests the return of `check_image_caches_synced` function
+        """
+
+        def _get_object(kind, name, **_):
+            if kind == "Node":
+                return node
+            return caches.get(name)
+
+        node_name = (node or {}).get("metadata", {}).get("name", "master-1")
+        with patch.object(metalk8s_kubernetes, "get_object", _get_object):
+            if raises:
+                self.assertRaisesRegex(
+                    CommandExecutionError,
+                    result,
+                    metalk8s_kubernetes.check_image_caches_synced,
+                    node=node_name,
+                    names=names,
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_kubernetes.check_image_caches_synced(
+                        node=node_name, names=names
+                    ),
+                    result,
+                )
