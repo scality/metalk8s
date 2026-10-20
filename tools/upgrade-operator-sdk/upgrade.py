@@ -327,7 +327,7 @@ def reconcile_versions(
     - No pin: use detected, log info.
     - Pin < detected: warn (newer available), keep pinned.
     - Pin == detected: all good.
-    - Pin > detected: warn (ahead of scaffold), keep pinned, and warn if
+    - Pin > detected: log info (ahead of scaffold), keep pinned, and warn if
       a newer patch of the pinned minor is available.
 
     Never modifies the YAML file. Zero interactive input -- CI-safe.
@@ -349,7 +349,7 @@ def reconcile_versions(
             log_warn(f"  {key}: pinned {pinned}, newer {found} available")
             cfg[key] = pinned
         else:
-            log_warn(f"  {key}: pinned {pinned} ahead of scaffold {found}, keeping pin")
+            log_info(f"  {key}: pinned {pinned} ahead of scaffold {found}, keeping pin")
             # The scaffold minor was looked up, check the pinned one too.
             latest = _latest_pinned_patch(key, pinned)
             if latest and _version_tuple(latest) > _version_tuple(pinned):

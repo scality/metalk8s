@@ -183,7 +183,7 @@ the pinned values:
 - **Pin is older** than detected: warning printed with the newer version available.
   The pinned value is still used. Update the YAML manually when ready.
 - **Pin is newer** than detected (e.g. k8s.io libs pinned past what
-  operator-sdk scaffolds): warning, the pinned value is still used. For
+  operator-sdk scaffolds): info message, the pinned value is still used. For
   `go_toolchain` and `k8s_libs`, the latest patch of the pinned minor is
   also looked up, and a warning is printed if it is newer than the pin.
 
