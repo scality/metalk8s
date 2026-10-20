@@ -22,6 +22,10 @@ spec:
     algorithm: ECDSA
     size: 256
   issuerRef:
-    name: metalk8s-registry-selfsigned-bootstrap
+    name: metalk8s-registry-selfsigned
     kind: ClusterIssuer
     group: cert-manager.io
+  usages:
+    - key encipherment
+    - digital signature
+    - client auth

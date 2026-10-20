@@ -78,8 +78,8 @@ Registry CR prerequisites in place:
   test.nop:
     - require:
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.registry-namespace
-      - test: Wait for Server CA Certificate
-      - test: Wait for Agent CA Certificate
+      - sls: metalk8s.addons.metalk8s-registry-operator.deployed.registry-certs.registry
+      - test: Wait for CA Certificate
       - test: Wait for mTLS CA Certificate
     - require_in:
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.registry

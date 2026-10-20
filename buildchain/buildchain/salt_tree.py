@@ -408,11 +408,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     ),
     Path(
         "salt/metalk8s/addons/metalk8s-registry-operator/deployed/registry-certs/",
-        "server.sls",
-    ),
-    Path(
-        "salt/metalk8s/addons/metalk8s-registry-operator/deployed/registry-certs/",
-        "agent.sls",
+        "registry.sls",
     ),
     Path(
         "salt/metalk8s/addons/metalk8s-registry-operator/deployed/registry-certs/",
