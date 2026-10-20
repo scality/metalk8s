@@ -1,0 +1,66 @@
+{
+  "return": [
+    {
+      "worker-1": {
+        "control_plane": {
+          "ip": "192.168.1.6",
+          "interface": "eth1"
+        },
+        "workload_plane": {
+          "ip": "192.168.2.9",
+          "interface": "eth2"
+        }
+      },
+      "worker-0": {
+        "control_plane": {
+          "ip": "192.168.1.29",
+          "interface": "eth1"
+        },
+        "workload_plane": {
+          "ip": "192.168.2.12",
+          "interface": "eth2"
+        }
+      },
+      "worker-2": {
+        "control_plane": {
+          "ip": "192.168.1.9",
+          "interface": "eth1"
+        },
+        "workload_plane": {
+          "ip": "192.168.2.11",
+          "interface": "eth2"
+        }
+      },
+      "master-1": {
+        "control_plane": {
+          "ip": "192.168.1.33",
+          "interface": "eth1"
+        },
+        "workload_plane": {
+          "ip": "192.168.2.10",
+          "interface": "eth2"
+        }
+      },
+      "master-0": {
+        "control_plane": {
+          "ip": "192.168.1.36",
+          "interface": "eth1"
+        },
+        "workload_plane": {
+          "ip": "192.168.2.17",
+          "interface": "eth2"
+        }
+      },
+      "bootstrap": {
+        "control_plane": {
+          "ip": "192.168.1.18",
+          "interface": "eth1"
+        },
+        "workload_plane": {
+          "ip": "192.168.2.13",
+          "interface": "eth2"
+        }
+      }
+    }
+  ]
+}
