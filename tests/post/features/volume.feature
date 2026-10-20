@@ -18,7 +18,7 @@ Feature: Volume management
             metadata:
               name: test-volume1-sparse
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: metalk8s
               sparseLoopDevice:
                 size: 10Gi
@@ -47,7 +47,7 @@ Feature: Volume management
             metadata:
               name: test-volume1-rawblock
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: metalk8s
               rawBlockDevice:
                 devicePath: {device_path}
@@ -75,7 +75,7 @@ Feature: Volume management
             metadata:
               name: test-volume1-lvmlv
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: metalk8s
               lvmLogicalVolume:
                 vgName: test-vg-1
@@ -113,7 +113,7 @@ Feature: Volume management
             metadata:
               name: test-volume4
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: metalk8s
             """
         Then the Volume 'test-volume4' is 'Failed' with code 'InternalError' and message matches 'volume type not found'
@@ -127,7 +127,7 @@ Feature: Volume management
             metadata:
               name: test-volume5
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: metalk8s
               someRandomDevice:
                 capacity: 10Gi
@@ -177,7 +177,7 @@ Feature: Volume management
             metadata:
               name: test-volume8
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: test-sc-btrfs
               sparseLoopDevice:
                 size: 10Gi
@@ -193,7 +193,7 @@ Feature: Volume management
             metadata:
               name: test-volume9
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: not-found
               sparseLoopDevice:
                 size: 10Gi
@@ -209,7 +209,7 @@ Feature: Volume management
             metadata:
               name: test-volume10
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: test-sc-delete
               sparseLoopDevice:
                 size: 10Gi
@@ -228,7 +228,7 @@ Feature: Volume management
             metadata:
               name: test-volume11
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: metalk8s
               sparseLoopDevice:
                 size: 10Gi
@@ -247,7 +247,7 @@ Feature: Volume management
             metadata:
               name: test-volume12-loop
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: metalk8s
               mode: Block
               sparseLoopDevice:
@@ -267,7 +267,7 @@ Feature: Volume management
             metadata:
               name: test-volume12-rawblock
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: metalk8s
               mode: Block
               rawBlockDevice:
@@ -287,7 +287,7 @@ Feature: Volume management
             metadata:
               name: test-volume12-lvmlv
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: metalk8s
               mode: Block
               lvmLogicalVolume:
@@ -310,7 +310,7 @@ Feature: Volume management
             metadata:
               name: test-lv-13
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: metalk8s
               lvmLogicalVolume:
                 vgName: test-vg-13
@@ -328,7 +328,7 @@ Feature: Volume management
               annotations:
                 metalk8s.scality.com/force-lvcreate: ""
             spec:
-              nodeName: bootstrap
+              nodeName: node-1
               storageClassName: metalk8s
               lvmLogicalVolume:
                 vgName: test-vg-13

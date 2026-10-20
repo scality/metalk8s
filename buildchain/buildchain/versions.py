@@ -27,7 +27,7 @@ K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
 CALICO_VERSION: str = "3.32.0"
 SALT_VERSION: str = "3006.27"
-CONTAINERD_VERSION: str = "2.2.5"
+CONTAINERD_VERSION: str = "2.3.6"
 
 SOSREPORT_RELEASE: str = "2"
 
@@ -77,7 +77,7 @@ ROCKY_BASE_IMAGE_9_SHA256: str = (
 
 ETCD_VERSION: str = "3.6.11"
 ETCD_IMAGE_VERSION: str = f"{ETCD_VERSION}-0"
-NGINX_IMAGE_VERSION: str = "1.31.2-alpine"
+NGINX_IMAGE_VERSION: str = "1.31.7-alpine"
 NODEJS_IMAGE_VERSION: str = "20.11.1"
 KEEPALIVED_VERSION: str = "2.3.3"
 CERT_MANAGER_VERSION: str = "1.17.1"
@@ -131,8 +131,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="dex",
-        version="v2.44.0",
-        digest="sha256:5d0656fce7d453c0e3b2706abf40c0d0ce5b371fb0b73b3cf714d05f35fa5f86",
+        version="v2.46.0",
+        digest="sha256:933fcd3f523338c847b88ef84a7145fb2fcb7b9917f08418612afeaaa2001777",
     ),
     Image(
         name="etcd",
@@ -203,7 +203,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="pause",
-        version="3.10.1",
+        version="3.10.2",
         # Do not check the digest for this image, since this one is re-published
         # several times with the same tag
         digest=None,
@@ -241,6 +241,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="metalk8s-boot-cache-control-plane",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
+        name="metalk8s-boot-cache-etcd",
         version=VERSION,
         digest=None,
     ),
@@ -291,8 +296,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="loki",
-        version="3.6.7",
-        digest="sha256:3c8fd3570dd9219951a60d3f919c7f31923d10baee578b77bc26c4a0b32d092d",
+        # Use the Loki image tag pinned in the chart values (`loki.image.tag`),
+        # not the chart appVersion, which follows the Grafana Enterprise Logs
+        # image (e.g. chart 7.3.0 has appVersion 3.6.12 but pins Loki 3.6.11)
+        version="3.6.11",
+        digest="sha256:44148ad243c07957113baea950ee5ba9b0c8eff8d7e38ff3cc1c0af705790945",
     ),
     Image(
         name="fluent-bit",
@@ -333,6 +341,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         name="file-reflector",
         version="v0.2.0",
         digest="sha256:97f14f857ebef1b421ad2799e6fba77c9b0cebcfc19f0b726344e322a4f7ead5",
+    ),
+    Image(
+        name="image-cache-agent",
+        version="v0.1.0-alpha.2",
+        digest="sha256:a7f7c2c188acd2820618ff524b7183c27da7ec8cfa1f2878856364ea32c622ad",
     ),
     Image(
         name="node-warden-operator",
@@ -467,16 +480,30 @@ PREBUILT_RPMS: Tuple[PrebuiltRPM, ...] = (
     # finished RPM has no spec: declaring them by name here would have `dnf`
     # download an unpinned copy, and reading them off the package makes the
     # download list depend on a file we have yet to fetch. Worth solving on
-    # the second prebuilt package, not for one dependency already on the ISO.
+    # the first prebuilt package that needs more than what the ISO carries:
+    # `imagecachectl`, a static binary, needs nothing.
     PrebuiltRPM(
         name="containerd-image-preload",
         repo="scality",
         source="scality/image-cache",
-        tag="v0.1.0-alpha.1",
+        tag="v0.1.0-alpha.2",
         sha256={
-            "8": "b374b74d78c2786c8143e1da2f20bfd46434bc007c42ebb458e87af22a527ad1",
-            "9": "bc205c2120970f5185bbd2808cb55219141acb311692707249692492b143d954",
+            "8": "606bd150f7768823b789b6f02ee916c1442bb8bc3ed12728c38b968ad7af3d19",
+            "9": "31a317ebe27548dddf389ad9dcc954713682ee16176a5639a55e719f75d59bae",
         },
+    ),
+    # Fills the image cache at bootstrap and at join. A static binary, it
+    # requires nothing.
+    PrebuiltRPM(
+        name="imagecachectl",
+        repo="scality",
+        source="scality/image-cache",
+        tag="v0.1.0-alpha.2",
+        sha256={
+            "8": "31941e9c4019481eea7d07286f6334b2ff778179b75cc39d2414f6f3179260cd",
+            "9": "bfc28af473859468b95beb581aafcf3474aea55ae3bc86fa57a03796007f1fb5",
+        },
+        arch="x86_64",
     ),
 )
 

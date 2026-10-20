@@ -1,161 +1,150 @@
 name: "spawn-cluster"
-description: "Spawn a cluster using Terraform"
+description: "Spawn a cluster using Platform Spawner"
 
 inputs:
-  # Access credentials
-  GIT_ACCESS_TOKEN:
-    description: "A Github PAT"
-    required: true
-  ARTIFACTS_USER:
-    description: "Scality Artifacts username"
-    required: true
-  ARTIFACTS_PASSWORD:
-    description: "Scality Artifacts password"
+  # Stack information
+  name:
+    description: "Name of the deployment, unique within the run"
     required: true
 
-  # Tooling configuration
-  TERRAFORM_VERSION:
-    description: "Terraform version to use"
+  # Platform configuration
+  os:
+    description: "OS of the nodes (an image known to the cloud)"
     required: false
-    default: "1.11.4"
-  TERRAFORM_SNAPSHOT_TAG:
-    description: "Tag to checkout for the scality/terraform-snapshot repository"
-    required: false
-    default: "0.18.0"
-
-  # Cloud configuration
-  CLOUD:
-    description: "Name of the remote cloud to use (available: ovh)"
-    required: false
-    default: "ovh"
-
-  # Spawn configuration
-  NAME:
-    description: "Name of the deployment (used in artifacts and the VM names prefix)"
-    required: true
-
-  OS:
-    description: "Name of the OS to spawn"
-    required: false
-    default: rocky-9
-  NODES_COUNT:
-    description: "Number of nodes to spawn in addition to bootstrap and bastion"
+    default: "rocky-9"
+  nodes-count:
+    description: "Number of nodes to spawn next to the bootstrap one"
     required: false
     default: "0"
-  RESTORE_ENV:
-    description: "The name of the snapshoted environment that will be use to spawn"
+  restore-snapshot:
+    description: "Name of a snapshot to spawn the nodes back from, instead of the OS image"
+    required: false
+    default: ""
+  ssh-user:
+    description: "SSH user of the nodes"
+    required: false
+    # NOTE: A snapshot names no image, so the spawner cannot work the user
+    # out on its own when restoring one.
+    default: "rocky"
+  flavor:
+    description: "Flavor of the nodes (a portable size or a name from the cloud catalog)"
+    required: false
+    default: "c3-16"
+  bastion-flavor:
+    description: "Flavor of the bastion (a portable size or a name from the cloud catalog)"
+    required: false
+    default: "b3-16"
+  authorized-cidrs:
+    description: >-
+      List of CIDRs (JSON) to allow SSH and ICMP ingress from
+      (defaults to the ones the spawner knows about)
     required: false
     default: ""
 
-  AUTHORIZED_CIDRS:
-    description: "List of CIDRs to allow SSH and ICMP ingress from"
+  # AWS credentials
+  # NOTE: Even when spawning on OpenStack those are needed, the stack state
+  # lives in an S3 bucket.
+  aws-account-id:
+    description: "The AWS account holding the role to assume"
+    required: true
+  aws-region:
+    description: "The AWS region"
     required: false
-    default: '["0.0.0.0/0"]'
+    default: "eu-north-1"
 
-  args:
-    description: Specific arguments to add to the apply command
-    required: false
-    default: ""
-  skip-prepare:
-    description: Skip the preparation of the worker
-    required: false
-    default: "false"
+  # Artifacts credentials
+  artifacts-user:
+    description: "Scality Artifacts username"
+    required: true
+  artifacts-password:
+    description: "Scality Artifacts password"
+    required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Prepare SSH keypair
-      if: inputs.skip-prepare == 'false'
+    - name: Compute the stack name
+      id: stack
+      uses: ./.github/actions/stack-name
+      with:
+        name: ${{ inputs.name }}
+
+    - name: Install jq
       shell: bash
+      # NOTE: Needed here to build the configuration, and by the spawner itself
+      # to read its outputs back, while the self-hosted runners lack it.
       run: |
-        mkdir -p ~/.ssh
-        rm -rf ~/.ssh/terraform*
-        ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/terraform
-        # copy ssh keys now in order to allow us to connect to the machine if needed
-        mkdir -p "artifacts/terraform-context/${{ inputs.NAME }}/"
-        cp ~/.ssh/terraform* "artifacts/terraform-context/${{ inputs.NAME }}/"
-    - name: Upload SSH keypair
-      if: inputs.skip-prepare == 'false'
-      uses: scality/action-artifacts@v4
-      with:
-        method: upload
-        url: https://artifacts.scality.net
-        user: ${{inputs.ARTIFACTS_USER}}
-        password: ${{inputs.ARTIFACTS_PASSWORD}}
-        source: artifacts/
-    - name: Checkout scality/terraform-snapshot
-      if: inputs.skip-prepare == 'false'
-      uses: actions/checkout@v6
-      with:
-        repository: scality/terraform-snapshot
-        path: terraform-snapshot
-        token: ${{ inputs.GIT_ACCESS_TOKEN }}
-        ref: ${{ inputs.TERRAFORM_SNAPSHOT_TAG }}
-    - name: Install tools
-      if: inputs.skip-prepare == 'false'
-      shell: bash
-      run: |
-        # Wait for apt/dpkg locks to be released (e.g. unattended-upgrades at startup).
-        # DPkg::Lock::Timeout makes apt retry internally instead of failing immediately,
-        # which avoids the TOCTOU race of checking locks externally then calling apt-get.
-        sudo apt-get -o DPkg::Lock::Timeout=600 update && \
-        sudo apt-get -o DPkg::Lock::Timeout=600 install -y unzip
-    - name: Install node
-      if: inputs.skip-prepare == 'false'
-      uses: actions/setup-node@v6
-      with:
-        node-version: "14"
-    - name: Install Terraform
-      if: inputs.skip-prepare == 'false'
-      uses: hashicorp/setup-terraform@v4
-      with:
-        terraform_version: ${{ inputs.TERRAFORM_VERSION }}
-        terraform_wrapper: false
-    - name: Initialize Terraform
-      if: inputs.skip-prepare == 'false'
-      working-directory: terraform-snapshot/terraform/
-      shell: bash
-      run: terraform init
-    - name: Validate terraform
-      working-directory: terraform-snapshot/terraform/
-      shell: bash
-      run: terraform validate
-    - name: Spawn cluster with Terraform
-      working-directory: terraform-snapshot/terraform/
+        if ! command -v jq > /dev/null; then
+          sudo apt-get -o DPkg::Lock::Timeout=600 update && \
+          sudo apt-get -o DPkg::Lock::Timeout=600 install -y jq
+        fi
+
+    - name: Build the stack configuration
+      id: config
       shell: bash
       env:
-        TF_VAR_prefix: ${{ github.workflow }}-${{ github.run_number }}-${{ inputs.NAME }}
-        TF_VAR_os: "${{ inputs.OS }}"
-        TF_VAR_nodes_count: "${{ inputs.NODES_COUNT }}"
-        TF_VAR_restore_env: "${{ inputs.RESTORE_ENV }}"
-        TF_VAR_ingress_remote_ip_prefix: "${{ inputs.AUTHORIZED_CIDRS }}"
-        TF_VAR_flavors_map: '{ ovh = { default = "d2-8", bastion = "b3-16" } }'
-        MAX_RETRIES: "3"
-        TFVARS_DIR: "${{ github.workspace }}/.github/spawn/tfvars"
+        OS: ${{ inputs.os }}
+        NODES_COUNT: ${{ inputs.nodes-count }}
+        RESTORE_SNAPSHOT: ${{ inputs.restore-snapshot }}
+        SSH_USER: ${{ inputs.ssh-user }}
+        FLAVOR: ${{ inputs.flavor }}
+        BASTION_FLAVOR: ${{ inputs.bastion-flavor }}
+        AUTHORIZED_CIDRS: ${{ inputs.authorized-cidrs }}
       run: |
-        declare -a TF_OPTS=(
-          "-auto-approve"
-          "-var-file $TFVARS_DIR/common.tfvars"
-          "-var-file $TFVARS_DIR/${{ inputs.CLOUD }}.tfvars"
+        # NOTE: YAML is a superset of JSON, so the configuration the spawner
+        # expects is built with jq, which sees to the quoting for us.
+        configuration=$(
+          jq -n \
+            --argjson instance_count "$(( NODES_COUNT + 1 ))" \
+            --arg instance_image "$OS" \
+            --arg restore_snapshot "$RESTORE_SNAPSHOT" \
+            --arg instance_ssh_user "$SSH_USER" \
+            --arg instance_flavor "$FLAVOR" \
+            --arg bastion_flavor "$BASTION_FLAVOR" \
+            --argjson authorized_cidrs "${AUTHORIZED_CIDRS:-null}" \
+            '{
+              provider: "openstack",
+              # The nodes fetch OS packages from the internet
+              offline: false,
+              instance_count: $instance_count,
+              instance_image: $instance_image,
+              restore_snapshot: $restore_snapshot,
+              instance_ssh_user: $instance_ssh_user,
+              instance_flavor: $instance_flavor,
+              bastion_flavor: $bastion_flavor
+            }
+            # Left out when empty, so that the spawner answers with the CIDRs
+            # it knows about rather than with none at all.
+            + (if $authorized_cidrs then { authorized_cidrs: $authorized_cidrs } else {} end)'
         )
-        for try in $(seq 1 ${MAX_RETRIES}); do
-          if terraform apply ${TF_OPTS[@]} ${{ inputs.args }}; then
-            break
-          elif [ $try -lt $MAX_RETRIES ]; then
-            sleep 150
-          else
-            echo "Error: unable to spawn openstack virtual infra after" \
-                 "$MAX_RETRIES tries" >&2
-            exit 1
-          fi
-        done
-    - name: Save node IPs in output
-      id: output_ips
-      working-directory: terraform-snapshot/terraform
-      shell: bash
-      run: terraform output -json ips
+
+        {
+          echo "configuration<<EOF"
+          echo "$configuration"
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/scality-github-e2e-infrastructure
+        role-session-name: GitHubActions-SpawnCluster-${{ github.run_id }}
+        aws-region: ${{ inputs.aws-region }}
+
+    - name: Spawn the platform
+      id: spawn
+      uses: scality/platform-spawner@v3
+      with:
+        action: spawn
+        stack_name: ${{ steps.stack.outputs.stack-name }}
+        configuration: ${{ steps.config.outputs.configuration }}
+        artifacts_user: ${{ inputs.artifacts-user }}
+        artifacts_password: ${{ inputs.artifacts-password }}
 
 outputs:
-  ips:
-    description: JSON string representing all access IPs for the spawned machines
-    value: ${{ steps.output_ips.outputs.stdout }}
+  bastion:
+    description: JSON object describing the bastion
+    value: ${{ steps.spawn.outputs.bastion }}
+  nodes:
+    description: JSON object describing every spawned node
+    value: ${{ steps.spawn.outputs.nodes }}
