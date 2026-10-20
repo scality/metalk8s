@@ -27,7 +27,7 @@ K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
 CALICO_VERSION: str = "3.32.0"
 SALT_VERSION: str = "3006.27"
-CONTAINERD_VERSION: str = "2.2.5"
+CONTAINERD_VERSION: str = "2.3.6"
 
 SOSREPORT_RELEASE: str = "2"
 
@@ -77,7 +77,7 @@ ROCKY_BASE_IMAGE_9_SHA256: str = (
 
 ETCD_VERSION: str = "3.6.11"
 ETCD_IMAGE_VERSION: str = f"{ETCD_VERSION}-0"
-NGINX_IMAGE_VERSION: str = "1.31.2-alpine"
+NGINX_IMAGE_VERSION: str = "1.31.7-alpine"
 NODEJS_IMAGE_VERSION: str = "20.11.1"
 KEEPALIVED_VERSION: str = "2.3.3"
 CERT_MANAGER_VERSION: str = "1.17.1"
@@ -131,8 +131,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="dex",
-        version="v2.44.0",
-        digest="sha256:5d0656fce7d453c0e3b2706abf40c0d0ce5b371fb0b73b3cf714d05f35fa5f86",
+        version="v2.46.0",
+        digest="sha256:933fcd3f523338c847b88ef84a7145fb2fcb7b9917f08418612afeaaa2001777",
     ),
     Image(
         name="etcd",
@@ -203,7 +203,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="pause",
-        version="3.10.1",
+        version="3.10.2",
         # Do not check the digest for this image, since this one is re-published
         # several times with the same tag
         digest=None,
@@ -296,8 +296,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="loki",
-        version="3.6.7",
-        digest="sha256:3c8fd3570dd9219951a60d3f919c7f31923d10baee578b77bc26c4a0b32d092d",
+        # Use the Loki image tag pinned in the chart values (`loki.image.tag`),
+        # not the chart appVersion, which follows the Grafana Enterprise Logs
+        # image (e.g. chart 7.3.0 has appVersion 3.6.12 but pins Loki 3.6.11)
+        version="3.6.11",
+        digest="sha256:44148ad243c07957113baea950ee5ba9b0c8eff8d7e38ff3cc1c0af705790945",
     ),
     Image(
         name="fluent-bit",
