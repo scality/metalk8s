@@ -1741,6 +1741,9 @@ spec:
         - mountPath: /run/log
           name: runlog
           readOnly: true
+        - mountPath: /etc/machine-id
+          name: etcmachineid
+          readOnly: true
         - mountPath: /fluent-bit/etc/tls
           name: certificates
           readOnly: true
@@ -1776,6 +1779,10 @@ spec:
       - hostPath:
           path: /run/log
         name: runlog
+      - hostPath:
+          path: /etc/machine-id
+          type: File
+        name: etcmachineid
       - name: certificates
         secret:
           secretName: fluent-bit-certs

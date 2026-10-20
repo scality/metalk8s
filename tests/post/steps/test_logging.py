@@ -52,6 +52,11 @@ def test_logging_pipeline_is_working(host):
     pass
 
 
+@scenario("../features/logging.feature", "Host logs are sent to Loki")
+def test_host_logs_sent_to_loki(host):
+    pass
+
+
 @scenario("../features/logging.feature", "We can access a specific Loki instance")
 def test_instance_service(host):
     pass
@@ -193,6 +198,24 @@ def retrieve_pod_logs_from_loki(k8s_client, pod_creation_ts):
         times=60,
         wait=10,
         name="check that a log exists for 'logger' pod",
+    )
+
+
+@then(parsers.parse("we can retrieve logs from '{unit}' unit in Loki API"))
+def retrieve_unit_logs_from_loki(k8s_client, unit):
+    query = {"query": '{{unit="{0}"}}'.format(unit)}
+
+    def _check_unit_logs_exist():
+        response = query_loki_api(k8s_client, query)
+        result_data = response[0]["data"]["result"]
+
+        assert result_data, "No log found in Loki for '{}' unit".format(unit)
+
+    utils.retry(
+        _check_unit_logs_exist,
+        times=40,
+        wait=5,
+        name="check that logs exist for '{}' unit".format(unit),
     )
 
 
