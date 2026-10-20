@@ -210,6 +210,9 @@ def retrieve_unit_logs_from_loki(k8s_client, unit):
         result_data = response[0]["data"]["result"]
 
         assert result_data, "No log found in Loki for '{}' unit".format(unit)
+        for stream in result_data:
+            labels = stream["stream"]
+            assert labels.get("hostname"), "No 'hostname' label: {}".format(labels)
 
     utils.retry(
         _check_unit_logs_exist,
