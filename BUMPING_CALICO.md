@@ -26,7 +26,7 @@ Since v3.33, Calico ships most components (CNI plugin, IPAM, kube-controllers)
 in the single `calico/calico` image; the former `calico/cni` and
 `calico/kube-controllers` images are no longer published.
 If the set of images changes again, also update `IMGS_PER_REPOSITORY`,
-`REMOTE_NAMES` and the `control-plane` entry of `BOOT_CACHE_VARIANTS` in
+`REMOTE_NAMES` and the `worker` entry of `BOOT_CACHE_VARIANTS` in
 `buildchain/buildchain/image.py`.
 
 ## 2. Discover which patches need to be reapplied
