@@ -10,43 +10,33 @@ spec:
   namespace: metalk8s-registry
   nodeSelector:
     node-role.kubernetes.io/registry: ""
+  tolerations:
+    - key: node-role.kubernetes.io/bootstrap
+      effect: NoSchedule
+      operator: Exists
+    - key: node-role.kubernetes.io/infra
+      effect: NoSchedule
+      operator: Exists
+    - key: node-role.kubernetes.io/registry
+      effect: NoSchedule
+      operator: Exists
   server:
     image:
       registry: {{ metalk8s_repository }}
     certificateIssuerRef:
-      name: metalk8s-registry-server-ca
+      name: metalk8s-registry-ca
       kind: ClusterIssuer
-    tolerations:
-      - key: node-role.kubernetes.io/bootstrap
-        effect: NoSchedule
-        operator: Exists
-      - key: node-role.kubernetes.io/infra
-        effect: NoSchedule
-        operator: Exists
-      - key: node-role.kubernetes.io/registry
-        effect: NoSchedule
-        operator: Exists
   agent:
     image:
       registry: {{ metalk8s_repository }}
     certificateIssuerRef:
-      name: metalk8s-registry-agent-ca
+      name: metalk8s-registry-ca
       kind: ClusterIssuer
     authentication:
       mtls:
         caSecretRef:
           name: metalk8s-registry-agent-auth-ca
           namespace: metalk8s-registry
-    tolerations:
-      - key: node-role.kubernetes.io/bootstrap
-        effect: NoSchedule
-        operator: Exists
-      - key: node-role.kubernetes.io/infra
-        effect: NoSchedule
-        operator: Exists
-      - key: node-role.kubernetes.io/registry
-        effect: NoSchedule
-        operator: Exists
   mirrorPropagation:
     image:
       registry: {{ metalk8s_repository }}
