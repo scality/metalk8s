@@ -8,6 +8,17 @@ include:
   - metalk8s.addons.metalk8s-operator.deployed
   - metalk8s.addons.prometheus-operator.pre-upgrade
 
+# Clusters bootstrapped before the registry role existed lack this label
+{%- for node in salt.metalk8s.minions_by_role('bootstrap') %}
+Ensure node {{ node }} has the registry role:
+  metalk8s_kubernetes.labels_exist:
+    - name: {{ node }}
+    - apiVersion: v1
+    - kind: Node
+    - labels:
+        node-role.kubernetes.io/registry: ""
+{%- endfor %}
+
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') %}
 {#- A node the upgrade skips is never deployed, so nothing would uncordon it
     after this drain. On a single-node cluster, that leaves the
