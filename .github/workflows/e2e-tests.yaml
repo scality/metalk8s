@@ -45,6 +45,8 @@ on:
         required: true
       OVH_REGION:
         required: true
+      AWS_MAIN_ACCOUNT_ID:
+        required: true
 
   workflow_dispatch:
     inputs:
