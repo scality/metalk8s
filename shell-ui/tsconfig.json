@@ -71,7 +71,6 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */,
     "types": [
-      "@scality/core-ui/types/styled.d.ts",
       "node",
       "jest",
       "@testing-library/jest-dom"

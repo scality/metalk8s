@@ -260,7 +260,9 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
         param.explicit(kwargs=test_case)
         for test_case in YAML_TESTS_CASES["get_service_endpoints"]
     )
-    def test_get_service_endpoints(self, obj, result, raises=False):
+    def test_get_service_endpoints(
+        self, obj, result, raises=False, include_not_ready=False
+    ):
         """
         Tests the return of `get_service_endpoints` function
         """
@@ -281,13 +283,17 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     metalk8s_kubernetes_utils.get_service_endpoints,
                     "my_service",
                     namespace="my_namespace",
+                    include_not_ready=include_not_ready,
                     kubeconfig="my-kubeconf",
                 )
             else:
                 self.assertEqual(
                     result,
                     metalk8s_kubernetes_utils.get_service_endpoints(
-                        "my_service", namespace="my_namespace", kubeconfig="my-kubeconf"
+                        "my_service",
+                        namespace="my_namespace",
+                        include_not_ready=include_not_ready,
+                        kubeconfig="my-kubeconf",
                     ),
                 )
 

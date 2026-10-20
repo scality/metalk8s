@@ -1,0 +1,6 @@
+kind: Fix
+body: 'Resuming an interrupted upgrade to 134 no longer fails in the etcd step with `sign_remote_certificate() missing 1 required positional argument: ''kwargs''`, and the upgrade now moves the CA salt-minion first, so no node asks a CA running another x509 module.'
+time: 2026-09-24T17:36:14.81423359Z
+custom:
+    CommentId: "5819038719"
+    Pull: "5136"

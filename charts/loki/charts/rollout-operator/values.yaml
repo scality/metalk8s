@@ -41,6 +41,31 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+## CRD management.
+## rollout-operator always requires its CRDs (ReplicaTemplate, NoDownscale) to
+## be present in the cluster — the operator will not start without them. This
+## flag controls only whether *this chart* installs them via the bundled
+## `crds` subchart.
+##
+## Leave `enabled: true` (default) for standalone installs.
+##
+## Set `enabled: false` only when CRDs are managed out of band, for example:
+##   * a single shared rollout-operator instance owns the CRDs cluster-wide
+##     and other releases should not contend with them;
+##   * CRDs are reconciled by a GitOps controller, an umbrella chart, or a
+##     separate Helm release dedicated to CRDs;
+##   * cluster RBAC forbids the release's service account from creating CRDs.
+## In all of these cases you are responsible for ensuring the CRDs exist
+## before installing/upgrading this chart.
+crds:
+  # -- Install CRDs as part of the chart (via the bundled `crds` subchart).
+  # Set to `false` only when CRDs are managed out of band — see the comment
+  # above for guidance.
+  enabled: true
+
+# -- Additional annotations to add to the deployment
+annotations: {}
+
 # -- Pod Annotations
 podAnnotations: {}
 

@@ -1,0 +1,6 @@
+kind: Added
+body: Ship the image cache agent in the ISO and deploy it on every node at bootstrap
+time: 2026-10-13T07:29:14.639919804Z
+custom:
+    CommentId: "6140571709"
+    Pull: "5160"

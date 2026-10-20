@@ -1,4 +1,5 @@
 import json
+import shlex
 
 import kubernetes.client
 from kubernetes.client.rest import ApiException
@@ -50,6 +51,21 @@ def test_package_installed(host):
     "../features/sanity.feature", "Systemd unit is enabled and running on every node"
 )
 def test_systemd_unit_running(host):
+    pass
+
+
+@scenario(
+    "../features/sanity.feature", "The worker image cache is filled on every node"
+)
+def test_worker_image_cache_filled(host):
+    pass
+
+
+@scenario(
+    "../features/sanity.feature",
+    "Every node is synced to the image caches of its roles",
+)
+def test_image_caches_synced(host):
     pass
 
 
@@ -274,6 +290,62 @@ def check_systemd_unit_running(host, ssh_config, k8s_client, name):
     utils.retry(_check_unit, times=3, wait=5, name=f"check systemd unit '{name}'")
 
 
+@then(parsers.parse("every node holds the worker image cache in '{directory}'"))
+def check_worker_image_cache(host, ssh_config, k8s_client, version, directory):
+    """Check every node holds the worker boot cache of this version.
+
+    The bootstrap node reads it from the ISO, a joining node pulls it from
+    the registry. Both write the same directory, named after the ImageCache
+    resource, with the sentinel `imagecachectl` writes last.
+    """
+    sentinel = f"{directory}/worker-{version.replace('.', '-')}/.image-cache-agent.json"
+
+    def _check_sentinel():
+        results = _salt_on_every_node(
+            host, ssh_config, k8s_client, "file.file_exists", sentinel
+        )
+
+        missing = sorted(node for node, found in results.items() if found is not True)
+        assert not missing, f"no '{sentinel}' on {', '.join(missing)}"
+
+    utils.retry(_check_sentinel, times=3, wait=5, name=f"check '{sentinel}'")
+
+
+# The role label each boot cache variant selects, `None` for every node.
+IMAGE_CACHE_ROLES = {
+    "worker": None,
+    "control-plane": "node-role.kubernetes.io/master",
+    "etcd": "node-role.kubernetes.io/etcd",
+}
+
+
+@then("every node is synced to the image caches of its roles")
+def check_image_caches_synced(k8s_client, version):
+    """Check the agent reports each ImageCache of this version synced.
+
+    The agent labels each node it selects with the status of each resource.
+    """
+    suffix = version.replace(".", "-")
+
+    def _check_labels():
+        nodes = k8s_client.resources.get(api_version="v1", kind="Node").get().items
+        assert nodes, "no Kubernetes node to check"
+
+        not_synced = []
+        for node in nodes:
+            labels = node.to_dict()["metadata"].get("labels") or {}
+            for variant, role in IMAGE_CACHE_ROLES.items():
+                if role is not None and role not in labels:
+                    continue
+                key = f"image-cache.scality.com/{variant}-{suffix}"
+                if labels.get(key) != "synced":
+                    not_synced.append(f"{node.metadata.name} ({key}={labels.get(key)})")
+
+        assert not not_synced, f"not synced: {', '.join(not_synced)}"
+
+    utils.retry(_check_labels, times=30, wait=10, name="check image cache labels")
+
+
 def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
     """Run a Salt execution function on every node, return the result per node.
 
@@ -286,7 +358,17 @@ def _salt_on_every_node(host, ssh_config, k8s_client, function, *args):
     )
     assert nodes, "no Kubernetes node to check"
 
-    command = ["salt", "--static", "--out=json", "-L", ",".join(nodes), function, *args]
+    # Quoted: the command is joined into one shell line before it runs, so an
+    # argument could otherwise be split or glob expanded on the way.
+    command = [
+        "salt",
+        "--static",
+        "--out=json",
+        "-L",
+        ",".join(nodes),
+        function,
+        *(shlex.quote(arg) for arg in args),
+    ]
     results = json.loads(utils.run_salt_command(host, command, ssh_config).stdout)
 
     silent = sorted(set(nodes) - set(results))
