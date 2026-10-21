@@ -18,6 +18,7 @@ import {
 } from '../alerts';
 import AlertProvider from '../alerts/AlertProvider';
 import { useAuthConfig } from '../auth/AuthConfigProvider';
+import { useAskAssistant } from '../guardian/GuardianContext';
 import { useAuth } from '../auth/AuthProvider';
 import {
   useConfig,
@@ -42,6 +43,7 @@ export type ShellHooks = {
   useDeployedApps: typeof useDeployedApps;
   useShellThemeSelector: typeof useShellThemeSelector;
   useNotificationCenter: typeof useNotificationCenter;
+  useAskAssistant: typeof useAskAssistant;
 };
 
 export type ShellAlerts = {
@@ -79,6 +81,7 @@ export const shellHooks: ShellHooks = {
   useDeployedApps,
   useShellThemeSelector,
   useNotificationCenter,
+  useAskAssistant,
 };
 
 export const shellAlerts: ShellAlerts = {

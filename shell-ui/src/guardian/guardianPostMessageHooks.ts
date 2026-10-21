@@ -4,6 +4,9 @@ import { useCallback, useEffect } from 'react';
 // How often to re-send MCP_DISCOVERY (Guardian's React app may mount after the iframe load event)
 const DISCOVERY_INTERVAL_MS = 3000;
 
+const PROMPT_RETRY_INTERVAL_MS = 500;
+const PROMPT_DELIVERY_TIMEOUT_MS = 20000;
+
 // Both hooks take the Guardian `origin` (scheme + host + port, no query string)
 // sourced from shell config. It is used as the postMessage target origin and to
 // validate inbound message origins, so it must stay query-string-free even when
@@ -22,6 +25,32 @@ export const useDiscoveryEmitter = (iframeRef: React.RefObject<HTMLIFrameElement
     const interval = setInterval(sendDiscovery, DISCOVERY_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [sendDiscovery]);
+};
+
+// Re-posted on an interval for the same reason discovery is: the iframe mounts the moment the
+// drawer opens, well before the assistant's React tree exists. The assistant delivers one
+// question per promptId, so the repeats are ignored. It gives up rather than retrying for ever —
+// a question arriving mid-conversation minutes later is worse than none.
+export const usePromptEmitter = (
+  iframeRef: React.RefObject<HTMLIFrameElement>,
+  origin: string,
+  pendingPrompt: { prompt: string; promptId: string } | null,
+  onDelivered: () => void,
+) => {
+  useEffect(() => {
+    if (!pendingPrompt) return;
+
+    const post = () =>
+      iframeRef.current?.contentWindow?.postMessage({ type: 'GUARDIAN_PROMPT', ...pendingPrompt }, origin);
+
+    post();
+    const interval = setInterval(post, PROMPT_RETRY_INTERVAL_MS);
+    const timeout = setTimeout(onDelivered, PROMPT_DELIVERY_TIMEOUT_MS);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [iframeRef, origin, pendingPrompt, onDelivered]);
 };
 
 export const useMcpCallHandler = (iframeRef: React.RefObject<HTMLIFrameElement>, origin: string) => {
