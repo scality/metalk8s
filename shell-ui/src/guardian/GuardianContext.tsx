@@ -74,13 +74,21 @@ export const useGuardianDrawer = () => useContext(GuardianDrawerContext);
  */
 export const useAskAssistant = () => {
   const { open, setPendingPrompt } = useGuardianDrawer();
-  return useCallback(
+  const { config } = useShellConfig();
+  // GuardianDrawer is only mounted when canUseGuardian is set, and the drawer owns the hook that
+  // posts to the iframe. Without it `ask` would open nothing and leave a question in the context
+  // that no one ever sends — so say so, and let the caller hide its button.
+  const isAvailable = Boolean(config.guardianOrigin && config.canUseGuardian);
+
+  const ask = useCallback(
     (prompt: string, promptId?: string) => {
       const asked = prompt.trim();
-      if (!asked) return;
+      if (!isAvailable || !asked) return;
       open();
       setPendingPrompt({ prompt: asked, promptId: promptId || asked });
     },
-    [open, setPendingPrompt],
+    [isAvailable, open, setPendingPrompt],
   );
+
+  return { ask, isAvailable };
 };
