@@ -1,13 +1,14 @@
 import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import { RoutePatternProvider, Routes } from '@scality/core-ui/dist/components/routes/Routes.component';
 import { ScrollbarWrapper } from '@scality/core-ui/dist/components/scrollbarwrapper/ScrollbarWrapper.component';
 import { ToastProvider } from '@scality/core-ui/dist/components/toast/ToastProvider';
 import { FederatedComponent, FederatedComponentProps, SolutionUI } from '@scality/module-federation';
 import React, { useEffect, useMemo } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { QueryClient } from 'react-query';
-import { BrowserRouter, Route, Routes } from 'react-router';
+import { BrowserRouter, Route } from 'react-router';
 
 import { loadShare } from '@module-federation/enhanced/runtime';
 import { useQuery } from 'react-query';
@@ -28,6 +29,7 @@ import { SolutionsNavbar } from './navbar';
 import { LanguageProvider, useLanguage } from './navbar/lang';
 import NotificationCenterProvider from './NotificationCenterProvider';
 import { QueryClientProvider } from './QueryClientProvider';
+import { PageViewTracker } from './telemetry/PageViewTracker';
 
 /**
  * This is a mock function to replace the real loadShare function when running tests.
@@ -168,8 +170,9 @@ function InternalApp() {
               )}
               {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
               {status === 'success' && (
-                <>
+                <RoutePatternProvider>
                   <MCPRegistrar />
+                  <PageViewTracker />
                   <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
                     {/* Layout containment makes this column the containing block
                         for its fixed-position descendants. The drawer beside it
@@ -184,7 +187,7 @@ function InternalApp() {
                     </div>
                     {config.canUseGuardian && <GuardianDrawer />}
                   </div>
-                </>
+                </RoutePatternProvider>
               )}
             </GuardianDrawerProvider>
           </NotificationCenterProvider>
