@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.18.0
+    controller-gen.kubebuilder.io/version: v0.21.0
   labels:
     app.kubernetes.io/created-by: metalk8s
     app.kubernetes.io/part-of: metalk8s
@@ -832,6 +832,7 @@ spec:
                         description: |-
                           nodeAffinity defines constraints that limit what nodes this volume can be accessed from.
                           This field influences the scheduling of pods that use this volume.
+                          This field is mutable if MutablePVNodeAffinity feature gate is enabled.
                         properties:
                           required:
                             description: required specifies hard node constraints
@@ -953,8 +954,7 @@ spec:
                         description: |-
                           portworxVolume represents a portworx volume attached and mounted on kubelets host machine.
                           Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type
-                          are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate
-                          is on.
+                          are redirected to the pxd.portworx.com CSI driver.
                         properties:
                           fsType:
                             description: |-
@@ -1245,7 +1245,6 @@ spec:
                           after a volume has been updated successfully to a new class.
                           For an unbound PersistentVolume, the volumeAttributesClassName will be matched with unbound
                           PersistentVolumeClaims during the binding process.
-                          This is a beta field and requires enabling VolumeAttributesClass feature (off by default).
                         type: string
                       volumeMode:
                         description: |-

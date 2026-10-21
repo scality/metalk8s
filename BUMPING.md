@@ -167,10 +167,18 @@ This guide is applied for both `metalk8s-operator` and `storage-operator`.
 Target versions are pinned in `tools/upgrade-operator-sdk/<name>/config.yaml`:
 
 ```yaml
-operator_sdk_version: v1.42.1    # target operator-sdk release
-go_toolchain: go1.24.13          # pin Go toolchain (for GOTOOLCHAIN)
-k8s_libs: v0.33.10               # pin k8s.io libs version
+operator_sdk_version: v1.42.3    # target operator-sdk release
+go_toolchain: go1.26.9           # pin Go toolchain (for GOTOOLCHAIN)
+k8s_libs: v0.36.5                # pin k8s.io libs version
+# Optional: pins applied on top of the scaffold, needed when k8s_libs
+# is pinned past what operator-sdk scaffolds.
+controller_runtime: v0.24.1      # pin sigs.k8s.io/controller-runtime
+controller_tools: v0.21.0        # pin CONTROLLER_TOOLS_VERSION in the Makefile
+golangci_lint: v2.14.0           # pin GOLANGCI_LINT_VERSION in the Makefile
 ```
+
+The Dockerfile builder image follows `go_toolchain` (e.g. `go1.26.9` gives
+`golang:1.26`).
 
 After scaffolding, the script detects the latest available versions (operator-sdk
 from GitHub, Go and k8s.io patches from go.dev / module proxy) and compares with
@@ -180,7 +188,20 @@ the pinned values:
 - **Pin matches detected**: all good, no action.
 - **Pin is older** than detected: warning printed with the newer version available.
   The pinned value is still used. Update the YAML manually when ready.
-- **Pin is newer** than detected (unusual): warning, the detected value is used.
+- **Pin is newer** than detected (e.g. k8s.io libs pinned past what
+  operator-sdk scaffolds): info message, the pinned value is still used. For
+  `go_toolchain` and `k8s_libs`, the latest patch of the pinned minor is
+  also looked up, and a warning is printed if it is newer than the pin.
+
+These rules apply to `operator_sdk_version`, `go_toolchain` and `k8s_libs`.
+`controller_runtime`, `controller_tools` and `golangci_lint` are not detected:
+when pinned, they are applied as is, otherwise the scaffold versions are kept.
+
+Each controller-runtime release requires one k8s.io minor. When `k8s_libs` is
+pinned, the script checks that the controller-runtime version (the pinned one,
+or the scaffold one) requires the same k8s.io minor, by reading its `go.mod` on
+the Go module proxy. On mismatch, a warning is printed: bump
+`controller_runtime` along with `k8s_libs`.
 
 This is CI-friendly: zero interactive input during reconciliation.
 
@@ -213,7 +234,7 @@ Options:
 Each operator has a config directory at `tools/upgrade-operator-sdk/<name>/` containing
 `config.yaml` and a `patches/` subdirectory. The config fields are:
 
-- **Versions**: `operator_sdk_version`, `go_toolchain` (optional pin), `k8s_libs` (optional pin)
+- **Versions**: `operator_sdk_version`, `go_toolchain` (optional pin), `k8s_libs` (optional pin), `controller_runtime` (optional pin), `controller_tools` (optional pin), `golangci_lint` (optional pin)
 - **Scaffold**: `repo`, `domain`, `apis` (with `group`, `version`, `kind`, `namespaced`). The operator name is derived from the config directory name.
 - **Raw copy**: `raw_copy` -- directories or files copied as-is from backup (purely custom code with no scaffold equivalent: `pkg/`, `version/`, `config/metalk8s/`, `salt/`, individual test/helper files)
 - **Post-processing**: `extra_commands`
