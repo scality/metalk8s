@@ -256,9 +256,9 @@ TO_PULL: Dict[str, targets.RemoteImage] = {}
 
 IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.CALICO_REPOSITORY: [
-        "calico-cni",
+        "calico",
         "calico-node",
-        "calico-kube-controllers",
+        "calico-third-party-cni-plugins",
     ],
     constants.COREDNS_REPOSITORY: [
         "coredns",
@@ -332,9 +332,8 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
 }
 
 REMOTE_NAMES: Dict[str, str] = {
-    "calico-cni": "cni",
     "calico-node": "node",
-    "calico-kube-controllers": "kube-controllers",
+    "calico-third-party-cni-plugins": "third-party-cni-plugins",
     "nginx-ingress-controller": "controller",
 }
 
@@ -364,7 +363,6 @@ BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
         "kube-controller-manager",
         "kube-scheduler",
         "coredns",
-        "calico-kube-controllers",
     ],
     # Apart from the control plane: a node can hold the etcd role alone.
     "etcd": [
@@ -384,8 +382,10 @@ BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
         # `alpine`.
         "kube-proxy",
         "alpine",
-        # calico-cni runs the init containers that write the CNI config.
-        "calico-cni",
+        # The calico-node init containers write the CNI config and plugins;
+        # `calico` also runs `calico-kube-controllers`.
+        "calico",
+        "calico-third-party-cni-plugins",
         "calico-node",
         # Writes the containerd mirror configuration of the registry. It is
         # not in the host network, so it needs the CNI above.

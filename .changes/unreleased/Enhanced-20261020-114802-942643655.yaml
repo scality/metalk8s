@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Bump Calico to [3.33.0](https://github.com/projectcalico/calico/releases/tag/v3.33.0). The calico-cni and calico-kube-controllers images are replaced by calico and calico-third-party-cni-plugins.
+time: 2026-10-20T11:48:02.942643655Z
+custom:
+    CommentId: "6149222307"
+    Pull: "5165"

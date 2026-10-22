@@ -111,7 +111,7 @@ networks:
     # Apply to all nodes
     node:
       127.0.0.1:9099:
-        expected: calico-node
+        expected: calico
         description: Calico node
       control_plane_ip:9100:
         expected: node_exporter
