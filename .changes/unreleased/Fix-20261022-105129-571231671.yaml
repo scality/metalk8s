@@ -1,0 +1,6 @@
+kind: Fix
+body: 'Fix flaky multi-node Control Plane Ingress tests: the tests now wait for the operator to observe the latest ClusterConfig generation before reconfiguring the Control Plane Ingress, instead of acting on a stale `Ready` condition'
+time: 2026-10-22T10:51:29.571231671Z
+custom:
+    CommentId: "6338951700"
+    Pull: "5193"
