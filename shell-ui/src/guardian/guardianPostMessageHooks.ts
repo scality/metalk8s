@@ -27,10 +27,11 @@ export const useDiscoveryEmitter = (iframeRef: React.RefObject<HTMLIFrameElement
   }, [sendDiscovery]);
 };
 
-// Re-posted on an interval for the same reason discovery is: the iframe mounts the moment the
-// drawer opens, well before the assistant's React tree exists. The assistant delivers one
-// question per promptId, so the repeats are ignored. It gives up rather than retrying for ever —
-// a question arriving mid-conversation minutes later is worse than none.
+// Re-posted on an interval because nothing acknowledges delivery. The iframe is mounted with the
+// drawer at startup, not on open, so by the time a button is clicked the assistant is usually
+// listening and the first post lands; the repeats cover the click that beats its React tree to it.
+// They are safe because the assistant acts on one question per promptId. It gives up rather than
+// retrying for ever — a question arriving mid-conversation minutes later is worse than none.
 export const usePromptEmitter = (
   iframeRef: React.RefObject<HTMLIFrameElement>,
   origin: string,
