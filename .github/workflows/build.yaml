@@ -65,6 +65,13 @@ jobs:
     defaults:
       run:
         shell: bash
+    env:
+      # NOTE: A tag build is a release: it leaves the boot cache images out
+      # to keep the ISO small. Every other build ships them, so that the CI
+      # bootstraps through the image cache provisioning.
+      # Set for the whole job and not the build step only: `doit clean` only
+      # removes the boot cache images when it sees the same value.
+      WITH_BOOT_CACHE: true
     outputs:
       artifact-name: ${{ steps.upload.outputs.name }}
       artifact-link: ${{ steps.upload.outputs.link }}
@@ -84,8 +91,6 @@ jobs:
       - name: Set safe directory (since container is root and not user 1001)
         run: git config --global --add safe.directory ${{ github.workspace }}
       - name: Build everything
-        env:
-          WITH_BOOT_CACHE: true
         run: cd "${{ github.workspace }}" && ./doit.sh -n 4 --verbosity 2 --failure-verbosity 2
       - name: Prepare artifacts
         env:

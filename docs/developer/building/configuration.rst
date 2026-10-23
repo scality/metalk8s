@@ -15,9 +15,9 @@ Available options are:
 - ``WITH_BOOT_CACHE``: ship the boot cache images on the ISO (``true`` or
   ``false``). They add about 1.5 GB to the ISO, and the bootstrap node only
   fills its image cache from them when they are there. Run ``./doit.sh clean``
-  after turning it off: the build tree keeps the images an earlier build made,
-  and the ISO still ships them. The CI sets it for every build but the
-  release ones, built from a tag
+  before turning it off: the clean only removes the boot cache images while
+  the option is set, and the next ISO would still ship them. The CI sets it
+  for every build but the release ones, built from a tag
 - ``DOCKER_BIN``: Docker binary (name or path to the binary)
 - ``GIT_BIN``: Git binary (name or path to the binary)
 - ``HARDLINK_BIN``: hardlink binary (name or path to the binary)
