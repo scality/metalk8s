@@ -1,0 +1,61 @@
+#!jinja | metalk8s_kubernetes
+{%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/repo/macro.sls" import metalk8s_repository with context %}
+
+apiVersion: metalk8s.scality.com/v1alpha1
+kind: Registry
+metadata:
+  name: main
+spec:
+  namespace: metalk8s-registry
+  nodeSelector:
+    node-role.kubernetes.io/registry: ""
+  tolerations:
+    - key: node-role.kubernetes.io/bootstrap
+      effect: NoSchedule
+      operator: Exists
+    - key: node-role.kubernetes.io/infra
+      effect: NoSchedule
+      operator: Exists
+    - key: node-role.kubernetes.io/registry
+      effect: NoSchedule
+      operator: Exists
+  server:
+    image:
+      registry: {{ metalk8s_repository }}
+    certificateIssuerRef:
+      name: metalk8s-registry-ca
+      kind: ClusterIssuer
+  agent:
+    image:
+      registry: {{ metalk8s_repository }}
+    certificateIssuerRef:
+      name: metalk8s-registry-ca
+      kind: ClusterIssuer
+    authentication:
+      mtls:
+        caSecretRef:
+          name: metalk8s-registry-agent-auth-ca
+          namespace: metalk8s-registry
+  mirrorPropagation:
+    image:
+      registry: {{ metalk8s_repository }}
+    tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
+        operator: Exists
+      - key: node-role.kubernetes.io/bootstrap
+        effect: NoSchedule
+        operator: Exists
+      - key: node-role.kubernetes.io/registry
+        effect: NoSchedule
+        operator: Exists
+      - key: node-role.kubernetes.io/infra
+        effect: NoSchedule
+        operator: Exists
+    enabled: true
+    ignorePaths:
+      - {{ repo.registry_endpoint }} # This one is still handled by salt until the migration to the new registry is fully completed

@@ -108,6 +108,10 @@ networks:
       control_plane_ip:2381:
         expected: etcd
         description: Etcd metrics
+    registry:
+      control_plane_ip:5000:
+        expected: static-oci-registry
+        description: MetalK8s container registry
     # Apply to all nodes
     node:
       127.0.0.1:9099:

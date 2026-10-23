@@ -1,0 +1,11 @@
+kind: Added
+body: |-
+    Integrated registry operator as a core addon, using:
+
+    metalk8s-registry-operator
+    metalk8s-registry-node-agent
+    static-oci-registry
+time: 2026-10-20T15:57:01.718572419Z
+custom:
+    CommentId: "6295140578"
+    Pull: "5183"

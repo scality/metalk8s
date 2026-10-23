@@ -57,9 +57,9 @@ CONFIG_STATE = "Configure containerd image preload"
 DIRECTORY_STATE = "Create the image cache directory"
 # The command every fill runs comes from its own package.
 COMMAND_STATE = "Install imagecachectl"
-# The bootstrap node holds the control plane, etcd and workloads, so it gets
-# every variant.
-VARIANTS = ("worker", "control-plane", "etcd")
+# The bootstrap node holds the control plane, etcd, the registry and workloads,
+# so it gets every variant.
+VARIANTS = ("worker", "control-plane", "etcd", "registry")
 PROVISION_STATES = [
     f"Import the {variant} boot cache from the ISO" for variant in VARIANTS
 ]
@@ -290,6 +290,7 @@ RESOURCE_NODE_SELECTORS = {
     "worker": None,
     "control-plane": {"node-role.kubernetes.io/master": ""},
     "etcd": {"node-role.kubernetes.io/etcd": ""},
+    "registry": {"node-role.kubernetes.io/registry": ""},
 }
 
 
