@@ -12,6 +12,12 @@ Available options are:
 - ``VAGRANT_PROVIDER``: type of machine to spawn with Vagrant
 - ``VAGRANT_UP_ARGS``: command line arguments to pass to ``vagrant up``
 - ``VAGRANT_SNAPSHOT_NAME``: name of auto generated Vagrant snapshot
+- ``WITH_BOOT_CACHE``: ship the boot cache images on the ISO (``true`` or
+  ``false``). They add about 1.5 GB to the ISO, and the bootstrap node only
+  fills its image cache from them when they are there. Run ``./doit.sh clean``
+  after turning it off: the build tree keeps the images an earlier build made,
+  and the ISO still ships them. The CI sets it for every build but the
+  release ones, built from a tag
 - ``DOCKER_BIN``: Docker binary (name or path to the binary)
 - ``GIT_BIN``: Git binary (name or path to the binary)
 - ``HARDLINK_BIN``: hardlink binary (name or path to the binary)
@@ -29,6 +35,7 @@ Default settings are equivalent to the following ``.env``:
    export BUILD_ROOT=_build
    export VAGRANT_PROVIDER=virtualbox
    export VAGRANT_UP_ARGS="--provision  --no-destroy-on-error --parallel --provider $VAGRANT_PROVIDER"
+   export WITH_BOOT_CACHE=false
    export DOCKER_BIN=docker
    export HARDLINK_BIN=hardlink
    export GIT_BIN=git
