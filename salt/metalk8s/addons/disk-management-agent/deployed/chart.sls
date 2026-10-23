@@ -6,7 +6,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.18.0
+    controller-gen.kubebuilder.io/version: v0.22.0
   name: discoveredphysicaldisks.metalk8s.scality.com
 spec:
   group: metalk8s.scality.com
@@ -423,7 +423,7 @@ spec:
         - name: SSACLI_PATH
           value: /host/libexec/ssacli
         image: '{% endraw -%}{{ build_image_name("disk-management-agent", False) }}{%-
-          raw %}:v0.1.0'
+          raw %}:v0.2.0'
         livenessProbe:
           httpGet:
             path: /healthz
