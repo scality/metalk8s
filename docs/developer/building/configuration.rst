@@ -16,7 +16,8 @@ Available options are:
   ``false``). They add about 1.5 GB to the ISO, and the bootstrap node only
   fills its image cache from them when they are there. Run ``./doit.sh clean``
   after turning it off: the build tree keeps the images an earlier build made,
-  and the ISO still ships them
+  and the ISO still ships them. The CI sets it for every build but the
+  release ones, built from a tag
 - ``DOCKER_BIN``: Docker binary (name or path to the binary)
 - ``GIT_BIN``: Git binary (name or path to the binary)
 - ``HARDLINK_BIN``: hardlink binary (name or path to the binary)

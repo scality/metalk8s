@@ -84,6 +84,11 @@ jobs:
       - name: Set safe directory (since container is root and not user 1001)
         run: git config --global --add safe.directory ${{ github.workspace }}
       - name: Build everything
+        env:
+          # NOTE: A tag build is a release: it leaves the boot cache images out
+          # to keep the ISO small. Every other build ships them, so that the CI
+          # bootstraps through the image cache provisioning.
+          WITH_BOOT_CACHE: ${{ github.ref_type != 'tag' }}
         run: cd "${{ github.workspace }}" && ./doit.sh -n 4 --verbosity 2 --failure-verbosity 2
       - name: Prepare artifacts
         env:
