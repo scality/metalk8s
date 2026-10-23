@@ -4,10 +4,15 @@ import { GuardianDrawerProvider, useAskAssistant, useGuardianDrawer } from './Gu
 // GuardianDrawer — which owns the hook that posts to the iframe — is only mounted when
 // canUseGuardian is set. Without it, asking would open nothing and leave a question nobody sends.
 // `mock`-prefixed so jest allows the hoisted factory below to reference it.
-const mockConfig: { value: Record<string, unknown> } = {
-  value: { guardianOrigin: 'https://assistant.example', canUseGuardian: true },
-};
+const mockConfig: { value: Record<string, unknown> } = { value: {} };
 jest.mock('../initFederation/ShellConfigProvider', () => ({ useShellConfig: () => ({ config: mockConfig.value }) }));
+
+// Rebuilt per test, not restored at the end of the one that overrides it: a failing expect would
+// skip that restore, and the next test would run with the assistant unavailable — passing for the
+// wrong reason, since `ask` returns early either way.
+beforeEach(() => {
+  mockConfig.value = { guardianOrigin: 'https://assistant.example', canUseGuardian: true };
+});
 
 const setup = () =>
   renderHook(() => ({ ...useAskAssistant(), drawer: useGuardianDrawer() }), {
@@ -33,7 +38,6 @@ it('does nothing, and says so, when the assistant is not available', () => {
   expect(result.current.isAvailable).toBe(false);
   expect(result.current.drawer.isOpen).toBe(false);
   expect(result.current.drawer.pendingPrompt).toBeNull();
-  mockConfig.value = { guardianOrigin: 'https://assistant.example', canUseGuardian: true };
 });
 
 it('ignores a blank question', () => {
@@ -41,5 +45,6 @@ it('ignores a blank question', () => {
 
   act(() => result.current.ask('   '));
 
+  expect(result.current.isAvailable).toBe(true); // or this would pass for the wrong reason
   expect(result.current.drawer.isOpen).toBe(false);
 });
