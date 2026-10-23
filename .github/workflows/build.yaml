@@ -65,13 +65,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-      # NOTE: A tag build is a release: it leaves the boot cache images out
-      # to keep the ISO small. Every other build ships them, so that the CI
-      # bootstraps through the image cache provisioning.
-      # Set for the whole job and not the build step only: `doit clean` only
-      # removes the boot cache images when it sees the same value.
-      WITH_BOOT_CACHE: true
     outputs:
       artifact-name: ${{ steps.upload.outputs.name }}
       artifact-link: ${{ steps.upload.outputs.link }}

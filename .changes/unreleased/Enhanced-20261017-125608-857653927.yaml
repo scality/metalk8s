@@ -1,6 +1,0 @@
-kind: Enhanced
-body: 'The boot cache images are now only built and shipped on the ISO when the build sets `WITH_BOOT_CACHE=true`, as they add about 1.5 GB to it. A bootstrap from an ISO without them skips filling the image cache and boots as it did before the cache.'
-time: 2026-10-17T12:56:08.843625952Z
-custom:
-    CommentId: "cli"
-    Pull: "5176"

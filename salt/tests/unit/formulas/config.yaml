@@ -280,18 +280,6 @@ metalk8s:
     provisioned.sls:
       _cases:
         "Containerd (default)": {}
-        "With the boot cache on the ISO":
-          pillar_overrides:
-            repo:
-              images:
-                metalk8s-boot-cache-control-plane:
-                  version: "134.0.1"
-        "Without the boot cache on the ISO":
-          pillar_overrides:
-            repo:
-              images:
-                metalk8s-boot-cache-control-plane:
-                  version: ""
         "Without any container engine":
           pillar_overrides:
             kubelet:

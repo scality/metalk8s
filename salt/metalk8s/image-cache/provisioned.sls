@@ -10,11 +10,7 @@
     it gets every variant. A joining node pulls its cache, see `pulled.sls`.
 
     Ordering this against the kubelet is left to the role that applies both,
-    so that this SLS stays applicable on its own.
-
-    The boot cache images are only on an ISO built with `WITH_BOOT_CACHE`,
-    and only such an ISO lists a version for them: without one there is
-    nothing to provision, and the node boots as it did before the cache. #}
+    so that this SLS stays applicable on its own. #}
 
 {%- if kubelet.container_engine == 'containerd' %}
 

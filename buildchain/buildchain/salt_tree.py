@@ -40,24 +40,9 @@ from buildchain import targets
 from buildchain import types
 from buildchain import utils
 from buildchain import versions
-from buildchain.image import UNSHIPPED_BOOT_CACHE_IMAGES
 
 sys.path.append(str(constants.STATIC_CONTAINER_REGISTRY))
 container_registry: Any = importlib.import_module("static-container-registry")
-
-
-def _salt_versions() -> Dict[str, Any]:
-    """Return the contents of `versions.json`, for the images on the ISO only.
-
-    A boot cache image left off the ISO must not have a version either: that
-    is what `metalk8s.image-cache.provisioned` checks to skip provisioning.
-    """
-    images = {
-        img.name: {"version": img.version}
-        for img in versions.CONTAINER_IMAGES
-        if img.name not in UNSHIPPED_BOOT_CACHE_IMAGES
-    }
-    return {**versions.SALT_VERSIONS_JSON, "images": images}
 
 
 def task_salt_tree() -> types.TaskDict:
@@ -291,7 +276,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     targets.SerializedData(
         task_name="versions.json",
         destination=constants.ISO_ROOT / "salt" / "metalk8s" / "versions.json",
-        data=_salt_versions(),
+        data=versions.SALT_VERSIONS_JSON,
         renderer=targets.Renderer.JSON,
     ),
     Path("salt/metalk8s/addons/alert-logger/deployed/deployment.sls"),

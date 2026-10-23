@@ -45,15 +45,6 @@ VAGRANT_UP_ARGS: Tuple[str, ...] = tuple(
     shlex.split(os.getenv("VAGRANT_UP_ARGS", _DEFAULT_VAGRANT_UP_ARGS))
 )
 
-# Ship the boot cache images on the ISO. They add about 1.5 GB to it, and only
-# a cold-start bootstrap uses them so far, so a build leaves them out unless it
-# asks for them.
-WITH_BOOT_CACHE: bool = os.getenv("WITH_BOOT_CACHE", "false").lower() in (
-    "1",
-    "true",
-    "yes",
-)
-
 # External commands {{{
 
 # Name of the external commands (if in the PATH) or path to the binary.
