@@ -1,6 +1,36 @@
 # CHANGELOG
 
 
+## Release 134.0.1
+
+### Bug Fixes
+
+- The Platform dashboard and node page bandwidth charts are no longer empty on
+  nodes whose control-plane or workload-plane IP sits on a bond or a VLAN. The
+  interface carrying each plane IP is now resolved live on the minion instead of
+  being read from the `ip_interfaces` grain, which is only computed when the
+  minion daemon starts -- before those interfaces exist -- and is not refreshed
+  afterwards. The charts used to query `node_network_receive_bytes_total` with an
+  empty device matcher, which no series can match, so Prometheus answered with an
+  empty result and the panel rendered blank without any error
+  (PR[#5120](https://github.com/scality/metalk8s/pull/5120))
+
+- The **Send a test email** button on the email notification configuration page
+  sends the test alert again. The request was rejected once Alertmanager became
+  protected by OIDC authentication, and the page reported nothing. A failed test or
+  save now shows an error message explaining what went wrong.
+  (PR[#5139](https://github.com/scality/metalk8s/pull/5139))
+
+- Corrected the trace system after the google chrome update
+  (PR[#5180](https://github.com/scality/metalk8s/pull/5180))
+
+- Chart axes, such as the Platform Health bar timeline, no longer disappear for a frame each time the page re-renders. The UI now uses @scality/core-ui 0.233.0, which requires a recharts version without that rendering bug.
+  (PR[#5181](https://github.com/scality/metalk8s/pull/5181))
+
+- Mount `/etc/machine-id` in the Fluent Bit pods, so host (systemd journal) logs are sent to Loki again
+  (PR[#5185](https://github.com/scality/metalk8s/pull/5185))
+
+
 ## Release 134.0.0
 
 ### Enhancements
