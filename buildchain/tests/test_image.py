@@ -37,9 +37,11 @@ class TestBootCacheVariants:
             missing = [name for name in members if name not in image.TO_PULL]
             assert not missing, f"variant {variant} lists unknown images: {missing}"
 
-    def test_shipped_variants_follow_the_build_option(self) -> None:
-        expected = image.BOOT_CACHE_VARIANTS if config.WITH_BOOT_CACHE else {}
-        assert image.SHIPPED_BOOT_CACHE_VARIANTS == expected
+    def test_every_variant_is_shipped_with_the_boot_cache(self) -> None:
+        assert image.shipped_boot_cache_variants(True) == image.BOOT_CACHE_VARIANTS
+
+    def test_no_variant_is_shipped_without_the_boot_cache(self) -> None:
+        assert image.shipped_boot_cache_variants(False) == {}
 
     def test_only_shipped_variants_are_built(self) -> None:
         built = {

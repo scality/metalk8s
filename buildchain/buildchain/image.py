@@ -386,11 +386,17 @@ BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
     # else (context, image, archive) follows from this listing.
 }
 
+
+def shipped_boot_cache_variants(with_boot_cache: bool) -> Dict[str, List[str]]:
+    """Return the boot cache variants to build and ship on the ISO."""
+    return BOOT_CACHE_VARIANTS if with_boot_cache else {}
+
+
 # The variants built and shipped on the ISO: none unless the build asks for
 # them with `WITH_BOOT_CACHE`. The others are left out of `versions.json` too,
 # which is what tells the Salt states there is no boot cache to provision.
-SHIPPED_BOOT_CACHE_VARIANTS: Dict[str, List[str]] = (
-    BOOT_CACHE_VARIANTS if config.WITH_BOOT_CACHE else {}
+SHIPPED_BOOT_CACHE_VARIANTS: Dict[str, List[str]] = shipped_boot_cache_variants(
+    config.WITH_BOOT_CACHE
 )
 
 UNSHIPPED_BOOT_CACHE_IMAGES: Tuple[str, ...] = tuple(
