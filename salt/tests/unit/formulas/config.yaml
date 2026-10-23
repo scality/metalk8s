@@ -81,6 +81,10 @@ metalk8s:
                       ip: 10.0.0.2
                       ports:
                         http: 8081
+      post-upgrade.sls:
+        _cases:
+          "Render from the master (orchestrate)":
+            mode: master
 
     logging:
       loki:
@@ -1170,6 +1174,11 @@ metalk8s:
           "Extended cluster":
             architecture: extended
             _subcases: *upgrade_subcases
+
+      post.sls:
+        _cases:
+          "Render from the master (orchestrate)":
+            mode: master
 
       pre.sls:
         _cases:
