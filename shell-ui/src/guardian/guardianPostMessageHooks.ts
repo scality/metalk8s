@@ -46,7 +46,13 @@ export const usePromptEmitter = (
 
     post();
     const interval = setInterval(post, PROMPT_RETRY_INTERVAL_MS);
-    const timeout = setTimeout(onDelivered, PROMPT_DELIVERY_TIMEOUT_MS);
+    // The interval is cleared HERE, not left to the caller. `onDelivered` clearing the pending
+    // prompt is what re-runs this effect today, so the bound only held because of what the caller
+    // happens to do with it — a caller that did anything else would be posted at for ever.
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      onDelivered();
+    }, PROMPT_DELIVERY_TIMEOUT_MS);
     return () => {
       clearInterval(interval);
       clearTimeout(timeout);

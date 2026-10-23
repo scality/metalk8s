@@ -30,6 +30,11 @@ it('stops after 20s, having posted once per 500ms', () => {
 
   expect(postMessage).toHaveBeenCalledTimes(41); // the first, plus 20000/500
   expect(onDelivered).toHaveBeenCalledTimes(1);
+
+  // The point of the test: the hook stopped on its own. `onDelivered` is a bare mock here, so
+  // nothing cleared the pending prompt — if the interval outlived the timeout, this would climb.
+  jest.advanceTimersByTime(5_000);
+  expect(postMessage).toHaveBeenCalledTimes(41);
 });
 
 it('posts nothing at all without a question', () => {
