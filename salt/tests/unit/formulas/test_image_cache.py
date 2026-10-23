@@ -12,11 +12,13 @@ its archives and they have been imported.
 from pathlib import Path
 import re
 from typing import Any, Dict, Iterable, Set
+from unittest.mock import MagicMock
 import jinja2
 import pytest
 import salt.utils.yaml  # type: ignore
 
 from tests.unit.formulas import config
+from tests.unit.formulas.fixtures import salt as salt_fixtures
 from tests.unit.formulas.fixtures.context import Context, make_context
 from tests.unit.formulas.fixtures.rendered import (
     RenderedStates,
@@ -33,6 +35,9 @@ EARLY_STAGE_BOOTSTRAP = Path("metalk8s/roles/internal/early-stage-bootstrap.sls"
 NODE_ROLE = Path("metalk8s/roles/node/init.sls")
 DEPLOY_NODE = Path("metalk8s/orchestrate/deploy_node.sls")
 UPGRADE_PRE = Path("metalk8s/orchestrate/upgrade/pre.sls")
+UPGRADE_POST = Path("metalk8s/orchestrate/upgrade/post.sls")
+IMAGE_CACHE_POST_UPGRADE = Path("metalk8s/addons/image-cache-agent/post-upgrade.sls")
+FLAT_ARCHIVES_ABSENT = Path("metalk8s/image-cache/flat-archives-absent.sls")
 
 # The formula that transitively brings in every state we require, so it must stay
 # in the `include` block. It defines `Install containerd`, and it includes both
@@ -619,3 +624,143 @@ def test_no_two_sls_applied_together_share_a_state_id(
         f"{sorted(shared)} is declared by both {left} and {right}, which can be"
         " applied in the same run"
     )
+
+
+IMAGE_CACHE_API = "image-cache.scality.com/v1alpha1"
+NO_PREVIOUS_CACHE_STATE = "No ImageCache of another version"
+POST_UPGRADE_SLS = "metalk8s.addons.image-cache-agent.post-upgrade"
+NO_FLAT_ARCHIVE_STATE = "No flat archive in the image cache"
+# What Salt sets on every object it creates.
+SALT_LABELS = {"app.kubernetes.io/managed-by": "salt"}
+
+
+def _deleted_caches(states: Dict[str, Any], case_id: str) -> Set[str]:
+    """Return the names of the ImageCache resources the states delete."""
+    deleted = set()
+    for state_id, body in states.items():
+        if "metalk8s_kubernetes.object_absent" not in body:
+            continue
+        args = _state_args(states, state_id)
+        assert args["kind"] == "ImageCache", case_id
+        assert args["apiVersion"] == IMAGE_CACHE_API, case_id
+        deleted.add(args["name"])
+    return deleted
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [IMAGE_CACHE_POST_UPGRADE], indirect=True)
+def test_the_upgrade_deletes_the_image_caches_of_other_versions(
+    environment: jinja2.Environment,
+    render_contexts: Iterable[Context],
+    template_path: Path,
+    metalk8s_versions: Any,
+) -> None:
+    """Check the post-upgrade deletes every ImageCache but the current ones.
+
+    The agent then removes their directories and node labels. Whatever is not
+    the current version goes, so that an interrupted or resumed upgrade ends in
+    the same state.
+    """
+    template = environment.get_template(str(template_path))
+    current = _expected_cache_names(metalk8s_versions)
+    previous = {"worker-2-7-1", "etcd-2-7-1", "control-plane-2-6-0"}
+    checked = False
+
+    for context in render_contexts:
+        for present, expected in [
+            (set(), set()),
+            (current, set()),
+            (current | previous, previous),
+        ]:
+            # pylint: disable=protected-access
+            context.data["salt"]._k8s.data[IMAGE_CACHE_API] = {
+                "ImageCache": [
+                    {"metadata": {"name": name, "labels": SALT_LABELS}}
+                    for name in present
+                ]
+                # Neither another manager's resource nor one that is not a
+                # boot cache variant is deleted.
+                + [{"metadata": {"name": "my-images-1-0-0", "labels": SALT_LABELS}}]
+                + [
+                    {
+                        "metadata": {
+                            "name": "worker-1-0-0",
+                            "labels": {"app.kubernetes.io/managed-by": "helm"},
+                        }
+                    }
+                ]
+            }
+            states = salt.utils.yaml.safe_load(template.render(**context.data))
+
+            deleted = _deleted_caches(states, context.id)
+            assert deleted == expected, f"deletes {sorted(deleted)} ({context.id})"
+            if not expected:
+                assert NO_PREVIOUS_CACHE_STATE in states, context.id
+            checked = True
+
+    assert checked, "no rendering case, the deletion went unchecked"
+
+
+def _mocked_by(mock: MagicMock) -> property:
+    """Return a property that stands for a mocked Salt function."""
+    return property(lambda _: mock)
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [FLAT_ARCHIVES_ABSENT], indirect=True)
+def test_only_flat_archives_are_removed(
+    environment: jinja2.Environment,
+    render_contexts: Iterable[Context],
+    template_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Check the cleanup removes the archives at the root of the cache only.
+
+    The directories under it belong to the image cache agent.
+    """
+    template = environment.get_template(str(template_path))
+    archive = "/var/lib/image-cache/calico-node-v3.30.0.tar"
+    checked = False
+
+    for context in render_contexts:
+        for found in ([], [archive]):
+            find = MagicMock(return_value=found)
+            monkeypatch.setattr(
+                salt_fixtures.MODULE_MOCKS["file"], "find", _mocked_by(find)
+            )
+            states = salt.utils.yaml.safe_load(template.render(**context.data))
+
+            find.assert_called_once_with(
+                "/var/lib/image-cache", maxdepth=1, type="f", name="*.tar"
+            )
+            if not found:
+                assert set(states) == {NO_FLAT_ARCHIVE_STATE}, context.id
+                continue
+
+            state_id = f"Remove the flat archive {archive}"
+            assert set(states) == {state_id}, context.id
+            assert "file.absent" in states[state_id], context.id
+            assert _state_args(states, state_id)["name"] == archive, context.id
+            checked = True
+
+    assert checked, "no rendering case, the cleanup went unchecked"
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [UPGRADE_POST], indirect=True)
+def test_the_upgrade_cleans_the_image_cache(
+    rendered_states: RenderedStates,
+) -> None:
+    """Check the post-upgrade deletes the old resources and archives.
+
+    The flat archives only exist on the bootstrap node: a 134 bootstrap wrote
+    them, and targeting a node that is down would fail the whole orchestrate.
+    """
+    cleanup_id = "Remove the flat archives from the image cache"
+
+    for case_id, states in rendered_states:
+        assert POST_UPGRADE_SLS in states.get("include", []), case_id
+
+        args = _state_args(states, cleanup_id)
+        assert args["sls"] == ["metalk8s.image-cache.flat-archives-absent"], case_id
+        assert args["tgt"] == "bootstrap", case_id
