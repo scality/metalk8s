@@ -36,6 +36,10 @@ log = logging.getLogger(__name__)
 
 __virtualname__ = "metalk8s_kubernetes"
 
+# The image cache agent labels each node with the status of every ImageCache
+# that selects it, under this prefix followed by the resource name.
+IMAGE_CACHE_LABEL_PREFIX = "image-cache.scality.com/"
+
 
 def __virtual__():
     if MISSING_DEPS:
@@ -554,5 +558,66 @@ def check_object_ready(*args, **kwargs):
 
         if condition["status"] != "True":
             raise CommandExecutionError("Object is not yet Ready")
+
+    return True
+
+
+def check_image_caches_synced(node, names, **kwargs):
+    """
+    Check the image cache agent reports a node synced to some ImageCaches
+
+    Only the resources in `names` that select the node are checked, so an
+    older resource stuck on the node holds nothing. The agent writes
+    `synced` or `pending` and nothing else: a failed pull stays `pending`
+    and leaves a `SyncFailed` event on the resource.
+
+    `names` is a list, or a comma separated string, which is what a
+    `__slot__` passes.
+
+    CLI Examples:
+
+    .. code-block:: bash
+
+        salt-call metalk8s_kubernetes.check_image_caches_synced node="master-1" names="worker-136-0-0,control-plane-136-0-0"
+    """
+    if isinstance(names, str):
+        names = names.split(",")
+
+    node_obj = get_object(kind="Node", apiVersion="v1", name=node, **kwargs)
+    if not node_obj:
+        raise CommandExecutionError(f"Node {node} does not exist")
+    labels = node_obj["metadata"].get("labels") or {}
+
+    not_synced = []
+    for name in names:
+        cache = get_object(
+            kind="ImageCache",
+            apiVersion="image-cache.scality.com/v1alpha1",
+            name=name,
+            **kwargs,
+        )
+        if not cache:
+            raise CommandExecutionError(f"ImageCache {name} does not exist")
+
+        selector = cache["spec"].get("nodeSelector") or {}
+        if any(labels.get(key) != value for key, value in selector.items()):
+            continue
+
+        status = labels.get(f"{IMAGE_CACHE_LABEL_PREFIX}{name}")
+        if status != "synced":
+            not_synced.append(f"{name} ({status or 'no label'})")
+
+    if not_synced:
+        cache_labels = ", ".join(
+            f"{key}={value}"
+            for key, value in sorted(labels.items())
+            if key.startswith(IMAGE_CACHE_LABEL_PREFIX)
+        )
+        raise CommandExecutionError(
+            f"Node {node} is not synced to {', '.join(not_synced)}."
+            f" Its image cache labels: {cache_labels or 'none'}."
+            " A failed pull leaves a SyncFailed event, see"
+            " `kubectl get events -A --field-selector involvedObject.kind=ImageCache`"
+        )
 
     return True

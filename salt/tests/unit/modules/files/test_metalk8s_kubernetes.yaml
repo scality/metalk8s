@@ -1192,3 +1192,87 @@ check_object_ready:
           type: Ready
     raises: True
     result: "Object is not yet Ready"
+
+check_image_caches_synced:
+  # Every resource that selects the node is synced
+  - node: &master_node
+      metadata:
+        name: master-1
+        labels:
+          node-role.kubernetes.io/master: ""
+          image-cache.scality.com/worker-2-9-0: synced
+          image-cache.scality.com/control-plane-2-9-0: synced
+    caches: &caches_2_9_0
+      worker-2-9-0:
+        spec: {}
+      control-plane-2-9-0:
+        spec:
+          nodeSelector:
+            node-role.kubernetes.io/master: ""
+      etcd-2-9-0:
+        spec:
+          nodeSelector:
+            node-role.kubernetes.io/etcd: ""
+    names: worker-2-9-0,control-plane-2-9-0,etcd-2-9-0
+    result: True
+
+  # Same, with the names given as a list, as `salt-call` passes them
+  - node: *master_node
+    caches: *caches_2_9_0
+    names: [worker-2-9-0, control-plane-2-9-0, etcd-2-9-0]
+    result: True
+
+  # A resource still pending on the node
+  - node:
+      metadata:
+        name: master-1
+        labels:
+          node-role.kubernetes.io/master: ""
+          image-cache.scality.com/worker-2-9-0: synced
+          image-cache.scality.com/control-plane-2-9-0: pending
+          image-cache.scality.com/worker-2-8-0: synced
+    caches: *caches_2_9_0
+    names: worker-2-9-0,control-plane-2-9-0,etcd-2-9-0
+    raises: True
+    result: >-
+      Node master-1 is not synced to control-plane-2-9-0 \(pending\).*
+      image-cache.scality.com/control-plane-2-9-0=pending,
+      image-cache.scality.com/worker-2-8-0=synced,
+      image-cache.scality.com/worker-2-9-0=synced
+
+  # The agent has not labeled the node yet
+  - node:
+      metadata:
+        name: worker-1
+        labels: {}
+    caches: *caches_2_9_0
+    names: worker-2-9-0,control-plane-2-9-0,etcd-2-9-0
+    raises: True
+    result: "Node worker-1 is not synced to worker-2-9-0 \\(no label\\)"
+
+  # An older resource stuck on the node does not hold the check
+  - node:
+      metadata:
+        name: worker-1
+        labels:
+          image-cache.scality.com/worker-2-9-0: synced
+          image-cache.scality.com/worker-2-8-0: pending
+    caches: *caches_2_9_0
+    names: worker-2-9-0,control-plane-2-9-0,etcd-2-9-0
+    result: True
+
+  # A resource the check waits on does not exist
+  - node: *master_node
+    caches:
+      worker-2-9-0:
+        spec: {}
+    names: worker-2-9-0,control-plane-2-9-0
+    raises: True
+    result: "ImageCache control-plane-2-9-0 does not exist"
+
+  # The node does not exist
+  - node: null
+    caches: *caches_2_9_0
+    names: worker-2-9-0
+    raises: True
+    result: "Node master-1 does not exist"

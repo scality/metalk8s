@@ -1,0 +1,29 @@
+{%- from "metalk8s/map.jinja" import repo with context %}
+
+{#- The ImageCache resources of the current version, one per boot cache
+    variant, keyed by variant. The name carries the version, so the resources
+    of two versions coexist during an upgrade. `imagecachectl` names the
+    directories it fills the same way, so that the agent adopts them, and the
+    upgrade waits on these names: they are computed here only. #}
+
+{%- set image_cache_variants = {} %}
+
+{%- for variant, node_selector in {
+      'worker': {},
+      'control-plane': {'node-role.kubernetes.io/master': ''},
+      'etcd': {'node-role.kubernetes.io/etcd': ''},
+    }.items() %}
+  {%- set image_name = 'metalk8s-boot-cache-' ~ variant %}
+  {%- set image_version = repo.images.get(image_name, {}).get('version') %}
+  {%- if not image_version %}
+    {{ raise('Missing version information for "' ~ image_name ~ '"') }}
+  {%- endif %}
+  {%- do image_cache_variants.update({
+        variant: {
+          'image_name': image_name,
+          'image_version': image_version,
+          'name': variant ~ '-' ~ image_version | replace('.', '-'),
+          'node_selector': node_selector,
+        }
+      }) %}
+{%- endfor %}
