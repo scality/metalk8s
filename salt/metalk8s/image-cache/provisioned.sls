@@ -12,7 +12,9 @@
     Ordering this against the kubelet is left to the role that applies both,
     so that this SLS stays applicable on its own. #}
 
-{%- if kubelet.container_engine == 'containerd' %}
+{#- NOTE: Disabled in 134.0: the boot cache feature is not complete yet.
+    It comes back in 136.0. #}
+{%- if False and kubelet.container_engine == 'containerd' %}
 
 {%- set archives = salt.metalk8s.get_archives() %}
 
