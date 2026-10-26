@@ -1,0 +1,6 @@
+kind: Fix
+body: move crl-operator nodeSelector into pod spec
+time: 2026-10-26T09:25:58.264097544Z
+custom:
+    CommentId: "6412599370"
+    Pull: "5204"
