@@ -49,9 +49,7 @@ def task_images() -> types.TaskDict:
         "task_dep": [
             "_image_mkdir_root",
             "_image_pull",
-            # NOTE: Disabled in 134.0: the boot cache feature is not complete yet.
-            # It comes back in 136.0.
-            # "_image_boot_cache_context",
+            "_image_boot_cache_context",
             "_image_build",
             "_image_dedup_layers",
         ],
@@ -493,10 +491,7 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
             "VERSION": versions.VERSION,
         },
     ),
-)
-# NOTE: Disabled in 134.0: the boot cache feature is not complete yet.
-# It comes back in 136.0.
-# + tuple(_boot_cache_image(variant) for variant in BOOT_CACHE_VARIANTS)
+) + tuple(_boot_cache_image(variant) for variant in BOOT_CACHE_VARIANTS)
 # }}}
 
 

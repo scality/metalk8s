@@ -153,7 +153,6 @@ def test_provisioning_runs_before_the_kubelet(
             )
 
 
-@pytest.mark.skip(reason="boot cache disabled in 134.0, back in 136.0")
 @pytest.mark.formulas
 @pytest.mark.parametrize("template_path", [IMAGE_CACHE_PROVISIONED], indirect=True)
 def test_import_follows_the_provisioning(
