@@ -92,7 +92,7 @@ jobs:
   multi-node:
     # We need to use those specific gcloud runner so that we have
     # known runner IPs
-    runs-on: [self-hosted, ubuntu, large, jammy, gcloud]
+    runs-on: [self-hosted, ubuntu, large, noble, gcloud]
     env:
       NODES_COUNT: ${{ inputs.nodes-count }}
     steps:
@@ -375,7 +375,7 @@ jobs:
       - multi-node
     # We need to use those specific gcloud runner so that we have
     # known runner IPs
-    runs-on: [self-hosted, ubuntu, large, jammy, gcloud]
+    runs-on: [self-hosted, ubuntu, large, noble, gcloud]
     if: always()
     steps:
       - name: Checkout

@@ -94,7 +94,7 @@ jobs:
   single-node:
     # We need to use those specific gcloud runner so that we have
     # known runner IPs
-    runs-on: [self-hosted, ubuntu, large, jammy, gcloud]
+    runs-on: [self-hosted, ubuntu, large, noble, gcloud]
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -299,7 +299,7 @@ jobs:
       - single-node
     # We need to use those specific gcloud runner so that we have
     # known runner IPs
-    runs-on: [self-hosted, ubuntu, large, jammy, gcloud]
+    runs-on: [self-hosted, ubuntu, large, noble, gcloud]
     if: always()
     steps:
       - name: Checkout
