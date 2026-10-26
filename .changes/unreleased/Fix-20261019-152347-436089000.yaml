@@ -1,6 +1,0 @@
-kind: Fix
-body: 'Chart axes, such as the Platform Health bar timeline, no longer disappear for a frame each time the page re-renders. The UI now uses @scality/core-ui 0.233.0, which requires a recharts version without that rendering bug.'
-time: 2026-10-19T15:23:47.436089000Z
-custom:
-    CommentId: cli
-    Pull: "5181"
