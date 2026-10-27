@@ -543,3 +543,18 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertEqual(
                     metalk8s_kubernetes.check_object_ready(**kwargs), result
                 )
+
+    @parameterized.expand(
+        param.explicit(kwargs=test_case)
+        for test_case in YAML_TESTS_CASES["check_object_ready"]
+    )
+    def test_is_object_ready(self, obj, result, raises=False, **kwargs):
+        """
+        Tests the return of `is_object_ready` function, which is False
+        whenever `check_object_ready` raises
+        """
+        del result  # Only relevant to `check_object_ready`
+        get_obj_mock = MagicMock(return_value=obj)
+
+        with patch.object(metalk8s_kubernetes, "get_object", get_obj_mock):
+            self.assertEqual(metalk8s_kubernetes.is_object_ready(**kwargs), not raises)
