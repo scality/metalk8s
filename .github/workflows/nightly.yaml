@@ -78,8 +78,19 @@ jobs:
         run: |
           echo "previous_minor=$(git tag --sort=taggerdate --list "$VERSION_MAJOR.$(( VERSION_MINOR - 1 )).*" | grep -v '\-' | tail -1)" >> $GITHUB_ENV
       - name: Get previous major version
+        # NOTE: Major versions are not always contiguous (134.0 is followed by
+        # 136.0), so look for the highest released major below the current one
+        # rather than `VERSION_MAJOR - 1`.
         run: |
-          echo "previous_major=$(git tag --sort=taggerdate --list "$((VERSION_MAJOR - 1 )).*" | grep -v '\-' | tail -1)" >> $GITHUB_ENV
+          previous_major_number=$(
+            git tag --list | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | cut -d. -f1 \
+              | sort -nu | awk -v major="$VERSION_MAJOR" '$1 < major' | tail -1
+          )
+          if [ -n "$previous_major_number" ]; then
+            echo "previous_major=$(git tag --sort=taggerdate --list "$previous_major_number.*" | grep -v '\-' | tail -1)" >> $GITHUB_ENV
+          else
+            echo "previous_major=" >> $GITHUB_ENV
+          fi
       - name: Compute matrix
         id: get-matrix
         run: |
@@ -122,8 +133,19 @@ jobs:
             echo "previous_minor=" >> $GITHUB_ENV
           fi
       - name: Get previous major version
+        # NOTE: Same as for promoted versions, look for the highest development
+        # branch major below the current one rather than `VERSION_MAJOR - 1`.
         run: |
-          echo "previous_major=$(git branch --remote --sort=creatordate --list --format="%(refname:lstrip=-2)" "origin/development/$(( VERSION_MAJOR - 1 )).*" | tail -1)" >> $GITHUB_ENV
+          previous_major_number=$(
+            git branch --remote --list --format="%(refname:lstrip=-2)" "origin/development/*" \
+              | grep -E '^development/[0-9]+\.[0-9]+$' | cut -d/ -f2 | cut -d. -f1 \
+              | sort -nu | awk -v major="$VERSION_MAJOR" '$1 < major' | tail -1
+          )
+          if [ -n "$previous_major_number" ]; then
+            echo "previous_major=$(git branch --remote --sort=creatordate --list --format="%(refname:lstrip=-2)" "origin/development/$previous_major_number.*" | tail -1)" >> $GITHUB_ENV
+          else
+            echo "previous_major=" >> $GITHUB_ENV
+          fi
       - name: Compute matrix
         id: get-matrix
         run: |
