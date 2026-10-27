@@ -361,9 +361,11 @@ def upgrade(dest_version, saltenv, raises=True):
         )
 
     # Check that all nodes are in a supported upgrade path
-    # We only support upgrade from one major version
+    # We only support upgrade from one major version, the previous one being
+    # defined in the destination version since majors are not always contiguous
     dest = dest_version.split(".")
-    min_version = f"{int(dest[0]) - 1}.0.0"
+    previous_major = metalk8s_pillar.get("previous_major_version", int(dest[0]) - 1)
+    min_version = f"{previous_major}.0.0"
 
     for node_name, node_info in metalk8s_pillar["nodes"].items():
         if (
@@ -419,9 +421,16 @@ def downgrade(dest_version, saltenv, raises=True, bypass_disable=False):
     )
 
     # Check that all nodes are in a supported downgrade path
-    # We only support downgrade from one major version
+    # We only support downgrade from one major version, so nodes can be at most
+    # in the major following the destination one. Majors are not always
+    # contiguous: when downgrading to the major the saltenv one follows, nodes
+    # can be up to the saltenv major
     dest = dest_version.split(".")
-    max_version = f"{int(dest[0]) + 2}.0.0"
+    if int(dest[0]) == metalk8s_pillar.get("previous_major_version"):
+        next_major = int(saltenv.replace("metalk8s-", "").split(".")[0])
+    else:
+        next_major = int(dest[0]) + 1
+    max_version = f"{next_major + 1}.0.0"
 
     newest_node_version = None
 

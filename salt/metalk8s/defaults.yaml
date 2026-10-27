@@ -1,6 +1,10 @@
 ---
 metalk8s:
   debug: false
+  # Major version this one follows, the one we support upgrading from and
+  # downgrading to. Majors are not always contiguous (136 follows 134), so it
+  # cannot be computed and is bumped when creating a major development branch.
+  previous_major_version: 134
   downgrade:
     # Define if the downgrade from this major version is supported.
     # It should be set to false if manual operations are needed
