@@ -55,6 +55,38 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
             else:
                 self.assertEqual(metalk8s_checks.nodes(**kwargs), result)
 
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["image_caches_synced"])
+    def test_image_caches_synced(
+        self, result, nodes, caches, expect_raise=False, **kwargs
+    ):
+        """
+        Tests the return of `image_caches_synced` function
+        """
+
+        def cmd_mock(fun, kind, name, **_kwargs):
+            if fun == "metalk8s_kubernetes.get_object":
+                return (nodes if kind == "Node" else caches).get(name)
+            return None
+
+        salt_dict = {"salt.cmd": MagicMock(side_effect=cmd_mock)}
+
+        with patch.dict(metalk8s_checks.__salt__, salt_dict):
+            if expect_raise:
+                self.assertRaisesRegex(
+                    CheckError,
+                    result,
+                    metalk8s_checks.image_caches_synced,
+                    node_list=list(nodes),
+                    **kwargs
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_checks.image_caches_synced(
+                        node_list=list(nodes), **kwargs
+                    ),
+                    result,
+                )
+
     @utils.parameterized_from_cases(YAML_TESTS_CASES["minions"])
     def test_minions(
         self,
