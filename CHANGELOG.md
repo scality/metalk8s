@@ -8,7 +8,7 @@
   internet by default: disable Loki anonymous usage reporting, and
   Grafana plugin update checks, plugin preinstall and plugin signing
   public key retrieval
-  (PR[#XXXX](https://github.com/scality/metalk8s/pull/XXXX))
+  (PR[#5208](https://github.com/scality/metalk8s/pull/5208))
 
 ## Release 131.0.11
 
