@@ -11,13 +11,13 @@ its archives and they have been imported.
 
 from pathlib import Path
 import re
-from typing import Any, Dict, Set
+from typing import Any, Dict, Iterable, Set
 import jinja2
 import pytest
 import salt.utils.yaml  # type: ignore
 
 from tests.unit.formulas import config
-from tests.unit.formulas.fixtures.context import make_context
+from tests.unit.formulas.fixtures.context import Context, make_context
 from tests.unit.formulas.fixtures.rendered import (
     RenderedStates,
     required_states,
@@ -29,7 +29,10 @@ IMAGE_CACHE_PROVISIONED = Path("metalk8s/image-cache/provisioned.sls")
 IMAGE_CACHE_PULLED = Path("metalk8s/image-cache/pulled.sls")
 IMAGE_CACHE_RESOURCES = Path("metalk8s/addons/image-cache-agent/deployed/resources.sls")
 BOOTSTRAP_LOCAL = Path("metalk8s/roles/bootstrap/local.sls")
+EARLY_STAGE_BOOTSTRAP = Path("metalk8s/roles/internal/early-stage-bootstrap.sls")
 NODE_ROLE = Path("metalk8s/roles/node/init.sls")
+DEPLOY_NODE = Path("metalk8s/orchestrate/deploy_node.sls")
+UPGRADE_PRE = Path("metalk8s/orchestrate/upgrade/pre.sls")
 
 # The formula that transitively brings in every state we require, so it must stay
 # in the `include` block. It defines `Install containerd`, and it includes both
@@ -75,11 +78,19 @@ PULL_STATE = "Pull the worker boot cache from the registry"
 # Not IMPORT_STATE: both SLS can land in one run, and Salt refuses an ID
 # declared twice.
 PULL_IMPORT_STATE = "Import the pulled boot cache archives into containerd"
-# Declared by both branches of the pull, so a role can always require it.
-PULL_TERMINAL_STATE = "The worker boot cache is in place"
+# What the pull renders instead when the node runs no containerd.
+NO_PULL_STATE = "No image cache to pull"
 PULLED_SLS = "metalk8s.image-cache.pulled"
-# Not GATE_STATE: the bootstrap node applies both role SLS in one run.
-PULL_GATE_STATE = "Ensure the image cache is pulled before the kubelet starts"
+# The source version of an upgrade into this one has no image cache agent, so
+# the upgrade deploys it whole, with its resource definition, before any node.
+IMAGE_CACHE_ADDON = "metalk8s.addons.image-cache-agent.deployed"
+SYNC_CHECK = "metalk8s_checks.image_caches_synced"
+# One wait for every node: the agent pulls on all of them at once.
+WAIT_STATE = "Wait for the image cache of every node"
+# The node the `deploy_node.sls` cases target, and the case where it already
+# completed a deployment.
+DEPLOYED_NODE = "master-1"
+FIRST_DEPLOY_ONLY_CASE = "Node completed a deployment before"
 
 
 @pytest.mark.formulas
@@ -120,15 +131,16 @@ def test_preload_timer_requires_a_running_containerd(
 
 
 @pytest.mark.formulas
-@pytest.mark.parametrize("template_path", [BOOTSTRAP_LOCAL], indirect=True)
+@pytest.mark.parametrize("template_path", [EARLY_STAGE_BOOTSTRAP], indirect=True)
 def test_provisioning_runs_before_the_kubelet(
     rendered_states: RenderedStates,
 ) -> None:
     """Check the cache is filled before the kubelet may start.
 
-    In `local.sls` and not in `init.sls`: this is the SLS the early stage of
-    the bootstrap applies, and the run that starts the kubelet for the first
-    time. An `_in` requisite only resolves against a state in the same run.
+    In the early stage of the bootstrap, and not in a role SLS: `bootstrap.sh`
+    and `restore.sh` apply it before the kubelet ever starts, and the `highstate`
+    must not run any image cache command. An `_in` requisite only resolves
+    against a state in the same run.
     """
     for case_id, states in rendered_states:
         assert GATE_STATE in states, f"the ordering gate is gone ({case_id})"
@@ -146,7 +158,8 @@ def test_provisioning_runs_before_the_kubelet(
         )
 
         includes = states.get("include", [])
-        for included in (PROVISIONED_SLS, "metalk8s.kubernetes.kubelet.standalone"):
+        # `roles.bootstrap.local` brings in `kubelet.standalone`.
+        for included in (PROVISIONED_SLS, "metalk8s.roles.bootstrap.local"):
             assert included in includes, (
                 f"'{included}' is not included, the requisites of"
                 f" '{GATE_STATE}' cannot resolve ({case_id})"
@@ -163,8 +176,8 @@ def test_import_follows_the_provisioning(
 
     for case_id, states in rendered_states:
         if NO_PROVISION_STATE in states:
-            # The bootstrap role requires this SLS as a whole, so its
-            # no-containerd branch has to declare a state of its own.
+            # The early stage of the bootstrap requires this SLS as a whole,
+            # so its no-containerd branch has to declare a state of its own.
             assert not set(PROVISION_STATES) & set(
                 states
             ), f"'{NO_PROVISION_STATE}' next to an import ({case_id})"
@@ -337,8 +350,8 @@ def test_pull_reads_the_registry_endpoint(
     checked = False
 
     for case_id, states in rendered_states:
-        assert PULL_TERMINAL_STATE in states, f"no '{PULL_TERMINAL_STATE}' ({case_id})"
         if PULL_STATE not in states:
+            assert NO_PULL_STATE in states, f"no '{NO_PULL_STATE}' ({case_id})"
             continue
 
         args = _state_args(states, PULL_STATE)
@@ -364,46 +377,197 @@ def test_pull_reads_the_registry_endpoint(
         ), f"'{PULL_IMPORT_STATE}' does not watch '{PULL_STATE}' ({case_id})"
         assert TIMER_STATE in required_states(states, PULL_IMPORT_STATE), case_id
 
-        assert {PULL_STATE, PULL_IMPORT_STATE} <= required_states(
-            states, PULL_TERMINAL_STATE
-        ), f"'{PULL_TERMINAL_STATE}' does not wait for the pull ({case_id})"
-
         checked = True
 
     assert checked, "no rendering case pulls the cache, the requisites went unchecked"
 
 
+def _runs_before(states: Dict[str, Any], first: str, then: str) -> bool:
+    """Tell whether one requisite, either way round, orders two states."""
+    return first in requisite_states(states, then) or then in requisite_states(
+        states, first, "require_in"
+    )
+
+
 @pytest.mark.formulas
-@pytest.mark.parametrize("template_path", [NODE_ROLE], indirect=True)
-def test_pulling_runs_before_the_kubelet(
+@pytest.mark.parametrize("template_path", [DEPLOY_NODE], indirect=True)
+def test_pulling_runs_before_the_kubelet_on_a_new_node(
     rendered_states: RenderedStates,
 ) -> None:
-    """Check a joining node holds its cache before the kubelet may start."""
+    """Check a node deployed for the first time holds its cache first.
+
+    The kubelet starts in the first state that applies a role on the node:
+    `Install etcd node` on an etcd node, the `highstate` otherwise. A node that
+    completed a deployment before gets its new images from the image cache
+    agent, so Salt runs no image cache command on it.
+    """
+    outcomes: Set[bool] = set()
+
     for case_id, states in rendered_states:
-        assert PULL_GATE_STATE in states, f"the ordering gate is gone ({case_id})"
+        fill_id = f"Fill the image cache on {DEPLOYED_NODE}"
+        first_deploy = FIRST_DEPLOY_ONLY_CASE not in case_id
+        outcomes.add(first_deploy)
 
-        waits_for = requisite_states(states, PULL_GATE_STATE)
-        assert PULL_TERMINAL_STATE in waits_for, (
-            f"'{PULL_GATE_STATE}' does not require '{PULL_TERMINAL_STATE}', it"
-            f" gates nothing ({case_id})"
-        )
-        assert PULLED_SLS not in waits_for, (
-            f"'{PULL_GATE_STATE}' requires '{PULLED_SLS}' whole, not its"
-            f" terminal state ({case_id})"
-        )
+        if not first_deploy:
+            assert fill_id not in states, f"'{fill_id}' is declared ({case_id})"
+            continue
 
-        releases = requisite_states(states, PULL_GATE_STATE, "require_in")
-        assert KUBELET_STATE in releases, (
-            f"'{PULL_GATE_STATE}' is not ordered before '{KUBELET_STATE}', the"
-            f" kubelet could start on a node whose cache is empty ({case_id})"
-        )
+        assert fill_id in states, f"'{fill_id}' is missing ({case_id})"
+        args = _state_args(states, fill_id)
+        assert args["tgt"] == DEPLOYED_NODE, case_id
+        assert args["sls"] == [PULLED_SLS], case_id
 
+        # The node may already run Pods: an older version did not record
+        # the annotation.
+        for earlier in ("Cordon the node", "Drain the node"):
+            if earlier in states:
+                assert earlier in requisite_states(
+                    states, fill_id
+                ), f"'{fill_id}' does not wait for '{earlier}' ({case_id})"
+
+        for later in ("Run the highstate", "Install etcd node"):
+            if later in states:
+                assert _runs_before(states, fill_id, later), (
+                    f"'{fill_id}' is not ordered before '{later}', the kubelet"
+                    f" could start on a node whose cache is empty ({case_id})"
+                )
+
+    assert outcomes == {
+        True,
+        False,
+    }, f"no case in `config.yaml` covers both a new node and '{FIRST_DEPLOY_ONLY_CASE}'"
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize(
+    "template_path",
+    [NODE_ROLE, BOOTSTRAP_LOCAL, Path("metalk8s/roles/bootstrap/init.sls")],
+    indirect=True,
+)
+def test_the_highstate_runs_no_image_cache_command(
+    rendered_states: RenderedStates,
+) -> None:
+    """Check the `highstate` leaves filling the cache to the agent.
+
+    The `highstate` runs on every node at each upgrade. The agent stages the new
+    version before the upgrade reaches the node, so a pull from Salt would at
+    best do nothing, and at worst pull from a registry the node cannot reach.
+    """
+    for case_id, states in rendered_states:
         includes = states.get("include", [])
-        for included in (PULLED_SLS, "metalk8s.kubernetes.kubelet"):
-            assert included in includes, (
-                f"'{included}' is not included, the requisites of"
-                f" '{PULL_GATE_STATE}' cannot resolve ({case_id})"
-            )
+        for sls in (PULLED_SLS, PROVISIONED_SLS):
+            assert sls not in includes, f"'{sls}' is included ({case_id})"
+
+        for state_id, body in states.items():
+            if isinstance(body, dict):
+                assert not any(
+                    fun.startswith("metalk8s_image_cache.") for fun in body
+                ), f"'{state_id}' runs an image cache command ({case_id})"
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [UPGRADE_PRE], indirect=True)
+def test_the_upgrade_declares_the_target_image_cache_first(
+    rendered_states: RenderedStates,
+) -> None:
+    """Check the agent and the target ImageCaches exist before any node moves.
+
+    The whole agent and not only the resources: the version an upgrade comes
+    from has no image cache agent, so neither the resource definition nor the
+    DaemonSet exist.
+    """
+    for case_id, states in rendered_states:
+        assert IMAGE_CACHE_ADDON in states.get(
+            "include", []
+        ), f"'{IMAGE_CACHE_ADDON}' is not included ({case_id})"
+
+
+def _expected_cache_names(metalk8s_versions: Any) -> Set[str]:
+    """Return the names of the ImageCache resources of the current version."""
+    return {
+        f"{variant}-"
+        + metalk8s_versions["images"][f"metalk8s-boot-cache-{variant}"][
+            "version"
+        ].replace(".", "-")
+        for variant in VARIANTS
+    }
+
+
+def _check_sync_wait(
+    states: Dict[str, Any],
+    nodes: Dict[str, Any],
+    expected_names: Set[str],
+    case_id: str,
+) -> bool:
+    """Check the one bounded wait for the image cache of the deployed nodes.
+
+    Return whether the case waits at all: only nodes that completed a
+    deployment run an agent.
+    """
+    deployed = {n for n in nodes if nodes[n].get("version_applied")}
+    if not deployed:
+        assert WAIT_STATE not in states, f"waits with no deployed node ({case_id})"
+        return False
+
+    assert WAIT_STATE in states, f"'{WAIT_STATE}' is missing ({case_id})"
+    assert IMAGE_CACHE_ADDON in requisite_states(
+        states, WAIT_STATE
+    ), f"'{WAIT_STATE}' does not wait for the resources ({case_id})"
+
+    assert "salt.runner" in states[WAIT_STATE], case_id
+    args = _state_args(states, WAIT_STATE)
+    assert args["name"] == SYNC_CHECK, case_id
+    assert set(args["node_list"]) == deployed, case_id
+    # Salt runs one copy of a state per entry of `names`, with that entry as
+    # its `name`: here, a runner named after each resource.
+    assert "names" not in args, f"'{WAIT_STATE}' passes `names` ({case_id})"
+    assert set(args["image_caches"]) == expected_names, case_id
+
+    retry = args["retry"]
+    assert (
+        retry["attempts"] * retry["interval"] <= 3600
+    ), f"'{WAIT_STATE}' may wait more than an hour ({case_id})"
+
+    # Nothing touches a node before every node is synced.
+    for state_id in [s for s in states if s.startswith("Best effort drain ")]:
+        assert WAIT_STATE in requisite_states(
+            states, state_id
+        ), f"'{state_id}' runs before the image cache is synced ({case_id})"
+
+    return True
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [UPGRADE_PRE], indirect=True)
+def test_every_node_is_synced_before_the_upgrade_starts(
+    environment: jinja2.Environment,
+    render_contexts: Iterable[Context],
+    template_path: Path,
+    metalk8s_versions: Any,
+) -> None:
+    """Check the upgrade starts only once the agent synced every deployed node.
+
+    Here and not before each node is deployed: etcd, the API servers and the
+    engines of the bootstrap node are upgraded first. The check is bounded,
+    so a node that never syncs stops the upgrade on a message naming it,
+    instead of waiting forever. A node never deployed runs no agent, and
+    deploying it fills its cache.
+    """
+    checked = False
+    template = environment.get_template(str(template_path))
+    expected_names = _expected_cache_names(metalk8s_versions)
+
+    for context in render_contexts:
+        states = salt.utils.yaml.safe_load(template.render(**context.data))
+        if _check_sync_wait(
+            states,
+            context.data["pillar"]["metalk8s"]["nodes"],
+            expected_names,
+            context.id,
+        ):
+            checked = True
+
+    assert checked, "no rendering case has a deployed node, the wait went unchecked"
 
 
 def _declared_ids(
@@ -430,9 +594,7 @@ def _declared_ids(
         # The bootstrap node applies `roles.bootstrap` and, through
         # `roles.master`, `roles.node`.
         (BOOTSTRAP_LOCAL, NODE_ROLE),
-        # So the bootstrap node applies both ways to fill the cache.
-        (IMAGE_CACHE_PROVISIONED, IMAGE_CACHE_PULLED),
-        # And each of them includes `installed.sls`.
+        # Each way to fill the cache includes `installed.sls`.
         (IMAGE_CACHE_INSTALLED, IMAGE_CACHE_PROVISIONED),
         (IMAGE_CACHE_INSTALLED, IMAGE_CACHE_PULLED),
     ],

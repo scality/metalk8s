@@ -242,6 +242,38 @@ Wait minion available:
     - require_in:
       - http: Wait for API server to be available before highstate
 
+{#- The kubelet starts in the first state that applies a role, so the cache
+    of a new node is filled before it. A node that completed a deployment
+    before gets the images of a new version from the image cache agent, which
+    an upgrade waits for, so Salt runs no image cache command on it. #}
+{%- if not pillar.metalk8s.nodes[node_name].get('version_applied') %}
+
+Fill the image cache on {{ node_name }}:
+  salt.state:
+    - tgt: {{ node_name }}
+    - saltenv: metalk8s-{{ version }}
+    - sls:
+      - metalk8s.image-cache.pulled
+    {#- The pull does not return while it downloads, see `Run the highstate`
+        for why a short timeout aborts the deployment #}
+    - timeout: 300
+    - require:
+      - salt: Wait minion available
+      - salt: Check pillar before salt-minion configuration
+      # NOTE: The node may already run Pods: older versions did not record
+      # the annotation.
+      - metalk8s_cordon: Cordon the node
+  {%- if run_drain %}
+      - metalk8s_drain: Drain the node
+  {%- endif %}
+    - require_in:
+      - salt: Run the highstate
+  {%- if 'etcd' in roles and 'etcd' not in skip_roles %}
+      - salt: Install etcd node
+  {%- endif %}
+
+{%- endif %}
+
 {%- if 'etcd' in roles and 'etcd' not in skip_roles %}
 
 Check pillar before etcd deployment:
@@ -275,11 +307,9 @@ Install etcd node:
           # Skip apiserver-proxy healthcheck as local apiserver may not be
           # deployed yet (as we call `highstate` just after)
           skip_apiserver_proxy_healthcheck: True
-    {#- Same grace as the highstate below, for the same reason. This step
-        applies `metalk8s.roles.etcd`, which includes `metalk8s.roles.node`,
-        so an etcd node pulls its boot cache here. That image is large and
-        the state does not return while it downloads. Once a
-        `saltutil.find_job` probe goes unanswered no further probe is sent,
+    {#- Same grace as the highstate below, for the same reason. A state
+        that does not return for a while, such as a large download, leaves a
+        `saltutil.find_job` probe unanswered. No further probe is then sent,
         and Salt reports `Run failed on minions: <node>` while the state is
         still running, aborting the deployment with the node cordoned #}
     - timeout: 300

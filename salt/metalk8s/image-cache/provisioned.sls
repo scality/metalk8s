@@ -1,16 +1,17 @@
 {%- from "metalk8s/map.jinja" import image_cache with context %}
 {%- from "metalk8s/map.jinja" import kubelet with context %}
-{%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/image-cache/variants.jinja" import image_cache_variants with context %}
 
 {#- Fills the image cache of the bootstrap node from the boot cache images
     shipped on the ISO.
 
     This is the cold path: no registry to pull from yet, so the archives come
     out of the ISO. This node holds the control plane, etcd and workloads, so
-    it gets every variant. A joining node pulls its cache, see `pulled.sls`.
+    it gets every variant. A new node pulls its cache, see `pulled.sls`.
 
-    Ordering this against the kubelet is left to the role that applies both,
-    so that this SLS stays applicable on its own. #}
+    Ordering this against the kubelet is left to the caller, see
+    `roles/internal/early-stage-bootstrap.sls`, so that this SLS stays
+    applicable on its own. #}
 
 {%- if kubelet.container_engine == 'containerd' %}
 
@@ -20,20 +21,15 @@ include:
   - .installed
   - metalk8s.archives.mounted
 
-{%- for variant in ['worker', 'control-plane', 'etcd'] %}
-  {%- set image_name = 'metalk8s-boot-cache-' ~ variant %}
-  {%- set image_version = repo.images.get(image_name, {}).get('version') %}
-  {%- if not image_version %}
-    {{ raise('Missing version information for "' ~ image_name ~ '"') }}
-  {%- endif %}
+{%- for variant, resource in image_cache_variants.items() %}
 
 Import the {{ variant }} boot cache from the ISO:
   metalk8s_image_cache.imported:
-    # NOTE: Must match the ImageCache resource that later owns this
-    # directory: `<variant>-<version>`, with dots replaced by dashes.
-    - name: {{ variant }}-{{ image_version | replace('.', '-') }}
+    # NOTE: The name of the ImageCache resource that later owns this
+    # directory, so that the agent adopts it.
+    - name: {{ resource.name }}
     - source: {{ archives[saltenv].path }}/images/{{
-        image_name }}-{{ image_version }}.tar
+        resource.image_name }}-{{ resource.image_version }}.tar
     - cache_path: {{ image_cache.directory }}
     - require:
       - file: Create the image cache directory
