@@ -1,6 +1,0 @@
-kind: Enhanced
-body: The nightly of a development branch tests upgrades and downgrades from the previous major again when majors are not contiguous. It used to look only for `MAJOR - 1`, so `development/136.0` found no 135 release or branch and skipped every lifecycle test. It now takes the highest released version and the highest `development/*` branch below the current major, so the 136.0 nightly tests from `134.0.1` and `development/134.0`.
-time: 2026-10-27T10:44:37.28033109Z
-custom:
-    CommentId: "6439907228"
-    Pull: "5206"
