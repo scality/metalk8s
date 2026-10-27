@@ -401,6 +401,50 @@ upgrade:
       Unable to upgrade from more than 1 major version, Node node-1 is in 1.1.0 and you try to upgrade to 3.1.0
       Unable to upgrade from more than 1 major version, Node node-3 is in 1.1.1 and you try to upgrade to 3.1.0
 
+  # 6.(ter) Success: Upgrade from the previous major, not contiguous
+  - pillar:
+      metalk8s:
+        previous_major_version: 134
+        nodes:
+          node-1:
+            version: 134.0.1
+          node-2:
+            version: 136.0.0
+    dest_version: 136.0.0
+    saltenv: metalk8s-136.0.0
+    result: True
+
+  # 6.(quater) Failure: Upgrade from before the previous major, not contiguous
+  - pillar:
+      metalk8s:
+        previous_major_version: 134
+        nodes:
+          node-1:
+            version: 133.0.17
+          node-2:
+            version: 134.0.1
+    dest_version: 136.0.0
+    saltenv: metalk8s-136.0.0
+    expect_raise: True
+    result: |-
+      Unable to upgrade from more than 1 major version, Node node-1 is in 133.0.17 and you try to upgrade to 136.0.0
+
+  # 6.(quinquies) Success: Upgrade from mixed patches of the previous major,
+  # given as a string
+  - pillar:
+      metalk8s:
+        previous_major_version: "134"
+        nodes:
+          node-1:
+            version: 134.0.15
+          node-2:
+            version: 134.0.16
+          node-3:
+            version: 134.0.17
+    dest_version: 136.0.0
+    saltenv: metalk8s-136.0.0
+    result: True
+
   # 7.Failure: One node is not ready
   - pillar:
       metalk8s:
@@ -707,6 +751,84 @@ downgrade:
     result: |-
       Unable to downgrade from more than 1 major version, Node node-2 is in 3.1.1 and you try to downgrade to 1.1.0
       Unable to downgrade from more than 1 major version, Node node-3 is in 3.1.0 and you try to downgrade to 1.1.0
+
+  # 6.(ter) Success: Downgrade to the previous major, not contiguous
+  - pillar:
+      metalk8s:
+        previous_major_version: 134
+        downgrade:
+          enabled: True
+        nodes:
+          node-1:
+            version: 134.0.1
+          node-2:
+            version: 136.0.0
+    dest_version: 134.0.1
+    saltenv: metalk8s-136.0.0
+    result: True
+
+  # 6.(quater) Failure: Downgrade to before the previous major, not contiguous
+  - pillar:
+      metalk8s:
+        previous_major_version: 134
+        downgrade:
+          enabled: True
+        nodes:
+          node-1:
+            version: 134.0.1
+          node-2:
+            version: 136.0.0
+    dest_version: 133.0.17
+    saltenv: metalk8s-136.0.0
+    expect_raise: True
+    result: |-
+      Unable to downgrade from more than 1 major version, Node node-2 is in 136.0.0 and you try to downgrade to 133.0.17
+
+  # 6.(quinquies) Success: Downgrade to the previous major, given as a string
+  - pillar:
+      metalk8s:
+        previous_major_version: "134"
+        downgrade:
+          enabled: True
+        nodes:
+          node-1:
+            version: 134.0.15
+          node-2:
+            version: 136.0.0
+    dest_version: 134.0.15
+    saltenv: metalk8s-136.0.0
+    result: True
+
+  # 6.(sexies) Success: Downgrade within the saltenv major
+  - pillar:
+      metalk8s:
+        previous_major_version: 134
+        downgrade:
+          enabled: True
+        nodes:
+          node-1:
+            version: 136.1.0
+          node-2:
+            version: 136.0.0
+    dest_version: 136.0.0
+    saltenv: metalk8s-136.1.0
+    result: True
+
+  # 6.(septies) Failure: Downgrade to the previous major with an invalid
+  # saltenv, reported as an error instead of crashing
+  - pillar:
+      metalk8s:
+        previous_major_version: 134
+        downgrade:
+          enabled: True
+        nodes:
+          node-1:
+            version: 136.0.0
+    dest_version: 134.0.1
+    saltenv: base
+    expect_raise: True
+    result: |-
+      Unable to downgrade from more than 1 major version, Node node-1 is in 136.0.0 and you try to downgrade to 134.0.1
 
   # 7.Failure: One node is not ready
   - pillar:

@@ -361,9 +361,13 @@ def upgrade(dest_version, saltenv, raises=True):
         )
 
     # Check that all nodes are in a supported upgrade path
-    # We only support upgrade from one major version
+    # We only support upgrade from one major version, the previous one being
+    # defined in the destination version since majors are not always contiguous
     dest = dest_version.split(".")
-    min_version = f"{int(dest[0]) - 1}.0.0"
+    previous_major = int(
+        metalk8s_pillar.get("previous_major_version", int(dest[0]) - 1)
+    )
+    min_version = f"{previous_major}.0.0"
 
     for node_name, node_info in metalk8s_pillar["nodes"].items():
         if (
@@ -419,9 +423,23 @@ def downgrade(dest_version, saltenv, raises=True, bypass_disable=False):
     )
 
     # Check that all nodes are in a supported downgrade path
-    # We only support downgrade from one major version
+    # We only support downgrade from one major version, so nodes can be at most
+    # in the major following the destination one. Majors are not always
+    # contiguous: when downgrading to the major the saltenv one follows, nodes
+    # can be up to the saltenv major (an invalid saltenv is reported below)
     dest = dest_version.split(".")
-    max_version = f"{int(dest[0]) + 2}.0.0"
+    saltenv_version = saltenv.replace("metalk8s-", "")
+    saltenv_major = saltenv_version.split(".")[0]
+    previous_major = metalk8s_pillar.get("previous_major_version")
+    if (
+        previous_major is not None
+        and int(dest[0]) == int(previous_major)
+        and saltenv_major.isdigit()
+    ):
+        next_major = int(saltenv_major)
+    else:
+        next_major = int(dest[0]) + 1
+    max_version = f"{next_major + 1}.0.0"
 
     newest_node_version = None
 
@@ -459,9 +477,7 @@ def downgrade(dest_version, saltenv, raises=True, bypass_disable=False):
 
     # When downgrading the saltenv should be at least the newest node version
     if (
-        __salt__["salt.cmd"](
-            "pkg.version_cmp", saltenv.replace("metalk8s-", ""), newest_node_version
-        )
+        __salt__["salt.cmd"]("pkg.version_cmp", saltenv_version, newest_node_version)
         == -1
     ):
         errors.append(
