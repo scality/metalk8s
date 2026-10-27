@@ -1,0 +1,8 @@
+{{- /*
+The built-in email.default.subject joins the values of every group label, and
+the email route created by the UI groups by all labels, so the default subject
+lists every label of the alert. Keep this template free of anything that can
+fail at execution time: Alertmanager then sends the email with an empty body.
+Do not redefine __subject, which the other integrations use.
+*/ -}}
+{{ define "email.default.subject" }}[{{ .Status | toUpper }}{{ if gt (len .Alerts) 1 }}:{{ len .Alerts }}{{ end }}] {{ with .CommonLabels.alertname }}{{ . }}{{ else }}multiple alerts{{ end }}{{ with .CommonLabels.severity }} - {{ . }}{{ end }}{{ end }}
