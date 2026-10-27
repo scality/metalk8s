@@ -245,6 +245,18 @@ def _object_manipulation_function(action):
                         and webhook.get("name") in old_ca_bundles
                     ):
                         client_config["caBundle"] = old_ca_bundles[webhook["name"]]
+            # Keep the data of service account token Secrets if not present in
+            # the body. The token controller fills it in, and would mint a new
+            # token on every replace otherwise.
+            if (
+                api.api_version == "v1"
+                and api.kind == "Secret"
+                and call_kwargs["body"].get("type")
+                == "kubernetes.io/service-account-token"
+                and not call_kwargs["body"].get("data")
+                and old_object.get("data")
+            ):
+                call_kwargs["body"]["data"] = old_object["data"]
 
         log.debug("Running '%s' with: %s", action, call_kwargs)
 

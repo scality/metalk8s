@@ -1,4 +1,7 @@
+# $schema: ./values.schema.json
+
 global:
+  # @schema type:[string, null]
   # -- Overrides the Docker registry globally for all images
   imageRegistry: null
 
@@ -39,6 +42,7 @@ serviceAccount:
   name: ""
   nameTest: ""
   ## ServiceAccount labels.
+  # @schema additionalProperties:{"type":"string"}
   labels: {}
   ## Service account annotations. Can be templated.
   #  annotations:
@@ -48,6 +52,7 @@ serviceAccount:
   # autoMount: false
   automountServiceAccountToken: false
 
+# @schema type:[integer, null]
 replicas: 1
 
 ## Create a headless service for the deployment
@@ -62,7 +67,9 @@ autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 5
+  # @schema type:[string, integer, null]
   targetCPU: "60"
+  # @schema type:[string, integer, null]
   targetMemory: ""
   behavior: {}
 
@@ -76,18 +83,26 @@ podDisruptionBudget: {}
 
 ## See `kubectl explain deployment.spec.strategy` for more
 ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+# @schema skipProperties:true;additionalProperties:true
 deploymentStrategy:
   type: RollingUpdate
 
 ## The maximum time in seconds for a Deployment to make progress before it is considered to be failed.
 ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds
+# @schema type:[integer, null]
 progressDeadlineSeconds: null
 
+## Startup probe. Holds off the liveness and readiness probes until it succeeds, useful for slow starts.
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+startupProbe: {}
+
+# @schema skipProperties:true;additionalProperties:true
 readinessProbe:
   httpGet:
     path: /api/health
     port: grafana
 
+# @schema skipProperties:true;additionalProperties:true
 livenessProbe:
   httpGet:
     path: /api/health
@@ -107,7 +122,7 @@ image:
   # -- Docker image repository
   repository: grafana/grafana
   # Overrides the Grafana image tag whose default is the chart appVersion
-  tag: ""
+  tag: "{{ .Chart.AppVersion }}-distroless"
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -129,10 +144,25 @@ testFramework:
     # -- The Docker registry
     registry: docker.io
     repository: bats/bats
-    tag: "1.13.0"
+    tag: "1.14.0"
   imagePullPolicy: IfNotPresent
-  securityContext: {}
-  containerSecurityContext: {}
+  # @schema skipProperties:true;additionalProperties:true
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 472
+    runAsGroup: 472
+    seccompProfile:
+      type: RuntimeDefault
+  # @schema skipProperties:true;additionalProperties:true
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    privileged: false
+    capabilities:
+      drop:
+      - ALL
+    seccompProfile:
+      type: RuntimeDefault
+    readOnlyRootFilesystem: true
   resources: {}
   #  limits:
   #    cpu: 100m
@@ -142,6 +172,7 @@ testFramework:
   #    memory: 128Mi
 
 # dns configuration for pod
+# @schema type:[string, null]
 dnsPolicy: ~
 dnsConfig: {}
   # nameservers:
@@ -151,13 +182,16 @@ dnsConfig: {}
   #   value: "2"
   # - name: edns0
 
+# @schema type:[boolean, null]
 hostUsers: ~
+# @schema skipProperties:true;additionalProperties:true
 securityContext:
   runAsNonRoot: true
   runAsUser: 472
   runAsGroup: 472
   fsGroup: 472
 
+# @schema skipProperties:true;additionalProperties:true
 containerSecurityContext:
   allowPrivilegeEscalation: false
   privileged: false
@@ -166,6 +200,7 @@ containerSecurityContext:
     - ALL
   seccompProfile:
     type: RuntimeDefault
+  readOnlyRootFilesystem: true
 
 # Enable creating the grafana configmap
 createConfigmap: true
@@ -195,6 +230,7 @@ shadowBundledPlugins: false
 
 
 # Apply extra labels to common labels.
+# @schema additionalProperties:{"type":"string"}
 extraLabels: {}
 
 ## Assign a PriorityClassName to pods if set
@@ -204,7 +240,7 @@ downloadDashboardsImage:
   # -- The Docker registry
   registry: docker.io
   repository: curlimages/curl
-  tag: 8.20.0
+  tag: 8.23.0
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -212,6 +248,7 @@ downloadDashboards:
   env: {}
   envFromSecret: ""
   resources: {}
+  # @schema skipProperties:true;additionalProperties:true
   securityContext:
     allowPrivilegeEscalation: false
     capabilities:
@@ -219,6 +256,7 @@ downloadDashboards:
       - ALL
     seccompProfile:
       type: RuntimeDefault
+    readOnlyRootFilesystem: true
   envValueFrom: {}
   #  ENV_NAME:
   #    configMapKeyRef:
@@ -258,7 +296,9 @@ service:
   targetPort: 3000
     # targetPort: 4181 To be used with a proxy extraContainer
   ## Service annotations. Can be templated.
+  # @schema additionalProperties:{"type":"string"}
   annotations: {}
+  # @schema additionalProperties:{"type":"string"}
   labels: {}
   portName: service
   # Adds the appProtocol field to the service. This allows to work with istio protocol selection. Ex: "http" or "tcp"
@@ -275,10 +315,21 @@ serviceMonitor:
   enabled: false
   path: /metrics
   #  namespace: monitoring  (defaults to use the namespace this chart is deployed to)
+  # @schema additionalProperties:{"type":"string"}
   labels: {}
   # Set these to override the Prometheus global scrape interval/timeout.
   # interval: 30s
   # scrapeTimeout: 30s
+  # Configure scrape protocol negotiation and native histogram handling.
+  # Requires corresponding support in the Prometheus Operator CRDs and Prometheus.
+  # See: https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.ServiceMonitorSpec
+  # scrapeProtocols: ["PrometheusProto", "OpenMetricsText1.0.0", "OpenMetricsText0.0.1", "PrometheusText0.0.4"]
+  # scrapeNativeHistograms: true
+  # scrapeClassicHistograms: false
+  # convertClassicHistogramsToNHCB: false
+  # nativeHistogramBucketLimit: 0
+  # nativeHistogramMinBucketFactor: "1.1"
+  # fallbackScrapeProtocol: PrometheusText0.0.4
   scheme: http
   tlsConfig: {}
   relabelings: []
@@ -301,9 +352,11 @@ ingress:
   enabled: false
   # ingressClassName: nginx
   # Values can be templated
+  # @schema additionalProperties:{"type":"string"}
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+  # @schema additionalProperties:{"type":"string"}
   labels: {}
   path: /
   pathType: Prefix
@@ -343,7 +396,9 @@ route:
     # Valid options are GRPCRoute, HTTPRoute, TCPRoute, TLSRoute, UDPRoute
     kind: HTTPRoute
 
+    # @schema additionalProperties:{"type":"string"}
     annotations: {}
+    # @schema additionalProperties:{"type":"string"}
     labels: {}
 
     hostnames: []
@@ -396,7 +451,9 @@ listenerSet:
     # -- Set the ListenerSet apiVersion, e.g. gateway.networking.k8s.io/v1
     apiVersion: gateway.networking.k8s.io/v1
 
+    # @schema additionalProperties:{"type":"string"}
     annotations: {}
+    # @schema additionalProperties:{"type":"string"}
     labels: {}
 
     # -- Reference to the parent Gateway this ListenerSet attaches to
@@ -428,6 +485,16 @@ resources: {}
 #    cpu: 100m
 #    memory: 128Mi
 
+## Configure the GOMEMLIMIT environment variable.
+## When enabled and resources.limits.memory is set, GOMEMLIMIT is injected
+## as a computed value (factor × memory limit) unless the user has already
+## defined GOMEMLIMIT via env or envValueFrom.
+goMemLimit:
+  # -- Enable automatic GOMEMLIMIT injection.
+  enabled: true
+  # -- Fraction of resources.limits.memory to use as GOMEMLIMIT (e.g. 0.9 = 90 %).
+  factor: 0.9
+
 ## Node labels for pod assignment
 ## ref: https://kubernetes.io/docs/user-guide/node-selection/
 #
@@ -454,6 +521,8 @@ topologySpreadConstraints: []
 extraInitContainers: []
 
 ## Enable an Specify container in extraContainers. This is meant to allow adding an authentication proxy to a grafana pod
+## Accepts either a list of containers or a string. Both are evaluated as template.
+# @schema type:[string, array, null]
 extraContainers: ""
 # extraContainers: |
 # - name: proxy
@@ -490,6 +559,7 @@ persistence:
   volumeName: ""
   accessModes:
     - ReadWriteOnce
+  # @schema type:[string, integer]
   size: 10Gi
   # annotations: {}
   finalizers:
@@ -500,8 +570,15 @@ persistence:
   ## Name of an existing PVC. Can be templated.
   # existingClaim:
   ## Extra labels to apply to a PVC.
+  # @schema additionalProperties:{"type":"string"}
   extraPvcLabels: {}
   disableWarning: false
+  ## Configure StatefulSet persistent volume claim retention policy.
+  ## This is ignored when Grafana is configured to use a Deployment with a PVC.
+  ## By default, Kubernetes uses Retain for both whenDeleted and whenScaled.
+  persistentVolumeClaimRetentionPolicy: {}
+  #  whenDeleted: Retain
+  #  whenScaled: Retain
 
   ## If persistence is not enabled, this allows to mount the
   ## local storage in-memory to improve performance
@@ -544,6 +621,7 @@ initChownData:
   #  requests:
   #    cpu: 100m
   #    memory: 128Mi
+  # @schema skipProperties:true;additionalProperties:true
   securityContext:
     readOnlyRootFilesystem: false
     runAsNonRoot: false
@@ -570,10 +648,9 @@ admin:
 
 ## Define command to be executed at startup by grafana container
 ## Needed if using `vault-env` to manage secrets (ref: https://banzaicloud.com/blog/inject-secrets-into-pods-vault/)
-## Default is "run.sh" as defined in grafana's Dockerfile
+## The default distroless image starts Grafana directly and does not contain a shell or `/run.sh`.
 # command:
-# - "sh"
-# - "/run.sh"
+# - "/path/to/your/entrypoint"
 
 ## Optionally define args if command is used
 ## Needed if using `hashicorp/envconsul` to manage secrets
@@ -892,6 +969,11 @@ dashboardProviders: {}
 ##
 defaultCurlOptions: "-skf"
 
+## Configure shell options for downloading dashboards. The beginning dash is added automatically.
+## Add `x` to enable command tracing. This can expose sensitive values in logs.
+##
+defaultShellOptions: "eufo pipefail"
+
 ## Configure grafana dashboard to import
 ## NOTE: To use dashboards you must also enable/configure dashboardProviders
 ## ref: https://grafana.com/dashboards
@@ -946,6 +1028,7 @@ dashboardsConfigMaps: {}
 ## NOTE: values in map will be converted to ini format
 ## ref: http://docs.grafana.org/installation/configuration/
 ##
+# @schema skipProperties:true;additionalProperties:true
 grafana.ini:
   paths:
     data: /var/lib/grafana/
@@ -954,6 +1037,8 @@ grafana.ini:
     provisioning: /etc/grafana/provisioning
   analytics:
     check_for_updates: true
+  plugins:
+    preinstall_auto_update: "false"
   log:
     mode: console
   server:
@@ -1032,7 +1117,7 @@ sidecar:
     # -- The Docker registry
     registry: quay.io
     repository: kiwigrid/k8s-sidecar
-    tag: 2.7.3
+    tag: 2.14.1
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
@@ -1042,6 +1127,7 @@ sidecar:
 #   requests:
 #     cpu: 50m
 #     memory: 50Mi
+  # @schema skipProperties:true;additionalProperties:true
   securityContext:
     allowPrivilegeEscalation: false
     capabilities:
@@ -1049,6 +1135,7 @@ sidecar:
       - ALL
     seccompProfile:
       type: RuntimeDefault
+    readOnlyRootFilesystem: true
   # Set to true to skip tls verification for kube api calls. Can be overridden per sidecar
   # skipTlsVerify: true
   enableUniqueFilenames: false
@@ -1086,6 +1173,7 @@ sidecar:
     # If specified, the sidecar will search for alert config-maps inside this namespace.
     # Otherwise the namespace in which the sidecar is running will be used.
     # It's also possible to specify ALL to search in all namespaces
+    # @schema type:[string, array, null]
     searchNamespace: null
     # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
     watchMethod: WATCH
@@ -1130,6 +1218,7 @@ sidecar:
     # Absolute path to a script to execute after a configmap got reloaded.
     # It runs before calls to REQ_URI. If the file is not executable it will be passed to sh.
     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
+    # @schema type:[string, null]
     script: null
     skipReload: false
     # This is needed if skipReload is true, to load any alerts defined at startup time.
@@ -1148,6 +1237,7 @@ sidecar:
     # Additional alerts sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the alert sidecar emptyDir volume
+    # @schema type:[string, integer]
     sizeLimit: ""
   dashboards:
     enabled: false
@@ -1180,10 +1270,12 @@ sidecar:
     # folder in the pod that should hold the collected dashboards (unless `defaultFolderName` is set)
     folder: /tmp/dashboards
     # The default folder name, it will create a subfolder under the `folder` and put dashboards in there instead
+    # @schema type:[string, null]
     defaultFolderName: null
     # Namespaces list. If specified, the sidecar will search for config-maps/secrets inside these namespaces.
     # Otherwise the namespace in which the sidecar is running will be used.
     # It's also possible to specify ALL to search in all namespaces.
+    # @schema type:[string, array, null]
     searchNamespace: null
     # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
     watchMethod: WATCH
@@ -1191,6 +1283,7 @@ sidecar:
     resource: both
     # If specified, the sidecar will look for annotation with this name to create folder and put graph here.
     # You can use this parameter together with `provider.foldersFromFilesStructure`to annotate configmaps and create folder structure.
+    # @schema type:[string, null]
     folderAnnotation: null
     #
     # resourceName: comma separated list of resource names to be fetched/checked by this sidecar.
@@ -1221,6 +1314,7 @@ sidecar:
     # Absolute path to a script to execute after a configmap got reloaded.
     # It runs before calls to REQ_URI. If the file is not executable it will be passed to sh.
     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
+    # @schema type:[string, null]
     script: null
     skipReload: false
     # This is needed if skipReload is true, to load any dashboards defined at startup time.
@@ -1251,6 +1345,7 @@ sidecar:
       # name of the provider, should be unique
       name: sidecarProvider
       # orgid as configured in grafana
+      # @schema type:[string, integer]
       orgid: 1
       # folder in which the dashboards should be imported in grafana
       folder: ''
@@ -1267,6 +1362,7 @@ sidecar:
     # Additional dashboards sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the dashboard sidecar emptyDir volume
+    # @schema type:[string, integer]
     sizeLimit: ""
   datasources:
     enabled: false
@@ -1298,6 +1394,7 @@ sidecar:
     # If specified, the sidecar will search for datasource config-maps inside this namespace.
     # Otherwise the namespace in which the sidecar is running will be used.
     # It's also possible to specify ALL to search in all namespaces
+    # @schema type:[string, array, null]
     searchNamespace: null
     # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
     watchMethod: WATCH
@@ -1342,6 +1439,7 @@ sidecar:
     # Absolute path to a script to execute after a configmap got reloaded.
     # It runs before calls to REQ_URI. If the file is not executable it will be passed to sh.
     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
+    # @schema type:[string, null]
     script: null
     skipReload: false
     # This is needed if skipReload is true, to load any datasources defined at startup time.
@@ -1360,6 +1458,7 @@ sidecar:
     # Additional datasources sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the datasource sidecar emptyDir volume
+    # @schema type:[string, integer]
     sizeLimit: ""
   plugins:
     enabled: false
@@ -1378,6 +1477,7 @@ sidecar:
     # If specified, the sidecar will search for plugin config-maps inside this namespace.
     # Otherwise the namespace in which the sidecar is running will be used.
     # It's also possible to specify ALL to search in all namespaces
+    # @schema type:[string, array, null]
     searchNamespace: null
     # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
     watchMethod: WATCH
@@ -1422,6 +1522,7 @@ sidecar:
     # Absolute path to a script to execute after a configmap got reloaded.
     # It runs before calls to REQ_URI. If the file is not executable it will be passed to sh.
     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
+    # @schema type:[string, null]
     script: null
     skipReload: false
     # Deploy the datasource sidecar as an initContainer in addition to a container.
@@ -1430,6 +1531,7 @@ sidecar:
     # Additional plugins sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the plugin sidecar emptyDir volume
+    # @schema type:[string, integer]
     sizeLimit: ""
   notifiers:
     enabled: false
@@ -1448,6 +1550,7 @@ sidecar:
     # If specified, the sidecar will search for notifier config-maps inside this namespace.
     # Otherwise the namespace in which the sidecar is running will be used.
     # It's also possible to specify ALL to search in all namespaces
+    # @schema type:[string, array, null]
     searchNamespace: null
     # Method to use to detect ConfigMap changes. With WATCH the sidecar will do a WATCH requests, with SLEEP it will list all ConfigMaps, then sleep for 60 seconds.
     watchMethod: WATCH
@@ -1492,6 +1595,7 @@ sidecar:
     # Absolute path to a script to execute after a configmap got reloaded.
     # It runs before calls to REQ_URI. If the file is not executable it will be passed to sh.
     # Otherwise, it's executed as is. Shebangs known to work are #!/bin/sh and #!/usr/bin/env python
+    # @schema type:[string, null]
     script: null
     skipReload: false
     # Deploy the notifier sidecar as an initContainer in addition to a container.
@@ -1510,6 +1614,7 @@ sidecar:
     # Additional notifiers sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the notifier sidecar emptyDir volume
+    # @schema type:[string, integer]
     sizeLimit: ""
 
 ## Override the deployment namespace
@@ -1518,6 +1623,7 @@ namespaceOverride: ""
 
 ## Number of old ReplicaSets to retain
 ##
+# @schema type:[integer, null]
 revisionHistoryLimit: 10
 
 ## Add a separate remote image renderer deployment/service
@@ -1526,15 +1632,19 @@ imageRenderer:
   ## The maximum time in seconds for the image renderer Deployment to make progress before it is
   ## considered to be failed.
   ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds
+  # @schema type:[integer, null]
   progressDeadlineSeconds: null
   # Enable the image-renderer deployment & service
   enabled: false
+  # @schema type:[integer, null]
   replicas: 1
   autoscaling:
     enabled: false
     minReplicas: 1
     maxReplicas: 5
+    # @schema type:[string, integer, null]
     targetCPU: "60"
+    # @schema type:[string, integer, null]
     targetMemory: ""
     behavior: {}
   # The url of remote image renderer if it is not in the same namespace with the grafana instance
@@ -1558,6 +1668,7 @@ imageRenderer:
     pullSecrets: []
     # image-renderer ImagePullPolicy
     pullPolicy: Always
+  # @schema type:[string, null]
   dnsPolicy: ~
   dnsConfig: {}
     # nameservers:
@@ -1567,6 +1678,7 @@ imageRenderer:
     #   value: "2"
     # - name: edns0
   # extra environment variables
+  # @schema skipProperties:true;additionalProperties:true
   env:
     HTTP_HOST: "0.0.0.0"
     # Fixes "Error: Failed to launch the browser process!\nchrome_crashpad_handler: --database is required"
@@ -1594,18 +1706,29 @@ imageRenderer:
   serviceAccountName: ""
   automountServiceAccountToken: false
   # image-renderer deployment hostUsers
+  # @schema type:[boolean, null]
   hostUsers: ~
   # image-renderer deployment securityContext
-  securityContext: {}
+  # @schema skipProperties:true;additionalProperties:true
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
   # image-renderer deployment container securityContext
+  # @schema skipProperties:true;additionalProperties:true
   containerSecurityContext:
+    runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
     capabilities:
       drop: ['ALL']
     allowPrivilegeEscalation: false
+    privileged: false
     readOnlyRootFilesystem: true
   ## image-renderer pod annotation
+  # @schema additionalProperties:{"type":"string"}
   podAnnotations: {}
   # image-renderer deployment Host Aliases
   hostAliases: []
@@ -1613,6 +1736,12 @@ imageRenderer:
   priorityClassName: ''
   # Path to the healthcheck endpoint. On Image Renderer v5.0.0 or newer, this is '/healthz'. Older versions use '/'.
   healthcheckPath: '/healthz'
+  # image-renderer container readinessProbe. Disabled by default.
+  # readinessProbe:
+  #   httpGet:
+  #     path: /healthz
+  #     port: http
+  readinessProbe: {}
   service:
     # Enable the image-renderer service
     enabled: true
@@ -1630,10 +1759,21 @@ imageRenderer:
     enabled: false
     path: /metrics
     #  namespace: monitoring  (defaults to use the namespace this chart is deployed to)
+    # @schema additionalProperties:{"type":"string"}
     labels: {}
     # Set these to override the Prometheus global scrape interval/timeout.
     # interval: 1m
     # scrapeTimeout: 30s
+    # Configure scrape protocol negotiation and native histogram handling.
+    # Requires corresponding support in the Prometheus Operator CRDs and Prometheus.
+    # See: https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.ServiceMonitorSpec
+    # scrapeProtocols: ["PrometheusProto", "OpenMetricsText1.0.0", "OpenMetricsText0.0.1", "PrometheusText0.0.4"]
+    # scrapeNativeHistograms: true
+    # scrapeClassicHistograms: false
+    # convertClassicHistogramsToNHCB: false
+    # nativeHistogramBucketLimit: 0
+    # nativeHistogramMinBucketFactor: "1.1"
+    # fallbackScrapeProtocol: PrometheusText0.0.4
     scheme: http
     tlsConfig: {}
     relabelings: []
@@ -1648,6 +1788,7 @@ imageRenderer:
   # name of the image-renderer port on the pod
   podPortName: http
   # number of image-renderer replica sets to keep
+  # @schema type:[integer, null]
   revisionHistoryLimit: 10
   networkPolicy:
     # Enable a NetworkPolicy to limit inbound traffic to only the created grafana pods
@@ -1696,19 +1837,17 @@ imageRenderer:
   extraVolumes: []
 
 networkPolicy:
-  # -- networkPolicy.enabled Enable creation of NetworkPolicy resources. Only Ingress traffic is filtered for now.
+  # -- Enable creation of NetworkPolicy resources. Only Ingress traffic is filtered for now.
   enabled: false
-  # --networkPolicy.allowExternal Don't require client label for connections
+  # -- When true enables the creation of an ingress network policy
+  ingress: true
+  # -- Don't require client label for connections.
   # The Policy model to apply. When set to false, only pods with the correct
-  # client label will have network access to  grafana port defined.
+  # client label will have network access to grafana port defined.
   # When true, grafana will accept connections from any source
   # (with the correct destination port).
-  #
-  ingress: true
-  # -- networkPolicy.ingress When true enables the creation
-  # an ingress network policy
   allowExternal: true
-  # -- networkPolicy.explicitNamespacesSelector A Kubernetes LabelSelector to explicitly select namespaces from which traffic could be allowed
+  # -- A Kubernetes LabelSelector to explicitly select namespaces from which traffic could be allowed
   # If explicitNamespacesSelector is missing or set to {}, only client Pods that are in the networkPolicy's namespace
   # and that match other criteria, the ones that have the good label, can reach the grafana.
   # But sometimes, we want the grafana to be accessible to clients from other namespaces, in this case, we can use this
@@ -1725,7 +1864,7 @@ networkPolicy:
   #    - {key: role, operator: In, values: [frontend]}
   # ```
   explicitNamespacesSelector: {}
-  # -- networkPolicy.explicitIpBlocks List of CIDR blocks allowed as ingress sources.
+  # -- List of CIDR blocks allowed as ingress sources.
   # Each entry must be a valid CIDR notation string (e.g. 10.0.0.0/8).
   # When defined, the specified CIDR ranges are added to the ingress `from` rules
   # using `ipBlock` entries and complement the other configured ingress sources.
@@ -1742,20 +1881,20 @@ networkPolicy:
   explicitIpBlocks: []
 
   egress:
-    # -- networkPolicy.egress.enabled When enabled, an egress network policy will be
+    # -- When enabled, an egress network policy will be
     # created allowing grafana to connect to external data sources from kubernetes cluster.
     enabled: false
-    # -- networkPolicy.egress.blockDNSResolution When enabled, DNS resolution will be blocked
+    # -- When enabled, DNS resolution will be blocked
     # for all pods in the grafana namespace.
     blockDNSResolution: false
-    # -- networkPolicy.egress.ports Add individual ports to be allowed by the egress
+    # -- Add individual ports to be allowed by the egress
     ports: []
     # Add ports to the egress by specifying - port: <port number>
     # E.X.
     # - port: 80
     # - port: 443
     #
-    # -- networkPolicy.egress.to Allow egress traffic to specific destinations
+    # -- Allow egress traffic to specific destinations
     to: []
     # -- destinations to the egress by specifying - ipBlock: <CIDR>
     # E.X.
@@ -1767,6 +1906,15 @@ networkPolicy:
 # Enable backward compatibility of kubernetes where version below 1.13 doesn't have the enableServiceLinks option
 enableKubeBackwardCompatibility: false
 useStatefulSet: false
+
+## podManagementPolicy controls how Pods are created and deleted during initial
+## deployment and scaling operations. It does not affect rolling updates, which
+## remain ordered regardless of this setting. Only applies when Grafana is deployed
+## as a StatefulSet (useStatefulSet: true or persistence.type: statefulset).
+## Valid values: OrderedReady (default) or Parallel.
+## Note: this field is immutable after StatefulSet creation; changing it requires
+## deleting and recreating the StatefulSet.
+podManagementPolicy: OrderedReady
 
 # extraObjects could be utilized to add dynamic manifests via values
 extraObjects: []
@@ -1818,10 +1966,12 @@ verticalPodAutoscaler:
     memory: true
 
   # Default safety bounds
+  # @schema skipProperties:true;additionalProperties:{"type":["string","number"]}
   minAllowed:
     cpu: "25m"
     memory: "128Mi"
 
+  # @schema skipProperties:true;additionalProperties:{"type":["string","number"]}
   maxAllowed:
     cpu: "1000m"
     memory: "1Gi"

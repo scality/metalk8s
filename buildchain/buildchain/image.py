@@ -49,9 +49,7 @@ def task_images() -> types.TaskDict:
         "task_dep": [
             "_image_mkdir_root",
             "_image_pull",
-            # NOTE: Disabled in 134.0: the boot cache feature is not complete yet.
-            # It comes back in 136.0.
-            # "_image_boot_cache_context",
+            "_image_boot_cache_context",
             "_image_build",
             "_image_dedup_layers",
         ],
@@ -258,9 +256,9 @@ TO_PULL: Dict[str, targets.RemoteImage] = {}
 
 IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.CALICO_REPOSITORY: [
-        "calico-cni",
+        "calico",
         "calico-node",
-        "calico-kube-controllers",
+        "calico-third-party-cni-plugins",
     ],
     constants.COREDNS_REPOSITORY: [
         "coredns",
@@ -328,14 +326,14 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "crl-operator",
         "disk-management-agent",
         "file-reflector",
+        "image-cache-agent",
         "node-warden-operator",
     ],
 }
 
 REMOTE_NAMES: Dict[str, str] = {
-    "calico-cni": "cni",
     "calico-node": "node",
-    "calico-kube-controllers": "kube-controllers",
+    "calico-third-party-cni-plugins": "third-party-cni-plugins",
     "nginx-ingress-controller": "controller",
 }
 
@@ -358,25 +356,39 @@ for repo, images in IMGS_PER_REPOSITORY.items():
 # This is the authoritative list; keep it in sync with what a node of that role
 # needs to boot. A name that is not pulled fails the build immediately.
 BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
+    # A node gets every variant its roles call for. Each one lists only what
+    # the worker variant does not already carry, since every node is a worker.
     "control-plane": [
-        # Pinned as the containerd sandbox image: without it the kubelet
-        # creates no sandbox, so not even the static pods below would start.
-        "pause",
-        "etcd",
         "kube-apiserver",
         "kube-controller-manager",
         "kube-scheduler",
         "coredns",
-        "kube-proxy",
-        "calico-cni",
-        "calico-node",
-        "calico-kube-controllers",
     ],
+    # Apart from the control plane: a node can hold the etcd role alone.
+    "etcd": [
+        "etcd",
+    ],
+    # Every node is a worker, and this is what lets one come back after it
+    # lost its images while the registry is unreachable.
     "worker": [
+        # Pinned as the containerd sandbox image: without it the kubelet
+        # creates no sandbox, so not even a static pod would start.
         "pause",
-        # The agent the registry operator runs to write the containerd mirror
-        # configuration on every node: a worker that has both the sandbox image
-        # and this one can boot and reach a registry.
+        # The `apiserver-proxy` static pod: the kubelet reaches the API server
+        # through it.
+        "nginx",
+        # calico-node reaches the API server through the `kubernetes`
+        # ClusterIP, and the `kube-proxy` pod has an init container on
+        # `alpine`.
+        "kube-proxy",
+        "alpine",
+        # The calico-node init containers write the CNI config and plugins;
+        # `calico` also runs `calico-kube-controllers`.
+        "calico",
+        "calico-third-party-cni-plugins",
+        "calico-node",
+        # Writes the containerd mirror configuration of the registry. It is
+        # not in the host network, so it needs the CNI above.
         "file-reflector",
     ],
     # The registry variant waits on images the buildchain does not carry yet:
@@ -479,10 +491,7 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
             "VERSION": versions.VERSION,
         },
     ),
-)
-# NOTE: Disabled in 134.0: the boot cache feature is not complete yet.
-# It comes back in 136.0.
-# + tuple(_boot_cache_image(variant) for variant in BOOT_CACHE_VARIANTS)
+) + tuple(_boot_cache_image(variant) for variant in BOOT_CACHE_VARIANTS)
 # }}}
 
 

@@ -33,11 +33,6 @@ def validate(
     :return: True if the kubeconfig file matches expectation
              False otherwise (ie need to be regenerated)
     """
-    # NOTE: This module is called during upgrade before actual upgrade of salt
-    # so it has to be compatible with older salt versions (relying on older x509 module)
-    # This can be removed in `development/135`
-    old_salt_version = not __salt__["salt_version.greater_than"]("Phosphorus")
-
     # Verify if the file exists
     if not os.path.isfile(filename):
         return False
@@ -90,9 +85,7 @@ def validate(
     # Verify client cn
     if expected_cn is not None:
         try:
-            current_cn = client_cert_detail[
-                "Subject" if old_salt_version else "subject"
-            ]["CN"]
+            current_cn = client_cert_detail["subject"]["CN"]
         except KeyError:
             return False
         else:
@@ -101,9 +94,7 @@ def validate(
 
     # Verify client client cert expiration date is > 30days
     try:
-        expiration_date = client_cert_detail[
-            "Not After" if old_salt_version else "not_after"
-        ]
+        expiration_date = client_cert_detail["not_after"]
     except KeyError:
         return False
     else:

@@ -1,6 +1,10 @@
 ---
 metalk8s:
   debug: false
+  # Major version this one follows, the one we support upgrading from and
+  # downgrading to. Majors are not always contiguous (136 follows 134), so it
+  # cannot be computed and is bumped when creating a major development branch.
+  previous_major_version: 134
   downgrade:
     # Define if the downgrade from this major version is supported.
     # It should be set to false if manual operations are needed
@@ -111,7 +115,7 @@ networks:
     # Apply to all nodes
     node:
       127.0.0.1:9099:
-        expected: calico-node
+        expected: calico
         description: Calico node
       control_plane_ip:9100:
         expected: node_exporter
@@ -134,9 +138,10 @@ kubelet:
   container_runtime_endpoint: "unix:///var/run/containerd/containerd.sock"
 
 image_cache:
-  # Where the boot cache archives are extracted, and where
-  # `containerd-image-preload` imports them from. Both sides read this:
-  # the states write here, and `metalk8s.image-cache.installed` renders
+  # Root of the image cache. `imagecachectl` writes each boot cache under
+  # `<directory>/<name>/`, and `containerd-image-preload` imports from it.
+  # Both sides read this value: the states pass it as `--cache-path`, and
+  # `metalk8s.image-cache.installed` renders
   # /etc/sysconfig/containerd-image-preload from it.
   directory: "/var/lib/image-cache"
   # Platform passed to `ctr images import`. The archives on the ISO are

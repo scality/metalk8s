@@ -43,7 +43,7 @@ minio:
 image:
   registry: ""
   repository: '__image__(thanos)'
-  tag: v0.41.0
+  tag: v0.42.4
   pullPolicy: IfNotPresent
 
 volumePermissions:
