@@ -40,8 +40,7 @@ data:
             server_name         backup;
             ssl_certificate     /etc/ssl/backup.crt;
             ssl_certificate_key /etc/ssl/backup.key;
-            ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
-            ssl_ciphers         HIGH:!aNULL:!MD5;
+            ssl_protocols       TLSv1.3;
 
             auth_basic           "Authentication";
             auth_basic_user_file /etc/nginx/htpasswd/.htpasswd;
