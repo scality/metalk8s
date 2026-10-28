@@ -10,6 +10,10 @@ server {
     }
 
     location ~ ^/metalk8s-[^/]+/$ {
+        root   /var/www/repositories;
+        if (!-d $request_filename) {
+            return 404;
+        }
         default_type text/plain;
         return 200 'OK';
     }
