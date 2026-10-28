@@ -24,7 +24,10 @@ spec:
         image: {{ image }}
         command: ["/bin/sh", "-c"]
         args:
+          # Keep the replicated archives readable by root only, as on the
+          # bootstrap node
           - >-
+            umask 0077 &&
             wget --accept="*.tar.gz"
             --no-host-directories --mirror
             --ca-certificate=/certificate/ca.crt
