@@ -2,9 +2,19 @@ server {
     listen       {{ listening_address }}:{{ listening_port }};
     server_name  localhost;
 
+    # Without autoindex these directories answer 403, keep them answering
+    # 200 for the pod probes (/) and the Salt readiness check (/<saltenv>/)
+    location = / {
+        return 200;
+    }
+
+    location ~ ^/metalk8s-[^/]+/$ {
+        return 200;
+    }
+
     location / {
         root   /var/www/repositories;
-        autoindex on;
+        autoindex off;
     }
 
     include conf.d/*.inc;
