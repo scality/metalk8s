@@ -10,6 +10,8 @@ spec:
       requests:
         memory: "256Mi"
   config:
+    analytics:
+      reporting_enabled: false
     auth_enabled: false
     memberlist:
       abort_if_cluster_join_fails: false
