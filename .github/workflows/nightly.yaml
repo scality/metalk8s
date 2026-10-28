@@ -78,8 +78,16 @@ jobs:
         run: |
           echo "previous_minor=$(git tag --sort=taggerdate --list "$VERSION_MAJOR.$(( VERSION_MINOR - 1 )).*" | grep -v '\-' | tail -1)" >> $GITHUB_ENV
       - name: Get previous major version
+        # NOTE: Major versions are not always contiguous (134.0 is followed by
+        # 136.0), so use the previous major declared in the Salt defaults, the
+        # one upgrades are supported from, rather than `VERSION_MAJOR - 1`.
+        # If this major has no release yet, there is nothing to test from.
         run: |
-          echo "previous_major=$(git tag --sort=taggerdate --list "$((VERSION_MAJOR - 1 )).*" | grep -v '\-' | tail -1)" >> $GITHUB_ENV
+          previous_major_number=$(
+            sed -nE 's/^  previous_major_version: *"?([0-9]+)"?.*$/\1/p' salt/metalk8s/defaults.yaml
+          )
+          previous_major_number=${previous_major_number:-$(( VERSION_MAJOR - 1 ))}
+          echo "previous_major=$(git tag --sort=taggerdate --list "$previous_major_number.*" | grep -v '\-' | tail -1)" >> $GITHUB_ENV
       - name: Compute matrix
         id: get-matrix
         run: |
@@ -122,8 +130,17 @@ jobs:
             echo "previous_minor=" >> $GITHUB_ENV
           fi
       - name: Get previous major version
+        # NOTE: Same as for promoted versions, use the previous major declared
+        # in the Salt defaults rather than `VERSION_MAJOR - 1`.
         run: |
-          echo "previous_major=$(git branch --remote --sort=creatordate --list --format="%(refname:lstrip=-2)" "origin/development/$(( VERSION_MAJOR - 1 )).*" | tail -1)" >> $GITHUB_ENV
+          previous_major_number=$(
+            sed -nE 's/^  previous_major_version: *"?([0-9]+)"?.*$/\1/p' salt/metalk8s/defaults.yaml
+          )
+          previous_major_number=${previous_major_number:-$(( VERSION_MAJOR - 1 ))}
+          echo "previous_major=$(
+            git branch --remote --sort=creatordate --list --format="%(refname:lstrip=-2)" "origin/development/$previous_major_number.*" \
+              | grep -E "^development/$previous_major_number\.[0-9]+$" | tail -1
+          )" >> $GITHUB_ENV
       - name: Compute matrix
         id: get-matrix
         run: |
