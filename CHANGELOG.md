@@ -2,6 +2,14 @@
 
 ## Release 131.0.12 (in development)
 
+### Enhancements
+
+- Stop Loki and Grafana from calling Grafana Labs services over the
+  internet by default: disable Loki anonymous usage reporting, and
+  Grafana plugin update checks, plugin preinstall and plugin signing
+  public key retrieval
+  (PR[#5208](https://github.com/scality/metalk8s/pull/5208))
+
 ## Release 131.0.11
 
 ## Release 131.0.10
