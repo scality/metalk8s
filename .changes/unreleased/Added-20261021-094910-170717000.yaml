@@ -1,0 +1,6 @@
+kind: Added
+body: 'The UI now reports each page view to the Maestro agent as an OpenTelemetry log record. A record names only the route pattern of the page, such as `/data/*`, never its full URL, query string or anything about the user.'
+time: 2026-10-21T09:49:10.170717000Z
+custom:
+    CommentId: cli
+    Pull: "5191"
