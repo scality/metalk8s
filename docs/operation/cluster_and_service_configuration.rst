@@ -53,7 +53,7 @@ The default configuration values for Grafana are specified below:
 
 .. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/grafana.yaml.j2
    :language: yaml
-   :lines: 8-35,37-47
+   :lines: 8-37,39-49
 
 .. _csc-prometheus-default-configuration:
 
