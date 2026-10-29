@@ -4,9 +4,9 @@ metadata:
   name: not-important
 spec:
   template:
-    nodeSelector:
-      node-role.kubernetes.io/master: ""
     spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
       tolerations:
       - key: "node-role.kubernetes.io/bootstrap"
         operator: "Exists"
