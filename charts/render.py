@@ -150,6 +150,20 @@ def remove_doc(doc, remove_manifests):
     return False
 
 
+def should_keep_doc(doc, keep_manifests):
+    if not keep_manifests:
+        return True
+
+    for to_keep in keep_manifests:
+        if (
+            doc.get("kind") == to_keep[0]
+            and doc.get("metadata").get("name") == to_keep[1]
+        ):
+            return True
+
+    return False
+
+
 def keep_doc(doc):
     if not doc:
         return False
@@ -414,6 +428,14 @@ def main():
         help="Remove a given manifest from the resulting chart",
     )
     parser.add_argument(
+        "--keep-manifest",
+        action="append",
+        nargs=2,
+        dest="keep_manifests",
+        metavar=("KIND", "NAME"),
+        help="Keep only specified manifests in the resulting chart (if set, all others are removed)",
+    )
+    parser.add_argument(
         "--kube-version",
         help="Override default kube-version used by helm",
     )
@@ -525,7 +547,11 @@ def main():
     for doc in yaml.safe_load_all(template):
         if keep_doc(doc):
             doc = fixup(doc, patches)
-        if doc and not remove_doc(doc, args.remove_manifests):
+        if (
+            doc
+            and not remove_doc(doc, args.remove_manifests)
+            and should_keep_doc(doc, args.keep_manifests)
+        ):
             manifests.append(doc)
 
     stream = io.StringIO()
