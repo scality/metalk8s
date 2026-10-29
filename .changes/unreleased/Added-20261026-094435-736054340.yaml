@@ -1,0 +1,12 @@
+kind: Added
+body: |-
+    Deploy [metalk8s-registry-operator](https://github.com/scality/metalk8s-registry-operator)
+    v0.0.1-alpha.6 as a core addon. It runs a container registry on the nodes with
+    the new `registry` role (the bootstrap node by default), using
+    [static-oci-registry](https://github.com/scality/static-oci-registry) v0.1.0-beta.4
+    and [metalk8s-registry-node-agent](https://github.com/scality/metalk8s-registry-node-agent)
+    v0.0.1-alpha.14
+time: 2026-10-26T09:44:35.73605434Z
+custom:
+    CommentId: "6295140578"
+    Pull: "5183"

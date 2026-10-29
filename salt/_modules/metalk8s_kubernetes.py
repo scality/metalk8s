@@ -496,6 +496,9 @@ def check_object_ready(*args, **kwargs):
     webhook has one. Otherwise, it is Ready right away: without a CA bundle,
     the API server verifies the webhooks with its system trust roots.
 
+    A CustomResourceDefinition has no Ready condition, it is considered Ready
+    once Established, that is once the API server serves its resources.
+
     CLI Examples:
 
     .. code-block:: bash
@@ -503,12 +506,17 @@ def check_object_ready(*args, **kwargs):
         salt-call metalk8s_kubernetes.check_object_ready kind="Pod" apiVersion="v1" name="my-pod"
         salt-call metalk8s_kubernetes.check_object_ready kind="Deployment" apiVersion="apps/v1" name="my-deploy" namespace="kube-system"
         salt-call metalk8s_kubernetes.check_object_ready kind="ValidatingWebhookConfiguration" apiVersion="admissionregistration.k8s.io/v1" name="my-webhook"
+        salt-call metalk8s_kubernetes.check_object_ready kind="CustomResourceDefinition" apiVersion="apiextensions.k8s.io/v1" name="my-crd"
     """
     obj = get_object(*args, **kwargs)
 
     if not obj:
         raise CommandExecutionError("Unable to find the object")
 
+    return _check_object_ready(obj)
+
+
+def _check_object_ready(obj):
     if (
         "observedGeneration" in (obj.get("status") or {})
         and obj["metadata"]["generation"] != obj["status"]["observedGeneration"]
@@ -536,6 +544,14 @@ def check_object_ready(*args, **kwargs):
             for webhook in obj.get("webhooks") or []
         ):
             raise CommandExecutionError("Some webhooks do not have a CA bundle yet")
+    elif obj["kind"] == "CustomResourceDefinition":
+        if not any(
+            cond["type"] == "Established" and cond["status"] == "True"
+            for cond in (obj.get("status") or {}).get("conditions") or []
+        ):
+            raise CommandExecutionError(
+                "The CustomResourceDefinition is not yet Established"
+            )
     else:
         try:
             condition = next(
@@ -556,3 +572,27 @@ def check_object_ready(*args, **kwargs):
             raise CommandExecutionError("Object is not yet Ready")
 
     return True
+
+
+def is_object_ready(*args, **kwargs):
+    """
+    Return whether an Object exists and is Ready, see `check_object_ready`
+
+    Unlike `check_object_ready`, it does not raise when the object is missing
+    or not Ready, so that it can be used when rendering a template.
+
+    CLI Examples:
+
+    .. code-block:: bash
+
+        salt-call metalk8s_kubernetes.is_object_ready kind="CustomResourceDefinition" apiVersion="apiextensions.k8s.io/v1" name="my-crd"
+    """
+    obj = get_object(*args, **kwargs)
+
+    if not obj:
+        return False
+
+    try:
+        return _check_object_ready(obj)
+    except CommandExecutionError:
+        return False

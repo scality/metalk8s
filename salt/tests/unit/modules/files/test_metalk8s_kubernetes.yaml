@@ -1139,6 +1139,52 @@ check_object_ready:
             url: https://my-webhook.example.com/mutate
     result: True
 
+  # CustomResourceDefinition Established
+  - obj:
+      apiVersion: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      metadata:
+        name: my-crd
+        generation: 1
+      status:
+        conditions:
+        - lastTransitionTime: "2023-02-13T10:20:32Z"
+          message: no conflicts found
+          reason: NoConflicts
+          status: "True"
+          type: NamesAccepted
+        - lastTransitionTime: "2023-02-13T10:20:32Z"
+          message: the initial names have been accepted
+          reason: InitialNamesAccepted
+          status: "True"
+          type: Established
+    result: True
+
+  # CustomResourceDefinition not yet Established
+  - obj:
+      apiVersion: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      metadata:
+        name: my-crd
+        generation: 1
+      status:
+        conditions:
+        - lastTransitionTime: "2023-02-13T10:20:32Z"
+          message: not all names are accepted
+          reason: Installing
+          status: "False"
+          type: Established
+    raises: True
+    result: "The CustomResourceDefinition is not yet Established"
+  - obj:
+      apiVersion: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      metadata:
+        name: my-crd
+        generation: 1
+    raises: True
+    result: "The CustomResourceDefinition is not yet Established"
+
   # Object with ObservedGeneration no match
   - obj:
       apiVersion: custom/v1
