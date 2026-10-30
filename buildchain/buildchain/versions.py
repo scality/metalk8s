@@ -27,7 +27,7 @@ K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
 CALICO_VERSION: str = "3.32.0"
 SALT_VERSION: str = "3006.27"
-CONTAINERD_VERSION: str = "2.2.5"
+CONTAINERD_VERSION: str = "2.4.2"
 
 SOSREPORT_RELEASE: str = "2"
 
@@ -203,7 +203,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="pause",
-        version="3.10.1",
+        version="3.10.2",
         # Do not check the digest for this image, since this one is re-published
         # several times with the same tag
         digest=None,
