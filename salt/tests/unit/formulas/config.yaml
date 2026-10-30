@@ -81,6 +81,10 @@ metalk8s:
                       ip: 10.0.0.2
                       ports:
                         http: 8081
+      post-upgrade.sls:
+        _cases:
+          "Render from the master (orchestrate)":
+            mode: master
 
     logging:
       loki:
@@ -572,6 +576,15 @@ metalk8s:
             "Minion already exists (default)": {}
             "Minion is new":
               minion_state: new
+            # The image cache agent fills the cache of a node that already
+            # runs, so Salt only fills it on a new one
+            "Node completed a deployment before":
+              pillar_overrides:
+                <<: *pillar_orch_target_master_node
+                metalk8s:
+                  nodes:
+                    master-1:
+                      version_applied: 2.7.1
             "Skip drain":
               pillar_overrides:
                 <<: *pillar_orch_target_master_node
@@ -1162,6 +1175,11 @@ metalk8s:
             architecture: extended
             _subcases: *upgrade_subcases
 
+      post.sls:
+        _cases:
+          "Render from the master (orchestrate)":
+            mode: master
+
       pre.sls:
         _cases:
           "Single node cluster":
@@ -1185,6 +1203,18 @@ metalk8s:
 
           "Compact cluster":
             architecture: compact
+            _subcases:
+              "No node recorded a deployment (default)": {}
+              # A node never deployed has no agent to wait for: deploying
+              # it fills its cache
+              "A node never deployed":
+                pillar_overrides:
+                  metalk8s:
+                    nodes:
+                      bootstrap:
+                        version_applied: 2.7.1
+                      master-1:
+                        version_applied: 2.7.1
 
       precheck.sls:
         _cases:
