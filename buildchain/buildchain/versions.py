@@ -296,8 +296,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="fluent-bit",
-        version="5.0.7",
-        digest="sha256:c96ee743cba9b1d5a38654931f411700af80bb7652697afbe67daad46cae237b",
+        version="5.1.5",
+        digest="sha256:2740f387f6e68fab66d28e4fa6a853387b9cab6ffb4cb78958f69bba4eb0e7b4",
     ),
     Image(
         name="cert-manager-controller",

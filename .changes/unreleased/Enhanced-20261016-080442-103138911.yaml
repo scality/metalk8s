@@ -1,0 +1,11 @@
+kind: Enhanced
+body: |-
+    Bump fluent-bit chart to [0.58.3](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.58.3)
+    and Fluent Bit image to [v5.1.5](https://github.com/fluent/fluent-bit/releases/tag/v5.1.5).
+    The previous images still trusted the root CAs of the compromised
+    eMudhra/emSign intermediate CAs (CVE-2026-111943) for the TLS outputs
+    that do not set `tls.ca_file`
+time: 2026-10-16T08:04:42.103138911Z
+custom:
+    CommentId: "6210973293"
+    Pull: "5215"
