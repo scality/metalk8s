@@ -1,6 +1,0 @@
-kind: Enhanced
-body: Bump containerd to 2.3.6 and pause to 3.10.2
-time: 2026-10-12T15:21:03.687079184Z
-custom:
-    CommentId: "6127221273"
-    Pull: "5157"
