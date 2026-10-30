@@ -1,5 +1,9 @@
 image:
   repository: '__image__(fluent-bit)'
+  # No chart ships Fluent Bit 5.1.5 yet, whose image no longer trusts the
+  # compromised eMudhra/emSign roots (CVE-2026-111943).
+  # Drop this override with the next chart bump.
+  tag: 5.1.5
   pullPolicy: IfNotPresent
 
 existingConfigMap: fluent-bit

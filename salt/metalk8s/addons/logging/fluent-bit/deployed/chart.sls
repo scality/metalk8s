@@ -1714,7 +1714,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: {% endraw -%}{{ build_image_name("fluent-bit", False) }}{%- raw %}:5.1.3
+        image: {% endraw -%}{{ build_image_name("fluent-bit", False) }}{%- raw %}:5.1.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
