@@ -68,6 +68,8 @@ COMMAND_STATE = "Install imagecachectl"
 # The bootstrap node holds the control plane, etcd, the registry and workloads,
 # so it gets every variant.
 VARIANTS = ("worker", "control-plane", "etcd", "registry")
+# The label the post-upgrade selects the old resources by.
+PART_OF_METALK8S = {"app.kubernetes.io/part-of": "metalk8s"}
 PROVISION_STATES = [
     f"Import the {variant} boot cache from the ISO" for variant in VARIANTS
 ]
@@ -324,6 +326,7 @@ def test_image_cache_resources_adopt_the_provisioned_cache(
     Same name as in `test_provisioning_names_match_the_image_cache_resources`,
     or the agent pulls the variant again next to the copy already there. The
     source names the endpoint address: the agent does not go through containerd.
+    The `part-of` label is what the post-upgrade selects the old resources by.
     """
     for case_id, states in rendered_states:
         for variant, node_selector in RESOURCE_NODE_SELECTORS.items():
@@ -337,6 +340,7 @@ def test_image_cache_resources_adopt_the_provisioned_cache(
                 f"{variant}-{version.replace('.', '-')}"
             ), case_id
             assert manifest["spec"].get("nodeSelector") == node_selector, case_id
+            assert manifest["metadata"].get("labels") == PART_OF_METALK8S, case_id
             assert re.fullmatch(
                 rf"[0-9.]+:[0-9]+/[^/]+/metalk8s-boot-cache-{variant}:"
                 rf"{re.escape(version)}",
@@ -658,7 +662,7 @@ IMAGE_CACHE_API = "image-cache.scality.com/v1alpha1"
 NO_PREVIOUS_CACHE_STATE = "No ImageCache of another version"
 POST_UPGRADE_SLS = "metalk8s.addons.image-cache-agent.post-upgrade"
 NO_FLAT_ARCHIVE_STATE = "No flat archive in the image cache"
-# What Salt sets on every object it creates.
+# What Salt sets on every object it creates, along with the version label.
 SALT_LABELS = {"app.kubernetes.io/managed-by": "salt"}
 
 
@@ -675,48 +679,65 @@ def _deleted_caches(states: Dict[str, Any], case_id: str) -> Set[str]:
     return deleted
 
 
+def _image_cache(name: str, version: str, **labels: str) -> Dict[str, Any]:
+    """Return an ImageCache as Salt creates it, with extra labels."""
+    return {
+        "metadata": {
+            "name": name,
+            "labels": {
+                **SALT_LABELS,
+                "metalk8s.scality.com/version": version,
+                **labels,
+            },
+        }
+    }
+
+
 @pytest.mark.formulas
 @pytest.mark.parametrize("template_path", [IMAGE_CACHE_POST_UPGRADE], indirect=True)
 def test_the_upgrade_deletes_the_image_caches_of_other_versions(
     environment: jinja2.Environment,
     render_contexts: Iterable[Context],
     template_path: Path,
-    metalk8s_versions: Any,
 ) -> None:
-    """Check the post-upgrade deletes every ImageCache but the current ones.
+    """Check the post-upgrade deletes the MetalK8s ImageCache of other versions.
 
-    The agent then removes their directories and node labels. Whatever is not
-    the current version goes, so that an interrupted or resumed upgrade ends in
-    the same state.
+    The agent then removes their directories and node labels. It goes by the
+    labels and not by the names, so a variant dropped since is deleted too.
+    Whatever is not the current version goes, so that an interrupted or resumed
+    upgrade ends in the same state.
     """
     template = environment.get_template(str(template_path))
-    current = _expected_cache_names(metalk8s_versions)
-    previous = {"worker-2-7-1", "etcd-2-7-1", "control-plane-2-6-0"}
+    part_of = dict(PART_OF_METALK8S)
     checked = False
 
     for context in render_contexts:
+        current_version = context.data["pillar"]["metalk8s"]["cluster_version"]
+        current = [
+            _image_cache(f"{variant}-current", current_version, **part_of)
+            for variant in VARIANTS
+        ]
+        previous = [
+            _image_cache("worker-2-6-0", "2.6.0", **part_of),
+            _image_cache("etcd-2-7-0", "2.7.0", **part_of),
+            # A variant the current version no longer has.
+            _image_cache("dropped-2-7-0", "2.7.0", **part_of),
+        ]
+        # Neither a resource of another manager nor one of another product.
+        foreign = [
+            _image_cache("my-images-1-0-0", "2.6.0"),
+            _image_cache(
+                "worker-1-0-0", "2.6.0", **{"app.kubernetes.io/part-of": "other"}
+            ),
+        ]
         for present, expected in [
-            (set(), set()),
+            ([], set()),
             (current, set()),
-            (current | previous, previous),
+            (current + previous, {"worker-2-6-0", "etcd-2-7-0", "dropped-2-7-0"}),
         ]:
             # pylint: disable=protected-access
             context.data["salt"]._k8s.data[IMAGE_CACHE_API] = {
-                "ImageCache": [
-                    {"metadata": {"name": name, "labels": SALT_LABELS}}
-                    for name in present
-                ]
-                # Neither another manager's resource nor one that is not a
-                # boot cache variant is deleted.
-                + [{"metadata": {"name": "my-images-1-0-0", "labels": SALT_LABELS}}]
-                + [
-                    {
-                        "metadata": {
-                            "name": "worker-1-0-0",
-                            "labels": {"app.kubernetes.io/managed-by": "helm"},
-                        }
-                    }
-                ]
+                "ImageCache": present + foreign
             }
             states = salt.utils.yaml.safe_load(template.render(**context.data))
 

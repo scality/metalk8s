@@ -21,6 +21,10 @@ Create the {{ variant }} ImageCache:
           # bootstrap and at join, see `metalk8s/image-cache/provisioned.sls`.
           # With the same name, the agent adopts it with no pull.
           name: {{ image_cache.name }}
+          labels:
+            # NOTE: The post-upgrade selects the resources of other versions
+            # by this label and the version one Salt sets.
+            app.kubernetes.io/part-of: metalk8s
         spec:
   {%- if image_cache.node_selector %}
           nodeSelector: {{ image_cache.node_selector | tojson }}

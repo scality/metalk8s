@@ -1,26 +1,20 @@
-{%- from "metalk8s/image-cache/variants.jinja" import image_cache_variants with context %}
+{#- Deletes the MetalK8s boot cache resources of any other version, so that
+    the agent removes their directories and node labels. Like
+    `prometheus-operator/post-cleanup.sls`, by label: a variant the current
+    version dropped goes too, and the version upgraded from does not matter,
+    so an interrupted or resumed upgrade ends the same. The pre-upgrade already
+    waited for every deployed node to sync the current resources. #}
 
-{#- Deletes the boot cache resources of any other version, so that the agent
-    removes their directories and node labels. Another ImageCache, even one
-    Salt created, is left alone. By name, since this runs with no knowledge of
-    the version upgraded from: whatever is not the current version goes,
-    whichever upgrade left it. The pre-upgrade already waited for every
-    deployed node to sync the current resources. #}
-
-{%- set current = image_cache_variants.values() | map(attribute='name') | list %}
-{%- set found = salt.metalk8s_kubernetes.list_objects(
+{%- set previous = salt.metalk8s_kubernetes.list_objects(
         kind='ImageCache',
         apiVersion='image-cache.scality.com/v1alpha1',
-        label_selector='app.kubernetes.io/managed-by=salt',
+        label_selector=[
+            'app.kubernetes.io/part-of=metalk8s',
+            'metalk8s.scality.com/version!=' ~ pillar.metalk8s.cluster_version,
+        ] | join(','),
     ) %}
-{%- set previous = [] %}
-{%- for name in found | map(attribute='metadata.name') | reject('in', current) %}
-  {%- for variant in image_cache_variants if name.startswith(variant ~ '-') %}
-    {%- do previous.append(name) %}
-  {%- endfor %}
-{%- endfor %}
 
-{%- for name in previous | sort %}
+{%- for name in previous | map(attribute='metadata.name') | sort %}
 
 Delete the {{ name }} ImageCache:
   metalk8s_kubernetes.object_absent:
