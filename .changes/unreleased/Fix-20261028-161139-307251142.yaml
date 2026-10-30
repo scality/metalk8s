@@ -1,0 +1,13 @@
+kind: Fix
+body: |-
+    Backup archives are now readable by root only (`0600`) whatever the umask of
+    the node, on the bootstrap node as on their replicated copies. They hold the CA
+    keys and the etcd snapshot, and were readable by every user of the node under
+    the usual `0022` umask. Under a strict umask such as `0077`, the backup server
+    answered 403 on them and the backup replication to the other master nodes
+    failed. Archives already on disk keep their mode until the rotation removes
+    them.
+time: 2026-10-28T16:11:39.307251142Z
+custom:
+    CommentId: "6474218916"
+    Pull: "5212"
