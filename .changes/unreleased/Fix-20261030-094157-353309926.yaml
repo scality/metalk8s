@@ -1,0 +1,12 @@
+kind: Fix
+body: |-
+    Nodes no longer run out of inotify instances, which on a single node with
+    logging enabled could make kube-proxy keep stale iptables rules after a
+    reconfiguration, or fluent-bit crash loop, with "too many open files".
+    MetalK8s now sets `fs.inotify.max_user_instances` to 8192 on every node, at
+    install and upgrade, as containerd needs one instance per container on
+    cgroups v2 and the default of 128 runs out.
+time: 2026-10-30T09:41:57.353309926Z
+custom:
+    CommentId: "6519705801"
+    Pull: "5213"
