@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <script>
+      (function () {
+        var light = localStorage.getItem('theme') === 'light';
+        var root = document.documentElement;
+        root.style.backgroundColor = light ? '#FCFCFC' : '#121219';
+        root.style.colorScheme = light ? 'light' : 'dark';
+      })();
+    </script>
     <script language="javascript">
       window.shellUIRemoteEntryUrl = "/shell/mf-manifest.json?version=<%=version%>";
     </script>
