@@ -33,6 +33,9 @@ kubeadm_preflight:
       - 2380
     sysctl_values:
       net.ipv4.ip_forward: 1
+      # Every containerd shim holds an inotify instance on cgroups v2, and
+      # all root containers share the limit, so the default of 128 runs out
+      fs.inotify.max_user_instances: 8192
 
 # List of services that conflict with MetalK8s installation
 conflicting_services:
