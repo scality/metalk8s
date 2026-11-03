@@ -104,8 +104,11 @@ runs:
             --argjson authorized_cidrs "${AUTHORIZED_CIDRS:-null}" \
             '{
               provider: "openstack",
-              # The nodes fetch OS packages from the internet
-              offline: false,
+              # The nodes are cut off the internet, and the bastion serves
+              # them DNS and a proxy for dnf
+              offline: true,
+              bastion_dns: true,
+              bastion_dnf_proxy: true,
               instance_count: $instance_count,
               instance_image: $instance_image,
               restore_snapshot: $restore_snapshot,
