@@ -1,6 +1,110 @@
 # CHANGELOG
 
 
+## Release 136.0.0-alpha.1
+
+### Enhancements
+
+- Ship boot cache images on the ISO, each carrying an archive of the container images
+  a node of that role needs to boot: `metalk8s-boot-cache-worker` (`pause`, `nginx`,
+  `kube-proxy`, `alpine`, Calico and `file-reflector`), for every node,
+  `metalk8s-boot-cache-control-plane` (`kube-apiserver`, `kube-controller-manager`,
+  `kube-scheduler` and CoreDNS) and
+  `metalk8s-boot-cache-etcd` (etcd). A node gets the worker one plus those of its
+  roles, so no image is carried twice. The worker one carries `pause`, which containerd
+  pins as its sandbox image:
+  without it the kubelet starts no Pod at all, not even a static one. A node can
+  restore them into containerd without reaching the registry, which breaks the
+  circular dependency between a node and the registry running on the cluster it
+  belongs to. Each archive is named after the image the kubelet asks for, so it is
+  imported as is, with no re-tagging. Each image is available as layers, for the
+  registry, and as an archive, for a node with no registry yet.
+  (PR[#5068](https://github.com/scality/metalk8s/pull/5068))
+
+- Bump Kubernetes version to 1.36.5 (https://github.com/kubernetes/kubernetes/releases/tag/v1.36.5)
+  (PR[#5146](https://github.com/scality/metalk8s/pull/5146))
+
+- Bump k8s Go libraries of `metalk8s-operator` and `storage-operator` to 0.36.5 (Go 1.26, `controller-runtime` 0.24.1)
+  (PR[#5154](https://github.com/scality/metalk8s/pull/5154))
+
+- Bump loki chart to [7.3.0](https://github.com/grafana/helm-charts/releases/tag/helm-loki-7.3.0) and Loki to v3.6.11
+  (PR[#5163](https://github.com/scality/metalk8s/pull/5163))
+
+- Bump fluent-bit chart to [0.58.3](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.58.3)
+  and Fluent Bit image to [v5.1.5](https://github.com/fluent/fluent-bit/releases/tag/v5.1.5).
+  The previous images still trusted the root CAs of the compromised
+  eMudhra/emSign intermediate CAs (CVE-2026-111943) for the TLS outputs
+  that do not set `tls.ca_file`
+  (PR[#5215](https://github.com/scality/metalk8s/pull/5215))
+
+- Bump Dex chart to [0.26.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.26.0) and Dex to [v2.46.0](https://github.com/dexidp/dex/releases/tag/v2.46.0)
+  (PR[#5161](https://github.com/scality/metalk8s/pull/5161))
+
+- Bump nginx image to [1.31.7-alpine](https://github.com/nginx/nginx/releases/tag/release-1.31.7)
+  (PR[#5158](https://github.com/scality/metalk8s/pull/5158))
+
+- Bump kube-prometheus-stack chart version to [92.10.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-92.10.0)
+  The following images have also been bumped accordingly:
+  - alertmanager to [v0.34.1](https://github.com/prometheus/alertmanager/releases/tag/v0.34.1)
+  - grafana to [13.2.4](https://github.com/grafana/grafana/releases/tag/v13.2.4)
+  - k8s-sidecar to [2.14.1](https://github.com/kiwigrid/k8s-sidecar/releases/tag/2.14.1)
+  - kube-state-metrics to [v2.20.0](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.20.0)
+  - node-exporter to [v1.12.1](https://github.com/prometheus/node_exporter/releases/tag/v1.12.1)
+  - prometheus to [v3.15.0](https://github.com/prometheus/prometheus/releases/tag/v3.15.0)
+  - prometheus-config-reloader to [v0.94.1](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.94.1)
+  - prometheus-operator to [v0.94.1](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.94.1)
+  - thanos to [v0.42.4](https://github.com/thanos-io/thanos/releases/tag/v0.42.4)
+  (PR[#5174](https://github.com/scality/metalk8s/pull/5174))
+
+- Bump Calico to [3.33.0](https://github.com/projectcalico/calico/releases/tag/v3.33.0). The calico-cni and calico-kube-controllers images are replaced by calico and calico-third-party-cni-plugins.
+  (PR[#5165](https://github.com/scality/metalk8s/pull/5165))
+
+- The nightly of a development branch tests upgrades and downgrades from the previous major again when majors are not contiguous. It used to look only for `MAJOR - 1`, so `development/136.0` found no 135 release or branch and skipped every lifecycle test. It now reads the previous major declared in the Salt defaults (`metalk8s.previous_major_version`), and tests from its latest release and its `development/*` branch.
+  (PR[#5206](https://github.com/scality/metalk8s/pull/5206))
+
+- Bump containerd to [2.4.2](https://github.com/containerd/containerd/releases/tag/v2.4.2)
+  and pause to [3.10.2](https://github.com/kubernetes/kubernetes/releases/tag/v3.10.2)
+  (PR[#5214](https://github.com/scality/metalk8s/pull/5214))
+
+### Bug Fixes
+
+- move node-warden-operator nodeSelector into pod spec
+  (PR[#5203](https://github.com/scality/metalk8s/pull/5203))
+
+- Upgrading from 134 to 136, and downgrading from 136 to 134, is no longer refused by the pre-checks with "Unable to upgrade from more than 1 major version". The checks assumed the previous major was always the current one minus one, which no longer holds since 136.0 follows 134.0. The major a version follows is now declared in its Salt defaults.
+  (PR[#5207](https://github.com/scality/metalk8s/pull/5207))
+
+- Nodes no longer run out of inotify instances, which on a single node with
+  logging enabled could make kube-proxy keep stale iptables rules after a
+  reconfiguration, or fluent-bit crash loop, with "too many open files".
+  MetalK8s now sets `fs.inotify.max_user_instances` to 8192 on every node, at
+  install and upgrade, as containerd needs one instance per container on
+  cgroups v2 and the default of 128 runs out.
+  (PR[#5213](https://github.com/scality/metalk8s/pull/5213))
+
+### Additions
+
+- The bootstrap node now fills its image cache from the boot cache images shipped on the ISO, before the kubelet starts. The archives they carry are extracted under `/var/lib/image-cache` and imported into containerd right away, so the first node can bring up its static pods with no registry to pull from. It gets the worker, control plane and etcd variants.
+  (PR[#5122](https://github.com/scality/metalk8s/pull/5122))
+
+- A node joining the cluster now fills its image cache before its kubelet starts. It pulls the worker boot cache image from the cluster registry into `/var/lib/image-cache` and imports it into containerd, so it can start its Pods again even if the registry goes away later. Both the bootstrap and the join paths use the `imagecachectl` command, and name each cache after its ImageCache resource, such as `worker-134-0-0`.
+  (PR[#5169](https://github.com/scality/metalk8s/pull/5169))
+
+- Ship the image cache agent in the ISO and deploy it on every node at bootstrap
+  (PR[#5160](https://github.com/scality/metalk8s/pull/5160))
+
+- The bootstrap now creates one `ImageCache` resource per boot cache variant of the installed version: `worker` on every node, `control-plane` and `etcd` on the nodes holding that role. The image cache agent adopts the directories filled from the ISO with no pull, and fills the control plane and etcd variants of a node that joins later.
+  (PR[#5171](https://github.com/scality/metalk8s/pull/5171))
+
+- Deploy [metalk8s-registry-operator](https://github.com/scality/metalk8s-registry-operator)
+  v0.0.1-alpha.6 as a core addon. It runs a container registry on the nodes with
+  the new `registry` role (the bootstrap node by default), using
+  [static-oci-registry](https://github.com/scality/static-oci-registry) v0.1.0-beta.4
+  and [metalk8s-registry-node-agent](https://github.com/scality/metalk8s-registry-node-agent)
+  v0.0.1-alpha.14
+  (PR[#5183](https://github.com/scality/metalk8s/pull/5183))
+
+
 ## Release 134.0.2
 
 ### Enhancements
@@ -571,14 +675,6 @@
   (PR[#4724](https://github.com/scality/metalk8s/pull/4724))
 
 ## Release 131.0.12 (in development)
-
-### Enhancements
-
-- Stop Loki and Grafana from calling Grafana Labs services over the
-  internet by default: disable Loki anonymous usage reporting, and
-  Grafana plugin update checks, plugin preinstall and plugin signing
-  public key retrieval
-  (PR[#5208](https://github.com/scality/metalk8s/pull/5208))
 
 ## Release 131.0.11
 
