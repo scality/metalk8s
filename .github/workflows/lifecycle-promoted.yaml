@@ -36,7 +36,7 @@ jobs:
   snapshot-upgrade:
     # We need to use those specific gcloud runner so that we have
     # known runner IPs
-    runs-on: [self-hosted, ubuntu, large, jammy, gcloud]
+    runs-on: [self-hosted, ubuntu, large, noble, gcloud]
     strategy:
       fail-fast: false
       matrix:

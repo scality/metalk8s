@@ -1,0 +1,6 @@
+kind: Fix
+body: Upgrading from 134 to 136, and downgrading from 136 to 134, is no longer refused by the pre-checks with "Unable to upgrade from more than 1 major version". The checks assumed the previous major was always the current one minus one, which no longer holds since 136.0 follows 134.0. The major a version follows is now declared in its Salt defaults.
+time: 2026-10-27T13:52:02.259739315Z
+custom:
+    CommentId: "6443594316"
+    Pull: "5207"

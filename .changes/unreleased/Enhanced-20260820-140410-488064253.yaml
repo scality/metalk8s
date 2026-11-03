@@ -4,7 +4,7 @@ body: |-
     a node of that role needs to boot: `metalk8s-boot-cache-worker` (`pause`, `nginx`,
     `kube-proxy`, `alpine`, Calico and `file-reflector`), for every node,
     `metalk8s-boot-cache-control-plane` (`kube-apiserver`, `kube-controller-manager`,
-    `kube-scheduler`, CoreDNS and `calico-kube-controllers`) and
+    `kube-scheduler` and CoreDNS) and
     `metalk8s-boot-cache-etcd` (etcd). A node gets the worker one plus those of its
     roles, so no image is carried twice. The worker one carries `pause`, which containerd
     pins as its sandbox image:

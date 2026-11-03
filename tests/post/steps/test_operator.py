@@ -50,7 +50,7 @@ def teardown(context, k8s_client):
 
             for cond in obj.status.conditions or []:
                 if cond.type == "Ready":
-                    assert obj.generation == cond.observed_generation
+                    assert obj.metadata.generation == cond.observedGeneration
                     assert cond.status == "True"
                     return
 

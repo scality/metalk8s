@@ -42,6 +42,11 @@ def test_daemonset_running(host):
     pass
 
 
+@scenario("../features/sanity.feature", "Registry is Ready")
+def test_registry_ready(host):
+    pass
+
+
 @scenario("../features/sanity.feature", "Package is installed on every node")
 def test_package_installed(host):
     pass
@@ -250,6 +255,35 @@ def check_statefulset(k8s_client, name, namespace):
     )
 
 
+@then(parsers.parse("the Registry '{name}' is Ready"))
+def check_registry_ready(k8s_client, name):
+    def _wait_for_registry():
+        try:
+            registry = k8s_client.resources.get(
+                api_version="metalk8s.scality.com/v1alpha1", kind="Registry"
+            ).get(name=name)
+        except ApiException as exc:
+            if exc.status == 404:
+                pytest.fail(f"Registry '{name}' does not exist")
+            raise
+
+        for cond in registry.status.conditions or []:
+            if cond.type == "Ready":
+                assert (
+                    cond.status == "True"
+                ), f"Registry '{name}' is not Ready yet: {cond.message}"
+                return
+
+        raise AssertionError(f"Registry '{name}' has no Ready condition yet")
+
+    utils.retry(
+        _wait_for_registry,
+        times=10,
+        wait=3,
+        name=f"wait for Registry '{name}'",
+    )
+
+
 @then(parsers.parse("the package '{name}' is installed on every node"))
 def check_package_installed(host, ssh_config, k8s_client, name):
     def _check_package():
@@ -316,6 +350,7 @@ IMAGE_CACHE_ROLES = {
     "worker": None,
     "control-plane": "node-role.kubernetes.io/master",
     "etcd": "node-role.kubernetes.io/etcd",
+    "registry": "node-role.kubernetes.io/registry",
 }
 
 

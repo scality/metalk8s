@@ -9,6 +9,12 @@
     )
 %}
 
+{%- set email_subject_template = salt['cp.get_file_str'](
+        'salt://metalk8s/addons/prometheus-operator/deployed/files/email-subject.tmpl',
+        saltenv=saltenv
+    )
+%}
+
 Create Alertmanager Configuration Secret:
   metalk8s_kubernetes.object_present:
     - manifest:
@@ -27,3 +33,5 @@ Create Alertmanager Configuration Secret:
         stringData:
           alertmanager.yaml: |-
             {{ alertmanager.spec.notification.config | tojson }}
+          email-subject.tmpl: |-
+            {{ email_subject_template | indent(12) }}

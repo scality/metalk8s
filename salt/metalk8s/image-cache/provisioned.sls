@@ -6,8 +6,9 @@
     shipped on the ISO.
 
     This is the cold path: no registry to pull from yet, so the archives come
-    out of the ISO. This node holds the control plane, etcd and workloads, so
-    it gets every variant. A joining node pulls its cache, see `pulled.sls`.
+    out of the ISO. This node holds the control plane, etcd, the registry and
+    workloads, so it gets every variant. A joining node pulls its cache, see
+    `pulled.sls`.
 
     Ordering this against the kubelet is left to the role that applies both,
     so that this SLS stays applicable on its own. #}
@@ -20,7 +21,7 @@ include:
   - .installed
   - metalk8s.archives.mounted
 
-{%- for variant in ['worker', 'control-plane', 'etcd'] %}
+{%- for variant in ['worker', 'control-plane', 'etcd', 'registry'] %}
   {%- set image_name = 'metalk8s-boot-cache-' ~ variant %}
   {%- set image_version = repo.images.get(image_name, {}).get('version') %}
   {%- if not image_version %}
@@ -62,6 +63,7 @@ Import the boot cache archives into containerd:
       - metalk8s_image_cache: Import the worker boot cache from the ISO
       - metalk8s_image_cache: Import the control-plane boot cache from the ISO
       - metalk8s_image_cache: Import the etcd boot cache from the ISO
+      - metalk8s_image_cache: Import the registry boot cache from the ISO
     - require:
       - service: Ensure containerd image preload timer running
 

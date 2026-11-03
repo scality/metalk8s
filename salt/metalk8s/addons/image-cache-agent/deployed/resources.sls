@@ -13,6 +13,7 @@
       'worker': {},
       'control-plane': {'node-role.kubernetes.io/master': ''},
       'etcd': {'node-role.kubernetes.io/etcd': ''},
+      'registry': {'node-role.kubernetes.io/registry': ''},
     } %}
 
 {%- for variant, node_selector in variants.items() %}

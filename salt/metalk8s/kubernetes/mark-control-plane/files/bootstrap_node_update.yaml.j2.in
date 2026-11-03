@@ -41,6 +41,7 @@ metadata:
     node-role.kubernetes.io/etcd: ""
     node-role.kubernetes.io/bootstrap: ""
     node-role.kubernetes.io/infra: ""
+    node-role.kubernetes.io/registry: ""
   annotations:
     kubeadm.alpha.kubernetes.io/cri-socket: {{ cri_socket }}
 {%- if update_taints %}

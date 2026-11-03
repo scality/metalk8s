@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Bump k8s Go libraries of `metalk8s-operator` and `storage-operator` to 0.36.5 (Go 1.26, `controller-runtime` 0.24.1)
+time: 2026-10-12T11:22:42.814420955Z
+custom:
+    CommentId: "6123219441"
+    Pull: "5154"

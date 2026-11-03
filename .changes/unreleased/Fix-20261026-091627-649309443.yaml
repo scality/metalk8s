@@ -1,0 +1,6 @@
+kind: Fix
+body: move node-warden-operator nodeSelector into pod spec
+time: 2026-10-26T09:16:27.649309443Z
+custom:
+    CommentId: "6412423571"
+    Pull: "5203"

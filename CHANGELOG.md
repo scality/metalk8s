@@ -1,6 +1,242 @@
 # CHANGELOG
 
 
+## Release 134.0.2
+
+### Enhancements
+
+- Alert notification emails now use a short subject,
+  `[FIRING] <alert name> - <severity>`, instead of listing the value of every
+  label of the alert, so the severity is visible in an inbox list. Email
+  receivers that set their own `Subject` header are not affected.
+  (PR[#5209](https://github.com/scality/metalk8s/pull/5209))
+
+### Bug Fixes
+
+- Fix flaky multi-node Control Plane Ingress tests: the tests now wait for the operator to observe the latest ClusterConfig generation before reconfiguring the Control Plane Ingress, instead of acting on a stale `Ready` condition
+  (PR[#5193](https://github.com/scality/metalk8s/pull/5193))
+
+- Bump [disk-management-agent](https://github.com/scality/disk-management-agent) to version
+  [v0.2.0](https://github.com/scality/disk-management-agent/releases/tag/v0.2.0). One failed drive on a
+  MegaRAID, storcli2 or HPE Smart Array controller no longer blanks the device paths of every disk on that
+  controller in the Storage Service UI: the healthy disks keep their paths, and the failed one is reported Failed.
+  (PR[#5199](https://github.com/scality/metalk8s/pull/5199))
+
+- move crl-operator nodeSelector into pod spec
+  (PR[#5204](https://github.com/scality/metalk8s/pull/5204))
+
+### Additions
+
+- let a mounted application open the assistant on a question
+  (PR[#5192](https://github.com/scality/metalk8s/pull/5192))
+
+### Removals
+
+- The ISO no longer ships the `metalk8s-boot-cache-control-plane` and
+  `metalk8s-boot-cache-worker` images, and the bootstrap node no longer fills its
+  image cache from them before the kubelet starts. The boot cache feature is not
+  complete in this release line, and comes back in 136.0. The
+  `containerd-image-preload` package and its timer are still installed on every
+  node, and run against an empty `/var/lib/image-cache`.
+  (PR[#5205](https://github.com/scality/metalk8s/pull/5205))
+
+
+## Release 134.0.1
+
+### Bug Fixes
+
+- The Platform dashboard and node page bandwidth charts are no longer empty on
+  nodes whose control-plane or workload-plane IP sits on a bond or a VLAN. The
+  interface carrying each plane IP is now resolved live on the minion instead of
+  being read from the `ip_interfaces` grain, which is only computed when the
+  minion daemon starts -- before those interfaces exist -- and is not refreshed
+  afterwards. The charts used to query `node_network_receive_bytes_total` with an
+  empty device matcher, which no series can match, so Prometheus answered with an
+  empty result and the panel rendered blank without any error
+  (PR[#5120](https://github.com/scality/metalk8s/pull/5120))
+
+- The **Send a test email** button on the email notification configuration page
+  sends the test alert again. The request was rejected once Alertmanager became
+  protected by OIDC authentication, and the page reported nothing. A failed test or
+  save now shows an error message explaining what went wrong.
+  (PR[#5139](https://github.com/scality/metalk8s/pull/5139))
+
+- Corrected the trace system after the google chrome update
+  (PR[#5180](https://github.com/scality/metalk8s/pull/5180))
+
+- Chart axes, such as the Platform Health bar timeline, no longer disappear for a frame each time the page re-renders. The UI now uses @scality/core-ui 0.233.0, which requires a recharts version without that rendering bug.
+  (PR[#5181](https://github.com/scality/metalk8s/pull/5181))
+
+- Mount `/etc/machine-id` in the Fluent Bit pods, so host (systemd journal) logs are sent to Loki again
+  (PR[#5185](https://github.com/scality/metalk8s/pull/5185))
+
+
+## Release 134.0.0
+
+### Enhancements
+
+- Add support for RHEL/Rocky 9.
+  RHEL/Rocky 8 support will be dropped in a future release.
+  (PR[#5014](https://github.com/scality/metalk8s/pull/5014))
+
+- Make node monitoring and Pod eviction timeouts configurable through the
+  `BootstrapConfiguration`: `kube-apiserver`
+  `defaultNotReadyTolerationSeconds`/`defaultUnreachableTolerationSeconds`
+  (default `60`), `kube-controller-manager`
+  `nodeMonitorGracePeriod`/`nodeMonitorPeriod` (default `30s`/`5s`) and kubelet
+  `nodeStatusUpdateFrequency` (default `10s`).
+  (PR[#4966](https://github.com/scality/metalk8s/pull/4966))
+
+- Bump Kubernetes version to [1.34.7](https://github.com/kubernetes/kubernetes/releases/tag/v1.34.7)
+  (PR[#4928](https://github.com/scality/metalk8s/pull/4928))
+
+- Bump etcd version to [3.6.11](https://github.com/etcd-io/etcd/releases/tag/v3.6.11)
+  (PR[#4928](https://github.com/scality/metalk8s/pull/4928))
+
+- Bump Salt version to [3006.27](https://github.com/saltstack/salt/releases/tag/v3006.27)
+  (PR[#5017](https://github.com/scality/metalk8s/pull/5017))
+
+- Bump dex chart to [0.24.1](https://github.com/dexidp/helm-charts/releases/tag/dex-0.24.1)
+  (PR[#4977](https://github.com/scality/metalk8s/pull/4977))
+
+- Bump fluent-bit chart to [0.57.7](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.57.7)
+  and Fluent Bit image to [v5.0.7](https://github.com/fluent/fluent-bit/releases/tag/v5.0.7)
+  (PR[#4978](https://github.com/scality/metalk8s/pull/4978))
+
+- Bump loki chart to [7.0.0](https://github.com/grafana/helm-charts/releases/tag/helm-loki-7.0.0)
+  and Loki image to [v3.6.7](https://github.com/grafana/loki/releases/tag/v3.6.7)
+  (PR[#4979](https://github.com/scality/metalk8s/pull/4979))
+
+- Bump ingress-nginx chart to [4.15.1](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.15.1)
+  and nginx ingress controller to [v1.15.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.15.1)
+  (PR[#4980](https://github.com/scality/metalk8s/pull/4980))
+
+- Bump kube-prometheus-stack chart version to [86.3.1](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-86.3.1)
+  The following images have also been bumped accordingly:
+  - alertmanager to [v0.33.0](https://github.com/prometheus/alertmanager/releases/tag/v0.33.0)
+  - grafana to [13.0.2](https://github.com/grafana/grafana/releases/tag/v13.0.2)
+  - k8s-sidecar to [2.7.3](https://github.com/kiwigrid/k8s-sidecar/releases/tag/2.7.3)
+  - kube-state-metrics to [v2.19.1](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.19.1)
+  - node-exporter to [v1.11.1](https://github.com/prometheus/node_exporter/releases/tag/v1.11.1)
+  - prometheus to [v3.12.0](https://github.com/prometheus/prometheus/releases/tag/v3.12.0)
+  - prometheus-config-reloader to [v0.91.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.91.0)
+  - prometheus-operator to [v0.91.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.91.0)
+  (PR[#4981](https://github.com/scality/metalk8s/pull/4981))
+
+- Bump Calico version to [3.32.0](https://github.com/projectcalico/calico/releases/tag/v3.32.0)
+  (PR[#4985](https://github.com/scality/metalk8s/pull/4985))
+
+- Bump containerd to [2.2.5](https://github.com/containerd/containerd/releases/tag/v2.2.5)
+  The pause image has been bumped to 3.10.1
+  (PR[#4991](https://github.com/scality/metalk8s/pull/4991))
+
+- Bump nginx image to [1.31.2-alpine](https://github.com/nginx/nginx/releases/tag/release-1.31.2)
+  (PR[#4992](https://github.com/scality/metalk8s/pull/4992))
+
+- Bump Alpine base image version to [3.24.1](https://github.com/alpinelinux/aports/releases/tag/v3.24.1)
+  (PR[#4993](https://github.com/scality/metalk8s/pull/4993))
+
+- Bump the rocky base image used by `metalk8s-utils` image to
+  `rockylinux:9.8-minimal`
+  (PR[#4994](https://github.com/scality/metalk8s/pull/4994))
+
+- Move `salt-master` image to Rocky 9 minimal
+  (PR[#5014](https://github.com/scality/metalk8s/pull/5014))
+
+- Bump operator-sdk to [v1.42.3](https://github.com/operator-framework/operator-sdk/releases/tag/v1.42.3)
+  for the `metalk8s-operator` and `storage-operator`, and bump their
+  `k8s.io/{api,apimachinery,client-go}` dependencies to v0.33.13
+  (PR[#5012](https://github.com/scality/metalk8s/pull/5012))
+
+- Bump `kube-apiserver` `AuthenticationConfiguration` apiVersion to
+  `apiserver.config.k8s.io/v1` (GA in Kubernetes 1.34)
+  (PR[#5001](https://github.com/scality/metalk8s/pull/5001))
+
+- Bump [disk-management-agent](https://github.com/scality/disk-management-agent) to version
+  [v0.1.0](https://github.com/scality/disk-management-agent/releases/tag/v0.1.0)
+  (PR[#5024](https://github.com/scality/metalk8s/pull/5024))
+
+- Ship boot cache images on the ISO, each carrying an archive of the container images
+  a node of that role needs to boot: `metalk8s-boot-cache-control-plane` (`pause`,
+  etcd, `kube-apiserver`, `kube-controller-manager`, `kube-scheduler`, CoreDNS,
+  `kube-proxy` and Calico) and `metalk8s-boot-cache-worker` (`pause` and
+  `file-reflector`). Both carry `pause`, which containerd pins as its sandbox image:
+  without it the kubelet starts no Pod at all, not even a static one. A node can
+  restore them into containerd without reaching the registry, which breaks the
+  circular dependency between a node and the registry running on the cluster it
+  belongs to. Each archive is named after the image the kubelet asks for, so it is
+  imported as is, with no re-tagging. Both images are available as layers, for the
+  registry, and as an archive, for a node with no registry yet.
+  (PR[#5068](https://github.com/scality/metalk8s/pull/5068))
+
+- Pull the [file-reflector](https://github.com/scality/file-reflector) image
+  ([v0.2.0](https://github.com/scality/file-reflector/releases/tag/v0.2.0)), the agent
+  that writes containerd's mirror configuration on each node, so it can be cached on
+  workers.
+  (PR[#5068](https://github.com/scality/metalk8s/pull/5068))
+
+- The UI pages now adapt to the width of the area they are given, and stay usable when that area is narrowed.
+  (PR[#5106](https://github.com/scality/metalk8s/pull/5106))
+
+- add new webmcp tool to get a list of a specific resource in kubernetes
+  (PR[#5149](https://github.com/scality/metalk8s/pull/5149))
+
+### Breaking Changes
+
+- Due to the major bump of Salt and Python version, downgrading from
+  134 to 133 will not be possible.
+  (PR[#5017](https://github.com/scality/metalk8s/pull/5017))
+
+### Bug Fixes
+
+- Keep a UI's fixed-position elements — toasts and notifications — inside the content column instead of anchored to the browser viewport, so they no longer land over the drawer when it is open.
+  (PR[#5105](https://github.com/scality/metalk8s/pull/5105))
+
+- The Nodes and Volumes pages no longer show "No nodes found" / "No volumes found" while the list is still loading
+  (PR[#5118](https://github.com/scality/metalk8s/pull/5118))
+
+- Resuming an interrupted upgrade to 134 no longer fails in the etcd step with `sign_remote_certificate() missing 1 required positional argument: 'kwargs'`, and the upgrade now moves the CA salt-minion first, so no node asks a CA running another x509 module.
+  (PR[#5136](https://github.com/scality/metalk8s/pull/5136))
+
+- Stop the UI from auto-discovering a WebMCP local relay on the administrator's machine at login, which triggered an unexplained Chrome "access other apps and services on your computer" permission prompt
+  (PR[#5145](https://github.com/scality/metalk8s/pull/5145))
+
+- the webmcp tool calls are registered in the tool activity of devtool
+  (PR[#5147](https://github.com/scality/metalk8s/pull/5147))
+
+- Run the kube-proxy init container on `alpine` instead of the much larger `metalk8s-utils` image
+  (PR[#5150](https://github.com/scality/metalk8s/pull/5150))
+
+- Fix intermittent multi-node upgrade failures caused by webhook CA bundle injection and container registry hosts missing a restarting repository
+  (PR[#5156](https://github.com/scality/metalk8s/pull/5156))
+
+- The Platform Virtual Machines tab now shows up whenever the VM Management micro-app is deployed. It used to look the app up among the views declared in the shell navigation, where the product does not declare it, so the tab never appeared.
+  (PR[#5170](https://github.com/scality/metalk8s/pull/5170))
+
+### Additions
+
+- The ISO now carries the containerd-image-preload package in its scality repository, for RedHat 8 and 9.
+  (PR[#5103](https://github.com/scality/metalk8s/pull/5103))
+
+- Support background tasks for long-running WebMCP tool operations, pollable from any UI through a single host-wide getTaskStatus tool.
+  (PR[#5086](https://github.com/scality/metalk8s/pull/5086))
+
+- Every node now installs the `containerd-image-preload` package and runs its timer. The timer imports the image archives found under `/var/lib/image-cache` into containerd, once at boot and then every 10 minutes, so a node that lost images from its content store gets them back without reaching a registry.
+  (PR[#5109](https://github.com/scality/metalk8s/pull/5109))
+
+- The bootstrap node now fills its image cache from the boot cache image shipped on the ISO, before the kubelet starts. The archives it carries are extracted into `/var/lib/image-cache` and imported into containerd right away, so the first node can bring up its static pods with no registry to pull from. Only the control plane variant is provisioned, and only at bootstrap: a node joining the cluster still gets nothing.
+  (PR[#5122](https://github.com/scality/metalk8s/pull/5122))
+
+- The Platform navigation now carries a Virtual Machines tab next to Nodes and Volumes, opening the VM Management micro-app inline. It shows up on ARTESCA+ platforms only: the micro-app is not deployed elsewhere, so no tab is added and the route falls through to the 404 page.
+  (PR[#5127](https://github.com/scality/metalk8s/pull/5127))
+
+- describe a specific kube resource
+  (PR[#5151](https://github.com/scality/metalk8s/pull/5151))
+
+- get the logs of a pod
+  (PR[#5155](https://github.com/scality/metalk8s/pull/5155))
+
+
 ## Release 133.0.17
 
 ### Bug Fixes
@@ -332,6 +568,18 @@
 - Fix a bug where part of the upgrade process would silently be skipped
   if the containerd socket is lost (crictl exec would exit with code 0)
   (PR[#4802](https://github.com/scality/metalk8s/pull/4802))
+
+## Release 132.0.3
+
+### Bug Fixes
+
+- Fix a bug where Salt master process may report an error about `VerboseLogger`
+  not having attributes `trace`
+  (PR[#4831](https://github.com/scality/metalk8s/pull/4831))
+
+- Stop the UI from auto-discovering a WebMCP local relay on the administrator's machine at login, which triggered an unexplained Chrome "access other apps and services on your computer" permission prompt
+  (PR[#5145](https://github.com/scality/metalk8s/pull/5145))
+
 
 ## Release 132.0.2
 

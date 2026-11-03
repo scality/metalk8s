@@ -1,0 +1,17 @@
+kind: Enhanced
+body: |-
+    Bump kube-prometheus-stack chart version to [92.10.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-92.10.0)
+    The following images have also been bumped accordingly:
+    - alertmanager to [v0.34.1](https://github.com/prometheus/alertmanager/releases/tag/v0.34.1)
+    - grafana to [13.2.4](https://github.com/grafana/grafana/releases/tag/v13.2.4)
+    - k8s-sidecar to [2.14.1](https://github.com/kiwigrid/k8s-sidecar/releases/tag/2.14.1)
+    - kube-state-metrics to [v2.20.0](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.20.0)
+    - node-exporter to [v1.12.1](https://github.com/prometheus/node_exporter/releases/tag/v1.12.1)
+    - prometheus to [v3.15.0](https://github.com/prometheus/prometheus/releases/tag/v3.15.0)
+    - prometheus-config-reloader to [v0.94.1](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.94.1)
+    - prometheus-operator to [v0.94.1](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.94.1)
+    - thanos to [v0.42.4](https://github.com/thanos-io/thanos/releases/tag/v0.42.4)
+time: 2026-10-16T16:20:53.908167566Z
+custom:
+    CommentId: "6219832497"
+    Pull: "5174"

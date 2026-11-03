@@ -19,15 +19,15 @@ Image = namedtuple("Image", ("name", "version", "digest"))
 # Project-wide versions {{{
 
 K8S_VERSION_MAJOR: str = "1"
-K8S_VERSION_MINOR: str = "34"
-K8S_VERSION_PATCH: str = "7"
+K8S_VERSION_MINOR: str = "36"
+K8S_VERSION_PATCH: str = "5"
 
 K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
 K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
-CALICO_VERSION: str = "3.32.0"
+CALICO_VERSION: str = "3.33.0"
 SALT_VERSION: str = "3006.27"
-CONTAINERD_VERSION: str = "2.3.6"
+CONTAINERD_VERSION: str = "2.4.2"
 
 SOSREPORT_RELEASE: str = "2"
 
@@ -106,28 +106,28 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="alertmanager",
-        version="v0.33.0",
-        digest="sha256:af26fbe4dd1886ac0efd7bd55cd9027da262e105b137a376522b7c14c3626e4a",
+        version="v0.34.1",
+        digest="sha256:e9733bafb1bdef9b00e25a21f8f99dc26a22224bf16641ad754d1649f4c3357a",
     ),
     Image(
-        name="calico-cni",
+        name="calico",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14",
+        digest="sha256:4ebc20730127bc9e8bf1db5f5a2d8b58cf37fe0e891b3c7b5471992221d213e5",
     ),
     Image(
         name="calico-node",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+        digest="sha256:565d8db3200e443955557f8f28ff44ab8a4a456754bc74a19c4f2f3444af9b1c",
     ),
     Image(
-        name="calico-kube-controllers",
+        name="calico-third-party-cni-plugins",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:adf0ac895796d21bca5383bc81c4cd2614be3a4308085b47857d7999f4cc2b1f",
+        digest="sha256:0f32f48279484c0d6f0e0d0e767b2d0e1a6c6ca34cb3421a61b989d992f3df41",
     ),
     Image(
         name="coredns",
-        version="v1.12.4",
-        digest="sha256:986f04c2e15e147d00bdd51e8c51bcef3644b13ff806be7d2ff1b261d6dfbae1",
+        version="v1.14.2",
+        digest="sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
     ),
     Image(
         name="dex",
@@ -141,38 +141,38 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="grafana",
-        version="13.0.2",
-        digest="sha256:5dad0df181cb644a14e13617b913b261a54f7d4fd4510721dba420929f35bea2",
+        version="13.2.4-distroless",
+        digest="sha256:ae3d3add290adbe6a88412229f5d76fd7bb82743050881698642d3d62f277e35",
     ),
     Image(
         name="k8s-sidecar",
-        version="2.7.3",
-        digest="sha256:694950d736c8b532eba4006527ccbdac98fefc9f30b3346ba2de50b6cad91c94",
+        version="2.14.1",
+        digest="sha256:092dbe0c335fba9af414a27630ca68f34df6185784fa847d9954187e69dbfdd7",
     ),
     Image(
         name="kube-apiserver",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:b96b8464d152a24c81d7f0435fd2198f8486970cd26a9e0e9c20826c73d1441c",
+        digest="sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
     ),
     Image(
         name="kube-controller-manager",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:7d759bdc4fef10a3fc1ad60ce9439d58e1a4df7ebb22751f7cc0201ce55f280b",
+        digest="sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
     ),
     Image(
         name="kube-proxy",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:062519bc0a14769e2f98c6bdff7816a17e6252de3f3c9cb102e6be33fe38d9e2",
+        digest="sha256:5f180e85f05b5b0949fc9d2886ca536c2aa8b8a3b8302b58e7d49c4a645f97a9",
     ),
     Image(
         name="kube-scheduler",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:4ab32f707ff84beaac431797999707757b885196b0b9a52d29cb67f95efce7c1",
+        digest="sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
     ),
     Image(
         name="kube-state-metrics",
-        version="v2.19.1",
-        digest="sha256:85108987d044b18a098126732f98602df408888c0f7d456241f5abefb9744bc1",
+        version="v2.20.0",
+        digest="sha256:42cfe3723a5f058171c627537fb57a3ea0f26e4380fa18555a95cb1a1b4cfc5b",
     ),
     Image(
         name="nginx",
@@ -188,8 +188,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="node-exporter",
-        version="v1.11.1-distroless",
-        digest="sha256:6112664fd761bb964d8a2d3d0119d6c8402618a89edbb3a43c8f7b4090fb53c9",
+        version="v1.12.1-distroless",
+        digest="sha256:8c9bac11973b94b59be88d6e11fee4429aa743c8846cdc75d65b18db33f6a106",
     ),
     Image(
         name="node-problem-detector",
@@ -210,8 +210,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus",
-        version="v3.12.0-distroless",
-        digest="sha256:f39df5334dee301b885f77e0ff1159f5d8a43bf9db518f885544594799a1e3c2",
+        version="v3.15.0-distroless",
+        digest="sha256:b2a413d5a03ea6a76782a508d1c7947440bba3b973931a25676e278431891b01",
     ),
     Image(
         name="prometheus-adapter",
@@ -220,18 +220,18 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus-config-reloader",
-        version="v0.91.0",
-        digest="sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1",
+        version="v0.94.1",
+        digest="sha256:06b52bd4dbe3ed6dd5905aadaf8b9987d9da4c31d37bb86deaadae68cee2d26b",
     ),
     Image(
         name="prometheus-operator",
-        version="v0.91.0",
-        digest="sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d",
+        version="v0.94.1",
+        digest="sha256:7c88d4e7bae63bd8d0f8da986054337c23b4472fa8d3c6817f5bc4b8407a2d6a",
     ),
     Image(
         name="thanos",
-        version="v0.41.0",
-        digest="sha256:cf3e9b292e4302ad4a4955b56379703aea39516607d382a57604a3d003c35d10",
+        version="v0.42.4",
+        digest="sha256:b567818fe608067eb0f1d7c2c4fe361e7ad83c8a256234c97685f1d0bf670cc8",
     ),
     # Local images
     Image(
@@ -251,6 +251,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="metalk8s-boot-cache-worker",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
+        name="metalk8s-boot-cache-registry",
         version=VERSION,
         digest=None,
     ),
@@ -304,8 +309,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="fluent-bit",
-        version="5.0.7",
-        digest="sha256:c96ee743cba9b1d5a38654931f411700af80bb7652697afbe67daad46cae237b",
+        version="5.1.5",
+        digest="sha256:2740f387f6e68fab66d28e4fa6a853387b9cab6ffb4cb78958f69bba4eb0e7b4",
     ),
     Image(
         name="cert-manager-controller",
@@ -333,9 +338,24 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:86b4198036c1f83f1d9363a1e2ae78015482ca4fe60cd706939b8730c179ac8a",
     ),
     Image(
+        name="static-oci-registry",
+        version="v0.1.0-beta.4",
+        digest="sha256:e23d0050707295c24a09401abb19ae3f0b446217d4270beca99237e845b517b9",
+    ),
+    Image(
+        name="metalk8s-registry-node-agent",
+        version="v0.0.1-alpha.14",
+        digest="sha256:ebd7cbe53e37a01c4dd0528970825dccb8fbac1962088626f1d7c8d1cdac3b7f",
+    ),
+    Image(
+        name="metalk8s-registry-operator",
+        version="v0.0.1-alpha.6",
+        digest="sha256:d7ea154198885fd8e13031aa1918f7e4f365a5f45a722c4aaa117139fbf93483",
+    ),
+    Image(
         name="disk-management-agent",
-        version="v0.1.0",
-        digest="sha256:d63d4e20a089dcd3ac33f58d2210a66e48a1f9f08120494352b22cca94747769",
+        version="v0.2.0",
+        digest="sha256:6d9e33f59d9f28df6b6c04f1f30509fdf10d1e73c449f9cc9fd76418343d32c4",
     ),
     Image(
         name="file-reflector",
