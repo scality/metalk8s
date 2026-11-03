@@ -10,25 +10,49 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/managed-by: salt
 data:
-  ssl.conf: |
-    server {
-        listen              443 ssl;
-        server_name         backup;
-        ssl_certificate     /etc/ssl/backup.crt;
-        ssl_certificate_key /etc/ssl/backup.key;
-        ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
-        ssl_ciphers         HIGH:!aNULL:!MD5;
+  # Backup archives belong to root with a 0600 mode, workers must run as
+  # root to serve them
+  nginx.conf: |
+    user                root;
+    worker_processes    auto;
 
-        auth_basic           "Authentication";
-        auth_basic_user_file /etc/nginx/htpasswd/.htpasswd;
+    error_log           stderr notice;
+    pid                 /run/nginx.pid;
 
-        location /livez {
-            auth_basic off;
-            return 200 "I'm alive!";
-        }
+    events {
+        worker_connections  1024;
+    }
 
-        location / {
-            root      /backups;
-            autoindex on;
+    http {
+        include             /etc/nginx/mime.types;
+        default_type        application/octet-stream;
+
+        log_format          main  '$remote_addr - $remote_user [$time_local] "$request" '
+                                  '$status $body_bytes_sent "$http_referer" '
+                                  '"$http_user_agent" "$http_x_forwarded_for"';
+        access_log          /dev/stdout  main;
+
+        sendfile            on;
+        keepalive_timeout   65;
+
+        server {
+            listen              443 ssl;
+            server_name         backup;
+            ssl_certificate     /etc/ssl/backup.crt;
+            ssl_certificate_key /etc/ssl/backup.key;
+            ssl_protocols       TLSv1.3;
+
+            auth_basic           "Authentication";
+            auth_basic_user_file /etc/nginx/htpasswd/.htpasswd;
+
+            location /livez {
+                auth_basic off;
+                return 200 "I'm alive!";
+            }
+
+            location / {
+                root      /backups;
+                autoindex on;
+            }
         }
     }
