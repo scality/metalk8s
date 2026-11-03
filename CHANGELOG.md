@@ -552,6 +552,18 @@
   if the containerd socket is lost (crictl exec would exit with code 0)
   (PR[#4802](https://github.com/scality/metalk8s/pull/4802))
 
+## Release 132.0.3
+
+### Bug Fixes
+
+- Fix a bug where Salt master process may report an error about `VerboseLogger`
+  not having attributes `trace`
+  (PR[#4831](https://github.com/scality/metalk8s/pull/4831))
+
+- Stop the UI from auto-discovering a WebMCP local relay on the administrator's machine at login, which triggered an unexplained Chrome "access other apps and services on your computer" permission prompt
+  (PR[#5145](https://github.com/scality/metalk8s/pull/5145))
+
+
 ## Release 132.0.2
 
 ## Release 132.0.1
@@ -571,14 +583,6 @@
   (PR[#4724](https://github.com/scality/metalk8s/pull/4724))
 
 ## Release 131.0.12 (in development)
-
-### Enhancements
-
-- Stop Loki and Grafana from calling Grafana Labs services over the
-  internet by default: disable Loki anonymous usage reporting, and
-  Grafana plugin update checks, plugin preinstall and plugin signing
-  public key retrieval
-  (PR[#5208](https://github.com/scality/metalk8s/pull/5208))
 
 ## Release 131.0.11
 
