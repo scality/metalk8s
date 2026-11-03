@@ -26,7 +26,7 @@ K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
 K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
 CALICO_VERSION: str = "3.32.0"
-SALT_VERSION: str = "3006.27"
+SALT_VERSION: str = "3006.30"
 CONTAINERD_VERSION: str = "2.4.2"
 
 SOSREPORT_RELEASE: str = "2"
@@ -88,7 +88,7 @@ UI_OPERATOR_VERSION: str = "1.1.0"
 # installed in the image needs to be updated.
 # This should be reset to 1 when the service exposed by the container changes
 # version.
-SALT_MASTER_BUILD_ID = 2
+SALT_MASTER_BUILD_ID = 1
 
 
 def _version_prefix(version: str, prefix: str = "v") -> str:
