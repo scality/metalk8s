@@ -256,6 +256,10 @@ jobs:
             "bastion:metalk8s/ui/cypress/videos/e2e/*" \
             "${DEST_DIR}/"
 
+      - name: Check no image was pulled from the internet
+        if: always()
+        uses: ./.github/actions/check-external-image-pulls
+
       - name: Generate and Collect sosreport
         if: always()
         uses: ./.github/actions/sosreport-logs

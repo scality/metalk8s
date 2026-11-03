@@ -67,6 +67,10 @@ runs:
         stack_name: ${{ steps.stack.outputs.stack-name }}
         configuration: ${{ steps.config.outputs.configuration }}
 
+    # NOTE: A node brought back is as blank as a spawned one.
+    - name: Set up the offline nodes
+      uses: ./.github/actions/setup-offline-nodes
+
 outputs:
   bastion:
     description: JSON object describing the bastion

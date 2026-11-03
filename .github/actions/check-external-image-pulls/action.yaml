@@ -1,0 +1,64 @@
+name: "Check external image pulls"
+description: "Fail if containerd can, or tried to, pull an image from outside the cluster"
+
+runs:
+  using: composite
+  steps:
+    ## Here we cannot use the ssh-command action as we need to run this in a loop
+    ## that is generated at the runtime.
+    - shell: bash
+      run: test -f ssh_config
+    ## The nodes are offline (see `setup-offline-nodes`), so a pull aimed
+    ## outside the cluster never reaches the internet, it fails to connect.
+    ## Those failures are what this looks for: they name the image a node went
+    ## looking for outside, whether or not a test noticed the pull failing.
+    ## The MetalK8s registries are all reached at IP addresses, a registry
+    ## outside is reached by name.
+    ##
+    ## A request to an `.invalid` registry is no such attempt: that name cannot
+    ## resolve, it is only the last resort containerd tries for an image the
+    ## MetalK8s repositories could not serve, e.g. while they are stopped on
+    ## purpose.
+    ##
+    ## Finding no failure only means something if the nodes are offline and
+    ## the failures are logged the way this looks for them. So each node first
+    ## pulls a public image on purpose, and the failure of that pull must be
+    ## found. Only the containerd logs name the URL, the error `crictl` gets
+    ## back just says the image was not found.
+    - name: Check containerd logs on each node
+      shell: bash
+      run: |
+        canary_image=registry.k8s.io/pause:3.10
+        canary_url=https://registry.k8s.io/v2/pause/manifests/3.10
+        external=""
+        for host in $(awk '$1 == "Host" && $2 != "bastion" { print $2 }' ssh_config); do
+          if ! ssh -F ssh_config -o ConnectTimeout=15 "$host" true 2> /dev/null; then
+            echo "::warning title=external image pulls::'$host' is unreachable, skipping it"
+            continue
+          fi
+          if ssh -F ssh_config -o ConnectTimeout=15 "$host" \
+            "sudo timeout 120 crictl pull $canary_image" > /dev/null 2>&1; then
+            echo "::error title=external image pulls::'$host' pulled $canary_image from the internet, it is not offline"
+            external="yes"
+          fi
+          urls=$(
+            ssh -F ssh_config -o ConnectTimeout=15 "$host" \
+              "sudo journalctl -u containerd --no-pager -o cat | grep -F 'fetch failed' || true" \
+            | grep -F 'msg="fetch failed"' \
+            | grep -oE ' url="https?://[^"]+"' \
+            | sed -E 's/^ url="//; s/"$//' \
+            | grep -vE '^https?://([0-9.]+|\[[0-9a-fA-F:]+\]|[^/]*\.invalid)(:[0-9]+)?/' \
+            | sort -u || true
+          )
+          if ! grep -qxF "$canary_url" <<< "$urls"; then
+            echo "::error title=external image pulls::'$host' did not log the failed pull of $canary_image, other failed pulls would go unnoticed"
+            external="yes"
+          fi
+          for url in $urls; do
+            if [ "$url" != "$canary_url" ]; then
+              echo "::error title=external image pulls::'$host' tried to pull from $url"
+              external="yes"
+            fi
+          done
+        done
+        [ -z "$external" ]

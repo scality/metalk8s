@@ -104,8 +104,9 @@ runs:
             --argjson authorized_cidrs "${AUTHORIZED_CIDRS:-null}" \
             '{
               provider: "openstack",
-              # The nodes fetch OS packages from the internet
-              offline: false,
+              # The nodes are cut off the internet, the bastion serves them
+              # DNS and a dnf proxy, see `setup-offline-nodes`
+              offline: true,
               instance_count: $instance_count,
               instance_image: $instance_image,
               restore_snapshot: $restore_snapshot,
@@ -140,6 +141,9 @@ runs:
         configuration: ${{ steps.config.outputs.configuration }}
         artifacts_user: ${{ inputs.artifacts-user }}
         artifacts_password: ${{ inputs.artifacts-password }}
+
+    - name: Set up the offline nodes
+      uses: ./.github/actions/setup-offline-nodes
 
 outputs:
   bastion:
