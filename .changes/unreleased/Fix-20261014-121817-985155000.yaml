@@ -1,6 +1,0 @@
-kind: Fix
-body: 'The Platform Virtual Machines tab now shows up whenever the VM Management micro-app is deployed. It used to look the app up among the views declared in the shell navigation, where the product does not declare it, so the tab never appeared.'
-time: 2026-10-14T12:18:17.985155000Z
-custom:
-    CommentId: cli
-    Pull: "5170"

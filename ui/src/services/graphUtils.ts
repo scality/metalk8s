@@ -299,7 +299,9 @@ export const getNodesInterfacesString = (nodeIPsInfo): [] => {
     // @ts-expect-error - FIXME when you are working on it
     plane?.workloadPlane?.interface,
   ]);
-  const uniqueInterfaces = [...new Set(interfaces)];
+  // Drop the interfaces Salt could not resolve: keeping them would build a
+  // device matcher that cannot match any series, and silently empty the chart.
+  const uniqueInterfaces = [...new Set(interfaces)].filter(Boolean);
   // @ts-expect-error - FIXME when you are working on it
   return uniqueInterfaces;
 };

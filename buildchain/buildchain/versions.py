@@ -27,7 +27,7 @@ K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
 CALICO_VERSION: str = "3.32.0"
 SALT_VERSION: str = "3006.27"
-CONTAINERD_VERSION: str = "2.2.5"
+CONTAINERD_VERSION: str = "2.4.2"
 
 SOSREPORT_RELEASE: str = "2"
 
@@ -203,7 +203,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="pause",
-        version="3.10.1",
+        version="3.10.2",
         # Do not check the digest for this image, since this one is re-published
         # several times with the same tag
         digest=None,
@@ -296,8 +296,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="fluent-bit",
-        version="5.0.7",
-        digest="sha256:c96ee743cba9b1d5a38654931f411700af80bb7652697afbe67daad46cae237b",
+        version="5.1.5",
+        digest="sha256:2740f387f6e68fab66d28e4fa6a853387b9cab6ffb4cb78958f69bba4eb0e7b4",
     ),
     Image(
         name="cert-manager-controller",
@@ -326,8 +326,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="disk-management-agent",
-        version="v0.1.0",
-        digest="sha256:d63d4e20a089dcd3ac33f58d2210a66e48a1f9f08120494352b22cca94747769",
+        version="v0.2.0",
+        digest="sha256:6d9e33f59d9f28df6b6c04f1f30509fdf10d1e73c449f9cc9fd76418343d32c4",
     ),
     Image(
         name="file-reflector",

@@ -21,6 +21,11 @@ Feature: Logging stack is up and running
     And we have set up a logger pod
     Then we can retrieve logs from logger pod in Loki API
 
+  Scenario: Host logs are sent to Loki
+    Given the Kubernetes API is available
+    And the Loki API is available
+    Then we can retrieve logs from 'kubelet.service' unit in Loki API
+
   Scenario: Retrieve cluster alerts from Loki
     Given the Kubernetes API is available
     And the Loki API is available

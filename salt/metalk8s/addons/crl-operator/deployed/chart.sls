@@ -692,8 +692,6 @@ spec:
       labels:
         app.kubernetes.io/name: crl-operator
         control-plane: controller-manager
-    nodeSelector:
-      node-role.kubernetes.io/master: ""
     spec:
       containers:
       - args:
@@ -739,6 +737,8 @@ spec:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: webhook-certs
           readOnly: true
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
       securityContext:
         runAsNonRoot: true
         seccompProfile:

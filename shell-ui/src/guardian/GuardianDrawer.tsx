@@ -1,6 +1,6 @@
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { useGuardianDrawer } from './GuardianContext';
-import { useDiscoveryEmitter, useMcpCallHandler } from './guardianPostMessageHooks';
+import { useDiscoveryEmitter, useMcpCallHandler, usePromptEmitter } from './guardianPostMessageHooks';
 
 const DRAWER_WIDTH = 500;
 
@@ -12,7 +12,7 @@ const sourceForProduct = (productName: string): string => `${productName.toLower
 export const GuardianDrawer = () => {
   // iframeRef and guardianOrigin live in the context so they can be reached from
   // outside this component (e.g. the MCP relay hooks below, and MCPRegistrar).
-  const { isOpen, iframeRef, guardianOrigin } = useGuardianDrawer();
+  const { isOpen, iframeRef, guardianOrigin, pendingPrompt, clearPendingPrompt } = useGuardianDrawer();
   const { config } = useShellConfig();
 
   const guardianSource = (config.guardianSource || sourceForProduct(config.productName));
@@ -21,6 +21,7 @@ export const GuardianDrawer = () => {
 
   useDiscoveryEmitter(iframeRef, guardianOrigin);
   useMcpCallHandler(iframeRef, guardianOrigin);
+  usePromptEmitter(iframeRef, guardianOrigin, pendingPrompt, clearPendingPrompt);
 
   return (
     <div

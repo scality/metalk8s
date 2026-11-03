@@ -797,7 +797,7 @@ def wait_cc_status(k8s_client, status):
 
         for cond in obj.status.conditions or []:
             if cond.type == status:
-                assert obj.generation == cond.observed_generation
+                assert obj.metadata.generation == cond.observedGeneration
                 assert cond.status == "True"
                 return
 
