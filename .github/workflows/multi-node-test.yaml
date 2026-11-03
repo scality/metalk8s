@@ -304,6 +304,12 @@ jobs:
           PYTEST_FILTERS: "post and ci and not slow"
       # }}}
 
+      # NOTE: Before the conformance tests, which pull images that do not
+      # exist on purpose (e.g. `webserver:404`) and would be reported here.
+      - name: Check no image was pulled from the internet
+        if: always()
+        uses: ./.github/actions/check-external-image-pulls
+
       # Run k8s conformance tests (if enabled) {{{
       - name: Untaint bootstrap node for conformance tests
         if: inputs.k8s-conformance

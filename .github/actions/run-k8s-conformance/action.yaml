@@ -26,6 +26,13 @@ runs:
         COMMAND: |
           sudo rpm -q --queryformat '%{VERSION}' kubelet | cut -d'.' -f1,2
         CAPTURE_RESULT: "true"
+    - name: Retrieve the full Kubernetes version
+      id: get-k8s-full-version
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: |
+          sudo rpm -q --queryformat '%{VERSION}\n' kubelet
+        CAPTURE_RESULT: "true"
     - name: Get sonobuoy bin
       shell: bash
       env:
@@ -37,11 +44,35 @@ runs:
       uses: ./.github/actions/copy-file-ssh
       with:
         SOURCE_FILE: "sonobuoy"
+    # NOTE: The nodes cannot pull from the internet (see `generate-bootstrap`),
+    # so the images the tests need are pulled here, on the runner, and handed
+    # to every node through its image cache: `containerd-image-preload`
+    # imports any archive sitting flat in the cache directory, and the image
+    # cache agent leaves such archives alone.
+    - name: Save the conformance images
+      shell: bash
+      env:
+        K8S_VERSION: v${{ steps.get-k8s-full-version.outputs.RESULT }}
+      run: |
+        ./sonobuoy images pull --kubernetes-version "$K8S_VERSION"
+        ./sonobuoy images download --kubernetes-version "$K8S_VERSION"
+        echo "CONFORMANCE_IMAGES=kubernetes_e2e_images_$K8S_VERSION.tar" >> $GITHUB_ENV
+    ## Here we cannot use the ssh-command action as we need to run this in a loop
+    ## that is generated at the runtime.
+    - name: Preload the conformance images on every node
+      shell: bash
+      run: |
+        for host in $(awk '$1 == "Host" && $2 != "bastion" { print $2 }' ssh_config); do
+          scp -F ssh_config "$CONFORMANCE_IMAGES" "$host:"
+          ssh -F ssh_config "$host" \
+            "sudo mv '$CONFORMANCE_IMAGES' /var/lib/image-cache/ \
+            && sudo systemctl restart containerd-image-preload.service"
+        done
     - name: Run conformance tests from Bootstrap node
       uses: ./.github/actions/run-command-ssh
       with:
         COMMAND: |
-          sudo ./sonobuoy run --kubeconfig=/etc/kubernetes/admin.conf --mode=certified-conformance --wait
+          sudo ./sonobuoy run --kubeconfig=/etc/kubernetes/admin.conf --mode=certified-conformance --kubernetes-version=v${{ steps.get-k8s-full-version.outputs.RESULT }} --image-pull-policy=IfNotPresent --wait
     - name: Retrieve conformance tests result
       uses: ./.github/actions/run-command-ssh
       with:
