@@ -4,11 +4,12 @@
 """Tasks for code generation."""
 
 import shlex
-from typing import Callable, Iterator, Optional, Sequence, Tuple
+from typing import Callable, Dict, Iterator, Optional, Sequence, Tuple
 
 import doit  # type: ignore
 
 from buildchain import constants
+from buildchain import targets
 from buildchain import types
 from buildchain import utils
 
@@ -369,6 +370,94 @@ def codegen_chart_cert_manager() -> types.TaskDict:
     }
 
 
+def task_get_codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
+    """Generate the kustomize manifests output for the Registry Operator."""
+    kustomize_dir = constants.ROOT / "kustomizes/metalk8s-registry-operator"
+
+    cmd = f"kustomize build {kustomize_dir}"
+
+    return {
+        "doc": task_get_codegen_kustomize_metalk8s_registry_operator.__doc__,
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT, save_out="stdout")],
+        "file_dep": list(utils.git_ls(kustomize_dir)),
+        "task_dep": ["check_for:kustomize"],
+    }
+
+
+def task_transform_codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
+    """Transform the kustomize manifests output for the Registry Operator."""
+
+    def _transform(stdout: str) -> Dict[str, str]:
+        """Split the ServiceMonitor out of the kustomize output.
+
+        The Registry Operator is deployed as a core component, before
+        prometheus-operator installs the ServiceMonitor CRD, so its
+        ServiceMonitor goes to a separate SLS applied once the CRD exists.
+        """
+        manifests = []
+        service_monitors = []
+        for doc in stdout.strip().split("\n---\n"):
+            if "\nkind: ServiceMonitor\n" in f"\n{doc}\n":
+                service_monitors.append(doc)
+            else:
+                manifests.append(doc)
+        return {
+            "manifests": "\n---\n".join(manifests) + "\n",
+            "service_monitors": "\n---\n".join(service_monitors) + "\n",
+        }
+
+    return {
+        "doc": task_transform_codegen_kustomize_metalk8s_registry_operator.__doc__,
+        "actions": [_transform],
+        "task_dep": ["get_codegen_kustomize_metalk8s_registry_operator"],
+        "getargs": {
+            "stdout": ("get_codegen_kustomize_metalk8s_registry_operator", "stdout"),
+        },
+    }
+
+
+def _codegen_kustomize_metalk8s_registry_operator_sls(
+    name: str, target_sls: str, output: str
+) -> types.TaskDict:
+    tpl_task = targets.TemplateFile(
+        task_name=name,
+        source=constants.ROOT / "kustomizes/template.sls.in",
+        destination=constants.ROOT
+        / "salt/metalk8s/addons/metalk8s-registry-operator/deployed"
+        / target_sls,
+    )
+    tpl_task_dict = tpl_task.task
+    tpl_task_dict.update(
+        {
+            "title": utils.title_with_subtask_name("CODEGEN"),
+            "task_dep": ["transform_codegen_kustomize_metalk8s_registry_operator"],
+            "getargs": {
+                "Manifests": (
+                    "transform_codegen_kustomize_metalk8s_registry_operator",
+                    output,
+                ),
+            },
+        }
+    )
+    return tpl_task_dict
+
+
+def codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
+    """Generate the SLS file for the Registry Operator."""
+    return _codegen_kustomize_metalk8s_registry_operator_sls(
+        "kustomize_metalk8s-registry-operator", "chart.sls", "manifests"
+    )
+
+
+def codegen_kustomize_metalk8s_registry_operator_servicemonitor() -> types.TaskDict:
+    """Generate the ServiceMonitor SLS file for the Registry Operator."""
+    return _codegen_kustomize_metalk8s_registry_operator_sls(
+        "kustomize_metalk8s-registry-operator-servicemonitor",
+        "servicemonitor.sls",
+        "service_monitors",
+    )
+
+
 def _codegen_kustomize(
     name: str, doc: Optional[str], replacements: Sequence[Tuple[str, str]]
 ) -> types.TaskDict:
@@ -405,15 +494,6 @@ def codegen_kustomize_crl_operator() -> types.TaskDict:
         "crl-operator",
         codegen_kustomize_crl_operator.__doc__,
         [("crl-operator-system", "metalk8s-certs")],
-    )
-
-
-def codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
-    """Generate the SLS file for the Registry Operator."""
-    return _codegen_kustomize(
-        "metalk8s-registry-operator",
-        codegen_kustomize_metalk8s_registry_operator.__doc__,
-        [],
     )
 
 
@@ -466,6 +546,7 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_cert_manager,
     codegen_kustomize_crl_operator,
     codegen_kustomize_metalk8s_registry_operator,
+    codegen_kustomize_metalk8s_registry_operator_servicemonitor,
     codegen_kustomize_disk_management_agent,
     codegen_kustomize_node_warden_operator,
     codegen_kustomize_image_cache_agent,
