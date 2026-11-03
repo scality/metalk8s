@@ -18,11 +18,10 @@
   {%- do registry_eps.append('http://' ~ ep.ip ~ ":" ~ ep.ports.http) %}
 {%- endfor %}
 
-{%- set no_proxy = [
-  "localhost", "127.0.0.1",
-  networks.control_plane.cidr, networks.workload_plane.cidr,
-  networks.pod, networks.service
-] %}
+{#- The plane CIDRs are lists, concatenated so that each one is an entry. #}
+{%- set no_proxy = ["localhost", "127.0.0.1"]
+      + networks.control_plane.cidr + networks.workload_plane.cidr
+      + [networks.pod, networks.service] %}
 {%- if proxies.no_proxy | default %}
   {%- do no_proxy.extend(proxies.no_proxy) %}
 {%- endif %}
