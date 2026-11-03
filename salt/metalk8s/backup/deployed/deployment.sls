@@ -101,7 +101,8 @@ spec:
             name: backup-nginx-config
         - name: tls
           secret:
-            defaultMode: 400
+            # 0400 in decimal, salt-lint rejects octal literals
+            defaultMode: 256
             secretName: backup-tls
         - name: htpasswd
           emptyDir: {}
