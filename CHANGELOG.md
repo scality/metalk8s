@@ -1,6 +1,28 @@
 # CHANGELOG
 
 
+## Release 134.0.3
+
+### Enhancements
+
+- Bump containerd to [2.4.2](https://github.com/containerd/containerd/releases/tag/v2.4.2)
+  and pause to [3.10.2](https://github.com/kubernetes/kubernetes/releases/tag/v3.10.2)
+  (PR[#5214](https://github.com/scality/metalk8s/pull/5214))
+
+### Bug Fixes
+
+- move node-warden-operator nodeSelector into pod spec
+  (PR[#5203](https://github.com/scality/metalk8s/pull/5203))
+
+- Nodes no longer run out of inotify instances, which on a single node with
+  logging enabled could make kube-proxy keep stale iptables rules after a
+  reconfiguration, or fluent-bit crash loop, with "too many open files".
+  MetalK8s now sets `fs.inotify.max_user_instances` to 8192 on every node, at
+  install and upgrade, as containerd needs one instance per container on
+  cgroups v2 and the default of 128 runs out.
+  (PR[#5213](https://github.com/scality/metalk8s/pull/5213))
+
+
 ## Release 134.0.2
 
 ### Enhancements
