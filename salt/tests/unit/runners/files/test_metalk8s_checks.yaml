@@ -909,3 +909,147 @@ downgrade:
         - Invalid saltenv 'metalk8s-1.2.0' consider using at least 'metalk8s-3.1.0'
         - Node node-1 iS nOt ReAdY
         - Minion node-1 iS nOt ReAdY
+
+image_caches_synced:
+  # Every resource that selects each node is synced, the worker node is
+  # selected by the worker resource only
+  - nodes: &synced_nodes
+      master-1: &master_node
+        metadata:
+          name: master-1
+          labels:
+            node-role.kubernetes.io/master: ""
+            image-cache.scality.com/worker-2-9-0: synced
+            image-cache.scality.com/control-plane-2-9-0: synced
+      worker-1:
+        metadata:
+          name: worker-1
+          labels:
+            image-cache.scality.com/worker-2-9-0: synced
+    caches: &caches_2_9_0
+      worker-2-9-0:
+        spec: {}
+      control-plane-2-9-0:
+        spec:
+          nodeSelector:
+            node-role.kubernetes.io/master: ""
+      etcd-2-9-0:
+        spec:
+          nodeSelector:
+            node-role.kubernetes.io/etcd: ""
+    image_caches: [worker-2-9-0, control-plane-2-9-0, etcd-2-9-0]
+    result: True
+
+  # Not synced, without raising
+  - nodes:
+      worker-1:
+        metadata:
+          name: worker-1
+          labels: {}
+    caches: *caches_2_9_0
+    image_caches: [worker-2-9-0]
+    raises: False
+    result:
+      retcode: 1
+      errors:
+        - "Node worker-1 is not synced to worker-2-9-0 (no label). Its image cache labels: none."
+        - >-
+          Check the image-cache-agent Pod of each node in the
+          metalk8s-image-cache namespace, then run the upgrade again. A failed
+          pull leaves a SyncFailed event, see `kubectl get events -A
+          --field-selector involvedObject.kind=ImageCache`
+
+  # A resource still pending on a node
+  - nodes:
+      master-1:
+        metadata:
+          name: master-1
+          labels:
+            node-role.kubernetes.io/master: ""
+            image-cache.scality.com/worker-2-9-0: synced
+            image-cache.scality.com/control-plane-2-9-0: pending
+            image-cache.scality.com/worker-2-8-0: synced
+    caches: *caches_2_9_0
+    image_caches: [worker-2-9-0, control-plane-2-9-0, etcd-2-9-0]
+    expect_raise: True
+    result: >-
+      Node master-1 is not synced to control-plane-2-9-0 \(pending\).*
+      image-cache.scality.com/control-plane-2-9-0=pending,
+      image-cache.scality.com/worker-2-8-0=synced,
+      image-cache.scality.com/worker-2-9-0=synced
+
+  # Every node not synced is named, not only the first one
+  - nodes:
+      master-1: *master_node
+      worker-1:
+        metadata:
+          name: worker-1
+          labels: {}
+      worker-2:
+        metadata:
+          name: worker-2
+          labels:
+            image-cache.scality.com/worker-2-9-0: pending
+    caches: *caches_2_9_0
+    image_caches: [worker-2-9-0, control-plane-2-9-0, etcd-2-9-0]
+    expect_raise: True
+    result: >-
+      ^Node worker-1 is not synced to worker-2-9-0 \(no label\)\. Its image
+      cache labels: none\.\nNode worker-2 is not synced to worker-2-9-0
+      \(pending\)\.
+
+  # A NoExecute taint evicts the agent, the error names it, not a NoSchedule
+  # one the agent tolerates
+  - nodes:
+      worker-1:
+        metadata:
+          name: worker-1
+          labels: {}
+        spec:
+          taints:
+            - key: node.scality.com/workload-plane-unreachable
+              effect: NoExecute
+            - key: node-role.kubernetes.io/infra
+              effect: NoSchedule
+    caches: *caches_2_9_0
+    image_caches: [worker-2-9-0]
+    expect_raise: True
+    result: >-
+      Its image cache labels: none\. Its NoExecute taints, which evict the
+      agent: node\.scality\.com/workload-plane-unreachable\.\n
+
+  # An older resource stuck on the node does not hold the check
+  - nodes:
+      worker-1:
+        metadata:
+          name: worker-1
+          labels:
+            image-cache.scality.com/worker-2-9-0: synced
+            image-cache.scality.com/worker-2-8-0: pending
+    caches: *caches_2_9_0
+    image_caches: [worker-2-9-0, control-plane-2-9-0, etcd-2-9-0]
+    result: True
+
+  # A resource the check waits on does not exist
+  - nodes:
+      master-1: *master_node
+    caches:
+      worker-2-9-0:
+        spec: {}
+    image_caches: [worker-2-9-0, control-plane-2-9-0]
+    expect_raise: True
+    result: "ImageCache control-plane-2-9-0 does not exist"
+
+  # A node does not exist, the other nodes are still checked
+  - nodes:
+      master-2: null
+      worker-1:
+        metadata:
+          name: worker-1
+          labels: {}
+    caches: *caches_2_9_0
+    image_caches: [worker-2-9-0]
+    expect_raise: True
+    result: >-
+      ^Node master-2 does not exist\.\nNode worker-1 is not synced to
+      worker-2-9-0 \(no label\)
