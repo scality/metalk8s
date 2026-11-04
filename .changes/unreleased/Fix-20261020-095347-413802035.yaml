@@ -1,6 +1,0 @@
-kind: Fix
-body: Mount `/etc/machine-id` in the Fluent Bit pods, so host (systemd journal) logs are sent to Loki again
-time: 2026-10-20T09:53:47.413802035Z
-custom:
-    CommentId: "6288275636"
-    Pull: "5185"
