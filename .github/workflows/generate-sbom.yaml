@@ -94,17 +94,6 @@ jobs:
           merge: true
           merge_hierarchical: true
 
-      - name: Upload sbom to Dependency-Track
-        uses: scality/sbom-upload@v1
-        with:
-          url: ${{ vars.DEPENDENCY_TRACK_HOSTNAME }}
-          api-key: ${{ secrets.DEPENDENCY_TRACK_APIKEY }}
-          hierarchy-input-dir: ${{ env.SBOM_PATH }}
-          generate-hierarchy: true
-          hierarchy-upload: true
-          delete-on-version-suffix-match: true
-          delete-version-suffix-pattern: 'dev'
-
       - name: Generate archive
         shell: bash
         run: |
