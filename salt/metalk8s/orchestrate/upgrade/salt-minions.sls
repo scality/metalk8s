@@ -129,7 +129,7 @@ Wait for salt-minion {{ dest_salt_version }} on {{ node }}:
   salt.runner:
     - name: metalk8s_saltutil.wait_minions
     - tgt: {{ node }}
-    - expected_salt_version: {{ dest_salt_version }}
+    - expected_salt_version: "{{ dest_salt_version }}"
     # Same budget as in `metalk8s.orchestrate.deploy_node`: the reconnection
     # to the publish channel can take a few minutes after the restart
     - retry:

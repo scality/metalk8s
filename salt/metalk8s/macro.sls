@@ -9,7 +9,7 @@
     - name: {{ package_name }}
     - pkgs_info: {{ repo.packages | tojson }}
     {%- if package.version | default(None) %}
-    - version: {{ package.version }}
+    - version: "{{ package.version }}"
     - hold: True
     - update_holds: True
     - ignore_epoch: True
