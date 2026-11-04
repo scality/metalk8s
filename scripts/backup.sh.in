@@ -163,7 +163,12 @@ VERSION=@@VERSION
 DATE=$(date -u --iso-8601=seconds)
 EOF
 
-    tar "${TAR_OPTS[@]}" -C "$BACKUP_DIR" -cz -f "$BACKUP_ARCHIVE" ./
+    # The archive holds the CA keys and the etcd snapshot, keep it readable
+    # by root only whatever the caller umask
+    (
+        umask 0077 &&
+        tar "${TAR_OPTS[@]}" -C "$BACKUP_DIR" -cz -f "$BACKUP_ARCHIVE" ./
+    )
 }
 
 replicate_archives() {
