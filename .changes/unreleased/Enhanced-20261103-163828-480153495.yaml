@@ -1,7 +1,0 @@
-kind: Enhanced
-body: |-
-    Bump Salt version to [3006.30](https://github.com/saltstack/salt/releases/tag/v3006.30)
-time: 2026-11-03T16:38:28.480153495Z
-custom:
-    CommentId: cli
-    Pull: "5224"
