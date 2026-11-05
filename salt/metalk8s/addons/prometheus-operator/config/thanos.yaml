@@ -13,3 +13,20 @@ spec:
       limits:
         cpu: "1"
         memory: "2Gi"
+  # Guard-rails of the Thanos Querier, so that heavy queries are queued,
+  # timed out or refused instead of getting the Pod OOMKilled
+  query:
+    # Maximum number of queries processed concurrently (--query.max-concurrent)
+    maxConcurrent: 4
+    # Maximum time to process a query, queueing included (--query.timeout)
+    timeout: "1m"
+    # Ratio of the container memory limit used as Go GOMEMLIMIT
+    # (--auto-gomemlimit.ratio), making the Go GC work harder before the
+    # kernel OOM-kills the Querier
+    autoGoMemLimitRatio: 0.85
+    # Maximum series / samples a single Series request may return
+    # (--store.limits.request-series / --store.limits.request-samples),
+    # 0 means no limit
+    storeLimits:
+      requestSeries: 0
+      requestSamples: 0

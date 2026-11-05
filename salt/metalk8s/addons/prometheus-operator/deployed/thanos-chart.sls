@@ -171,6 +171,12 @@ spec:
         - --endpoint=dnssrv+_grpc._tcp.prometheus-operator-thanos-discovery
         - --alert.query-url=http://thanos-query.metalk8s-monitoring.svc.cluster.local:9090
         - --query.auto-downsampling
+        - --query.max-concurrent={% endraw -%}{{ thanos.spec.query.maxConcurrent }}{%- raw %}
+        - --query.timeout={% endraw -%}{{ thanos.spec.query.timeout }}{%- raw %}
+        - --enable-auto-gomemlimit
+        - --auto-gomemlimit.ratio={% endraw -%}{{ thanos.spec.query.autoGoMemLimitRatio }}{%- raw %}
+        - --store.limits.request-series={% endraw -%}{{ thanos.spec.query.storeLimits.requestSeries }}{%- raw %}
+        - --store.limits.request-samples={% endraw -%}{{ thanos.spec.query.storeLimits.requestSamples }}{%- raw %}
         image: {% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.41.0
         imagePullPolicy: IfNotPresent
         livenessProbe:

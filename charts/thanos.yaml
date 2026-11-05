@@ -66,8 +66,15 @@ query:
 
   existingSDConfigmap: thanos-query-sd-files
 
+  # guard-rails templated from CSC (metalk8s-thanos-config)
   extraFlags:
     - --query.auto-downsampling
+    - --query.max-concurrent=__var__(thanos.spec.query.maxConcurrent)
+    - --query.timeout=__var__(thanos.spec.query.timeout)
+    - --enable-auto-gomemlimit
+    - --auto-gomemlimit.ratio=__var__(thanos.spec.query.autoGoMemLimitRatio)
+    - --store.limits.request-series=__var__(thanos.spec.query.storeLimits.requestSeries)
+    - --store.limits.request-samples=__var__(thanos.spec.query.storeLimits.requestSamples)
 
   automountServiceAccountToken: false
 

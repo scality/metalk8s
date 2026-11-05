@@ -875,6 +875,37 @@ can be tuned:
                cpu: "1"
                memory: "4Gi"
 
+Adjust the Thanos Querier guard-rails
+"""""""""""""""""""""""""""""""""""""
+
+The Thanos Querier limits how many queries run at the same time and how long
+a query (queueing included) may take, and sets the Go memory limit
+(``GOMEMLIMIT``) to a ratio of its container memory limit. Queries above the
+concurrency limit wait instead of all loading their data in memory at once.
+Optionally, a single Series request to a store can be capped in series or
+samples, in which case a query exceeding it fails instead of being loaded:
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-thanos-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: ThanosConfig
+       spec:
+         query:
+           maxConcurrent: 4
+           timeout: "1m"
+           autoGoMemLimitRatio: 0.85
+           storeLimits:
+             requestSeries: 0
+             requestSamples: 0
+
 Then apply the configuration:
 
 .. parsed-literal::
