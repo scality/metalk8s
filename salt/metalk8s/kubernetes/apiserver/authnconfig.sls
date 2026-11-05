@@ -12,13 +12,16 @@
 #     (pkg/kubeapiserver/options/authentication.go: "authentication-config
 #     file and oidc-* flags are mutually exclusive").
 #
+# kube-apiserver re-reads this file every minute and applies it without
+# restart, except for `anonymous`: a reload that changes it is rejected,
+# so changing `anonymous` still needs a kube-apiserver restart.
+#
 # Relies on the AnonymousAuthConfigurableEndpoints and
 # StructuredAuthenticationConfiguration feature gates, both beta and
 # on-by-default in Kubernetes 1.32+.
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 
 include:
-  - .installed
   - metalk8s.addons.nginx-ingress.ca.advertised
 
 {%- set authn_config_path = kube_api.authn_config_path %}
@@ -95,5 +98,3 @@ Create kube-apiserver authentication configuration:
             message: "email_verified claim must be true when set"
           {%- endif %}
         {%- endif %}
-    - require_in:
-      - metalk8s: Create kube-apiserver Pod manifest

@@ -12,6 +12,7 @@ include:
   - metalk8s.kubernetes.sa.advertised
   - metalk8s.addons.nginx-ingress.ca.advertised
   - .certs
+  - .authnconfig
 
 {%- set host = grains['metalk8s']['control_plane_ip'] %}
 {%- set etcd_servers = [] %}
@@ -50,7 +51,6 @@ Create kube-apiserver Pod manifest:
     - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml.j2
     - config_files:
         - {{ encryption_k8s_path }}
-        - {{ authn_config_path }}
         - {{ certificates.server.files.apiserver.path }}
         - /etc/kubernetes/pki/apiserver.key
         - {{ certificates.client.files['apiserver-etcd'].path }}
@@ -64,7 +64,6 @@ Create kube-apiserver Pod manifest:
         - /etc/kubernetes/pki/front-proxy-client.key
         - /etc/kubernetes/pki/sa.key
         - /etc/kubernetes/pki/sa.pub
-        - /etc/metalk8s/pki/nginx-ingress/ca.crt
     - context:
         name: kube-apiserver
         host: {{ host }}
@@ -117,8 +116,11 @@ Create kube-apiserver Pod manifest:
           - path: {{ encryption_k8s_path }}
             type: File
             name: k8s-encryption
-          - path: {{ authn_config_path }}
-            type: File
+          {#- kube-apiserver reloads this file live, so neither it nor the
+              Ingress CA it inlines is in `config_files`. Mount its directory:
+              a single-file bind mount keeps the old file once salt atomically
+              replaces it. #}
+          - path: {{ salt.file.dirname(authn_config_path) }}
             name: k8s-authn-config
           {%- if grains['os_family'] == 'RedHat' %}
           - path: /etc/pki/ca-trust
@@ -138,6 +140,7 @@ Create kube-apiserver Pod manifest:
       - file: Ensure front-proxy CA cert is present
       - file: Ensure SA pub key is present
       - file: Ensure Ingress CA cert is present
+      - file: Create kube-apiserver authentication configuration
 
 {%- if last_pod_id %}
 Restart kubelet to make it pick up the manifest changes:

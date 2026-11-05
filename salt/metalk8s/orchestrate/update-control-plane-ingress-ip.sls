@@ -40,26 +40,16 @@ Reconfigure Control Plane components:
   - require:
     - salt: Reconfigure Control Plane Ingress
 
-{%- set master_nodes = salt.metalk8s.minions_by_role('master') %}
-{%- for node in master_nodes | sort %}
-
-Reconfigure apiserver on {{ node }}:
+{#- Only the authentication config: kube-apiserver reloads it live. The full
+    `metalk8s.kubernetes.apiserver` would also apply any pending manifest
+    change, e.g. `--etcd-servers` after an expansion, and restart the
+    kube-apiserver this orchestrate is often run through (`kubectl exec`). #}
+Reconfigure apiserver authentication:
   salt.state:
-    - tgt: {{ node }}
+    - tgt: {{ salt.metalk8s.minions_by_role('master') | join(',') }}
+    - tgt_type: list
     - sls:
-      - metalk8s.kubernetes.apiserver
+      - metalk8s.kubernetes.apiserver.authnconfig
     - saltenv: {{ saltenv }}
-    {#- Increase the timeout to 300s instead of the default 20s, to let this
-        state run to completion, because it writes the kube-apiserver static
-        pod manifest on the very node the salt-master polls with
-        `saltutil.find_job`, once per master in sequence. This prevents Salt
-        reporting `Run failed on minions: <node>` and aborting the control
-        plane Ingress reconfiguration with the remaining masters untouched #}
-    - timeout: 300
     - require:
       - salt: Reconfigure Control Plane components
-    {%- if loop.previtem is defined %}
-      - salt: Reconfigure apiserver on {{ loop.previtem }}
-    {%- endif %}
-
-{%- endfor %}
