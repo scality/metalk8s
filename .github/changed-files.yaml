@@ -101,5 +101,6 @@ build:
   - "!README.md"
   - "!CONTRIBUTING.md"
   - "!CHANGELOG.md"
+  - "!.changes/**"
   - "!Vagrantfile"
   - "!vagrant_config.rb.example"
