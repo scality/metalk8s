@@ -388,8 +388,9 @@ def task_transform_codegen_kustomize_metalk8s_registry_operator() -> types.TaskD
         """Split the ServiceMonitor out of the kustomize output.
 
         The Registry Operator is deployed as a core component, before
-        prometheus-operator installs the ServiceMonitor CRD, so its
-        ServiceMonitor goes to a separate SLS applied once the CRD exists.
+        prometheus-operator installs the ServiceMonitor resource definition,
+        so its ServiceMonitor goes to a separate SLS applied once that
+        definition exists.
         """
         manifests = []
         service_monitors = []
