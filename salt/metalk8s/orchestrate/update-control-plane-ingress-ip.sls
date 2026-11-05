@@ -35,7 +35,7 @@ Reconfigure Control Plane components:
   - mods:
     - metalk8s.addons.dex.deployed
     - metalk8s.addons.prometheus-operator.deployed
-    - metalk8s.addons.ui.deployed
+    - metalk8s.addons.shell-ui.deployed
   - saltenv: {{ saltenv }}
   - require:
     - salt: Reconfigure Control Plane Ingress
