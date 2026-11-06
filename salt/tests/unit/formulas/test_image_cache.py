@@ -12,6 +12,8 @@ its archives and they have been imported.
 from pathlib import Path
 import pytest
 
+from tests.unit.formulas.paths import SALT_DIR
+
 from tests.unit.formulas.fixtures.rendered import (
     RenderedStates,
     required_states,
@@ -44,6 +46,15 @@ REQUIRED_GATES = [
 ]
 
 CONFIG_STATE = "Configure containerd image preload"
+
+# What makes the import run before the kubelet at boot: a drop-in on the
+# service, a drop-in on the timer, and a `systemctl daemon-reload` so both are
+# read.
+DROPIN_STATE = "Configure containerd image preload service"
+TIMER_DROPIN_STATE = "Configure containerd image preload timer"
+RELOAD_STATE = "Reload systemd for containerd image preload"
+DROPIN_TEMPLATE = SALT_DIR / "metalk8s/image-cache/files/50-metalk8s.conf.j2"
+TIMER_DROPIN = SALT_DIR / "metalk8s/image-cache/files/50-metalk8s-timer.conf"
 
 DIRECTORY_STATE = "Create the image cache directory"
 PROVISION_STATE = "Provision the boot cache"
@@ -91,6 +102,63 @@ def test_preload_timer_requires_a_running_containerd(
     assert (
         checked
     ), "no rendering case installs the timer, the requisites went unchecked"
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [IMAGE_CACHE_INSTALLED], indirect=True)
+def test_preload_is_ordered_before_the_kubelet_at_boot(
+    rendered_states: RenderedStates,
+) -> None:
+    """Check the preload service and timer get their drop-ins.
+
+    The order is set on the preload service and not on the kubelet: if the
+    kubelet asked for the preload, every kubelet restart would run a full
+    import.
+    """
+    checked = False
+
+    for case_id, states in rendered_states:
+        if TIMER_STATE not in states:
+            for state in (DROPIN_STATE, TIMER_DROPIN_STATE, RELOAD_STATE):
+                assert state not in states, f"unexpected '{state}' ({case_id})"
+            continue
+
+        reloaded_on = requisite_states(states, RELOAD_STATE, "onchanges")
+        for state in (DROPIN_STATE, TIMER_DROPIN_STATE):
+            assert state in states, f"no '{state}' state ({case_id})"
+            assert "Install containerd image preload" in required_states(
+                states, state
+            ), f"'{state}' does not require the package ({case_id})"
+            assert (
+                state in reloaded_on
+            ), f"systemd is not reloaded when '{state}' changes ({case_id})"
+
+        assert RELOAD_STATE in required_states(states, TIMER_STATE), (
+            f"'{TIMER_STATE}' does not wait for the reload, the first import"
+            f" could run without the drop-in ({case_id})"
+        )
+
+        checked = True
+
+    assert checked, "no rendering case installs the preload, nothing was checked"
+
+
+@pytest.mark.formulas
+def test_preload_dropin_orders_and_bounds_the_import() -> None:
+    """Check the drop-in keeps the two settings the boot order relies on."""
+    lines = DROPIN_TEMPLATE.read_text(encoding="utf-8").splitlines()
+
+    assert (
+        "Before=kubelet.service" in lines
+    ), "the drop-in no longer runs the import before the kubelet"
+    assert (
+        "TimeoutStartSec={{ timeout }}" in lines
+    ), "the drop-in no longer bounds the import, a stuck one would block the kubelet"
+
+    timer_lines = TIMER_DROPIN.read_text(encoding="utf-8").splitlines()
+    assert (
+        "AccuracySec=1us" in timer_lines
+    ), "the timer may fire late at boot, after the kubelet started"
 
 
 @pytest.mark.formulas

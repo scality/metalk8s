@@ -145,6 +145,10 @@ image_cache:
   # Platform passed to `ctr images import`. The archives on the ISO are
   # built for amd64 only.
   platform: "linux/amd64"
+  # How long, in seconds, the kubelet waits at boot for
+  # `containerd-image-preload` to import the cache. Importing 2.2 GB takes
+  # about 23 s. Past this limit the import is stopped and the kubelet starts.
+  preload_timeout: 300
 
 ca:
   cert:
