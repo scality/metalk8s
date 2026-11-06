@@ -1,6 +1,0 @@
-kind: Enhanced
-body: Prometheus now scrapes the metrics of the `metalk8s-registry-operator`, bumped to `v0.0.1-alpha.7`. Its ServiceMonitor is applied once prometheus-operator has installed the ServiceMonitor CRD, so the bootstrap does not depend on it.
-time: 2026-11-05T15:04:56.08182796Z
-custom:
-    CommentId: "6661361803"
-    Pull: "5225"
