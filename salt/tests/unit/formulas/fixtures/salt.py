@@ -4,6 +4,7 @@ import copy
 import functools
 import ipaddress
 import json
+import os
 import random
 import string
 from typing import Any, Callable, Dict, List, Optional, Type
@@ -408,6 +409,7 @@ def slsutil_renderer(salt_mock: SaltMock, source: str, **_kwargs: Any) -> Any:
 # Static mocks {{{
 
 register_basic("cri.get_pod_id")(MagicMock(return_value="abcd1234"))
+register_basic("file.dirname")(os.path.dirname)
 register_basic("file.find")(MagicMock(return_value=[]))
 register_basic("file.join")(lambda *args: "/".join(args))
 register_basic("file.read")(MagicMock(return_value="<file contents>"))
