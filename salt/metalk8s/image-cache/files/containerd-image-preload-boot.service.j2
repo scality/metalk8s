@@ -15,7 +15,10 @@
 [Unit]
 Description=Import the container image cache into containerd before the kubelet
 After=containerd.service
-Requires=containerd.service
+# `Wants=` and not the `Requires=` of the packaged service: this unit stays
+# active, and `Requires=` would restart it, so run a full import, every time
+# containerd is restarted.
+Wants=containerd.service
 # This only sets the order: the kubelet still starts if the import fails.
 # The first periodic import also waits, rather than run at the same time.
 Before=kubelet.service containerd-image-preload.service

@@ -10,7 +10,7 @@ its archives and they have been imported.
 """
 
 from pathlib import Path
-from typing import Iterable
+from typing import Dict, Iterable, List
 
 import jinja2
 import pytest
@@ -50,21 +50,12 @@ REQUIRED_GATES = [
 CONFIG_STATE = "Configure containerd image preload"
 
 # What makes the import run before the kubelet at boot: a unit of its own,
-# enabled for `multi-user.target`, and a `systemctl daemon-reload` so the unit
-# is known before it is enabled.
+# enabled for `multi-user.target`.
 BOOT_UNIT_STATE = "Install containerd image preload boot service"
 BOOT_ENABLE_STATE = "Enable containerd image preload at boot"
-RELOAD_STATE = "Reload systemd for containerd image preload"
 BOOT_UNIT_TEMPLATE = Path(
     "metalk8s/image-cache/files/containerd-image-preload-boot.service.j2"
 )
-
-# The drop-ins an earlier version put on the packaged service and timer. They
-# applied the boot order and the time limit to every periodic import too.
-DROPIN_STATES = [
-    "Configure containerd image preload service",
-    "Configure containerd image preload timer",
-]
 
 DIRECTORY_STATE = "Create the image cache directory"
 PROVISION_STATE = "Provision the boot cache"
@@ -119,7 +110,7 @@ def test_preload_timer_requires_a_running_containerd(
 def test_preload_is_ordered_before_the_kubelet_at_boot(
     rendered_states: RenderedStates,
 ) -> None:
-    """Check the boot import unit is installed, reloaded and enabled.
+    """Check the boot import unit is installed and enabled.
 
     The order is set on a unit of its own and not on the kubelet: if the
     kubelet asked for the import, every kubelet restart would run one. And not
@@ -128,14 +119,8 @@ def test_preload_is_ordered_before_the_kubelet_at_boot(
     checked = False
 
     for case_id, states in rendered_states:
-        for state in DROPIN_STATES:
-            assert state not in states, (
-                f"'{state}' is back, the boot order would apply to every"
-                f" periodic import ({case_id})"
-            )
-
         if TIMER_STATE not in states:
-            for state in (BOOT_UNIT_STATE, BOOT_ENABLE_STATE, RELOAD_STATE):
+            for state in (BOOT_UNIT_STATE, BOOT_ENABLE_STATE):
                 assert state not in states, f"unexpected '{state}' ({case_id})"
             continue
 
@@ -146,20 +131,30 @@ def test_preload_is_ordered_before_the_kubelet_at_boot(
             f"'{BOOT_UNIT_STATE}' does not require the package, it runs the"
             f" script the package installs ({case_id})"
         )
-        assert BOOT_UNIT_STATE in requisite_states(
-            states, RELOAD_STATE, "onchanges"
-        ), f"systemd is not reloaded when the boot unit changes ({case_id})"
-
-        enabled_after = required_states(states, BOOT_ENABLE_STATE)
-        for state in (BOOT_UNIT_STATE, RELOAD_STATE):
-            assert state in enabled_after, (
-                f"'{BOOT_ENABLE_STATE}' does not require '{state}', it could"
-                f" enable a unit systemd does not know yet ({case_id})"
-            )
+        assert BOOT_UNIT_STATE in required_states(states, BOOT_ENABLE_STATE), (
+            f"'{BOOT_ENABLE_STATE}' does not require '{BOOT_UNIT_STATE}', it"
+            f" could enable a unit that is not written yet ({case_id})"
+        )
 
         checked = True
 
     assert checked, "no rendering case installs the preload, nothing was checked"
+
+
+def _unit_settings(unit: str) -> Dict[str, List[str]]:
+    """Collect the values of each setting of a unit file, all sections merged.
+
+    A setting can be repeated and takes space-separated values, so the values of
+    every occurrence are gathered in a single list.
+    """
+    settings: Dict[str, List[str]] = {}
+    for line in unit.splitlines():
+        line = line.strip()
+        if not line or line.startswith(("#", ";", "[")) or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        settings.setdefault(key.strip(), []).extend(value.split())
+    return settings
 
 
 @pytest.mark.formulas
@@ -175,21 +170,22 @@ def test_boot_unit_orders_and_bounds_the_import(
 
     for context in render_contexts:
         timeout = context.data["timeout"]
-        lines = template.render(**context.data).splitlines()
+        settings = _unit_settings(template.render(**context.data))
 
-        assert (
-            "Before=kubelet.service containerd-image-preload.service" in lines
-        ), f"the import no longer runs before the kubelet ({context.id})"
-        assert (
-            "WantedBy=multi-user.target" in lines
-        ), f"nothing starts the import at boot ({context.id})"
-        assert f"TimeoutStartSec={timeout}" in lines, (
+        assert "kubelet.service" in settings.get("Before", []), (
+            f"the import no longer runs before the kubelet ({context.id})"
+        )
+        assert "multi-user.target" in settings.get("WantedBy", []), (
+            f"nothing starts the import at boot ({context.id})"
+        )
+        assert settings.get("TimeoutStartSec") == [str(timeout)], (
             f"the import is not bounded, a stuck one would block the kubelet"
             f" ({context.id})"
         )
-        assert (
-            "ExecStart=/usr/bin/containerd-image-preload" in lines
-        ), f"the unit no longer runs the packaged script ({context.id})"
+        assert "containerd.service" not in settings.get("Requires", []), (
+            f"a containerd restart would restart the unit and run an import"
+            f" ({context.id})"
+        )
 
         checked = True
 

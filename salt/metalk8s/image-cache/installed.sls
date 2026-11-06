@@ -57,20 +57,14 @@ Install containerd image preload boot service:
       # NOTE: The unit runs the script the package installs.
       - metalk8s_package_manager: Install containerd image preload
 
-Reload systemd for containerd image preload:
-  module.run:
-    - service.systemctl_reload: []
-    - onchanges:
-      - file: Install containerd image preload boot service
-
 # NOTE: Only enabled, not started: it runs at the next boot. Until then, the
-# timer imports the cache.
+# timer imports the cache. The systemd service module reloads systemd itself
+# when the unit file is new or changed.
 Enable containerd image preload at boot:
   service.enabled:
     - name: containerd-image-preload-boot.service
     - require:
       - file: Install containerd image preload boot service
-      - module: Reload systemd for containerd image preload
 
 Ensure containerd image preload timer running:
   service.running:
