@@ -148,6 +148,11 @@ Restart kubelet to make it pick up the manifest changes:
     - name: kubelet
     - watch:
       - metalk8s: Create kube-apiserver Pod manifest
+    {#- Skip the state, `unless` included, when the manifest is unchanged:
+        `unless` would otherwise wait the whole timeout for a Pod that never
+        gets replaced. #}
+    - onchanges:
+      - metalk8s: Create kube-apiserver Pod manifest
     - unless:
       # Do not restart kubelet if we see the Pod was updated
       - fun: cri.wait_pod
