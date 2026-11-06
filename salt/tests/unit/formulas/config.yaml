@@ -242,7 +242,7 @@ metalk8s:
   container-engine:
     containerd:
       files:
-        containerd-image-preload-boot.service.j2:
+        50-metalk8s.conf.j2:
           _cases:
             "From metalk8s.container-engine.containerd.installed":
               extra_context:

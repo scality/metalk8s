@@ -50,8 +50,8 @@ REQUIRED_GATES = [
 CONFIG_STATE = "Configure containerd image preload"
 
 # What makes the import run before the kubelet at boot: a unit of its own,
-# enabled for `multi-user.target`, and a `systemctl daemon-reload` so systemd
-# knows it before it is enabled.
+# enabled for `multi-user.target`, and a `systemctl daemon-reload` so the unit
+# is known before it is enabled.
 BOOT_UNIT_STATE = "Install containerd image preload boot service"
 BOOT_ENABLE_STATE = "Enable containerd image preload at boot"
 RELOAD_STATE = "Reload systemd for containerd image preload"
@@ -119,7 +119,7 @@ def test_preload_timer_requires_a_running_containerd(
 def test_preload_is_ordered_before_the_kubelet_at_boot(
     rendered_states: RenderedStates,
 ) -> None:
-    """Check the boot import unit is installed, known to systemd and enabled.
+    """Check the boot import unit is installed, reloaded and enabled.
 
     The order is set on a unit of its own and not on the kubelet: if the
     kubelet asked for the import, every kubelet restart would run one. And not
