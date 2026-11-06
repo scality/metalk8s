@@ -172,12 +172,12 @@ def test_boot_unit_orders_and_bounds_the_import(
         timeout = context.data["timeout"]
         settings = _unit_settings(template.render(**context.data))
 
-        assert "kubelet.service" in settings.get("Before", []), (
-            f"the import no longer runs before the kubelet ({context.id})"
-        )
-        assert "multi-user.target" in settings.get("WantedBy", []), (
-            f"nothing starts the import at boot ({context.id})"
-        )
+        assert "kubelet.service" in settings.get(
+            "Before", []
+        ), f"the import no longer runs before the kubelet ({context.id})"
+        assert "multi-user.target" in settings.get(
+            "WantedBy", []
+        ), f"nothing starts the import at boot ({context.id})"
         assert settings.get("TimeoutStartSec") == [str(timeout)], (
             f"the import is not bounded, a stuck one would block the kubelet"
             f" ({context.id})"
