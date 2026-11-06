@@ -280,6 +280,54 @@ then be applied with Salt.
                       saltenv=metalk8s-|version|
 
 
+Checking Monitoring API Requests with an External Service
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+The ``/api/prometheus``, ``/api/alertmanager`` and ``/api/loki`` routes served
+by the Control Plane Ingress Controller can ask an external service whether
+each request may go through, for instance to reject a bearer token that was
+revoked before it expires.
+
+When ``spec.externalAuth.url`` is set, the Ingress controller sends a request
+to this URL with the headers of the original request, ``Authorization``
+included, before forwarding it. A ``2xx`` answer lets the request through, a
+``401`` or ``403`` answer rejects it. If the service cannot be reached, the
+request is rejected. The URL must start with ``http://`` or ``https://`` and
+contain only letters, digits and ``- . _ ~ / : , ? & =``.
+
+The answer is cached for each ``Authorization`` header during
+``spec.externalAuth.cacheDuration`` (``60s`` by default, a number followed by
+``ms``, ``s``, ``m``, ``h``, ``d``, ``w``, ``M`` or ``y``), which is also how long
+a token rejected by the service may still be accepted. The service must
+therefore base its answer on the ``Authorization`` header alone, and must not
+send ``Cache-Control`` or ``Expires`` headers, which would extend this
+duration.
+
+#. Set ``spec.externalAuth`` in the
+   ``metalk8s-ingress-control-plane-controller-config`` ConfigMap:
+
+   .. code-block:: yaml
+
+      apiVersion: v1
+      kind: ConfigMap
+      data:
+        config.yaml: |-
+          apiVersion: addons.metalk8s.scality.com/v1alpha2
+          kind: IngressControllerConfig
+          spec:
+            externalAuth:
+              url: https://auth.example.com/check
+              cacheDuration: 60s
+
+#. Apply your changes to the Ingress serving these routes by running:
+
+   .. parsed-literal::
+
+      root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                         --kubeconfig /etc/kubernetes/admin.conf \\
+                         salt-master-bootstrap -- salt-run state.sls \\
+                         metalk8s.addons.ui.deployed saltenv=metalk8s-|version|
+
 .. _csc-alertmanager-customization:
 
 Alertmanager Configuration Customization
