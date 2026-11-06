@@ -28,7 +28,10 @@ def _mock_k8s_dynamic(namespaced, action, mock):
         if namespaced is None:
             raise ResourceNotFoundError("Error !!")
         obj = MagicMock()
-        obj.api_version = api_version
+        # Like `kubernetes.dynamic.Resource`: `api_version` holds the version
+        # only, `group_version` the full `apiVersion`
+        obj.group_version = api_version
+        obj.api_version = api_version.rpartition("/")[2]
         obj.kind = kind
         obj.namespaced = namespaced
         setattr(obj, action, mock)

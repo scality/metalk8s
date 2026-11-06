@@ -3,6 +3,7 @@ import pathlib
 import re
 import requests.exceptions
 import time
+import urllib.parse
 
 import kubernetes
 import pytest
@@ -455,6 +456,98 @@ def check_resource_list(host, resource, namespace):
     converters=dict(should_fail=lambda s: s == "not "),
 )
 def dex_login(username, password, should_fail, control_plane_ingress_ep):
+    _, auth_response = _dex_submit_login(control_plane_ingress_ep, username, password)
+
+    assert auth_response.text is not None
+    if should_fail:
+        assert auth_response.status_code == 401
+        assert "Invalid Email Address and password" in auth_response.text
+        assert auth_response.headers.get("location") is None
+    else:
+        assert auth_response.status_code == 303
+        assert auth_response.headers.get("location") is not None
+
+
+@then(
+    parsers.parse(
+        "the Kubernetes API accepts a Dex token for '{username}' "
+        "using password '{password}'"
+    )
+)
+def kube_api_accepts_dex_token(
+    username, password, control_plane_ingress_ep, control_plane_ip
+):
+    redirect_uri = control_plane_ingress_ep + "/"
+    session, auth_response = _dex_submit_login(
+        control_plane_ingress_ep, username, password
+    )
+    assert auth_response.status_code == 303, auth_response.text
+
+    # Follow the Dex redirects (the approval screen is skipped) until the one to
+    # the client redirect URI, which carries the authorization code
+    location = auth_response.headers["location"]
+    for _ in range(5):
+        if location.startswith(redirect_uri):
+            break
+        response = session.get(
+            urllib.parse.urljoin(control_plane_ingress_ep, location),
+            verify=False,
+            allow_redirects=False,
+        )
+        assert response.status_code in (302, 303), response.text
+        location = response.headers["location"]
+    else:
+        pytest.fail(f"Dex never redirected to '{redirect_uri}', last: '{location}'")
+    code = urllib.parse.parse_qs(urllib.parse.urlparse(location).query)["code"][0]
+
+    # `metalk8s-ui` is a public client: no secret needed
+    token_response = session.post(
+        control_plane_ingress_ep + "/oidc/token",
+        data={
+            "grant_type": "authorization_code",
+            "code": code,
+            "client_id": "metalk8s-ui",
+            "redirect_uri": redirect_uri,
+        },
+        verify=False,
+    )
+    assert token_response.status_code == 200, token_response.text
+    id_token = token_response.json()["id_token"]
+
+    def _api_accepts_token():
+        response = session.get(
+            f"https://{control_plane_ip}:6443/api",
+            headers={"Authorization": f"Bearer {id_token}"},
+            verify=False,
+        )
+        assert (
+            response.status_code == 200
+        ), f"Kubernetes API answered {response.status_code}: {response.text}"
+
+    # kube-apiserver reloads its authentication config once a minute
+    utils.retry(
+        _api_accepts_token,
+        times=24,
+        wait=5,
+        name="Kubernetes API accepts a Dex token",
+    )
+
+
+@then(parsers.parse('node "{node_name}" is a member of etcd cluster'))
+def check_etcd_role(ssh_config, k8s_client, node_name):
+    """Check if the given node is a member of the etcd cluster."""
+    etcd_member_list = etcdctl(k8s_client, ["member", "list"], ssh_config)
+    assert (
+        node_name in etcd_member_list
+    ), "node {} is not part of the etcd cluster".format(node_name)
+
+
+# }}}
+# Helpers {{{
+
+
+def _dex_submit_login(control_plane_ingress_ep, username, password):
+    """Submit the Dex login form, return the session and the form response."""
     session = utils.requests_retry_session(
         # Both Dex and the ingress controller may fail with one of the following codes
         status_forcelist=(500, 502, 503, 504),
@@ -468,7 +561,10 @@ def dex_login(username, password, should_fail, control_plane_ingress_ep):
             params={
                 "response_type": "code",
                 "client_id": "metalk8s-ui",
-                "scope": "openid audience:server:client_id:oidc-auth-client",
+                # The ID token targets the client kube-apiserver trusts
+                "scope": (
+                    "openid email groups audience:server:client_id:oidc-auth-client"
+                ),
                 "redirect_uri": control_plane_ingress_ep + "/",
                 "nonce": "nonce",
             },
@@ -513,27 +609,7 @@ def dex_login(username, password, should_fail, control_plane_ingress_ep):
             )
         )
 
-    assert auth_response.text is not None
-    if should_fail:
-        assert auth_response.status_code == 401
-        assert "Invalid Email Address and password" in auth_response.text
-        assert auth_response.headers.get("location") is None
-    else:
-        assert auth_response.status_code == 303
-        assert auth_response.headers.get("location") is not None
-
-
-@then(parsers.parse('node "{node_name}" is a member of etcd cluster'))
-def check_etcd_role(ssh_config, k8s_client, node_name):
-    """Check if the given node is a member of the etcd cluster."""
-    etcd_member_list = etcdctl(k8s_client, ["member", "list"], ssh_config)
-    assert (
-        node_name in etcd_member_list
-    ), "node {} is not part of the etcd cluster".format(node_name)
-
-
-# }}}
-# Helpers {{{
+    return session, auth_response
 
 
 def _verify_kubeapi_service(host):
