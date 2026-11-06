@@ -1,6 +1,0 @@
-kind: Enhanced
-body: "At boot, the kubelet now waits for the image cache to be imported into\ncontainerd before it starts, so a node with no registry finds the images of its\nstatic Pods instead of failing to pull them. The kubelet still starts if the\nimport fails, and waits at most 5 minutes for it (`image_cache.preload_timeout`). \nRestarting the kubelet never waits for an import."
-time: 2026-11-06T15:25:28.870894646Z
-custom:
-    CommentId: "6637330349"
-    Pull: "5228"
