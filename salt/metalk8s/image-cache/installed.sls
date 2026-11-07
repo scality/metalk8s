@@ -33,6 +33,39 @@ Configure containerd image preload:
     - require:
       - metalk8s_package_manager: Install containerd image preload
 
+{#- `TimeoutStartSec=0` means no limit to systemd, and a value it cannot parse
+    is ignored, so either would let a stuck import block the kubelet. #}
+{%- set preload_timeout = image_cache.preload_timeout | int %}
+{%- if preload_timeout <= 0 %}
+  {{ raise('image_cache.preload_timeout must be a positive number of seconds, got "' ~ image_cache.preload_timeout ~ '"') }}
+{%- endif %}
+
+# NOTE: A unit of its own and not a drop-in on the packaged service, which the
+# timer also runs every 10 minutes: the order before the kubelet and the time
+# limit must only apply to the import at boot.
+Install containerd image preload boot service:
+  file.managed:
+    - name: /etc/systemd/system/containerd-image-preload-boot.service
+    - source: salt://{{ slspath }}/files/containerd-image-preload-boot.service.j2
+    - template: jinja
+    - user: root
+    - group: root
+    - mode: '0644'
+    - context:
+        timeout: {{ preload_timeout }}
+    - require:
+      # NOTE: The unit runs the script the package installs.
+      - metalk8s_package_manager: Install containerd image preload
+
+# NOTE: Only enabled, not started: it runs at the next boot. Until then, the
+# timer imports the cache. The systemd service module reloads systemd itself
+# when the unit file is new or changed.
+Enable containerd image preload at boot:
+  service.enabled:
+    - name: containerd-image-preload-boot.service
+    - require:
+      - file: Install containerd image preload boot service
+
 Ensure containerd image preload timer running:
   service.running:
     - name: containerd-image-preload.timer

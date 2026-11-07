@@ -10,8 +10,12 @@ its archives and they have been imported.
 """
 
 from pathlib import Path
+from typing import Dict, Iterable, List
+
+import jinja2
 import pytest
 
+from tests.unit.formulas.fixtures.context import Context
 from tests.unit.formulas.fixtures.rendered import (
     RenderedStates,
     required_states,
@@ -44,6 +48,14 @@ REQUIRED_GATES = [
 ]
 
 CONFIG_STATE = "Configure containerd image preload"
+
+# What makes the import run before the kubelet at boot: a unit of its own,
+# enabled for `multi-user.target`.
+BOOT_UNIT_STATE = "Install containerd image preload boot service"
+BOOT_ENABLE_STATE = "Enable containerd image preload at boot"
+BOOT_UNIT_TEMPLATE = Path(
+    "metalk8s/image-cache/files/containerd-image-preload-boot.service.j2"
+)
 
 DIRECTORY_STATE = "Create the image cache directory"
 PROVISION_STATE = "Provision the boot cache"
@@ -91,6 +103,93 @@ def test_preload_timer_requires_a_running_containerd(
     assert (
         checked
     ), "no rendering case installs the timer, the requisites went unchecked"
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [IMAGE_CACHE_INSTALLED], indirect=True)
+def test_preload_is_ordered_before_the_kubelet_at_boot(
+    rendered_states: RenderedStates,
+) -> None:
+    """Check the boot import unit is installed and enabled.
+
+    The order is set on a unit of its own and not on the kubelet: if the
+    kubelet asked for the import, every kubelet restart would run one. And not
+    on the packaged service either, which the timer also runs every 10 minutes.
+    """
+    checked = False
+
+    for case_id, states in rendered_states:
+        if TIMER_STATE not in states:
+            for state in (BOOT_UNIT_STATE, BOOT_ENABLE_STATE):
+                assert state not in states, f"unexpected '{state}' ({case_id})"
+            continue
+
+        assert BOOT_UNIT_STATE in states, f"no '{BOOT_UNIT_STATE}' state ({case_id})"
+        assert "Install containerd image preload" in required_states(
+            states, BOOT_UNIT_STATE
+        ), (
+            f"'{BOOT_UNIT_STATE}' does not require the package, it runs the"
+            f" script the package installs ({case_id})"
+        )
+        assert BOOT_UNIT_STATE in required_states(states, BOOT_ENABLE_STATE), (
+            f"'{BOOT_ENABLE_STATE}' does not require '{BOOT_UNIT_STATE}', it"
+            f" could enable a unit that is not written yet ({case_id})"
+        )
+
+        checked = True
+
+    assert checked, "no rendering case installs the preload, nothing was checked"
+
+
+def _unit_settings(unit: str) -> Dict[str, List[str]]:
+    """Collect the values of each setting of a unit file, all sections merged.
+
+    A setting can be repeated and takes space-separated values, so the values of
+    every occurrence are gathered in a single list.
+    """
+    settings: Dict[str, List[str]] = {}
+    for line in unit.splitlines():
+        line = line.strip()
+        if not line or line.startswith(("#", ";", "[")) or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        settings.setdefault(key.strip(), []).extend(value.split())
+    return settings
+
+
+@pytest.mark.formulas
+@pytest.mark.parametrize("template_path", [BOOT_UNIT_TEMPLATE], indirect=True)
+def test_boot_unit_orders_and_bounds_the_import(
+    environment: jinja2.Environment,
+    render_contexts: Iterable[Context],
+    template_path: Path,
+) -> None:
+    """Check the rendered boot unit keeps the settings the boot order relies on."""
+    template = environment.get_template(str(template_path))
+    checked = False
+
+    for context in render_contexts:
+        timeout = context.data["timeout"]
+        settings = _unit_settings(template.render(**context.data))
+
+        assert "kubelet.service" in settings.get(
+            "Before", []
+        ), f"the import no longer runs before the kubelet ({context.id})"
+        assert "multi-user.target" in settings.get(
+            "WantedBy", []
+        ), f"nothing starts the import at boot ({context.id})"
+        assert settings.get("TimeoutStartSec") == [str(timeout)], (
+            f"the import is not bounded, a stuck one would block the kubelet"
+            f" ({context.id})"
+        )
+        assert "containerd.service" not in settings.get("Requires", []), (
+            f"a containerd restart would restart the unit and run an import"
+            f" ({context.id})"
+        )
+
+        checked = True
+
+    assert checked, "no rendering context for the boot unit, nothing was checked"
 
 
 @pytest.mark.formulas
