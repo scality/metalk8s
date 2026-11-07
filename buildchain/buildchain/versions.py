@@ -339,8 +339,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="static-oci-registry",
-        version="v0.1.0-beta.4",
-        digest="sha256:e23d0050707295c24a09401abb19ae3f0b446217d4270beca99237e845b517b9",
+        version="v0.1.0-beta.5",
+        digest="sha256:4a797ce74539eeee03726a1885bf59ba947d2bee30e68237a207c3518a8237c6",
     ),
     Image(
         name="metalk8s-registry-node-agent",
@@ -349,8 +349,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="metalk8s-registry-operator",
-        version="v0.0.1-alpha.6",
-        digest="sha256:d7ea154198885fd8e13031aa1918f7e4f365a5f45a722c4aaa117139fbf93483",
+        version="v0.0.1-alpha.7",
+        digest="sha256:59020ca1a5bea35f4bc956f2970c34c9f4dfc7af2828d199b1a11b10e19371c2",
     ),
     Image(
         name="disk-management-agent",
@@ -359,8 +359,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="file-reflector",
-        version="v0.2.0",
-        digest="sha256:97f14f857ebef1b421ad2799e6fba77c9b0cebcfc19f0b726344e322a4f7ead5",
+        version="v0.3.0",
+        digest="sha256:5ffd20de6f0335a1c5b2e37d1105f089db7329253aafcaafc2b1747bc1363e42",
     ),
     Image(
         name="image-cache-agent",
