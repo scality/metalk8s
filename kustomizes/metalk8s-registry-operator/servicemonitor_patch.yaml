@@ -1,0 +1,6 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: not-important
+  labels:
+    metalk8s.scality.com/monitor: ""

@@ -26,6 +26,47 @@ Feature: Monitoring is up and running
         And job 'prometheus-operator-prometheus' in namespace 'metalk8s-monitoring' is 'up'
         And job 'kube-state-metrics' in namespace 'metalk8s-monitoring' is 'up'
 
+    Scenario Outline: ServiceMonitor is deployed and scraped
+        Given the Kubernetes API is available
+        And the Prometheus API is available
+        Then the ServiceMonitor '<name>' in namespace '<namespace>' has all its targets 'up'
+
+        Examples:
+        | namespace                | name                                                            |
+        | metalk8s-monitoring      | prometheus-operator-alertmanager                                |
+        | metalk8s-monitoring      | prometheus-operator-apiserver                                   |
+        | metalk8s-monitoring      | prometheus-operator-coredns                                     |
+        | metalk8s-monitoring      | prometheus-operator-grafana                                     |
+        | metalk8s-monitoring      | prometheus-operator-kube-controller-manager                     |
+        | metalk8s-monitoring      | prometheus-operator-kube-etcd                                   |
+        | metalk8s-monitoring      | prometheus-operator-kube-proxy                                  |
+        | metalk8s-monitoring      | prometheus-operator-kube-scheduler                              |
+        | metalk8s-monitoring      | prometheus-operator-kube-state-metrics                          |
+        | metalk8s-monitoring      | prometheus-operator-kubelet                                     |
+        | metalk8s-monitoring      | prometheus-operator-operator                                    |
+        | metalk8s-monitoring      | prometheus-operator-prometheus                                  |
+        | metalk8s-monitoring      | prometheus-operator-prometheus-node-exporter                    |
+        | metalk8s-monitoring      | node-problem-detector                                           |
+        | metalk8s-monitoring      | node-warden-operator-controller-manager-metrics-monitor         |
+        | metalk8s-certs           | cert-manager                                                    |
+        | metalk8s-ingress         | ingress-nginx-controller                                        |
+        | metalk8s-ingress         | ingress-nginx-control-plane-controller                          |
+        | metalk8s-registry-system | metalk8s-registry-operator-controller-manager-metrics-monitor   |
+        | metalk8s-registry        | metalk8s-registry-node-agent-controller-manager-metrics-monitor |
+
+    # Logging components may not be deployed in every environment
+    @logging
+    Scenario: Fluent-bit ServiceMonitor is deployed and scraped
+        Given the Kubernetes API is available
+        And the Prometheus API is available
+        Then the ServiceMonitor 'fluent-bit' in namespace 'metalk8s-logging' has all its targets 'up'
+
+    @logging @volumes_provisioned
+    Scenario: Loki ServiceMonitor is deployed and scraped
+        Given the Kubernetes API is available
+        And the Prometheus API is available
+        Then the ServiceMonitor 'loki' in namespace 'metalk8s-logging' has all its targets 'up'
+
     Scenario: The metrics.k8s.io/v1beta1 API is available
         Given the Kubernetes API is available
         And pods with label 'app.kubernetes.io/name=prometheus-adapter' are 'Ready'
