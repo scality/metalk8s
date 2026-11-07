@@ -147,6 +147,8 @@ const config: Configuration = {
           Object.entries(deps)
             // @mcp-b/* are side-effect-only browser globals — must not be shared via MF
             .filter(([key]) => !key.startsWith('@mcp-b/'))
+            // The shell imports @opentelemetry/* at startup, before shared modules can load
+            .filter(([key]) => !key.startsWith('@opentelemetry/'))
             .map(([key]) => [key, {}]),
         ),
         'react-intl': {
