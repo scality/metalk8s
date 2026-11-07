@@ -177,6 +177,25 @@ metalk8s:
 
     ui:
       deployed:
+        ingress.sls:
+          _cases:
+            "No external authorization (default)": {}
+            "External authorization":
+              k8s_overrides:
+                add:
+                  - kind: ConfigMap
+                    apiVersion: v1
+                    metadata:
+                      name: metalk8s-ingress-control-plane-controller-config
+                      namespace: metalk8s-ingress
+                    data:
+                      config.yaml: |-
+                        apiVersion: addons.metalk8s.scality.com/v1alpha2
+                        kind: IngressControllerConfig
+                        spec:
+                          externalAuth:
+                            url: https://auth.example.com/check?scope=a&b=c
+                            cacheDuration: 30s
         files:
           metalk8s-ui-deployment.yaml.j2:
             _cases:

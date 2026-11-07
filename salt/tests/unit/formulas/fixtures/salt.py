@@ -17,6 +17,7 @@ import pytest
 import salt.utils.data  # type: ignore
 import salt.utils.dictupdate  # type: ignore
 import salt.utils.yamlloader  # type: ignore
+import yaml
 
 from tests.unit.formulas.fixtures import kubernetes
 from tests.unit.formulas import paths
@@ -497,9 +498,25 @@ def metalk8s_network_get_ip_from_cidrs(
 
 
 # Used in most metalk8s.addons.<addon>.deployed.chart, to inject overrides.
-register_basic("metalk8s_service_configuration.get_service_conf")(
-    lambda _namespace, _name, defaults: defaults
-)
+@register("metalk8s_service_configuration.get_service_conf")
+def metalk8s_service_configuration_get_service_conf(
+    salt_mock: SaltMock,
+    namespace: str,
+    configmap_name: str,
+    default_csc: Dict[str, Any],
+    **_kwargs: Any,
+) -> Dict[str, Any]:
+    manifest = salt_mock._k8s.get(
+        api_version="v1", kind="ConfigMap", name=configmap_name, namespace=namespace
+    )
+    if manifest is None:
+        return default_csc
+    config = yaml.safe_load(manifest["data"]["config.yaml"])
+    return salt.utils.dictupdate.merge(
+        default_csc, config, strategy="recurse", merge_lists=True
+    )
+
+
 # NOTE: This is a static function that does not rely on any salt stuff
 register_basic("metalk8s_service_configuration.get_pod_affinity")(
     metalk8s_service_configuration.get_pod_affinity

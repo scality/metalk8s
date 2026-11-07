@@ -1,0 +1,12 @@
+kind: Enhanced
+body: |-
+    The monitoring API routes of the control plane Ingress (`/api/prometheus`,
+    `/api/alertmanager`, `/api/loki`) can now check each request against an
+    external authorization service, set with `spec.externalAuth` in the
+    `metalk8s-ingress-control-plane-controller-config` ConfigMap. This lets a
+    platform reject a bearer token revoked before its expiry. Without the
+    setting, the Ingress is unchanged.
+time: 2026-11-06T16:54:26.4369421Z
+custom:
+    CommentId: "6690386607"
+    Pull: "5235"
