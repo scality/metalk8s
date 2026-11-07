@@ -1,0 +1,40 @@
+name: "Set up offline nodes"
+description: "Serve the offline nodes DNS and a dnf proxy from the bastion"
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: test -f ssh_config
+    # NOTE: The platform is spawned offline: the nodes reach each other and
+    # the bastion, the one machine left with a way out, and nothing else. The
+    # bastion gives them what an offline site has on its own network, a DNS
+    # server and a proxy that only dnf goes through, for the OS packages
+    # MetalK8s installs.
+    - name: Serve DNS and a dnf proxy from the bastion
+      shell: bash
+      env:
+        BASTION_IP: 172.30.100.99
+      run: |
+        ssh -F ssh_config -o ConnectTimeout=15 bastion \
+          sudo bash -s -- "$BASTION_IP" < "$GITHUB_ACTION_PATH/bastion.sh"
+    # NOTE: Running it again changes nothing, and a node unreachable over ssh
+    # is skipped, as a node destroyed on purpose is.
+    - name: Point each node at the bastion
+      shell: bash
+      env:
+        BASTION_IP: 172.30.100.99
+      run: |
+        failed=""
+        for host in $(awk '$1 == "Host" && $2 != "bastion" { print $2 }' ssh_config); do
+          if ! ssh -F ssh_config -o ConnectTimeout=15 "$host" true 2> /dev/null; then
+            echo "::warning title=offline nodes::'$host' is unreachable, skipping it"
+            continue
+          fi
+          if ! ssh -F ssh_config -o ConnectTimeout=15 "$host" \
+            sudo bash -s -- "$BASTION_IP" < "$GITHUB_ACTION_PATH/node.sh"; then
+            echo "::error title=offline nodes::'$host' could not be given DNS and a dnf proxy"
+            failed="$failed $host"
+          fi
+        done
+        [ -z "$failed" ]

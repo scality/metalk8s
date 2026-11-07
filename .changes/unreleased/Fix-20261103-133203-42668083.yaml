@@ -1,0 +1,10 @@
+kind: Fix
+body: |-
+    With a proxy configured, containerd no longer sends its pulls from the MetalK8s
+    repositories to that proxy. The control plane and workload plane CIDRs reached
+    its `NO_PROXY` as lists, such as `['10.0.0.0/24']`, which match no address, so
+    nodes could only pull through a proxy able to reach the repositories back.
+time: 2026-11-03T13:32:03.042668083Z
+custom:
+    CommentId: "6605154253"
+    Pull: "5221"
