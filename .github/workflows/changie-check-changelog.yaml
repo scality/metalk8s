@@ -47,13 +47,40 @@ jobs:
         If a changelog entry is not appropriate for this PR (e.g. CI-only or
         docs-only change), apply the `skip changelog` label instead.
     steps:
+      # The job-level `if` above only sees the labels captured in the
+      # event payload. Bots (e.g. the release workflow) open the PR and
+      # add `skip changelog` in a separate API call, so the `opened`
+      # payload has no label, and the `labeled` event sent with
+      # GITHUB_TOKEN does not start a new run. Wait a bit, then read the
+      # labels from the API. When the label is found, the changed-files
+      # step is skipped, so neither the failure nor the success path runs.
+      - name: Check `skip changelog` label (live)
+        id: skip
+        uses: actions/github-script@v9
+        with:
+          script: |
+            if (context.payload.action === 'opened') {
+              await new Promise((resolve) => setTimeout(resolve, 5000));
+            }
+            const labels = await github.paginate(
+              github.rest.issues.listLabelsOnIssue,
+              { ...context.repo, issue_number: context.issue.number, per_page: 100 }
+            );
+            const skip = labels.some((l) => l.name === 'skip changelog');
+            if (skip) {
+              core.notice('`skip changelog` label found, skipping the changelog check');
+            }
+            core.setOutput('skip', skip);
+
       - name: "Clone repository"
+        if: steps.skip.outputs.skip != 'true'
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Get changed files in the docs folder
         id: changelogs
+        if: steps.skip.outputs.skip != 'true'
         uses: tj-actions/changed-files@v47
         with:
           files: |
