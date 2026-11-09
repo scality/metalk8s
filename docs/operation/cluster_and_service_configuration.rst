@@ -297,8 +297,8 @@ contain only letters, digits and ``- . _ ~ / : , ? & =``.
 
 The answer is cached for each ``Authorization`` header during
 ``spec.externalAuth.cacheDuration`` (``60s`` by default, a number followed by
-``ms``, ``s``, ``m``, ``h``, ``d``, ``w``, ``M`` or ``y``), which is also how long
-a token rejected by the service may still be accepted. The service must
+``ms``, ``s``, ``m``, ``h``, ``d``, ``w``, ``M`` or ``y``), which is also how
+long a token rejected by the service may still be accepted. The service must
 therefore base its answer on the ``Authorization`` header alone, and must not
 send ``Cache-Control`` or ``Expires`` headers, which would extend this
 duration.
