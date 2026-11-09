@@ -361,20 +361,46 @@ jobs:
       - name: mint a Guardian token
         id: token
         if: steps.covered.outputs.any == 'true'
+        working-directory: ${{ github.workspace }}
         env:
+          # Every ${{ }} arrives through env, never in the script text — same rule as the scope
+          # step. Just the two credentials: the tenant, client id and redirect URI are pre-prod
+          # constants in the script, and none of them is secret.
           GUARDIAN_EVAL_ONE_LOGIN_USERNAME: ${{ secrets.GUARDIAN_EVAL_ONE_LOGIN_USERNAME }}
           GUARDIAN_EVAL_ONE_LOGIN_PASSWORD: ${{ secrets.GUARDIAN_EVAL_ONE_LOGIN_PASSWORD }}
         run: |
           set -euo pipefail
+          # A fork PR gets no secrets, and an absent secret expands to an empty string rather than
+          # failing. Skipping is the honest outcome — there is nothing to report about the PR.
           if [ -z "${GUARDIAN_EVAL_ONE_LOGIN_PASSWORD:-}" ]; then
             echo "minted=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::OneLogin credentials are not set in this repository — skipping the eval."
+            echo "no OneLogin credentials in this context (a fork PR, or the secrets are not set)"
             exit 0
           fi
-          # TODO: port scripts/onelogin-token.mjs from artesca, or share it. Until then this job
-          # reaches here and stops, which is why `minted` is an output rather than an assumption.
-          echo "minted=false" >> "$GITHUB_OUTPUT"
-          echo "::warning::No token script in this repository yet — the eval cannot run."
+
+          node ui/scripts/onelogin-token.mjs \
+            --out "$RUNNER_TEMP/guardian-token" \
+            --shot "$RUNNER_TEMP/onelogin-page.png"
+
+          token=$(cat "$RUNNER_TEMP/guardian-token")
+          # BEFORE the value can reach anything that prints. A mask registered later does not
+          # apply to lines already written.
+          echo "::add-mask::$token"
+          echo "GUARDIAN_TOKEN=$token" >> "$GITHUB_ENV"
+          rm -f "$RUNNER_TEMP/guardian-token"
+          echo "minted=true" >> "$GITHUB_OUTPUT"
+      # The sign-in page is not a contract, so when it stops matching the useful question is what
+      # it looked like. The password renders as dots and the USERNAME is scrubbed out of the DOM by
+      # onelogin-token.mjs before the shot is taken — masking does not reach an image, so without
+      # that the secret would be published to anyone who can download this artifact.
+      - name: keep the sign-in page on failure
+        if: failure() && steps.covered.outputs.any == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: onelogin-page
+          path: ${{ runner.temp }}/onelogin-page.png
+          if-no-files-found: ignore
+          retention-days: 3
       # IS THE API STILL THE API? Asked before the eval, because it is the difference between
       # "the tools regressed" and "Guardian shipped a schema change this morning" — and those two
       # look identical from a wall of failed scenarios.
