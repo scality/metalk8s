@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 
 // Fallback Guardian origin for local development when shell config omits it.
@@ -38,12 +38,18 @@ const GuardianDrawerContext = createContext<GuardianDrawerContextValue>({
   guardianOrigin: GUARDIAN_ORIGIN_FALLBACK,
 });
 
+// Apart from the drawer's context, the setter in a context of its own: a page handing over its
+// background must re-render the drawer only, not the navbar, which would remount the page.
+const AssistantBackgroundContext = createContext<string | null>(null);
+const SetAssistantBackgroundContext = createContext<(background: string | null) => void>(() => {});
+
 export const GuardianDrawerProvider = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = useCallback(() => setIsOpen((v) => !v), []);
   const open = useCallback(() => setIsOpen(true), []);
   const [pendingPrompt, setPendingPrompt] = useState<PendingPrompt | null>(null);
   const clearPendingPrompt = useCallback(() => setPendingPrompt(null), []);
+  const [assistantBackground, setAssistantBackground] = useState<string | null>(null);
 
   const { config } = useShellConfig();
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -59,7 +65,11 @@ export const GuardianDrawerProvider = ({ children }: { children: React.ReactNode
 
   return (
     <GuardianDrawerContext.Provider value={value}>
-      {children}
+      <SetAssistantBackgroundContext.Provider value={setAssistantBackground}>
+        <AssistantBackgroundContext.Provider value={assistantBackground}>
+          {children}
+        </AssistantBackgroundContext.Provider>
+      </SetAssistantBackgroundContext.Provider>
     </GuardianDrawerContext.Provider>
   );
 };
@@ -92,3 +102,22 @@ export const useAskAssistant = () => {
 
   return { ask, isAvailable };
 };
+
+/**
+ * Paint `background` behind the assistant while the calling page is mounted, for a page whose own
+ * background should carry on under the drawer. Laid out against the window
+ * (`background-attachment: fixed`), so the page paints the same value fixed too and the two meet
+ * seamlessly. Only drawers that let the page show through Guardian (ARTESCA's) use it.
+ *
+ * Exposed through useShellHooks: the drawer sits beside the application, out of its reach.
+ */
+export const useAssistantBackground = (background: string) => {
+  const setAssistantBackground = useContext(SetAssistantBackgroundContext);
+  useEffect(() => {
+    setAssistantBackground(background);
+    return () => setAssistantBackground(null);
+  }, [background, setAssistantBackground]);
+};
+
+/** The background the page on screen handed over, for the drawer to paint. */
+export const useHandedAssistantBackground = () => useContext(AssistantBackgroundContext);
