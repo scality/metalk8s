@@ -11,13 +11,27 @@ import { createAgent } from '@scality/webmcp-eval/v1';
 
 export const GUARDIAN_URL = process.env.GUARDIAN_URL || 'http://localhost:8081';
 
-// Which agent to drive. No default is guessed here beyond the one Guardian advertises for
-// platform questions: an agent that does not support MCP accepts the request and ignores the
-// catalogue, so a wrong name reports prose with nothing saying why.
+// aiops_agent is the only agent with `supports_mcp: true` (guardian-backend
+// src/guardian/config/agents.json). Anything else silently ignores mcp_tools and the eval tests
+// nothing — it accepts the request and answers prose, with nothing saying why.
 export const AGENT = process.env.GUARDIAN_EVAL_AGENT || 'aiops_agent';
 
-// The source the agent is restricted to. MetalK8s is not artesca_ui, so this has to be whatever
-// guardian-backend lists for this console in its agents config — set it before the first real run.
+// THIS DOES NOT WORK YET, AND THE DEFAULT IS DELIBERATELY THE ONE THAT DOESN'T.
+//
+// Guardian has no MetalK8s surface. Its SourceType is
+//
+//   "portal" | "artesca_ui" | "customer_portal" | "ring_ui" | "adi_ui"
+//
+// so `metalk8s_ui` is a 422 at the agents endpoint, and aiops_agent restricts itself further to
+// ["artesca_ui", "adi_ui"] on top of that. Two changes on their side make this honest: add
+// metalk8s_ui to SourceType, and add it to that agent's source_restriction.
+//
+// Until then, to watch a run locally:
+//
+//   GUARDIAN_EVAL_SOURCE=artesca_ui npm run eval
+//
+// That is borrowing another product's surface, which is why it is an override and not the
+// default: a default that works by claiming to be ARTESCA would ship, and nobody would notice.
 const SOURCE = process.env.GUARDIAN_EVAL_SOURCE || 'metalk8s_ui';
 
 // CI injects one from a secret; locally it is the file `make token` writes.
