@@ -29,12 +29,33 @@ backend_up() {
   [ "$(curl -s -m 3 -o /dev/null -w '%{http_code}' "$GUARDIAN_URL/api/v1/health/" 2>/dev/null || echo 000)" = "200" ]
 }
 
+SOURCE="${GUARDIAN_EVAL_SOURCE:-metalk8s_ui}"
+
 # /agents IS authenticated (401 without a token), which is what makes it a usable expiry probe.
-token_valid() {
-  [ -s "$TOKEN_FILE" ] || return 1
-  [ "$(curl -s -m 5 -o /dev/null -w '%{http_code}' \
-        -H "Authorization: Bearer $(cat "$TOKEN_FILE")" \
-        "$GUARDIAN_URL/api/v1/agents/?source=${GUARDIAN_EVAL_SOURCE:-metalk8s_ui}" 2>/dev/null || echo 000)" = "200" ]
+# The STATUS, not a yes/no: 401 and 422 are different problems and only one of them is fixed by
+# signing in again.
+agents_status() {
+  [ -s "$TOKEN_FILE" ] || { echo 000; return; }
+  curl -s -m 5 -o /dev/null -w '%{http_code}' \
+    -H "Authorization: Bearer $(cat "$TOKEN_FILE")" \
+    "$GUARDIAN_URL/api/v1/agents/?source=$SOURCE" 2>/dev/null || echo 000
+}
+
+token_valid() { [ "$(agents_status)" = "200" ]; }
+
+# A SOURCE THE DEPLOYMENT DOES NOT KNOW IS NOT AN EXPIRED TOKEN. 422 means the service answered
+# and refused a value, so re-authenticating cannot help — and the old check treated every non-200
+# as expiry, which opened a browser, minted a perfectly good token, restarted the backend, and
+# then reported the token as rejected. Say what is actually wrong instead.
+reject_bad_source() {
+  [ "$(agents_status)" = "422" ] || return 0
+  say "the backend refused source=\"$SOURCE\" (HTTP 422) — the token is fine."
+  curl -s -m 5 -H "Authorization: Bearer $(cat "$TOKEN_FILE")" \
+    "$GUARDIAN_URL/api/v1/agents/?source=$SOURCE" 2>/dev/null | head -c 300
+  echo
+  say "Guardian knows a fixed set of surfaces and metalk8s is not yet one of them."
+  say "To run against it today:  GUARDIAN_EVAL_SOURCE=artesca_ui npm run eval"
+  exit 1
 }
 
 wait_for_backend() {
@@ -66,7 +87,11 @@ else
   restart_backend
 fi
 
-# 2. Token usable? Only re-auth if not — this is the step that opens a browser.
+# 2. Is the source even one this deployment accepts? Checked BEFORE the token, because a 422 is
+#    not fixed by signing in and the browser round trip is the expensive part.
+reject_bad_source
+
+# 3. Token usable? Only re-auth if not — this is the step that opens a browser.
 if token_valid; then
   say "token still valid"
 else
@@ -74,10 +99,11 @@ else
   ( cd "$GUARDIAN_BACKEND" && make token )
   # make token just rewrote .venv, which kills the container. Always restart after it.
   restart_backend
+  reject_bad_source
   token_valid || { say "token still rejected after re-auth — check ONELOGIN_* in $GUARDIAN_BACKEND/.env"; exit 1; }
 fi
 
-# 3. Run the eval. Everything after this point is a real result, not an environment problem.
+# 4. Run the eval. Everything after this point is a real result, not an environment problem.
 say "running the eval"
 echo
 exec npm run eval:mcp
