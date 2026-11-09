@@ -1,0 +1,6 @@
+kind: Fix
+body: 'Alert count badges on the Platform dashboard and the Alerts page keep their spacing from the label next to them. The UI now uses @scality/core-ui 0.234.0, which no longer adds a margin around badges.'
+time: 2026-11-09T15:30:00.123456789Z
+custom:
+    CommentId: cli
+    Pull: "5241"
