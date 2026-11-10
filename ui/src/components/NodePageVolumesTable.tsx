@@ -191,7 +191,6 @@ const VolumeListTable = React.memo((props) => {
       columns={columns}
       data={volumeListData}
       defaultSortingKey="health"
-      status="success"
       entityName={{
         en: {
           singular: 'volume',

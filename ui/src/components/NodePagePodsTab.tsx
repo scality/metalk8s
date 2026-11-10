@@ -155,7 +155,6 @@ const NodePagePodsTab = React.memo((props) => {
         columns={columns}
         data={pods}
         defaultSortingKey={'status'}
-        status="success"
         entityName={{
           en: {
             singular: 'pod',
