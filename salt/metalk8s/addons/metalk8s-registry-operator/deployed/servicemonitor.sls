@@ -36,5 +36,4 @@ spec:
     matchLabels:
       app.kubernetes.io/name: metalk8s-registry-operator
       control-plane: controller-manager
-
 {%- endraw %}
