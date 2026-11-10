@@ -253,6 +253,13 @@ metalk8s:
                   HTTPS_PROXY: https://my-proxy.local
 
   image-cache:
+    files:
+      containerd-image-preload-boot.service.j2:
+        _cases:
+          "From metalk8s.image-cache.installed":
+            extra_context:
+              timeout: 300
+
     installed.sls:
       _cases:
         "Containerd (default)": {}
