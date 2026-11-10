@@ -60,7 +60,7 @@ def codegen_chart_dex() -> types.TaskDict:
     chart_dir = constants.CHART_ROOT / "dex"
     value_file = constants.CHART_ROOT / "dex.yaml"
     cmd = (
-        f"{constants.CHART_RENDER_CMD} dex {value_file} {chart_dir} "
+        f"{constants.CHART_RENDER_CMD} {chart_dir} "
         "--namespace metalk8s-auth "
         "--service-config dex metalk8s-dex-config "
         "metalk8s/addons/dex/config/dex.yaml.j2 metalk8s-auth "
@@ -69,7 +69,7 @@ def codegen_chart_dex() -> types.TaskDict:
 
     file_dep = list(utils.git_ls(chart_dir))
     file_dep.append(value_file)
-    file_dep.append(constants.CHART_RENDER_SCRIPT)
+    file_dep.extend(constants.RENDER_SCRIPTS)
 
     return {
         "name": "chart_dex",
@@ -77,7 +77,7 @@ def codegen_chart_dex() -> types.TaskDict:
         "doc": codegen_chart_dex.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["check_for:helm"],
     }
 
 
@@ -89,7 +89,7 @@ def codegen_chart_fluent_bit() -> types.TaskDict:
     chart_dir = constants.CHART_ROOT / "fluent-bit"
     value_file = constants.CHART_ROOT / "fluent-bit.yaml"
     cmd = (
-        f"{constants.CHART_RENDER_CMD} fluent-bit {value_file} {chart_dir} "
+        f"{constants.CHART_RENDER_CMD} {chart_dir} "
         "--namespace metalk8s-logging "
         "--service-config fluent_bit metalk8s-fluent-bit-config "
         "metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml.j2 metalk8s-logging "
@@ -98,7 +98,7 @@ def codegen_chart_fluent_bit() -> types.TaskDict:
 
     file_dep = list(utils.git_ls(chart_dir))
     file_dep.append(value_file)
-    file_dep.append(constants.CHART_RENDER_SCRIPT)
+    file_dep.extend(constants.RENDER_SCRIPTS)
 
     return {
         "name": "chart_fluent-bit",
@@ -106,7 +106,7 @@ def codegen_chart_fluent_bit() -> types.TaskDict:
         "doc": codegen_chart_fluent_bit.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["check_for:helm"],
     }
 
 
@@ -116,7 +116,7 @@ def codegen_chart_ingress_nginx() -> types.TaskDict:
     ingress_nginx_namespace = "metalk8s-ingress"
     actions = []
     file_dep = list(utils.git_ls(chart_dir))
-    file_dep.append(constants.CHART_RENDER_SCRIPT)
+    file_dep.extend(constants.RENDER_SCRIPTS)
 
     # Workload Plane Ingress
     target_sls = (
@@ -126,7 +126,8 @@ def codegen_chart_ingress_nginx() -> types.TaskDict:
     value_file = constants.CHART_ROOT / f"{chart_name}.yaml"
     actions.append(
         doit.action.CmdAction(
-            f"{constants.CHART_RENDER_CMD} {chart_name} {value_file} {chart_dir} "
+            f"{constants.CHART_RENDER_CMD} {chart_dir} "
+            f"--release {chart_name} --values {value_file} "
             f"--namespace {ingress_nginx_namespace} --remove-manifest ConfigMap "
             f"{chart_name}-controller "
             f"--output {target_sls}",
@@ -145,7 +146,8 @@ def codegen_chart_ingress_nginx() -> types.TaskDict:
     value_file = constants.CHART_ROOT / f"{chart_name}.yaml"
     actions.append(
         doit.action.CmdAction(
-            f"{constants.CHART_RENDER_CMD} {chart_name} {value_file} {chart_dir} "
+            f"{constants.CHART_RENDER_CMD} {chart_dir} "
+            f"--release {chart_name} --values {value_file} "
             f"--namespace {ingress_nginx_namespace} --remove-manifest ConfigMap "
             f"{chart_name}-controller "
             f"--output {target_sls}",
@@ -160,7 +162,7 @@ def codegen_chart_ingress_nginx() -> types.TaskDict:
         "doc": codegen_chart_ingress_nginx.__doc__,
         "actions": actions,
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["check_for:helm"],
     }
 
 
@@ -173,7 +175,8 @@ def codegen_chart_kube_prometheus_stack() -> types.TaskDict:
     value_file = constants.CHART_ROOT / "kube-prometheus-stack.yaml"
     drop_rule_file = constants.CHART_ROOT / "drop-prometheus-rules.yaml"
     cmd = (
-        f"{constants.CHART_RENDER_CMD} prometheus-operator {value_file} {chart_dir} "
+        f"{constants.CHART_RENDER_CMD} {chart_dir} "
+        "--release prometheus-operator "
         "--namespace metalk8s-monitoring "
         "--service-config grafana metalk8s-grafana-config "
         "metalk8s/addons/prometheus-operator/config/grafana.yaml.j2 "
@@ -198,7 +201,7 @@ def codegen_chart_kube_prometheus_stack() -> types.TaskDict:
 
     file_dep = list(utils.git_ls(chart_dir))
     file_dep.append(value_file)
-    file_dep.append(constants.CHART_RENDER_SCRIPT)
+    file_dep.extend(constants.RENDER_SCRIPTS)
     file_dep.append(drop_rule_file)
 
     return {
@@ -207,7 +210,7 @@ def codegen_chart_kube_prometheus_stack() -> types.TaskDict:
         "doc": codegen_chart_kube_prometheus_stack.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["check_for:helm"],
     }
 
 
@@ -217,7 +220,7 @@ def codegen_chart_loki() -> types.TaskDict:
     chart_dir = constants.CHART_ROOT / "loki"
     value_file = constants.CHART_ROOT / "loki.yaml"
     cmd = (
-        f"{constants.CHART_RENDER_CMD} loki {value_file} {chart_dir} "
+        f"{constants.CHART_RENDER_CMD} {chart_dir} "
         "--namespace metalk8s-logging "
         "--service-config loki metalk8s-loki-config "
         "metalk8s/addons/logging/loki/config/loki.yaml metalk8s-logging "
@@ -228,7 +231,7 @@ def codegen_chart_loki() -> types.TaskDict:
 
     file_dep = list(utils.git_ls(chart_dir))
     file_dep.append(value_file)
-    file_dep.append(constants.CHART_RENDER_SCRIPT)
+    file_dep.extend(constants.RENDER_SCRIPTS)
 
     return {
         "name": "chart_loki",
@@ -236,7 +239,7 @@ def codegen_chart_loki() -> types.TaskDict:
         "doc": codegen_chart_loki.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["check_for:helm"],
     }
 
 
@@ -248,14 +251,14 @@ def codegen_chart_node_problem_detector() -> types.TaskDict:
     chart_dir = constants.CHART_ROOT / "node-problem-detector"
     value_file = constants.CHART_ROOT / "node-problem-detector.yaml"
     cmd = (
-        f"{constants.CHART_RENDER_CMD} node-problem-detector {value_file} {chart_dir} "
+        f"{constants.CHART_RENDER_CMD} {chart_dir} "
         "--namespace metalk8s-monitoring "
         f"--output {target_sls}"
     )
 
     file_dep = list(utils.git_ls(chart_dir))
     file_dep.append(value_file)
-    file_dep.append(constants.CHART_RENDER_SCRIPT)
+    file_dep.extend(constants.RENDER_SCRIPTS)
 
     return {
         "name": "chart_node-problem-detector",
@@ -263,7 +266,7 @@ def codegen_chart_node_problem_detector() -> types.TaskDict:
         "doc": codegen_chart_node_problem_detector.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["check_for:helm"],
     }
 
 
@@ -275,14 +278,14 @@ def codegen_chart_prometheus_adapter() -> types.TaskDict:
     chart_dir = constants.CHART_ROOT / "prometheus-adapter"
     value_file = constants.CHART_ROOT / "prometheus-adapter.yaml"
     cmd = (
-        f"{constants.CHART_RENDER_CMD} prometheus-adapter {value_file} {chart_dir} "
+        f"{constants.CHART_RENDER_CMD} {chart_dir} "
         "--namespace metalk8s-monitoring "
         f"--output {target_sls}"
     )
 
     file_dep = list(utils.git_ls(chart_dir))
     file_dep.append(value_file)
-    file_dep.append(constants.CHART_RENDER_SCRIPT)
+    file_dep.extend(constants.RENDER_SCRIPTS)
 
     return {
         "name": "chart_prometheus-adapter",
@@ -290,7 +293,7 @@ def codegen_chart_prometheus_adapter() -> types.TaskDict:
         "doc": codegen_chart_prometheus_adapter.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["check_for:helm"],
     }
 
 
@@ -303,7 +306,7 @@ def codegen_chart_thanos() -> types.TaskDict:
     chart_dir = constants.CHART_ROOT / "thanos"
     value_file = constants.CHART_ROOT / "thanos.yaml"
     cmd = (
-        f"{constants.CHART_RENDER_CMD} thanos {value_file} {chart_dir} "
+        f"{constants.CHART_RENDER_CMD} {chart_dir} "
         "--namespace metalk8s-monitoring "
         "--service-config thanos metalk8s-thanos-config "
         "metalk8s/addons/prometheus-operator/config/thanos.yaml "
@@ -313,7 +316,7 @@ def codegen_chart_thanos() -> types.TaskDict:
 
     file_dep = list(utils.git_ls(chart_dir))
     file_dep.append(value_file)
-    file_dep.append(constants.CHART_RENDER_SCRIPT)
+    file_dep.extend(constants.RENDER_SCRIPTS)
 
     return {
         "name": "chart_thanos",
@@ -321,7 +324,7 @@ def codegen_chart_thanos() -> types.TaskDict:
         "doc": codegen_chart_thanos.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["check_for:helm"],
     }
 
 
@@ -336,14 +339,14 @@ def codegen_chart_cert_manager() -> types.TaskDict:
     value_file = constants.CHART_ROOT / "cert-manager.yaml"
 
     chart_cmd = (
-        f"{constants.CHART_RENDER_CMD} cert-manager {value_file} {chart_dir} "
+        f"{constants.CHART_RENDER_CMD} {chart_dir} "
         "--namespace metalk8s-certs "
         "--remove-manifest ServiceMonitor cert-manager "
         f"--output {target_sls}"
     )
 
     sm_cmd = (
-        f"{constants.CHART_RENDER_CMD} cert-manager {value_file} {chart_dir} "
+        f"{constants.CHART_RENDER_CMD} {chart_dir} "
         "--namespace metalk8s-certs "
         "--keep-manifest ServiceMonitor cert-manager "
         f"--output {sm_sls}"
@@ -351,7 +354,7 @@ def codegen_chart_cert_manager() -> types.TaskDict:
 
     file_dep = list(utils.git_ls(chart_dir))
     file_dep.append(value_file)
-    file_dep.append(constants.CHART_RENDER_SCRIPT)
+    file_dep.extend(constants.RENDER_SCRIPTS)
 
     return {
         "name": "chart_cert-manager",
@@ -363,7 +366,7 @@ def codegen_chart_cert_manager() -> types.TaskDict:
         ],
         "targets": [target_sls, sm_sls],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["check_for:helm"],
     }
 
 
