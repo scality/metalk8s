@@ -45,7 +45,12 @@
     "test:integration": "cypress run --browser chromium 'cypress/integration/**/*.cy.js'",
     "jest-preview": "jest-preview",
     "rsstart": "rspack serve -c rspack.config.ts",
-    "rsbuild": "rspack build -c rspack.config.ts"
+    "rsbuild": "rspack build -c rspack.config.ts",
+    "eval": "bash scripts/run-mcp-eval.sh",
+    "eval:mcp": "jest --config jest.eval.config.js --forceExit",
+    "eval:which": "EVAL_DRY_RUN=1 npm run eval:mcp",
+    "eval:catalogue": "EVAL_WRITE_CATALOGUE=1 jest src/mcpTools/evals/catalogue.test.ts",
+    "eval:token": "node scripts/onelogin-token.mjs"
   },
   "eslintConfig": {
     "extends": [
@@ -76,6 +81,7 @@
     "@redux-saga/testing-utils": "^1.0.2",
     "@rspack/cli": "^1.6.7",
     "@rspack/core": "^1.6.7",
+    "@scality/webmcp-eval": "^0.1.0",
     "@testing-library/dom": "^9.3.1",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^15.0.7",
@@ -115,6 +121,7 @@
     "jest-preview": "^0.3.1",
     "msw": "0.36.8",
     "oidc-client": "^1.8.0",
+    "playwright": "^1.65.0",
     "querystring": "^0.2.1",
     "react-test-renderer": "^18.3.1",
     "ts-node": "^10.9.2",
@@ -149,7 +156,11 @@
       "^@fortawesome/free-regular-svg-icons/(.*)\\.js$": "@fortawesome/free-regular-svg-icons/$1",
       "^codemirror-json-schema(.*)$": "<rootDir>/src/__mocks__/emptyModule.js"
     },
-    "testEnvironment": "jsdom"
+    "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "\\.eval\\.test\\.ts$"
+    ]
   },
   "jest-junit": {
     "output": "junit/jest-junit.xml",
