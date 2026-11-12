@@ -53,7 +53,7 @@ class RemoteImage(image.ContainerImage):
         self._repository = repository
         self._digest = digest
         self._remote_name = remote_name or name
-        self._save_as = save_as or [SaveAsLayers()]
+        self._save_as = save_as or [SaveAsLayers(), SaveAsOCILayout()]
         kwargs.setdefault("task_dep", []).append("check_for:skopeo")
         super().__init__(name=name, version=version, destination=destination, **kwargs)
         self._targets = self.filepaths
@@ -76,6 +76,10 @@ class RemoteImage(image.ContainerImage):
     def fullname(self) -> str:
         """Complete image name to use as a tag before saving with Docker."""
         return f"{self.repository}/{self.tag}"
+
+    @property
+    def layout_dirname(self) -> Path:
+        return self.dest_dir.joinpath(self.repository, self.remote_name)
 
     @property
     def filepaths(self) -> List[Path]:
@@ -132,6 +136,24 @@ class SaveAsLayers(ImageSaveFormat):
     def clean(self, img: RemoteImage) -> types.Action:
         """Return the action to delete the image."""
         return img.clean
+
+
+class SaveAsOCILayout(ImageSaveFormat):
+    """Save an image as an OCI layout, named after its upstream reference."""
+
+    def filepath(self, img: RemoteImage) -> Path:
+        return img.layout_dirname / "index.json"
+
+    def save(self, img: RemoteImage) -> List[types.Action]:
+        source = img.remote_fullname_digest if img.digest else img.remote_fullname
+        skopeo_copy = list(constants.SKOPEO_COPY_OCI_ARGS)
+        skopeo_copy.append(f"docker://{source}")
+        skopeo_copy.append(f"oci:{img.layout_dirname}:{img.version}")
+        return [img.prepare_layout, skopeo_copy]
+
+    def clean(self, img: RemoteImage) -> types.Action:
+        """Return the action to delete the image."""
+        return img.clean_layout
 
 
 class SaveAsTar(ImageSaveFormat):

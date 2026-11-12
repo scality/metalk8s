@@ -167,3 +167,35 @@ class TestBootCacheImage:
         assert img.archive_reference == image._node_image_fullname(
             img.name, img.version
         )
+
+
+class TestOCILayouts:
+    """Every image on the ISO also gets an OCI layout, under its full name."""
+
+    @staticmethod
+    def saved_images() -> List[Any]:
+        built = [img for img in image.TO_BUILD if img.save_on_disk]
+        return [*image.TO_PULL.values(), *built]
+
+    def test_every_saved_image_gets_one(self) -> None:
+        for img in self.saved_images():
+            assert img.layout_dirname / "index.json" in img.task["targets"]
+
+    def test_built_images_are_named_after_the_metalk8s_repository(self) -> None:
+        # Boot cache images included: they are built locally too.
+        for img in image.TO_BUILD:
+            assert img.layout_dirname == (
+                constants.ISO_IMAGE_ROOT / constants.METALK8S_REPOSITORY / img.name
+            )
+
+    def test_layouts_do_not_overlap(self) -> None:
+        layouts = [img.layout_dirname for img in self.saved_images()]
+        assert len(set(layouts)) == len(layouts)
+        for layout in layouts:
+            assert not any(layout in other.parents for other in layouts)
+
+    def test_layouts_stay_out_of_the_layers_tree(self) -> None:
+        # Cleaning an image removes `<root>/<name>`: it must hold no layout.
+        layer_dirs = {img.dest_dir / img.name for img in self.saved_images()}
+        for img in self.saved_images():
+            assert not layer_dirs.intersection(img.layout_dirname.parents)
