@@ -31,13 +31,19 @@ export function createGetPlatformAlertsTool(context: ToolContext) {
 
       return {
         status: 'ok',
-        alerts: result.alerts.map((alert) => ({
-          id: alert.id,
-          severity: alert.severity,
-          alertname: alert.labels.alertname,
-          description: alert.description || alert.summary,
-          startsAt: alert.startsAt,
-        })),
+        // Leaves only, the same filter AlertPage and AlertNavbarUpdater apply. The cache also
+        // holds the parent alerts lib-alert-tree builds (PlatformDegraded and the like, marked by
+        // a `children` label), which appear on no page — so without this the agent counts alerts
+        // the user cannot see, and "the second alert" means two different rows.
+        alerts: result.alerts
+          .filter((alert) => !alert.labels.children)
+          .map((alert) => ({
+            id: alert.id,
+            severity: alert.severity,
+            alertname: alert.labels.alertname,
+            description: alert.description || alert.summary,
+            startsAt: alert.startsAt,
+          })),
       };
     },
   };

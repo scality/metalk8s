@@ -31,6 +31,19 @@ describe('getPlatformAlerts', () => {
     expect(window.fetch).not.toHaveBeenCalled();
   });
 
+  it('leaves out the parent alerts, which appear on no page', async () => {
+    // lib-alert-tree puts its aggregates in the same cache, marked by a `children` label. The
+    // alert page filters them out, so counting them here would make "the second alert" ambiguous.
+    const context = loaded([
+      raw('PlatformDegraded', 'critical', 'p1', { children: 'NodeDown,VolumeAlmostFull' }),
+      raw('NodeDown', 'critical', 'c1', { instance: 'node-2' }),
+    ]);
+
+    const { alerts } = (await run(context)) as { alerts: Array<Record<string, unknown>> };
+
+    expect(alerts.map((alert) => alert.id)).toEqual(['c1']);
+  });
+
   it('reads the description the way the alert page does, so an alert with no summary is not blank', async () => {
     const LICENSE =
       'Your product instance is missing a valid license key.\nYou can request one from Scality by sending an email to\n' +
