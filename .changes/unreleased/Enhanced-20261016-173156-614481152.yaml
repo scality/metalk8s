@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Remove the white flash on page load in dark mode
+time: 2026-10-16T17:31:56.614481152Z
+custom:
+    CommentId: "6221092231"
+    Pull: "5175"
