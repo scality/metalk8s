@@ -391,6 +391,9 @@ check_minion_id() {
     #   - contain only lowercase alphanumeric characters, '-' or '.'
     #   - start with an alphanumeric character
     #   - end with an alphanumeric character
+    # On top of that, the ID is used in the CN of certificates (for instance
+    # "system:node:<ID>" and "salt-master-<ID>"), which X.509 limits to 64
+    # characters, so the ID must not be longer than 52 characters.
     # NB: It is only needed for bootstrap node, as it will be automatically
     # done by K8s APIServer for expansion, when applying new node manifests.
     minion_id=$(get_salt_minion_id)
@@ -400,6 +403,14 @@ check_minion_id() {
              "with RFC1123, which means it must contain no more than 253" \
              "characters, contain only lowercase alphanumeric characters, '-'" \
              "or '.' and start and end with an alphanumeric character."
+        return 1
+    fi
+
+    if [ "${#minion_id}" -gt 52 ]; then
+        echo "Invalid Salt minion ID '$minion_id': The ID is ${#minion_id}" \
+             "characters long, but it must contain no more than 52" \
+             "characters, as it is used in the Common Name of certificates," \
+             "which is limited to 64 characters."
         return 1
     fi
 }
