@@ -33,6 +33,8 @@ THANOS_REPOSITORY: str = "quay.io/thanos"
 CERT_MANAGER_REPOSITORY: str = "quay.io/jetstack"
 OAUTH2_PROXY_REPOSITORY: str = "quay.io/oauth2-proxy"
 SCALITY_REPOSITORY: str = "ghcr.io/scality"
+# Locally built images are named after it, as published for `shell-ui`.
+METALK8S_REPOSITORY: str = f"{SCALITY_REPOSITORY}/metalk8s"
 
 # Registry endpoint the nodes resolve through their containerd mirror
 # configuration: kept in sync with `repo:registry_endpoint` in
@@ -120,15 +122,18 @@ GIT_REF = git_ref()
 # }}}
 # Skopeo default arguments {{{
 
-SKOPEO_COPY_DEFAULT_ARGS: List[str] = [
+_SKOPEO_COPY_ARGS: List[str] = [
     config.ExtCommand.SKOPEO.value,
     "--override-os",
     "linux",
     "--insecure-policy",
     "copy",
-    "--format",
-    "v2s2",
 ]
+
+SKOPEO_COPY_DEFAULT_ARGS: List[str] = [*_SKOPEO_COPY_ARGS, "--format", "v2s2"]
+
+# An image already in the OCI format keeps its upstream manifest.
+SKOPEO_COPY_OCI_ARGS: List[str] = [*_SKOPEO_COPY_ARGS, "--format", "oci"]
 
 # }}}
 # Alert tree definitions {{{

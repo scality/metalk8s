@@ -241,6 +241,7 @@ def _local_image(name: str, **kwargs: Any) -> targets.LocalImage:
     kwargs.setdefault("destination", constants.ISO_IMAGE_ROOT)
     kwargs.setdefault("dockerfile", constants.ROOT / "images" / name / "Dockerfile")
     kwargs.setdefault("save_on_disk", True)
+    kwargs.setdefault("repository", constants.METALK8S_REPOSITORY)
     kwargs.setdefault("task_dep", []).append("_image_mkdir_root")
 
     return targets.LocalImage(
@@ -341,8 +342,8 @@ REMOTE_NAMES: Dict[str, str] = {
 }
 
 SAVE_AS: Dict[str, List[targets.ImageSaveFormat]] = {
-    "pause": [targets.SaveAsTar(), targets.SaveAsLayers()],
-    "nginx": [targets.SaveAsTar(), targets.SaveAsLayers()],
+    "pause": [targets.SaveAsTar(), targets.SaveAsLayers(), targets.SaveAsOCILayout()],
+    "nginx": [targets.SaveAsTar(), targets.SaveAsLayers(), targets.SaveAsOCILayout()],
 }
 
 for repo, images in IMGS_PER_REPOSITORY.items():

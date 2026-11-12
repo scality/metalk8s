@@ -53,7 +53,7 @@ class ExplicitContext:  # pylint: disable=too-few-public-methods
 class LocalImage(image.ContainerImage):
     """A locally built container image."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         name: str,
         version: str,
@@ -63,6 +63,7 @@ class LocalImage(image.ContainerImage):
         build_context: Optional[Union[Path, ExplicitContext]] = None,
         build_args: Optional[Dict[str, Any]] = None,
         archive_reference: Optional[str] = None,
+        repository: Optional[str] = None,
         **kwargs: Any,
     ):
         """Initialize a local container image.
@@ -82,6 +83,9 @@ class LocalImage(image.ContainerImage):
                                remote images), under this exact reference:
                                importing the archive makes the image available
                                under that name, with no re-tagging
+            repository:        if set, also save the image as an OCI layout
+                               named after `<repository>/<name>`, when it is
+                               saved on disk
 
         Keyword Arguments:
             They are passed to `Target` init method.
@@ -103,6 +107,7 @@ class LocalImage(image.ContainerImage):
 
         self._save = save_on_disk
         self._archive_reference = archive_reference
+        self._repository = repository
         self._build_args = build_args or {}
         kwargs.setdefault("file_dep", []).append(self.dockerfile)
         kwargs.setdefault("task_dep", []).append("check_for:skopeo")
@@ -112,6 +117,7 @@ class LocalImage(image.ContainerImage):
     dockerfile = property(operator.attrgetter("_dockerfile"))
     save_on_disk = property(operator.attrgetter("_save"))
     archive_reference = property(operator.attrgetter("_archive_reference"))
+    repository = property(operator.attrgetter("_repository"))
     build_context = property(operator.attrgetter("_build_context"))
     custom_context = property(operator.attrgetter("_custom_context"))
     build_args = property(operator.attrgetter("_build_args"))
@@ -126,6 +132,17 @@ class LocalImage(image.ContainerImage):
     def tar_filepath(self) -> Path:
         """Path of the image archive, when saved as one."""
         return self.dest_dir / f"{self.name}-{self.version}.tar"
+
+    @property
+    def save_as_oci_layout(self) -> bool:
+        """Is the image also saved as an OCI layout?"""
+        return self.save_on_disk and self._repository is not None
+
+    @property
+    def layout_dirname(self) -> Path:
+        if self._repository is None:
+            raise ValueError(f"{self.name} has no repository to name its OCI layout")
+        return self.dest_dir.joinpath(self._repository, self.name)
 
     def load_deps_from_dockerfile(self) -> Dict[str, Any]:
         """Compute file dependencies from Dockerfile."""
@@ -170,6 +187,9 @@ class LocalImage(image.ContainerImage):
         if self.save_on_disk:
             outputs.append(self.dirname / "manifest.json")
             cleaners.append(self.clean)
+        if self.save_as_oci_layout:
+            outputs.append(self.layout_dirname / "index.json")
+            cleaners.append(self.clean_layout)
         if self.save_as_tar:
             outputs.append(self.tar_filepath)
             cleaners.append(self.clean_tar)
@@ -194,6 +214,8 @@ class LocalImage(image.ContainerImage):
         actions = self._do_build()
         if self.save_on_disk:
             actions.extend(self._do_save())
+        if self.save_as_oci_layout:
+            actions.extend(self._do_save_as_oci_layout())
         if self.save_as_tar:
             actions.extend(self._do_save_as_tar())
         return actions
@@ -206,26 +228,38 @@ class LocalImage(image.ContainerImage):
         """Return the actions used to build the image."""
         return [(docker_command.docker_build, [self], {})]
 
-    def _do_save(self) -> List[types.Action]:
-        """Return the actions used to save the image."""
-        # If a destination is defined, let's save the image there.
-        cmd = list(constants.SKOPEO_COPY_DEFAULT_ARGS)
-        cmd.append("--dest-compress")
+    def _copy_from_daemon(self, args: List[str], destination: str) -> List[str]:
+        """Return the skopeo command copying the built image to `destination`."""
+        cmd = list(args)
         docker_host = os.getenv("DOCKER_HOST")
         if docker_host is not None:
             cmd.extend(["--src-daemon-host", f"http://{docker_host}"])
         cmd.append(f"docker-daemon:{self.tag}")
-        cmd.append(f"dir:{str(self.dirname)}")
+        cmd.append(destination)
+        return cmd
+
+    def _do_save(self) -> List[types.Action]:
+        """Return the actions used to save the image."""
+        cmd = self._copy_from_daemon(
+            [*constants.SKOPEO_COPY_DEFAULT_ARGS, "--dest-compress"],
+            f"dir:{self.dirname}",
+        )
         return [self.mkdirs, cmd]
+
+    def _do_save_as_oci_layout(self) -> List[types.Action]:
+        """Return the actions used to save the image as an OCI layout."""
+        cmd = self._copy_from_daemon(
+            constants.SKOPEO_COPY_OCI_ARGS,
+            f"oci:{self.layout_dirname}:{self.version}",
+        )
+        return [self.prepare_layout, cmd]
 
     def _do_save_as_tar(self) -> List[types.Action]:
         """Return the actions used to save the image as an archive."""
-        cmd = list(constants.SKOPEO_COPY_DEFAULT_ARGS)
-        docker_host = os.getenv("DOCKER_HOST")
-        if docker_host is not None:
-            cmd.extend(["--src-daemon-host", f"http://{docker_host}"])
-        cmd.append(f"docker-daemon:{self.tag}")
-        cmd.append(f"docker-archive:{str(self.tar_filepath)}:{self.archive_reference}")
+        cmd = self._copy_from_daemon(
+            constants.SKOPEO_COPY_DEFAULT_ARGS,
+            f"docker-archive:{self.tar_filepath}:{self.archive_reference}",
+        )
         return [self._prepare_tar, cmd]
 
     def _prepare_tar(self) -> None:
