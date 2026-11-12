@@ -37,7 +37,6 @@ class TestBootCacheVariants:
             missing = [name for name in members if name not in image.TO_PULL]
             assert not missing, f"variant {variant} lists unknown images: {missing}"
 
-    @pytest.mark.skip(reason="boot cache disabled in 134.0, back in 136.0")
     def test_every_variant_is_built(self) -> None:
         built = {img.name for img in image.TO_BUILD}
         for variant in image.BOOT_CACHE_VARIANTS:
@@ -134,7 +133,6 @@ class TestBootCacheContextTask:
         assert list(images_dir.iterdir()) == []
 
 
-@pytest.mark.skip(reason="boot cache disabled in 134.0, back in 136.0")
 class TestBootCacheImage:
     @staticmethod
     def image_of(variant: str) -> Any:

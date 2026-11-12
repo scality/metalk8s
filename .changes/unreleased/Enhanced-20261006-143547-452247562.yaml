@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Bump Kubernetes version to 1.36.5 (https://github.com/kubernetes/kubernetes/releases/tag/v1.36.5)
+time: 2026-10-06T14:35:47.452247562Z
+custom:
+    CommentId: "5933608947"
+    Pull: "5146"

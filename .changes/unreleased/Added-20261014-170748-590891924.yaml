@@ -1,0 +1,6 @@
+kind: Added
+body: 'The bootstrap now creates one `ImageCache` resource per boot cache variant of the installed version: `worker` on every node, `control-plane` and `etcd` on the nodes holding that role. The image cache agent adopts the directories filled from the ISO with no pull, and fills the control plane and etcd variants of a node that joins later.'
+time: 2026-10-14T17:07:48.590891924Z
+custom:
+    CommentId: "6173894333"
+    Pull: "5171"

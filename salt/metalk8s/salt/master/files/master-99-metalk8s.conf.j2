@@ -83,7 +83,3 @@ reactor:
     - salt://metalk8s/reactor/certs/renew.sls?saltenv={{ saltenv }}
   - 'salt/beacon/*/metalk8s_watch_kubeconfig_expiry/':
     - salt://metalk8s/reactor/certs/renew.sls?saltenv={{ saltenv }}
-
-{#- NOTE: This can be removed in `development/135` #}
-# Allow authentication with older salt versions
-minimum_auth_version: 2

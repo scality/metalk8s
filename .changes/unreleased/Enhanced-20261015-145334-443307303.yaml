@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Bump loki chart to [7.3.0](https://github.com/grafana/helm-charts/releases/tag/helm-loki-7.3.0) and Loki to v3.6.11
+time: 2026-10-15T14:53:34.443307303Z
+custom:
+    CommentId: "6146870150"
+    Pull: "5163"

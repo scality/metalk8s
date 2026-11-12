@@ -80,7 +80,7 @@ To interact with the Salt Master with the usual CLIs, open a terminal in the
 
    root@bootstrap $ kubectl exec -it -n kube-system -c salt-master \
                       --kubeconfig /etc/kubernetes/admin.conf \
-                      salt-master-bootstrap bash
+                      salt-master-bootstrap -- bash
 
 .. todo::
 

@@ -453,7 +453,7 @@ class TestContainerdImagePreload:
             "8": packaging.task__fetch_redhat_8_packages,
             "9": packaging.task__fetch_redhat_9_packages,
         }[releasever]()
-        assert [task["name"] for task in tasks] == [PACKAGE_NAME]
+        assert [task["name"] for task in tasks] == [PACKAGE_NAME, "imagecachectl"]
 
     def test_digests_are_pinned(self) -> None:
         # A bump moves the tag and every digest together: a half-done one

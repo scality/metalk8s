@@ -171,7 +171,7 @@ spec:
         - --endpoint=dnssrv+_grpc._tcp.prometheus-operator-thanos-discovery
         - --alert.query-url=http://thanos-query.metalk8s-monitoring.svc.cluster.local:9090
         - --query.auto-downsampling
-        image: {% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.41.0
+        image: {% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.42.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 6

@@ -83,10 +83,16 @@ REPO_NAME=prometheus-community
 REPO_URL=https://prometheus-community.github.io/helm-charts
 ```
 
-NB: thanos chart is updated at the same time
+NB: thanos chart is updated at the same time. The Thanos image tag is not
+taken from the chart, it is pinned in `charts/thanos.yaml` (`image.tag`), to
+keep in sync with `buildchain/buildchain/versions.py`.
 
 After the first failed build, rules.json and alerting_rules.json from
 `$ARTIFACTS_URL/alert_rules` and place them in `tools/rule_extractor` folder.
+
+If the chart adds or removes Grafana dashboards, update
+`tests/post/steps/files/grafana_dashboard_uids.json` (title and `uid` of each
+dashboard), otherwise the post-install tests fail.
 
 **k8s-sidecar cross-dependency**: kube-prometheus-stack bundles `k8s-sidecar`
 (the Grafana sidecar for dashboard/datasource discovery). The Loki chart also
@@ -161,10 +167,18 @@ This guide is applied for both `metalk8s-operator` and `storage-operator`.
 Target versions are pinned in `tools/upgrade-operator-sdk/<name>/config.yaml`:
 
 ```yaml
-operator_sdk_version: v1.42.1    # target operator-sdk release
-go_toolchain: go1.24.13          # pin Go toolchain (for GOTOOLCHAIN)
-k8s_libs: v0.33.10               # pin k8s.io libs version
+operator_sdk_version: v1.42.3    # target operator-sdk release
+go_toolchain: go1.26.9           # pin Go toolchain (for GOTOOLCHAIN)
+k8s_libs: v0.36.5                # pin k8s.io libs version
+# Optional: pins applied on top of the scaffold, needed when k8s_libs
+# is pinned past what operator-sdk scaffolds.
+controller_runtime: v0.24.1      # pin sigs.k8s.io/controller-runtime
+controller_tools: v0.21.0        # pin CONTROLLER_TOOLS_VERSION in the Makefile
+golangci_lint: v2.14.0           # pin GOLANGCI_LINT_VERSION in the Makefile
 ```
+
+The Dockerfile builder image follows `go_toolchain` (e.g. `go1.26.9` gives
+`golang:1.26`).
 
 After scaffolding, the script detects the latest available versions (operator-sdk
 from GitHub, Go and k8s.io patches from go.dev / module proxy) and compares with
@@ -174,7 +188,20 @@ the pinned values:
 - **Pin matches detected**: all good, no action.
 - **Pin is older** than detected: warning printed with the newer version available.
   The pinned value is still used. Update the YAML manually when ready.
-- **Pin is newer** than detected (unusual): warning, the detected value is used.
+- **Pin is newer** than detected (e.g. k8s.io libs pinned past what
+  operator-sdk scaffolds): info message, the pinned value is still used. For
+  `go_toolchain` and `k8s_libs`, the latest patch of the pinned minor is
+  also looked up, and a warning is printed if it is newer than the pin.
+
+These rules apply to `operator_sdk_version`, `go_toolchain` and `k8s_libs`.
+`controller_runtime`, `controller_tools` and `golangci_lint` are not detected:
+when pinned, they are applied as is, otherwise the scaffold versions are kept.
+
+Each controller-runtime release requires one k8s.io minor. When `k8s_libs` is
+pinned, the script checks that the controller-runtime version (the pinned one,
+or the scaffold one) requires the same k8s.io minor, by reading its `go.mod` on
+the Go module proxy. On mismatch, a warning is printed: bump
+`controller_runtime` along with `k8s_libs`.
 
 This is CI-friendly: zero interactive input during reconciliation.
 
@@ -207,7 +234,7 @@ Options:
 Each operator has a config directory at `tools/upgrade-operator-sdk/<name>/` containing
 `config.yaml` and a `patches/` subdirectory. The config fields are:
 
-- **Versions**: `operator_sdk_version`, `go_toolchain` (optional pin), `k8s_libs` (optional pin)
+- **Versions**: `operator_sdk_version`, `go_toolchain` (optional pin), `k8s_libs` (optional pin), `controller_runtime` (optional pin), `controller_tools` (optional pin), `golangci_lint` (optional pin)
 - **Scaffold**: `repo`, `domain`, `apis` (with `group`, `version`, `kind`, `namespaced`). The operator name is derived from the config directory name.
 - **Raw copy**: `raw_copy` -- directories or files copied as-is from backup (purely custom code with no scaffold equivalent: `pkg/`, `version/`, `config/metalk8s/`, `salt/`, individual test/helper files)
 - **Post-processing**: `extra_commands`
@@ -241,6 +268,28 @@ New `.patch` files in the patches directory are automatically picked up.
 4. Check `config/rbac/role.yaml` for RBAC completeness
 5. Check `deploy/manifests.yaml` for correct Jinja templates
 6. Remove backup: `rm -rf <operator>.bak/`
+
+## Kubernetes
+
+1. In `buildchain/buildchain/versions.py`, set `K8S_VERSION_MAJOR`,
+   `K8S_VERSION_MINOR` and `K8S_VERSION_PATCH`. Nothing else to edit for the
+   packages: `kubelet` and `kubectl` are pinned to this version, and the build
+   fetches them from the official Kubernetes RPM repository.
+2. In the same `buildchain/buildchain/versions.py`, update the digests of the
+   control-plane images (`kube-apiserver`, `kube-controller-manager`,
+   `kube-scheduler`, `kube-proxy`):
+   ```gcrane digest registry.k8s.io/$image:v$K8S_VERSION```
+3. Read the changelogs of every minor version crossed, and adapt the salt
+   states to removed flags, removed APIs and changed defaults (kubelet, for
+   one, does not start with an unknown flag).
+4. Check that the `kubectl` commands in `docs/` still work.
+5. Regenerate `KUBE_REMOVED_FEATURE_GATES` and `KUBE_LOCKED_FEATURE_GATES` in
+   `salt/_runners/metalk8s_checks.py`, which the upgrade prechecks use to
+   refuse feature gates the new kube-apiserver no longer accepts. `$FROM` is
+   the Kubernetes version of the previous MetalK8s version, and `$K8S_VERSION` is the new one:
+   ```
+   python3 tools/kube-feature-gates/generate.py $FROM $K8S_VERSION
+   ```
 
 ## Calico
 

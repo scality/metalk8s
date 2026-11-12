@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Bump Dex chart to [0.26.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.26.0) and Dex to [v2.46.0](https://github.com/dexidp/dex/releases/tag/v2.46.0)
+time: 2026-10-16T08:32:14.271140983Z
+custom:
+    CommentId: "6144562053"
+    Pull: "5161"

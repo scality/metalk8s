@@ -66,6 +66,26 @@ metalk8s:
                         kind: DexConfig
                         spec: {}
 
+    image-cache-agent:
+      deployed:
+        resources.sls:
+          _cases:
+            "Render from the master (orchestrate)":
+              mode: master
+            "Endpoints as a dict":
+              mode: master
+              pillar_overrides:
+                metalk8s:
+                  endpoints:
+                    repositories:
+                      ip: 10.0.0.2
+                      ports:
+                        http: 8081
+      post-upgrade.sls:
+        _cases:
+          "Render from the master (orchestrate)":
+            mode: master
+
     logging:
       loki:
         deployed:
@@ -85,6 +105,39 @@ metalk8s:
                           apiVersion: addons.metalk8s.scality.com
                           kind: LokiConfig
                           spec: {}
+
+    metalk8s-registry-operator:
+      deployed:
+        registry.sls:
+          _cases:
+            "No ServiceMonitor CRD (default)":
+              mode: master
+            "ServiceMonitor CRD Established":
+              mode: master
+              k8s_overrides:
+                add:
+                  - &servicemonitor_crd
+                    apiVersion: apiextensions.k8s.io/v1
+                    kind: CustomResourceDefinition
+                    metadata:
+                      name: servicemonitors.monitoring.coreos.com
+                    status:
+                      conditions:
+                        - type: Established
+                          status: "True"
+            "ServiceMonitor CRD not yet Established":
+              mode: master
+              k8s_overrides:
+                add:
+                  - <<: *servicemonitor_crd
+                    status:
+                      conditions:
+                        - type: Established
+                          status: "False"
+        monitoring.sls:
+          _cases:
+            "Render from the master (orchestrate)":
+              mode: master
 
     node-problem-detector:
       deployed:
@@ -264,6 +317,33 @@ metalk8s:
     provisioned.sls:
       _cases:
         "Containerd (default)": {}
+        "Without any container engine":
+          pillar_overrides:
+            kubelet:
+              container_engine: ""
+
+    pulled.sls:
+      _cases:
+        "Containerd, endpoints as a list (default)": {}
+        "Containerd, endpoints as a dict":
+          pillar_overrides:
+            metalk8s:
+              endpoints:
+                repositories:
+                  ip: 10.0.0.2
+                  ports:
+                    http: 8081
+        "Containerd, several endpoints":
+          pillar_overrides:
+            metalk8s:
+              endpoints:
+                repositories:
+                  - ip: 10.0.0.2
+                    ports:
+                      http: 8080
+                  - ip: 10.0.0.3
+                    ports:
+                      http: 8080
         "Without any container engine":
           pillar_overrides:
             kubelet:
@@ -496,6 +576,15 @@ metalk8s:
             "Minion already exists (default)": {}
             "Minion is new":
               minion_state: new
+            # The image cache agent fills the cache of a node that already
+            # runs, so Salt only fills it on a new one
+            "Node completed a deployment before":
+              pillar_overrides:
+                <<: *pillar_orch_target_master_node
+                metalk8s:
+                  nodes:
+                    master-1:
+                      version_applied: 2.7.1
             "Skip drain":
               pillar_overrides:
                 <<: *pillar_orch_target_master_node
@@ -1086,6 +1175,11 @@ metalk8s:
             architecture: extended
             _subcases: *upgrade_subcases
 
+      post.sls:
+        _cases:
+          "Render from the master (orchestrate)":
+            mode: master
+
       pre.sls:
         _cases:
           "Single node cluster":
@@ -1109,6 +1203,18 @@ metalk8s:
 
           "Compact cluster":
             architecture: compact
+            _subcases:
+              "No node recorded a deployment (default)": {}
+              # A node never deployed has no agent to wait for: deploying
+              # it fills its cache
+              "A node never deployed":
+                pillar_overrides:
+                  metalk8s:
+                    nodes:
+                      bootstrap:
+                        version_applied: 2.7.1
+                      master-1:
+                        version_applied: 2.7.1
 
       precheck.sls:
         _cases:

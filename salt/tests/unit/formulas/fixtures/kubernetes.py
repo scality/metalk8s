@@ -24,8 +24,11 @@ class KubernetesMock:
             matches = True
             for matcher in matchers:
                 val = item
-                for key in matcher.key:
-                    val = val[key]
+                for key in matcher.key[:-1]:
+                    val = val.get(key) or {}
+                # Like the API server: a missing label never matches `=`, and
+                # always matches `!=`.
+                val = val.get(matcher.key[-1])
                 if matcher.op == "=":
                     matches &= val == matcher.value
                 elif matcher.op == "!=":

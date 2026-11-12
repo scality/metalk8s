@@ -314,7 +314,7 @@ When expanding the control plane, one can check the etcd cluster health:
 
 .. code-block:: shell
 
-   root@bootstrap $ kubectl -n kube-system exec -ti etcd-bootstrap sh --kubeconfig /etc/kubernetes/admin.conf
+   root@bootstrap $ kubectl -n kube-system exec -ti etcd-bootstrap --kubeconfig /etc/kubernetes/admin.conf -- sh
    root@etcd-bootstrap $ etcdctl --endpoints=https://[127.0.0.1]:2379 \
                          --cacert=/etc/kubernetes/pki/etcd/ca.crt \
                          --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \

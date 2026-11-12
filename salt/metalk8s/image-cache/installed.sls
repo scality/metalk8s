@@ -16,6 +16,11 @@ Install containerd image preload:
       # fresh node from resolving that dependency to another provider.
       - metalk8s_package_manager: Install containerd
 
+Install imagecachectl:
+  {{ pkg_installed('imagecachectl') }}
+    - require:
+      - test: Repositories configured
+
 Configure containerd image preload:
   file.managed:
     - name: /etc/sysconfig/containerd-image-preload
@@ -32,6 +37,16 @@ Configure containerd image preload:
       - IMAGE_PLATFORM={{ image_cache.platform }}
     - require:
       - metalk8s_package_manager: Install containerd image preload
+
+# NOTE: Here and not in the SLS that fill the cache, so that both can require
+# it without declaring the same state ID twice in one run.
+Create the image cache directory:
+  file.directory:
+    - name: {{ image_cache.directory }}
+    - user: root
+    - group: root
+    - mode: '0755'
+    - makedirs: True
 
 Ensure containerd image preload timer running:
   service.running:

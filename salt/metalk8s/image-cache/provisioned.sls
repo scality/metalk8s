@@ -1,29 +1,20 @@
 {%- from "metalk8s/map.jinja" import image_cache with context %}
 {%- from "metalk8s/map.jinja" import kubelet with context %}
-{%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/image-cache/variants.jinja" import image_cache_variants with context %}
 
-{#- Fills the image cache from the boot cache image shipped on the ISO.
+{#- Fills the image cache of the bootstrap node from the boot cache images
+    shipped on the ISO.
 
-    This is the cold path: first node, no registry to pull from and no
-    Kubernetes to run the image cache agent, so the archives come out of the
-    ISO. Joining nodes are MK8S-394, upgrades are MK8S-167.
+    This is the cold path: no registry to pull from yet, so the archives come
+    out of the ISO. This node holds the control plane, etcd, the registry and
+    workloads, so it gets every variant. A new node pulls its cache, see
+    `pulled.sls`.
 
-    Ordering this against the kubelet is left to the role that applies both,
-    so that this SLS stays applicable on its own.
+    Ordering this against the kubelet is left to the caller, see
+    `roles/internal/early-stage-bootstrap.sls`, so that this SLS stays
+    applicable on its own. #}
 
-    Only the control plane variant is handled here. The worker and registry
-    variants land with MK8S-380 and MK8S-394, which is also where picking a
-    variant per node role belongs. #}
-
-{#- NOTE: Disabled in 134.0: the boot cache feature is not complete yet.
-    It comes back in 136.0. #}
-{%- if False and kubelet.container_engine == 'containerd' %}
-
-{%- set image_name = 'metalk8s-boot-cache-control-plane' %}
-{%- set image_version = repo.images.get(image_name, {}).get('version') %}
-{%- if not image_version %}
-  {{ raise('Missing version information for "' ~ image_name ~ '"') }}
-{%- endif %}
+{%- if kubelet.container_engine == 'containerd' %}
 
 {%- set archives = salt.metalk8s.get_archives() %}
 
@@ -31,25 +22,24 @@ include:
   - .installed
   - metalk8s.archives.mounted
 
-Create the image cache directory:
-  file.directory:
-    - name: {{ image_cache.directory }}
-    - user: root
-    - group: root
-    - mode: '0755'
-    - makedirs: True
+{%- for variant, resource in image_cache_variants.items() %}
 
-Provision the boot cache:
-  metalk8s_image_cache.provisioned:
-    - name: {{ image_cache.directory }}
+Import the {{ variant }} boot cache from the ISO:
+  metalk8s_image_cache.imported:
+    # NOTE: The name of the ImageCache resource that later owns this
+    # directory, so that the agent adopts it.
+    - name: {{ resource.name }}
     - source: {{ archives[saltenv].path }}/images/{{
-        image_name }}-{{ image_version }}.tar
+        resource.image_name }}-{{ resource.image_version }}.tar
+    - cache_path: {{ image_cache.directory }}
     - require:
       - file: Create the image cache directory
+      - metalk8s_package_manager: Install imagecachectl
       # NOTE: The source is read from the mounted ISO. The bootstrap role
       # happens to include the mount before this state, but relying on the
       # include order of another formula is not a dependency.
       - sls: metalk8s.archives.mounted
+{%- endfor %}
 
 Import the boot cache archives into containerd:
   module.run:
@@ -66,7 +56,9 @@ Import the boot cache archives into containerd:
     # would let the kubelet start with no images, so run the service once,
     # here, as soon as the archives land.
     - onchanges:
-      - metalk8s_image_cache: Provision the boot cache
+{%- for variant in image_cache_variants %}
+      - metalk8s_image_cache: Import the {{ variant }} boot cache from the ISO
+{%- endfor %}
     - require:
       - service: Ensure containerd image preload timer running
 

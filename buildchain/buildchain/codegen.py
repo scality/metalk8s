@@ -190,6 +190,8 @@ def codegen_chart_kube_prometheus_stack() -> types.TaskDict:
         "--patch 'PrometheusRule,metalk8s-monitoring,"
         "prometheus-operator-etcd,"
         'spec:groups:0:rules:11:for,"30m"\' '
+        "--patch 'Deployment,metalk8s-monitoring,prometheus-operator-grafana,"
+        'spec:replicas,"__var__(grafana.spec.deployment.replicas)"\' '
         f"--drop-prometheus-rules {drop_rule_file} "
         f"--output {target_sls}"
     )
@@ -326,12 +328,25 @@ def codegen_chart_thanos() -> types.TaskDict:
 def codegen_chart_cert_manager() -> types.TaskDict:
     """Generate the SLS file for Cert-Manager using the chart render script."""
     target_sls = constants.ROOT / "salt/metalk8s/addons/cert-manager/deployed/chart.sls"
+    sm_sls = (
+        constants.ROOT
+        / "salt/metalk8s/addons/cert-manager/deployed/monitoring/servicemonitor.sls"
+    )
     chart_dir = constants.CHART_ROOT / "cert-manager"
     value_file = constants.CHART_ROOT / "cert-manager.yaml"
-    cmd = (
+
+    chart_cmd = (
         f"{constants.CHART_RENDER_CMD} cert-manager {value_file} {chart_dir} "
         "--namespace metalk8s-certs "
+        "--remove-manifest ServiceMonitor cert-manager "
         f"--output {target_sls}"
+    )
+
+    sm_cmd = (
+        f"{constants.CHART_RENDER_CMD} cert-manager {value_file} {chart_dir} "
+        "--namespace metalk8s-certs "
+        "--keep-manifest ServiceMonitor cert-manager "
+        f"--output {sm_sls}"
     )
 
     file_dep = list(utils.git_ls(chart_dir))
@@ -342,10 +357,57 @@ def codegen_chart_cert_manager() -> types.TaskDict:
         "name": "chart_cert-manager",
         "title": utils.title_with_subtask_name("CODEGEN"),
         "doc": codegen_chart_cert_manager.__doc__,
-        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
+        "actions": [
+            doit.action.CmdAction(chart_cmd, cwd=constants.ROOT),
+            doit.action.CmdAction(sm_cmd, cwd=constants.ROOT),
+        ],
+        "targets": [target_sls, sm_sls],
         "file_dep": file_dep,
         "task_dep": ["check_for:tox", "check_for:helm"],
     }
+
+
+def task_get_codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
+    """Generate the kustomize manifests output for the Registry Operator."""
+    kustomize_dir = constants.ROOT / "kustomizes/metalk8s-registry-operator"
+
+    cmd = f"kustomize build {kustomize_dir}"
+
+    return {
+        "doc": task_get_codegen_kustomize_metalk8s_registry_operator.__doc__,
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT, save_out="stdout")],
+        "file_dep": list(utils.git_ls(kustomize_dir)),
+        "task_dep": ["check_for:kustomize"],
+    }
+
+
+def codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
+    """Generate the SLS file for the Registry Operator."""
+    target_sls = (
+        constants.ROOT
+        / "salt/metalk8s/addons/metalk8s-registry-operator/deployed/chart.sls"
+    )
+    template_file = constants.ROOT / "kustomizes/template.sls.in"
+
+    tpl_task = targets.TemplateFile(
+        task_name="kustomize_metalk8s-registry-operator",
+        source=template_file,
+        destination=target_sls,
+    )
+    tpl_task_dict = tpl_task.task
+    tpl_task_dict.update(
+        {
+            "title": utils.title_with_subtask_name("CODEGEN"),
+            "task_dep": ["get_codegen_kustomize_metalk8s_registry_operator"],
+            "getargs": {
+                "Manifests": (
+                    "get_codegen_kustomize_metalk8s_registry_operator",
+                    "stdout",
+                ),
+            },
+        }
+    )
+    return tpl_task_dict
 
 
 def task_get_codegen_kustomize_crl_operator() -> types.TaskDict:
@@ -543,6 +605,71 @@ def codegen_kustomize_node_warden_operator() -> types.TaskDict:
     return tpl_task_dict
 
 
+def task_get_codegen_kustomize_image_cache_agent() -> types.TaskDict:
+    """Generate the kustomize manifests output for the Image Cache Agent."""
+    kustomize_dir = constants.ROOT / "kustomizes/image-cache-agent"
+
+    cmd = f"kustomize build {kustomize_dir}"
+
+    return {
+        "doc": task_get_codegen_kustomize_image_cache_agent.__doc__,
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT, save_out="stdout")],
+        "file_dep": list(utils.git_ls(kustomize_dir)),
+        "task_dep": ["check_for:kustomize"],
+    }
+
+
+def task_transform_codegen_kustomize_image_cache_agent() -> types.TaskDict:
+    """Transform the kustomize manifests output for the Image Cache Agent."""
+
+    def _transform(stdout: str) -> Dict[str, str]:
+        """Transform the kustomize output."""
+        # The kustomize namespace does not reach strings inside fields, so
+        # replace any leftover upstream namespace.
+        return {
+            "output": stdout.strip().replace(
+                "image-cache-agent-system", "metalk8s-image-cache"
+            )
+        }
+
+    return {
+        "doc": task_transform_codegen_kustomize_image_cache_agent.__doc__,
+        "actions": [_transform],
+        "task_dep": ["get_codegen_kustomize_image_cache_agent"],
+        "getargs": {
+            "stdout": ("get_codegen_kustomize_image_cache_agent", "stdout"),
+        },
+    }
+
+
+def codegen_kustomize_image_cache_agent() -> types.TaskDict:
+    """Generate the SLS file for the Image Cache Agent."""
+    target_sls = (
+        constants.ROOT / "salt/metalk8s/addons/image-cache-agent/deployed/chart.sls"
+    )
+    template_file = constants.ROOT / "kustomizes/template.sls.in"
+
+    tpl_task = targets.TemplateFile(
+        task_name="kustomize_image-cache-agent",
+        source=template_file,
+        destination=target_sls,
+    )
+    tpl_task_dict = tpl_task.task
+    tpl_task_dict.update(
+        {
+            "title": utils.title_with_subtask_name("CODEGEN"),
+            "task_dep": ["transform_codegen_kustomize_image_cache_agent"],
+            "getargs": {
+                "Manifests": (
+                    "transform_codegen_kustomize_image_cache_agent",
+                    "output",
+                ),
+            },
+        }
+    )
+    return tpl_task_dict
+
+
 # List of available code generation tasks.
 CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_storage_operator,
@@ -557,8 +684,10 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_thanos,
     codegen_chart_cert_manager,
     codegen_kustomize_crl_operator,
+    codegen_kustomize_metalk8s_registry_operator,
     codegen_kustomize_disk_management_agent,
     codegen_kustomize_node_warden_operator,
+    codegen_kustomize_image_cache_agent,
 )
 
 

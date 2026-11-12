@@ -8,9 +8,10 @@ import os
 import random
 import string
 from typing import Any, Callable, Dict, List, Optional, Type
+from unittest import mock
 from unittest.mock import MagicMock
 
-from _modules import metalk8s_service_configuration
+from _modules import metalk8s_kubernetes, metalk8s_service_configuration
 
 import jinja2
 import pytest
@@ -300,6 +301,28 @@ def metalk8s_kubernetes_get_object(
     )
 
 
+@register("metalk8s_kubernetes.is_object_ready")
+def metalk8s_kubernetes_is_object_ready(
+    salt_mock: SaltMock,
+    name: str,
+    kind: str,
+    # pylint: disable=invalid-name
+    apiVersion: str,
+    # pylint: enable=invalid-name
+    namespace: Optional[str] = None,
+) -> bool:
+    """Check the object from the K8s API mock with the actual readiness logic."""
+    obj = salt_mock._k8s.get(
+        api_version=apiVersion, kind=kind, name=name, namespace=namespace
+    )
+    with mock.patch.object(metalk8s_kubernetes, "get_object", return_value=obj):
+        return bool(
+            metalk8s_kubernetes.is_object_ready(
+                name=name, kind=kind, apiVersion=apiVersion, namespace=namespace
+            )
+        )
+
+
 @register("metalk8s_kubernetes.list_objects")
 def metalk8s_kubernetes_list_objects(
     salt_mock: SaltMock,
@@ -421,7 +444,6 @@ register_basic("hashutil.base64_encodefile")(
 )
 register_basic("log.warning")(print)
 register_basic("metalk8s.format_san")(", ".join)
-register_basic("salt_version.greater_than")(MagicMock(return_value=True))
 
 
 @register_basic("metalk8s.cmp_sorted")

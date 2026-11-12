@@ -1,0 +1,6 @@
+kind: Enhanced
+body: An upgrade now caches the images of the target version on every node before it upgrades anything, and Salt no longer runs an image cache command during an upgrade.
+time: 2026-10-22T13:47:33.307592333Z
+custom:
+    CommentId: "6342348825"
+    Pull: "5194"
