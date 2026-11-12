@@ -10,6 +10,8 @@ import type { ToolContext } from '../types';
  * already formatted, stripped of the warnings a critical twin covers, and sorted by severity. "The
  * second alert" means the same thing to the agent and to the user.
  *
+ * Everything else about one alert is getAlert's.
+ *
  * Each field is a column of the alert page, read the way the page reads it. `description` is the
  * page's Description column — `row.description || row.summary` in AlertPage — because an alert can
  * carry a description and no summary at all, and a summary alone would leave those blank.
@@ -40,7 +42,8 @@ export function createGetAlertsTool(context: ToolContext) {
       "Returns the platform's active alerts — the same list, in the same order, as the alert page.\n" +
       'Call it when the user asks what is wrong, what is alerting, or about an alert without ' +
       'giving its id.\n' +
-      'Each alert has id, severity, alertname, description and startsAt (when it started firing).\n' +
+      'Each alert has id, severity, alertname, description and startsAt (when it started firing). ' +
+      'Pass an id to getAlert for everything about that alert.\n' +
       'When `alertingPipelineSuspect` comes back, report it the way that field says and never as ' +
       '"everything is fine" — INCLUDING when the list is not empty, which is when it matters ' +
       'most: alerts are listed, and the thing that proves alerting still works is not among ' +
