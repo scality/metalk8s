@@ -2,6 +2,7 @@ import {
   AppContainer,
   ConstrainedText,
   FormattedDateTime,
+  Icon,
   Stack,
   StatusWrapper,
   TextBadge,
@@ -17,7 +18,7 @@ import styled from 'styled-components';
 import CircleStatus from '../components/CircleStatus';
 import StatusIcon from '../components/StatusIcon';
 import { STATUS_CRITICAL, STATUS_HEALTH, STATUS_WARNING } from '../constants';
-import { useUserAccessRight } from '../hooks';
+import { useAskAssistant, useUserAccessRight } from '../hooks';
 import { compareHealth } from '../services/utils';
 import { useAlerts } from './AlertProvider';
 import type { Alert } from '../services/alertUtils';
@@ -146,6 +147,33 @@ function AlertPageHeader({
   );
 }
 
+/**
+ * The Guardian button on an alert's row: asks the assistant to diagnose that alert.
+ *
+ * The prompt carries the alert's id, which getAlert takes, and its name, which the assistant's tool
+ * search matches on. Everything else about the alert is the assistant's to read.
+ */
+function AskGuardianButton({ alert }: { alert: Alert }) {
+  const { ask } = useAskAssistant();
+  return (
+    <Button
+      size="inline"
+      variant="secondary"
+      icon={<Icon name="HandSparkles" />}
+      tooltip={{ overlay: 'Ask Guardian' }}
+      aria-label={`Ask Guardian about ${alert.labels.alertname}`}
+      onClick={(event) => {
+        // The row is selectable: the click is the button's, not the row's.
+        event.stopPropagation();
+        // The id only has to be stable across the shell's retries of ONE ask: the assistant drops
+        // a repeat of an id it has already seen, so a fixed id would silently swallow the second
+        // click on the same alert.
+        ask(`Diagnose the alert ${alert.labels.alertname} (id ${alert.id})`, `alert:${alert.id}:${Date.now()}`);
+      }}
+    />
+  );
+}
+
 type ActiveAlertTabProps = {
   columns: Record<string, unknown>[];
   data: Alert[];
@@ -225,6 +253,8 @@ export default function AlertPage() {
   );
   const criticalAlerts = leafAlerts.filter((alert) => alert.severity === 'critical');
   const wariningAlerts = leafAlerts.filter((alert) => alert.severity === 'warning');
+  // Without Guardian on this platform there is no column at all, rather than an empty one.
+  const { isAvailable: canAskGuardian } = useAskAssistant();
   const columns = React.useMemo(
     () => [
       {
@@ -268,8 +298,23 @@ export default function AlertPage() {
         },
         Cell: (cell) => <FormattedDateTime value={new Date(cell.value)} format="date-time-second" />,
       },
+      ...(canAskGuardian
+        ? [
+            {
+              Header: '',
+              id: 'askGuardian',
+              disableSortBy: true,
+              cellStyle: {
+                flex: 0.5,
+                minWidth: '3rem',
+                textAlign: 'center',
+              },
+              Cell: (cell) => <AskGuardianButton alert={cell.row.original} />,
+            },
+          ]
+        : []),
     ],
-    [],
+    [canAskGuardian],
   );
   return (
     <AppContainer>
