@@ -1,3 +1,4 @@
+import { WATCHDOG_ALERT_NAME } from '../../constants';
 import type { Alert } from '../../services/alertUtils';
 import { readAlerts } from '../monitoringTools';
 import type { ToolContext } from '../types';
@@ -40,8 +41,10 @@ export function createGetAlertsTool(context: ToolContext) {
       'Call it when the user asks what is wrong, what is alerting, or about an alert without ' +
       'giving its id.\n' +
       'Each alert has id, severity, alertname, description and startsAt (when it started firing).\n' +
-      'An EMPTY list is not good news: it comes back with `alertingPipelineSuspect` and a reason. ' +
-      'Report it the way that field says, never as "everything is fine".\n' +
+      'When `alertingPipelineSuspect` comes back, report it the way that field says and never as ' +
+      '"everything is fine" — INCLUDING when the list is not empty, which is when it matters ' +
+      'most: alerts are listed, and the thing that proves alerting still works is not among ' +
+      'them.\n' +
       'Any other status means you could not look — never report that as "no alerts" either.',
     inputSchema: { type: 'object', properties: {}, required: [] },
     annotations: { readOnlyHint: true },
@@ -52,12 +55,14 @@ export function createGetAlertsTool(context: ToolContext) {
 
       const alerts = leaves(result.alerts);
 
-      // An empty list is not a healthy platform. Watchdog fires permanently and for no other
-      // reason than to prove the alerting pipeline works (`expr: vector(1)`, severity none), so it
-      // is in this list on any platform that can report at all. Nothing at all therefore says
-      // Prometheus or Alertmanager has stopped reporting, which is the opposite of what "no
-      // alerts" sounds like — and it is the state in which nothing would warn the user anyway.
-      if (!alerts.some((alert) => alert.alertname === 'Watchdog')) {
+      // Watchdog fires permanently and for no other reason than to prove the alerting pipeline
+      // works (`expr: vector(1)`, severity none), so it is in this list on any platform that can
+      // report at all. Its absence says Prometheus or Alertmanager has stopped reporting — the
+      // state in which nothing would warn anyone — and that holds whether the list is empty or
+      // full. AlertNavbarUpdaterComponent raises "Alerting Service is Unavailable" on the same
+      // condition, and the two have to say the same thing: this tool's contract is that the
+      // assistant and the console describe one platform.
+      if (!alerts.some((alert) => alert.alertname === WATCHDOG_ALERT_NAME)) {
         return {
           status: 'ok',
           alerts,

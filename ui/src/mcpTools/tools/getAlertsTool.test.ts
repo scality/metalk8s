@@ -15,10 +15,13 @@ describe('getAlerts', () => {
   });
 
   it('returns the list the console holds, in its order, without calling Alertmanager again', async () => {
+    // Watchdog is in the fixture because it is on every healthy platform: without it this list
+    // would also be asserting a broken alerting pipeline, which is a different test.
     const context = loaded([
       raw('VolumeAlmostFull', 'warning', 'w1', { instance: 'node-1' }),
       raw('VolumeAlmostFull', 'critical', 'c1', { instance: 'node-1' }),
       raw('NodeDown', 'warning', 'w2', { instance: 'node-2' }),
+      raw('Watchdog', 'none', 'wd'),
     ]);
 
     expect(await run(context)).toEqual({
@@ -26,6 +29,7 @@ describe('getAlerts', () => {
       alerts: [
         { id: 'c1', severity: 'critical', alertname: 'VolumeAlmostFull', description: 'VolumeAlmostFull summary', startsAt: '2026-11-05T09:12:00Z' },
         { id: 'w2', severity: 'warning', alertname: 'NodeDown', description: 'NodeDown summary', startsAt: '2026-11-05T09:12:00Z' },
+        { id: 'wd', severity: 'none', alertname: 'Watchdog', description: 'Watchdog summary', startsAt: '2026-11-05T09:12:00Z' },
       ],
     });
     expect(window.fetch).not.toHaveBeenCalled();
@@ -64,6 +68,16 @@ describe('getAlerts', () => {
     expect(result.alertingPipelineSuspect).toEqual(expect.stringContaining('Watchdog'));
   });
 
+  it('flags the pipeline when Watchdog is missing even though other alerts are firing', async () => {
+    // The case that matters: a list of real alerts reads as a working platform, and the one alert
+    // that proves alerting still works is not in it. AlertNavbarUpdaterComponent raises "Alerting
+    // Service is Unavailable" on the same condition, so the tool and the navbar agree.
+    const result = await run(loaded([raw('NodeDown', 'critical', 'c1'), raw('VolumeAlmostFull', 'warning', 'w1')]));
+
+    expect(result.alerts).toHaveLength(2);
+    expect(result.alertingPipelineSuspect).toEqual(expect.stringContaining('Watchdog'));
+  });
+
   it('says nothing about the pipeline while alerts are coming through', async () => {
     const result = await run(loaded([raw('Watchdog', 'none', 'wd'), raw('NodeDown', 'critical', 'c1')]));
 
@@ -72,6 +86,14 @@ describe('getAlerts', () => {
 
   it('returns an empty list only when Alertmanager really answered with none', async () => {
     expect(await run(loaded([]))).toMatchObject({ status: 'ok', alerts: [] });
+  });
+
+  it('leaves Watchdog in the list, because the alert page shows it', async () => {
+    const result = await run(loaded([raw('Watchdog', 'none', 'wd')]));
+
+    expect(result.alerts).toEqual([
+      { id: 'wd', severity: 'none', alertname: 'Watchdog', description: 'Watchdog summary', startsAt: '2026-11-05T09:12:00Z' },
+    ]);
   });
 
   it("refuses the provider's initial empty list: not loaded is not \"nothing firing\"", async () => {
