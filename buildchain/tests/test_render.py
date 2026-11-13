@@ -109,7 +109,7 @@ def test_kustomize_render() -> None:
     )
     expected = kustomize.SlsTemplate(
         kustomize.TEMPLATE_FILE.read_text(encoding="utf-8")
-    ).substitute(Manifests=f"{DEPLOYMENT}\n---\n{MONITOR}\n")
+    ).substitute(Manifests=f"{DEPLOYMENT}\n---\n{MONITOR}")
     assert sls == expected
 
 
@@ -173,3 +173,30 @@ def test_helm_missing_manifest() -> None:
         args = parse(helm, ["charts/dex", "--remove-manifest", "Service", "typo"])
         with pytest.raises(ValueError, match="Service/typo"):
             helm.render(args)
+
+
+def test_kustomize_replace() -> None:
+    """Replacements are done in the given order, before the selection."""
+    output = DEPLOYMENT.replace("operator", "operator-system") + "\n"
+    args = parse(
+        kustomize,
+        [
+            "kustomizes/operator",
+            "--replace",
+            "operator-system",
+            "PLACEHOLDER",
+            "--replace",
+            "PLACEHOLDER",
+            "metalk8s-operator",
+            "--keep-manifest",
+            "Deployment",
+            "metalk8s-operator",
+        ],
+    )
+    with unittest.mock.patch.object(
+        kustomize.subprocess, "check_output", return_value=output
+    ):
+        sls = kustomize.render(args)
+    assert "name: metalk8s-operator\n" in sls
+    assert "operator-system" not in sls
+    assert "PLACEHOLDER" not in sls

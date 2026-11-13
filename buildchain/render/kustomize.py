@@ -7,6 +7,8 @@ deploys it in a Kubernetes cluster as part of MetalK8s.
 It performs the following tasks:
 
 - Run `kustomize build` on the directory
+- Replace strings in its output, in the given order (kustomize does not set the
+  namespace in custom resource fields, like the Certificate `dnsNames`)
 - Keep or remove manifests, selected by kind and name
 - Put the manifests in the `kustomizes/template.sls.in` SLS template
 
@@ -38,16 +40,28 @@ def manifest_id(document):
 
 def add_arguments(parser):
     parser.add_argument("path", help="Path to the kustomize directory")
+    parser.add_argument(
+        "--replace",
+        action="append",
+        nargs=2,
+        dest="replacements",
+        metavar=("OLD", "NEW"),
+        help="Replace OLD by NEW in the kustomize output, can be repeated "
+        "(replacements are done in the given order)",
+    )
 
 
 def render(args):
     rendered = subprocess.check_output(["kustomize", "build", args.path], text=True)
-    documents = rendered.strip().split(DOCUMENT_SEPARATOR)
+    rendered = rendered.strip()
+    for old, new in args.replacements or []:
+        rendered = rendered.replace(old, new)
+    documents = rendered.split(DOCUMENT_SEPARATOR)
 
     selected = common.select_manifests(
         documents, args.keep_manifests, args.remove_manifests, identify=manifest_id
     )
 
     return SlsTemplate(TEMPLATE_FILE.read_text(encoding="utf-8")).substitute(
-        Manifests=DOCUMENT_SEPARATOR.join(selected) + "\n"
+        Manifests=DOCUMENT_SEPARATOR.join(selected)
     )

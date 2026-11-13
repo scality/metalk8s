@@ -1714,5 +1714,4 @@ webhooks:
     resources:
     - solutionarchives
   sideEffects: None
-
 {%- endraw %}

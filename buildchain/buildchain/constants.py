@@ -87,6 +87,10 @@ UI_ASSETS: Path = UI_BRANDING / "assets"
 # Path to the chart files
 CHART_ROOT: Path = ROOT / "charts"
 
+# Path to the kustomize files
+KUSTOMIZE_ROOT: Path = ROOT / "kustomizes"
+KUSTOMIZE_TEMPLATE: Path = KUSTOMIZE_ROOT / "template.sls.in"
+
 # Path to the render tool, for Helm charts and kustomize directories
 RENDER_ROOT: Path = ROOT / "buildchain/render"
 RENDER_SCRIPTS: List[Path] = sorted(RENDER_ROOT.glob("*.py"))
@@ -164,6 +168,7 @@ RENDER_CMD: List[str] = [sys.executable, str(RENDER_ROOT)]
 CHART_RENDER_CMD: str = shlex.join(
     [*RENDER_CMD, "helm", "--kube-version", versions.K8S_VERSION]
 )
+KUSTOMIZE_RENDER_CMD: List[str] = [*RENDER_CMD, "kustomize"]
 
 # For mypy, see `--no-implicit-reexport` documentation.
 __all__ = ["ROOT"]
