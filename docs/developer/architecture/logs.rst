@@ -409,8 +409,7 @@ the `loki helm chart`_::
   helm repo add loki https://grafana.github.io/loki/charts
   helm repo update
   helm fetch -d charts --untar loki/loki
-  ./charts/render.py loki --namespace metalk8s-logging \
-    charts/loki.yaml charts/loki/ \
+  python3 buildchain/render helm charts/loki --namespace metalk8s-logging \
     > salt/metalk8s/addons/loki/deployed/charts.sls
 
 .. _loki helm chart: https://github.com/grafana/loki/tree/master/production/helm

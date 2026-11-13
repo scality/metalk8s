@@ -1,6 +1,7 @@
 include:
   - metalk8s.addons.prometheus-operator.deployed
   - metalk8s.addons.metalk8s-registry-operator.deployed
+  - .servicemonitor
 
 # The ServiceMonitor CRD is deployed by the prometheus-operator chart
 Wait for the ServiceMonitor CRD to be Established:
@@ -14,6 +15,8 @@ Wait for the ServiceMonitor CRD to be Established:
         attempts: 30
     - require:
       - sls: metalk8s.addons.prometheus-operator.deployed.chart
+    - require_in:
+      - sls: metalk8s.addons.metalk8s-registry-operator.deployed.servicemonitor
 
 # On a fresh cluster, registry.sls leaves monitoring out of the Registry CR,
 # since the ServiceMonitor CRD does not exist yet when it is rendered
