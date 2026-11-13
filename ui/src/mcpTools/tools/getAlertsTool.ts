@@ -62,7 +62,7 @@ export function createGetAlertsTool(context: ToolContext) {
           status: 'ok',
           alerts,
           alertingPipelineSuspect:
-            'No alert at all, not even Watchdog — the alert that fires permanently to prove the ' +
+            'Watchdog is missing — the alert that fires permanently to prove the ' +
             'alerting pipeline works. That usually means Prometheus or Alertmanager has stopped ' +
             'reporting rather than that the platform is healthy, and nothing would raise an alarm ' +
             'while it lasts. Say so, and offer to look into why the alerting service is down.',
