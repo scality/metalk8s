@@ -177,9 +177,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="nginx",
         version=NGINX_IMAGE_VERSION,
-        # Do not check the digest for this image, since this one is re-published
-        # several times with the same tag
-        digest=None,
+        digest="sha256:892bb2152464f0c5d8972593a5f5afaf8054552580b699d95f8ff4af08c2d33d",
     ),
     Image(
         name="nginx-ingress-controller",
@@ -204,9 +202,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="pause",
         version="3.10.2",
-        # Do not check the digest for this image, since this one is re-published
-        # several times with the same tag
-        digest=None,
+        digest="sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
     ),
     Image(
         name="prometheus",

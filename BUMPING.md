@@ -150,6 +150,9 @@ A few tips to bump image versions and SHAs:
  - the registry for an image can be found by parsing `constants.py` and `image.py`.
  - when the registry is known, the SHA for the new version can be fetched:
    ```gcrane digest $registry/$image:$tag```
+ - every pulled image needs its digest: the build pulls images by digest only,
+   so an upstream re-push of the tag does not change what ships. Use the digest
+   `gcrane digest` prints without `--platform`, the one of the multi-arch index.
 
 ## Operator-sdk and Go version
 

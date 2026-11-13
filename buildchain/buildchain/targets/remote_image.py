@@ -12,6 +12,7 @@ All of these actions are done by a single task.
 import abc
 import itertools
 import operator
+import re
 from pathlib import Path
 from typing import Any, Optional, List, Sequence
 
@@ -42,7 +43,7 @@ class RemoteImage(image.ContainerImage):
             repository:     repository where the image is stored
             name:           image name
             version:        image version
-            digest:         image digest
+            digest:         digest of the image upstream, pulled by it
             destination:    save location for the image
             save_as:        format(s) in which to save the image
             remote_name:    image name in the registry
@@ -50,6 +51,11 @@ class RemoteImage(image.ContainerImage):
         Keyword Arguments:
             They are passed to `Target` init method.
         """
+        if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest or ""):
+            raise ValueError(
+                f"{name}:{version}: pin the digest of the image, as `gcrane digest` "
+                f"prints it (got {digest!r})"
+            )
         self._repository = repository
         self._digest = digest
         self._remote_name = remote_name or name
@@ -129,7 +135,7 @@ class SaveAsLayers(ImageSaveFormat):
         # Use Skopeo to directly copy the remote image into a directory
         # of image layers
         skopeo_copy = list(constants.SKOPEO_COPY_DEFAULT_ARGS)
-        skopeo_copy.append(f"docker://{img.remote_fullname}")
+        skopeo_copy.append(f"docker://{img.remote_fullname_digest}")
         skopeo_copy.append(f"dir:{img.dirname}")
         return [img.mkdirs, skopeo_copy]
 
@@ -145,9 +151,8 @@ class SaveAsOCILayout(ImageSaveFormat):
         return img.layout_dirname / "index.json"
 
     def save(self, img: RemoteImage) -> List[types.Action]:
-        source = img.remote_fullname_digest if img.digest else img.remote_fullname
         skopeo_copy = list(constants.SKOPEO_COPY_OCI_ARGS)
-        skopeo_copy.append(f"docker://{source}")
+        skopeo_copy.append(f"docker://{img.remote_fullname_digest}")
         skopeo_copy.append(f"oci:{img.layout_dirname}:{img.version}")
         return [img.prepare_layout, skopeo_copy]
 
@@ -169,12 +174,12 @@ class SaveAsTar(ImageSaveFormat):
         return [
             (
                 docker_command.docker_pull,
-                [img.repository, img.remote_name, img.version, img.digest],
+                [img.repository, img.remote_name, img.digest],
                 {},
             ),
             (
                 docker_command.docker_tag,
-                [qualname, img.remote_fullname, img.version],
+                [qualname, img.remote_fullname_digest, img.version],
                 {},
             ),
             (docker_command.docker_save, [img.fullname, self.filepath(img)], {}),
