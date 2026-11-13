@@ -65,7 +65,7 @@ describe('getAlerts', () => {
   });
 
   it('says nothing about the pipeline while alerts are coming through', async () => {
-    const result = await run(loaded([raw('NodeDown', 'critical', 'c1')]));
+    const result = await run(loaded([raw('Watchdog', 'none', 'wd'), raw('NodeDown', 'critical', 'c1')]));
 
     expect(result.alertingPipelineSuspect).toBeUndefined();
   });
