@@ -5,7 +5,7 @@
 
 from pathlib import Path
 import subprocess
-from typing import List, Optional, FrozenSet
+from typing import Dict, List, Optional, FrozenSet
 
 from buildchain import ROOT  # Re-export ROOT through this module.
 from buildchain import config, versions
@@ -132,8 +132,20 @@ _SKOPEO_COPY_ARGS: List[str] = [
 
 SKOPEO_COPY_DEFAULT_ARGS: List[str] = [*_SKOPEO_COPY_ARGS, "--format", "v2s2"]
 
-# An image already in the OCI format keeps its upstream manifest.
+# Built images are copied from the Docker daemon in the OCI format.
 SKOPEO_COPY_OCI_ARGS: List[str] = [*_SKOPEO_COPY_ARGS, "--format", "oci"]
+
+# Pulled images keep their upstream manifests and blobs, byte for byte.
+SKOPEO_COPY_RAW_ARGS: List[str] = [*_SKOPEO_COPY_ARGS, "--preserve-digests"]
+
+SKOPEO_INSPECT_RAW_ARGS: List[str] = [
+    config.ExtCommand.SKOPEO.value,
+    "inspect",
+    "--raw",
+]
+
+# The only platform the ISO ships images for.
+IMAGE_PLATFORM: Dict[str, str] = {"os": "linux", "architecture": "amd64"}
 
 # }}}
 # Alert tree definitions {{{
