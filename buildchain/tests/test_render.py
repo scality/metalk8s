@@ -55,28 +55,42 @@ def test_is_selected(
     assert common.is_selected("ServiceMonitor", "operator", keep, remove) is expected
 
 
-def test_select_documents_keep() -> None:
+def select(
+    keep: Optional[List[List[str]]], remove: Optional[List[List[str]]]
+) -> List[str]:
+    """Select kustomize documents, written as text."""
+    selected: List[str] = common.select_manifests(
+        DOCUMENTS, keep, remove, identify=kustomize.manifest_id
+    )
+    return selected
+
+
+def test_select_manifests_keep() -> None:
     """Keeping a manifest drops all the others."""
-    selected = kustomize.select_documents(
-        DOCUMENTS, [["ServiceMonitor", "operator"]], None
-    )
-    assert selected == [MONITOR]
+    assert select([["ServiceMonitor", "operator"]], None) == [MONITOR]
 
 
-def test_select_documents_remove() -> None:
+def test_select_manifests_remove() -> None:
     """Removing a manifest keeps all the others, in order."""
-    selected = kustomize.select_documents(
-        DOCUMENTS, None, [["ServiceMonitor", "operator"]]
-    )
-    assert selected == [DEPLOYMENT, SERVICE]
+    assert select(None, [["ServiceMonitor", "operator"]]) == [DEPLOYMENT, SERVICE]
 
 
-def test_select_documents_missing() -> None:
+def test_select_manifests_missing() -> None:
     """A manifest that is not in the output is an error, not a silent no-op."""
     with pytest.raises(ValueError, match="ServiceMonitor/typo"):
-        kustomize.select_documents(DOCUMENTS, [["ServiceMonitor", "typo"]], None)
+        select([["ServiceMonitor", "typo"]], None)
     with pytest.raises(ValueError, match="Service/typo"):
-        kustomize.select_documents(DOCUMENTS, None, [["Service", "typo"]])
+        select(None, [["Service", "typo"]])
+
+
+def test_select_manifests_parsed() -> None:
+    """Parsed manifests, as Helm renders them, are identified by default."""
+    service = {"kind": "Service", "metadata": {"name": "operator"}}
+    deployment = {"kind": "Deployment", "metadata": {"name": "operator"}}
+    selected = common.select_manifests(
+        [deployment, service], None, [["Service", "operator"]]
+    )
+    assert selected == [deployment]
 
 
 def test_kustomize_render() -> None:
@@ -149,3 +163,13 @@ def test_helm_remove_manifest() -> None:
         sls = helm.render(args)
     assert "kind: Deployment" in sls
     assert "kind: ServiceMonitor" not in sls
+
+
+def test_helm_missing_manifest() -> None:
+    """Helm charts also fail on a manifest that is not in the output."""
+    with unittest.mock.patch.object(
+        helm.subprocess, "check_output", return_value=DEPLOYMENT.encode()
+    ):
+        args = parse(helm, ["charts/dex", "--remove-manifest", "Service", "typo"])
+        with pytest.raises(ValueError, match="Service/typo"):
+            helm.render(args)

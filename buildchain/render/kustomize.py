@@ -32,28 +32,8 @@ class SlsTemplate(string.Template):
 
 
 def manifest_id(document):
-    manifest = yaml.safe_load(document) or {}
-    return (manifest.get("kind"), (manifest.get("metadata") or {}).get("name"))
-
-
-def select_documents(documents, keep_manifests, remove_manifests):
-    # A typo in a name would silently keep or drop the wrong manifests
-    wanted = (keep_manifests or []) + (remove_manifests or [])
-    missing = {tuple(manifest) for manifest in wanted}
-    selected = []
-    for document in documents:
-        kind, name = manifest_id(document)
-        missing.discard((kind, name))
-        if common.is_selected(kind, name, keep_manifests, remove_manifests):
-            selected.append(document)
-
-    if missing:
-        raise ValueError(
-            "Manifests not found in the kustomize output: "
-            + ", ".join(f"{kind}/{name}" for kind, name in sorted(missing))
-        )
-
-    return selected
+    """Return the kind and name of a manifest written as text."""
+    return common.manifest_id(yaml.safe_load(document) or {})
 
 
 def add_arguments(parser):
@@ -64,7 +44,9 @@ def render(args):
     rendered = subprocess.check_output(["kustomize", "build", args.path], text=True)
     documents = rendered.strip().split(DOCUMENT_SEPARATOR)
 
-    selected = select_documents(documents, args.keep_manifests, args.remove_manifests)
+    selected = common.select_manifests(
+        documents, args.keep_manifests, args.remove_manifests, identify=manifest_id
+    )
 
     return SlsTemplate(TEMPLATE_FILE.read_text(encoding="utf-8")).substitute(
         Manifests=DOCUMENT_SEPARATOR.join(selected) + "\n"

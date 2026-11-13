@@ -517,17 +517,16 @@ def render(args):
     ).lstrip()
     out += "\n"
 
-    manifests = []
+    docs = []
     for doc in yaml.safe_load_all(template):
         if keep_doc(doc):
             doc = fixup(doc, patches)
-        if doc and common.is_selected(
-            doc.get("kind"),
-            (doc.get("metadata") or {}).get("name"),
-            args.keep_manifests,
-            args.remove_manifests,
-        ):
-            manifests.append(doc)
+        if doc:
+            docs.append(doc)
+
+    manifests = common.select_manifests(
+        docs, args.keep_manifests, args.remove_manifests
+    )
 
     stream = io.StringIO()
     yaml.safe_dump_all(
