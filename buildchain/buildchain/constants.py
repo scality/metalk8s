@@ -5,7 +5,7 @@
 
 from pathlib import Path
 import subprocess
-from typing import List, Optional, FrozenSet
+from typing import Dict, List, Optional, FrozenSet
 
 from buildchain import ROOT  # Re-export ROOT through this module.
 from buildchain import config, versions
@@ -33,6 +33,8 @@ THANOS_REPOSITORY: str = "quay.io/thanos"
 CERT_MANAGER_REPOSITORY: str = "quay.io/jetstack"
 OAUTH2_PROXY_REPOSITORY: str = "quay.io/oauth2-proxy"
 SCALITY_REPOSITORY: str = "ghcr.io/scality"
+# Locally built images are named after it, as published for `shell-ui`.
+METALK8S_REPOSITORY: str = f"{SCALITY_REPOSITORY}/metalk8s"
 
 # Registry endpoint the nodes resolve through their containerd mirror
 # configuration: kept in sync with `repo:registry_endpoint` in
@@ -120,15 +122,30 @@ GIT_REF = git_ref()
 # }}}
 # Skopeo default arguments {{{
 
-SKOPEO_COPY_DEFAULT_ARGS: List[str] = [
+_SKOPEO_COPY_ARGS: List[str] = [
     config.ExtCommand.SKOPEO.value,
     "--override-os",
     "linux",
     "--insecure-policy",
     "copy",
-    "--format",
-    "v2s2",
 ]
+
+SKOPEO_COPY_DEFAULT_ARGS: List[str] = [*_SKOPEO_COPY_ARGS, "--format", "v2s2"]
+
+# Built images are copied from the Docker daemon in the OCI format.
+SKOPEO_COPY_OCI_ARGS: List[str] = [*_SKOPEO_COPY_ARGS, "--format", "oci"]
+
+# Pulled images keep their upstream manifests and blobs, byte for byte.
+SKOPEO_COPY_RAW_ARGS: List[str] = [*_SKOPEO_COPY_ARGS, "--preserve-digests"]
+
+SKOPEO_INSPECT_RAW_ARGS: List[str] = [
+    config.ExtCommand.SKOPEO.value,
+    "inspect",
+    "--raw",
+]
+
+# The only platform the ISO ships images for.
+IMAGE_PLATFORM: Dict[str, str] = {"os": "linux", "architecture": "amd64"}
 
 # }}}
 # Alert tree definitions {{{
