@@ -1,13 +1,15 @@
 # coding: utf-8
 
-"""Unit tests for the boot cache tasks of `buildchain.image`."""
+"""Unit tests for the tasks of `buildchain.image`."""
 
+import subprocess
 from pathlib import Path
-from typing import Any, List
+from typing import Any, Dict, List, Optional, Tuple
 
 import pytest
 
 from buildchain import config, constants, image, versions
+from buildchain.targets import RemoteImage
 
 VARIANTS = sorted(image.BOOT_CACHE_VARIANTS)
 
@@ -199,3 +201,82 @@ class TestOCILayouts:
         layer_dirs = {img.dest_dir / img.name for img in self.saved_images()}
         for img in self.saved_images():
             assert not layer_dirs.intersection(img.layout_dirname.parents)
+
+
+class TestCheckImagePins:
+    OTHER_DIGEST = "sha256:" + "f" * 64
+
+    @pytest.fixture(name="checked")
+    def fixture_checked(self, monkeypatch: pytest.MonkeyPatch) -> List[str]:
+        """The images whose tag gets looked up, all found as pinned."""
+        checked: List[str] = []
+
+        def digest_of_tag(img: RemoteImage) -> str:
+            checked.append(img.name)
+            return str(img.digest)
+
+        monkeypatch.setattr(RemoteImage, "digest_of_tag", digest_of_tag)
+        return checked
+
+    @staticmethod
+    def current_pins() -> Dict[str, Tuple[str, Optional[str]]]:
+        return {img.name: (img.version, img.digest) for img in image.TO_PULL.values()}
+
+    def test_every_image_without_a_base(self, checked: List[str]) -> None:
+        assert image._check_image_pins(base="")
+        assert sorted(checked) == sorted(image.TO_PULL)
+
+    def test_only_the_changed_pins_with_a_base(
+        self, checked: List[str], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        previous = self.current_pins()
+        previous["pause"] = ("0.0.1", previous["pause"][1])
+        del previous["nginx"]
+        monkeypatch.setattr(image, "_image_pins_at", lambda _: previous)
+        assert image._check_image_pins(base="origin/main")
+        assert sorted(checked) == ["nginx", "pause"]
+
+    def test_nothing_when_no_pin_changed(
+        self, checked: List[str], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(image, "_image_pins_at", lambda _: self.current_pins())
+        assert image._check_image_pins(base="origin/main")
+        assert not checked
+
+    def test_a_moved_tag_fails(
+        self, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        monkeypatch.setattr(RemoteImage, "digest_of_tag", lambda _: self.OTHER_DIGEST)
+        assert not image._check_image_pins(base="")
+        assert f"points to {self.OTHER_DIGEST}" in capsys.readouterr().out
+
+    def test_pins_are_read_from_versions_py_at_the_revision(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        source = (
+            "from collections import namedtuple\n"
+            "Image = namedtuple('Image', ('name', 'version', 'digest'))\n"
+            "CONTAINER_IMAGES = (Image('pause', '3.9', 'sha256:abc'),)\n"
+        )
+        commands: List[List[str]] = []
+
+        def run(command: List[str], **_: Any) -> subprocess.CompletedProcess:
+            commands.append(command)
+            return subprocess.CompletedProcess(command, 0, source, "")
+
+        monkeypatch.setattr(image.subprocess, "run", run)
+        assert image._image_pins_at("origin/main") == {"pause": ("3.9", "sha256:abc")}
+        assert commands[0][-2:] == [
+            "show",
+            "origin/main:buildchain/buildchain/versions.py",
+        ]
+
+    def test_an_unknown_revision_is_an_error(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        def run(command: List[str], **_: Any) -> subprocess.CompletedProcess:
+            return subprocess.CompletedProcess(command, 128, "", "bad revision")
+
+        monkeypatch.setattr(image.subprocess, "run", run)
+        with pytest.raises(RuntimeError, match="bad revision"):
+            image._image_pins_at("nope")

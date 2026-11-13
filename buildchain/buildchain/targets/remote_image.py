@@ -82,6 +82,13 @@ class RemoteImage(image.ContainerImage):
         """Complete image name retrieved from the remote repository using digest."""
         return f"{self.repository}/{self.remote_name}@{self.digest}"
 
+    def digest_of_tag(self) -> str:
+        """Return the digest the tag of the image points to upstream."""
+        manifest = _skopeo(
+            [*constants.SKOPEO_INSPECT_RAW_ARGS, f"docker://{self.remote_fullname}"]
+        )
+        return f"sha256:{hashlib.sha256(manifest).hexdigest()}"
+
     @property
     def fullname(self) -> str:
         """Complete image name to use as a tag before saving with Docker."""
