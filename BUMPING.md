@@ -153,6 +153,10 @@ A few tips to bump image versions and SHAs:
  - every pulled image needs its digest: the build pulls images by digest only,
    so an upstream re-push of the tag does not change what ships. Use the digest
    `gcrane digest` prints without `--platform`, the one of the multi-arch index.
+ - CI checks that the tag of each image whose pin changed points to its digest.
+   To run the check locally, against the development branch:
+   ```./doit.sh check_image_pins --base origin/development/<version>```
+   Without `--base`, it checks every image.
 
 ## Operator-sdk and Go version
 

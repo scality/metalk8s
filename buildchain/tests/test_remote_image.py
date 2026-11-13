@@ -145,6 +145,26 @@ class TestPin:
         ]
 
 
+class TestDigestOfTag:
+    def test_hashes_the_raw_manifest_of_the_tag(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        commands: List[List[str]] = []
+
+        def run(command: List[str], **_: Any) -> subprocess.CompletedProcess:
+            commands.append(command)
+            return subprocess.CompletedProcess(command, 0, b"manifest", b"")
+
+        monkeypatch.setattr(remote_image.subprocess, "run", run)
+        assert make_image().digest_of_tag() == digest_of(b"manifest")
+        assert commands == [
+            [
+                *remote_image.constants.SKOPEO_INSPECT_RAW_ARGS,
+                "docker://registry.invalid/project/some-image:1.0.0",
+            ]
+        ]
+
+
 class TestOCILayout:
     def test_saved_by_default_next_to_the_layers(self) -> None:
         image = make_image()

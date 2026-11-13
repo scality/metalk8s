@@ -43,6 +43,9 @@ unit-tests-buildchain:
   - tox.ini
   - .devcontainer/**
 
+image-pins:
+  - buildchain/buildchain/versions.py
+
 unit-tests-lib-alert-tree:
   - tools/lib-alert-tree/**
   - .devcontainer/**
