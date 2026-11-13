@@ -57,7 +57,7 @@ export function createGetAlertsTool(context: ToolContext) {
       // is in this list on any platform that can report at all. Nothing at all therefore says
       // Prometheus or Alertmanager has stopped reporting, which is the opposite of what "no
       // alerts" sounds like — and it is the state in which nothing would warn the user anyway.
-      if (!alerts.length) {
+      if (!alerts.some((alert) => alert.alertname === 'Watchdog')) {
         return {
           status: 'ok',
           alerts,
