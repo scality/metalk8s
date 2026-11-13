@@ -279,29 +279,20 @@ def docker_tag(repository: str, full_name: str, version: str) -> None:
         ValueError: default_error_handler,
     }
 )
-def docker_pull(
-    repository: str, name: str, version: str, digest: Optional[str] = None
-) -> None:
-    """Pull a Docker image using Docker API.
+def docker_pull(repository: str, name: str, digest: str) -> None:
+    """Pull a Docker image by digest using Docker API.
 
     Arguments:
         repository: the repository to pull from
         name:       the image name to pull from the repository
-        version:    the version of the image to pull
-        digest:     the expected digest of the image to pull
+        digest:     the digest of the image to pull
     """
-    pulled = DOCKER_CLIENT.images.pull(
+    DOCKER_CLIENT.images.pull(
         # For some reason, the repository must include the image name…
         f"{repository}/{name}",
-        tag=version,
+        tag=digest,
         platform="linux/amd64",
     )
-    if digest and pulled.id != digest:
-        raise ValueError(
-            f"Image {name}:{version} pulled from {repository} "
-            "doesn't match expected digest: "
-            f"expected {digest}, got {pulled.id}"
-        )
 
 
 @task_error(
