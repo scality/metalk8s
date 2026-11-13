@@ -3,6 +3,7 @@ import { createGetAlertTool } from './tools/getAlertTool';
 import { createGetAlertsTool } from './tools/getAlertsTool';
 import { createGetPodLogsTool } from './tools/getPodLogsTool';
 import { createListKubeResourcesTool } from './tools/listKubeResourcesTool';
+import { createMakePrometheusQueryTool } from './tools/makePrometheusQueryTool';
 import type { ToolContext } from './types';
 
 /**
@@ -18,4 +19,5 @@ export const createTools = (context: ToolContext) => [
   createGetPodLogsTool(context),
   createGetAlertsTool(context),
   createGetAlertTool(context),
+  createMakePrometheusQueryTool(context),
 ];
