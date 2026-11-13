@@ -1,17 +1,17 @@
 import { QueryClient } from 'react-query';
 import type { ToolContext } from '../types';
 import { contextWith, failed, loaded, notLoadedYet, raw } from './alertCache.testUtils';
-import { createGetPlatformAlertsTool } from './getPlatformAlertsTool';
+import { createGetAlertsTool } from './getAlertsTool';
 
-const run = (context: ToolContext) => createGetPlatformAlertsTool(context).execute() as Promise<Record<string, unknown>>;
+const run = (context: ToolContext) => createGetAlertsTool(context).execute() as Promise<Record<string, unknown>>;
 
 beforeEach(() => {
   window.fetch = jest.fn() as never;
 });
 
-describe('getPlatformAlerts', () => {
+describe('getAlerts', () => {
   it('is declared read-only', () => {
-    expect(createGetPlatformAlertsTool(notLoadedYet()).annotations).toEqual({ readOnlyHint: true });
+    expect(createGetAlertsTool(notLoadedYet()).annotations).toEqual({ readOnlyHint: true });
   });
 
   it('returns the list the console holds, in its order, without calling Alertmanager again', async () => {
@@ -55,8 +55,23 @@ describe('getPlatformAlerts', () => {
     expect(alerts[0].description).toBe(LICENSE);
   });
 
+  it('treats nothing at all as a broken alerting pipeline, not a healthy platform', async () => {
+    // Watchdog fires permanently and for no other reason than to prove the pipeline works, so an
+    // empty list means Prometheus or Alertmanager has stopped reporting.
+    const result = await run(loaded([]));
+
+    expect(result.alerts).toEqual([]);
+    expect(result.alertingPipelineSuspect).toEqual(expect.stringContaining('Watchdog'));
+  });
+
+  it('says nothing about the pipeline while alerts are coming through', async () => {
+    const result = await run(loaded([raw('NodeDown', 'critical', 'c1')]));
+
+    expect(result.alertingPipelineSuspect).toBeUndefined();
+  });
+
   it('returns an empty list only when Alertmanager really answered with none', async () => {
-    expect(await run(loaded([]))).toEqual({ status: 'ok', alerts: [] });
+    expect(await run(loaded([]))).toMatchObject({ status: 'ok', alerts: [] });
   });
 
   it("refuses the provider's initial empty list: not loaded is not \"nothing firing\"", async () => {
