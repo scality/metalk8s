@@ -362,7 +362,7 @@ catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
 
 # Force Go toolchain version
-export GOTOOLCHAIN = go1.24.13
+export GOTOOLCHAIN = go1.26.11
 
 .PHONY: metalk8s
 metalk8s: manifests kustomize ## Generate MetalK8s resulting manifests

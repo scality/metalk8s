@@ -1,6 +1,6 @@
 module github.com/scality/metalk8s/operator
 
-go 1.24.0
+go 1.26.11
 
 require (
 	github.com/go-logr/logr v1.4.3
