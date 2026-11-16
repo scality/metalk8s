@@ -51,22 +51,6 @@ import common
 yaml.SafeLoader.add_constructor("tag:yaml.org,2002:value", lambda _, n: n.value)
 
 
-START_BLOCK = """
-#!jinja | metalk8s_kubernetes
-
-{{%- from "metalk8s/map.jinja" import repo with context %}}
-{{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}}
-{csc_defaults}
-{configlines}
-
-{{% raw %}}
-"""
-
-END_BLOCK = """
-{% endraw %}
-"""
-
-
 def fixup_metadata(namespace, doc):
     if "metadata" in doc and "namespace" not in doc["metadata"]:
         doc["metadata"]["namespace"] = namespace
@@ -492,11 +476,6 @@ def render(args):
             )
         )
 
-    out = START_BLOCK.format(
-        csc_defaults="\n".join(import_csc_yaml), configlines="\n".join(config)
-    ).lstrip()
-    out += "\n"
-
     docs = []
     for doc in yaml.safe_load_all(template):
         if keep_doc(doc):
@@ -516,8 +495,8 @@ def render(args):
     )
     stream.seek(0)
 
-    out += replace_magic_strings(stream.read())
-
-    out += END_BLOCK
-
-    return out
+    return common.render_sls(
+        replace_magic_strings(stream.read()),
+        csc_defaults="\n".join(import_csc_yaml),
+        configlines="\n".join(config),
+    )

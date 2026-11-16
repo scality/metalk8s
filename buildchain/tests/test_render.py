@@ -107,9 +107,7 @@ def test_kustomize_render() -> None:
     check_output.assert_called_once_with(
         ["kustomize", "build", "kustomizes/operator"], text=True
     )
-    expected = kustomize.SLS_TEMPLATE.substitute(
-        Manifests=f"{DEPLOYMENT}\n---\n{MONITOR}"
-    )
+    expected = common.render_sls(f"{DEPLOYMENT}\n---\n{MONITOR}\n")
     assert sls == expected
 
 

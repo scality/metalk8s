@@ -6,6 +6,22 @@ import sys
 # Root of the MetalK8s repository.
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 
+# Header and footer of the generated SLS files, around the manifests
+START_BLOCK = """
+#!jinja | metalk8s_kubernetes
+
+{{%- from "metalk8s/map.jinja" import repo with context %}}
+{{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}}
+{csc_defaults}
+{configlines}
+
+{{% raw %}}
+"""
+
+END_BLOCK = """
+{% endraw %}
+"""
+
 
 def add_arguments(parser):
     parser.add_argument(
@@ -69,6 +85,16 @@ def select_manifests(manifests, keep_manifests, remove_manifests, identify=manif
         )
 
     return selected
+
+
+def render_sls(manifests, csc_defaults="", configlines=""):
+    """Put the manifests, a YAML stream ending with a newline, in a SLS file.
+
+    `csc_defaults` and `configlines` are Jinja lines loading service
+    configurations, for the manifests to use.
+    """
+    out = START_BLOCK.format(csc_defaults=csc_defaults, configlines=configlines)
+    return out.lstrip() + "\n" + manifests + END_BLOCK
 
 
 def write_output(out, output):
