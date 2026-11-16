@@ -5,6 +5,13 @@ export const REFRESH_METRICS_GRAPH = 60000;
 export const FR_LANG = 'FR';
 export const EN_LANG = 'EN';
 export const LANGUAGE = 'language';
+/**
+ * The alert that fires permanently to prove the alerting pipeline works (`expr: vector(1)`,
+ * severity none). Its ABSENCE is the signal: the navbar raises "Alerting Service is Unavailable"
+ * on it, and getAlerts reports it to the assistant, so both have to mean the same alert.
+ */
+export const WATCHDOG_ALERT_NAME = 'Watchdog';
+
 export const STATUS_WARNING = 'warning';
 export const STATUS_CRITICAL = 'critical';
 export const STATUS_SUCCESS = 'success';
