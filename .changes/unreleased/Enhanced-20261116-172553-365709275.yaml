@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Build metalk8s-operator and storage-operator with Go 1.26.11 so their binaries no longer trust the compromised eMudhra/emSign intermediate CAs (https://github.com/advisories/GHIS-6cqv-mx9q-x2j9).
+time: 2026-11-16T17:25:53.365709275Z
+custom:
+    CommentId: "6923819169"
+    Pull: "5259"
