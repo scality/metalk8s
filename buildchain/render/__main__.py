@@ -4,7 +4,7 @@ in a Kubernetes cluster as part of MetalK8s.
 
 Usage (with the buildchain Python, which provides PyYAML):
 
-    python3 buildchain/render helm charts/<name> [options]
+    python3 buildchain/render helm <release> charts/<name>.yaml charts/<name> [options]
     python3 buildchain/render kustomize kustomizes/<name> [options]
 
 Run `python3 buildchain/render {helm,kustomize} --help` for the options.

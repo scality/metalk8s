@@ -10,7 +10,7 @@ It performs the following tasks:
 - Replace strings in its output, in the given order (kustomize does not set the
   namespace in custom resource fields, like the Certificate `dnsNames`)
 - Keep or remove manifests, selected by kind and name
-- Put the manifests in the `kustomizes/template.sls.in` SLS template
+- Put the manifests in the SLS template below
 
 The manifests are written as `kustomize build` outputs them: they are only
 parsed to read their kind and name.
@@ -23,7 +23,6 @@ import yaml
 
 import common
 
-TEMPLATE_FILE = common.REPO_ROOT / "kustomizes" / "template.sls.in"
 DOCUMENT_SEPARATOR = "\n---\n"
 
 
@@ -31,6 +30,16 @@ class SlsTemplate(string.Template):
     """Template using `@@` as delimiter, like the buildchain templates."""
 
     delimiter = "@@"
+
+
+SLS_TEMPLATE = SlsTemplate("""\
+#!jinja | metalk8s_kubernetes
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+
+{%- raw %}
+@@Manifests
+{%- endraw %}
+""")
 
 
 def manifest_id(document):
@@ -62,6 +71,4 @@ def render(args):
         documents, args.keep_manifests, args.remove_manifests, identify=manifest_id
     )
 
-    return SlsTemplate(TEMPLATE_FILE.read_text(encoding="utf-8")).substitute(
-        Manifests=DOCUMENT_SEPARATOR.join(selected)
-    )
+    return SLS_TEMPLATE.substitute(Manifests=DOCUMENT_SEPARATOR.join(selected))

@@ -1,12 +1,9 @@
 """
 Render a Helm chart into a SLS file.
 
-This takes a Helm chart directory, a namespace name and optionally a Helm
-release name and a chart `values` file, and turns it into a YAML document that
-can be deployed in a Kubernetes cluster as part of MetalK8s.
-
-For a chart in `charts/<name>`, the release name defaults to `<name>` and the
-values file to `charts/<name>.yaml`.
+This takes a Helm release name, a namespace name, a Helm chart `values` file
+and a chart, and turns it into a YAML document that can be deployed in a
+Kubernetes cluster as part of MetalK8s.
 
 It performs the following tasks:
 
@@ -37,7 +34,6 @@ import argparse
 import copy
 import io
 import json
-import pathlib
 import re
 import subprocess
 
@@ -336,20 +332,11 @@ def get_patches(arg_patch):
 
 
 def add_arguments(parser):
-    parser.add_argument("path", help="Path to the chart directory")
-    parser.add_argument(
-        "--release",
-        dest="name",
-        help="Helm release name, default to the chart directory name",
-    )
+    parser.add_argument("name", help="Denotes the name of the chart")
     parser.add_argument(
         "-n", "--namespace", default="default", help="Namespace to deploy this chart in"
     )
-    parser.add_argument(
-        "--values",
-        help="Our custom chart values, default to the `.yaml` file named "
-        "like the chart directory, next to it",
-    )
+    parser.add_argument("values", help="Our custom chart values")
 
     class ActionServiceConfigArgs(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
@@ -368,8 +355,7 @@ def add_arguments(parser):
             try:
                 path = values.pop(0)
             except IndexError:
-                # Default set in `render`, once the release name is known
-                path = None
+                path = "metalk8s/addons/{0}/config/{1}.yaml".format(args.name, name)
             service_namespace = values.pop(0)
 
             option = getattr(args, self.dest)
@@ -417,14 +403,10 @@ def add_arguments(parser):
         ),
     )
 
+    parser.add_argument("path", help="Path to the chart directory")
+
 
 def render(args):
-    chart_dir = pathlib.Path(args.path)
-    if args.name is None:
-        args.name = chart_dir.name
-    if args.values is None:
-        args.values = str(chart_dir.with_name(f"{chart_dir.name}.yaml"))
-
     api_versions = [
         # Used by APIService (available since Kubernetes 1.10)
         "apiregistration.k8s.io/v1",
@@ -496,8 +478,6 @@ def render(args):
     import_csc_yaml = []
     config = []
     for name, configmap, path, service_namespace in args.service_configs or []:
-        if path is None:
-            path = f"metalk8s/addons/{args.name}/config/{name}.yaml"
         import_csc_yaml.append(
             "{{%- set {0}_defaults = "
             "salt.slsutil.renderer('salt://{1}', saltenv=saltenv) %}}".format(

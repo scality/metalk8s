@@ -107,10 +107,13 @@ def test_kustomize_render() -> None:
     check_output.assert_called_once_with(
         ["kustomize", "build", "kustomizes/operator"], text=True
     )
-    expected = kustomize.SlsTemplate(
-        kustomize.TEMPLATE_FILE.read_text(encoding="utf-8")
-    ).substitute(Manifests=f"{DEPLOYMENT}\n---\n{MONITOR}")
+    expected = kustomize.SLS_TEMPLATE.substitute(
+        Manifests=f"{DEPLOYMENT}\n---\n{MONITOR}"
+    )
     assert sls == expected
+
+
+DEX = ["dex", "charts/dex.yaml", "charts/dex"]
 
 
 def helm_template(argv: List[str]) -> List[str]:
@@ -123,23 +126,13 @@ def helm_template(argv: List[str]) -> List[str]:
     return command
 
 
-def test_helm_defaults() -> None:
-    """The release name and values file default to the chart directory name."""
-    command = helm_template(["charts/dex"])
-    assert command[:3] == ["helm", "template", "dex"]
-    assert command[command.index("--values") + 1] == "charts/dex.yaml"
-    assert "charts/dex" in command
-
-
-def test_helm_explicit_release_and_values() -> None:
-    """The release name and values file can differ from the chart directory."""
+def test_helm_arguments() -> None:
+    """The release name, values file and chart are passed to `helm template`."""
     command = helm_template(
         [
-            "charts/ingress-nginx",
-            "--release",
             "ingress-nginx-control-plane",
-            "--values",
             "charts/ingress-nginx-control-plane.yaml",
+            "charts/ingress-nginx",
         ]
     )
     assert command[:3] == ["helm", "template", "ingress-nginx-control-plane"]
@@ -158,7 +151,13 @@ def test_helm_remove_manifest() -> None:
         return_value="\n---\n".join(DOCUMENTS).encode(),
     ):
         args = parse(
-            helm, ["charts/dex", "--remove-manifest", "ServiceMonitor", "operator"]
+            helm,
+            [
+                *DEX,
+                "--remove-manifest",
+                "ServiceMonitor",
+                "operator",
+            ],
         )
         sls = helm.render(args)
     assert "kind: Deployment" in sls
@@ -170,7 +169,7 @@ def test_helm_missing_manifest() -> None:
     with unittest.mock.patch.object(
         helm.subprocess, "check_output", return_value=DEPLOYMENT.encode()
     ):
-        args = parse(helm, ["charts/dex", "--remove-manifest", "Service", "typo"])
+        args = parse(helm, [*DEX, "--remove-manifest", "Service", "typo"])
         with pytest.raises(ValueError, match="Service/typo"):
             helm.render(args)
 

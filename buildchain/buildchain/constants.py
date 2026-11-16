@@ -89,7 +89,6 @@ CHART_ROOT: Path = ROOT / "charts"
 
 # Path to the kustomize files
 KUSTOMIZE_ROOT: Path = ROOT / "kustomizes"
-KUSTOMIZE_TEMPLATE: Path = KUSTOMIZE_ROOT / "template.sls.in"
 
 # Path to the render tool, for Helm charts and kustomize directories
 RENDER_ROOT: Path = ROOT / "buildchain/render"
