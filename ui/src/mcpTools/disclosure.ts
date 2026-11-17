@@ -4,8 +4,8 @@
 // other callers. A panel rendering a pod for the administrator whose cluster it is may want the
 // environment values withheld here, and it should not have to argue with the service about it.
 //
-// Two reasons to withhold. Credentials: excluding Secret is necessary and not sufficient, because a
-// pod spec and a ConfigMap carry them just as readily. And bulk: a single object normally fits
+// Two reasons to withhold. Credentials: a Secret's values, and the same values where a pod spec or
+// a ConfigMap carries them. And bulk: a single object normally fits
 // whole, but some arrive outsized on their own, and a model's context is not free.
 
 /** Whatever the API returned. Only the keys this file touches are named. */
@@ -57,11 +57,11 @@ const withoutEnvValues = (container: unknown, dropped: { any: boolean }): unknow
  * wherever its author chose. Reaching for a path covers the kinds someone wrote down, and a kind
  * reached by apiVersion is by definition one nobody did.
  *
- * Excluding Secret is necessary and not sufficient: a pod spec holds a password just as readily.
+ * A Secret's values are not the only credentials: a pod spec holds a password just as readily.
  * The names and any `valueFrom` reference survive, which is what a diagnosis reads — that a variable
  * is set, and where it comes from.
  */
-export const withoutEnvironmentValues = (value: unknown, dropped: { any: boolean }): unknown => {
+const withoutEnvironmentValues = (value: unknown, dropped: { any: boolean }): unknown => {
   if (Array.isArray(value)) return value.map((nested) => withoutEnvironmentValues(nested, dropped));
   // A Date survives only by being returned as it is: entries() on one gives nothing back.
   if (value === null || typeof value !== 'object' || value instanceof Date) return value;
@@ -91,6 +91,34 @@ const withoutConfigMapValues = (kind: string, object: KubeObject, omitted: strin
 
   omitted.push('ConfigMap values (keys kept)');
   return { ...rest, dataKeys: [...Object.keys(data ?? {}), ...Object.keys(binaryData ?? {})] };
+};
+
+/** Bytes a base64 string decodes to, without decoding it. */
+const decodedBytes = (base64: string) => {
+  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
+  return Math.floor((base64.length * 3) / 4) - padding;
+};
+
+/**
+ * A Secret as `kubectl describe` shows it: each key with its size in bytes, never its value.
+ * `stringData` is write-only and never comes back from the API, so it is dropped if present.
+ */
+const withoutSecretValues = (kind: string, object: KubeObject, omitted: string[]): KubeObject => {
+  if (kind !== 'secrets') return object;
+
+  const { data, stringData, ...rest } = object as KubeObject & {
+    data?: Record<string, string>;
+    stringData?: Record<string, string>;
+  };
+  if (!data && !stringData) return object;
+
+  omitted.push('Secret values (keys and sizes kept)');
+  return {
+    ...rest,
+    data: Object.fromEntries(
+      Object.entries(data ?? {}).map(([key, value]) => [key, `${decodedBytes(String(value ?? ''))} bytes`]),
+    ),
+  };
 };
 
 /**
@@ -169,7 +197,10 @@ export const disclose = (kind: string, object: KubeObject): { resource: KubeObje
   if (dropped.any) omitted.push('env values (names kept)');
 
   return {
-    resource: sizeDown(withoutConfigMapValues(kind, withoutLastApplied(redacted, omitted), omitted), omitted),
+    resource: sizeDown(
+      withoutSecretValues(kind, withoutConfigMapValues(kind, withoutLastApplied(redacted, omitted), omitted), omitted),
+      omitted,
+    ),
     omitted,
   };
 };
