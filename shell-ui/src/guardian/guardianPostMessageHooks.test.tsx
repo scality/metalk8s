@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { GuardianDrawerProvider, useGuardianDrawer } from './GuardianContext';
-import { usePromptEmitter } from './guardianPostMessageHooks';
+import { rememberToolMeta } from '../mcp/toolMeta';
+import { useDiscoveryEmitter, usePromptEmitter } from './guardianPostMessageHooks';
 
 jest.mock('../initFederation/ShellConfigProvider', () => ({
   useShellConfig: () => ({ config: { guardianOrigin: 'https://assistant.example', canUseGuardian: true } }),
@@ -81,4 +82,24 @@ it('clears the pending question when it changes, so the old one stops being post
   jest.advanceTimersByTime(5_000);
 
   expect(postMessage).toHaveBeenCalledTimes(posted);
+});
+
+it("announces each tool with the _meta its app registered, which listTools drops", () => {
+  const { postMessage, iframeRef } = emitter();
+  const registration = new AbortController();
+  const meta = { 'scality.guardian/reveals': ['readLog'] };
+  rememberToolMeta('diagnose', meta, registration.signal);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (document as any).modelContext = { listTools: () => [{ name: 'diagnose' }, { name: 'readLog' }] };
+
+  renderHook(() => useDiscoveryEmitter(iframeRef, ORIGIN));
+  jest.advanceTimersByTime(3_000);
+
+  expect(postMessage).toHaveBeenCalledWith(
+    { type: 'MCP_DISCOVERY', tools: [{ name: 'diagnose', _meta: meta }, { name: 'readLog' }] },
+    ORIGIN,
+  );
+  registration.abort();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  delete (document as any).modelContext;
 });
