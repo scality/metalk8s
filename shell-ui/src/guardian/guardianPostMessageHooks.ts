@@ -1,6 +1,7 @@
 import type { ModelContextWithExtensions } from '@mcp-b/webmcp-types';
 import { useCallback, useEffect } from 'react';
 import { withToolMeta } from '../mcp/toolMeta';
+import type { PendingPrompt } from './GuardianContext';
 
 // How often to re-send MCP_DISCOVERY (Guardian's React app may mount after the iframe load event)
 const DISCOVERY_INTERVAL_MS = 3000;
@@ -36,7 +37,7 @@ export const useDiscoveryEmitter = (iframeRef: React.RefObject<HTMLIFrameElement
 export const usePromptEmitter = (
   iframeRef: React.RefObject<HTMLIFrameElement>,
   origin: string,
-  pendingPrompt: { prompt: string; promptId: string } | null,
+  pendingPrompt: PendingPrompt | null,
   onDelivered: () => void,
 ) => {
   useEffect(() => {
