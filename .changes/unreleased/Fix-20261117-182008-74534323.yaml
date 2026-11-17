@@ -1,0 +1,6 @@
+kind: Fix
+body: remove data from the listKubeResource to make it lighter
+time: 2026-11-17T18:20:08.074534323Z
+custom:
+    CommentId: "6956936192"
+    Pull: "5257"
