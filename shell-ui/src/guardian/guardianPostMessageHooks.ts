@@ -1,5 +1,6 @@
 import type { ModelContextWithExtensions } from '@mcp-b/webmcp-types';
 import { useCallback, useEffect } from 'react';
+import { withToolMeta } from '../mcp/toolMeta';
 
 // How often to re-send MCP_DISCOVERY (Guardian's React app may mount after the iframe load event)
 const DISCOVERY_INTERVAL_MS = 3000;
@@ -17,7 +18,7 @@ export const useDiscoveryEmitter = (iframeRef: React.RefObject<HTMLIFrameElement
     // Chrome 150 moved modelContext from navigator to document; navigator is a
     // deprecated alias. https://github.com/webmachinelearning/webmcp/pull/184
     const modelContext = document.modelContext || navigator.modelContext;
-    const tools = (modelContext as ModelContextWithExtensions)?.listTools?.() ?? [];
+    const tools = withToolMeta((modelContext as ModelContextWithExtensions)?.listTools?.() ?? []);
     iframeRef.current?.contentWindow?.postMessage?.({ type: 'MCP_DISCOVERY', tools }, origin);
   }, [origin]);
 

@@ -22,10 +22,12 @@ import {
   useHostGetTaskStatusTool,
 } from './tasks';
 import { traceToolActivity } from './toolActivity';
+import { rememberToolMeta } from './toolMeta';
 import type { ToolContext } from './types';
 
 interface MCPToolDescriptor extends ToolDescriptor {
   getTaskStatus?: () => Promise<TaskStatusReport>;
+  _meta?: Record<string, unknown>;
 }
 
 type MCPToolsModule =
@@ -148,6 +150,7 @@ export const _InternalMCPRegistrar = ({
         },
         { signal: controller.signal },
       );
+      if (tool._meta) rememberToolMeta(tool.name, tool._meta, controller.signal);
 
       // Track within this registration pass so the same name appearing twice in
       // one tools array doesn't throw either.
