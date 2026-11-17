@@ -103,3 +103,12 @@ it("announces each tool with the _meta its app registered, which listTools drops
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete (document as any).modelContext;
 });
+
+it('carries the tools the asking page wants the assistant to start with', () => {
+  const { postMessage, iframeRef } = emitter();
+  const asked = { ...prompt, preferredTools: ['diagnoseSoftwareUpgrade'] };
+
+  renderHook(() => usePromptEmitter(iframeRef, ORIGIN, asked, jest.fn()));
+
+  expect(postMessage).toHaveBeenCalledWith({ type: 'GUARDIAN_PROMPT', ...asked }, ORIGIN);
+});
