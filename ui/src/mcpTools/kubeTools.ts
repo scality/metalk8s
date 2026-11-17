@@ -43,9 +43,8 @@ export const refusal = (error: K8sApiError) => ({
 });
 
 /**
- * Refused by describeKubeResource rather than by the service layer: never returning what a Secret
- * holds is its policy, not a property of the cluster. listKubeResources lists them, since kubectl's
- * printed columns carry a Secret's name, type and key count and never a value.
+ * Refused by describeKubeResource, as a policy of the tool rather than of the cluster.
+ * listKubeResources lists them: kubectl's columns hold no value.
  */
 const SECRET_KINDS = ['secret', 'secrets'];
 

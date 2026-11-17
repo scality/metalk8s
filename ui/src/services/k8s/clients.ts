@@ -20,9 +20,8 @@ export type K8sApiClients = {
   /** A GET whose answer is text rather than JSON, rejecting as the generated clients do. */
   text: (path: string, query?: Query, headers?: Record<string, string>) => Promise<string>;
   /**
-   * A GET of any API path, its JSON handed over untouched — no model built from the v1.13 types, so
-   * nothing Kubernetes added since is dropped. Rejects as the generated clients do, with the status
-   * kept even when the error body is not JSON.
+   * A GET of any API path, its JSON untouched (the generated v1.13 models drop newer fields). Rejects
+   * as the generated clients do, keeping the status even when the error body is not JSON.
    */
   json: <T = unknown>(path: string, query?: Query, headers?: Record<string, string>) => Promise<T>;
 };
@@ -65,8 +64,8 @@ export const k8sApi = (url: string, token: string): K8sApiClients => {
     return body;
   };
 
-  // Through `text` rather than `response.json()`: the API server answers a path it does not route
-  // with a plain-text 404, and parsing that first would lose the status, as the generated clients do.
+  // Through `text`: a path the API server does not route gets a plain-text 404, and parsing it first
+  // would lose the status.
   const json = async <T = unknown>(
     path: string,
     query: Query = {},

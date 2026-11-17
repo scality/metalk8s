@@ -9,30 +9,15 @@ import { kubeClients, refusal } from '../kubeTools';
 import type { ToolContext } from '../types';
 
 /**
- * READ-ONLY: what exists in the cluster, of one kind, and which of it is unhappy.
- *
- * Two parameters, and no filters. A row is what `kubectl get -o wide` prints for one object, so one
- * kind is a few kilobytes for a cluster of a hundred-odd pods — which a caller can read and filter
- * unaided, where a filter would be one more thing to get wrong on the way to an answer it already
- * had. The rest of an object is describeKubeResource's.
- *
- * It runs as the signed-in user, with that user's own token, so the API server enforces that user's
- * RBAC.
+ * READ-ONLY: every resource of one kind, as `kubectl get -A -o wide` prints it. No filters: one kind
+ * is small enough for the caller to filter itself. Runs with the signed-in user's token, so their
+ * RBAC applies.
  */
 export function createListKubeResourcesTool(context: ToolContext) {
   return {
     name: 'listKubeResources',
-    // What this says, and what it deliberately does not.
-    //
-    // A reader of this has read the Kubernetes source: it knows what a pod is called, which group a
-    // kind lives in, and what a CRD is. Repeating any of that spends context to tell it something it
-    // already has, so none of it is here — no list of kinds, no enum, no examples of group names.
-    // Asking for a kind that cannot be reached is how it finds out, and the refusal names the ones
-    // that can.
-    //
-    // What IS here is only what this tool does and Kubernetes does not imply. Each line below maps
-    // to a wrong answer it would otherwise give: that a row is the whole object, that filters exist,
-    // that a short list is the whole cluster, or that not_authorized means there was nothing there.
+    // Only what this tool does that Kubernetes does not imply; the model already knows the kinds and
+    // groups, and the not_found refusal lists the ones that need no apiVersion.
     description:
       'Lists every Kubernetes resource of one kind in the cluster, as `kubectl get <kind> -A -o wide` ' +
       'prints it: one item per object, keyed by the column headers in camelCase. A column kubectl ' +
@@ -45,7 +30,6 @@ export function createListKubeResourcesTool(context: ToolContext) {
       'apiVersions it serves.\n' +
       'There is no namespace or label filter: the whole cluster comes back, so pick from the ' +
       'result rather than calling again.\n' +
-      'Secrets are listed as kubectl prints them: name, type and number of keys, never a value.\n' +
       `truncated means the list was cut at ${MAX_ITEMS} items and total says how many there were. ` +
       'There is no way to page.\n' +
       'not_authorized means you were not allowed to look — never report it as an empty cluster.\n' +
@@ -69,22 +53,17 @@ export function createListKubeResourcesTool(context: ToolContext) {
 
     execute: async ({ kind, apiVersion }: { kind: string; apiVersion?: string }) => {
       try {
-        // Resolved purely: an unknown kind and an apiVersion that is not one both cost nothing and
-        // reach no network.
+        // No request for an unknown kind or a malformed apiVersion.
         const target: KubeTarget = resolveTarget(kind, apiVersion);
         const clients = await kubeClients(context);
 
-        // Through shell-ui's QueryClient — the one every federated app shares, by contextSharing in
-        // its FederatedApp — rather than a bare call. The failures are rejections, so only
-        // successes are cached.
+        // Through the QueryClient shell-ui shares with every federated app; only successes are cached.
         const list = await context.queryClient.fetchQuery(kubeResourcesQuery(clients, target));
 
         return {
           status: 'ok',
           ...list,
-          // No message on a complete answer: a sentence counting the items only restates them. A
-          // cut list is the exception — that the ceiling is internal, and that there is nothing to
-          // page with, is not in the data anywhere.
+          // A message only for a cut list: that there is no way to page is not in the data.
           ...(list.truncated
             ? {
                 message:
