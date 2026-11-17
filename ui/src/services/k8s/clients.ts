@@ -18,8 +18,16 @@ export type K8sApiClients = {
   storage: StorageV1Api;
   appsV1: AppsV1Api;
   /** A GET whose answer is text rather than JSON, rejecting as the generated clients do. */
-  text: (path: string, query?: Record<string, string | number | boolean | undefined>) => Promise<string>;
+  text: (path: string, query?: Query, headers?: Record<string, string>) => Promise<string>;
+  /**
+   * A GET of any API path, its JSON handed over untouched — no model built from the v1.13 types, so
+   * nothing Kubernetes added since is dropped. Rejects as the generated clients do, with the status
+   * kept even when the error body is not JSON.
+   */
+  json: <T = unknown>(path: string, query?: Query, headers?: Record<string, string>) => Promise<T>;
 };
+
+type Query = Record<string, string | number | boolean | undefined>;
 
 /**
  * Shared with useK8sApiConfig so that callers without React get the same clients — an MCP tool
@@ -35,14 +43,14 @@ export const k8sApi = (url: string, token: string): K8sApiClients => {
    * status code before any caller sees it. readNamespacedPodLog cannot read a log in a browser at
    * all, and no argument to it changes that.
    */
-  const text = async (path: string, query: Record<string, string | number | boolean | undefined> = {}) => {
+  const text = async (path: string, query: Query = {}, headers: Record<string, string> = {}) => {
     const search = new URLSearchParams();
     for (const [key, value] of Object.entries(query)) if (value !== undefined) search.set(key, String(value));
     // `.size` is newer than the browsers this UI supports, and reads as empty where it is missing.
     const suffix = search.toString();
 
     const response = await fetch(`${url}${path}${suffix ? `?${suffix}` : ''}`, {
-      headers: { authorization: `Bearer ${token}` },
+      headers: { ...headers, authorization: `Bearer ${token}` },
     });
     const body = await response.text();
 
@@ -57,8 +65,24 @@ export const k8sApi = (url: string, token: string): K8sApiClients => {
     return body;
   };
 
+  // Through `text` rather than `response.json()`: the API server answers a path it does not route
+  // with a plain-text 404, and parsing that first would lose the status, as the generated clients do.
+  const json = async <T = unknown>(
+    path: string,
+    query: Query = {},
+    headers: Record<string, string> = {},
+  ): Promise<T> => {
+    const body = await text(path, query, headers);
+    try {
+      return JSON.parse(body) as T;
+    } catch {
+      throw new SyntaxError(`The Kubernetes API answered ${path} with something other than JSON.`);
+    }
+  };
+
   return {
     text,
+    json,
     coreV1: config.makeApiClient(CoreV1Api),
     customObjects: config.makeApiClient(CustomObjectsApi),
     storage: config.makeApiClient(StorageV1Api),

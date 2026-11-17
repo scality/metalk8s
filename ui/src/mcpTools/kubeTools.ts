@@ -33,7 +33,7 @@ export const refusal = (error: K8sApiError) => ({
   status: error.status,
   // The detail alone when there is one. EXPLAIN says what SORT of thing went wrong, and in front of
   // a detail that already names the specific thing it contradicts it — "your RBAC does not allow
-  // this" ahead of "Secrets are never listed whatever your permissions allow" blames the cluster for
+  // this" ahead of "Secrets are never read whatever your permissions allow" blames the cluster for
   // a policy of ours.
   message: error.detail ?? EXPLAIN[error.status],
   // Attached to every not_found, which is either a kind these tools do not know or an object the
@@ -43,8 +43,9 @@ export const refusal = (error: K8sApiError) => ({
 });
 
 /**
- * Refused by the tools rather than by the service layer: never returning a Secret is their policy,
- * not a property of the cluster.
+ * Refused by describeKubeResource rather than by the service layer: never returning what a Secret
+ * holds is its policy, not a property of the cluster. listKubeResources lists them, since kubectl's
+ * printed columns carry a Secret's name, type and key count and never a value.
  */
 const SECRET_KINDS = ['secret', 'secrets'];
 
@@ -76,7 +77,7 @@ export const isSecretKind = (kind: string, apiVersion?: string) =>
 export const secretRefusal = () =>
   new K8sApiError(
     'not_authorized',
-    'Secrets are never listed or read by this tool, whatever your permissions allow. If what a Secret holds matters, ask the user to look at it themselves.',
+    'Secrets are never read by this tool, whatever your permissions allow — listKubeResources shows their names, types and key counts. If what a Secret holds matters, ask the user to look at it themselves.',
   );
 
 /**
