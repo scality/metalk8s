@@ -1,5 +1,6 @@
 import { QueryClient } from 'react-query';
 import { k8sApi } from '../../services/k8s/clients';
+import { kubeDescriptionQuery } from '../../services/k8s/describe';
 import type { ToolContext } from '../types';
 import { createDescribeKubeResourceTool } from './describeKubeResourceTool';
 
@@ -151,6 +152,30 @@ describe('describeKubeResource', () => {
     expect(cached).toContain('7 bytes');
     expect(cached).not.toContain('aHVudGVyMg==');
     expect(cached).not.toContain('YWRtaW4=');
+  });
+
+  it('never reads a cache entry another view filled with the raw Secret', async () => {
+    routes['/api/v1'] = { resources: [{ name: 'secrets', namespaced: true }] };
+    routes['/api/v1/namespaces/default/secrets/db'] = {
+      metadata: { name: 'db', namespace: 'default' },
+      data: { password: 'aHVudGVyMg==' },
+    };
+    const context = makeContext();
+    // A reader that keeps the object whole, within the tool's staleTime.
+    const target = { kind: 'secrets', apiVersion: 'v1', base: '/api/v1', namespaced: true };
+    await context.queryClient.fetchQuery(
+      kubeDescriptionQuery(
+        k8sApi('/api/kubernetes', 'a-fresh-token'),
+        target,
+        { name: 'db', namespace: 'default' },
+        { name: 'raw', present: (described) => described },
+      ),
+    );
+
+    const result = await run({ kind: 'secrets', apiVersion: 'v1', name: 'db', namespace: 'default' }, context);
+
+    expect(result.resource).toMatchObject({ data: { password: '7 bytes' } });
+    expect(JSON.stringify(result)).not.toContain('aHVudGVyMg==');
   });
 
   it.each([

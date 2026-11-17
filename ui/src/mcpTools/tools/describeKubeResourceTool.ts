@@ -99,10 +99,15 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
         // What reaches the model is decided here, inside the queryFn, so the shared cache never
         // holds what is withheld.
         const description = await context.queryClient.fetchQuery(
-          kubeDescriptionQuery(clients, target, { name, namespace, includeEvents }, (described) => ({
-            ...described,
-            ...disclose(target.kind, described.resource),
-          })),
+          kubeDescriptionQuery(
+            clients,
+            target,
+            { name, namespace, includeEvents },
+            {
+              name: 'disclosed',
+              present: (described) => ({ ...described, ...disclose(target.kind, described.resource) }),
+            },
+          ),
         );
 
         return { status: 'ok', ...description };

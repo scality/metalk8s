@@ -280,25 +280,30 @@ export const describeResource = async (
   };
 };
 
+/** How a caller keeps a description, named so that two views never share a cache entry. */
+type DescriptionView<T> = { name: string; present: (description: KubeDescription) => T };
+
 /**
- * The description as a react-query definition. `present` runs inside the queryFn, so the shared
- * cache holds only what the caller keeps — never what it withholds, such as a Secret's values.
+ * The description as a react-query definition. The view runs inside the queryFn and names the cache
+ * entry, so the shared cache holds only what a caller keeps — and a caller that withholds a
+ * Secret's values never reads an entry another view filled with them.
  */
 export const kubeDescriptionQuery = <T>(
   clients: K8sApiClients,
   target: DescribeTarget,
   params: DescribeParams,
-  present: (description: KubeDescription) => T,
+  view: DescriptionView<T>,
 ) => ({
   queryKey: [
     'kubeDescription',
+    view.name,
     target.kind,
     target.apiVersion,
     params.namespace ?? '',
     params.name,
     params.includeEvents !== false,
   ] as const,
-  queryFn: async () => present(await describeResource(clients, target, params)),
+  queryFn: async () => view.present(await describeResource(clients, target, params)),
   // Short: during a diagnosis the object and its events change.
   staleTime: 5000,
   retry: false as const,
