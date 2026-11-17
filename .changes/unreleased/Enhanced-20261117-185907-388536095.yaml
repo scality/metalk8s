@@ -1,0 +1,9 @@
+kind: Enhanced
+body: |-
+    The `describeKubeResource` WebMCP tool can describe any kind
+    `listKubeResources` lists, from its kind and apiVersion. Secrets are described
+    as `kubectl describe` shows them: key names and sizes, never their values.
+time: 2026-11-17T18:59:07.388536095Z
+custom:
+    CommentId: "6957016146"
+    Pull: "5258"

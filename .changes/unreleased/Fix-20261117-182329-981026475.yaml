@@ -1,6 +1,0 @@
-kind: Fix
-body: the data returned by describeResource
-time: 2026-11-17T18:23:29.981026475Z
-custom:
-    CommentId: "6957016146"
-    Pull: "5258"
