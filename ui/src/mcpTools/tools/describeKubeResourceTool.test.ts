@@ -132,7 +132,8 @@ describe('describeKubeResource', () => {
       data: { password: 'aHVudGVyMg==', user: 'YWRtaW4=' },
     };
 
-    const result = await run({ kind: 'secrets', apiVersion: 'v1', name: 'db', namespace: 'default' });
+    const context = makeContext();
+    const result = await run({ kind: 'secrets', apiVersion: 'v1', name: 'db', namespace: 'default' }, context);
 
     expect(result.status).toBe('ok');
     expect(result.resource).toMatchObject({ type: 'Opaque', data: { password: '7 bytes', user: '5 bytes' } });
@@ -140,6 +141,16 @@ describe('describeKubeResource', () => {
     // Neither the value nor its copy in the annotation kubectl apply writes.
     expect(JSON.stringify(result)).not.toContain('aHVudGVyMg==');
     expect(JSON.stringify(result)).not.toContain('YWRtaW4=');
+    // Nor in the cache shell-ui shares with every app: it is redacted before it is cached.
+    const cached = JSON.stringify(
+      context.queryClient
+        .getQueryCache()
+        .getAll()
+        .map((query) => query.state.data),
+    );
+    expect(cached).toContain('7 bytes');
+    expect(cached).not.toContain('aHVudGVyMg==');
+    expect(cached).not.toContain('YWRtaW4=');
   });
 
   it.each([

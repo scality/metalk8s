@@ -96,14 +96,16 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
         // Whether the kind is served, and namespaced: that decides if a namespace is required.
         const target = await context.queryClient.fetchQuery(kubeDiscoveryQuery(clients, request));
 
+        // What reaches the model is decided here, inside the queryFn, so the shared cache never
+        // holds what is withheld.
         const description = await context.queryClient.fetchQuery(
-          kubeDescriptionQuery(clients, target, { name, namespace, includeEvents }),
+          kubeDescriptionQuery(clients, target, { name, namespace, includeEvents }, (described) => ({
+            ...described,
+            ...disclose(target.kind, described.resource),
+          })),
         );
 
-        // The service returns the object whole; what reaches the model is decided here.
-        const { resource, omitted } = disclose(target.kind, description.resource);
-
-        return { status: 'ok', ...description, resource, omitted };
+        return { status: 'ok', ...description };
       } catch (error) {
         // No allowedKinds: any served kind can be described.
         return refusal(failureFor(error), { allowedKinds: false });

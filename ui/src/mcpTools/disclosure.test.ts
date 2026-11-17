@@ -164,4 +164,59 @@ describe('disclose', () => {
     expect(JSON.stringify(pod()).length).toBeLessThan(MAX_OBJECT_BYTES);
     expect(omitted).toEqual([]);
   });
+
+  it.each([
+    // "abc", "ab" and "a": no padding, one "=", two "=".
+    ['YWJj', '3 bytes'],
+    ['YWI=', '2 bytes'],
+    ['YQ==', '1 bytes'],
+    ['', '0 bytes'],
+  ])("gives a Secret's %s as kubectl describe does: %s", (value, size) => {
+    const { resource, omitted } = disclose('secrets', {
+      metadata: { name: 'db', namespace: 'default' },
+      type: 'Opaque',
+      data: { key: value },
+    });
+
+    expect(resource.data).toEqual({ key: size });
+    expect(omitted).toEqual(['Secret values (keys and sizes kept)']);
+  });
+
+  it("drops a Secret's stringData, which never comes back from the API, even with no data beside it", () => {
+    const { resource, omitted } = disclose('secrets', {
+      metadata: { name: 'db', namespace: 'default' },
+      stringData: { password: 'hunter2' },
+    });
+
+    expect(JSON.stringify(resource)).not.toContain('hunter2');
+    expect(resource).not.toHaveProperty('stringData');
+    expect(omitted).toContain('Secret values (keys and sizes kept)');
+  });
+
+  it("drops the copy of a Secret's data that kubectl apply leaves in its annotation", () => {
+    const { resource, omitted } = disclose('secrets', {
+      metadata: {
+        name: 'db',
+        namespace: 'default',
+        annotations: {
+          'kubectl.kubernetes.io/last-applied-configuration': '{"data":{"password":"aHVudGVyMg=="}}',
+          'app.kubernetes.io/managed-by': 'salt',
+        },
+      },
+      data: { password: 'aHVudGVyMg==' },
+    });
+
+    expect(JSON.stringify(resource)).not.toContain('aHVudGVyMg==');
+    expect(resource.metadata).toMatchObject({ annotations: { 'app.kubernetes.io/managed-by': 'salt' } });
+    expect(omitted).toEqual([
+      'metadata.annotations["kubectl.kubernetes.io/last-applied-configuration"]',
+      'Secret values (keys and sizes kept)',
+    ]);
+  });
+
+  it('leaves data alone on any kind but secrets', () => {
+    const { resource } = disclose('leases', { metadata: { name: 'x' }, data: { key: 'YWJj' } });
+
+    expect(resource.data).toEqual({ key: 'YWJj' });
+  });
 });

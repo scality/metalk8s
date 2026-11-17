@@ -309,6 +309,27 @@ describe('describeResource', () => {
     expect(clients.json).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ['null', null],
+    ['an empty string', ''],
+  ])('takes %s as no namespace, as models send for an optional field', async (_, namespace) => {
+    const clients = makeClients({ '/api/v1/nodes/node-1': { metadata: { name: 'node-1', uid: 'uid-n' } } });
+
+    await describeResource(clients, NODES, { name: 'node-1', namespace: namespace as unknown as string });
+
+    expect(clients.json).toHaveBeenCalledWith('/api/v1/nodes/node-1');
+  });
+
+  it('still requires a namespace for a namespaced kind when it arrives as null', async () => {
+    const clients = makeClients();
+
+    await expect(describePod(clients, { namespace: null })).rejects.toMatchObject({
+      status: 'malformed',
+      detail: expect.stringMatching(/namespace is required/),
+    });
+    expect(clients.json).not.toHaveBeenCalled();
+  });
+
   it('refuses a namespace on a cluster-scoped kind rather than ignoring it', async () => {
     const clients = makeClients();
 

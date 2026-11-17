@@ -117,7 +117,8 @@ export const resolveDescribeRequest = (kind: unknown, apiVersion: unknown): Desc
 /** Name, namespace and options checked without any request; the scope rule is checkScope's. */
 export const checkDescribeParams = ({ name, namespace, includeEvents }: DescribeParams) => {
   checkName(name);
-  if (namespace !== undefined) checkNamespaceFormat(namespace);
+  // Models often send null or "" for an optional field; checkScope reports a missing one.
+  if (namespace) checkNamespaceFormat(namespace);
 
   // Refused rather than coerced: the string "false" is truthy.
   if (includeEvents !== undefined && typeof includeEvents !== 'boolean') {
@@ -279,8 +280,16 @@ export const describeResource = async (
   };
 };
 
-/** The description as a react-query definition, so every reader shares one cache. */
-export const kubeDescriptionQuery = (clients: K8sApiClients, target: DescribeTarget, params: DescribeParams) => ({
+/**
+ * The description as a react-query definition. `present` runs inside the queryFn, so the shared
+ * cache holds only what the caller keeps — never what it withholds, such as a Secret's values.
+ */
+export const kubeDescriptionQuery = <T>(
+  clients: K8sApiClients,
+  target: DescribeTarget,
+  params: DescribeParams,
+  present: (description: KubeDescription) => T,
+) => ({
   queryKey: [
     'kubeDescription',
     target.kind,
@@ -289,7 +298,7 @@ export const kubeDescriptionQuery = (clients: K8sApiClients, target: DescribeTar
     params.name,
     params.includeEvents !== false,
   ] as const,
-  queryFn: () => describeResource(clients, target, params),
+  queryFn: async () => present(await describeResource(clients, target, params)),
   // Short: during a diagnosis the object and its events change.
   staleTime: 5000,
   retry: false as const,
