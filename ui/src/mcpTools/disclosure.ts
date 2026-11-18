@@ -199,7 +199,8 @@ const CREDENTIAL_OBJECTS = new Set(['mfaSecrets', 'webauthnCredentials'].map((na
 const JWK_PRIVATE_FIELDS = new Set(['d', 'p', 'q', 'dp', 'dq', 'qi', 'k']);
 
 const isText = (value: unknown) =>
-  typeof value === 'string' || (Array.isArray(value) && value.every((item) => typeof item === 'string'));
+  typeof value === 'string' ||
+  (Array.isArray(value) && value.length > 0 && value.every((item) => typeof item === 'string'));
 
 /**
  * Every credential in `value` hidden, everything else kept, any `metadata` (its labels and
