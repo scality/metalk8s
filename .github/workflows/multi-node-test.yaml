@@ -205,17 +205,6 @@ jobs:
       # }}}
 
       # Tests {{{
-      - name: Copy MetalK8s ISO to the node-2
-        uses: ./.github/actions/copy-file-ssh
-        with:
-          SOURCE_FILE: "metalk8s.iso"
-          NODE_TO: "node-2"
-      - name: Copy Solution ISO to the node-2
-        if: inputs.install-solution
-        uses: ./.github/actions/copy-file-ssh
-        with:
-          SOURCE_FILE: "${{ steps.solution.outputs.filename }}"
-          NODE_TO: "node-2"
       - name: Wait for pods to stabilize
         uses: ./.github/actions/wait-pod-stable
       - name: Run tests from Bastion
