@@ -45,7 +45,7 @@ MAX_TRIES=300
 # shellcheck disable=SC1090
 source "${PRODUCT_TXT}"
 
-PRODUCT_MOUNT=${PRODUCT_MOUNT:-/srv/scality/metalk8s-${VERSION}}
+PRODUCT_MOUNT=${PRODUCT_MOUNT:-/srv/scality/metalk8s/solutions/metalk8s/${VERSION}}
 
 if ! test -f "${PRODUCT_MOUNT}/examples/prometheus-sparse.yaml"; then
     echo 1>&2 "Storage provisioning template not found."

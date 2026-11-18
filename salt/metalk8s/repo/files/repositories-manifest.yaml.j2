@@ -44,11 +44,16 @@ spec:
       volumeMounts:
         - name: nginx-configuration
           mountPath: /etc/nginx/conf.d
-        {%- for env, archive in archives.items() | sort(attribute='0') %}
+        {%- for root in iso_roots %}
+        - name: archives-{{ loop.index }}
+          mountPath: {{ root }}
+          readOnly: true
+          mountPropagation: HostToContainer
+        {%- endfor %}
+        {%- for env, archive in archives.items() | sort(attribute='0') if not archive.iso %}
         - name: repositories-{{ env | replace('.', '-') }}
-          mountPath: /var/www/repositories/{{ env }}/
-        - name: registry-{{ env | replace('.', '-') }}
-          mountPath: /srv/scality/{{ env }}/images/
+          mountPath: {{ archive.path ~ package_path }}
+          readOnly: true
         {%- endfor %}
         {%- for name, versions in solutions.items() | sort(attribute='0') %}
           {%- for info in versions | sort(attribute='version') %}
@@ -61,14 +66,16 @@ spec:
       hostPath:
         path: {{ nginx_confd_path }}
         type: Directory
-    {%- for env, archive in archives.items() | sort(attribute='0') %}
+    {%- for root in iso_roots %}
+    - name: archives-{{ loop.index }}
+      hostPath:
+        path: {{ root }}
+        type: Directory
+    {%- endfor %}
+    {%- for env, archive in archives.items() | sort(attribute='0') if not archive.iso %}
     - name: repositories-{{ env | replace('.', '-') }}
       hostPath:
         path: {{ archive.path ~ package_path }}
-        type: Directory
-    - name: registry-{{ env | replace('.', '-') }}
-      hostPath:
-        path: {{ archive.path ~ image_path }}
         type: Directory
     {%- endfor %}
     {%- for name, versions in solutions.items() | sort(attribute='0') %}

@@ -241,6 +241,7 @@ def metalk8s_get_archives(salt_mock: SaltMock) -> Dict[str, Dict[str, str]]:
         "/directory-archive": {
             "path": "/directory-archive",
             "iso": None,
+            "archive": None,
         },
     }
 
@@ -250,8 +251,9 @@ def metalk8s_get_archives(salt_mock: SaltMock) -> Dict[str, Dict[str, str]]:
         # current version - though it shouldn't affect the rendering logic.
         version = current_version if idx == 0 else f"{major_minor}.{int(patch) + idx}"
         result[f"metalk8s-{version}"] = {
-            "path": f"/srv/scality/metalk8s-{version}",
+            "path": f"/srv/scality/metalk8s/solutions/metalk8s/{version}",
             "iso": archive,
+            "archive": f"/srv/scality/metalk8s/archives/metalk8s-{version}.iso",
             "version": f"{version}",
             "name": "MetalK8s",
         }
@@ -432,6 +434,7 @@ def slsutil_renderer(salt_mock: SaltMock, source: str, **_kwargs: Any) -> Any:
 # Static mocks {{{
 
 register_basic("cri.get_pod_id")(MagicMock(return_value="abcd1234"))
+register_basic("file.basename")(os.path.basename)
 register_basic("file.dirname")(os.path.dirname)
 register_basic("file.find")(MagicMock(return_value=[]))
 register_basic("file.join")(lambda *args: "/".join(args))

@@ -2,10 +2,17 @@ server {
     listen       {{ listening_address }}:{{ listening_port }};
     server_name  localhost;
 
-    location / {
-        root   /var/www/repositories;
+    # Answers the probes.
+    location = / {
+        return 200;
+    }
+{%- for env, archive in archives.items() | sort(attribute='0') %}
+
+    location /{{ env }}/ {
+        alias {{ archive.path ~ package_path }}/;
         autoindex on;
     }
+{%- endfor %}
 
     include conf.d/*.inc;
 }
