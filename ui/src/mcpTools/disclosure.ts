@@ -143,6 +143,7 @@ const CREDENTIAL_WORDS = new Set([
   'credential',
   'credentials',
   'hmac',
+  'authorization',
   // Two words that make a credential only together: `accessKey`, `ACCESS_KEY`, `user_code`.
   'accesskey',
   'secretkey',
