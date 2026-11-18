@@ -360,4 +360,65 @@ describe('disclose', () => {
     expect(resource).toEqual(keycloak);
     expect(omitted).toEqual([]);
   });
+
+  it("hides a realm's key provider secrets: private key, HMAC secret, keystore and key passwords", () => {
+    const { resource } = disclose('keycloakrealmimports', {
+      apiVersion: 'k8s.keycloak.org/v2alpha1',
+      kind: 'KeycloakRealmImport',
+      metadata: { name: 'r', namespace: 'kc' },
+      spec: {
+        realm: {
+          components: {
+            'org.keycloak.keys.KeyProvider': [
+              { name: 'rsa', providerId: 'rsa', config: { priority: ['100'], privateKey: ['RSA-PRIVATE-KEY'] } },
+              { name: 'hmac', providerId: 'hmac-generated', config: { secret: ['HMAC-SECRET'] } },
+              {
+                name: 'java-keystore',
+                providerId: 'java-keystore',
+                config: { keystore: ['/opt/ks.jks'], keystorePassword: ['KS-PASSWORD'], keyPassword: ['KEY-PASSWORD'] },
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(JSON.stringify(resource)).not.toMatch(/RSA-PRIVATE-KEY|HMAC-SECRET|KS-PASSWORD|KEY-PASSWORD/);
+    expect(resource.spec).toMatchObject({
+      realm: {
+        components: {
+          'org.keycloak.keys.KeyProvider': [
+            { name: 'rsa', config: { priority: ['100'], privateKey: 'hidden' } },
+            { name: 'hmac', config: { secret: 'hidden' } },
+            {
+              name: 'java-keystore',
+              config: { keystore: ['/opt/ks.jks'], keystorePassword: 'hidden', keyPassword: 'hidden' },
+            },
+          ],
+        },
+      },
+    });
+  });
+
+  it("hides a Dex device request's codes and client secret, and keeps the rest", () => {
+    const { resource, omitted } = disclose('devicerequests', {
+      apiVersion: 'dex.coreos.com/v1',
+      kind: 'DeviceRequest',
+      metadata: { name: 'dr', namespace: 'dex' },
+      client_id: 'cli',
+      scopes: ['openid'],
+      device_code: 'DEVICE-CODE',
+      user_code: 'USER-CODE',
+      client_secret: 'CLIENT-SECRET',
+    });
+
+    expect(resource).toMatchObject({
+      client_id: 'cli',
+      scopes: ['openid'],
+      device_code: 'hidden',
+      user_code: 'hidden',
+      client_secret: 'hidden',
+    });
+    expect(omitted).toContain('Dex credentials (fields kept)');
+  });
 });
