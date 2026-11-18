@@ -291,7 +291,7 @@ const withoutCredentialFields = (
       const name = key.toLowerCase();
       const isCredential =
         CREDENTIAL_OBJECTS.has(name) ||
-        (isText(nested) &&
+        ((isText(nested) || typeof nested === 'number') &&
           (isCredentialName(key) ||
             ((within === 'credentials' || isNamedCredential) && name === 'value') ||
             (within === 'credentialMap' && !isReferenceName(key)))) ||
