@@ -13,15 +13,20 @@ Preparation
    node. Run `checkisomd5 --verbose <path-to-iso>` to validate its integrity
    (`checkisomd5` is part of the `isomd5sum` package).
 
-#. Mount this ISO file at the path of your choice (we will use
-   ``/srv/scality/metalk8s-|version|`` for the rest of this guide, as this is
-   where the ISO will be mounted automatically after running the bootstrap
-   script):
+#. Mount this ISO file at the path of your choice, to run the bootstrap
+   script from it (we will use ``/mnt/metalk8s-|version|`` for the rest of
+   this guide):
 
    .. parsed-literal::
 
-      root@bootstrap $ mkdir -p /srv/scality/metalk8s-|version|
-      root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|version|
+      root@bootstrap $ mkdir -p /mnt/metalk8s-|version|
+      root@bootstrap $ mount <path-to-iso> /mnt/metalk8s-|version|
+
+   The bootstrap script copies the ISO file to
+   ``/srv/scality/metalk8s/archives/``, for the registry to serve the images
+   it contains, and mounts that copy at
+   ``/srv/scality/metalk8s/solutions/metalk8s/|version|``. Keep around
+   5 GiB free under ``/srv/scality`` for it.
 
 .. _Bootstrap Configuration:
 
@@ -344,7 +349,7 @@ Bootstrap node.
 
 .. parsed-literal::
 
-   root@bootstrap $ /srv/scality/metalk8s-|version|/bootstrap.sh
+   root@bootstrap $ /mnt/metalk8s-|version|/bootstrap.sh
 
 .. warning::
 

@@ -10,7 +10,7 @@ installation with the verbose flag (``--verbose``).
 
 .. parsed-literal::
 
-   root@bootstrap $ /srv/scality/metalk8s-|version|/bootstrap.sh --verbose
+   root@bootstrap $ /mnt/metalk8s-|version|/bootstrap.sh --verbose
 
 Errors after restarting the bootstrap node
 """"""""""""""""""""""""""""""""""""""""""
@@ -18,15 +18,19 @@ Errors after restarting the bootstrap node
 If you reboot the bootstrap node and some containers (especially the
 salt-master container) do not start, perform the following checks:
 
-#. Ensure that the MetalK8s ISO is mounted properly.
+#. Ensure that the MetalK8s ISO is mounted properly. The registry node agent
+   mounts it again once it runs, after the network of the node is up.
 
    .. parsed-literal::
 
-      [root@bootstrap vagrant]# mount | grep /srv/scality/metalk8s-|version|
-      /home/centos/metalk8s.iso on /srv/scality/metalk8s-|version| type iso9660 (ro,relatime)
+      [root@bootstrap vagrant]# findmnt /srv/scality/metalk8s/solutions/metalk8s/|version|
+      TARGET                                          SOURCE     FSTYPE  OPTIONS
+      /srv/scality/metalk8s/solutions/metalk8s/|version| /dev/loop0 iso9660 ro,relatime
 
-#. If the ISO is unmounted, run the following command to check the
-   the status of the ISO file and remount it automatically.
+#. If the ISO is still unmounted, check the logs of the
+   ``metalk8s-registry-node-agent`` Pod of the node, in the
+   ``metalk8s-registry`` namespace. As a last resort, run the following
+   command to mount it again.
 
    .. parsed-literal::
 

@@ -12,6 +12,9 @@ REPO_NAME=fluent
 REPO_URL=https://fluent.github.io/helm-charts
 ```
 
+NB: `charts/fluent-bit.yaml` pins `image.tag` to a newer Fluent Bit than the
+chart's; drop it once the chart ships that version.
+
 ### cert-manager
 
 ```
@@ -83,9 +86,11 @@ REPO_NAME=prometheus-community
 REPO_URL=https://prometheus-community.github.io/helm-charts
 ```
 
-NB: thanos chart is updated at the same time. The Thanos image tag is not
-taken from the chart, it is pinned in `charts/thanos.yaml` (`image.tag`), to
-keep in sync with `buildchain/buildchain/versions.py`.
+NB: thanos chart is updated at the same time. The Thanos version follows
+`prometheusOperator.thanosImage` in this chart, and is pinned by hand twice to
+match: in `charts/thanos.yaml` (`image`), whose chart defaults to a Bitnami
+image, and in `charts/kube-prometheus-stack.yaml`
+(`prometheus.prometheusSpec.thanos.image`), which keeps the Thanos sidecar on.
 
 After the first failed build, rules.json and alerting_rules.json from
 `$ARTIFACTS_URL/alert_rules` and place them in `tools/rule_extractor` folder.
@@ -96,14 +101,14 @@ dashboard), otherwise the post-install tests fail.
 
 **k8s-sidecar cross-dependency**: kube-prometheus-stack bundles `k8s-sidecar`
 (the Grafana sidecar for dashboard/datasource discovery). The Loki chart also
-uses `k8s-sidecar`, but its version is **explicitly pinned** in
-`charts/loki.yaml` under `sidecar.image.tag`. When the sidecar version changes
-as part of a kube-prometheus-stack bump, you must also:
+uses `k8s-sidecar`, but its image is **explicitly pinned** in
+`charts/loki.yaml` under `sidecar.image` (registry and tag). When the sidecar
+version changes as part of a kube-prometheus-stack bump, you must also:
 1. Update the `tag:` value in `charts/loki.yaml` to match.
 2. Regenerate the Loki Salt state: `./doit.sh codegen:chart_loki`
 
-Failure to do so will cause the CI install to attempt to pull the old sidecar
-image that is no longer present in the registry.
+Otherwise `TestManifestImages` fails: the old sidecar image is no longer on
+the ISO.
 
 ### thanos
 
@@ -145,9 +150,21 @@ In order to Bump this chart, one has to:
 
 A few tips to bump image versions and SHAs:
 
- - we can find the desired image version in the chart.
+ - charts render their default images, and kustomizations set theirs in
+   `images` (`newName`, `newTag`): `buildchain/buildchain/versions.py` must
+   declare each of them with the same tag, and the same digest when a chart
+   pins one (ingress-nginx). After regenerating the SLS,
+   `tox -e unit-tests-buildchain` (`TestManifestImages`) fails on any image the
+   ISO does not serve.
+ - the registry operator runs static-oci-registry, the registry node agent
+   and file-reflector with the images it defaults to, in
+   `api/v1alpha1/registry_types.go`: when bumping the operator, give these
+   three the same tags in `versions.py`. No manifest names them, so
+   `TestManifestImages` cannot catch a mismatch.
  - bumps are done in the file `buildchain/buildchain/versions.py`.
- - the registry for an image can be found by parsing `constants.py` and `image.py`.
+ - the registry and path of an image are in `IMGS_PER_REPOSITORY` (and
+   `REMOTE_NAMES`) in `buildchain/buildchain/versions.py`: they must be the
+   ones the chart or kustomization names.
  - when the registry is known, the SHA for the new version can be fetched:
    ```gcrane digest $registry/$image:$tag```
  - every pulled image needs its digest: the build pulls images by digest only,
@@ -336,3 +353,5 @@ gave it once on disk, tilde included.
  - git add changes because codegen need to list them.
  - generate the sls state from the chart:
    ```./doit.sh codegen:chart_$CHART_NAME```
+ - or from the kustomization:
+   ```./doit.sh codegen:kustomize_$NAME```

@@ -14,8 +14,8 @@ This is a **Kubernetes distribution for long-term on-premises deployments** (Sca
 Full checklist -- easy-to-forget items in **bold**:
 
 - Vendor the full chart under `charts/<name>/` and **document its source in `BUMPING.md`** (some upstreams are OCI-only, e.g. deliveryhero: `oci://ghcr.io/deliveryhero/helm-charts`)
-- Values overrides in `charts/<name>.yaml` (`__image__(...)`/`__var__(...)` magic strings); render via a `codegen_chart_<name>` task in `buildchain/buildchain/codegen.py` -- never hand-edit the generated `chart.sls`
-- Container images: `buildchain/buildchain/versions.py` (version + digest), `constants.py` (source repository), `image.py` (`IMGS_PER_REPOSITORY`)
+- Values overrides in `charts/<name>.yaml` (`__var__(...)` magic strings); render via a `codegen_chart_<name>` task in `buildchain/buildchain/codegen.py` -- never hand-edit the generated `chart.sls`
+- Container images: keep the chart's default images, overriding them with plain upstream values only when the ISO ships another one; declare them in `buildchain/buildchain/versions.py` (version + digest, and the source repository in `IMGS_PER_REPOSITORY`), `image.py` (`BOOT_CACHE_VARIANTS` if a node needs it before the registry serves). `TestManifestImages` fails on any image the ISO does not serve
 - **List every new salt file in `buildchain/buildchain/salt_tree.py`**, otherwise it does not ship in the ISO
 - Include the addon in `salt/metalk8s/deployed/init.sls`
 - SLS rendered by orchestrate (master-side) need a `mode: master` case in `salt/tests/unit/formulas/config.yaml`
