@@ -229,12 +229,15 @@ def registry_address(host, version):
 
 
 @pytest.fixture
-def utils_image(registry_address, version):
-    return "{registry_address}/{repository}/{image}".format(
-        registry_address=registry_address,
-        repository="metalk8s-{}".format(version),
-        image="metalk8s-utils:{}".format(version),
-    )
+def utils_image(host, version):
+    with host.sudo():
+        image_json = host.check_output(
+            "salt-call --out json slsutil.renderer string='"
+            '{% from "metalk8s/repo/macro.sls" import build_image_name with context %}'
+            '{{ build_image_name("metalk8s-utils") }}\' '
+            "saltenv='metalk8s-" + str(version) + "'"
+        )
+    return json.loads(image_json)["local"]
 
 
 @pytest.fixture
