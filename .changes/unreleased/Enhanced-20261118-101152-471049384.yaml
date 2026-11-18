@@ -1,0 +1,10 @@
+kind: Enhanced
+body: |-
+    The `describeKubeResource` WebMCP tool can describe any kind
+    `listKubeResources` lists, from its kind and apiVersion. Credentials keep their
+    key names with each value replaced by `hidden`: Secret data, Dex's credential
+    fields and a KeycloakRealmImport's secrets.
+time: 2026-11-18T10:11:52.471049384Z
+custom:
+    CommentId: "6957016146"
+    Pull: "5258"
