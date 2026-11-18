@@ -152,6 +152,15 @@ const CREDENTIAL_WORDS = new Set([
   'devicecode',
   'usercode',
   'connectordata',
+  'encryptionkey',
+  'signingkey',
+  'masterkey',
+  'sessionkey',
+  'cookiekey',
+  'sshkey',
+  'accesskeys',
+  'privatekeys',
+  'apikeys',
 ]);
 const CREDENTIAL_WORD_PARTS = ['password', 'passwd', 'secret', 'token'];
 
