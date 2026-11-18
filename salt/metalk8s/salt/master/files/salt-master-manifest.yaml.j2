@@ -60,12 +60,18 @@ spec:
           mountPath: '/var/cache/salt'
         - name: run
           mountPath: '/var/run/salt'
-        {%- for env, archive in archives.items() | sort(attribute='0') %}
+        {%- for root in iso_roots %}
+        - name: archives-{{ loop.index }}
+          mountPath: '{{ root }}'
+          readOnly: true
+          mountPropagation: HostToContainer
+        {%- endfor %}
+        {%- for env, archive in archives.items() | sort(attribute='0') if not archive.iso %}
         - name: states-{{ env | replace('.', '-') }}
-          mountPath: '/srv/scality/{{ env }}/salt'
+          mountPath: '{{ archive.path }}/salt'
           readOnly: true
         - name: pillar-{{ env | replace('.', '-') }}
-          mountPath: '/srv/scality/{{ env }}/pillar'
+          mountPath: '{{ archive.path }}/pillar'
           readOnly: true
         {%- endfor %}
         {%- for solution, mountpoint in solution_archives.items() | sort(attribute='0') %}
@@ -122,7 +128,13 @@ spec:
       hostPath:
         path: '/var/run/salt'
         type: DirectoryOrCreate
-    {%- for env, archive in archives.items() | sort(attribute='0') %}
+    {%- for root in iso_roots %}
+    - name: archives-{{ loop.index }}
+      hostPath:
+        path: '{{ root }}'
+        type: Directory
+    {%- endfor %}
+    {%- for env, archive in archives.items() | sort(attribute='0') if not archive.iso %}
     - name: states-{{ env | replace('.', '-') }}
       hostPath:
         path: '{{ archive.path }}/salt'

@@ -35,14 +35,14 @@ Configure salt master roots paths:
     - backup: false
     - dataset:
         file_roots:
-        {%- for env in archives.keys() | sort(attribute='0') %}
+        {%- for env, archive in archives.items() | sort(attribute='0') %}
           {{ env }}:
-            - /srv/scality/{{ env }}/salt
+            - {{ archive.path }}/salt
         {%- endfor %}
         pillar_roots:
-        {%- for env in archives.keys() | sort(attribute='0') %}
+        {%- for env, archive in archives.items() | sort(attribute='0') %}
           {{ env }}:
-            - /srv/scality/{{ env }}/pillar
+            - {{ archive.path }}/pillar
         {%- endfor %}
 
 # Deploy the salt-ssh `ssh_pre_flight` script at a stable path so the

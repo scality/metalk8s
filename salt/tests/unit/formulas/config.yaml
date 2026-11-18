@@ -1277,22 +1277,19 @@ metalk8s:
 
   repo:
     files:
-      metalk8s-registry-config.inc.j2:
-        _cases:
-          "From metalk8s.repo.configured":
-            extra_context:
-              archives: &example_archives
-                metalk8s-2.7.1:
-                  iso: /archives/metalk8s.iso
-                  path: /srv/scality/metalk8s-2.7.1
-                  version: "2.7.1"
-
       nginx.conf.j2:
         _cases:
           "From metalk8s.repo.configured":
             extra_context:
               listening_address: "10.0.0.1"
               listening_port: 8080
+              archives: &example_archives
+                metalk8s-2.7.1:
+                  iso: /archives/metalk8s.iso
+                  archive: /srv/scality/metalk8s/archives/metalk8s-2.7.1.iso
+                  path: /srv/scality/metalk8s/solutions/metalk8s/2.7.1
+                  version: "2.7.1"
+              package_path: /packages
 
       repositories-manifest.yaml.j2:
         _cases:
@@ -1304,9 +1301,10 @@ metalk8s:
               name: repositories
               version: "1.0.0"
               archives: *example_archives
+              iso_roots:
+                - /srv/scality/metalk8s/solutions/metalk8s
               solutions: {}
               package_path: /packages
-              image_path: /images/
               nginx_confd_path: /var/lib/metalk8s/repositories/conf.d
               probe_host: "10.0.0.1"
               metalk8s_version: "2.7.1"
@@ -1371,9 +1369,17 @@ metalk8s:
                 version: "3002.2"
                 archives:
                   metalk8s-2.7.1:
-                    path: /srv/scality/metalk8s-2.7.1
+                    path: /srv/scality/metalk8s/solutions/metalk8s/2.7.1
                     iso: /archives/metalk8s-2.7.1
+                    archive: /srv/scality/metalk8s/archives/metalk8s-2.7.1.iso
                     version: "2.7.1"
+                  metalk8s-2.7.0:
+                    path: /directory-archive
+                    iso: null
+                    archive: null
+                    version: "2.7.0"
+                iso_roots:
+                  - /srv/scality/metalk8s/solutions/metalk8s
                 solution_archives:
                   example-solution-1-2-3: /srv/scality/example-solution-1.2.3
                 salt_ip: "10.0.0.1"
