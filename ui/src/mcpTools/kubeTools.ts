@@ -1,6 +1,5 @@
-// What every Kubernetes tool shares: worded failures, the refusal of credential-holding groups, and
-// clients carrying the signed-in user's token. In mcpTools/ because it depends on ToolContext and
-// holds tool policy the service layer should not apply to its other callers.
+// What every Kubernetes tool shares: worded failures and clients carrying the signed-in user's
+// token. In mcpTools/ because it depends on ToolContext.
 
 import { type K8sApiClients, k8sApi } from '../services/k8s/clients';
 import { ALLOWED_KINDS, K8sApiError, type K8sFailureKind } from '../services/k8s/resources';
@@ -27,32 +26,6 @@ export const refusal = (error: K8sApiError, { allowedKinds = true }: { allowedKi
   // For a tool with a fixed set of kinds: the next call can pick from them instead of guessing.
   ...(allowedKinds && error.status === 'not_found' ? { allowedKinds: ALLOWED_KINDS } : {}),
 });
-
-/**
- * Groups refused by describeKubeResource, because their objects hold credentials in their own
- * fields: Dex stores its signing keys, client secrets and password hashes as custom resources.
- */
-const CREDENTIAL_GROUPS = ['dex.coreos.com'];
-
-const normalise = (value: unknown) =>
-  String(value ?? '')
-    .trim()
-    .toLowerCase();
-
-/** The group of an apiVersion; empty for a core one such as `v1`. */
-const groupOf = (apiVersion?: string) => {
-  const parts = normalise(apiVersion).split('/');
-  return parts.length === 2 ? parts[0] : '';
-};
-
-// Never throws, whatever the input: a guard that throws on what it exists to catch is no guard.
-export const isCredentialGroup = (apiVersion?: string) => CREDENTIAL_GROUPS.includes(groupOf(apiVersion));
-
-export const credentialGroupRefusal = () =>
-  new K8sApiError(
-    'not_authorized',
-    "Dex's resources hold signing keys and password hashes in their own fields, so they are never described by this tool, whatever your permissions allow. listKubeResources shows their names; if what one holds matters, ask the user to look at it themselves.",
-  );
 
 /** The clients, built from the tool's context. Throws K8sApiError, so a tool has one error path. */
 export const kubeClients = async (context: ToolContext): Promise<K8sApiClients> => {

@@ -120,7 +120,7 @@ describe('describeKubeResource', () => {
     expect(result).not.toHaveProperty('allowedKinds');
   });
 
-  it('describes a Secret as kubectl does: its keys and their sizes, never a value', async () => {
+  it('describes a Secret with its keys kept and every value hidden', async () => {
     routes['/api/v1'] = { resources: [{ name: 'secrets', namespaced: true }] };
     routes['/api/v1/namespaces/default/secrets/db'] = {
       metadata: {
@@ -129,7 +129,6 @@ describe('describeKubeResource', () => {
         annotations: { 'kubectl.kubernetes.io/last-applied-configuration': '{"data":{"pw":"aHVudGVyMg=="}}' },
       },
       type: 'Opaque',
-      // "hunter2" (7 bytes) and "admin" (5 bytes).
       data: { password: 'aHVudGVyMg==', user: 'YWRtaW4=' },
     };
 
@@ -137,8 +136,8 @@ describe('describeKubeResource', () => {
     const result = await run({ kind: 'secrets', apiVersion: 'v1', name: 'db', namespace: 'default' }, context);
 
     expect(result.status).toBe('ok');
-    expect(result.resource).toMatchObject({ type: 'Opaque', data: { password: '7 bytes', user: '5 bytes' } });
-    expect(result.omitted).toContain('Secret values (keys and sizes kept)');
+    expect(result.resource).toMatchObject({ type: 'Opaque', data: { password: 'hidden', user: 'hidden' } });
+    expect(result.omitted).toContain('Secret values (keys kept)');
     // Neither the value nor its copy in the annotation kubectl apply writes.
     expect(JSON.stringify(result)).not.toContain('aHVudGVyMg==');
     expect(JSON.stringify(result)).not.toContain('YWRtaW4=');
@@ -149,7 +148,7 @@ describe('describeKubeResource', () => {
         .getAll()
         .map((query) => query.state.data),
     );
-    expect(cached).toContain('7 bytes');
+    expect(cached).toContain('hidden');
     expect(cached).not.toContain('aHVudGVyMg==');
     expect(cached).not.toContain('YWRtaW4=');
   });
@@ -174,22 +173,37 @@ describe('describeKubeResource', () => {
 
     const result = await run({ kind: 'secrets', apiVersion: 'v1', name: 'db', namespace: 'default' }, context);
 
-    expect(result.resource).toMatchObject({ data: { password: '7 bytes' } });
+    expect(result.resource).toMatchObject({ data: { password: 'hidden' } });
     expect(JSON.stringify(result)).not.toContain('aHVudGVyMg==');
   });
 
-  it.each([
-    ['signingkeies', 'dex.coreos.com/v1'],
-    ['passwords', 'DEX.CoreOS.com/v1'],
-    ['whatever-they-add-next', 'dex.coreos.com/v1'],
-  ])("refuses Dex's %s, whose credentials sit in its own fields, before any request", async (kind, apiVersion) => {
-    const result = await run({ kind, apiVersion, name: 'key', namespace: 'dex' });
+  it('describes a Dex client with its secret hidden, here and in the cache', async () => {
+    routes['/apis/dex.coreos.com/v1'] = { resources: [{ name: 'oauth2clients', namespaced: true }] };
+    routes['/apis/dex.coreos.com/v1/namespaces/dex-test/oauth2clients/fake-client'] = {
+      apiVersion: 'dex.coreos.com/v1',
+      kind: 'OAuth2Client',
+      metadata: { name: 'fake-client', namespace: 'dex-test', uid: 'uid-c' },
+      id: 'fake-client',
+      redirectURIs: ['https://example.invalid/callback'],
+      secret: 'FAKE-CLIENT-SECRET',
+    };
+    const context = makeContext();
 
-    expect(result.status).toBe('not_authorized');
-    expect(result.message).toMatch(/never described/i);
-    // Our policy, not the cluster's answer: nothing that blames the user's permissions.
-    expect(result.message).not.toMatch(/RBAC/i);
-    expect(k8sApi).not.toHaveBeenCalled();
+    const result = await run(
+      { kind: 'oauth2clients', apiVersion: 'dex.coreos.com/v1', name: 'fake-client', namespace: 'dex-test' },
+      context,
+    );
+
+    expect(result.status).toBe('ok');
+    expect(result.resource).toMatchObject({ id: 'fake-client', secret: 'hidden' });
+    expect(result.omitted).toContain('Dex credentials (fields kept)');
+    const cached = JSON.stringify(
+      context.queryClient
+        .getQueryCache()
+        .getAll()
+        .map((query) => query.state.data),
+    );
+    expect(cached).not.toContain('FAKE-CLIENT-SECRET');
   });
 
   it.each([
@@ -262,12 +276,13 @@ describe('describeKubeResource', () => {
     );
   });
 
-  it('asks for kind, apiVersion and name, and says what a null events list means', () => {
+  it('asks for kind, apiVersion and name, and says what hidden values and null events mean', () => {
     const { description, inputSchema } = createDescribeKubeResourceTool(makeContext());
 
+    expect(description).toMatch(/kubectl describe <kind> <name>/);
     expect(description).toMatch(/null is NOT "no events"/i);
-    // The values are gone but the names are not, and a model has to be told the difference.
-    expect(description).toMatch(/never report it as empty or missing/i);
+    // A hidden value still exists: the model has to be told so.
+    expect(description).toMatch(/replaced by "hidden"/);
     expect(inputSchema.required).toEqual(['kind', 'apiVersion', 'name']);
     expect(inputSchema.properties.kind).not.toHaveProperty('enum');
   });

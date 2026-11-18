@@ -4,9 +4,10 @@
 // other callers. A panel rendering a pod for the administrator whose cluster it is may want the
 // environment values withheld here, and it should not have to argue with the service about it.
 //
-// Two reasons to withhold. Credentials: a Secret's values, and the same values where a pod spec or
-// a ConfigMap carries them. And bulk: a single object normally fits
-// whole, but some arrive outsized on their own, and a model's context is not free.
+// Two reasons to withhold. Credentials: a Secret's values, the same values where a pod spec or a
+// ConfigMap carries them, and those Dex and a Keycloak realm import keep in their own fields. And
+// bulk: a single object normally fits whole, but some arrive outsized, and a model's context is not
+// free.
 
 /** Whatever the API returned. Only the keys this file touches are named. */
 type KubeObject = {
@@ -93,15 +94,12 @@ const withoutConfigMapValues = (kind: string, object: KubeObject, omitted: strin
   return { ...rest, dataKeys: [...Object.keys(data ?? {}), ...Object.keys(binaryData ?? {})] };
 };
 
-/** Bytes a base64 string decodes to, without decoding it. */
-const decodedBytes = (base64: string) => {
-  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
-  return Math.floor((base64.length * 3) / 4) - padding;
-};
+/** What a withheld value is replaced with: the key stays, so the model knows the value exists. */
+const HIDDEN = 'hidden';
 
 /**
- * A Secret as `kubectl describe` shows it: each key with its size in bytes, never its value.
- * `stringData` is write-only and never comes back from the API, so it is dropped if present.
+ * A Secret with each key kept and its value hidden. `stringData` is write-only and never comes back
+ * from the API, so it is dropped if present.
  */
 const withoutSecretValues = (kind: string, object: KubeObject, omitted: string[]): KubeObject => {
   if (kind !== 'secrets') return object;
@@ -112,13 +110,114 @@ const withoutSecretValues = (kind: string, object: KubeObject, omitted: string[]
   };
   if (!data && !stringData) return object;
 
-  omitted.push('Secret values (keys and sizes kept)');
-  return {
-    ...rest,
-    data: Object.fromEntries(
-      Object.entries(data ?? {}).map(([key, value]) => [key, `${decodedBytes(String(value ?? ''))} bytes`]),
+  omitted.push('Secret values (keys kept)');
+  return { ...rest, data: Object.fromEntries(Object.keys(data ?? {}).map((key) => [key, HIDDEN])) };
+};
+
+/**
+ * Dex (`storage.type: kubernetes`) keeps its credentials in its own objects' fields, under these
+ * names: client secrets, password hashes, connector configs, tokens and MFA material.
+ */
+const DEX_CREDENTIAL_FIELDS = new Set([
+  'secret',
+  'hash',
+  'config',
+  'token',
+  'obsoleteToken',
+  'client_secret',
+  'hmac_key',
+  'mfaSecrets',
+  'webauthnCredentials',
+  'connectorData',
+]);
+
+/** The private parts of a JSON Web Key; `kty`, `kid`, `n` and `e` are public. */
+const JWK_PRIVATE_FIELDS = new Set(['d', 'p', 'q', 'dp', 'dq', 'qi', 'k']);
+
+/** A JWK's private parts hidden, wherever in the object a key (anything with a `kty`) sits. */
+const withoutPrivateKeys = (value: unknown, hidden: { any: boolean }): unknown => {
+  if (Array.isArray(value)) return value.map((nested) => withoutPrivateKeys(nested, hidden));
+  if (value === null || typeof value !== 'object' || value instanceof Date) return value;
+
+  const isKey = 'kty' in (value as Record<string, unknown>);
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, nested]) => {
+      if (isKey && JWK_PRIVATE_FIELDS.has(key)) {
+        hidden.any = true;
+        return [key, HIDDEN];
+      }
+      return [key, withoutPrivateKeys(nested, hidden)];
+    }),
+  );
+};
+
+/** A Dex object with its credential fields and private keys hidden, everything else kept. */
+const withoutDexCredentials = (object: KubeObject, omitted: string[]): KubeObject => {
+  if (!String(object.apiVersion ?? '').startsWith('dex.coreos.com/')) return object;
+
+  const hidden = { any: false };
+  const fields = Object.fromEntries(
+    Object.entries(object).map(([key, value]) => {
+      if (key !== 'metadata' && DEX_CREDENTIAL_FIELDS.has(key)) {
+        hidden.any = true;
+        return [key, HIDDEN];
+      }
+      return [key, key === 'metadata' ? value : withoutPrivateKeys(value, hidden)];
+    }),
+  ) as KubeObject;
+
+  if (!hidden.any) return object;
+  omitted.push('Dex credentials (fields kept)');
+  return fields;
+};
+
+/**
+ * Where a Keycloak realm, as a KeycloakRealmImport carries it in `spec.realm`, holds credentials.
+ * `*` is any item of a list or any value of a map.
+ */
+const KEYCLOAK_REALM_CREDENTIALS = [
+  ['clients', '*', 'secret'],
+  ['users', '*', 'credentials', '*', 'value'],
+  ['users', '*', 'credentials', '*', 'secretData'],
+  ['identityProviders', '*', 'config', 'clientSecret'],
+  ['smtpServer', 'password'],
+  ['components', '*', '*', 'config', 'bindCredential'],
+];
+
+/** The value at `path` replaced by HIDDEN, wherever it exists; the rest of `value` untouched. */
+const hideAt = (value: unknown, path: string[], hidden: { any: boolean }): unknown => {
+  if (path.length === 0) {
+    if (value === undefined) return value;
+    hidden.any = true;
+    return HIDDEN;
+  }
+  if (value === null || typeof value !== 'object') return value;
+
+  const [step, ...rest] = path;
+  if (Array.isArray(value)) return step === '*' ? value.map((item) => hideAt(item, rest, hidden)) : value;
+
+  const entries = Object.entries(value as Record<string, unknown>);
+  return Object.fromEntries(
+    entries.map(([key, nested]) =>
+      step === '*' || key === step ? [key, hideAt(nested, rest, hidden)] : [key, nested],
     ),
-  };
+  );
+};
+
+/** A KeycloakRealmImport with its realm's credentials hidden, everything else kept. */
+const withoutKeycloakCredentials = (object: KubeObject, omitted: string[]): KubeObject => {
+  if (!String(object.apiVersion ?? '').startsWith('k8s.keycloak.org/') || object.kind !== 'KeycloakRealmImport') {
+    return object;
+  }
+  const spec = object.spec as { realm?: unknown } | undefined;
+  if (!spec?.realm) return object;
+
+  const hidden = { any: false };
+  const realm = KEYCLOAK_REALM_CREDENTIALS.reduce((current, path) => hideAt(current, path, hidden), spec.realm);
+
+  if (!hidden.any) return object;
+  omitted.push('Keycloak credentials (fields kept)');
+  return { ...object, spec: { ...spec, realm } };
 };
 
 /**
@@ -198,7 +297,17 @@ export const disclose = (kind: string, object: KubeObject): { resource: KubeObje
 
   return {
     resource: sizeDown(
-      withoutSecretValues(kind, withoutConfigMapValues(kind, withoutLastApplied(redacted, omitted), omitted), omitted),
+      withoutKeycloakCredentials(
+        withoutDexCredentials(
+          withoutSecretValues(
+            kind,
+            withoutConfigMapValues(kind, withoutLastApplied(redacted, omitted), omitted),
+            omitted,
+          ),
+          omitted,
+        ),
+        omitted,
+      ),
       omitted,
     ),
     omitted,

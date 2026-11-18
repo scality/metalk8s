@@ -165,21 +165,80 @@ describe('disclose', () => {
     expect(omitted).toEqual([]);
   });
 
-  it.each([
-    // "abc", "ab" and "a": no padding, one "=", two "=".
-    ['YWJj', '3 bytes'],
-    ['YWI=', '2 bytes'],
-    ['YQ==', '1 bytes'],
-    ['', '0 bytes'],
-  ])("gives a Secret's %s as kubectl describe does: %s", (value, size) => {
+  it("keeps a Secret's keys and hides every value", () => {
     const { resource, omitted } = disclose('secrets', {
       metadata: { name: 'db', namespace: 'default' },
       type: 'Opaque',
-      data: { key: value },
+      data: { password: 'aHVudGVyMg==', user: 'YWRtaW4=', empty: '' },
     });
 
-    expect(resource.data).toEqual({ key: size });
-    expect(omitted).toEqual(['Secret values (keys and sizes kept)']);
+    expect(resource).toMatchObject({ type: 'Opaque', data: { password: 'hidden', user: 'hidden', empty: 'hidden' } });
+    expect(omitted).toEqual(['Secret values (keys kept)']);
+  });
+
+  it("hides a Dex client's secret and keeps everything else", () => {
+    const { resource, omitted } = disclose('oauth2clients', {
+      apiVersion: 'dex.coreos.com/v1',
+      kind: 'OAuth2Client',
+      metadata: { name: 'fake-client', namespace: 'dex-test' },
+      id: 'fake-client',
+      name: 'Fake client',
+      redirectURIs: ['https://example.invalid/callback'],
+      secret: 'FAKE-CLIENT-SECRET',
+    });
+
+    expect(resource).toMatchObject({
+      id: 'fake-client',
+      name: 'Fake client',
+      redirectURIs: ['https://example.invalid/callback'],
+      secret: 'hidden',
+    });
+    expect(omitted).toEqual(['Dex credentials (fields kept)']);
+  });
+
+  it("hides a Dex signing key's private parts and keeps its public ones and its rotation", () => {
+    const { resource } = disclose('signingkeies', {
+      apiVersion: 'dex.coreos.com/v1',
+      kind: 'SigningKey',
+      metadata: { name: 'openid-connect', namespace: 'dex-test' },
+      nextRotation: '2026-12-01T00:00:00Z',
+      signingKey: { kty: 'RSA', kid: 'k1', n: 'MODULUS', e: 'AQAB', d: 'PRIV-D', p: 'PRIV-P', q: 'PRIV-Q' },
+      signingKeyPub: { kty: 'RSA', kid: 'k1', n: 'MODULUS', e: 'AQAB' },
+      verificationKeys: [{ publicKey: { kty: 'RSA', kid: 'k0', n: 'OLD', e: 'AQAB' }, expiry: '2026-11-30T00:00:00Z' }],
+    });
+
+    expect(resource).toMatchObject({
+      nextRotation: '2026-12-01T00:00:00Z',
+      signingKey: { kty: 'RSA', kid: 'k1', n: 'MODULUS', e: 'AQAB', d: 'hidden', p: 'hidden', q: 'hidden' },
+      signingKeyPub: { kty: 'RSA', kid: 'k1', n: 'MODULUS', e: 'AQAB' },
+      verificationKeys: [{ publicKey: { kid: 'k0', n: 'OLD' }, expiry: '2026-11-30T00:00:00Z' }],
+    });
+    expect(JSON.stringify(resource)).not.toMatch(/PRIV-/);
+  });
+
+  it.each([
+    ['passwords', { email: 'admin@example.invalid', hash: 'JDJhJDEw' }, 'hash'],
+    ['connectors', { type: 'ldap', name: 'LDAP', config: 'eyJiaW5kUFciOiJ4In0=' }, 'config'],
+    ['refreshtokens', { clientID: 'c', token: 'tok', obsoleteToken: 'old' }, 'token'],
+  ])("hides a Dex %s's credential field %#", (kind, fields, hiddenField) => {
+    const { resource } = disclose(kind, {
+      apiVersion: 'dex.coreos.com/v1',
+      metadata: { name: 'x', namespace: 'dex' },
+      ...fields,
+    });
+
+    expect(resource[hiddenField]).toBe('hidden');
+  });
+
+  it('leaves a field named secret alone outside the Dex group', () => {
+    const { resource, omitted } = disclose('widgets', {
+      apiVersion: 'example.com/v1',
+      metadata: { name: 'x' },
+      secret: 'my-secret-name',
+    });
+
+    expect(resource.secret).toBe('my-secret-name');
+    expect(omitted).toEqual([]);
   });
 
   it("drops a Secret's stringData, which never comes back from the API, even with no data beside it", () => {
@@ -190,7 +249,7 @@ describe('disclose', () => {
 
     expect(JSON.stringify(resource)).not.toContain('hunter2');
     expect(resource).not.toHaveProperty('stringData');
-    expect(omitted).toContain('Secret values (keys and sizes kept)');
+    expect(omitted).toContain('Secret values (keys kept)');
   });
 
   it("drops the copy of a Secret's data that kubectl apply leaves in its annotation", () => {
@@ -210,7 +269,7 @@ describe('disclose', () => {
     expect(resource.metadata).toMatchObject({ annotations: { 'app.kubernetes.io/managed-by': 'salt' } });
     expect(omitted).toEqual([
       'metadata.annotations["kubectl.kubernetes.io/last-applied-configuration"]',
-      'Secret values (keys and sizes kept)',
+      'Secret values (keys kept)',
     ]);
   });
 
@@ -218,5 +277,87 @@ describe('disclose', () => {
     const { resource } = disclose('leases', { metadata: { name: 'x' }, data: { key: 'YWJj' } });
 
     expect(resource.data).toEqual({ key: 'YWJj' });
+  });
+
+  it("hides a Keycloak realm import's client secret and user password, and keeps the rest", () => {
+    const { resource, omitted } = disclose('keycloakrealmimports', {
+      apiVersion: 'k8s.keycloak.org/v2alpha1',
+      kind: 'KeycloakRealmImport',
+      metadata: { name: 'fake-realm', namespace: 'keycloak-test' },
+      spec: {
+        keycloakCRName: 'does-not-exist',
+        realm: {
+          realm: 'fake-realm',
+          enabled: true,
+          clients: [
+            { clientId: 'fake-client', redirectUris: ['https://example.invalid/*'], secret: 'FAKE-CLIENT-SECRET' },
+            { clientId: 'public-client', publicClient: true },
+          ],
+          users: [
+            {
+              username: 'fake-user',
+              enabled: true,
+              credentials: [{ type: 'password', value: 'FAKE-USER-PASSWORD' }],
+            },
+          ],
+        },
+      },
+    });
+
+    expect(resource.spec).toEqual({
+      keycloakCRName: 'does-not-exist',
+      realm: {
+        realm: 'fake-realm',
+        enabled: true,
+        clients: [
+          { clientId: 'fake-client', redirectUris: ['https://example.invalid/*'], secret: 'hidden' },
+          { clientId: 'public-client', publicClient: true },
+        ],
+        users: [{ username: 'fake-user', enabled: true, credentials: [{ type: 'password', value: 'hidden' }] }],
+      },
+    });
+    expect(omitted).toEqual(['Keycloak credentials (fields kept)']);
+  });
+
+  it("hides a realm's identity provider secret, SMTP password and LDAP bind credential", () => {
+    const { resource } = disclose('keycloakrealmimports', {
+      apiVersion: 'k8s.keycloak.org/v2alpha1',
+      kind: 'KeycloakRealmImport',
+      metadata: { name: 'r', namespace: 'kc' },
+      spec: {
+        realm: {
+          identityProviders: [{ alias: 'google', config: { clientId: 'g', clientSecret: 'IDP-SECRET' } }],
+          smtpServer: { host: 'smtp.example.invalid', password: 'SMTP-PASSWORD' },
+          components: {
+            'org.keycloak.storage.UserStorageProvider': [
+              { name: 'ldap', config: { connectionUrl: ['ldap://x'], bindCredential: ['LDAP-PASSWORD'] } },
+            ],
+          },
+          users: [{ username: 'u', credentials: [{ type: 'password', secretData: '{"value":"HASH"}' }] }],
+        },
+      },
+    });
+
+    expect(JSON.stringify(resource)).not.toMatch(/IDP-SECRET|SMTP-PASSWORD|LDAP-PASSWORD|HASH/);
+    expect(resource.spec).toMatchObject({
+      realm: {
+        identityProviders: [{ alias: 'google', config: { clientId: 'g', clientSecret: 'hidden' } }],
+        smtpServer: { host: 'smtp.example.invalid', password: 'hidden' },
+      },
+    });
+  });
+
+  it('leaves a Keycloak instance alone: its secret fields name Secrets, they hold none', () => {
+    const keycloak = {
+      apiVersion: 'k8s.keycloak.org/v2alpha1',
+      kind: 'Keycloak',
+      metadata: { name: 'artesca-keycloak', namespace: 'artesca-auth' },
+      spec: { bootstrapAdmin: { user: { secret: 'artesca-kc-initial-admin' } } },
+    };
+
+    const { resource, omitted } = disclose('keycloaks', keycloak);
+
+    expect(resource).toEqual(keycloak);
+    expect(omitted).toEqual([]);
   });
 });
