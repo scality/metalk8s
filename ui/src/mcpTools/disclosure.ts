@@ -163,7 +163,7 @@ const CREDENTIAL_WORDS = new Set([
   'privatekeys',
   'apikeys',
 ]);
-const CREDENTIAL_WORD_PARTS = ['password', 'passwd', 'secret', 'token'];
+const CREDENTIAL_WORD_PARTS = ['password', 'passwd', 'passphrase', 'secret', 'token'];
 
 /** Too common a word to match inside a longer name (`pod-template-hash`), so only on its own. */
 const CREDENTIAL_NAMES = new Set(['hash']);
