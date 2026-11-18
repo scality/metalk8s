@@ -187,13 +187,16 @@ const isCredentialValue = (value: unknown): boolean =>
     (item) => typeof item === 'string' && (PRIVATE_KEY.test(item) || URL_WITH_PASSWORD.test(item)),
   );
 
-const isCredentialName = (name: string): boolean => {
-  if (CREDENTIAL_NAMES.has(name.toLowerCase())) return true;
-  const words = name
+const wordsOf = (name: string) =>
+  name
     .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter(Boolean);
+
+const isCredentialName = (name: string): boolean => {
+  if (CREDENTIAL_NAMES.has(name.toLowerCase())) return true;
+  const words = wordsOf(name);
   const joined = (i: number) => (i > 0 ? words[i - 1] + words[i] : '');
   const last = words.length - 1;
   if (REFERENCE_WORDS.has(words[last])) return words[last] === 'key' && CREDENTIAL_WORDS.has(joined(last));
@@ -203,6 +206,16 @@ const isCredentialName = (name: string): boolean => {
       CREDENTIAL_WORDS.has(joined(i)) ||
       CREDENTIAL_WORD_PARTS.some((part) => word.includes(part)),
   );
+};
+
+/**
+ * Inside a map named like a credential (`secrets: { db: '…' }`), what is kept: a reference such as
+ * `secretName`, or a bare `key` naming a Secret's key. `AWS_KEY` there is the credential itself.
+ */
+const isReferenceName = (name: string): boolean => {
+  const words = wordsOf(name);
+  const last = words[words.length - 1];
+  return REFERENCE_WORDS.has(last) && (last !== 'key' || words.length === 1);
 };
 
 /** Credential fields whose value is an object or a list of objects: hidden whole, whatever it holds. */
@@ -218,13 +231,18 @@ const isText = (value: unknown) =>
 /**
  * Every credential in `value` hidden, everything else kept, any `metadata` (its labels and
  * annotations hold hashes, never credentials) left alone. Besides the names and values above,
- * three shapes:
+ * four shapes:
  * the private parts of a JSON Web Key (any object with a `kty`), the `value` of a `credentials`
- * list item (a Keycloak user's password), and the `value` of any `{ name, value }` item whose name
- * is a credential's, as env is written outside a container (`additionalOptions`, `extraEnv`).
+ * list item (a Keycloak user's password), the `value` of any `{ name, value }` item whose name
+ * is a credential's, as env is written outside a container (`additionalOptions`, `extraEnv`), and
+ * every text in a map named like a credential but its references.
  */
-const withoutCredentialFields = (value: unknown, hidden: { any: boolean }, inCredentials = false): unknown => {
-  if (Array.isArray(value)) return value.map((item) => withoutCredentialFields(item, hidden, inCredentials));
+const withoutCredentialFields = (
+  value: unknown,
+  hidden: { any: boolean },
+  within?: 'credentials' | 'credentialMap',
+): unknown => {
+  if (Array.isArray(value)) return value.map((item) => withoutCredentialFields(item, hidden, within));
   if (value === null || typeof value !== 'object' || value instanceof Date) return value;
 
   const isKey = 'kty' in (value as Record<string, unknown>);
@@ -239,14 +257,19 @@ const withoutCredentialFields = (value: unknown, hidden: { any: boolean }, inCre
         (isText(nested) &&
           (isCredentialName(key) ||
             isCredentialValue(nested) ||
-            ((inCredentials || isNamedCredential) && name === 'value'))) ||
+            ((within === 'credentials' || isNamedCredential) && name === 'value') ||
+            (within === 'credentialMap' && !isReferenceName(key)))) ||
         (isKey && JWK_PRIVATE_FIELDS.has(key));
       // Already hidden (a Secret's data): nothing left to withhold, and nothing to report twice.
       if (isCredential && nested !== undefined && nested !== HIDDEN) {
         hidden.any = true;
         return [key, HIDDEN];
       }
-      return [key, withoutCredentialFields(nested, hidden, name === 'credentials')];
+      // A JSON Web Key keeps its own rule: its public parts stay readable.
+      const isMap = nested !== null && typeof nested === 'object' && !Array.isArray(nested) && !('kty' in nested);
+      const scope =
+        isMap && isCredentialName(key) ? 'credentialMap' : name === 'credentials' ? 'credentials' : undefined;
+      return [key, withoutCredentialFields(nested, hidden, scope)];
     }),
   );
 };

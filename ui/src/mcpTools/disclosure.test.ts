@@ -687,6 +687,27 @@ describe('disclose', () => {
     });
   });
 
+  it('hides every value of a map named like a credential, and keeps its references', () => {
+    const { resource, omitted } = disclose('widgets', {
+      metadata: { name: 'x' },
+      spec: {
+        secrets: { db: 'pw123', AWS_KEY: 'AKIAEXAMPLE' },
+        credentials: { username: 'admin', apiKeyValue: 'k-123' },
+        passwordSecret: { name: 'pg-creds', key: 'password' },
+        volumes: [{ name: 'creds', secret: { secretName: 'db', items: [{ key: 'pw', path: 'pw' }] } }],
+      },
+    });
+
+    expect(resource.spec).toEqual({
+      secrets: { db: 'hidden', AWS_KEY: 'hidden' },
+      credentials: { username: 'hidden', apiKeyValue: 'hidden' },
+      // A reference to a Secret: its name and key, not its value.
+      passwordSecret: { name: 'pg-creds', key: 'password' },
+      volumes: [{ name: 'creds', secret: { secretName: 'db', items: [{ key: 'pw', path: 'pw' }] } }],
+    });
+    expect(omitted).toEqual(['credentials (fields kept)']);
+  });
+
   it("leaves a pod template's metadata alone, wherever it sits", () => {
     const deployment = {
       metadata: { name: 'web' },
