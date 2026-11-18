@@ -108,6 +108,10 @@ metalk8s:
 
     metalk8s-registry-operator:
       deployed:
+        archive.sls:
+          _cases:
+            "Render from the master (orchestrate)":
+              mode: master
         registry.sls:
           _cases:
             "No ServiceMonitor CRD (default)":

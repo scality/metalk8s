@@ -499,6 +499,8 @@ def check_object_ready(*args, **kwargs):
     A CustomResourceDefinition has no Ready condition, it is considered Ready
     once Established, that is once the API server serves its resources.
 
+    A SolutionArchive is considered Ready once the registry serves it.
+
     CLI Examples:
 
     .. code-block:: bash
@@ -552,6 +554,9 @@ def _check_object_ready(obj):
             raise CommandExecutionError(
                 "The CustomResourceDefinition is not yet Established"
             )
+    elif obj["kind"] == "SolutionArchive":
+        if not (obj.get("status") or {}).get("served"):
+            raise CommandExecutionError("The SolutionArchive is not yet served")
     else:
         try:
             condition = next(
