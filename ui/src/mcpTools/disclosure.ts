@@ -182,6 +182,10 @@ const KEYCLOAK_REALM_CREDENTIALS = [
   ['identityProviders', '*', 'config', 'clientSecret'],
   ['smtpServer', 'password'],
   ['components', '*', '*', 'config', 'bindCredential'],
+  ['components', '*', '*', 'config', 'privateKey'],
+  ['components', '*', '*', 'config', 'secret'],
+  ['components', '*', '*', 'config', 'keystorePassword'],
+  ['components', '*', '*', 'config', 'keyPassword'],
 ];
 
 /** The value at `path` replaced by HIDDEN, wherever it exists; the rest of `value` untouched. */
