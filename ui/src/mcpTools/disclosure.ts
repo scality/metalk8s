@@ -170,10 +170,21 @@ const CREDENTIAL_NAMES = new Set(['hash']);
 
 /**
  * A last word that makes the name a reference or a setting, not a credential: `secretName`,
- * `secretKeyRef`, `bearerTokenFile`, `passwordSecretRef`. `key` is one only after a word it does not
+ * `secretKeyRef`, `bearerTokenFile`, `passwordSecretRef`, `encryptionKeyVersion`. `key` is one only after a word it does not
  * make a credential with: `passwordKey` names a key in a Secret, `secretKey` is the key itself.
  */
-const REFERENCE_WORDS = new Set(['name', 'names', 'ref', 'file', 'path', 'dir', 'namespace', 'selector', 'key']);
+const REFERENCE_WORDS = new Set([
+  'name',
+  'names',
+  'ref',
+  'file',
+  'path',
+  'dir',
+  'namespace',
+  'selector',
+  'version',
+  'key',
+]);
 
 /**
  * Credentials recognised by the value whatever the name: a PEM private key (`tlsKey`, `caKey`), also
@@ -272,12 +283,17 @@ const isText = (value: unknown) =>
  * the private parts of a JSON Web Key (any object with a `kty`), the `value` of a `credentials`
  * list item (a Keycloak user's password), the `value` of any `{ name, value }` item whose name
  * is a credential's, as env is written outside a container (`additionalOptions`, `extraEnv`), and
- * every text in a map named like a credential but its references.
+ * every text in a map of credentials but its references.
+ *
+ * A map of credentials is named in the plural (`secrets: { db: '…' }`, `credentials: { … }`). A
+ * singular one describes a single credential instead — `serviceAccountToken: { audience, path }`,
+ * `secret: { secretName, defaultMode }`, `privateKey: { algorithm, size }` — and is only walked into.
+ * Nor is a CRD schema's `properties`: `properties.secrets` describes the field, it holds none.
  */
 const withoutCredentialFields = (
   value: unknown,
   hidden: { any: boolean },
-  within?: 'credentials' | 'credentialMap',
+  within?: 'credentials' | 'credentialMap' | 'schema',
 ): unknown => {
   if (Array.isArray(value)) return value.map((item) => withoutCredentialFields(item, hidden, within));
   if (value === null || typeof value !== 'object' || value instanceof Date) return value;
@@ -291,9 +307,10 @@ const withoutCredentialFields = (
       const name = key.toLowerCase();
       const isCredential =
         CREDENTIAL_OBJECTS.has(name) ||
-        ((isText(nested) || typeof nested === 'number') &&
-          (isCredentialName(key) ||
-            ((within === 'credentials' || isNamedCredential) && name === 'value') ||
+        // A number counts under its own credential name only (`pin: 1234`), not as a setting in a map.
+        ((isText(nested) || typeof nested === 'number') && isCredentialName(key)) ||
+        (isText(nested) &&
+          (((within === 'credentials' || isNamedCredential) && name === 'value') ||
             (within === 'credentialMap' && !isReferenceName(key)))) ||
         (isKey && JWK_PRIVATE_FIELDS.has(key));
       // Already hidden (a Secret's data): nothing left to withhold, and nothing to report twice.
@@ -308,8 +325,15 @@ const withoutCredentialFields = (
       }
       // A JSON Web Key keeps its own rule: its public parts stay readable.
       const isMap = nested !== null && typeof nested === 'object' && !Array.isArray(nested) && !('kty' in nested);
-      const scope =
-        isMap && isCredentialName(key) ? 'credentialMap' : name === 'credentials' ? 'credentials' : undefined;
+      const isCredentialMap =
+        isMap && within !== 'schema' && isCredentialName(key) && wordsOf(key).pop()?.endsWith('s');
+      const scope = isCredentialMap
+        ? 'credentialMap'
+        : name === 'credentials'
+          ? 'credentials'
+          : key === 'properties'
+            ? 'schema'
+            : undefined;
       return [key, withoutCredentialFields(nested, hidden, scope)];
     }),
   );

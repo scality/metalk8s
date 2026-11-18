@@ -530,6 +530,7 @@ describe('disclose', () => {
     'passwordSecretRef',
     'secretNamespace',
     'certificateKey',
+    'encryptionKeyVersion',
   ])('keeps %s, whose last word makes it a reference', (field) => {
     const { resource } = disclose('widgets', { metadata: { name: 'x' }, spec: { [field]: 'db' } });
 
@@ -758,6 +759,74 @@ describe('disclose', () => {
       volumes: [{ name: 'creds', secret: { secretName: 'db', items: [{ key: 'pw', path: 'pw' }] } }],
     });
     expect(omitted).toEqual(['credentials (fields kept)']);
+  });
+
+  it('hides a credential stored as a number under its own name', () => {
+    const { resource } = disclose('widgets', {
+      metadata: { name: 'x' },
+      spec: { password: 123456, replicas: 3, tokens: { api: 'tok-123', ttlSeconds: 3600 } },
+    });
+
+    // In a map of credentials, a number is a setting: only text is the credential there.
+    expect(resource.spec).toEqual({ password: 'hidden', replicas: 3, tokens: { api: 'hidden', ttlSeconds: 3600 } });
+  });
+
+  it("leaves a pod's token and Secret volumes alone: they describe a credential, they hold none", () => {
+    const object = pod({
+      spec: {
+        containers: [{ name: 'web' }],
+        volumes: [
+          {
+            name: 'kube-api-access',
+            projected: {
+              sources: [{ serviceAccountToken: { audience: 'vault', expirationSeconds: 3607, path: 'token' } }],
+            },
+          },
+          { name: 'tls', secret: { secretName: 'tls', defaultMode: 420 } },
+        ],
+      },
+    });
+
+    const { resource, omitted } = disclose('pods', object);
+
+    expect(resource).toEqual(object);
+    expect(omitted).toEqual([]);
+  });
+
+  it("leaves a cert-manager Certificate's private key settings alone", () => {
+    const spec = { secretName: 'tls', privateKey: { algorithm: 'RSA', encoding: 'PKCS1', size: 2048 } };
+
+    const { resource, omitted } = disclose('certificates', { metadata: { name: 'x' }, spec });
+
+    expect(resource.spec).toEqual(spec);
+    expect(omitted).toEqual([]);
+  });
+
+  it("leaves a CRD's schema alone: its credential-named properties describe fields, they hold none", () => {
+    const spec = {
+      versions: [
+        {
+          name: 'v1',
+          schema: {
+            openAPIV3Schema: {
+              properties: {
+                password: { type: 'string', description: 'The admin password' },
+                secrets: {
+                  type: 'object',
+                  description: 'Credentials by name',
+                  additionalProperties: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    const { resource, omitted } = disclose('customresourcedefinitions', { metadata: { name: 'x' }, spec });
+
+    expect(resource.spec).toEqual(spec);
+    expect(omitted).toEqual([]);
   });
 
   it("leaves a pod template's metadata alone, wherever it sits", () => {
