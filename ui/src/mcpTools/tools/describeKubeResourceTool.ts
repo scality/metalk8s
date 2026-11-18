@@ -20,7 +20,7 @@ export function createDescribeKubeResourceTool(context: ToolContext) {
     name: 'describeKubeResource',
     description:
       "call this when being asked to describe one of the cluster's resources, " +
-      'the result will be the same as kubectl describe <kind> <name> -n <namespace>. You can describe any kind from kubernetes\n' +
+      'the result will be the same as kubectl describe <kind> <name> -n <namespace>. Any kind listKubeResources lists can be described: pass its kind and apiVersion as the list returned them.\n' +
       'events is null when they could not be read, and eventsUnavailable says why — null is NOT ' +
       '"no events", so never say nothing happened. They expire after about an hour, so an empty ' +
       'list means nothing happened RECENTLY.\n' +
