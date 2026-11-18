@@ -554,6 +554,60 @@ describe('disclose', () => {
     expect(resource.spec).toEqual({ containers: [{ name: 'web', env: [{ name, value: hidden ? 'hidden' : 'v' }] }] });
   });
 
+  it.each([
+    'ENCRYPTION_KEY',
+    'SIGNING_KEY',
+    'MASTER_KEY',
+    'SESSION_KEY',
+    'COOKIE_KEY',
+    'SSH_KEY',
+    'ACCESS_KEYS',
+  ])('hides the env value of %s, a key that is the credential itself', (name) => {
+    const { resource } = disclose(
+      'pods',
+      pod({ spec: { containers: [{ name: 'web', env: [{ name, value: 'v' }] }] } }),
+    );
+
+    expect(resource.spec).toEqual({ containers: [{ name: 'web', env: [{ name, value: 'hidden' }] }] });
+  });
+
+  it.each(['encryptionKey', 'apiKeys', 'accessKeys', 'privateKeys'])('hides %s, a list of keys included', (field) => {
+    const { resource } = disclose('widgets', { metadata: { name: 'x' }, spec: { [field]: ['k1', 'k2'] } });
+
+    expect(resource.spec).toEqual({ [field]: 'hidden' });
+  });
+
+  it('leaves an empty list under a credential name alone: there is no value to hide', () => {
+    const serviceAccount = { metadata: { name: 'default' }, secrets: [], imagePullSecrets: [] };
+
+    const { resource, omitted } = disclose('serviceaccounts', serviceAccount);
+
+    expect(resource).toEqual(serviceAccount);
+    expect(omitted).toEqual([]);
+  });
+
+  it('hides the value of a { name, value } item named like a credential, outside containers too', () => {
+    const { resource, omitted } = disclose('keycloaks', {
+      metadata: { name: 'kc' },
+      spec: {
+        additionalOptions: [
+          { name: 'db-password', value: 'hunter2' },
+          { name: 'db-pool-max-size', value: '20' },
+          { name: 'db-username', secret: { name: 'pg-creds', key: 'username' } },
+        ],
+      },
+    });
+
+    expect(resource.spec).toEqual({
+      additionalOptions: [
+        { name: 'db-password', value: 'hidden' },
+        { name: 'db-pool-max-size', value: '20' },
+        { name: 'db-username', secret: { name: 'pg-creds', key: 'username' } },
+      ],
+    });
+    expect(omitted).toEqual(['credentials (fields kept)']);
+  });
+
   it("leaves a pod template's metadata alone, wherever it sits", () => {
     const deployment = {
       metadata: { name: 'web' },

@@ -204,22 +204,25 @@ const isText = (value: unknown) =>
 
 /**
  * Every credential in `value` hidden, everything else kept, any `metadata` (its labels and
- * annotations hold hashes, never credentials) left alone. Besides the names above, two shapes:
- * the private parts of a JSON Web Key (any object with a `kty`), and the `value` of a
- * `credentials` list item (a Keycloak user's password).
+ * annotations hold hashes, never credentials) left alone. Besides the names above, three shapes:
+ * the private parts of a JSON Web Key (any object with a `kty`), the `value` of a `credentials`
+ * list item (a Keycloak user's password), and the `value` of any `{ name, value }` item whose name
+ * is a credential's, as env is written outside a container (`additionalOptions`, `extraEnv`).
  */
 const withoutCredentialFields = (value: unknown, hidden: { any: boolean }, inCredentials = false): unknown => {
   if (Array.isArray(value)) return value.map((item) => withoutCredentialFields(item, hidden, inCredentials));
   if (value === null || typeof value !== 'object' || value instanceof Date) return value;
 
   const isKey = 'kty' in (value as Record<string, unknown>);
+  const itemName = (value as { name?: unknown }).name;
+  const isNamedCredential = typeof itemName === 'string' && isCredentialName(itemName);
   return Object.fromEntries(
     Object.entries(value as Record<string, unknown>).map(([key, nested]) => {
       if (key === 'metadata') return [key, nested];
       const name = key.toLowerCase();
       const isCredential =
         CREDENTIAL_OBJECTS.has(name) ||
-        (isText(nested) && (isCredentialName(key) || (inCredentials && name === 'value'))) ||
+        (isText(nested) && (isCredentialName(key) || ((inCredentials || isNamedCredential) && name === 'value'))) ||
         (isKey && JWK_PRIVATE_FIELDS.has(key));
       // Already hidden (a Secret's data): nothing left to withhold, and nothing to report twice.
       if (isCredential && nested !== undefined && nested !== HIDDEN) {
