@@ -8,9 +8,10 @@ import (
 )
 
 var _ = Describe("GetImageName", func() {
-	// Nothing to test today, just here for coverage
-	It("return the image name", func() {
-		Expect(utils.GetImageName("metalk8s-keepalived")).ToNot(BeEmpty())
+	It("return the upstream name of the image", func() {
+		Expect(utils.GetImageName("metalk8s-keepalived")).To(
+			HavePrefix("ghcr.io/scality/metalk8s/metalk8s-keepalived:"),
+		)
 	})
 
 	It("do not find the image", func() {
