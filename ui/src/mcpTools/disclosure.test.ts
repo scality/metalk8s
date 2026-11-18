@@ -646,6 +646,47 @@ describe('disclose', () => {
     expect(omitted).toEqual([]);
   });
 
+  it("hides a probe's Authorization header, and keeps its other headers", () => {
+    const { resource } = disclose(
+      'pods',
+      pod({
+        spec: {
+          containers: [
+            {
+              name: 'web',
+              livenessProbe: {
+                httpGet: {
+                  path: '/healthz',
+                  port: 8080,
+                  httpHeaders: [
+                    { name: 'Authorization', value: 'Bearer eyJhbGciOi' },
+                    { name: 'Accept', value: 'application/json' },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(JSON.stringify(resource)).not.toContain('eyJhbGciOi');
+    expect(resource.spec).toMatchObject({
+      containers: [
+        {
+          livenessProbe: {
+            httpGet: {
+              httpHeaders: [
+                { name: 'Authorization', value: 'hidden' },
+                { name: 'Accept', value: 'application/json' },
+              ],
+            },
+          },
+        },
+      ],
+    });
+  });
+
   it("leaves a pod template's metadata alone, wherever it sits", () => {
     const deployment = {
       metadata: { name: 'web' },

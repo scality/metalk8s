@@ -69,7 +69,10 @@ type DescribeRequest = {
 /** A request whose scope the API server has confirmed. */
 export type DescribeTarget = DescribeRequest & { namespaced: boolean };
 
-/** A name is an RFC 1123 subdomain and a namespace a label; both go into the path, so both are checked. */
+/**
+ * A name is one path segment — RBAC objects have names such as `system:node` — and a namespace an
+ * RFC 1123 label; both go into the path, so both are checked.
+ */
 const NAME = /^(?!\.\.?$)[^/%\s]+$/;
 const NAMESPACE = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
 
@@ -77,7 +80,7 @@ const checkName = (name: string) => {
   if (typeof name !== 'string' || !name || name.length > 253 || name.includes('..') || !NAME.test(name)) {
     throw new K8sApiError(
       'malformed',
-      `"${name}" is not a resource name. Names are lower-case letters, digits, dashes and dots — never a path.`,
+      `"${name}" is not a resource name. A name is one path segment: no "/", "%" or whitespace, and not "." or "..".`,
     );
   }
 };

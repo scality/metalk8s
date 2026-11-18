@@ -224,6 +224,17 @@ describe('describeResource', () => {
     );
   });
 
+  it('describes an RBAC object, whose name is not a DNS subdomain', async () => {
+    const path = '/apis/rbac.authorization.k8s.io/v1/clusterroles/system%3Acontroller%3Anode-controller';
+    const clients = makeClients({ [path]: { metadata: { name: 'system:controller:node-controller', uid: 'uid-r' } } });
+
+    const description = await describeResource(clients, target('clusterroles', 'rbac.authorization.k8s.io/v1', false), {
+      name: 'system:controller:node-controller',
+    });
+
+    expect(description.resource.metadata).toMatchObject({ name: 'system:controller:node-controller' });
+  });
+
   it('still describes the object when the events cannot be read', async () => {
     const clients = makeClients({ [POD_PATH]: pod() });
     (clients.coreV1.listNamespacedEvent as jest.Mock).mockRejectedValue(apiRejection(403));
@@ -284,7 +295,8 @@ describe('describeResource', () => {
   it.each([
     '../../../api/v1/secrets/admin',
     'web/../../secrets',
-    'Web-ABC',
+    'with space',
+    '..',
     '',
   ])('refuses %s as a name, rather than trusting it to be encoded', async (name) => {
     const clients = makeClients();
