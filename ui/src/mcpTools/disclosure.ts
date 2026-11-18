@@ -2,10 +2,10 @@
 //
 // This is policy, not Kubernetes: it lives here rather than in services/k8s because the service has
 // other callers. A panel rendering a pod for the administrator whose cluster it is may want the
-// environment values withheld here, and it should not have to argue with the service about it.
+// values withheld here, and it should not have to argue with the service about it.
 //
-// Two reasons to withhold. Credentials: a Secret's values, the same values where a pod spec or a
-// ConfigMap carries them, and those Dex and a Keycloak realm import keep in their own fields. And
+// Two reasons to withhold. Credentials: a Secret's values, a ConfigMap's, and any field or env
+// variable named like a credential, whatever its kind. And
 // bulk: a single object normally fits whole, but some arrive outsized, and a model's context is not
 // free.
 
@@ -35,22 +35,40 @@ const LAST_APPLIED = 'kubectl.kubernetes.io/last-applied-configuration';
 /** Wherever a pod template puts its containers, these are the arrays holding them. */
 const CONTAINER_KEYS = new Set(['containers', 'initContainers', 'ephemeralContainers']);
 
-const withoutEnvValues = (container: unknown, dropped: { any: boolean }): unknown => {
+/**
+ * Whether an environment variable is named like a credential, by the same list as any other field.
+ * `KC_DB_PASSWORD` matches on a word; `AWS_ACCESS_KEY_ID` on two joined; `KC_HTTPS_CERTIFICATE_KEY_FILE`
+ * not at all, since a bare `KEY` is as often a path or a setting as a secret.
+ */
+const isCredentialName = (name: unknown): boolean => {
+  if (typeof name !== 'string') return false;
+  const words = name
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  return words.some((word, i) => CREDENTIAL_FIELDS.has(word) || (i > 0 && CREDENTIAL_FIELDS.has(words[i - 1] + word)));
+};
+
+const withoutEnvCredentials = (container: unknown, hidden: { any: boolean }): unknown => {
   const env = (container as { env?: { name?: string; value?: string }[] })?.env;
   if (!Array.isArray(env)) return container;
 
   return {
     ...(container as object),
     env: env.map((variable) => {
-      const { value, ...withoutValue } = variable ?? {};
-      if (value !== undefined) dropped.any = true;
-      return withoutValue;
+      if (variable?.value === undefined || variable.value === HIDDEN || !isCredentialName(variable.name)) {
+        return variable;
+      }
+      hidden.any = true;
+      return { ...variable, value: HIDDEN };
     }),
   };
 };
 
 /**
- * Environment values dropped, their names kept — wherever in the object the containers are.
+ * Environment values named like a credential, hidden, their names kept — wherever in the object the
+ * containers are. The others stay: a port, a host or a feature flag is what a diagnosis reads.
  *
  * It walks rather than reaching for a path, because every kind puts its pod template somewhere
  * different: a Pod at `spec.containers`, a ReplicaSet or Job at `spec.template.spec.containers`, a
@@ -58,20 +76,20 @@ const withoutEnvValues = (container: unknown, dropped: { any: boolean }): unknow
  * wherever its author chose. Reaching for a path covers the kinds someone wrote down, and a kind
  * reached by apiVersion is by definition one nobody did.
  *
- * A Secret's values are not the only credentials: a pod spec holds a password just as readily.
- * The names and any `valueFrom` reference survive, which is what a diagnosis reads — that a variable
- * is set, and where it comes from.
+ * A Secret's values are not the only credentials: a pod spec holds a password just as readily, but
+ * as `{ name, value }`, so the field name that gives a credential away elsewhere is the variable's
+ * name here. Any `valueFrom` reference survives: it says where the variable comes from, not what it is.
  */
-const withoutEnvironmentValues = (value: unknown, dropped: { any: boolean }): unknown => {
-  if (Array.isArray(value)) return value.map((nested) => withoutEnvironmentValues(nested, dropped));
+const withoutEnvironmentCredentials = (value: unknown, hidden: { any: boolean }): unknown => {
+  if (Array.isArray(value)) return value.map((nested) => withoutEnvironmentCredentials(nested, hidden));
   // A Date survives only by being returned as it is: entries() on one gives nothing back.
   if (value === null || typeof value !== 'object' || value instanceof Date) return value;
 
   return Object.fromEntries(
     Object.entries(value as Record<string, unknown>).map(([key, nested]) =>
       CONTAINER_KEYS.has(key) && Array.isArray(nested)
-        ? [key, nested.map((container) => withoutEnvValues(container, dropped))]
-        : [key, withoutEnvironmentValues(nested, dropped)],
+        ? [key, nested.map((container) => withoutEnvCredentials(container, hidden))]
+        : [key, withoutEnvironmentCredentials(nested, hidden)],
     ),
   );
 };
@@ -115,119 +133,106 @@ const withoutSecretValues = (kind: string, object: KubeObject, omitted: string[]
 };
 
 /**
- * Dex (`storage.type: kubernetes`) keeps its credentials in its own objects' fields, under these
- * names: client secrets, password hashes, connector configs, tokens and MFA material.
+ * Field names whose value is a credential, matched case-insensitively wherever they sit outside
+ * `metadata`, on any kind. A text value (or a list of text) is hidden; an object is walked into, so
+ * a reference such as `volumes[].secret: { secretName }` stays readable. Names that hold a reference
+ * — `secretName`, `secretKeyRef`, `passwordKey` — are not in the list.
+ *
+ * Gathered from the kinds deployed on an ARTESCA cluster and from Dex and Keycloak: Zenko's S3
+ * accounts, cert-manager keystores, Prometheus Operator tokens, Keycloak realm imports, Dex.
+ * A field holding a Secret's NAME under one of these names is hidden too, which is the cost of a
+ * rule that does not know every kind.
  */
-const DEX_CREDENTIAL_FIELDS = new Set([
-  'secret',
-  'hash',
-  'config',
-  'token',
-  'obsoleteToken',
-  'client_secret',
-  'hmac_key',
-  'mfaSecrets',
-  'webauthnCredentials',
-  'connectorData',
-  'device_code',
-  'user_code',
-]);
+const CREDENTIAL_FIELDS = new Set(
+  [
+    'secret',
+    'password',
+    'passwd',
+    'bindPW',
+    'bindCredential',
+    'keystorePassword',
+    'keyPassword',
+    'token',
+    'obsoleteToken',
+    'bearerToken',
+    'registrationAccessToken',
+    'hash',
+    'accessKey',
+    'accessKeyID',
+    'secretKey',
+    'encryptedSecretKey',
+    'privateKey',
+    'apiKey',
+    'clientSecret',
+    'client_secret',
+    'hmac_key',
+    'device_code',
+    'user_code',
+    'connectorData',
+    'secretData',
+  ].map((name) => name.toLowerCase()),
+);
+
+/** Credential fields whose value is an object or a list of objects: hidden whole, whatever it holds. */
+const CREDENTIAL_OBJECTS = new Set(['mfaSecrets', 'webauthnCredentials'].map((name) => name.toLowerCase()));
 
 /** The private parts of a JSON Web Key; `kty`, `kid`, `n` and `e` are public. */
 const JWK_PRIVATE_FIELDS = new Set(['d', 'p', 'q', 'dp', 'dq', 'qi', 'k']);
 
-/** A JWK's private parts hidden, wherever in the object a key (anything with a `kty`) sits. */
-const withoutPrivateKeys = (value: unknown, hidden: { any: boolean }): unknown => {
-  if (Array.isArray(value)) return value.map((nested) => withoutPrivateKeys(nested, hidden));
+const isText = (value: unknown) =>
+  typeof value === 'string' || (Array.isArray(value) && value.every((item) => typeof item === 'string'));
+
+/**
+ * Every credential in `value` hidden, everything else kept. Besides the names above, two shapes:
+ * the private parts of a JSON Web Key (any object with a `kty`), and the `value` of a
+ * `credentials` list item (a Keycloak user's password).
+ */
+const withoutCredentialFields = (value: unknown, hidden: { any: boolean }, inCredentials = false): unknown => {
+  if (Array.isArray(value)) return value.map((item) => withoutCredentialFields(item, hidden, inCredentials));
   if (value === null || typeof value !== 'object' || value instanceof Date) return value;
 
   const isKey = 'kty' in (value as Record<string, unknown>);
   return Object.fromEntries(
     Object.entries(value as Record<string, unknown>).map(([key, nested]) => {
-      if (isKey && JWK_PRIVATE_FIELDS.has(key)) {
+      const name = key.toLowerCase();
+      const isCredential =
+        CREDENTIAL_OBJECTS.has(name) ||
+        (isText(nested) && (CREDENTIAL_FIELDS.has(name) || (inCredentials && name === 'value'))) ||
+        (isKey && JWK_PRIVATE_FIELDS.has(key));
+      // Already hidden (a Secret's data): nothing left to withhold, and nothing to report twice.
+      if (isCredential && nested !== undefined && nested !== HIDDEN) {
         hidden.any = true;
         return [key, HIDDEN];
       }
-      return [key, withoutPrivateKeys(nested, hidden)];
+      return [key, withoutCredentialFields(nested, hidden, name === 'credentials')];
     }),
   );
 };
 
-/** A Dex object with its credential fields and private keys hidden, everything else kept. */
-const withoutDexCredentials = (object: KubeObject, omitted: string[]): KubeObject => {
-  if (!String(object.apiVersion ?? '').startsWith('dex.coreos.com/')) return object;
-
-  const hidden = { any: false };
-  const fields = Object.fromEntries(
-    Object.entries(object).map(([key, value]) => {
-      if (key !== 'metadata' && DEX_CREDENTIAL_FIELDS.has(key)) {
-        hidden.any = true;
-        return [key, HIDDEN];
-      }
-      return [key, key === 'metadata' ? value : withoutPrivateKeys(value, hidden)];
-    }),
-  ) as KubeObject;
-
-  if (!hidden.any) return object;
-  omitted.push('Dex credentials (fields kept)');
-  return fields;
-};
-
 /**
- * Where a Keycloak realm, as a KeycloakRealmImport carries it in `spec.realm`, holds credentials.
- * `*` is any item of a list or any value of a map.
+ * The object with its credentials hidden, `metadata` left alone (its labels and annotations hold
+ * hashes, never credentials). Dex's `config` — a connector's settings, LDAP password included — is
+ * too common a name for the list, so it is matched on Dex's group only.
  */
-const KEYCLOAK_REALM_CREDENTIALS = [
-  ['clients', '*', 'secret'],
-  ['users', '*', 'credentials', '*', 'value'],
-  ['users', '*', 'credentials', '*', 'secretData'],
-  ['identityProviders', '*', 'config', 'clientSecret'],
-  ['smtpServer', 'password'],
-  ['components', '*', '*', 'config', 'bindCredential'],
-  ['components', '*', '*', 'config', 'privateKey'],
-  ['components', '*', '*', 'config', 'secret'],
-  ['components', '*', '*', 'config', 'keystorePassword'],
-  ['components', '*', '*', 'config', 'keyPassword'],
-];
-
-/** The value at `path` replaced by HIDDEN, wherever it exists; the rest of `value` untouched. */
-const hideAt = (value: unknown, path: string[], hidden: { any: boolean }): unknown => {
-  if (path.length === 0) {
-    if (value === undefined) return value;
-    hidden.any = true;
-    return HIDDEN;
-  }
-  if (value === null || typeof value !== 'object') return value;
-
-  const [step, ...rest] = path;
-  if (Array.isArray(value)) return step === '*' ? value.map((item) => hideAt(item, rest, hidden)) : value;
-
-  const entries = Object.entries(value as Record<string, unknown>);
-  return Object.fromEntries(
-    entries.map(([key, nested]) =>
-      step === '*' || key === step ? [key, hideAt(nested, rest, hidden)] : [key, nested],
-    ),
-  );
-};
-
-/** A KeycloakRealmImport with its realm's credentials hidden, everything else kept. */
-const withoutKeycloakCredentials = (object: KubeObject, omitted: string[]): KubeObject => {
-  if (!String(object.apiVersion ?? '').startsWith('k8s.keycloak.org/') || object.kind !== 'KeycloakRealmImport') {
-    return object;
-  }
-  const spec = object.spec as { realm?: unknown } | undefined;
-  if (!spec?.realm) return object;
-
+const withoutCredentials = (object: KubeObject, omitted: string[]): KubeObject => {
   const hidden = { any: false };
-  const realm = KEYCLOAK_REALM_CREDENTIALS.reduce((current, path) => hideAt(current, path, hidden), spec.realm);
+  const { metadata, ...body } = object;
+  // Dex keeps credentials at its objects' top level, so the names are checked from there down.
+  const isDex = String(object.apiVersion ?? '').startsWith('dex.coreos.com/');
+  if (isDex && body.config !== undefined) {
+    body.config = HIDDEN;
+    hidden.any = true;
+  }
+  const kept = withoutCredentialFields(body, hidden) as Record<string, unknown>;
 
   if (!hidden.any) return object;
-  omitted.push('Keycloak credentials (fields kept)');
-  return { ...object, spec: { ...spec, realm } };
+  omitted.push('credentials (fields kept)');
+  // The object's own key order, metadata where it was.
+  return Object.fromEntries(Object.keys(object).map((key) => [key, key === 'metadata' ? metadata : kept[key]]));
 };
 
 /**
- * The annotation `kubectl apply` writes: a verbatim JSON copy of the applied spec, env values and
+ * The annotation `kubectl apply` writes: a verbatim JSON copy of the applied spec, credentials and
  * all. Dropped every time rather than only when the object is outsized — redacting the spec and
  * leaving its copy behind would hand the values over anyway — and it says nothing `spec` does not.
  */
@@ -297,25 +302,15 @@ const sizeDown = (object: KubeObject, omitted: string[]): KubeObject => {
 export const disclose = (kind: string, object: KubeObject): { resource: KubeObject; omitted: string[] } => {
   const omitted: string[] = [];
 
-  const dropped = { any: false };
-  const redacted = withoutEnvironmentValues(object, dropped) as KubeObject;
-  if (dropped.any) omitted.push('env values (names kept)');
+  const hidden = { any: false };
+  let resource = withoutEnvironmentCredentials(object, hidden) as KubeObject;
+  if (hidden.any) omitted.push('credential env values (names kept)');
 
-  return {
-    resource: sizeDown(
-      withoutKeycloakCredentials(
-        withoutDexCredentials(
-          withoutSecretValues(
-            kind,
-            withoutConfigMapValues(kind, withoutLastApplied(redacted, omitted), omitted),
-            omitted,
-          ),
-          omitted,
-        ),
-        omitted,
-      ),
-      omitted,
-    ),
-    omitted,
-  };
+  resource = withoutLastApplied(resource, omitted);
+  resource = withoutConfigMapValues(kind, resource, omitted);
+  resource = withoutSecretValues(kind, resource, omitted);
+  resource = withoutCredentials(resource, omitted);
+  resource = sizeDown(resource, omitted);
+
+  return { resource, omitted };
 };

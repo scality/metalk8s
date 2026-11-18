@@ -196,7 +196,7 @@ describe('describeKubeResource', () => {
 
     expect(result.status).toBe('ok');
     expect(result.resource).toMatchObject({ id: 'fake-client', secret: 'hidden' });
-    expect(result.omitted).toContain('Dex credentials (fields kept)');
+    expect(result.omitted).toContain('credentials (fields kept)');
     const cached = JSON.stringify(
       context.queryClient
         .getQueryCache()
@@ -245,20 +245,20 @@ describe('describeKubeResource', () => {
   });
 
   it('withholds what disclose() withholds — the wiring, not the function', async () => {
-    // disclosure.test.ts proves disclose() drops the value. Nothing proved the tool CALLS it: drop
+    // disclosure.test.ts proves disclose() hides the value. Nothing proved the tool CALLS it: drop
     // `resource` from the return below, or let `...description` land after it, and the raw object
     // goes to the model with every test still green.
     routes[POD_PATH] = {
       metadata: { name: 'web-abc', namespace: 'default' },
-      spec: { containers: [{ name: 'web', env: [{ name: 'PW', value: 'hunter2' }] }] },
+      spec: { containers: [{ name: 'web', env: [{ name: 'DB_PASSWORD', value: 'hunter2' }] }] },
       status: { phase: 'Running' },
     };
 
     const result = await describePod();
 
     expect(JSON.stringify(result)).not.toContain('hunter2');
-    expect(JSON.stringify(result)).toContain('"PW"');
-    expect(result.omitted).toContain('env values (names kept)');
+    expect(JSON.stringify(result)).toContain('"DB_PASSWORD"');
+    expect(result.omitted).toContain('credential env values (names kept)');
   });
 
   it('keeps an object it may not look at apart from one that is not there', async () => {

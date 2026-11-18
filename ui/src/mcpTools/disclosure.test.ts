@@ -17,7 +17,7 @@ describe('disclose', () => {
     expect(omitted).toEqual([]);
   });
 
-  it('keeps env names and drops their values', () => {
+  it('hides the env values named like a credential, and only those', () => {
     const { resource, omitted } = disclose(
       'pods',
       pod({
@@ -27,6 +27,9 @@ describe('disclose', () => {
               name: 'web',
               env: [
                 { name: 'DB_PASSWORD', value: 'hunter2' },
+                { name: 'AWS_ACCESS_KEY_ID', value: 'AKIAEXAMPLE' },
+                { name: 'KC_HTTP_PORT', value: '8080' },
+                { name: 'KC_HTTPS_CERTIFICATE_KEY_FILE', value: '/etc/tls/tls.key' },
                 { name: 'DB_HOST', valueFrom: { configMapKeyRef: { name: 'cfg', key: 'host' } } },
               ],
             },
@@ -36,11 +39,16 @@ describe('disclose', () => {
     );
 
     expect(JSON.stringify(resource)).not.toContain('hunter2');
-    expect(resource.spec).toMatchObject({
+    expect(resource.spec).toEqual({
       containers: [
         {
+          name: 'web',
           env: [
-            { name: 'DB_PASSWORD' },
+            { name: 'DB_PASSWORD', value: 'hidden' },
+            { name: 'AWS_ACCESS_KEY_ID', value: 'hidden' },
+            // Configuration, not a credential: a bare KEY names a file as often as a secret.
+            { name: 'KC_HTTP_PORT', value: '8080' },
+            { name: 'KC_HTTPS_CERTIFICATE_KEY_FILE', value: '/etc/tls/tls.key' },
             // A reference is not a value: it says where the variable comes from, which is the half
             // worth having.
             { name: 'DB_HOST', valueFrom: { configMapKeyRef: { name: 'cfg', key: 'host' } } },
@@ -48,20 +56,26 @@ describe('disclose', () => {
         },
       ],
     });
-    expect(omitted).toContain('env values (names kept)');
+    expect(omitted).toContain('credential env values (names kept)');
   });
 
   it.each([
     [
       'a deployment, whose containers are under spec.template.spec',
-      { spec: { template: { spec: { containers: [{ name: 'web', env: [{ name: 'PW', value: 'hunter2' }] }] } } } },
+      {
+        spec: {
+          template: { spec: { containers: [{ name: 'web', env: [{ name: 'DB_PASSWORD', value: 'hunter2' }] }] } },
+        },
+      },
     ],
     [
       'a cronjob, two templates deep',
       {
         spec: {
           jobTemplate: {
-            spec: { template: { spec: { containers: [{ name: 'job', env: [{ name: 'PW', value: 'hunter2' }] }] } } },
+            spec: {
+              template: { spec: { containers: [{ name: 'job', env: [{ name: 'DB_PASSWORD', value: 'hunter2' }] }] } },
+            },
           },
         },
       },
@@ -72,8 +86,8 @@ describe('disclose', () => {
     const { resource, omitted } = disclose('deployments', { metadata: { name: 'thing' }, ...body });
 
     expect(JSON.stringify(resource)).not.toContain('hunter2');
-    expect(JSON.stringify(resource)).toContain('"PW"');
-    expect(omitted).toContain('env values (names kept)');
+    expect(JSON.stringify(resource)).toContain('"DB_PASSWORD"');
+    expect(omitted).toContain('credential env values (names kept)');
   });
 
   it('leaves dates alone while walking the object', () => {
@@ -108,10 +122,10 @@ describe('disclose', () => {
         metadata: {
           name: 'web-abc',
           annotations: {
-            // kubectl apply writes the whole spec back verbatim, env values and all — redacting the
+            // kubectl apply writes the whole spec back verbatim, credentials and all — redacting the
             // spec and leaving this behind would hand them over anyway.
             'kubectl.kubernetes.io/last-applied-configuration':
-              '{"spec":{"containers":[{"name":"web","env":[{"name":"PW","value":"hunter2"}]}]}}',
+              '{"spec":{"containers":[{"name":"web","env":[{"name":"DB_PASSWORD","value":"hunter2"}]}]}}',
             'other/annotation': 'kept',
           },
         },
@@ -193,7 +207,7 @@ describe('disclose', () => {
       redirectURIs: ['https://example.invalid/callback'],
       secret: 'hidden',
     });
-    expect(omitted).toEqual(['Dex credentials (fields kept)']);
+    expect(omitted).toEqual(['credentials (fields kept)']);
   });
 
   it("hides a Dex signing key's private parts and keeps its public ones and its rotation", () => {
@@ -230,15 +244,15 @@ describe('disclose', () => {
     expect(resource[hiddenField]).toBe('hidden');
   });
 
-  it('leaves a field named secret alone outside the Dex group', () => {
+  it('hides a credential-named field on any kind, a Secret name included: the accepted cost', () => {
     const { resource, omitted } = disclose('widgets', {
       apiVersion: 'example.com/v1',
       metadata: { name: 'x' },
       secret: 'my-secret-name',
     });
 
-    expect(resource.secret).toBe('my-secret-name');
-    expect(omitted).toEqual([]);
+    expect(resource.secret).toBe('hidden');
+    expect(omitted).toEqual(['credentials (fields kept)']);
   });
 
   it("drops a Secret's stringData, which never comes back from the API, even with no data beside it", () => {
@@ -316,7 +330,7 @@ describe('disclose', () => {
         users: [{ username: 'fake-user', enabled: true, credentials: [{ type: 'password', value: 'hidden' }] }],
       },
     });
-    expect(omitted).toEqual(['Keycloak credentials (fields kept)']);
+    expect(omitted).toEqual(['credentials (fields kept)']);
   });
 
   it("hides a realm's identity provider secret, SMTP password and LDAP bind credential", () => {
@@ -347,18 +361,25 @@ describe('disclose', () => {
     });
   });
 
-  it('leaves a Keycloak instance alone: its secret fields name Secrets, they hold none', () => {
-    const keycloak = {
+  it("hides a Keycloak instance's bootstrap Secret name too, and keeps the references beside it", () => {
+    const { resource } = disclose('keycloaks', {
       apiVersion: 'k8s.keycloak.org/v2alpha1',
       kind: 'Keycloak',
       metadata: { name: 'artesca-keycloak', namespace: 'artesca-auth' },
-      spec: { bootstrapAdmin: { user: { secret: 'artesca-kc-initial-admin' } } },
-    };
+      spec: {
+        bootstrapAdmin: { user: { secret: 'artesca-kc-initial-admin' } },
+        db: { passwordSecret: { name: 'pg-creds', key: 'password' } },
+        http: { tlsSecret: 'keycloak-tls' },
+      },
+    });
 
-    const { resource, omitted } = disclose('keycloaks', keycloak);
-
-    expect(resource).toEqual(keycloak);
-    expect(omitted).toEqual([]);
+    expect(resource.spec).toEqual({
+      // A name, but its field is called secret: hidden, which is what a generic rule costs.
+      bootstrapAdmin: { user: { secret: 'hidden' } },
+      // A reference object and a name under another field name: kept.
+      db: { passwordSecret: { name: 'pg-creds', key: 'password' } },
+      http: { tlsSecret: 'keycloak-tls' },
+    });
   });
 
   it("hides a realm's key provider secrets: private key, HMAC secret, keystore and key passwords", () => {
@@ -419,6 +440,90 @@ describe('disclose', () => {
       user_code: 'hidden',
       client_secret: 'hidden',
     });
-    expect(omitted).toContain('Dex credentials (fields kept)');
+    expect(omitted).toContain('credentials (fields kept)');
+  });
+
+  it("hides a Zenko overlay's S3 account and location keys", () => {
+    const { resource, omitted } = disclose('zenkoconfigurationoverlays', {
+      apiVersion: 'zenko.io/v1alpha1',
+      kind: 'ZenkoConfigurationOverlay',
+      metadata: { name: 'artesca-data', namespace: 'zenko' },
+      spec: {
+        accounts: [{ name: 'admin', accessKey: 'AKIAFAKE', encryptedSecretKey: 'ENCRYPTED-KEY' }],
+        locations: [{ name: 'aws', details: { bucketName: 'b', secretKey: 'S3-SECRET' } }],
+      },
+    });
+
+    expect(resource.spec).toEqual({
+      accounts: [{ name: 'admin', accessKey: 'hidden', encryptedSecretKey: 'hidden' }],
+      locations: [{ name: 'aws', details: { bucketName: 'b', secretKey: 'hidden' } }],
+    });
+    expect(omitted).toEqual(['credentials (fields kept)']);
+  });
+
+  it('hides Dex MFA and WebAuthn material whole, whatever shape it takes', () => {
+    const { resource } = disclose('useridentities', {
+      apiVersion: 'dex.coreos.com/v1',
+      kind: 'UserIdentity',
+      metadata: { name: 'u', namespace: 'dex' },
+      userID: 'u1',
+      mfaSecrets: { totp: { secret: 'TOTP-SEED', confirmed: true } },
+      webauthnCredentials: [{ id: 'cred-1', publicKey: 'PUB', signCount: 3 }],
+    });
+
+    expect(resource).toMatchObject({ userID: 'u1', mfaSecrets: 'hidden', webauthnCredentials: 'hidden' });
+    expect(JSON.stringify(resource)).not.toMatch(/TOTP-SEED|cred-1/);
+  });
+
+  it("hides a Keycloak user's stored credential data", () => {
+    const { resource } = disclose('keycloakrealmimports', {
+      apiVersion: 'k8s.keycloak.org/v2alpha1',
+      kind: 'KeycloakRealmImport',
+      metadata: { name: 'r', namespace: 'kc' },
+      spec: {
+        realm: { users: [{ username: 'u', credentials: [{ type: 'password', secretData: '{"value":"HASH"}' }] }] },
+      },
+    });
+
+    expect(JSON.stringify(resource)).not.toContain('HASH');
+  });
+
+  it("hides Dex's connector config, and leaves a config field alone anywhere else", () => {
+    const dex = disclose('connectors', {
+      apiVersion: 'dex.coreos.com/v1',
+      metadata: { name: 'ldap', namespace: 'dex' },
+      type: 'ldap',
+      config: 'eyJiaW5kUFciOiJ4In0=',
+    });
+    const other = disclose('widgets', { apiVersion: 'example.com/v1', metadata: { name: 'x' }, config: 'debug' });
+
+    expect(dex.resource).toMatchObject({ type: 'ldap', config: 'hidden' });
+    expect(other.resource.config).toBe('debug');
+  });
+
+  it('keeps references to Secrets, and never touches metadata', () => {
+    const pod = {
+      metadata: {
+        name: 'web',
+        namespace: 'default',
+        labels: { 'pod-template-hash': '7d9f' },
+        annotations: { 'checksum/secret': 'abc' },
+      },
+      spec: {
+        containers: [
+          {
+            name: 'web',
+            env: [{ name: 'DB_PASSWORD', valueFrom: { secretKeyRef: { name: 'db', key: 'password' } } }],
+          },
+        ],
+        volumes: [{ name: 'creds', secret: { secretName: 'db' } }],
+        tolerations: [{ key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' }],
+      },
+    };
+
+    const { resource, omitted } = disclose('pods', pod);
+
+    expect(resource).toEqual(pod);
+    expect(omitted).toEqual([]);
   });
 });
