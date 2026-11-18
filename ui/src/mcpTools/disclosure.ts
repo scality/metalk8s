@@ -129,6 +129,8 @@ const DEX_CREDENTIAL_FIELDS = new Set([
   'mfaSecrets',
   'webauthnCredentials',
   'connectorData',
+  'device_code',
+  'user_code',
 ]);
 
 /** The private parts of a JSON Web Key; `kty`, `kid`, `n` and `e` are public. */
