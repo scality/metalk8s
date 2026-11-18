@@ -213,9 +213,8 @@ describe('listKubeResources', () => {
     expect(description).not.toContain(ALLOWED_KINDS.join(', '));
     expect(inputSchema.properties.kind).not.toHaveProperty('enum');
     expect(inputSchema.properties.kind.description).not.toContain('pods');
-    // The way out of not knowing a custom resource's version stays, because it is a mechanism
-    // rather than a constraint.
-    expect(description).toMatch(/customresourcedefinitions first/i);
+    // What it returns is kubectl's own output, which the model already knows how to read.
+    expect(description).toMatch(/kubectl get <kind> -A -o wide/);
     expect(inputSchema.required).toEqual(['kind']);
   });
 });
