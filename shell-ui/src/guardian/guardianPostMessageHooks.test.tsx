@@ -85,7 +85,11 @@ it('clears the pending question when it changes, so the old one stops being post
 });
 
 describe('tool discovery', () => {
-  const registration = new AbortController();
+  let registration: AbortController;
+
+  beforeEach(() => {
+    registration = new AbortController();
+  });
 
   afterEach(() => {
     registration.abort();

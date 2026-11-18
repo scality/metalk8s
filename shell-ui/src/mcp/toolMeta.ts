@@ -22,7 +22,7 @@ export const rememberGuardianHints = (
     ...(entrypoint && { [ENTRYPOINT_KEY]: true }),
     ...(reveals && reveals.length > 0 && { [REVEALS_KEY]: reveals }),
   };
-  if (Object.keys(meta).length === 0) return;
+  if (Object.keys(meta).length === 0 || signal.aborted) return;
   metaByToolName.set(name, meta);
   signal.addEventListener('abort', () => {
     if (metaByToolName.get(name) === meta) metaByToolName.delete(name);
