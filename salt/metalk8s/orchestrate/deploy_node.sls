@@ -2,6 +2,7 @@
 {%- from "metalk8s/map.jinja" import kubernetes with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/repo/registry.jinja" import registry_addresses, registry_ca with context %}
 
 {%- set node_name = pillar.orchestrate.node_name %}
 {%- set run_drain = not pillar.orchestrate.get('skip_draining', False) %}
@@ -254,6 +255,12 @@ Fill the image cache on {{ node_name }}:
     - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.image-cache.pulled
+    # NOTE: The node reaches no Kubernetes API yet, read them for it.
+    - pillar:
+        metalk8s:
+          registry:
+            addresses: {{ registry_addresses | tojson }}
+            ca: {{ registry_ca | tojson }}
     {#- The pull does not return while it downloads, see `Run the highstate`
         for why a short timeout aborts the deployment #}
     - timeout: 300
@@ -397,12 +404,28 @@ Wait for API server to be available:
   - require:
     - salt: Run the highstate
 
+# The Pods scheduled once the node is uncordoned pull through the registry
+# mirror configuration, which the registry operator writes on every node.
+Wait for the registry mirror configuration on the node:
+  salt.function:
+    - name: file.file_exists
+    - tgt: {{ node_name }}
+    - arg:
+      - /etc/containerd/certs.d/_default/hosts.toml
+    - retry:
+        attempts: 30
+        interval: 10
+    - require:
+      - salt: Run the highstate
+      - http: Wait for API server to be available
+
 Uncordon the node:
   metalk8s_cordon.node_uncordoned:
     - name: {{ node_name }}
     - require:
       - salt: Run the highstate
       - http: Wait for API server to be available
+      - salt: Wait for the registry mirror configuration on the node
 
 {%- set master_minions = salt['metalk8s.minions_by_role']('master') %}
 

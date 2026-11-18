@@ -31,6 +31,7 @@ class Metalk8sImageCacheTestCase(TestCase, mixins.LoaderModuleMockMixin):
         [
             ("defaults", {}, []),
             ("cache path", {"cache_path": "/cache"}, ["--cache-path", "/cache"]),
+            ("CA file", {"ca_file": "/ca.crt"}, ["--ca-file", "/ca.crt"]),
             ("plain http", {"plain_http": True}, ["--plain-http"]),
         ]
     )
