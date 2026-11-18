@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { GuardianDrawerProvider, useGuardianDrawer } from './GuardianContext';
-import { rememberToolMeta } from '../mcp/toolMeta';
+import { rememberGuardianHints } from '../mcp/toolMeta';
 import { useDiscoveryEmitter, usePromptEmitter } from './guardianPostMessageHooks';
 
 jest.mock('../initFederation/ShellConfigProvider', () => ({
@@ -84,24 +84,32 @@ it('clears the pending question when it changes, so the old one stops being post
   expect(postMessage).toHaveBeenCalledTimes(posted);
 });
 
-it("announces each tool with the _meta its app registered, which listTools drops", () => {
-  const { postMessage, iframeRef } = emitter();
+describe('tool discovery', () => {
   const registration = new AbortController();
-  const meta = { 'scality.guardian/reveals': ['readLog'] };
-  rememberToolMeta('diagnose', meta, registration.signal);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (document as any).modelContext = { listTools: () => [{ name: 'diagnose' }, { name: 'readLog' }] };
 
-  renderHook(() => useDiscoveryEmitter(iframeRef, ORIGIN));
-  jest.advanceTimersByTime(3_000);
+  afterEach(() => {
+    registration.abort();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (document as any).modelContext;
+  });
 
-  expect(postMessage).toHaveBeenCalledWith(
-    { type: 'MCP_DISCOVERY', tools: [{ name: 'diagnose', _meta: meta }, { name: 'readLog' }] },
-    ORIGIN,
-  );
-  registration.abort();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  delete (document as any).modelContext;
+  it("announces each tool with the _meta its app's hints map to, which listTools drops", () => {
+    const { postMessage, iframeRef } = emitter();
+    rememberGuardianHints('diagnose', { reveals: ['readLog'] }, registration.signal);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (document as any).modelContext = { listTools: () => [{ name: 'diagnose' }, { name: 'readLog' }] };
+
+    renderHook(() => useDiscoveryEmitter(iframeRef, ORIGIN));
+    jest.advanceTimersByTime(3_000);
+
+    expect(postMessage).toHaveBeenCalledWith(
+      {
+        type: 'MCP_DISCOVERY',
+        tools: [{ name: 'diagnose', _meta: { 'scality.guardian/reveals': ['readLog'] } }, { name: 'readLog' }],
+      },
+      ORIGIN,
+    );
+  });
 });
 
 it('carries the tools the asking page wants the assistant to start with', () => {

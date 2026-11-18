@@ -260,9 +260,8 @@ describe('_InternalMCPRegistrar', () => {
       expect(listed[0].annotations).toEqual({ readOnlyHint: true, openWorldHint: true });
     });
 
-    it("keeps a tool's _meta for the assistant and forgets it on unmount", () => {
-      const meta = { 'scality.guardian/entrypoint': true };
-      const tool = { ...makeTool({ name: 'diagnose' }), _meta: meta };
+    it("announces a tool's Guardian hints as _meta and forgets them on unmount", () => {
+      const tool = { ...makeTool({ name: 'diagnose' }), entrypoint: true, reveals: ['readLog'] };
       const moduleExports = {
         [MODULE_KEY]: { createTools: () => [tool, makeTool({ name: 'plain' })] },
       };
@@ -277,7 +276,13 @@ describe('_InternalMCPRegistrar', () => {
       );
 
       const announced = withToolMeta([{ name: 'diagnose' }, { name: 'plain' }]);
-      expect(announced).toEqual([{ name: 'diagnose', _meta: meta }, { name: 'plain' }]);
+      expect(announced).toEqual([
+        {
+          name: 'diagnose',
+          _meta: { 'scality.guardian/entrypoint': true, 'scality.guardian/reveals': ['readLog'] },
+        },
+        { name: 'plain' },
+      ]);
 
       unmount();
 
