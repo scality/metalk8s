@@ -608,6 +608,44 @@ describe('disclose', () => {
     expect(omitted).toEqual(['credentials (fields kept)']);
   });
 
+  it.each([
+    ['a PEM private key', '-----BEGIN RSA PRIVATE KEY-----\nMIIE\n-----END RSA PRIVATE KEY-----\n'],
+    ['a URL with a password', 'postgres://app:hunter2@db:5432/app'],
+  ])('hides %s whatever the field or env variable is called', (_, credential) => {
+    const { resource, omitted } = disclose('widgets', {
+      metadata: { name: 'x' },
+      spec: {
+        tlsKey: credential,
+        databaseUrl: credential,
+        hosts: ['web', credential],
+        containers: [{ name: 'web', env: [{ name: 'DATABASE_URL', value: credential }] }],
+      },
+    });
+
+    expect(resource.spec).toEqual({
+      tlsKey: 'hidden',
+      databaseUrl: 'hidden',
+      hosts: 'hidden',
+      containers: [{ name: 'web', env: [{ name: 'DATABASE_URL', value: 'hidden' }] }],
+    });
+    expect(omitted).toEqual(['credential env values (names kept)', 'credentials (fields kept)']);
+  });
+
+  it('keeps a URL with no password, a public key and a certificate', () => {
+    const spec = {
+      databaseUrl: 'postgres://app@db:5432/app',
+      issuerUrl: 'https://keycloak.example.invalid:8443/realms/artesca',
+      publicKey: '-----BEGIN PUBLIC KEY-----\nMIIB\n-----END PUBLIC KEY-----\n',
+      caBundle: '-----BEGIN CERTIFICATE-----\nMIIC\n-----END CERTIFICATE-----\n',
+      containers: [{ name: 'web', env: [{ name: 'DATABASE_URL', value: 'postgres://db:5432/app' }] }],
+    };
+
+    const { resource, omitted } = disclose('widgets', { metadata: { name: 'x' }, spec });
+
+    expect(resource.spec).toEqual(spec);
+    expect(omitted).toEqual([]);
+  });
+
   it("leaves a pod template's metadata alone, wherever it sits", () => {
     const deployment = {
       metadata: { name: 'web' },

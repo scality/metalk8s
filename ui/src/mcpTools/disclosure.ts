@@ -45,8 +45,7 @@ const withoutEnvCredentials = (container: unknown, hidden: { any: boolean }): un
       if (
         variable?.value === undefined ||
         variable.value === HIDDEN ||
-        typeof variable.name !== 'string' ||
-        !isCredentialName(variable.name)
+        !((typeof variable.name === 'string' && isCredentialName(variable.name)) || isCredentialValue(variable.value))
       ) {
         return variable;
       }
@@ -58,7 +57,8 @@ const withoutEnvCredentials = (container: unknown, hidden: { any: boolean }): un
 
 /**
  * Environment values named like a credential, hidden, their names kept — wherever in the object the
- * containers are. The others stay: a port, a host or a feature flag is what a diagnosis reads.
+ * containers are, or whose value is one (a private key, a URL with a password). The others stay: a
+ * port, a host or a feature flag is what a diagnosis reads.
  *
  * It walks rather than reaching for a path, because every kind puts its pod template somewhere
  * different: a Pod at `spec.containers`, a ReplicaSet or Job at `spec.template.spec.containers`, a
@@ -174,6 +174,18 @@ const CREDENTIAL_NAMES = new Set(['hash']);
  */
 const REFERENCE_WORDS = new Set(['name', 'names', 'ref', 'file', 'path', 'dir', 'namespace', 'selector', 'key']);
 
+/**
+ * Credentials recognised by the value whatever the name: a PEM private key (`tlsKey`, `caKey`), and a
+ * URL carrying a password (`DATABASE_URL=postgres://user:pass@host`).
+ */
+const PRIVATE_KEY = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
+const URL_WITH_PASSWORD = /:\/\/[^/\s:@]+:[^/\s@]+@/;
+
+const isCredentialValue = (value: unknown): boolean =>
+  (Array.isArray(value) ? value : [value]).some(
+    (item) => typeof item === 'string' && (PRIVATE_KEY.test(item) || URL_WITH_PASSWORD.test(item)),
+  );
+
 const isCredentialName = (name: string): boolean => {
   if (CREDENTIAL_NAMES.has(name.toLowerCase())) return true;
   const words = name
@@ -204,7 +216,8 @@ const isText = (value: unknown) =>
 
 /**
  * Every credential in `value` hidden, everything else kept, any `metadata` (its labels and
- * annotations hold hashes, never credentials) left alone. Besides the names above, three shapes:
+ * annotations hold hashes, never credentials) left alone. Besides the names and values above,
+ * three shapes:
  * the private parts of a JSON Web Key (any object with a `kty`), the `value` of a `credentials`
  * list item (a Keycloak user's password), and the `value` of any `{ name, value }` item whose name
  * is a credential's, as env is written outside a container (`additionalOptions`, `extraEnv`).
@@ -222,7 +235,10 @@ const withoutCredentialFields = (value: unknown, hidden: { any: boolean }, inCre
       const name = key.toLowerCase();
       const isCredential =
         CREDENTIAL_OBJECTS.has(name) ||
-        (isText(nested) && (isCredentialName(key) || ((inCredentials || isNamedCredential) && name === 'value'))) ||
+        (isText(nested) &&
+          (isCredentialName(key) ||
+            isCredentialValue(nested) ||
+            ((inCredentials || isNamedCredential) && name === 'value'))) ||
         (isKey && JWK_PRIVATE_FIELDS.has(key));
       // Already hidden (a Secret's data): nothing left to withhold, and nothing to report twice.
       if (isCredential && nested !== undefined && nested !== HIDDEN) {
