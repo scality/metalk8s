@@ -42,15 +42,14 @@ const withoutEnvCredentials = (container: unknown, hidden: { any: boolean }): un
   return {
     ...(container as object),
     env: env.map((variable) => {
-      if (
-        variable?.value === undefined ||
-        variable.value === HIDDEN ||
-        !((typeof variable.name === 'string' && isCredentialName(variable.name)) || isCredentialValue(variable.value))
-      ) {
-        return variable;
-      }
+      if (typeof variable?.value !== 'string' || variable.value === HIDDEN) return variable;
+      const value =
+        typeof variable.name === 'string' && isCredentialName(variable.name)
+          ? HIDDEN
+          : withoutCredentialText(variable.value);
+      if (value === variable.value) return variable;
       hidden.any = true;
-      return { ...variable, value: HIDDEN };
+      return { ...variable, value };
     }),
   };
 };
@@ -143,6 +142,7 @@ const CREDENTIAL_WORDS = new Set([
   'credential',
   'credentials',
   'hmac',
+  'kubeconfig',
   'authorization',
   // Two words that make a credential only together: `accessKey`, `ACCESS_KEY`, `user_code`.
   'accesskey',
@@ -176,22 +176,53 @@ const CREDENTIAL_NAMES = new Set(['hash']);
 const REFERENCE_WORDS = new Set(['name', 'names', 'ref', 'file', 'path', 'dir', 'namespace', 'selector', 'key']);
 
 /**
- * Credentials recognised by the value whatever the name: a PEM private key (`tlsKey`, `caKey`), and a
- * URL carrying a password (`DATABASE_URL=postgres://user:pass@host`).
+ * Credentials recognised by the value whatever the name: a PEM private key (`tlsKey`, `caKey`), also
+ * base64-encoded (`client-key-data` in a kubeconfig), and a URL carrying a password
+ * (`DATABASE_URL=postgres://user:pass@host`).
  */
 const PRIVATE_KEY = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
+/** `-----BEGIN` in base64, and the run that follows it. */
+const ENCODED_PEM = /LS0tLS1CRUdJTi[A-Za-z0-9+/=]+/g;
 const URL_WITH_PASSWORD = /:\/\/[^/\s:@]+:[^/\s@]+@/;
 
-const CREDENTIAL_FLAG = /^-{1,2}([A-Za-z0-9_.-]+)=./;
+const decodesToPrivateKey = (run: string) => {
+  try {
+    return PRIVATE_KEY.test(atob(run.slice(0, run.length - (run.length % 4))));
+  } catch {
+    return false;
+  }
+};
 
-const isCredentialValue = (value: unknown): boolean =>
-  (Array.isArray(value) ? value : [value]).some(
-    (item) =>
-      typeof item === 'string' &&
-      (PRIVATE_KEY.test(item) ||
-        URL_WITH_PASSWORD.test(item) ||
-        isCredentialName(CREDENTIAL_FLAG.exec(item)?.[1] ?? '')),
-  );
+const isCredentialText = (text: string) =>
+  PRIVATE_KEY.test(text) || URL_WITH_PASSWORD.test(text) || (text.match(ENCODED_PEM) ?? []).some(decodesToPrivateKey);
+
+/** A command-line flag, as `--db-password=value` or `--db-password` followed by its value. */
+const FLAG_WITH_VALUE = /^(-{1,2}([A-Za-z0-9_.-]+)=)./;
+const BARE_FLAG = /^-{1,2}([A-Za-z0-9_.-]+)$/;
+
+/**
+ * Text, or a list of it, with its credentials hidden item by item, so a container's other `args`
+ * stay readable: a credential text, the value of a credential flag (`--db-password=hidden`), and the
+ * item after a bare one (`--token`, `hidden`). The same value comes back when nothing is hidden.
+ */
+const withoutCredentialText = <T extends string | string[]>(value: T): T => {
+  const items: string[] = Array.isArray(value) ? value : [value];
+  let changed = false;
+  const kept = items.map((item, i) => {
+    const flag = FLAG_WITH_VALUE.exec(item);
+    const previousFlag = i > 0 ? BARE_FLAG.exec(items[i - 1])?.[1] : undefined;
+    let next = item;
+    if (flag) {
+      if (isCredentialName(flag[2]) || isCredentialText(item)) next = `${flag[1]}${HIDDEN}`;
+    } else if ((previousFlag && isCredentialName(previousFlag) && !item.startsWith('-')) || isCredentialText(item)) {
+      next = HIDDEN;
+    }
+    if (next !== item) changed = true;
+    return next;
+  });
+  if (!changed) return value;
+  return (Array.isArray(value) ? kept : kept[0]) as T;
+};
 
 const wordsOf = (name: string) =>
   name
@@ -262,7 +293,6 @@ const withoutCredentialFields = (
         CREDENTIAL_OBJECTS.has(name) ||
         (isText(nested) &&
           (isCredentialName(key) ||
-            isCredentialValue(nested) ||
             ((within === 'credentials' || isNamedCredential) && name === 'value') ||
             (within === 'credentialMap' && !isReferenceName(key)))) ||
         (isKey && JWK_PRIVATE_FIELDS.has(key));
@@ -270,6 +300,11 @@ const withoutCredentialFields = (
       if (isCredential && nested !== undefined && nested !== HIDDEN) {
         hidden.any = true;
         return [key, HIDDEN];
+      }
+      if (isText(nested)) {
+        const kept = withoutCredentialText(nested as string | string[]);
+        if (kept !== nested) hidden.any = true;
+        return [key, kept];
       }
       // A JSON Web Key keeps its own rule: its public parts stay readable.
       const isMap = nested !== null && typeof nested === 'object' && !Array.isArray(nested) && !('kty' in nested);

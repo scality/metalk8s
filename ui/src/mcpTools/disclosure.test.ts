@@ -611,6 +611,7 @@ describe('disclose', () => {
   it.each([
     ['a PEM private key', '-----BEGIN RSA PRIVATE KEY-----\nMIIE\n-----END RSA PRIVATE KEY-----\n'],
     ['a URL with a password', 'postgres://app:hunter2@db:5432/app'],
+    ['a base64-encoded private key', btoa('-----BEGIN EC PRIVATE KEY-----\nMHcC\n-----END EC PRIVATE KEY-----\n')],
   ])('hides %s whatever the field or env variable is called', (_, credential) => {
     const { resource, omitted } = disclose('widgets', {
       metadata: { name: 'x' },
@@ -625,10 +626,61 @@ describe('disclose', () => {
     expect(resource.spec).toEqual({
       tlsKey: 'hidden',
       databaseUrl: 'hidden',
-      hosts: 'hidden',
+      // Item by item: the rest of the list stays readable.
+      hosts: ['web', 'hidden'],
       containers: [{ name: 'web', env: [{ name: 'DATABASE_URL', value: 'hidden' }] }],
     });
     expect(omitted).toEqual(['credential env values (names kept)', 'credentials (fields kept)']);
+  });
+
+  it("hides a container's credential flags, item by item, and keeps its other args", () => {
+    const { resource, omitted } = disclose(
+      'pods',
+      pod({
+        spec: {
+          containers: [
+            {
+              name: 'web',
+              command: ['server', '--client-secret=abc'],
+              args: ['--port=8080', '--db-password=hunter2', '--token', 'tok-123', '--password-file=/etc/pw', '-v'],
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(JSON.stringify(resource)).not.toMatch(/hunter2|tok-123|=abc/);
+    expect(resource.spec).toEqual({
+      containers: [
+        {
+          name: 'web',
+          command: ['server', '--client-secret=hidden'],
+          // A file holding the password is a path, not the password.
+          args: ['--port=8080', '--db-password=hidden', '--token', 'hidden', '--password-file=/etc/pw', '-v'],
+        },
+      ],
+    });
+    expect(omitted).toEqual(['credentials (fields kept)']);
+  });
+
+  it('keeps a bare credential flag followed by another flag: there is no value to hide', () => {
+    const spec = { args: ['--insecure-skip-tls-verify', '--token', '--verbose'] };
+
+    const { resource } = disclose('widgets', { metadata: { name: 'x' }, spec });
+
+    expect(resource.spec).toEqual(spec);
+  });
+
+  it('hides a kubeconfig whole, and a key encoded in it wherever it sits', () => {
+    const encodedKey = btoa('-----BEGIN RSA PRIVATE KEY-----\nMIIE\n-----END RSA PRIVATE KEY-----\n');
+    const config = `apiVersion: v1\nusers:\n- name: admin\n  user:\n    client-key-data: ${encodedKey}\n`;
+
+    const { resource } = disclose('widgets', {
+      metadata: { name: 'x' },
+      spec: { kubeconfig: 'apiVersion: v1\nusers: []\n', bootstrap: config },
+    });
+
+    expect(resource.spec).toEqual({ kubeconfig: 'hidden', bootstrap: 'hidden' });
   });
 
   it('keeps a URL with no password, a public key and a certificate', () => {
