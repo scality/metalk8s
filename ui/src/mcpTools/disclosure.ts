@@ -182,9 +182,15 @@ const REFERENCE_WORDS = new Set(['name', 'names', 'ref', 'file', 'path', 'dir', 
 const PRIVATE_KEY = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
 const URL_WITH_PASSWORD = /:\/\/[^/\s:@]+:[^/\s@]+@/;
 
+const CREDENTIAL_FLAG = /^-{1,2}([A-Za-z0-9_.-]+)=./;
+
 const isCredentialValue = (value: unknown): boolean =>
   (Array.isArray(value) ? value : [value]).some(
-    (item) => typeof item === 'string' && (PRIVATE_KEY.test(item) || URL_WITH_PASSWORD.test(item)),
+    (item) =>
+      typeof item === 'string' &&
+      (PRIVATE_KEY.test(item) ||
+        URL_WITH_PASSWORD.test(item) ||
+        isCredentialName(CREDENTIAL_FLAG.exec(item)?.[1] ?? '')),
   );
 
 const wordsOf = (name: string) =>
