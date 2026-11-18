@@ -467,6 +467,7 @@ IMAGE_CACHE_ROLES = {
     "control-plane": "node-role.kubernetes.io/master",
     "etcd": "node-role.kubernetes.io/etcd",
     "registry": "node-role.kubernetes.io/registry",
+    "bootstrap": "node-role.kubernetes.io/bootstrap",
 }
 
 

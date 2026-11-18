@@ -67,7 +67,7 @@ DIRECTORY_STATE = "Create the image cache directory"
 COMMAND_STATE = "Install imagecachectl"
 # The bootstrap node holds the control plane, etcd, the registry and workloads,
 # so it gets every variant.
-VARIANTS = ("worker", "control-plane", "etcd", "registry")
+VARIANTS = ("worker", "control-plane", "etcd", "registry", "bootstrap")
 # The label the post-upgrade selects the old resources by.
 PART_OF_METALK8S = {"app.kubernetes.io/part-of": "metalk8s"}
 PROVISION_STATES = [
@@ -313,6 +313,7 @@ RESOURCE_NODE_SELECTORS = {
     "control-plane": {"node-role.kubernetes.io/master": ""},
     "etcd": {"node-role.kubernetes.io/etcd": ""},
     "registry": {"node-role.kubernetes.io/registry": ""},
+    "bootstrap": {"node-role.kubernetes.io/bootstrap": ""},
 }
 
 

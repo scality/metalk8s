@@ -31,7 +31,7 @@ Overview:
 import datetime
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from buildchain import builder
 from buildchain import config
@@ -212,8 +212,8 @@ def _get_image_info(name: str) -> versions.Image:
 def _remote_image(name: str, repository: str, **overrides: Any) -> targets.RemoteImage:
     """Build a `RemoteImage` from a name and a repository.
 
-    Provides sane defaults, relies on the `REMOTE_NAMES` and `SAVE_AS`
-    constants to add some arguments.
+    Provides sane defaults, relies on `versions.REMOTE_NAMES` and `SAVE_AS`
+    to add some arguments.
     """
     overrides.setdefault("destination", constants.ISO_IMAGE_ROOT)
     overrides.setdefault("task_dep", []).append("_image_mkdir_root")
@@ -226,8 +226,8 @@ def _remote_image(name: str, repository: str, **overrides: Any) -> targets.Remot
         **overrides,
     )
 
-    if name in REMOTE_NAMES:
-        kwargs["remote_name"] = REMOTE_NAMES[name]
+    if name in versions.REMOTE_NAMES:
+        kwargs["remote_name"] = versions.REMOTE_NAMES[name]
 
     return targets.RemoteImage(**kwargs)
 
@@ -236,11 +236,10 @@ def _node_image_fullname(name: str, version: str) -> str:
     """Return the name under which an image is known on a node.
 
     A cached archive is imported as-is (no re-tagging), so it must already
-    carry the name the kubelet asks for: the one served by the cluster
-    registry.
+    carry the name the kubelet asks for: the full upstream name, which the
+    cluster registry serves from the ISO.
     """
-    prefix = f"{config.PROJECT_NAME.lower()}-{versions.VERSION}"
-    return f"{constants.NODE_REGISTRY_ENDPOINT}/{prefix}/{name}:{version}"
+    return f"{versions.image_fullname(name)}:{version}"
 
 
 def _boot_cache_context(variant: str) -> Path:
@@ -251,16 +250,16 @@ def _boot_cache_context(variant: str) -> Path:
 def _boot_cache_context_task(variant: str) -> types.TaskDict:
     """Fill the build context of a boot cache variant with its archives.
 
-    The archives are converted from the image layers already pulled for the
-    ISO, so no image is downloaded twice, and they stay under the build root:
-    only the boot cache images themselves are shipped.
+    The archives are converted from the image layers already saved on the
+    ISO, so no image is downloaded or built twice, and they stay under the
+    build root: only the boot cache images themselves are shipped.
     """
     try:
-        members = [TO_PULL[name] for name in BOOT_CACHE_VARIANTS[variant]]
+        members = [CACHEABLE_IMAGES[name] for name in BOOT_CACHE_VARIANTS[variant]]
     except KeyError as exc:
         raise ValueError(
-            f'Boot cache variant "{variant}" lists {exc} which is not a '
-            "pulled image: add it to `TO_PULL` or fix `BOOT_CACHE_VARIANTS`"
+            f'Boot cache variant "{variant}" lists {exc} which is not an image '
+            "saved on the ISO: pull or build it, or fix `BOOT_CACHE_VARIANTS`"
         ) from exc
     images_dir = _boot_cache_context(variant) / "images"
     archives = [images_dir / f"{img.name}-{img.version}.tar" for img in members]
@@ -321,7 +320,7 @@ def _local_image(name: str, **kwargs: Any) -> targets.LocalImage:
     kwargs.setdefault("destination", constants.ISO_IMAGE_ROOT)
     kwargs.setdefault("dockerfile", constants.ROOT / "images" / name / "Dockerfile")
     kwargs.setdefault("save_on_disk", True)
-    kwargs.setdefault("repository", constants.METALK8S_REPOSITORY)
+    kwargs.setdefault("repository", versions.METALK8S_REPOSITORY)
     kwargs.setdefault("task_dep", []).append("_image_mkdir_root")
 
     return targets.LocalImage(
@@ -335,98 +334,12 @@ def _local_image(name: str, **kwargs: Any) -> targets.LocalImage:
 # Container images to pull {{{
 TO_PULL: Dict[str, targets.RemoteImage] = {}
 
-IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
-    constants.CALICO_REPOSITORY: [
-        "calico",
-        "calico-node",
-        "calico-third-party-cni-plugins",
-    ],
-    constants.COREDNS_REPOSITORY: [
-        "coredns",
-    ],
-    constants.DEX_REPOSITORY: [
-        "dex",
-    ],
-    constants.DOCKER_REPOSITORY: [
-        "alpine",
-        "nginx",
-    ],
-    constants.FLUENT_REPOSITORY: [
-        "fluent-bit",
-    ],
-    constants.GRAFANA_REPOSITORY: [
-        "grafana",
-        "loki",
-    ],
-    constants.INGRESS_REPOSITORY: [
-        "nginx-ingress-controller",
-    ],
-    constants.K8S_REPOSITORY: [
-        "pause",
-        "etcd",
-        "kube-apiserver",
-        "kube-controller-manager",
-        "kube-proxy",
-        "kube-scheduler",
-    ],
-    constants.KIWIGRID_REPOSITORY: [
-        "k8s-sidecar",
-    ],
-    constants.KUBE_STATE_METRICS_REPOSITORY: [
-        "kube-state-metrics",
-    ],
-    constants.NODE_PROBLEM_DETECTOR_REPOSITORY: [
-        "node-problem-detector",
-    ],
-    constants.PROMETHEUS_ADAPTER_REPOSITORY: [
-        "prometheus-adapter",
-    ],
-    constants.PROMETHEUS_OPERATOR_REPOSITORY: [
-        "prometheus-config-reloader",
-        "prometheus-operator",
-    ],
-    constants.PROMETHEUS_REPOSITORY: [
-        "alertmanager",
-        "node-exporter",
-        "prometheus",
-    ],
-    constants.THANOS_REPOSITORY: [
-        "thanos",
-    ],
-    constants.CERT_MANAGER_REPOSITORY: [
-        "cert-manager-controller",
-        "cert-manager-webhook",
-        "cert-manager-cainjector",
-        "cert-manager-acmesolver",
-    ],
-    constants.OAUTH2_PROXY_REPOSITORY: [
-        "oauth2-proxy",
-    ],
-    constants.SCALITY_REPOSITORY: [
-        "ui-operator",
-        "crl-operator",
-        "disk-management-agent",
-        "file-reflector",
-        "image-cache-agent",
-        "node-warden-operator",
-        "metalk8s-registry-operator",
-        "metalk8s-registry-node-agent",
-        "static-oci-registry",
-    ],
-}
-
-REMOTE_NAMES: Dict[str, str] = {
-    "calico-node": "node",
-    "calico-third-party-cni-plugins": "third-party-cni-plugins",
-    "nginx-ingress-controller": "controller",
-}
-
 SAVE_AS: Dict[str, List[targets.ImageSaveFormat]] = {
     "pause": [targets.SaveAsTar(), targets.SaveAsLayers(), targets.SaveAsOCILayout()],
     "nginx": [targets.SaveAsTar(), targets.SaveAsLayers(), targets.SaveAsOCILayout()],
 }
 
-for repo, images in IMGS_PER_REPOSITORY.items():
+for repo, images in versions.IMGS_PER_REPOSITORY.items():
     for image_name in images:
         TO_PULL[image_name] = _remote_image(image_name, repo)
 
@@ -438,7 +351,7 @@ for repo, images in IMGS_PER_REPOSITORY.items():
 # into containerd without reaching the registry.
 #
 # This is the authoritative list; keep it in sync with what a node of that role
-# needs to boot. A name that is not pulled fails the build immediately.
+# needs to boot. A name that is not saved on the ISO fails the build immediately.
 BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
     # A node gets every variant its roles call for. Each one lists only what
     # the worker variant does not already carry, since every node is a worker.
@@ -447,6 +360,11 @@ BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
         "kube-controller-manager",
         "kube-scheduler",
         "coredns",
+        # cert-manager issues the registry certificates, so it runs before the
+        # registry serves anything.
+        "cert-manager-controller",
+        "cert-manager-webhook",
+        "cert-manager-cainjector",
     ],
     # Apart from the control plane: a node can hold the etcd role alone.
     "etcd": [
@@ -480,9 +398,13 @@ BOOT_CACHE_VARIANTS: Dict[str, List[str]] = {
         "static-oci-registry",
         "metalk8s-registry-node-agent",
     ],
+    # The salt-master static pod starts before Kubernetes does.
+    "bootstrap": [
+        "salt-master",
+    ],
 }
 
-TO_BUILD: Tuple[targets.LocalImage, ...] = (
+_BUILT_IMAGES: Tuple[targets.LocalImage, ...] = (
     _local_image(
         name="metalk8s-alert-logger",
         build_args={
@@ -573,7 +495,17 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
             "VERSION": versions.VERSION,
         },
     ),
-) + tuple(_boot_cache_image(variant) for variant in BOOT_CACHE_VARIANTS)
+)
+
+# The images a boot cache archive can be made from: those saved on the ISO.
+CACHEABLE_IMAGES: Dict[str, Union[targets.RemoteImage, targets.LocalImage]] = {
+    **TO_PULL,
+    **{img.name: img for img in _BUILT_IMAGES if img.save_on_disk},
+}
+
+TO_BUILD: Tuple[targets.LocalImage, ...] = _BUILT_IMAGES + tuple(
+    _boot_cache_image(variant) for variant in BOOT_CACHE_VARIANTS
+)
 # }}}
 
 

@@ -12,7 +12,7 @@ import json
 
 from collections import namedtuple
 from pathlib import Path
-from typing import Any, cast, Dict, NamedTuple, Optional, Tuple
+from typing import Any, cast, Dict, List, NamedTuple, Optional, Tuple
 
 Image = namedtuple("Image", ("name", "version", "digest"))
 
@@ -256,6 +256,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
+        name="metalk8s-boot-cache-bootstrap",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
         name="metalk8s-keepalived",
         version=VERSION,
         digest=None,
@@ -371,6 +376,133 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
 )
 
 CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}
+
+# }}}
+# Upstream repositories {{{
+
+# URLs of the main container repositories.
+K8S_REPOSITORY: str = "registry.k8s.io"
+CALICO_REPOSITORY: str = "docker.io/calico"
+COREDNS_REPOSITORY: str = f"{K8S_REPOSITORY}/coredns"
+DEX_REPOSITORY: str = "ghcr.io/dexidp"
+DOCKER_REPOSITORY: str = "docker.io/library"
+FLUENT_REPOSITORY: str = "cr.fluentbit.io/fluent"
+GRAFANA_REPOSITORY: str = "docker.io/grafana"
+INGRESS_REPOSITORY: str = f"{K8S_REPOSITORY}/ingress-nginx"
+KIWIGRID_REPOSITORY: str = "quay.io/kiwigrid"
+KUBE_STATE_METRICS_REPOSITORY: str = f"{K8S_REPOSITORY}/kube-state-metrics"
+NODE_PROBLEM_DETECTOR_REPOSITORY: str = f"{K8S_REPOSITORY}/node-problem-detector"
+PROMETHEUS_ADAPTER_REPOSITORY: str = f"{K8S_REPOSITORY}/prometheus-adapter"
+PROMETHEUS_OPERATOR_REPOSITORY: str = "quay.io/prometheus-operator"
+PROMETHEUS_REPOSITORY: str = "quay.io/prometheus"
+THANOS_REPOSITORY: str = "quay.io/thanos"
+CERT_MANAGER_REPOSITORY: str = "quay.io/jetstack"
+OAUTH2_PROXY_REPOSITORY: str = "quay.io/oauth2-proxy"
+SCALITY_REPOSITORY: str = "ghcr.io/scality"
+# Locally built images are named after it, as published for `shell-ui`.
+METALK8S_REPOSITORY: str = f"{SCALITY_REPOSITORY}/metalk8s"
+
+# Repository each remote image is pulled from.
+IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
+    CALICO_REPOSITORY: [
+        "calico",
+        "calico-node",
+        "calico-third-party-cni-plugins",
+    ],
+    COREDNS_REPOSITORY: [
+        "coredns",
+    ],
+    DEX_REPOSITORY: [
+        "dex",
+    ],
+    DOCKER_REPOSITORY: [
+        "alpine",
+        "nginx",
+    ],
+    FLUENT_REPOSITORY: [
+        "fluent-bit",
+    ],
+    GRAFANA_REPOSITORY: [
+        "grafana",
+        "loki",
+    ],
+    INGRESS_REPOSITORY: [
+        "nginx-ingress-controller",
+    ],
+    K8S_REPOSITORY: [
+        "pause",
+        "etcd",
+        "kube-apiserver",
+        "kube-controller-manager",
+        "kube-proxy",
+        "kube-scheduler",
+    ],
+    KIWIGRID_REPOSITORY: [
+        "k8s-sidecar",
+    ],
+    KUBE_STATE_METRICS_REPOSITORY: [
+        "kube-state-metrics",
+    ],
+    NODE_PROBLEM_DETECTOR_REPOSITORY: [
+        "node-problem-detector",
+    ],
+    PROMETHEUS_ADAPTER_REPOSITORY: [
+        "prometheus-adapter",
+    ],
+    PROMETHEUS_OPERATOR_REPOSITORY: [
+        "prometheus-config-reloader",
+        "prometheus-operator",
+    ],
+    PROMETHEUS_REPOSITORY: [
+        "alertmanager",
+        "node-exporter",
+        "prometheus",
+    ],
+    THANOS_REPOSITORY: [
+        "thanos",
+    ],
+    CERT_MANAGER_REPOSITORY: [
+        "cert-manager-controller",
+        "cert-manager-webhook",
+        "cert-manager-cainjector",
+        "cert-manager-acmesolver",
+    ],
+    OAUTH2_PROXY_REPOSITORY: [
+        "oauth2-proxy",
+    ],
+    SCALITY_REPOSITORY: [
+        "ui-operator",
+        "crl-operator",
+        "disk-management-agent",
+        "file-reflector",
+        "image-cache-agent",
+        "node-warden-operator",
+        "metalk8s-registry-operator",
+        "metalk8s-registry-node-agent",
+        "static-oci-registry",
+    ],
+}
+
+REMOTE_NAMES: Dict[str, str] = {
+    "calico-node": "node",
+    "calico-third-party-cni-plugins": "third-party-cni-plugins",
+    "nginx-ingress-controller": "controller",
+}
+
+
+def image_fullname(name: str) -> str:
+    """Return the full name of an image, without its tag.
+
+    This is the upstream name, registry host included: nodes refer to every
+    image by it, and the cluster registry serves it from the ISO.
+    """
+    if CONTAINER_IMAGES_MAP[name].digest is None:
+        return f"{METALK8S_REPOSITORY}/{name}"
+    repository = next(
+        repo for repo, images in IMGS_PER_REPOSITORY.items() if name in images
+    )
+    return f"{repository}/{REMOTE_NAMES.get(name, name)}"
+
 
 # }}}
 
@@ -638,6 +770,9 @@ SALT_VERSIONS_JSON = {
         }
         for os in ["centos", "rocky", "redhat"]
     },
-    "images": {img.name: {"version": img.version} for img in CONTAINER_IMAGES},
+    "images": {
+        img.name: {"version": img.version, "image": image_fullname(img.name)}
+        for img in CONTAINER_IMAGES
+    },
     "metalk8s": {"version": VERSION},
 }

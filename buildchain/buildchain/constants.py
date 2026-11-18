@@ -14,33 +14,8 @@ from buildchain import config, versions
 # (used in task display, for a nice aligned output).
 CMD_WIDTH: int = 14
 
-# URLs of the main container repositories.
-K8S_REPOSITORY: str = "registry.k8s.io"
-CALICO_REPOSITORY: str = "docker.io/calico"
-COREDNS_REPOSITORY: str = f"{K8S_REPOSITORY}/coredns"
-DEX_REPOSITORY: str = "ghcr.io/dexidp"
-DOCKER_REPOSITORY: str = "docker.io/library"
-FLUENT_REPOSITORY: str = "cr.fluentbit.io/fluent"
-GRAFANA_REPOSITORY: str = "docker.io/grafana"
-INGRESS_REPOSITORY: str = f"{K8S_REPOSITORY}/ingress-nginx"
-KIWIGRID_REPOSITORY: str = "quay.io/kiwigrid"
-KUBE_STATE_METRICS_REPOSITORY: str = f"{K8S_REPOSITORY}/kube-state-metrics"
-NODE_PROBLEM_DETECTOR_REPOSITORY: str = f"{K8S_REPOSITORY}/node-problem-detector"
-PROMETHEUS_ADAPTER_REPOSITORY: str = f"{K8S_REPOSITORY}/prometheus-adapter"
-PROMETHEUS_OPERATOR_REPOSITORY: str = "quay.io/prometheus-operator"
-PROMETHEUS_REPOSITORY: str = "quay.io/prometheus"
-THANOS_REPOSITORY: str = "quay.io/thanos"
-CERT_MANAGER_REPOSITORY: str = "quay.io/jetstack"
-OAUTH2_PROXY_REPOSITORY: str = "quay.io/oauth2-proxy"
-SCALITY_REPOSITORY: str = "ghcr.io/scality"
 # Locally built images are named after it, as published for `shell-ui`.
-METALK8S_REPOSITORY: str = f"{SCALITY_REPOSITORY}/metalk8s"
-
-# Registry endpoint the nodes resolve through their containerd mirror
-# configuration: kept in sync with `repo:registry_endpoint` in
-# salt/metalk8s/defaults.yaml. An image archive cached on a node is imported
-# as-is, so it must already carry the name the kubelet asks for.
-NODE_REGISTRY_ENDPOINT: str = "metalk8s-registry-from-config.invalid"
+METALK8S_REPOSITORY: str = versions.METALK8S_REPOSITORY
 
 # Paths {{{
 
