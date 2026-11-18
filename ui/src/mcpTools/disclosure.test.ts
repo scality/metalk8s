@@ -361,7 +361,7 @@ describe('disclose', () => {
     });
   });
 
-  it("hides a Keycloak instance's bootstrap Secret name too, and keeps the references beside it", () => {
+  it("hides a Keycloak instance's bootstrap and TLS Secret names too, and keeps the references beside it", () => {
     const { resource } = disclose('keycloaks', {
       apiVersion: 'k8s.keycloak.org/v2alpha1',
       kind: 'Keycloak',
@@ -374,11 +374,11 @@ describe('disclose', () => {
     });
 
     expect(resource.spec).toEqual({
-      // A name, but its field is called secret: hidden, which is what a generic rule costs.
+      // Names, but their fields are called secret: hidden, which is what a generic rule costs.
       bootstrapAdmin: { user: { secret: 'hidden' } },
-      // A reference object and a name under another field name: kept.
+      http: { tlsSecret: 'hidden' },
+      // A reference object: walked into, and a name and a key are not credentials.
       db: { passwordSecret: { name: 'pg-creds', key: 'password' } },
-      http: { tlsSecret: 'keycloak-tls' },
     });
   });
 
@@ -499,6 +499,74 @@ describe('disclose', () => {
 
     expect(dex.resource).toMatchObject({ type: 'ldap', config: 'hidden' });
     expect(other.resource.config).toBe('debug');
+  });
+
+  it.each([
+    'adminPassword',
+    'rootPassword',
+    'secretAccessKey',
+    'refreshToken',
+    'sessionToken',
+    'bindPW',
+    'keystorePassword',
+    'accessKeyID',
+    'encryptedSecretKey',
+    'privateKey',
+    'hmac_key',
+    'client_secret',
+    'user_code',
+    'connectorData',
+  ])('hides %s, a credential by the words of its name', (field) => {
+    const { resource } = disclose('widgets', { metadata: { name: 'x' }, spec: { [field]: 'hunter2' } });
+
+    expect(resource.spec).toEqual({ [field]: 'hidden' });
+  });
+
+  it.each([
+    'secretName',
+    'passwordKey',
+    'tokenKey',
+    'bearerTokenFile',
+    'passwordSecretRef',
+    'secretNamespace',
+    'certificateKey',
+  ])('keeps %s, whose last word makes it a reference', (field) => {
+    const { resource } = disclose('widgets', { metadata: { name: 'x' }, spec: { [field]: 'db' } });
+
+    expect(resource.spec).toEqual({ [field]: 'db' });
+  });
+
+  it.each([
+    ['PGPASSWORD', true],
+    ['DB_PASS', true],
+    ['MYSQL_PWD', true],
+    ['AWS_SECRET_ACCESS_KEY', true],
+    ['API_KEY', true],
+    ['TLS_KEY_FILE', false],
+    ['KC_HTTP_PORT', false],
+    ['TOKEN_PATH', false],
+  ])('hides the env value of %s: %s', (name, hidden) => {
+    const { resource } = disclose(
+      'pods',
+      pod({ spec: { containers: [{ name: 'web', env: [{ name, value: 'v' }] }] } }),
+    );
+
+    expect(resource.spec).toEqual({ containers: [{ name: 'web', env: [{ name, value: hidden ? 'hidden' : 'v' }] }] });
+  });
+
+  it("leaves a pod template's metadata alone, wherever it sits", () => {
+    const deployment = {
+      metadata: { name: 'web' },
+      spec: {
+        selector: { matchLabels: { app: 'web' } },
+        template: { metadata: { labels: { app: 'web' }, annotations: { 'checksum/secret': 'abc' } } },
+      },
+    };
+
+    const { resource, omitted } = disclose('deployments', deployment);
+
+    expect(resource).toEqual(deployment);
+    expect(omitted).toEqual([]);
   });
 
   it('keeps references to Secrets, and never touches metadata', () => {

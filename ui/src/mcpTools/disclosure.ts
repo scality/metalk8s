@@ -35,21 +35,6 @@ const LAST_APPLIED = 'kubectl.kubernetes.io/last-applied-configuration';
 /** Wherever a pod template puts its containers, these are the arrays holding them. */
 const CONTAINER_KEYS = new Set(['containers', 'initContainers', 'ephemeralContainers']);
 
-/**
- * Whether an environment variable is named like a credential, by the same list as any other field.
- * `KC_DB_PASSWORD` matches on a word; `AWS_ACCESS_KEY_ID` on two joined; `KC_HTTPS_CERTIFICATE_KEY_FILE`
- * not at all, since a bare `KEY` is as often a path or a setting as a secret.
- */
-const isCredentialName = (name: unknown): boolean => {
-  if (typeof name !== 'string') return false;
-  const words = name
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean);
-  return words.some((word, i) => CREDENTIAL_FIELDS.has(word) || (i > 0 && CREDENTIAL_FIELDS.has(words[i - 1] + word)));
-};
-
 const withoutEnvCredentials = (container: unknown, hidden: { any: boolean }): unknown => {
   const env = (container as { env?: { name?: string; value?: string }[] })?.env;
   if (!Array.isArray(env)) return container;
@@ -57,7 +42,12 @@ const withoutEnvCredentials = (container: unknown, hidden: { any: boolean }): un
   return {
     ...(container as object),
     env: env.map((variable) => {
-      if (variable?.value === undefined || variable.value === HIDDEN || !isCredentialName(variable.name)) {
+      if (
+        variable?.value === undefined ||
+        variable.value === HIDDEN ||
+        typeof variable.name !== 'string' ||
+        !isCredentialName(variable.name)
+      ) {
         return variable;
       }
       hidden.any = true;
@@ -77,8 +67,8 @@ const withoutEnvCredentials = (container: unknown, hidden: { any: boolean }): un
  * reached by apiVersion is by definition one nobody did.
  *
  * A Secret's values are not the only credentials: a pod spec holds a password just as readily, but
- * as `{ name, value }`, so the field name that gives a credential away elsewhere is the variable's
- * name here. Any `valueFrom` reference survives: it says where the variable comes from, not what it is.
+ * as `{ name, value }`, so the name matched against the credential words is the variable's. Any
+ * `valueFrom` reference survives: it says where the variable comes from, not what it is.
  */
 const withoutEnvironmentCredentials = (value: unknown, hidden: { any: boolean }): unknown => {
   if (Array.isArray(value)) return value.map((nested) => withoutEnvironmentCredentials(nested, hidden));
@@ -133,45 +123,65 @@ const withoutSecretValues = (kind: string, object: KubeObject, omitted: string[]
 };
 
 /**
- * Field names whose value is a credential, matched case-insensitively wherever they sit outside
- * `metadata`, on any kind. A text value (or a list of text) is hidden; an object is walked into, so
- * a reference such as `volumes[].secret: { secretName }` stays readable. Names that hold a reference
- * — `secretName`, `secretKeyRef`, `passwordKey` — are not in the list.
+ * The words a credential's name is made of, matched in any field or env variable name outside
+ * `metadata`, on any kind: `adminPassword`, `PGPASSWORD`, `secretAccessKey`, `refreshToken`,
+ * `client_secret`. Names are split on case and separators; the first four words are also matched
+ * inside a word, for names written as one (`PGPASSWORD`).
  *
- * Gathered from the kinds deployed on an ARTESCA cluster and from Dex and Keycloak: Zenko's S3
- * accounts, cert-manager keystores, Prometheus Operator tokens, Keycloak realm imports, Dex.
- * A field holding a Secret's NAME under one of these names is hidden too, which is the cost of a
- * rule that does not know every kind.
+ * Gathered from the kinds deployed on an ARTESCA cluster and from Dex and Keycloak. A field holding a
+ * Secret's NAME under such a name is hidden too, which is the cost of a rule that does not know every
+ * kind.
  */
-const CREDENTIAL_FIELDS = new Set(
-  [
-    'secret',
-    'password',
-    'passwd',
-    'bindPW',
-    'bindCredential',
-    'keystorePassword',
-    'keyPassword',
-    'token',
-    'obsoleteToken',
-    'bearerToken',
-    'registrationAccessToken',
-    'hash',
-    'accessKey',
-    'accessKeyID',
-    'secretKey',
-    'encryptedSecretKey',
-    'privateKey',
-    'apiKey',
-    'clientSecret',
-    'client_secret',
-    'hmac_key',
-    'device_code',
-    'user_code',
-    'connectorData',
-    'secretData',
-  ].map((name) => name.toLowerCase()),
-);
+const CREDENTIAL_WORDS = new Set([
+  'password',
+  'passwd',
+  'secret',
+  'token',
+  'pass',
+  'pwd',
+  'pw',
+  'credential',
+  'credentials',
+  'hmac',
+  // Two words that make a credential only together: `accessKey`, `ACCESS_KEY`, `user_code`.
+  'accesskey',
+  'secretkey',
+  'privatekey',
+  'apikey',
+  'hmackey',
+  'devicecode',
+  'usercode',
+  'connectordata',
+]);
+const CREDENTIAL_WORD_PARTS = ['password', 'passwd', 'secret', 'token'];
+
+/** Too common a word to match inside a longer name (`pod-template-hash`), so only on its own. */
+const CREDENTIAL_NAMES = new Set(['hash']);
+
+/**
+ * A last word that makes the name a reference or a setting, not a credential: `secretName`,
+ * `secretKeyRef`, `bearerTokenFile`, `passwordSecretRef`. `key` is one only after a word it does not
+ * make a credential with: `passwordKey` names a key in a Secret, `secretKey` is the key itself.
+ */
+const REFERENCE_WORDS = new Set(['name', 'names', 'ref', 'file', 'path', 'dir', 'namespace', 'selector', 'key']);
+
+const isCredentialName = (name: string): boolean => {
+  if (CREDENTIAL_NAMES.has(name.toLowerCase())) return true;
+  const words = name
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  const joined = (i: number) => (i > 0 ? words[i - 1] + words[i] : '');
+  const last = words.length - 1;
+  if (REFERENCE_WORDS.has(words[last])) return words[last] === 'key' && CREDENTIAL_WORDS.has(joined(last));
+  return words.some(
+    (word, i) =>
+      CREDENTIAL_WORDS.has(word) ||
+      CREDENTIAL_WORDS.has(joined(i)) ||
+      CREDENTIAL_WORD_PARTS.some((part) => word.includes(part)),
+  );
+};
 
 /** Credential fields whose value is an object or a list of objects: hidden whole, whatever it holds. */
 const CREDENTIAL_OBJECTS = new Set(['mfaSecrets', 'webauthnCredentials'].map((name) => name.toLowerCase()));
@@ -183,7 +193,8 @@ const isText = (value: unknown) =>
   typeof value === 'string' || (Array.isArray(value) && value.every((item) => typeof item === 'string'));
 
 /**
- * Every credential in `value` hidden, everything else kept. Besides the names above, two shapes:
+ * Every credential in `value` hidden, everything else kept, any `metadata` (its labels and
+ * annotations hold hashes, never credentials) left alone. Besides the names above, two shapes:
  * the private parts of a JSON Web Key (any object with a `kty`), and the `value` of a
  * `credentials` list item (a Keycloak user's password).
  */
@@ -194,10 +205,11 @@ const withoutCredentialFields = (value: unknown, hidden: { any: boolean }, inCre
   const isKey = 'kty' in (value as Record<string, unknown>);
   return Object.fromEntries(
     Object.entries(value as Record<string, unknown>).map(([key, nested]) => {
+      if (key === 'metadata') return [key, nested];
       const name = key.toLowerCase();
       const isCredential =
         CREDENTIAL_OBJECTS.has(name) ||
-        (isText(nested) && (CREDENTIAL_FIELDS.has(name) || (inCredentials && name === 'value'))) ||
+        (isText(nested) && (isCredentialName(key) || (inCredentials && name === 'value'))) ||
         (isKey && JWK_PRIVATE_FIELDS.has(key));
       // Already hidden (a Secret's data): nothing left to withhold, and nothing to report twice.
       if (isCredential && nested !== undefined && nested !== HIDDEN) {
@@ -210,25 +222,19 @@ const withoutCredentialFields = (value: unknown, hidden: { any: boolean }, inCre
 };
 
 /**
- * The object with its credentials hidden, `metadata` left alone (its labels and annotations hold
- * hashes, never credentials). Dex's `config` — a connector's settings, LDAP password included — is
- * too common a name for the list, so it is matched on Dex's group only.
+ * The object with its credentials hidden. Dex's `config` — a connector's settings, LDAP password
+ * included — is too common a name for the list, so it is matched on Dex's group only.
  */
 const withoutCredentials = (object: KubeObject, omitted: string[]): KubeObject => {
   const hidden = { any: false };
-  const { metadata, ...body } = object;
-  // Dex keeps credentials at its objects' top level, so the names are checked from there down.
   const isDex = String(object.apiVersion ?? '').startsWith('dex.coreos.com/');
-  if (isDex && body.config !== undefined) {
-    body.config = HIDDEN;
-    hidden.any = true;
-  }
-  const kept = withoutCredentialFields(body, hidden) as Record<string, unknown>;
+  const body = isDex && object.config !== undefined ? { ...object, config: HIDDEN } : object;
+  if (body !== object) hidden.any = true;
+  const kept = withoutCredentialFields(body, hidden) as KubeObject;
 
   if (!hidden.any) return object;
   omitted.push('credentials (fields kept)');
-  // The object's own key order, metadata where it was.
-  return Object.fromEntries(Object.keys(object).map((key) => [key, key === 'metadata' ? metadata : kept[key]]));
+  return kept;
 };
 
 /**
