@@ -23,7 +23,7 @@ To create a new backup file, run the following command:
 
 .. parsed-literal::
 
-    /srv/scality/metalk8s-|version|/backup.sh
+    /srv/scality/metalk8s/solutions/metalk8s/|version|/backup.sh
 
 Backup archives are stored in /var/lib/metalk8s/backups on all master nodes.
 

@@ -14,7 +14,7 @@ CALICO_VERSION: str = "3.X.Y"
 ```
 
 Fetch digests with `gcrane` (images are pulled from `docker.io/calico`, see
-`CALICO_REPOSITORY` in `constants.py`):
+`CALICO_REPOSITORY` in `versions.py`):
 
 ```sh
 gcrane digest docker.io/calico/calico:v3.X.Y
@@ -25,9 +25,9 @@ gcrane digest docker.io/calico/third-party-cni-plugins:v3.X.Y
 Since v3.33, Calico ships most components (CNI plugin, IPAM, kube-controllers)
 in the single `calico/calico` image; the former `calico/cni` and
 `calico/kube-controllers` images are no longer published.
-If the set of images changes again, also update `IMGS_PER_REPOSITORY`,
-`REMOTE_NAMES` and the `worker` entry of `BOOT_CACHE_VARIANTS` in
-`buildchain/buildchain/image.py`.
+If the set of images changes again, also update `IMGS_PER_REPOSITORY` and
+`REMOTE_NAMES` in `buildchain/buildchain/versions.py`, and the `worker` entry
+of `BOOT_CACHE_VARIANTS` in `buildchain/buildchain/image.py`.
 
 ## 2. Discover which patches need to be reapplied
 
