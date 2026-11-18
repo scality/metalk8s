@@ -70,7 +70,7 @@ type DescribeRequest = {
 export type DescribeTarget = DescribeRequest & { namespaced: boolean };
 
 /** A name is an RFC 1123 subdomain and a namespace a label; both go into the path, so both are checked. */
-const NAME = /^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$/;
+const NAME = /^(?!\.\.?$)[^/%\s]+$/;
 const NAMESPACE = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
 
 const checkName = (name: string) => {
