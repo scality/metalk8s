@@ -11,7 +11,7 @@ its archives and they have been imported.
 
 from pathlib import Path
 import re
-from typing import Any, Dict, Iterable, Set
+from typing import Any, Dict, Iterable, Set, Tuple
 from unittest.mock import MagicMock
 import jinja2
 import pytest
@@ -81,7 +81,8 @@ PROVISIONED_SLS = "metalk8s.image-cache.provisioned"
 # What the provisioning renders instead when the node runs no containerd.
 NO_PROVISION_STATE = "No image cache to provision"
 
-PULL_STATE = "Pull the worker boot cache from the registry"
+# The CA a joining node pulls its boot caches with.
+REGISTRY_CA_STATE = "Install the cluster registry CA"
 # Not IMPORT_STATE: both SLS can land in one run, and Salt refuses an ID
 # declared twice.
 PULL_IMPORT_STATE = "Import the pulled boot cache archives into containerd"
@@ -350,45 +351,63 @@ def test_image_cache_resources_adopt_the_provisioned_cache(
 
 @pytest.mark.formulas
 @pytest.mark.parametrize("template_path", [IMAGE_CACHE_PULLED], indirect=True)
-def test_pull_reads_the_registry_endpoint(
+def test_pull_reads_the_registry_addresses(
     rendered_states: RenderedStates, metalk8s_versions: Any
 ) -> None:
-    """Check a joining node pulls the worker variant over plain HTTP.
+    """Check a joining node pulls the variants of its roles from the registry.
 
-    The reference names the endpoint address, not the registry name only
-    containerd resolves through its mirror configuration.
+    The references name the address of each registry node, not the name only
+    containerd resolves through its mirror configuration, and the pull trusts
+    the CA of the registry the orchestrate passed.
     """
-    image_info = metalk8s_versions["images"]["metalk8s-boot-cache-worker"]
-    version = image_info["version"]
     checked = False
 
     for case_id, states in rendered_states:
-        if PULL_STATE not in states:
-            assert NO_PULL_STATE in states, f"no '{NO_PULL_STATE}' ({case_id})"
+        if NO_PULL_STATE in states:
             continue
 
-        args = _state_args(states, PULL_STATE)
-        assert args["name"] == f"worker-{version.replace('.', '-')}", case_id
-        # One reference per registry endpoint, so the next one is tried when
-        # the first is down.
-        assert isinstance(args["source"], list) and args["source"], case_id
-        if "several endpoints" in case_id:
-            assert len(args["source"]) == 2, case_id
-        for source in args["source"]:
-            assert re.fullmatch(
-                rf"[0-9.]+:[0-9]+/{re.escape(image_info['image'])}:"
-                rf"{re.escape(version)}",
-                source,
-            ), f"unexpected source '{source}' ({case_id})"
-        assert args.get("plain_http") is True, f"no plain HTTP ({case_id})"
-        assert args.get("timeout"), f"a pull with no timeout ({case_id})"
-        assert args.get("cache_path"), f"'{PULL_STATE}' sets no cache ({case_id})"
+        expected: Tuple[str, ...] = ("worker", "control-plane", "etcd", "bootstrap")
+        if "etcd node" in case_id:
+            expected = ("worker", "etcd")
+        pulls = {
+            variant: f"Pull the {variant} boot cache from the registry"
+            for variant in VARIANTS
+        }
+        declared = tuple(variant for variant in VARIANTS if pulls[variant] in states)
+        assert declared == expected, f"pulls {declared} ({case_id})"
 
-        assert DIRECTORY_STATE in required_states(states, PULL_STATE), case_id
-        assert COMMAND_STATE in required_states(states, PULL_STATE), case_id
-        assert PULL_STATE in requisite_states(
-            states, PULL_IMPORT_STATE, "onchanges"
-        ), f"'{PULL_IMPORT_STATE}' does not watch '{PULL_STATE}' ({case_id})"
+        for variant in expected:
+            image_info = metalk8s_versions["images"][f"metalk8s-boot-cache-{variant}"]
+            version = image_info["version"]
+            args = _state_args(states, pulls[variant])
+            assert args["name"] == f"{variant}-{version.replace('.', '-')}", case_id
+            # One reference per registry node, so the next one is tried when
+            # the first is down.
+            assert isinstance(args["source"], list) and args["source"], case_id
+            if "several registry nodes" in case_id:
+                assert len(args["source"]) == 2, case_id
+            for source in args["source"]:
+                assert re.fullmatch(
+                    rf"[0-9.]+:5000/{re.escape(image_info['image'])}:"
+                    rf"{re.escape(version)}",
+                    source,
+                ), f"unexpected source '{source}' ({case_id})"
+            assert args.get("ca_file"), f"no CA ({case_id})"
+            assert not args.get("plain_http"), f"plain HTTP ({case_id})"
+            assert args.get("timeout"), f"a pull with no timeout ({case_id})"
+            assert args.get("cache_path"), f"'{pulls[variant]}' sets no cache"
+
+            required = required_states(states, pulls[variant])
+            assert DIRECTORY_STATE in required, case_id
+            assert COMMAND_STATE in required, case_id
+            assert REGISTRY_CA_STATE in required, case_id
+            assert pulls[variant] in requisite_states(
+                states, PULL_IMPORT_STATE, "onchanges"
+            ), f"'{PULL_IMPORT_STATE}' does not watch '{pulls[variant]}' ({case_id})"
+
+        ca_args = _state_args(states, REGISTRY_CA_STATE)
+        assert ca_args["name"] == args["ca_file"], case_id
+        assert ca_args["contents_pillar"] == "metalk8s:registry:ca", case_id
         assert TIMER_STATE in required_states(states, PULL_IMPORT_STATE), case_id
 
         checked = True

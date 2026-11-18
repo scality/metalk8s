@@ -1,0 +1,7 @@
+# The registry operator renders a ConfigMap with the same name, in the same
+# namespace, holding the CA of the cluster registry.
+apiVersion: metalk8s.scality.com/v1alpha1
+kind: MirrorConfig
+metadata:
+  name: registry-ca
+spec: {}

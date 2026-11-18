@@ -14,18 +14,8 @@
 
 
 {#- Same reference as `build_image_name`, but on the address of a registry
-    endpoint, the first one unless given, for the clients that do not go
-    through the containerd mirror configuration. #}
-{%- macro build_registry_image_name(name, endpoint=None) -%}
-    {%- if endpoint is none -%}
-        {%- set endpoints = metalk8s.endpoints.repositories -%}
-        {%- if not endpoints | is_list -%}
-            {%- set endpoints = [endpoints] -%}
-        {%- endif -%}
-        {%- set endpoint = endpoints | first | default({}, true) -%}
-    {%- endif -%}
-    {%- if not endpoint.get('ip') or not endpoint.get('ports', {}).get('http') -%}
-{{ raise('Missing address of the repositories endpoint') }}
-    {%- endif -%}
-{{ endpoint.ip }}:{{ endpoint.ports.http }}/{{ build_image_name(name) }}
+    endpoint, for the clients that do not go through the containerd mirror
+    configuration: see `metalk8s/repo/registry.jinja`. #}
+{%- macro build_registry_image_name(name, address) -%}
+{{ address }}/{{ build_image_name(name) }}
 {%- endmacro -%}

@@ -283,7 +283,7 @@ spec:
       - args:
         - --metrics-bind-address=:8443
         - --health-probe-bind-address=:8081
-        - --plain-http
+        - --ca-file=/etc/image-cache/registry-ca/ca.crt
         command:
         - /manager
         env:
@@ -327,6 +327,9 @@ spec:
         volumeMounts:
         - mountPath: /var/lib/image-cache
           name: image-cache
+        - mountPath: /etc/image-cache/registry-ca
+          name: registry-ca
+          readOnly: true
       nodeSelector:
         kubernetes.io/arch: amd64
       securityContext:
@@ -343,4 +346,17 @@ spec:
           path: /var/lib/image-cache
           type: DirectoryOrCreate
         name: image-cache
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: registry-ca
+        name: registry-ca
+---
+apiVersion: metalk8s.scality.com/v1alpha1
+kind: MirrorConfig
+metadata:
+  name: registry-ca
+  namespace: metalk8s-image-cache
+spec: {}
 {%- endraw %}

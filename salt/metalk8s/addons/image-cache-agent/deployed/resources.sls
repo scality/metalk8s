@@ -1,4 +1,5 @@
 {%- from "metalk8s/repo/macro.sls" import build_registry_image_name with context %}
+{%- from "metalk8s/repo/registry.jinja" import registry_addresses with context %}
 {%- from "metalk8s/image-cache/variants.jinja" import image_cache_variants with context %}
 
 {#- Declares the boot cache of the current version, one ImageCache per
@@ -8,6 +9,10 @@
     Applying it again replaces each resource with the same name, so nothing
     is duplicated. A new registry endpoint only reaches the nodes that have
     not synced yet: the agent never pulls a synced directory again. #}
+
+{%- if not registry_addresses %}
+  {{ raise('The cluster registry has no address yet') }}
+{%- endif %}
 
 {%- for variant, image_cache in image_cache_variants.items() %}
 
@@ -32,7 +37,8 @@ Create the {{ variant }} ImageCache:
           # NOTE: The agent resolves the source itself, not through
           # containerd, so it needs the address of the registry and not the
           # name only the containerd mirror configuration knows.
-          source: {{ build_registry_image_name(image_cache.image_name) }}
+          source: {{ build_registry_image_name(
+                       image_cache.image_name, registry_addresses | first) }}
     # NOTE: The CRD is created right before, in the same run. Give the API
     # server a moment to serve the new kind.
     - retry:
