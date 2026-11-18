@@ -77,7 +77,7 @@ const NAME = /^(?!\.\.?$)[^/%\s]+$/;
 const NAMESPACE = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
 
 const checkName = (name: string) => {
-  if (typeof name !== 'string' || !name || name.length > 253 || name.includes('..') || !NAME.test(name)) {
+  if (typeof name !== 'string' || !name || name.length > 253 || !NAME.test(name)) {
     throw new K8sApiError(
       'malformed',
       `"${name}" is not a resource name. A name is one path segment: no "/", "%" or whitespace, and not "." or "..".`,
