@@ -12,15 +12,12 @@ import {
   STATUS_HEALTH,
 } from '../constants';
 import { compareHealth } from './utils';
-import type { IPInterfaces } from './salt/api';
+import type { PlanesInterfaces } from './salt/api';
 import type { RootState } from '../ducks/reducer';
 import type { NodesState } from '../ducks/app/nodes';
 import type { Alert } from '../services/alertUtils';
 import { getHealthStatus, filterAlerts } from '../services/alertUtils';
 import { CoreUITheme } from '@scality/core-ui/dist/style/theme';
-const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
-const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
-const IP_INTERFACES = 'ip_interfaces';
 // Note that: Reverse the selectors and result in order to type unknown number of selectors.
 export const createTypedSelector: <T>(
   selectorsResult: (...result: any) => T,
@@ -138,15 +135,13 @@ export const getNodeListData = (alerts: Array<Alert>, theme: CoreUITheme) =>
   );
 
 /*
-This function returns the IP and interface of Control Plane and Workload Plane for each Node
+This function adapts the `metalk8s_network.get_planes_interfaces` Salt return
+into the shape used across the UI.
+
 Arguments:
-  ipsInterfacesObject = {
-    ip_interface: {
-      eth1:['10.0.1.42', 'fe80::f816:3eff:fe25:5843'],
-      eth3:['10.100.0.2', 'fe80::f816:3eff:fe37:2f34']
-   },
-    metalk8s:control_plane_ip: "10.0.1.42",
-    metalk8s:workload_plane_ip: "10.100.0.2"
+  planesInterfaces = {
+    control_plane: { ip: '10.0.1.42', interface: 'eth1' },
+    workload_plane: { ip: '10.100.0.2', interface: 'eth3' },
   }
 Return
   {
@@ -154,13 +149,17 @@ Return
    workloadPlane: { ip: '10.100.0.2', interface: 'eth3'},
   }
 
-Note: the ipsInterfacesObject maybe also be a string with error message
+An `interface` comes back as null when no interface on the node holds the plane
+IP; it is normalised to '' here, which callers use to skip the metrics queries
+that would otherwise match no series at all.
 
-ipsInterfacesObject =
+Note: planesInterfaces may also be a string holding an error message
+
+planesInterfaces =
   "nodename": "Minion did not return. [No response]\nThe minions may not have all finished running and any remaining minions will return upon completion. To look up the return data for this job later, run the following command:\n\nsalt-run jobs.lookup_jid 20210429184411623617"
 */
 export const nodesCPWPIPsInterface = (
-  IPsInterfacesObject: IPInterfaces | false | string,
+  planesInterfaces: PlanesInterfaces | false | string,
 ): {
   controlPlane: {
     ip: string;
@@ -171,7 +170,7 @@ export const nodesCPWPIPsInterface = (
     interface: string;
   };
 } => {
-  if (!IPsInterfacesObject || typeof IPsInterfacesObject === 'string') {
+  if (!planesInterfaces || typeof planesInterfaces === 'string') {
     return {
       controlPlane: {
         ip: '',
@@ -186,18 +185,12 @@ export const nodesCPWPIPsInterface = (
 
   return {
     controlPlane: {
-      ip: IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP],
-      interface:
-        Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
-          IPsInterfacesObject[IP_INTERFACES][en].includes(IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP]),
-        ) || '',
+      ip: planesInterfaces.control_plane?.ip || '',
+      interface: planesInterfaces.control_plane?.interface || '',
     },
     workloadPlane: {
-      ip: IPsInterfacesObject[METALK8S_WORKLOAD_PLANE_IP],
-      interface:
-        Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
-          IPsInterfacesObject[IP_INTERFACES][en].includes(IPsInterfacesObject[METALK8S_WORKLOAD_PLANE_IP]),
-        ) || '',
+      ip: planesInterfaces.workload_plane?.ip || '',
+      interface: planesInterfaces.workload_plane?.interface || '',
     },
   };
 };

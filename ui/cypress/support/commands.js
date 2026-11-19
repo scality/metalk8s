@@ -68,8 +68,8 @@ Cypress.Commands.add(
     // SaltAPI
     cy.intercept({ method: 'POST', pathname: /^\/api\/salt\/$/ }, (req) => {
       const saltArgs = req.body;
-      if (saltArgs.fun === 'grains.item' && saltArgs.arg.includes('ip_interfaces'))
-        req.reply({ fixture: 'salt-api/ip-grains.json' });
+      if (saltArgs.fun === 'metalk8s_network.get_planes_interfaces')
+        req.reply({ fixture: 'salt-api/planes-interfaces.json' });
       else
         req.reply({
           body: 'Not supported in Cypress mock.',

@@ -70,7 +70,7 @@
     "skipLibCheck": true /* Skip type checking of declaration files. */,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */,
-    "types": ["node", "jest", "@testing-library/jest-dom", "@scality/core-ui/types/styled.d.ts"]
+    "types": ["node", "jest", "@testing-library/jest-dom"]
   },
   "exclude": ["cypress.config.ts", "cypress", "node_modules"]
 }

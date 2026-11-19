@@ -4,6 +4,9 @@ import { useCallback, useEffect } from 'react';
 // How often to re-send MCP_DISCOVERY (Guardian's React app may mount after the iframe load event)
 const DISCOVERY_INTERVAL_MS = 3000;
 
+const PROMPT_RETRY_INTERVAL_MS = 500;
+const PROMPT_DELIVERY_TIMEOUT_MS = 20000;
+
 // Both hooks take the Guardian `origin` (scheme + host + port, no query string)
 // sourced from shell config. It is used as the postMessage target origin and to
 // validate inbound message origins, so it must stay query-string-free even when
@@ -22,6 +25,39 @@ export const useDiscoveryEmitter = (iframeRef: React.RefObject<HTMLIFrameElement
     const interval = setInterval(sendDiscovery, DISCOVERY_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [sendDiscovery]);
+};
+
+// Re-posted on an interval because nothing acknowledges delivery. The iframe is mounted with the
+// drawer at startup, not on open, so by the time a button is clicked the assistant is usually
+// listening and the first post lands; the repeats cover the click that beats its React tree to it.
+// They are safe because the assistant acts on one question per promptId. It gives up rather than
+// retrying for ever — a question arriving mid-conversation minutes later is worse than none.
+export const usePromptEmitter = (
+  iframeRef: React.RefObject<HTMLIFrameElement>,
+  origin: string,
+  pendingPrompt: { prompt: string; promptId: string } | null,
+  onDelivered: () => void,
+) => {
+  useEffect(() => {
+    if (!pendingPrompt) return;
+
+    const post = () =>
+      iframeRef.current?.contentWindow?.postMessage({ type: 'GUARDIAN_PROMPT', ...pendingPrompt }, origin);
+
+    post();
+    const interval = setInterval(post, PROMPT_RETRY_INTERVAL_MS);
+    // The interval is cleared HERE, not left to the caller. `onDelivered` clearing the pending
+    // prompt is what re-runs this effect today, so the bound only held because of what the caller
+    // happens to do with it — a caller that did anything else would be posted at for ever.
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      onDelivered();
+    }, PROMPT_DELIVERY_TIMEOUT_MS);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [iframeRef, origin, pendingPrompt, onDelivered]);
 };
 
 export const useMcpCallHandler = (iframeRef: React.RefObject<HTMLIFrameElement>, origin: string) => {

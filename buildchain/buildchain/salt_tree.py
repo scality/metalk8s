@@ -407,6 +407,10 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
         "salt/metalk8s/addons/prometheus-operator/deployed/",
         "alertmanager-configuration-secret.sls",
     ),
+    Path(
+        "salt/metalk8s/addons/prometheus-operator/deployed/files/",
+        "email-subject.tmpl",
+    ),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/chart.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/dashboards.sls"),
     Path(

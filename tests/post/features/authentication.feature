@@ -59,3 +59,4 @@ Feature: Authentication is up and running
         And the control-plane Ingress path '/oidc' is available
         And pods with label 'app.kubernetes.io/name=dex' are 'Ready'
         Then we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
+        And the Kubernetes API accepts a Dex token for 'admin@metalk8s.invalid' using password 'password'

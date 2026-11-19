@@ -15,7 +15,9 @@
     variants land with MK8S-380 and MK8S-394, which is also where picking a
     variant per node role belongs. #}
 
-{%- if kubelet.container_engine == 'containerd' %}
+{#- NOTE: Disabled in 134.0: the boot cache feature is not complete yet.
+    It comes back in 136.0. #}
+{%- if False and kubelet.container_engine == 'containerd' %}
 
 {%- set image_name = 'metalk8s-boot-cache-control-plane' %}
 {%- set image_version = repo.images.get(image_name, {}).get('version') %}

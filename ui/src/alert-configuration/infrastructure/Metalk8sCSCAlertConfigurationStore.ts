@@ -21,6 +21,13 @@ type Metalk8sAlertManagerConfig = Metalk8sCSCConfiguration<
   }
 >;
 
+export class HttpRequestError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+    this.name = 'HttpRequestError';
+  }
+}
+
 const parseHostAndPort = (hostAndPort: string) => {
   const [host, port] = hostAndPort.split(':');
   return { host, port: port ? parseInt(port, 10) : 25 };
@@ -107,7 +114,7 @@ export class Metalk8sCSCAlertConfigurationStore implements IAlertConfigurationSt
     });
 
     if (saltLoginFetchResponse.status !== 200) {
-      throw new Error('Error login with salt api');
+      throw new HttpRequestError('Error login with salt api', saltLoginFetchResponse.status);
     }
 
     const saltLoginResponse: SaltLoginResponse = await saltLoginFetchResponse.json();
@@ -125,7 +132,7 @@ export class Metalk8sCSCAlertConfigurationStore implements IAlertConfigurationSt
     });
 
     if (nodesFetchResponse.status !== 200) {
-      throw new Error('Error fetching nodes information');
+      throw new HttpRequestError('Error fetching nodes information', nodesFetchResponse.status);
     }
 
     const nodesResponse: V1NodeList = await nodesFetchResponse.json();
@@ -486,6 +493,7 @@ export class Metalk8sCSCAlertConfigurationStore implements IAlertConfigurationSt
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${await this.getToken()}`,
       },
       body: JSON.stringify([
         {
@@ -501,13 +509,10 @@ export class Metalk8sCSCAlertConfigurationStore implements IAlertConfigurationSt
       ]),
     });
 
-    if (alertFetchResponse.status !== 200) {
-      throw new Error(`Error while sending test alert`);
-    }
-
-    const alertResponse = await alertFetchResponse.json();
-    if (alertResponse.status !== 'success') {
-      throw new Error(`Error while sending test alert : ${alertResponse.error.message}`);
+    if (!alertFetchResponse.ok) {
+      const errorBody = await alertFetchResponse.text().catch(() => '');
+      console.error(`Error while sending test alert (HTTP ${alertFetchResponse.status})`, errorBody);
+      throw new HttpRequestError('Error while sending test alert', alertFetchResponse.status);
     }
   }
 

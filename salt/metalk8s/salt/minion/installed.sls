@@ -24,7 +24,7 @@ Install salt-minion:
   pkg.installed:
     - name: salt-minion
     {%- if not installed_version %}
-    - version: {{ salt_minion_version }}
+    - version: "{{ salt_minion_version }}"
     {%- endif %}
     - hold: True
     - update_holds: True

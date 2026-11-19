@@ -229,7 +229,7 @@ def _object_manipulation_function(action):
             # Keep the webhooks `caBundle` if not present in the body.
             # Something else injects it, e.g. cert-manager. Every call to the
             # webhook fails until it is injected again.
-            if api.api_version == "admissionregistration.k8s.io/v1" and api.kind in [
+            if api.group_version == "admissionregistration.k8s.io/v1" and api.kind in [
                 "MutatingWebhookConfiguration",
                 "ValidatingWebhookConfiguration",
             ]:

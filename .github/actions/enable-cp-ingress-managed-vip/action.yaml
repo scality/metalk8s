@@ -29,11 +29,6 @@ runs:
       with:
         COMMAND: >
           sudo salt-call saltutil.refresh_pillar wait=True
-    - name: Reconfigure Bootstrap APIServer
-      uses: ./.github/actions/run-command-ssh
-      with:
-        COMMAND: >
-          sudo salt-call state.sls metalk8s.kubernetes.apiserver
     - name: Reconfigure Control Plane components
       uses: ./.github/actions/run-command-ssh
       with:
