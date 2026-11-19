@@ -18,6 +18,10 @@ MINIONS_PING_TIMEOUT = 10
 MINIONS_PING_ATTEMPTS = 6
 MINIONS_PING_INTERVAL = 10
 
+# The image cache agent labels each node with the status of every ImageCache
+# that selects it, under this prefix followed by the resource name.
+IMAGE_CACHE_LABEL_PREFIX = "image-cache.scality.com/"
+
 # kube-apiserver refuses to start on a feature gate it no longer knows, or on one
 # locked to the other value, and `kubernetes.apiServer.featureGates` is passed to
 # it as is. Regenerate these on every Kubernetes bump, from the version the
@@ -195,6 +199,93 @@ def nodes(node_list=None, raises=True):
     return _handle_errors(errors, raises)
 
 
+def image_caches_synced(node_list, image_caches, raises=True):
+    """Check the image cache agent synced some nodes to some ImageCaches
+
+    On a node, only the resources that select it are checked, as the agent
+    labels no other node, and an older resource stuck on the node holds
+    nothing. The agent writes `synced` or `pending` and nothing else: a failed
+    pull stays `pending` and leaves a `SyncFailed` event on the resource.
+
+    Args:
+        node_list (list): Nodes to check, all of them on each call.
+        image_caches (list): ImageCache resources the nodes must be synced to.
+            Not `names`: Salt reserves it in every state, and would run one
+            copy of the calling `salt.runner` state per name.
+        raises (bool, optional): Whether or not this function should raise. Defaults to True.
+
+    Raises:
+        CheckError: If 'raises' is True and some nodes are not synced
+
+    Returns:
+        dict or True: An error message or True if everything OK
+    """
+    selectors = {}
+    for name in image_caches:
+        cache = __salt__["salt.cmd"](
+            fun="metalk8s_kubernetes.get_object",
+            kind="ImageCache",
+            apiVersion="image-cache.scality.com/v1alpha1",
+            name=name,
+        )
+        if not cache:
+            return _handle_errors([f"ImageCache {name} does not exist"], raises)
+        selectors[name] = cache["spec"].get("nodeSelector") or {}
+
+    errors = []
+    for node_name in node_list:
+        node_obj = __salt__["salt.cmd"](
+            fun="metalk8s_kubernetes.get_object",
+            kind="Node",
+            apiVersion="v1",
+            name=node_name,
+        )
+        if not node_obj:
+            errors.append(f"Node {node_name} does not exist.")
+            continue
+        labels = node_obj["metadata"].get("labels") or {}
+
+        not_synced = []
+        for name, selector in selectors.items():
+            # Same match as the agent: exact, and empty selects every node.
+            if any(labels.get(key) != value for key, value in selector.items()):
+                continue
+            status = labels.get(f"{IMAGE_CACHE_LABEL_PREFIX}{name}")
+            if status != "synced":
+                not_synced.append(f"{name} ({status or 'no label'})")
+
+        if not_synced:
+            cache_labels = ", ".join(
+                f"{key}={value}"
+                for key, value in sorted(labels.items())
+                if key.startswith(IMAGE_CACHE_LABEL_PREFIX)
+            )
+            # The agent only tolerates NoSchedule taints: a NoExecute one,
+            # such as the node-warden one, keeps it off the node.
+            taints = ", ".join(
+                taint["key"]
+                for taint in node_obj.get("spec", {}).get("taints") or []
+                if taint.get("effect") == "NoExecute"
+            )
+            error = (
+                f"Node {node_name} is not synced to {', '.join(not_synced)}."
+                f" Its image cache labels: {cache_labels or 'none'}."
+            )
+            if taints:
+                error += f" Its NoExecute taints, which evict the agent: {taints}."
+            errors.append(error)
+
+    if errors:
+        errors.append(
+            "Check the image-cache-agent Pod of each node in the"
+            " metalk8s-image-cache namespace, then run the upgrade again. A"
+            " failed pull leaves a SyncFailed event, see"
+            " `kubectl get events -A --field-selector involvedObject.kind=ImageCache`"
+        )
+
+    return _handle_errors(errors, raises)
+
+
 def minions(
     minion_list=None,
     raises=True,
@@ -361,9 +452,13 @@ def upgrade(dest_version, saltenv, raises=True):
         )
 
     # Check that all nodes are in a supported upgrade path
-    # We only support upgrade from one major version
+    # We only support upgrade from one major version, the previous one being
+    # defined in the destination version since majors are not always contiguous
     dest = dest_version.split(".")
-    min_version = f"{int(dest[0]) - 1}.0.0"
+    previous_major = int(
+        metalk8s_pillar.get("previous_major_version", int(dest[0]) - 1)
+    )
+    min_version = f"{previous_major}.0.0"
 
     for node_name, node_info in metalk8s_pillar["nodes"].items():
         if (
@@ -419,9 +514,23 @@ def downgrade(dest_version, saltenv, raises=True, bypass_disable=False):
     )
 
     # Check that all nodes are in a supported downgrade path
-    # We only support downgrade from one major version
+    # We only support downgrade from one major version, so nodes can be at most
+    # in the major following the destination one. Majors are not always
+    # contiguous: when downgrading to the major the saltenv one follows, nodes
+    # can be up to the saltenv major (an invalid saltenv is reported below)
     dest = dest_version.split(".")
-    max_version = f"{int(dest[0]) + 2}.0.0"
+    saltenv_version = saltenv.replace("metalk8s-", "")
+    saltenv_major = saltenv_version.split(".")[0]
+    previous_major = metalk8s_pillar.get("previous_major_version")
+    if (
+        previous_major is not None
+        and int(dest[0]) == int(previous_major)
+        and saltenv_major.isdigit()
+    ):
+        next_major = int(saltenv_major)
+    else:
+        next_major = int(dest[0]) + 1
+    max_version = f"{next_major + 1}.0.0"
 
     newest_node_version = None
 
@@ -459,9 +568,7 @@ def downgrade(dest_version, saltenv, raises=True, bypass_disable=False):
 
     # When downgrading the saltenv should be at least the newest node version
     if (
-        __salt__["salt.cmd"](
-            "pkg.version_cmp", saltenv.replace("metalk8s-", ""), newest_node_version
-        )
+        __salt__["salt.cmd"]("pkg.version_cmp", saltenv_version, newest_node_version)
         == -1
     ):
         errors.append(

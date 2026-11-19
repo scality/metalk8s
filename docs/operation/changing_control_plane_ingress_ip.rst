@@ -68,14 +68,6 @@ Procedure
       local:
           <my-new-ip>
 
-#. On the Bootstrap node, reconfigure apiServer:
-
-   .. parsed-literal::
-
-     $ salt-call state.sls \\
-         metalk8s.kubernetes.apiserver \\
-         saltenv=metalk8s-|version|
-
 #. Reconfigure Control Plane components:
 
    .. parsed-literal::

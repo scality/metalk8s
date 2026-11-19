@@ -21,6 +21,10 @@ spec:
       annotations:
         checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret",
           apiVersion="v1", namespace="kube-system", name="backup-tls", path="data:backup.crt")
+        # The nginx configuration is mounted with a subPath, a ConfigMap change
+        # only reaches the pod through a rollout
+        checksum/nginx-config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap",
+          apiVersion="v1", namespace="kube-system", name="backup-nginx-config", path="data:nginx.conf")
       labels:
         app.kubernetes.io/name: backup
         app.kubernetes.io/part-of: metalk8s
@@ -71,8 +75,11 @@ spec:
           volumeMounts:
             - name: backups
               mountPath: /backups
+              readOnly: true
             - name: config
-              mountPath: /etc/nginx/conf.d
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
             - name: tls
               mountPath: /etc/ssl
             - name: htpasswd
@@ -94,7 +101,8 @@ spec:
             name: backup-nginx-config
         - name: tls
           secret:
-            defaultMode: 400
+            # 0400 in decimal, salt-lint rejects octal literals
+            defaultMode: 256
             secretName: backup-tls
         - name: htpasswd
           emptyDir: {}

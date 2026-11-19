@@ -797,7 +797,7 @@ def wait_cc_status(k8s_client, status):
 
         for cond in obj.status.conditions or []:
             if cond.type == status:
-                assert obj.generation == cond.observed_generation
+                assert obj.metadata.generation == cond.observedGeneration
                 assert cond.status == "True"
                 return
 
@@ -1036,10 +1036,6 @@ def re_configure_cp_ingress(host, version, ssh_config, context=None):
     with host.sudo():
         host.check_output(
             "salt-call --retcode-passthrough saltutil.refresh_pillar wait=True"
-        )
-        host.check_output(
-            "salt-call --retcode-passthrough state.sls "
-            "metalk8s.kubernetes.apiserver saltenv=metalk8s-{}".format(version)
         )
 
     command = [

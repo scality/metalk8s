@@ -17,6 +17,7 @@ spec:
     grafana.ini:
       analytics:
         check_for_updates: false
+        check_for_plugin_updates: false
         reporting_enabled: false
       paths:
         data: /var/lib/grafana/
@@ -25,6 +26,11 @@ spec:
         provisioning: /etc/grafana/provisioning
       log:
         mode: console
+      security:
+        disable_gravatar: true
+      plugins:
+        preinstall_disabled: true
+        public_key_retrieval_disabled: true
       server:
         root_url: "{{ control_plane_ingress_endpoint }}/grafana"
       auth:

@@ -24,7 +24,11 @@ spec:
         image: {{ image }}
         command: ["/bin/sh", "-c"]
         args:
+          # Keep the replicated archives readable by root only, as on the
+          # bootstrap node, and close the directory on archives written
+          # before
           - >-
+            umask 0077 && chmod 0700 /backups &&
             wget --accept="*.tar.gz"
             --no-host-directories --mirror
             --ca-certificate=/certificate/ca.crt

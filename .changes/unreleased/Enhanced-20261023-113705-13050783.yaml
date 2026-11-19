@@ -1,0 +1,6 @@
+kind: Enhanced
+body: An upgrade now deletes the image cache of the other versions, along with the archives a 134 bootstrap left on the bootstrap node.
+time: 2026-10-23T11:37:05.013050783Z
+custom:
+    CommentId: "6363978263"
+    Pull: "5198"

@@ -21,6 +21,11 @@ const CountsRow = styled.div`
   align-items: center;
   gap: ${spacing.r16};
 `;
+const LabelWithBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.r4};
+`;
 const Link = styled.div`
   color: ${(props) => props.theme.textLink};
   cursor: pointer;
@@ -54,12 +59,14 @@ const DashboardAlerts = () => {
     <AlertsContainer>
       <Box display="flex" alignItems="center" gap={spacing.r8}>
         <div>
-          <Text isEmphazed>
-            {intl.formatMessage({
-              id: 'platform_active_alerts',
-            })}
-          </Text>
-          <TextBadge variant="infoPrimary" data-testid="all-alert-badge" text={totalAlerts} />
+          <LabelWithBadge>
+            <Text isEmphazed>
+              {intl.formatMessage({
+                id: 'platform_active_alerts',
+              })}
+            </Text>
+            <TextBadge variant="infoPrimary" data-testid="all-alert-badge" text={totalAlerts} />
+          </LabelWithBadge>
           {totalAlerts === 0 && (
             <div>
               <Text variant="Smaller" color="textSecondary">
@@ -90,14 +97,14 @@ const DashboardAlerts = () => {
         <Box pr={24}>
           <CountsRow>
             <BadgesContainer>
-              <div>
+              <LabelWithBadge>
                 <Text>Critical</Text>
                 <TextBadge variant="statusCritical" data-testid="critical-alert-badge" text={criticalAlerts.length} />
-              </div>
-              <div>
+              </LabelWithBadge>
+              <LabelWithBadge>
                 <Text>Warning</Text>
                 <TextBadge variant="statusWarning" data-testid="warning-alert-badge" text={warningAlerts.length} />
-              </div>
+              </LabelWithBadge>
             </BadgesContainer>
             <Link
               onClick={() => {

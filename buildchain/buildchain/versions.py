@@ -25,9 +25,9 @@ K8S_VERSION_PATCH: str = "5"
 K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
 K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
 
-CALICO_VERSION: str = "3.32.0"
-SALT_VERSION: str = "3006.27"
-CONTAINERD_VERSION: str = "2.3.6"
+CALICO_VERSION: str = "3.33.0"
+SALT_VERSION: str = "3006.30"
+CONTAINERD_VERSION: str = "2.4.2"
 
 SOSREPORT_RELEASE: str = "2"
 
@@ -88,7 +88,7 @@ UI_OPERATOR_VERSION: str = "1.1.0"
 # installed in the image needs to be updated.
 # This should be reset to 1 when the service exposed by the container changes
 # version.
-SALT_MASTER_BUILD_ID = 2
+SALT_MASTER_BUILD_ID = 1
 
 
 def _version_prefix(version: str, prefix: str = "v") -> str:
@@ -110,19 +110,19 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:e9733bafb1bdef9b00e25a21f8f99dc26a22224bf16641ad754d1649f4c3357a",
     ),
     Image(
-        name="calico-cni",
+        name="calico",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14",
+        digest="sha256:4ebc20730127bc9e8bf1db5f5a2d8b58cf37fe0e891b3c7b5471992221d213e5",
     ),
     Image(
         name="calico-node",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+        digest="sha256:565d8db3200e443955557f8f28ff44ab8a4a456754bc74a19c4f2f3444af9b1c",
     ),
     Image(
-        name="calico-kube-controllers",
+        name="calico-third-party-cni-plugins",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:adf0ac895796d21bca5383bc81c4cd2614be3a4308085b47857d7999f4cc2b1f",
+        digest="sha256:0f32f48279484c0d6f0e0d0e767b2d0e1a6c6ca34cb3421a61b989d992f3df41",
     ),
     Image(
         name="coredns",
@@ -255,6 +255,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
+        name="metalk8s-boot-cache-registry",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
         name="metalk8s-keepalived",
         version=VERSION,
         digest=None,
@@ -304,8 +309,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="fluent-bit",
-        version="5.0.7",
-        digest="sha256:c96ee743cba9b1d5a38654931f411700af80bb7652697afbe67daad46cae237b",
+        version="5.1.5",
+        digest="sha256:2740f387f6e68fab66d28e4fa6a853387b9cab6ffb4cb78958f69bba4eb0e7b4",
     ),
     Image(
         name="cert-manager-controller",
@@ -333,9 +338,24 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:86b4198036c1f83f1d9363a1e2ae78015482ca4fe60cd706939b8730c179ac8a",
     ),
     Image(
+        name="static-oci-registry",
+        version="v0.1.0-beta.4",
+        digest="sha256:e23d0050707295c24a09401abb19ae3f0b446217d4270beca99237e845b517b9",
+    ),
+    Image(
+        name="metalk8s-registry-node-agent",
+        version="v0.0.1-alpha.14",
+        digest="sha256:ebd7cbe53e37a01c4dd0528970825dccb8fbac1962088626f1d7c8d1cdac3b7f",
+    ),
+    Image(
+        name="metalk8s-registry-operator",
+        version="v0.0.1-alpha.6",
+        digest="sha256:d7ea154198885fd8e13031aa1918f7e4f365a5f45a722c4aaa117139fbf93483",
+    ),
+    Image(
         name="disk-management-agent",
-        version="v0.1.0",
-        digest="sha256:d63d4e20a089dcd3ac33f58d2210a66e48a1f9f08120494352b22cca94747769",
+        version="v0.2.0",
+        digest="sha256:6d9e33f59d9f28df6b6c04f1f30509fdf10d1e73c449f9cc9fd76418343d32c4",
     ),
     Image(
         name="file-reflector",

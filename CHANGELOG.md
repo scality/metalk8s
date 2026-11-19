@@ -1,6 +1,143 @@
 # CHANGELOG
 
 
+## Release 134.0.5
+
+### Enhancements
+
+- Speed up the Control Plane Ingress IP change by reloading the kube-apiserver authentication config without restart
+  (PR[#5233](https://github.com/scality/metalk8s/pull/5233))
+
+### Bug Fixes
+
+- The `loki-cleaner-wa` CronJob now runs its cleanup in the `loki` container of
+  each Loki pod. It used to run in the first container, the `loki-sc-rules`
+  sidecar, so the Job failed and old Loki chunks were never deleted.
+  (PR[#5230](https://github.com/scality/metalk8s/pull/5230))
+
+
+## Release 134.0.4
+
+### Enhancements
+
+- Bump fluent-bit chart to [0.58.3](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.58.3)
+  and Fluent Bit image to [v5.1.5](https://github.com/fluent/fluent-bit/releases/tag/v5.1.5).
+  The previous images still trusted the root CAs of the compromised
+  eMudhra/emSign intermediate CAs (CVE-2026-111943) for the TLS outputs
+  that do not set `tls.ca_file`
+  (PR[#5215](https://github.com/scality/metalk8s/pull/5215))
+
+- The backup server only accepts TLS 1.3. TLS 1.0, 1.1 and 1.2 are no longer
+  negotiated.
+  (PR[#5212](https://github.com/scality/metalk8s/pull/5212))
+
+- Bump Salt version to [3006.30](https://github.com/saltstack/salt/releases/tag/v3006.30)
+  (PR[#5224](https://github.com/scality/metalk8s/pull/5224))
+
+### Bug Fixes
+
+- Backup archives are now readable by root only (`0600`) whatever the umask of
+  the node, on the bootstrap node as on their replicated copies. They hold the CA
+  keys and the etcd snapshot, and were readable by every user of the node under
+  the usual `0022` umask. Under a strict umask such as `0077`, the backup server
+  answered 403 on them and the backup replication to the other master nodes
+  failed. The backups directory is also closed to `0700` on every master node, so
+  archives written before are no longer readable by other users.
+  (PR[#5212](https://github.com/scality/metalk8s/pull/5212))
+
+
+## Release 134.0.3
+
+### Enhancements
+
+- Bump containerd to [2.4.2](https://github.com/containerd/containerd/releases/tag/v2.4.2)
+  and pause to [3.10.2](https://github.com/kubernetes/kubernetes/releases/tag/v3.10.2)
+  (PR[#5214](https://github.com/scality/metalk8s/pull/5214))
+
+### Bug Fixes
+
+- move node-warden-operator nodeSelector into pod spec
+  (PR[#5203](https://github.com/scality/metalk8s/pull/5203))
+
+- Nodes no longer run out of inotify instances, which on a single node with
+  logging enabled could make kube-proxy keep stale iptables rules after a
+  reconfiguration, or fluent-bit crash loop, with "too many open files".
+  MetalK8s now sets `fs.inotify.max_user_instances` to 8192 on every node, at
+  install and upgrade, as containerd needs one instance per container on
+  cgroups v2 and the default of 128 runs out.
+  (PR[#5213](https://github.com/scality/metalk8s/pull/5213))
+
+
+## Release 134.0.2
+
+### Enhancements
+
+- Alert notification emails now use a short subject,
+  `[FIRING] <alert name> - <severity>`, instead of listing the value of every
+  label of the alert, so the severity is visible in an inbox list. Email
+  receivers that set their own `Subject` header are not affected.
+  (PR[#5209](https://github.com/scality/metalk8s/pull/5209))
+
+### Bug Fixes
+
+- Fix flaky multi-node Control Plane Ingress tests: the tests now wait for the operator to observe the latest ClusterConfig generation before reconfiguring the Control Plane Ingress, instead of acting on a stale `Ready` condition
+  (PR[#5193](https://github.com/scality/metalk8s/pull/5193))
+
+- Bump [disk-management-agent](https://github.com/scality/disk-management-agent) to version
+  [v0.2.0](https://github.com/scality/disk-management-agent/releases/tag/v0.2.0). One failed drive on a
+  MegaRAID, storcli2 or HPE Smart Array controller no longer blanks the device paths of every disk on that
+  controller in the Storage Service UI: the healthy disks keep their paths, and the failed one is reported Failed.
+  (PR[#5199](https://github.com/scality/metalk8s/pull/5199))
+
+- move crl-operator nodeSelector into pod spec
+  (PR[#5204](https://github.com/scality/metalk8s/pull/5204))
+
+### Additions
+
+- let a mounted application open the assistant on a question
+  (PR[#5192](https://github.com/scality/metalk8s/pull/5192))
+
+### Removals
+
+- The ISO no longer ships the `metalk8s-boot-cache-control-plane` and
+  `metalk8s-boot-cache-worker` images, and the bootstrap node no longer fills its
+  image cache from them before the kubelet starts. The boot cache feature is not
+  complete in this release line, and comes back in 136.0. The
+  `containerd-image-preload` package and its timer are still installed on every
+  node, and run against an empty `/var/lib/image-cache`.
+  (PR[#5205](https://github.com/scality/metalk8s/pull/5205))
+
+
+## Release 134.0.1
+
+### Bug Fixes
+
+- The Platform dashboard and node page bandwidth charts are no longer empty on
+  nodes whose control-plane or workload-plane IP sits on a bond or a VLAN. The
+  interface carrying each plane IP is now resolved live on the minion instead of
+  being read from the `ip_interfaces` grain, which is only computed when the
+  minion daemon starts -- before those interfaces exist -- and is not refreshed
+  afterwards. The charts used to query `node_network_receive_bytes_total` with an
+  empty device matcher, which no series can match, so Prometheus answered with an
+  empty result and the panel rendered blank without any error
+  (PR[#5120](https://github.com/scality/metalk8s/pull/5120))
+
+- The **Send a test email** button on the email notification configuration page
+  sends the test alert again. The request was rejected once Alertmanager became
+  protected by OIDC authentication, and the page reported nothing. A failed test or
+  save now shows an error message explaining what went wrong.
+  (PR[#5139](https://github.com/scality/metalk8s/pull/5139))
+
+- Corrected the trace system after the google chrome update
+  (PR[#5180](https://github.com/scality/metalk8s/pull/5180))
+
+- Chart axes, such as the Platform Health bar timeline, no longer disappear for a frame each time the page re-renders. The UI now uses @scality/core-ui 0.233.0, which requires a recharts version without that rendering bug.
+  (PR[#5181](https://github.com/scality/metalk8s/pull/5181))
+
+- Mount `/etc/machine-id` in the Fluent Bit pods, so host (systemd journal) logs are sent to Loki again
+  (PR[#5185](https://github.com/scality/metalk8s/pull/5185))
+
+
 ## Release 134.0.0
 
 ### Enhancements
@@ -165,6 +302,47 @@
 
 - get the logs of a pod
   (PR[#5155](https://github.com/scality/metalk8s/pull/5155))
+
+
+## Release 133.0.18
+
+### Bug Fixes
+
+- The Platform dashboard and node page bandwidth charts are no longer empty on
+  nodes whose control-plane or workload-plane IP sits on a bond or a VLAN. The
+  interface carrying each plane IP is now resolved live on the minion instead of
+  being read from the `ip_interfaces` grain, which is only computed when the
+  minion daemon starts -- before those interfaces exist -- and is not refreshed
+  afterwards. The charts used to query `node_network_receive_bytes_total` with an
+  empty device matcher, which no series can match, so Prometheus answered with an
+  empty result and the panel rendered blank without any error
+  (PR[#5120](https://github.com/scality/metalk8s/pull/5120))
+
+- Mount `/etc/machine-id` in the Fluent Bit pods, so host (systemd journal) logs are sent to Loki again
+  (PR[#5185](https://github.com/scality/metalk8s/pull/5185))
+
+- move node-warden-operator nodeSelector into pod spec
+  (PR[#5203](https://github.com/scality/metalk8s/pull/5203))
+
+- move crl-operator nodeSelector into pod spec
+  (PR[#5204](https://github.com/scality/metalk8s/pull/5204))
+
+
+## Release 133.0.17
+
+### Bug Fixes
+
+- The **Send a test email** button on the email notification configuration page
+  sends the test alert again. The request was rejected once Alertmanager became
+  protected by OIDC authentication, and the page reported nothing. A failed test or
+  save now shows an error message explaining what went wrong.
+  (PR[#5139](https://github.com/scality/metalk8s/pull/5139))
+
+- Stop the UI from auto-discovering a WebMCP local relay on the administrator's machine at login, which triggered an unexplained Chrome "access other apps and services on your computer" permission prompt
+  (PR[#5145](https://github.com/scality/metalk8s/pull/5145))
+
+- Fix intermittent multi-node upgrade failures caused by webhook CA bundle injection and container registry hosts missing a restarting repository
+  (PR[#5156](https://github.com/scality/metalk8s/pull/5156))
 
 
 ## Release 133.0.16
@@ -481,6 +659,18 @@
 - Fix a bug where part of the upgrade process would silently be skipped
   if the containerd socket is lost (crictl exec would exit with code 0)
   (PR[#4802](https://github.com/scality/metalk8s/pull/4802))
+
+## Release 132.0.3
+
+### Bug Fixes
+
+- Fix a bug where Salt master process may report an error about `VerboseLogger`
+  not having attributes `trace`
+  (PR[#4831](https://github.com/scality/metalk8s/pull/4831))
+
+- Stop the UI from auto-discovering a WebMCP local relay on the administrator's machine at login, which triggered an unexplained Chrome "access other apps and services on your computer" permission prompt
+  (PR[#5145](https://github.com/scality/metalk8s/pull/5145))
+
 
 ## Release 132.0.2
 

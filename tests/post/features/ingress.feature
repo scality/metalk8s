@@ -139,6 +139,7 @@ Feature: Ingress
         And we wait for the rollout of 'deploy/dex' in namespace 'metalk8s-auth' to complete
         Then the control plane ingress IP is equal to node 'node-2' IP
         And we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
+        And the Kubernetes API accepts a Dex token for 'admin@metalk8s.invalid' using password 'password'
 
     @authentication
     Scenario: Change Control Plane IP to a managed Virtual IP
@@ -152,3 +153,4 @@ Feature: Ingress
         And we wait for the rollout of 'deploy/dex' in namespace 'metalk8s-auth' to complete
         Then the control plane ingress IP is equal to '{new_cp_ingress_vip}'
         And we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
+        And the Kubernetes API accepts a Dex token for 'admin@metalk8s.invalid' using password 'password'

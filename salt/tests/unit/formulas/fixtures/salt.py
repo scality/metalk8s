@@ -4,12 +4,14 @@ import copy
 import functools
 import ipaddress
 import json
+import os
 import random
 import string
 from typing import Any, Callable, Dict, List, Optional, Type
+from unittest import mock
 from unittest.mock import MagicMock
 
-from _modules import metalk8s_service_configuration
+from _modules import metalk8s_kubernetes, metalk8s_service_configuration
 
 import jinja2
 import pytest
@@ -299,6 +301,28 @@ def metalk8s_kubernetes_get_object(
     )
 
 
+@register("metalk8s_kubernetes.is_object_ready")
+def metalk8s_kubernetes_is_object_ready(
+    salt_mock: SaltMock,
+    name: str,
+    kind: str,
+    # pylint: disable=invalid-name
+    apiVersion: str,
+    # pylint: enable=invalid-name
+    namespace: Optional[str] = None,
+) -> bool:
+    """Check the object from the K8s API mock with the actual readiness logic."""
+    obj = salt_mock._k8s.get(
+        api_version=apiVersion, kind=kind, name=name, namespace=namespace
+    )
+    with mock.patch.object(metalk8s_kubernetes, "get_object", return_value=obj):
+        return bool(
+            metalk8s_kubernetes.is_object_ready(
+                name=name, kind=kind, apiVersion=apiVersion, namespace=namespace
+            )
+        )
+
+
 @register("metalk8s_kubernetes.list_objects")
 def metalk8s_kubernetes_list_objects(
     salt_mock: SaltMock,
@@ -408,6 +432,7 @@ def slsutil_renderer(salt_mock: SaltMock, source: str, **_kwargs: Any) -> Any:
 # Static mocks {{{
 
 register_basic("cri.get_pod_id")(MagicMock(return_value="abcd1234"))
+register_basic("file.dirname")(os.path.dirname)
 register_basic("file.find")(MagicMock(return_value=[]))
 register_basic("file.join")(lambda *args: "/".join(args))
 register_basic("file.read")(MagicMock(return_value="<file contents>"))

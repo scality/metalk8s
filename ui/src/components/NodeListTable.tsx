@@ -139,7 +139,7 @@ const NodeListTable = ({ nodeTableData, loading }) => {
       revealDroppedColumns
       columns={columns}
       data={nodeTableData}
-      status={loading ? 'loading' : 'success'}
+      loading={loading}
       defaultSortingKey={'health'}
       entityName={{
         en: {

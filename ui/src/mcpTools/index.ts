@@ -1,4 +1,6 @@
 import { createDescribeKubeResourceTool } from './tools/describeKubeResourceTool';
+import { createGetAlertTool } from './tools/getAlertTool';
+import { createGetAlertsTool } from './tools/getAlertsTool';
 import { createGetPodLogsTool } from './tools/getPodLogsTool';
 import { createListKubeResourcesTool } from './tools/listKubeResourcesTool';
 import type { ToolContext } from './types';
@@ -14,4 +16,6 @@ export const createTools = (context: ToolContext) => [
   createListKubeResourcesTool(context),
   createDescribeKubeResourceTool(context),
   createGetPodLogsTool(context),
+  createGetAlertsTool(context),
+  createGetAlertTool(context),
 ];

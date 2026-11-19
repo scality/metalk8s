@@ -78,7 +78,7 @@
 # have a node without `etcd` role and you have an `etcd` `skip_roles` then the
 # `metalk8s.roles.etcd.absent` state will not be called
 
-{%- set roles = ['bootstrap', 'ca', 'etcd', 'master', 'node', 'infra'] -%}
+{%- set roles = ['bootstrap', 'ca', 'etcd', 'master', 'node', 'infra', 'registry'] -%}
 {%- set node_role = 'node' -%}
 {%- set node_roles = roles | difference(['ca']) -%}
 

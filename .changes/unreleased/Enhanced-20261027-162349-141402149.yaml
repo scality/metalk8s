@@ -1,0 +1,6 @@
+kind: Enhanced
+body: The nightly of a development branch tests upgrades and downgrades from the previous major again when majors are not contiguous. It used to look only for `MAJOR - 1`, so `development/136.0` found no 135 release or branch and skipped every lifecycle test. It now reads the previous major declared in the Salt defaults (`metalk8s.previous_major_version`), and tests from its latest release and its `development/*` branch.
+time: 2026-10-27T16:23:49.141402149Z
+custom:
+    CommentId: "6439907228"
+    Pull: "5206"
