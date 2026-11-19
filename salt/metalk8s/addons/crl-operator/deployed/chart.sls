@@ -1,5 +1,4 @@
 #!jinja | metalk8s_kubernetes
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 {%- raw %}
 apiVersion: apiextensions.k8s.io/v1
@@ -702,8 +701,7 @@ spec:
         - --cert-manager-namespace=metalk8s-certs
         command:
         - /manager
-        image: '{% endraw -%}{{ build_image_name("crl-operator", False) }}{%- raw
-          %}:v1.0.0'
+        image: ghcr.io/scality/crl-operator:v1.0.0
         livenessProbe:
           httpGet:
             path: /healthz

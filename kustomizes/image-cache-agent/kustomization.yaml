@@ -5,7 +5,7 @@ resources:
 
 images:
   - name: controller
-    newName: '{% endraw -%}{{ build_image_name("image-cache-agent", False) }}{%- raw %}'
+    newName: ghcr.io/scality/image-cache-agent
     newTag: v0.1.0-alpha.2
 
 patches:

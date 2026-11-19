@@ -1,5 +1,4 @@
 #!jinja | metalk8s_kubernetes
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 {%- raw %}
 apiVersion: apiextensions.k8s.io/v1
@@ -422,8 +421,7 @@ spec:
           value: /host/libexec/MegaRAID/perccli2/perccli2
         - name: SSACLI_PATH
           value: /host/libexec/ssacli
-        image: '{% endraw -%}{{ build_image_name("disk-management-agent", False) }}{%-
-          raw %}:v0.2.0'
+        image: ghcr.io/scality/disk-management-agent:v0.2.0
         livenessProbe:
           httpGet:
             path: /healthz

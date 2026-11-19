@@ -1,5 +1,4 @@
 #!jinja | metalk8s_kubernetes
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 {%- raw %}
 apiVersion: monitoring.coreos.com/v1
