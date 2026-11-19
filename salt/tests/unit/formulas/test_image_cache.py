@@ -331,9 +331,8 @@ def test_image_cache_resources_adopt_the_provisioned_cache(
     """
     for case_id, states in rendered_states:
         for variant, node_selector in RESOURCE_NODE_SELECTORS.items():
-            version = metalk8s_versions["images"][f"metalk8s-boot-cache-{variant}"][
-                "version"
-            ]
+            image_info = metalk8s_versions["images"][f"metalk8s-boot-cache-{variant}"]
+            version = image_info["version"]
             manifest = _state_args(states, f"Create the {variant} ImageCache")[
                 "manifest"
             ]
@@ -343,7 +342,7 @@ def test_image_cache_resources_adopt_the_provisioned_cache(
             assert manifest["spec"].get("nodeSelector") == node_selector, case_id
             assert manifest["metadata"].get("labels") == PART_OF_METALK8S, case_id
             assert re.fullmatch(
-                rf"[0-9.]+:[0-9]+/[^/]+/metalk8s-boot-cache-{variant}:"
+                rf"[0-9.]+:[0-9]+/{re.escape(image_info['image'])}:"
                 rf"{re.escape(version)}",
                 manifest["spec"]["source"],
             ), f"unexpected source '{manifest['spec']['source']}' ({case_id})"
@@ -359,7 +358,8 @@ def test_pull_reads_the_registry_endpoint(
     The reference names the endpoint address, not the registry name only
     containerd resolves through its mirror configuration.
     """
-    version = metalk8s_versions["images"]["metalk8s-boot-cache-worker"]["version"]
+    image_info = metalk8s_versions["images"]["metalk8s-boot-cache-worker"]
+    version = image_info["version"]
     checked = False
 
     for case_id, states in rendered_states:
@@ -376,7 +376,8 @@ def test_pull_reads_the_registry_endpoint(
             assert len(args["source"]) == 2, case_id
         for source in args["source"]:
             assert re.fullmatch(
-                rf"[0-9.]+:[0-9]+/[^/]+/metalk8s-boot-cache-worker:{re.escape(version)}",
+                rf"[0-9.]+:[0-9]+/{re.escape(image_info['image'])}:"
+                rf"{re.escape(version)}",
                 source,
             ), f"unexpected source '{source}' ({case_id})"
         assert args.get("plain_http") is True, f"no plain HTTP ({case_id})"

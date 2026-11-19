@@ -1,6 +1,5 @@
 #!jinja | metalk8s_kubernetes
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/repo/macro.sls" import metalk8s_repository with context %}
 
 {#- The operator webhook rejects monitoring until the ServiceMonitor CRD is
     established. On a fresh cluster, prometheus-operator deploys it after this
@@ -36,14 +35,10 @@ spec:
       effect: NoSchedule
       operator: Exists
   server:
-    image:
-      registry: {{ metalk8s_repository }}
     certificateIssuerRef:
       name: metalk8s-registry-ca
       kind: ClusterIssuer
   agent:
-    image:
-      registry: {{ metalk8s_repository }}
     certificateIssuerRef:
       name: metalk8s-registry-ca
       kind: ClusterIssuer
@@ -53,8 +48,6 @@ spec:
           name: metalk8s-registry-agent-auth-ca
           namespace: metalk8s-registry
   mirrorPropagation:
-    image:
-      registry: {{ metalk8s_repository }}
     tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -73,7 +66,8 @@ spec:
         operator: Exists
     enabled: true
     ignorePaths:
-      - {{ repo.registry_endpoint }} # This one is still handled by salt until the migration to the new registry is fully completed
+      # Salt keeps it for the Solutions served by the repositories Pod
+      - {{ repo.registry_endpoint }}
 {%- if servicemonitor_crd_established %}
   # Keep in sync with monitoring.sls
   monitoring:
