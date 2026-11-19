@@ -1,3 +1,4 @@
+import { useShellHooks } from '@scality/module-federation';
 import type { V1Node } from '@kubernetes/client-node';
 
 import type { Serie } from '@scality/core-ui/dist/next';
@@ -423,3 +424,18 @@ export const useUserAccessRight = (): UserAccessRight => {
     canConfigureEmailNotification: isPlatformAdmin,
   };
 };
+
+type AskAssistant = { ask: (prompt: string, promptId?: string) => void; isAvailable: boolean };
+
+/**
+ * Open the Guardian drawer on a question. The shell owns the drawer and its iframe.
+ *
+ * Optional because an older shell does not expose it, and because Guardian is not configured on
+ * every platform. Absent reads as unavailable, so the caller simply does not offer the button.
+ */
+export function useAskAssistant(): AskAssistant {
+  const { useAskAssistant: useShellAskAssistant } = useShellHooks() as unknown as {
+    useAskAssistant?: () => AskAssistant;
+  };
+  return useShellAskAssistant?.() ?? { ask: () => {}, isAvailable: false };
+}
