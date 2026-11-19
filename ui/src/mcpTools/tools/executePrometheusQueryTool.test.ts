@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { QueryClient } from 'react-query';
 import type { ToolContext } from '../types';
-import { createMakePrometheusQueryTool } from './makePrometheusQueryTool';
+import { createExecutePrometheusQueryTool } from './executePrometheusQueryTool';
 
 jest.mock('axios');
 
@@ -15,7 +15,7 @@ const makeContext = (overrides: Partial<ToolContext> = {}): ToolContext =>
   }) as ToolContext;
 
 const run = (params: { query: string; range?: { minutes: number; step?: string } }, context = makeContext()) =>
-  createMakePrometheusQueryTool(context).execute(params) as Promise<Record<string, unknown>>;
+  createExecutePrometheusQueryTool(context).execute(params) as Promise<Record<string, unknown>>;
 
 const VECTOR = {
   status: 'success',
@@ -27,9 +27,9 @@ beforeEach(() => {
   jest.spyOn(Date, 'now').mockReturnValue(1_762_335_120_000);
 });
 
-describe('makePrometheusQuery', () => {
+describe('executePrometheusQuery', () => {
   it('is declared read-only', () => {
-    expect(createMakePrometheusQueryTool(makeContext()).annotations).toEqual({ readOnlyHint: true });
+    expect(createExecutePrometheusQueryTool(makeContext()).annotations).toEqual({ readOnlyHint: true });
   });
 
   it("runs an instant query and returns Prometheus's JSON untouched", async () => {

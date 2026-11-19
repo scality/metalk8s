@@ -15,9 +15,9 @@ type QueryParams = { query: string; range?: { minutes: number; step?: string } }
  * app's shared one: that one is only initialised once the MetalK8s pages themselves have mounted,
  * and a tool can be called from any app's page.
  */
-export function createMakePrometheusQueryTool(context: ToolContext) {
+export function createExecutePrometheusQueryTool(context: ToolContext) {
   return {
-    name: 'makePrometheusQuery',
+    name: 'executePrometheusQuery',
     description:
       "Runs one PromQL query against the platform's Prometheus and returns Prometheus's own JSON, " +
       'untouched.\n' +
