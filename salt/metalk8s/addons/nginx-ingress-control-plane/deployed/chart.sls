@@ -1,7 +1,6 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 
 
@@ -361,7 +360,7 @@ spec:
               fieldPath: metadata.namespace
         - name: LD_PRELOAD
           value: /usr/local/lib/libmimalloc.so
-        image: {% endraw -%}{{ build_image_name("nginx-ingress-controller", False) }}{%- raw %}:v1.15.1
+        image: registry.k8s.io/ingress-nginx/controller:v1.15.1@sha256:594ceea76b01c592858f803f9ff4d2cb40542cae2060410b2c95f75907d659e1
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:

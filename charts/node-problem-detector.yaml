@@ -1,6 +1,3 @@
-image:
-  repository: '__image__(node-problem-detector)'
-
 settings:
   # Chart defaults minus docker-monitor (containerd runtime) and
   # readonly-monitor: its ReadonlyFilesystem condition fires with no known

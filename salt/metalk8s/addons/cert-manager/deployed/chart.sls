@@ -1,7 +1,6 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 
 
@@ -14003,7 +14002,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: {% endraw -%}{{ build_image_name("cert-manager-cainjector", False) }}{%- raw %}:v1.17.1
+        image: quay.io/jetstack/cert-manager-cainjector:v1.17.1
         imagePullPolicy: IfNotPresent
         name: cert-manager-cainjector
         ports:
@@ -14073,14 +14072,14 @@ spec:
         - --v=2
         - --cluster-resource-namespace=$(POD_NAMESPACE)
         - --leader-election-namespace=kube-system
-        - --acme-http01-solver-image={% endraw -%}{{ build_image_name("cert-manager-acmesolver", False) }}{%- raw %}:v1.17.1
+        - --acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.17.1
         - --max-concurrent-challenges=60
         env:
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: {% endraw -%}{{ build_image_name("cert-manager-controller", False) }}{%- raw %}:v1.17.1
+        image: quay.io/jetstack/cert-manager-controller:v1.17.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 8
@@ -14172,7 +14171,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: {% endraw -%}{{ build_image_name("cert-manager-webhook", False) }}{%- raw %}:v1.17.1
+        image: quay.io/jetstack/cert-manager-webhook:v1.17.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

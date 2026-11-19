@@ -4,10 +4,6 @@ loki:
   storage:
     type: 'filesystem'
 
-  image:
-    registry: ""
-    repository: '__image__(loki)'
-
   # needs to be removed asap when https://github.com/grafana/loki/issues/14497 is fixed
   schemaConfig:
     remove: me 
@@ -79,10 +75,10 @@ monitoring:
 lokiCanary:
   enabled: false
 
+# The same sidecar as Grafana, rather than the chart's older one.
 sidecar:
   image:
-    registry: ""
-    repository: "__image__(k8s-sidecar)"
+    registry: quay.io
     tag: 2.14.1
 
 gateway:
