@@ -183,7 +183,7 @@ export const describeResource = async (
   { name, namespace, includeEvents = true }: DescribeParams,
 ): Promise<KubeDescription> => {
   const entry = target.entry;
-  if (!entry) {
+  if (!entry?.read) {
     throw new K8sApiError(
       'not_found',
       `"${target.kind}" can be listed but not described — describing is limited to the kinds this tool names.`,
