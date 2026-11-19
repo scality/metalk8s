@@ -8,7 +8,18 @@ import type { ToolContext } from '../types';
  * alert keeps Alertmanager's own object as originalAlert, and that is what comes back: every label,
  * every annotation, whether it is silenced or inhibited, and the generatorURL that carries the rule
  * which fired it.
+ *
+ * That rule also comes back decoded, as `expr`: the generatorURL points at Prometheus's address
+ * inside the cluster, which the model cannot open, and its PromQL is only readable once decoded.
  */
+const ruleExpression = (generatorURL?: string) => {
+  try {
+    return new URL(generatorURL ?? '').searchParams.get('g0.expr') ?? undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 export function createGetAlertTool(context: ToolContext) {
   return {
     name: 'getAlert',
@@ -16,6 +27,8 @@ export function createGetAlertTool(context: ToolContext) {
       'Returns everything Alertmanager holds about ONE active alert, by its id: labels, ' +
       'annotations, startsAt and endsAt, status (silencedBy, inhibitedBy) and generatorURL — the ' +
       'link to the PromQL rule that fired it.\n' +
+      'expr is that rule, decoded: run it with executePrometheusQuery to see which series fire and ' +
+      'with what value, and search its metric names with getPrometheusMetrics.\n' +
       'The id comes from getAlerts.\n' +
       'not_found means no active alert has that id: it has resolved, or the id is wrong. Any other ' +
       'status means you could not look — never report that as the alert being gone.',
@@ -37,7 +50,8 @@ export function createGetAlertTool(context: ToolContext) {
           message: `No active alert has the id "${id}". It has resolved, or the id is wrong — getAlerts lists the current ones.`,
         };
       }
-      return { status: 'ok', alert: alert.originalAlert };
+      const expr = ruleExpression(alert.originalAlert.generatorURL);
+      return { status: 'ok', ...(expr ? { expr } : {}), alert: alert.originalAlert };
     },
   };
 }
