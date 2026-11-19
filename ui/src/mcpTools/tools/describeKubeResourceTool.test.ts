@@ -61,7 +61,7 @@ describe('describeKubeResource', () => {
     const result = await run(args);
 
     expect(result.status).toBe('not_authorized');
-    expect(result.message).toMatch(/never listed or read/i);
+    expect(result.message).toMatch(/never read/i);
     expect(result.message).not.toMatch(/RBAC/i);
     expect(k8sApi).not.toHaveBeenCalled();
   });

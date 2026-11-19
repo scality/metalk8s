@@ -173,16 +173,3 @@ export const disclose = (kind: string, object: KubeObject): { resource: KubeObje
     omitted,
   };
 };
-
-/**
- * What may be disclosed of a list, and the list of what that cost.
- *
- * `omitted` is never silent: a field absent without explanation reads as a field the cluster does
- * not have, and "this variable has no value" is a different statement from "we did not show it".
- */
-export const discloseList = <T>(items: T[]): { items: T[]; omitted: string[] } => {
-  const dropped = { any: false };
-  const disclosed = items.map((item) => withoutEnvironmentValues(item, dropped) as T);
-
-  return { items: disclosed, omitted: dropped.any ? ['env values (names kept)'] : [] };
-};
