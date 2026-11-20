@@ -1,13 +1,19 @@
-// One object in full, and what the cluster has been saying about it — the read behind the
-// `describeKubeResource` MCP tool.
+// One object as the API returns it, with its events — the read behind the `describeKubeResource` MCP
+// tool, as `kubectl describe` reads it. What the tools withhold from it is in mcpTools/disclosure.ts.
 //
-// Where `listResources` answers "what exists", this answers "what is wrong with this one". The
-// object comes through as the API returned it, with the events attached to it, which are usually the
-// actual reason anyone is describing it. What a caller may show of it is the caller's own business —
-// see mcpTools/disclosure.ts for what the tools withhold.
+// Every kind is read the same way: discovery says whether the kind is served and namespaced, and one
+// GET built from the kind and apiVersion reads the object.
 
 import type { K8sApiClients } from './clients';
-import { eventLastSeen, failureFor, K8sApiError, KINDS, type KubeTarget } from './resources';
+import {
+  apiBaseFor,
+  checkPlural,
+  eventLastSeen,
+  eventLastSeenMillis,
+  failureFor,
+  K8sApiError,
+  normalizeKind,
+} from './resources';
 
 /** Whatever the API returned. Only the keys this file touches are named. */
 type KubeObject = {
@@ -16,10 +22,10 @@ type KubeObject = {
   status?: unknown;
 } & Record<string, unknown>;
 
-/** Enough to see a pattern; past that it is the same message again with a later timestamp. */
+/** Enough to see a pattern; past that it is the same message with a later timestamp. */
 export const MAX_EVENTS = 50;
 
-export type KubeEvent = {
+type KubeEvent = {
   type?: string;
   reason?: string;
   count?: number;
@@ -27,74 +33,111 @@ export type KubeEvent = {
   message?: string;
 };
 
-export type KubeDescription = {
+type KubeDescription = {
   kind: string;
+  apiVersion: string;
   name: string;
   namespace?: string;
   /**
-   * The object as the API returned it.
-   *
-   * Nested rather than spread across the top level because a tool's answer already has a `status` —
-   * ok, or why not — and a Kubernetes object has one too. Flat, one would quietly overwrite the
-   * other, and a caller could not tell a healthy object from a successful call.
-   *
-   * There is no summary beside it, and nothing is withheld: what a particular caller may not show
-   * is that caller's business. The MCP tools drop environment values and a ConfigMap's contents
-   * before disclosing any of this to a model; a panel rendering the same object for the
-   * administrator whose cluster it is may want exactly those.
+   * The object as the API returned it, nothing withheld. Nested because the tool's answer has a
+   * `status` of its own, which the object's would overwrite.
    */
   resource: KubeObject;
-  /** null when the events could not be read — which is not a failure of the description. */
+  /** null when the events could not be read; the description still succeeds. */
   events: KubeEvent[] | null;
   /** Why the events are null, when they are. */
   eventsUnavailable?: string;
-  /** true ⇒ there were more than MAX_EVENTS and the oldest were dropped. */
+  /** true when there were more than MAX_EVENTS and the oldest were dropped. */
   truncated: boolean;
 };
 
-export type DescribeParams = {
+type DescribeParams = {
   name: string;
   namespace?: string;
   includeEvents?: boolean;
 };
 
+/** The kind and apiVersion asked for, checked before anything is sent. */
+type DescribeRequest = {
+  /** The resource plural, as it goes into the path. */
+  kind: string;
+  apiVersion: string;
+  /** `/api/v1` for the core group, `/apis/{group}/{version}` for every other. */
+  base: string;
+};
+
+/** A request whose scope the API server has confirmed. */
+export type DescribeTarget = DescribeRequest & { namespaced: boolean };
+
 /**
- * A resource name is an RFC 1123 subdomain and a namespace is a label. Checked because both are
- * path segments: the client encodes them, but encoding is not the same as validating, and a name is
- * never a path.
+ * A name is one path segment — RBAC objects have names such as `system:node` — and a namespace an
+ * RFC 1123 label; both go into the path, so both are checked.
  */
-const NAME = /^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$/;
+const NAME = /^(?!\.\.?$)[^/%\s]+$/;
 const NAMESPACE = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
 
 const checkName = (name: string) => {
-  if (typeof name !== 'string' || !name || name.length > 253 || name.includes('..') || !NAME.test(name)) {
+  if (typeof name !== 'string' || !name || name.length > 253 || !NAME.test(name)) {
     throw new K8sApiError(
       'malformed',
-      `"${name}" is not a resource name. Names are lower-case letters, digits, dashes and dots — never a path.`,
+      `"${name}" is not a resource name. A name is one path segment: no "/", "%" or whitespace, and not "." or "..".`,
+    );
+  }
+};
+
+const checkNamespaceFormat = (namespace: string) => {
+  if (typeof namespace !== 'string' || namespace.length > 63 || !NAMESPACE.test(namespace)) {
+    throw new K8sApiError(
+      'malformed',
+      `"${namespace}" is not a namespace. Namespaces are lower-case letters, digits and dashes.`,
     );
   }
 };
 
 /**
- * A namespace is required for a namespaced kind and refused for a cluster-scoped one, rather than
- * ignored: a caller that passes one to a node has misunderstood something, and silently dropping it
- * would hand back an answer about a different object than the one it believes it asked for.
+ * Kind and apiVersion, checked and turned into the API path they name, without any request.
+ * apiVersion is required for every kind: the path is built from it.
  */
-const checkNamespace = (target: KubeTarget, namespace?: string) => {
-  if (target.namespaced) {
-    if (!namespace) {
-      throw new K8sApiError('malformed', `${target.kind} are namespaced: a namespace is required.`);
-    }
-    if (typeof namespace !== 'string' || namespace.length > 63 || !NAMESPACE.test(namespace)) {
-      throw new K8sApiError(
-        'malformed',
-        `"${namespace}" is not a namespace. Namespaces are lower-case letters, digits and dashes.`,
-      );
-    }
-    return;
+export const resolveDescribeRequest = (kind: unknown, apiVersion: unknown): DescribeRequest => {
+  if (apiVersion === undefined || apiVersion === null || apiVersion === '') {
+    throw new K8sApiError(
+      'malformed',
+      'apiVersion is required — "v1" for core kinds such as pods, "group/version" for any other. listKubeResources answers with the one to pass.',
+    );
   }
 
-  if (namespace) {
+  // A number would pass the plural check as "7" and only fail at the server.
+  if (typeof kind !== 'string') {
+    throw new K8sApiError('malformed', 'kind is the resource plural, as a string — "pods", "deployments".');
+  }
+
+  const plural = normalizeKind(kind);
+  checkPlural(kind, plural);
+
+  return { kind: plural, apiVersion: String(apiVersion), base: apiBaseFor(String(apiVersion)) };
+};
+
+/** Name, namespace and options checked without any request; the scope rule is checkScope's. */
+export const checkDescribeParams = ({ name, namespace, includeEvents }: DescribeParams) => {
+  checkName(name);
+  // Models often send null or "" for an optional field; checkScope reports a missing one.
+  if (namespace) checkNamespaceFormat(namespace);
+
+  // Refused rather than coerced: the string "false" is truthy.
+  if (includeEvents !== undefined && typeof includeEvents !== 'boolean') {
+    throw new K8sApiError('malformed', 'includeEvents is true or false.');
+  }
+};
+
+/**
+ * A namespace is required for a namespaced kind and refused for a cluster-scoped one rather than
+ * ignored, which would answer about another object than the caller meant.
+ */
+const checkScope = (target: DescribeTarget, namespace?: string) => {
+  if (target.namespaced && !namespace) {
+    throw new K8sApiError('malformed', `${target.kind} are namespaced: a namespace is required.`);
+  }
+  if (!target.namespaced && namespace) {
     throw new K8sApiError(
       'malformed',
       `${target.kind} are cluster-scoped: they are not in a namespace, so do not pass one.`,
@@ -102,42 +145,54 @@ const checkNamespace = (target: KubeTarget, namespace?: string) => {
   }
 };
 
-/**
- * Everything about a request that can be judged without asking the cluster anything.
- *
- * Exported so a caller can refuse a bad request before opening a connection — a name that is a path
- * should cost nothing, not a token refresh and a client.
- */
-export const checkDescribeParams = (target: KubeTarget, { name, namespace, includeEvents }: DescribeParams) => {
-  checkName(name);
-  checkNamespace(target, namespace);
+/** What `GET /api/v1` or `/apis/{group}/{version}` answers, as `kubectl api-resources` reads it. */
+type APIResourceList = { resources?: { name?: string; namespaced?: boolean }[] };
 
-  // Refused rather than coerced, because there is no sensible coercion: the string "false" is
-  // truthy, so taking it as given would read the events the caller asked to skip.
-  if (includeEvents !== undefined && typeof includeEvents !== 'boolean') {
-    throw new K8sApiError('malformed', 'includeEvents is true or false.');
+/** Whether the API server serves this kind at this apiVersion, and whether it is namespaced. */
+export const discoverTarget = async (clients: K8sApiClients, request: DescribeRequest): Promise<DescribeTarget> => {
+  let served: APIResourceList;
+  try {
+    served = await clients.json<APIResourceList>(request.base);
+  } catch (error) {
+    const failure = failureFor(error);
+    if (failure.status !== 'not_found') throw failure;
+    throw new K8sApiError(
+      'not_found',
+      `${request.apiVersion} is not served by this cluster. List customresourcedefinitions for the apiVersions a custom kind serves.`,
+    );
   }
+
+  // Subresources are listed as "pods/log" and the like; only the resource itself matches.
+  const resource = served?.resources?.find((candidate) => candidate?.name === request.kind);
+  if (!resource) {
+    throw new K8sApiError(
+      'not_found',
+      `"${request.kind}" is not served at ${request.apiVersion}. The kind is the resource plural, as listKubeResources answers with it.`,
+    );
+  }
+
+  return { ...request, namespaced: resource.namespaced === true };
 };
 
-/**
- * The events attached to this object.
- *
- * Read with a field selector on the object's own name and uid: the uid is what keeps a Deployment's
- * events from being reported against a Service that happens to share its name.
- */
+/** Discovery as a react-query definition, kept long: it only changes when an operator is installed. */
+export const kubeDiscoveryQuery = (clients: K8sApiClients, request: DescribeRequest) => ({
+  queryKey: ['kubeDiscovery', request.apiVersion, request.kind] as const,
+  queryFn: () => discoverTarget(clients, request),
+  staleTime: 10 * 60 * 1000,
+  retry: false as const,
+});
+
+/** The object's events, selected by name and uid so another kind sharing the name is not mixed in. */
 const readEvents = async (
   clients: K8sApiClients,
-  kind: string,
+  target: DescribeTarget,
   name: string,
   namespace: string | undefined,
   uid: string | undefined,
 ) => {
-  // The uid narrows a name that two kinds may share — except on a node, where it would narrow the
-  // answer away. The kubelet records a node's own events (Starting, NodeReady, NodeHasDiskPressure,
-  // Rebooted) with involvedObject.uid set to the node's NAME; only the node controller uses the real
-  // uid. kubectl describe node works around it by searching with ref.UID = node.Name; here the uid
-  // is simply left out and the kind pinned instead, which catches both writers.
-  const byNode = kind === 'nodes';
+  // Not for a node: the kubelet files a node's events with its NAME as uid, so the kind is pinned
+  // instead, which catches both the kubelet's events and the node controller's.
+  const byNode = target.kind === 'nodes' && target.apiVersion === 'v1';
   const selector = [
     `involvedObject.name=${name}`,
     ...(byNode ? ['involvedObject.kind=Node'] : uid ? [`involvedObject.uid=${uid}`] : []),
@@ -145,7 +200,7 @@ const readEvents = async (
 
   const response = namespace
     ? await clients.coreV1.listNamespacedEvent(namespace, undefined, undefined, undefined, selector)
-    : // A node's events are not in its own namespace, because it has none.
+    : // A cluster-scoped object has no namespace to look in.
       await clients.coreV1.listEventForAllNamespaces(undefined, selector);
 
   const items = response?.body?.items;
@@ -157,8 +212,7 @@ const readEvents = async (
 };
 
 const projectEvent = (event: Parameters<typeof eventLastSeen>[0]): KubeEvent => {
-  // Dated the way kubectl dates it: an event written through events.k8s.io/v1 sets neither
-  // lastTimestamp nor count in this view.
+  // Dated as kubectl dates it: events.k8s.io/v1 writers set neither lastTimestamp nor count.
   const lastSeen = eventLastSeen(event);
 
   return {
@@ -171,36 +225,30 @@ const projectEvent = (event: Parameters<typeof eventLastSeen>[0]): KubeEvent => 
 };
 
 /**
- * Describe one object.
- *
- * Throws K8sApiError, which is what makes this usable as a react-query `queryFn`: a failure is a
- * rejection, so only successes are cached. The events are the exception — they are a second call,
- * and a description that failed entirely because that call was slow would be a bad trade.
+ * Describes one object. Throws K8sApiError, so a react-query cache keeps only successes — except for
+ * the events, whose failure is reported beside the object rather than failing the description.
  */
 export const describeResource = async (
   clients: K8sApiClients,
-  target: KubeTarget,
+  target: DescribeTarget,
   { name, namespace, includeEvents = true }: DescribeParams,
 ): Promise<KubeDescription> => {
-  const entry = target.entry;
-  if (!entry?.read) {
-    throw new K8sApiError(
-      'not_found',
-      `"${target.kind}" can be listed but not described — describing is limited to the kinds this tool names.`,
-    );
-  }
+  checkDescribeParams({ name, namespace, includeEvents });
+  checkScope(target, namespace);
 
-  checkDescribeParams(target, { name, namespace, includeEvents });
+  // Checked above, encoded anyway.
+  const path = `${target.base}${
+    target.namespaced ? `/namespaces/${encodeURIComponent(namespace as string)}` : ''
+  }/${target.kind}/${encodeURIComponent(name)}`;
 
   let object: KubeObject;
   try {
-    const response = await entry.read(clients, name, namespace);
-    object = response?.body as typeof object;
+    object = await clients.json<KubeObject>(path);
   } catch (error) {
     throw failureFor(error);
   }
 
-  // A 2xx that is not an object. An absent one is a 404, which is already not_found.
+  // A 2xx that is not an object; a missing one is already a 404.
   if (!object?.metadata?.name) {
     throw new K8sApiError('malformed', 'The Kubernetes API answered without an object.');
   }
@@ -211,17 +259,13 @@ export const describeResource = async (
 
   if (includeEvents) {
     try {
-      const found = await readEvents(clients, target.kind, name, namespace, object.metadata.uid);
-      // Newest first, then cut: the API returns events in etcd key order, so the oldest would
-      // otherwise be the ones that survive.
-      const ordered = [...found].sort(
-        (a, b) => (KINDS.events.newestFirst?.(b as never) ?? 0) - (KINDS.events.newestFirst?.(a as never) ?? 0),
-      );
+      const found = await readEvents(clients, target, name, namespace, object.metadata.uid);
+      // Newest first, then cut: in the API's order, the oldest would be the ones kept.
+      const ordered = [...found].sort((a, b) => eventLastSeenMillis(b) - eventLastSeenMillis(a));
       truncated = ordered.length > MAX_EVENTS;
       events = ordered.slice(0, MAX_EVENTS).map((event) => projectEvent(event as never));
     } catch (error) {
-      // Not a failure of the description. The object is still the answer to most of the question,
-      // and losing it because a second call failed would be a worse trade than saying so.
+      // The object is still most of the answer, so the description does not fail with the events.
       events = null;
       eventsUnavailable = `The events for this object could not be read (${failureFor(error).status}). The description below is unaffected.`;
     }
@@ -229,6 +273,7 @@ export const describeResource = async (
 
   return {
     kind: target.kind,
+    apiVersion: target.apiVersion,
     name,
     ...(namespace ? { namespace } : {}),
     resource: object,
@@ -238,17 +283,31 @@ export const describeResource = async (
   };
 };
 
-/** The same description as a react-query definition, so a panel and a tool share one cache. */
-export const kubeDescriptionQuery = (clients: K8sApiClients, target: KubeTarget, params: DescribeParams) => ({
+/** How a caller keeps a description, named so that two views never share a cache entry. */
+type DescriptionView<T> = { name: string; present: (description: KubeDescription) => T };
+
+/**
+ * The description as a react-query definition. The view runs inside the queryFn and names the cache
+ * entry, so the shared cache holds only what a caller keeps — and a caller that withholds a
+ * Secret's values never reads an entry another view filled with them.
+ */
+export const kubeDescriptionQuery = <T>(
+  clients: K8sApiClients,
+  target: DescribeTarget,
+  params: DescribeParams,
+  view: DescriptionView<T>,
+) => ({
   queryKey: [
     'kubeDescription',
+    view.name,
     target.kind,
+    target.apiVersion,
     params.namespace ?? '',
     params.name,
     params.includeEvents !== false,
   ] as const,
-  queryFn: () => describeResource(clients, target, params),
-  // Short: a description read during a diagnosis is the object as it is now, and the events move.
+  queryFn: async () => view.present(await describeResource(clients, target, params)),
+  // Short: during a diagnosis the object and its events change.
   staleTime: 5000,
   retry: false as const,
 });
