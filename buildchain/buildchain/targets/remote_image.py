@@ -10,10 +10,15 @@ All of these actions are done by a single task.
 """
 
 import abc
+import hashlib
 import itertools
+import json
 import operator
+import re
+import subprocess
+import tempfile
 from pathlib import Path
-from typing import Any, Optional, List, Sequence
+from typing import Any, Dict, Optional, List, Sequence
 
 from buildchain import constants
 from buildchain import docker_command
@@ -42,7 +47,7 @@ class RemoteImage(image.ContainerImage):
             repository:     repository where the image is stored
             name:           image name
             version:        image version
-            digest:         image digest
+            digest:         digest of the image upstream, pulled by it
             destination:    save location for the image
             save_as:        format(s) in which to save the image
             remote_name:    image name in the registry
@@ -50,10 +55,15 @@ class RemoteImage(image.ContainerImage):
         Keyword Arguments:
             They are passed to `Target` init method.
         """
+        if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest or ""):
+            raise ValueError(
+                f"{name}:{version}: pin the digest of the image, as `gcrane digest` "
+                f"prints it (got {digest!r})"
+            )
         self._repository = repository
         self._digest = digest
         self._remote_name = remote_name or name
-        self._save_as = save_as or [SaveAsLayers()]
+        self._save_as = save_as or [SaveAsLayers(), SaveAsOCILayout()]
         kwargs.setdefault("task_dep", []).append("check_for:skopeo")
         super().__init__(name=name, version=version, destination=destination, **kwargs)
         self._targets = self.filepaths
@@ -72,10 +82,21 @@ class RemoteImage(image.ContainerImage):
         """Complete image name retrieved from the remote repository using digest."""
         return f"{self.repository}/{self.remote_name}@{self.digest}"
 
+    def digest_of_tag(self) -> str:
+        """Return the digest the tag of the image points to upstream."""
+        manifest = _skopeo(
+            [*constants.SKOPEO_INSPECT_RAW_ARGS, f"docker://{self.remote_fullname}"]
+        )
+        return f"sha256:{hashlib.sha256(manifest).hexdigest()}"
+
     @property
     def fullname(self) -> str:
         """Complete image name to use as a tag before saving with Docker."""
         return f"{self.repository}/{self.tag}"
+
+    @property
+    def layout_dirname(self) -> Path:
+        return self.dest_dir.joinpath(self.repository, self.remote_name)
 
     @property
     def filepaths(self) -> List[Path]:
@@ -125,13 +146,32 @@ class SaveAsLayers(ImageSaveFormat):
         # Use Skopeo to directly copy the remote image into a directory
         # of image layers
         skopeo_copy = list(constants.SKOPEO_COPY_DEFAULT_ARGS)
-        skopeo_copy.append(f"docker://{img.remote_fullname}")
+        skopeo_copy.append(f"docker://{img.remote_fullname_digest}")
         skopeo_copy.append(f"dir:{img.dirname}")
         return [img.mkdirs, skopeo_copy]
 
     def clean(self, img: RemoteImage) -> types.Action:
         """Return the action to delete the image."""
         return img.clean
+
+
+class SaveAsOCILayout(ImageSaveFormat):
+    """Save an image as an OCI layout, named after its upstream reference.
+
+    The layout keeps the upstream manifests unchanged, so the image is served
+    under the digest it is pinned by. Of a multi-platform image, it holds the
+    upstream index, but only the image for `constants.IMAGE_PLATFORM`.
+    """
+
+    def filepath(self, img: RemoteImage) -> Path:
+        return img.layout_dirname / "index.json"
+
+    def save(self, img: RemoteImage) -> List[types.Action]:
+        return [img.prepare_layout, (write_oci_layout, [img], {})]
+
+    def clean(self, img: RemoteImage) -> types.Action:
+        """Return the action to delete the image."""
+        return img.clean_layout
 
 
 class SaveAsTar(ImageSaveFormat):
@@ -147,12 +187,12 @@ class SaveAsTar(ImageSaveFormat):
         return [
             (
                 docker_command.docker_pull,
-                [img.repository, img.remote_name, img.version, img.digest],
+                [img.repository, img.remote_name, img.digest],
                 {},
             ),
             (
                 docker_command.docker_tag,
-                [qualname, img.remote_fullname, img.version],
+                [qualname, img.remote_fullname_digest, img.version],
                 {},
             ),
             (docker_command.docker_save, [img.fullname, self.filepath(img)], {}),
@@ -161,3 +201,104 @@ class SaveAsTar(ImageSaveFormat):
     def clean(self, img: RemoteImage) -> types.Action:
         """Return the action to delete the image."""
         return self.filepath(img).unlink
+
+
+INDEX_MEDIA_TYPES = frozenset(
+    {
+        "application/vnd.oci.image.index.v1+json",
+        "application/vnd.docker.distribution.manifest.list.v2+json",
+    }
+)
+
+
+def write_oci_layout(img: RemoteImage) -> None:
+    """Write the OCI layout of an image, with its upstream manifests unchanged."""
+    source = f"docker://{img.repository}/{img.remote_name}"
+    blobs = img.layout_dirname / "blobs" / "sha256"
+    blobs.mkdir(parents=True)
+
+    pinned = _skopeo([*constants.SKOPEO_INSPECT_RAW_ARGS, f"{source}@{img.digest}"])
+    _write_blob(blobs, pinned, img.digest)
+    media_type = _media_type(pinned)
+    image_digest = img.digest
+    if media_type in INDEX_MEDIA_TYPES:
+        image_digest = _platform_image(json.loads(pinned), img)
+
+    with tempfile.TemporaryDirectory(dir=img.layout_dirname) as staging:
+        _skopeo(
+            [
+                *constants.SKOPEO_COPY_RAW_ARGS,
+                f"{source}@{image_digest}",
+                f"dir:{staging}",
+            ]
+        )
+        manifest = Path(staging, "manifest.json").read_bytes()
+        _write_blob(blobs, manifest, image_digest)
+        content = json.loads(manifest)
+        for descriptor in [content["config"], *content["layers"]]:
+            name = _blob_name(descriptor["digest"])
+            Path(staging, name).rename(blobs / name)
+
+    (img.layout_dirname / "oci-layout").write_text(
+        json.dumps({"imageLayoutVersion": "1.0.0"})
+    )
+    index = {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.oci.image.index.v1+json",
+        "manifests": [
+            {
+                "mediaType": media_type,
+                "digest": img.digest,
+                "size": len(pinned),
+                "annotations": {"org.opencontainers.image.ref.name": img.version},
+            }
+        ],
+    }
+    (img.layout_dirname / "index.json").write_text(json.dumps(index))
+
+
+def _skopeo(command: List[str]) -> bytes:
+    result = subprocess.run(command, capture_output=True, check=False)
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"`{' '.join(command)}` failed: {result.stderr.decode().strip()}"
+        )
+    return result.stdout
+
+
+def _blob_name(digest: str) -> str:
+    algorithm, _, encoded = digest.partition(":")
+    if algorithm != "sha256":
+        raise ValueError(f"unsupported digest algorithm: {digest}")
+    return encoded
+
+
+def _write_blob(blobs: Path, content: bytes, digest: str) -> None:
+    actual = f"sha256:{hashlib.sha256(content).hexdigest()}"
+    if actual != digest:
+        raise ValueError(f"expected a manifest of digest {digest}, got {actual}")
+    (blobs / _blob_name(digest)).write_bytes(content)
+
+
+def _media_type(manifest: bytes) -> str:
+    content = json.loads(manifest)
+    if "mediaType" in content:
+        return str(content["mediaType"])
+    if "manifests" in content:
+        return "application/vnd.oci.image.index.v1+json"
+    return "application/vnd.oci.image.manifest.v1+json"
+
+
+def _platform_image(index: Dict[str, Any], img: RemoteImage) -> str:
+    """Return the digest of the image for `constants.IMAGE_PLATFORM`."""
+    wanted = constants.IMAGE_PLATFORM
+    for descriptor in index["manifests"]:
+        platform = descriptor.get("platform", {})
+        if all(platform.get(key) == value for key, value in wanted.items()):
+            if descriptor.get("mediaType") in INDEX_MEDIA_TYPES:
+                break
+            return str(descriptor["digest"])
+    platform_name = "/".join(wanted.values())
+    raise ValueError(
+        f"{img.remote_fullname_digest} has no {platform_name} image manifest"
+    )

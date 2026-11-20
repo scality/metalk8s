@@ -59,6 +59,8 @@ mypy
 namespace
 nginx
 observability
+OCI
+oci
 pdf
 parameterized
 picklable

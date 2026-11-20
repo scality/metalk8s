@@ -3,6 +3,7 @@
 
 """Base class for container images."""
 
+import abc
 import operator
 from typing import Any
 from pathlib import Path
@@ -46,6 +47,15 @@ class ContainerImage(base.AtomicTarget):
         return self.dest_dir.joinpath(self.name, self.version)
 
     @property
+    @abc.abstractmethod
+    def layout_dirname(self) -> Path:
+        """Directory of the image OCI layout.
+
+        It is named after the image full name, registry host included: the name
+        static-oci-registry looks the image up by.
+        """
+
+    @property
     def tag(self) -> str:
         """Image tag."""
         return f"{self.name}:{self.version}"
@@ -61,3 +71,24 @@ class ContainerImage(base.AtomicTarget):
     def clean(self) -> None:
         """Delete the image directory and its contents."""
         coreutils.rm_rf(self.dest_dir / self.name)
+
+    def prepare_layout(self) -> None:
+        """Make room for skopeo to write the OCI layout.
+
+        skopeo adds to an existing layout, which would ship the previous
+        version along, and fails if the parent directory does not exist.
+        """
+        coreutils.rm_rf(self.layout_dirname)
+        self.layout_dirname.parent.mkdir(parents=True, exist_ok=True)
+
+    def clean_layout(self) -> None:
+        """Delete the OCI layout, and the parent directories it leaves empty."""
+        coreutils.rm_rf(self.layout_dirname)
+        directory = self.layout_dirname.parent
+        while (
+            directory != self.dest_dir
+            and directory.is_dir()
+            and not any(directory.iterdir())
+        ):
+            directory.rmdir()
+            directory = directory.parent
