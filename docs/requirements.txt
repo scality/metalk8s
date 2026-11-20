@@ -127,7 +127,7 @@ typing-extensions==4.15.0
     # via
     #   anyio
     #   starlette
-urllib3==2.6.3
+urllib3==2.7.0
     # via requests
 uvicorn==0.46.0
     # via sphinx-autobuild
