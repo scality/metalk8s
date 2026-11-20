@@ -1,14 +1,17 @@
 namespace: metalk8s-registry-system
 
 resources:
-  - github.com/scality/metalk8s-registry-operator.git/config/default?ref=v0.0.1-alpha.6
+  - github.com/scality/metalk8s-registry-operator.git/config/default?ref=v0.0.1-alpha.7
 
 images:
   - name: controller
     newName: '{% endraw -%}{{ build_image_name("metalk8s-registry-operator", False) }}{%- raw %}'
-    newTag: v0.0.1-alpha.6
+    newTag: v0.0.1-alpha.7
 
 patches:
+  - path: servicemonitor_patch.yaml
+    target:
+      kind: ServiceMonitor
   - path: deploy_patch.yaml
     target:
       kind: Deployment

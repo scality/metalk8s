@@ -1,9 +1,12 @@
-#!/usr/bin/env python3
-
 """
-This script takes a Helm release name, a namespace name, a Helm chart
-`values` file and a chart, and turns it into a YAML document that can be
-deployed in a Kubernetes cluster as part of MetalK8s.
+Render a Helm chart into a SLS file.
+
+This takes a Helm chart directory, a namespace name and optionally a Helm
+release name and a chart `values` file, and turns it into a YAML document that
+can be deployed in a Kubernetes cluster as part of MetalK8s.
+
+For a chart in `charts/<name>`, the release name defaults to `<name>` and the
+values file to `charts/<name>.yaml`.
 
 It performs the following tasks:
 
@@ -36,12 +39,13 @@ import io
 import json
 import pathlib
 import re
-import sys
 import subprocess
 
 import yaml
 from yaml.dumper import SafeDumper
 from yaml.representer import SafeRepresenter
+
+import common
 
 # Needed to load some yaml value
 # ```
@@ -139,31 +143,6 @@ def fixup_doc(doc):
         return doc
 
 
-def remove_doc(doc, remove_manifests):
-    for to_remove in remove_manifests or []:
-        if (
-            doc.get("kind") == to_remove[0]
-            and doc.get("metadata").get("name") == to_remove[1]
-        ):
-            return True
-
-    return False
-
-
-def should_keep_doc(doc, keep_manifests):
-    if not keep_manifests:
-        return True
-
-    for to_keep in keep_manifests:
-        if (
-            doc.get("kind") == to_keep[0]
-            and doc.get("metadata").get("name") == to_keep[1]
-        ):
-            return True
-
-    return False
-
-
 def keep_doc(doc):
     if not doc:
         return False
@@ -259,9 +238,7 @@ def remove_prometheus_rules(template, drop_rules):
     return updated_template
 
 
-DASHBOARD_PATCHES_FILE = (
-    pathlib.Path(__file__).parent / "grafana_dashboard_patches.json"
-)
+DASHBOARD_PATCHES_FILE = common.REPO_ROOT / "charts" / "grafana_dashboard_patches.json"
 DASHBOARD_PATCHES = json.loads(DASHBOARD_PATCHES_FILE.read_text())
 
 
@@ -358,15 +335,20 @@ def get_patches(arg_patch):
     return patches
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("name", help="Denotes the name of the chart")
+def add_arguments(parser):
+    parser.add_argument("path", help="Path to the chart directory")
+    parser.add_argument(
+        "--release",
+        dest="name",
+        help="Helm release name, default to the chart directory name",
+    )
     parser.add_argument(
         "-n", "--namespace", default="default", help="Namespace to deploy this chart in"
     )
-    parser.add_argument("values", help="Our custom chart values")
     parser.add_argument(
-        "-o", "--output", default="", help="Output file for SLS, default to stdout"
+        "--values",
+        help="Our custom chart values, default to the `.yaml` file named "
+        "like the chart directory, next to it",
     )
 
     class ActionServiceConfigArgs(argparse.Action):
@@ -386,7 +368,8 @@ def main():
             try:
                 path = values.pop(0)
             except IndexError:
-                path = "metalk8s/addons/{0}/config/{1}.yaml".format(args.name, name)
+                # Default set in `render`, once the release name is known
+                path = None
             service_namespace = values.pop(0)
 
             option = getattr(args, self.dest)
@@ -420,22 +403,6 @@ def main():
         help="YAML formatted file to drop some pre-defined Prometheus rules",
     )
     parser.add_argument(
-        "--remove-manifest",
-        action="append",
-        nargs=2,
-        dest="remove_manifests",
-        metavar=("KIND", "NAME"),
-        help="Remove a given manifest from the resulting chart",
-    )
-    parser.add_argument(
-        "--keep-manifest",
-        action="append",
-        nargs=2,
-        dest="keep_manifests",
-        metavar=("KIND", "NAME"),
-        help="Keep only specified manifests in the resulting chart (if set, all others are removed)",
-    )
-    parser.add_argument(
         "--kube-version",
         help="Override default kube-version used by helm",
     )
@@ -450,8 +417,13 @@ def main():
         ),
     )
 
-    parser.add_argument("path", help="Path to the chart directory")
-    args = parser.parse_args()
+
+def render(args):
+    chart_dir = pathlib.Path(args.path)
+    if args.name is None:
+        args.name = chart_dir.name
+    if args.values is None:
+        args.values = str(chart_dir.with_name(f"{chart_dir.name}.yaml"))
 
     api_versions = [
         # Used by APIService (available since Kubernetes 1.10)
@@ -524,6 +496,8 @@ def main():
     import_csc_yaml = []
     config = []
     for name, configmap, path, service_namespace in args.service_configs or []:
+        if path is None:
+            path = f"metalk8s/addons/{args.name}/config/{name}.yaml"
         import_csc_yaml.append(
             "{{%- set {0}_defaults = "
             "salt.slsutil.renderer('salt://{1}', saltenv=saltenv) %}}".format(
@@ -543,16 +517,16 @@ def main():
     ).lstrip()
     out += "\n"
 
-    manifests = []
+    docs = []
     for doc in yaml.safe_load_all(template):
         if keep_doc(doc):
             doc = fixup(doc, patches)
-        if (
-            doc
-            and not remove_doc(doc, args.remove_manifests)
-            and should_keep_doc(doc, args.keep_manifests)
-        ):
-            manifests.append(doc)
+        if doc:
+            docs.append(doc)
+
+    manifests = common.select_manifests(
+        docs, args.keep_manifests, args.remove_manifests
+    )
 
     stream = io.StringIO()
     yaml.safe_dump_all(
@@ -566,12 +540,4 @@ def main():
 
     out += END_BLOCK
 
-    if args.output:
-        with open(args.output, "w") as fd:
-            fd.write(out)
-    else:
-        sys.stdout.write(out)
-
-
-if __name__ == "__main__":
-    main()
+    return out
