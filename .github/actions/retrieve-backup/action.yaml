@@ -10,6 +10,7 @@ runs:
         COMMAND: >
           sudo cp \$(sudo find /var/lib/metalk8s/backups -name '*.tar.gz' | sort | tail -n1)
           /var/tmp/my-backup.tar.gz
+          && sudo chown \$(id -u):\$(id -g) /var/tmp/my-backup.tar.gz
     - name: Retrieve the backup file
       uses: ./.github/actions/copy-file-ssh
       with:
