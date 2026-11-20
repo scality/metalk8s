@@ -40,6 +40,26 @@ def test_monitored_components(host):
     pass
 
 
+@scenario("../features/monitoring.feature", "ServiceMonitor is deployed and scraped")
+def test_service_monitor_scraped(host):
+    pass
+
+
+@scenario(
+    "../features/monitoring.feature",
+    "Fluent-bit ServiceMonitor is deployed and scraped",
+)
+def test_fluent_bit_service_monitor_scraped(host):
+    pass
+
+
+@scenario(
+    "../features/monitoring.feature", "Loki ServiceMonitor is deployed and scraped"
+)
+def test_loki_service_monitor_scraped(host):
+    pass
+
+
 @scenario(
     "../features/monitoring.feature", "The metrics.k8s.io/v1beta1 API is available"
 )
@@ -373,6 +393,51 @@ def check_job_health(prometheus_api, job, namespace, health):
         name="wait for job '{}' in namespace '{}' being '{}'".format(
             job, namespace, health
         ),
+    )
+
+
+@then(
+    parsers.parse(
+        "the ServiceMonitor '{name}' in namespace '{namespace}' "
+        "has all its targets '{health}'"
+    )
+)
+def check_service_monitor_targets(k8s_client, prometheus_api, name, namespace, health):
+    service_monitor = k8s_client.resources.get(
+        api_version="monitoring.coreos.com/v1", kind="ServiceMonitor"
+    ).get(name=name, namespace=namespace)
+    endpoints_count = len(service_monitor.spec.endpoints)
+
+    # prometheus-operator names the scrape pool of each ServiceMonitor endpoint
+    # `serviceMonitor/<namespace>/<name>/<endpoint index>`
+    scrape_pools = [
+        f"serviceMonitor/{namespace}/{name}/{index}" for index in range(endpoints_count)
+    ]
+
+    def _wait_targets_health():
+        try:
+            response = prometheus_api.get_targets(params={"state": "active"})
+        except utils.PrometheusApiError as exc:
+            pytest.fail(str(exc))
+
+        for scrape_pool in scrape_pools:
+            targets = [
+                target
+                for target in response["data"]["activeTargets"]
+                if target["scrapePool"] == scrape_pool
+            ]
+            assert targets, f"No Prometheus target for scrape pool '{scrape_pool}'"
+            for target in targets:
+                assert target["health"] == health, (
+                    f"Target {target['scrapeUrl']} of '{scrape_pool}' is "
+                    f"'{target['health']}': {target['lastError']}"
+                )
+
+    utils.retry(
+        _wait_targets_health,
+        times=60,
+        wait=3,
+        name=f"wait for ServiceMonitor '{namespace}/{name}' targets being '{health}'",
     )
 
 
