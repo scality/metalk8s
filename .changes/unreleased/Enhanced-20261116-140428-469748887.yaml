@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Replace `charts/render.py` with `buildchain/render`, a single tool that renders both the Helm charts (`render helm`) and the kustomize addons (`render kustomize`) into SLS files.
+time: 2026-11-16T14:04:28.469748887Z
+custom:
+    CommentId: "6771871236"
+    Pull: "5244"
