@@ -1,0 +1,4 @@
+# Rebuilt by `npm run eval:catalogue`; catalogue.test.ts is what checks they are in step.
+# Collapsed in a PR, but NOT `-diff`: catalogue.json is pretty-printed precisely so a changed
+# tool description reads as one, instead of as a moved line of TypeScript.
+ui/src/mcpTools/evals/gen/** linguist-generated
