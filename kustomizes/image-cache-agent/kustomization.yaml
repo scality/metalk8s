@@ -2,10 +2,11 @@ namespace: metalk8s-image-cache
 
 resources:
   - github.com/scality/image-cache.git/agent/config/default?ref=v0.1.0-alpha.2
+  - mirrorconfig.yaml
 
 images:
   - name: controller
-    newName: '{% endraw -%}{{ build_image_name("image-cache-agent", False) }}{%- raw %}'
+    newName: ghcr.io/scality/image-cache-agent
     newTag: v0.1.0-alpha.2
 
 patches:
@@ -13,11 +14,27 @@ patches:
     target:
       kind: DaemonSet
   - path: delete_ns.yaml
-  # The MetalK8s registry serves plain HTTP, and the agent only falls back
-  # to it by itself for a private IP literal.
+  # The cluster registry serves TLS: trust the CA of the MirrorConfig. This is
+  # the upstream [REGISTRY-CA] patch, which kustomize cannot load from a
+  # remote base.
   - target:
       kind: DaemonSet
     patch: |-
       - op: add
+        path: /spec/template/spec/containers/0/volumeMounts/-
+        value:
+          mountPath: /etc/image-cache/registry-ca
+          name: registry-ca
+          readOnly: true
+      - op: add
         path: /spec/template/spec/containers/0/args/-
-        value: --plain-http
+        value: --ca-file=/etc/image-cache/registry-ca/ca.crt
+      - op: add
+        path: /spec/template/spec/volumes/-
+        value:
+          name: registry-ca
+          configMap:
+            name: registry-ca
+            items:
+              - key: ca.crt
+                path: ca.crt

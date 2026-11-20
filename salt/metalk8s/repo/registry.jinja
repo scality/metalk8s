@@ -1,0 +1,27 @@
+{#- How the clients that do not go through the containerd mirror configuration
+    reach the cluster registry: on the address of each registry node, as no
+    ClusterIP works before kube-proxy runs, with the CA its server certificates
+    come from. Both are read from Kubernetes, so render this on the master. #}
+
+{#- Fixed by the registry operator. #}
+{%- set registry_port = 5000 %}
+
+{%- set registry = salt.metalk8s_kubernetes.get_object(
+      apiVersion="metalk8s.scality.com/v1alpha1",
+      kind="Registry",
+      name="main",
+    ) or {} %}
+{%- set registry_addresses = [] %}
+{%- for ip in (registry.get("status") or {}).get("nodeIPs") or [] %}
+  {%- do registry_addresses.append(ip ~ ":" ~ registry_port) %}
+{%- endfor %}
+
+{#- The CA the operator publishes for the containerd mirror configuration of
+    every node. #}
+{%- set mirror = salt.metalk8s_kubernetes.get_object(
+      apiVersion="v1",
+      kind="ConfigMap",
+      name="metalk8s-registry-containerd-mirror",
+      namespace="metalk8s-registry",
+    ) or {} %}
+{%- set registry_ca = (mirror.get("data") or {}).get("ca.crt", "") %}

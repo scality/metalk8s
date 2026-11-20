@@ -68,6 +68,16 @@ Feature: Cluster Sanity Checks
     Scenario: Registry is Ready
         Then the Registry 'main' is Ready
 
+    Scenario: The registry serves the MetalK8s archive
+        Then the SolutionArchive of this MetalK8s version is served
+
+    Scenario: The MetalK8s ISO is mounted from the registry archives
+        Then the MetalK8s ISO is mounted from the registry archives only
+
+    Scenario: No container uses the legacy MetalK8s registry
+        Then no container references the legacy MetalK8s registry
+        And no container fails to pull its image
+
     Scenario Outline: Package is installed on every node
         Then the package '<name>' is installed on every node
 

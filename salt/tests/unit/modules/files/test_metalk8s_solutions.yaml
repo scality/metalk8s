@@ -368,6 +368,13 @@ list_available:
   - mountpoints:
       /: {}
       /srv/scality/metalk8s-x.y.z: {}
+      # Mounted by the registry node agent, served by the registry
+      /srv/scality/metalk8s/solutions/metalk8s/x.y.z:
+        alt_device: /srv/scality/metalk8s/archives/metalk8s-x.y.z.iso
+        fstype: iso9660
+      /srv/scality/metalk8s/solutions/my-solution/1.0.0:
+        alt_device: /srv/scality/metalk8s/archives/my-solution-1.0.0.iso
+        fstype: iso9660
       # Ignored as it does not contain any manifests
       /srv/scality/no-solution:
         alt_device: /tmp/not-a-solution.iso

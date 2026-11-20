@@ -24,7 +24,9 @@ def __virtual__():
     return __virtualname__
 
 
-def imported(name, source, cache_path=None, plain_http=False, timeout=None):
+def imported(
+    name, source, cache_path=None, ca_file=None, plain_http=False, timeout=None
+):
     """
     Import a boot cache image into the cache with `imagecachectl import`.
 
@@ -36,6 +38,8 @@ def imported(name, source, cache_path=None, plain_http=False, timeout=None):
         endpoint, so that an endpoint down does not stop the node.
     cache_path
         Root of the image cache, the `imagecachectl` default if not set
+    ca_file
+        CA bundle to verify the registry certificate with
     plain_http
         Talk plain HTTP to the registry
     timeout
@@ -52,6 +56,8 @@ def imported(name, source, cache_path=None, plain_http=False, timeout=None):
     flags = []
     if cache_path:
         flags.extend(["--cache-path", cache_path])
+    if ca_file:
+        flags.extend(["--ca-file", ca_file])
     if plain_http:
         flags.append("--plain-http")
     commands = [

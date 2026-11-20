@@ -6,9 +6,9 @@ import (
 	"github.com/scality/metalk8s/operator/version"
 )
 
-// NOTE: We hardcode the default registry here for the moment
-// this logic may change once the Operator will handle the registry
-const registry = "metalk8s-registry-from-config.invalid"
+// Nodes refer to an image by its upstream name, which the cluster registry
+// serves from the ISO: the one of the images MetalK8s builds.
+const repository = "ghcr.io/scality/metalk8s"
 
 var imageVersions = map[string]string{
 	"metalk8s-keepalived": version.Version,
@@ -17,11 +17,7 @@ var imageVersions = map[string]string{
 // Compute the full Image name
 func GetImageName(name string) string {
 	if imgVer, present := imageVersions[name]; present {
-		return fmt.Sprintf(
-			"%s/metalk8s-%s/%s:%s",
-			registry, version.Version,
-			name, imgVer,
-		)
+		return fmt.Sprintf("%s/%s:%s", repository, name, imgVer)
 	}
 	return ""
 }

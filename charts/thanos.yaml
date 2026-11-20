@@ -36,13 +36,11 @@ minio:
   enabled: false
 
 # -- Image ----------------------------------------------------------------
-# Use the upstream Thanos image via the MetalK8s __image__ macro.
-# Setting registry to empty lets common.images.image produce
-# "<repository>:<tag>" without a registry prefix.
+# The chart defaults to the Bitnami image, which MetalK8s does not ship.
 
 image:
-  registry: ""
-  repository: '__image__(thanos)'
+  registry: quay.io
+  repository: thanos/thanos
   tag: v0.42.4
   pullPolicy: IfNotPresent
 

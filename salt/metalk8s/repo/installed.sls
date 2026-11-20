@@ -5,6 +5,11 @@
 {%- set repositories_version = '1.0.0' %}
 
 {%- set archives = salt.metalk8s.get_archives() %}
+{#- The registry node agent mounts the ISOs again after a reboot, once this
+    Pod runs already: watch the directory holding them, so their mounts
+    propagate into the container. #}
+{%- set iso_roots = archives.values() | selectattr("iso") | map(attribute="path")
+                    | map("regex_replace", "/[^/]+$", "") | unique | list %}
 {%- set solutions = pillar.metalk8s.get('solutions', {}).get('available', {}) %}
 
 {%- set image_name = 'nginx' %}
@@ -42,20 +47,12 @@ Install repositories manifest:
     - source: salt://{{ slspath }}/files/repositories-manifest.yaml.j2
     - config_files:
       - {{ salt.file.join(repo.config.directory, repo.config.default) }}
-      - {{ salt.file.join(repo.config.directory, repo.config.registry) }}
       - {{ salt.file.join(repo.config.directory, repo.config.common_registry) }}
-      - {{ salt.file.join(repo.config.directory, '99-' ~ saltenv ~ '-registry.inc') }}
     {%- for name, versions in solutions.items() | sort(attribute='0') %}
       {%- for info in versions | sort(attribute='version') %}
       - {{ salt.file.join(repo.config.directory,
                           info.id ~ '-registry-config.inc') }}
       {%- endfor %}
-    {%- endfor %}
-    - config_files_opt:
-    {%- for env in archives.keys() %}
-      {%- if env != saltenv %}
-      - {{ salt.file.join(repo.config.directory, '99-' ~ env ~ '-registry.inc') }}
-      {%- endif %}
     {%- endfor %}
     - context:
         container_port: {{ repo.port }}
@@ -63,16 +60,14 @@ Install repositories manifest:
         name: {{ repositories_name }}
         version: {{ repositories_version }}
         archives: {{ archives | tojson }}
+        iso_roots: {{ iso_roots | tojson }}
         solutions: {{ solutions | tojson }}
         package_path: /{{ repo.relative_path }}
-        image_path: '/images/'
         nginx_confd_path: {{ repo.config.directory }}
         probe_host: {{ grains.metalk8s.control_plane_ip }}
     - require:
       - containerd: Inject nginx image
       - file: Generate repositories nginx configuration
-      - file: Deploy container registry nginx configuration
-      - file: Generate container registry configuration
 
 Delay after repositories pod deployment:
   module.run:
@@ -89,8 +84,6 @@ Ensure repositories container is up:
       - timeout: 180
     - onchanges:
       - file: Generate repositories nginx configuration
-      - file: Deploy container registry nginx configuration
-      - file: Generate container registry configuration
       - metalk8s: Install repositories manifest
     - require:
       - module: Delay after repositories pod deployment

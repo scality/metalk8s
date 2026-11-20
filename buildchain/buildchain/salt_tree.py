@@ -116,44 +116,6 @@ class CommonStaticContainerRegistry(_StaticContainerRegistryBase):
         return parts
 
 
-class StaticContainerRegistry(_StaticContainerRegistryBase):
-    """Generate a nginx configuration to serve a static container registry."""
-
-    def __init__(
-        self,
-        root: Path,
-        server_root: str,
-        name_prefix: str,
-        destination: Path,
-        **kwargs: Any,
-    ):
-        """Configure the static-container-registry script.
-
-        Arguments:
-            root:        path to the image files
-            server_root: where the image files will be stored on the web server
-            context:     will prefix every container name
-            destination: path to the nginx configuration file to write
-
-        Keyword Arguments:
-            They are passed to `Target` init method.
-        """
-        super().__init__(destination=destination, **kwargs)
-        self._img_root = root
-        self._srv_root = server_root
-        self._name_pfx = name_prefix
-
-    def _get_parts(self) -> Iterator[str]:
-        """Yield all parts that should go in the generated configuration file."""
-        parts: Iterator[str] = container_registry.create_config(
-            self._img_root,
-            self._srv_root,
-            self._name_pfx,
-            with_constants=False,
-        )
-        return parts
-
-
 class AlertingRulesManifest(targets.AtomicTarget):
     """Generate a PrometheusRule YAML manifest using the `lib_alert_tree` CLI."""
 
@@ -391,6 +353,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
         "salt/metalk8s/addons/node-problem-detector/deployed/",
         "workload-plane-alerts-rules.sls",
     ),
+    Path("salt/metalk8s/addons/metalk8s-registry-operator/deployed/archive.sls"),
     Path("salt/metalk8s/addons/metalk8s-registry-operator/deployed/chart.sls"),
     Path("salt/metalk8s/addons/metalk8s-registry-operator/deployed/init.sls"),
     Path("salt/metalk8s/addons/metalk8s-registry-operator/deployed/monitoring.sls"),
@@ -731,12 +694,12 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/repo/configured.sls"),
     Path("salt/metalk8s/repo/deployed.sls"),
     Path("salt/metalk8s/repo/files/nginx.conf.j2"),
-    Path("salt/metalk8s/repo/files/metalk8s-registry-config.inc.j2"),
     Path("salt/metalk8s/repo/files/repositories-manifest.yaml.j2"),
     Path("salt/metalk8s/repo/init.sls"),
     Path("salt/metalk8s/repo/installed.sls"),
     Path("salt/metalk8s/repo/macro.sls"),
     Path("salt/metalk8s/repo/redhat.sls"),
+    Path("salt/metalk8s/repo/registry.jinja"),
     Path("salt/metalk8s/roles/bootstrap/absent.sls"),
     Path("salt/metalk8s/roles/bootstrap/init.sls"),
     Path("salt/metalk8s/roles/bootstrap/local.sls"),
@@ -837,20 +800,6 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
             "salt/metalk8s/repo/files",
             f"{config.PROJECT_NAME.lower()}-registry-common.inc",
         )
-    ),
-    StaticContainerRegistry(
-        root=constants.ISO_IMAGE_ROOT,
-        server_root=(
-            f"${config.PROJECT_NAME.lower()}_"
-            f"{versions.VERSION.replace('.', '_').replace('-', '_')}_images"
-        ),
-        name_prefix=f"{config.PROJECT_NAME.lower()}-{versions.VERSION}/",
-        destination=Path(
-            constants.ISO_ROOT,
-            "salt/metalk8s/repo/files",
-            f"{config.PROJECT_NAME.lower()}-registry.inc",
-        ),
-        task_dep=["images"],
     ),
 )
 

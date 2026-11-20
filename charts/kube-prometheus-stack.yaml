@@ -13,10 +13,6 @@ customRules:
   NodeSystemSaturation:
     for: "30m"
 
-# NOTE: cannot use this at the moment because kube-state-metrics uses it incorrectly
-# global:
-#   imageRegistry: '__var__(repo.registry_endpoint)'
-
 alertmanager:
   alertmanagerSpec:
     # Set the externalUrl to the control plane ingress endpoint so alert
@@ -24,10 +20,6 @@ alertmanager:
     # instead of the in-cluster service URL. The actual endpoint is resolved
     # at deploy time via the salt helper.
     externalUrl: '__var__(salt.metalk8s_network.get_control_plane_ingress_endpoint())'
-
-    image:
-      registry: '__var__(repo.registry_endpoint)'
-      repository: '__image_no_reg__(alertmanager)'
 
     nodeSelector:
       node-role.kubernetes.io/infra: ''
@@ -77,15 +69,6 @@ alertmanager:
       - alertmanager-prometheus-operator-alertmanager
 
 prometheusOperator:
-  thanosImage:
-    registry: '__var__(repo.registry_endpoint)'
-    repository: '__image_no_reg__(thanos)'
-
-  prometheusConfigReloader:
-    image:
-      registry: '__var__(repo.registry_endpoint)'
-      repository: '__image_no_reg__(prometheus-config-reloader)'
-
   tls:
     enabled: false
 
@@ -103,10 +86,6 @@ prometheusOperator:
       operator: 'Exists'
       effect: 'NoSchedule'
 
-  image:
-    registry: '__var__(repo.registry_endpoint)'
-    repository: '__image_no_reg__(prometheus-operator)'
-
 prometheus:
   thanosService:
     enabled: true
@@ -116,13 +95,10 @@ prometheus:
     # and cause warning in the prometheus logs
     serviceDiscoveryRole: EndpointSlice
 
+    # The chart drops an empty block, which disables the Thanos sidecar.
     thanos:
-      image: '__full_image__(thanos)'
+      image: quay.io/thanos/thanos:v0.42.4
       objectStorageConfig: {}
-
-    image:
-      registry: '__var__(repo.registry_endpoint)'
-      repository: '__image_no_reg__(prometheus)'
 
     tolerations:
       - key: 'node-role.kubernetes.io/bootstrap'
@@ -182,15 +158,7 @@ grafana:
 
   adminPassword: admin
 
-  image:
-    registry: '__var__(repo.registry_endpoint)'
-    repository: '__image_no_reg__(grafana)'
-
   sidecar:
-    image:
-      registry: '__var__(repo.registry_endpoint)'
-      repository: '__image_no_reg__(k8s-sidecar)'
-
     dashboards:
       searchNamespace: ALL
       folderAnnotation: metalk8s.scality.com/grafana-folder-name
@@ -246,16 +214,11 @@ grafana:
   testFramework:
     enabled: false
 
-
 kube-state-metrics:
   prometheus:
     monitor:
       additionalLabels:
         metalk8s.scality.com/monitor: ''
-
-  image:
-    registry: '__var__(repo.registry_endpoint)'
-    repository: '__image_no_reg__(kube-state-metrics)'
 
   metricLabelsAllowlist:
     - persistentvolumeclaims=[excluded-from-alerts]
@@ -271,7 +234,6 @@ kube-state-metrics:
       operator: 'Exists'
       effect: 'NoSchedule'
 
-
 prometheus-node-exporter:
   prometheus:
     monitor:
@@ -281,9 +243,6 @@ prometheus-node-exporter:
   service:
     listenOnAllInterfaces: false
 
-  image:
-    registry: '__var__(repo.registry_endpoint)'
-    repository: '__image_no_reg__(node-exporter)'
   extraArgs:
     - --collector.diskstats.ignored-devices=^(ram|fd)\\d+$
     - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+|var/lib/containerd/.+)($|/)

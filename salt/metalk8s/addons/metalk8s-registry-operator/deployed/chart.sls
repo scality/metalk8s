@@ -1,5 +1,4 @@
 #!jinja | metalk8s_kubernetes
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 {%- raw %}
 apiVersion: apiextensions.k8s.io/v1
@@ -1570,8 +1569,7 @@ spec:
         - --webhook-port=9443
         command:
         - /manager
-        image: '{% endraw -%}{{ build_image_name("metalk8s-registry-operator", False)
-          }}{%- raw %}:v0.0.1-alpha.7'
+        image: ghcr.io/scality/metalk8s-registry-operator:v0.0.1-alpha.7
         livenessProbe:
           httpGet:
             path: /healthz

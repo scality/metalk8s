@@ -5,7 +5,7 @@ inputs:
   PYTEST_FILTERS:
     description: "The pytest filter to use"
     required: false
-    default: "post and ci and not multinode and not slow and not registry_ha"
+    default: "post and ci and not multinode and not slow"
   EXTRA_FILTER:
     description: "Extra pytest filter to add at the end"
     required: false

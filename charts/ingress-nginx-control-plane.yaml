@@ -1,10 +1,6 @@
 controller:
   allowSnippetAnnotations: true
 
-  image:
-    digest: null
-    repository: __image__(nginx-ingress-controller)
-
   electionID: ingress-control-plane-controller-leader
 
   ingressClassResource:

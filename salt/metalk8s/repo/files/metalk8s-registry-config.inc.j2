@@ -1,3 +1,0 @@
-{%- for env in archives.keys() %}
-set ${{ env | replace('.', '_') | replace('-', '_') }}_images "/srv/scality/{{ env }}/images/";
-{%- endfor %}
