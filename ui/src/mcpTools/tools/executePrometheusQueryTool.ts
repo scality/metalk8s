@@ -174,7 +174,7 @@ export function createExecutePrometheusQueryTool(context: ToolContext) {
             .map(([label, seen]) => [label, seen.size] as const)
             .sort((a, b) => b[1] - a[1]),
         );
-        const points = Math.max(1, ...result.map((series: { values?: unknown[] }) => series.values?.length ?? 1));
+        const points = (result as { values?: unknown[] }[]).reduce((max, series) => Math.max(max, series.values?.length ?? 1), 1);
         const [mostVaried] = Object.keys(varies);
         const narrowings = [
           ...(mostVaried ? [`filter on a label that varies ({${mostVaried}="…"})`] : []),
