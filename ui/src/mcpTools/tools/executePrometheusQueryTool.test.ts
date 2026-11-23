@@ -86,6 +86,24 @@ describe('executePrometheusQuery', () => {
     expect(axios).not.toHaveBeenCalled();
   });
 
+  it('lists the first 100 series of a broad answer, with the real count and how to narrow it', async () => {
+    const result = Array.from({ length: 150 }, (_, i) => ({ metric: { pod: `pod-${i}` }, value: [1762335120, '1'] }));
+    (axios as unknown as jest.Mock).mockResolvedValue({
+      data: { status: 'success', data: { resultType: 'vector', result } },
+    });
+
+    const answer = await run({ query: 'kube_pod_info' });
+
+    expect(answer).toMatchObject({ status: 'success', truncated: true, totalSeries: 150 });
+    expect((answer.data as { result: unknown[] }).result).toEqual(result.slice(0, 100));
+    expect(answer.message).toMatch(/first 100 of 150 series.*topk.*sum by/);
+  });
+
+  it('leaves an answer under the cap untouched', async () => {
+    (axios as unknown as jest.Mock).mockResolvedValue({ data: VECTOR });
+    expect(await run({ query: 'up' })).toEqual(VECTOR);
+  });
+
   it("passes a rejected query back as Prometheus's own error, so it can be fixed", async () => {
     const refusal = { status: 'error', errorType: 'bad_data', error: 'parse error at char 4' };
     (axios as unknown as jest.Mock).mockRejectedValue({ response: { status: 400, data: refusal } });

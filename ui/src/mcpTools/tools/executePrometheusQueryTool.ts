@@ -9,9 +9,16 @@ const toSeconds = (time: string) =>
   /^\d+(\.\d+)?$/.test(time) ? Number(time) : /(Z|[+-]\d{2}:\d{2})$/i.test(time) ? Date.parse(time) / 1000 : NaN;
 
 /**
+ * How many series one answer carries. A broad query — `kube_pod_info` is 1,180 series and about
+ * 600 KB on a lab cluster — would push the investigation out of the model's context. The rest stays
+ * reachable by narrowing the query itself, which is also the better question to ask.
+ */
+const MAX_SERIES = 100;
+
+/**
  * READ-ONLY: one PromQL query against the platform's Prometheus, answered with Prometheus's own JSON.
  *
- * Nothing is reshaped. Values stay strings and timestamps stay float seconds: a reshaping layer is
+ * Nothing is reshaped beyond the series cap. Values stay strings and timestamps stay float seconds: a reshaping layer is
  * somewhere a bug can quietly misstate the cluster, and the model reads Prometheus's format as it is.
  * Which query to run, and what the answer means, is the model's job.
  *
@@ -31,6 +38,10 @@ export function createExecutePrometheusQueryTool(context: ToolContext) {
       'Values are strings and timestamps are seconds, as Prometheus sends them.\n' +
       'A query Prometheus rejects comes back as its own error — { status: "error", errorType, ' +
       'error } — so fix the query and try again.\n' +
+      `At most ${MAX_SERIES} series come back: truncated means totalSeries matched and only the ` +
+      'first ones are listed. Narrow the query rather than asking again: filter on a label inside it ' +
+      '({namespace="…"}, values from getPrometheusMetrics with metric), keep the highest with ' +
+      'topk(10, …), or aggregate with sum by (…).\n' +
       'An empty result means no series matched: the metric may not exist under that name, or has ' +
       'no data in that window. It does NOT mean the value is zero.\n' +
       'not_authorized means you could not look — never report that as "nothing is wrong".',
@@ -107,6 +118,18 @@ export function createExecutePrometheusQueryTool(context: ToolContext) {
       if (response?.error) {
         const { status, data } = response.error.response ?? {};
         return data?.status === 'error' ? data : unreadable('Prometheus', status);
+      }
+      const result = response?.data?.result;
+      if (Array.isArray(result) && result.length > MAX_SERIES) {
+        return {
+          ...response,
+          data: { ...response.data, result: result.slice(0, MAX_SERIES) },
+          truncated: true,
+          totalSeries: result.length,
+          message:
+            `Showing the first ${MAX_SERIES} of ${result.length} series. Narrow the query: filter on a ` +
+            'label inside it, keep the highest with topk(10, …), or aggregate with sum by (…).',
+        };
       }
       return response;
     },
