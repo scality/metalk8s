@@ -1,15 +1,19 @@
 import { ConstrainedText, FormattedDateTime, spacing } from '@scality/core-ui';
 import { Box, Table } from '@scality/core-ui/dist/next';
 import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
+import { useAskAssistant } from '../hooks';
 import { Alert } from '../services/alertUtils';
 import { useURLQuery } from '../services/utils';
 import ActiveAlertsFilter from './ActiveAlertsFilters';
+import { askGuardianColumn } from './AskGuardianButton';
 import CircleStatus from './CircleStatus';
 import { useIntl } from 'react-intl';
 import { NotBoundContainer } from './style/CommonLayoutStyle';
 
 const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'loading' | 'error' | 'success' }) => {
   const query = useURLQuery();
+  // Without Guardian on this platform there is no column at all, rather than an empty one.
+  const { isAvailable: canAskGuardian } = useAskAssistant();
   // Retrieve the severity filter from URL.
   // Filter more than one severity, the URL should be:
   // `/nodes/<node-name>/alerts?severity=warning&severity=critical`
@@ -26,6 +30,8 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
           severity: alert.labels.severity,
           alertDescription: alert.description || alert.summary,
           activeSince: alert.startsAt,
+          // The whole alert, for the Guardian button: the prompt needs its id.
+          alert,
         };
       })
       ?.filter((alert) => alertSeverity.includes(alert.severity)) ?? [];
@@ -82,6 +88,7 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
         return <FormattedDateTime value={new Date(value)} format="date-time-second" />;
       },
     },
+    ...(canAskGuardian ? [askGuardianColumn<{ alert: Alert }>((row) => row.alert)] : []),
   ];
   return (
     <Box display="flex" flexDirection="column" height="100%" width="100%">
