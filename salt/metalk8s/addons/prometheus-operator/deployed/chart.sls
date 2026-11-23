@@ -73416,7 +73416,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
+    app.kubernetes.io/version: 13.0.13
     helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -73523,7 +73523,7 @@ metadata:
     app.kubernetes.io/component: admin-secret
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
+    app.kubernetes.io/version: 13.0.13
     helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -73548,7 +73548,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
+    app.kubernetes.io/version: 13.0.13
     helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana-config-dashboards
   namespace: metalk8s-monitoring
@@ -79225,7 +79225,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
+    app.kubernetes.io/version: 13.0.13
     helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana-clusterrole
   namespace: metalk8s-monitoring
@@ -79636,7 +79636,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
+    app.kubernetes.io/version: 13.0.13
     helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana-clusterrolebinding
   namespace: metalk8s-monitoring
@@ -79730,7 +79730,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
+    app.kubernetes.io/version: 13.0.13
     helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -80210,7 +80210,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
+    app.kubernetes.io/version: 13.0.13
     helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -80235,7 +80235,7 @@ spec:
       labels:
         app.kubernetes.io/instance: prometheus-operator
         app.kubernetes.io/name: grafana
-        app.kubernetes.io/version: 13.0.2
+        app.kubernetes.io/version: 13.0.13
         helm.sh/chart: grafana-12.4.8
     spec:
       automountServiceAccountToken: true
@@ -80345,7 +80345,7 @@ spec:
           value: /etc/grafana/provisioning
         - name: GF_UNIFIED_STORAGE_INDEX_PATH
           value: /var/lib/grafana-search/bleve
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:13.0.2
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:13.0.13
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -80648,7 +80648,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
+    app.kubernetes.io/version: 13.0.13
     helm.sh/chart: grafana-12.4.8
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -84415,7 +84415,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: grafana
-    app.kubernetes.io/version: 13.0.2
+    app.kubernetes.io/version: 13.0.13
     helm.sh/chart: grafana-12.4.8
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator

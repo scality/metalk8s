@@ -190,6 +190,10 @@ grafana:
   image:
     registry: '__var__(repo.registry_endpoint)'
     repository: '__image_no_reg__(grafana)'
+    # Ahead of the chart default (13.0.2), for a release built with a Go that
+    # distrusts the compromised eMudhra intermediates (CVE-2026-111943).
+    # Keep in sync with `versions.py`.
+    tag: 13.0.13
 
   sidecar:
     image:

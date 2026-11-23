@@ -141,8 +141,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="grafana",
-        version="13.0.2",
-        digest="sha256:5dad0df181cb644a14e13617b913b261a54f7d4fd4510721dba420929f35bea2",
+        version="13.0.13",
+        digest="sha256:9b031995a5483a44f80a5dd214a70cecb31448b42d765b44d3756e17b855775f",
     ),
     Image(
         name="k8s-sidecar",
