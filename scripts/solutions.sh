@@ -67,7 +67,8 @@ usage() {
     echo "    -n, --name          Name of the Solution to delete"
     echo
     echo "  import              Import a Solution archive"
-    echo "    -a, --archive       Path to the Solution archive to import,"
+    echo "    -a, --archive       Path to the Solution archive to import (ISO, or"
+    echo "                        directory holding its extracted contents),"
     echo "                        option can be provided multiple times"
     echo
     echo "  unimport            Unimport a Solution archive"
@@ -273,7 +274,12 @@ configure_archives() {
     local removed=${1:-False}
 
     for archive in "${ARCHIVES[@]}"; do
-        if file "$archive" | grep -vq 'ISO 9660'; then
+        if [ -d "$archive" ]; then
+            if [ ! -f "$archive/manifest.yaml" ]; then
+                echo "Directory '$archive' is not an extracted Solution archive" 1>&2
+                return 1
+            fi
+        elif file "$archive" | grep -vq 'ISO 9660'; then
             echo "File '$archive' is not an ISO archive" 1>&2
             return 1
         fi

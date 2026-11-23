@@ -21,7 +21,8 @@ No Solution found in configuration:
 {%- else %}
   {#- Mount configured #}
   {%- for archive_path in configured %}
-    {%- set solution = salt['metalk8s_solutions.manifest_from_iso'](archive_path) %}
+    {%- set solution = salt['metalk8s_solutions.manifest_from_archive'](archive_path) %}
+    {%- set is_directory = salt['file.directory_exists'](archive_path) %}
     {%- set display_name = solution.display_name ~ ' ' ~ solution.version %}
     {%- set mount_path = "/srv/scality/" ~ solution.id -%}
 
@@ -35,11 +36,19 @@ Archive of Solution {{ display_name }} is mounted at {{ mount_path }}:
   mount.mounted:
     - name: {{ mount_path }}
     - device: {{ archive_path }}
-    - fstype: iso9660
     - mkmnt: false
+    {%- if is_directory %}
+    - fstype: none
+    - opts:
+      - bind
+      - ro
+      - nofail
+    {%- else %}
+    - fstype: iso9660
     - opts:
       - ro
       - nofail
+    {%- endif %}
     - persist: true
     - match_on:
       - name

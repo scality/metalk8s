@@ -1,0 +1,7 @@
+kind: Fix
+body: |-
+    Detect Solution archives mounted under `/srv/scality` when `/srv` is a
+    symlink, as on bootc/ostree hosts where `/srv` points to `/var/srv`
+time: 2026-11-23T12:00:00.000000002Z
+custom:
+    Pull: "0000"

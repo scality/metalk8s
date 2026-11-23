@@ -338,6 +338,35 @@ manifest_from_iso:
     result: Failed to load YAML from Solution manifest
     raises: True
 
+manifest_from_archive:
+  # Ok - extracted Solution directory
+  - is_dir: true
+    manifest: |-
+      kind: Solution
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      metadata:
+        name: my-solution
+      spec:
+        version: 1.0.0
+    result:
+      name: my-solution
+      version: 1.0.0
+      display_name: my-solution
+      id: my-solution-1.0.0
+  # Ok - ISO file, read with isoinfo
+  - is_dir: false
+    result:
+      name: from-iso
+  # Nok - directory without manifest
+  - is_dir: true
+    result: Solution directory at '.*' must contain a '.*' file
+    raises: True
+  # Nok - directory with invalid YAML
+  - is_dir: true
+    manifest: '{'
+    result: Failed to load YAML from Solution manifest
+    raises: True
+
 list_available:
   # Ok - 1 Solution
   - mountpoints:
@@ -374,6 +403,102 @@ list_available:
         fstype: iso9660
   # Ok - No mountpoint
   - {}
+  # Ok - /srv is a symlink (bootc): kernel reports the resolved mountpoint
+  - mountpoints:
+      /var/srv/scality/my-solution:
+        alt_device: /tmp/my-solution-1.0.0.iso
+        fstype: iso9660
+        root: /
+    realpaths:
+      /srv/scality: /var/srv/scality
+    archive_infos:
+      name: my-solution
+      version: 1.0.0
+      display_name: My Solution
+      id: my-solution-1.0.0
+    result:
+      my-solution:
+        - name: My Solution
+          id: my-solution-1.0.0
+          mountpoint: /srv/scality/my-solution
+          archive: /tmp/my-solution-1.0.0.iso
+          version: 1.0.0
+          manifest: null
+  # Ok - /srv is a symlink, unrelated mount under the real /var/srv ignored
+  - mountpoints:
+      /var/srv/other/my-solution:
+        alt_device: /tmp/my-solution-1.0.0.iso
+        fstype: iso9660
+    realpaths:
+      /srv/scality: /var/srv/scality
+    archive_infos:
+      name: my-solution
+      version: 1.0.0
+      display_name: My Solution
+      id: my-solution-1.0.0
+  # Ok - extracted Solution directory, bind-mounted
+  - mountpoints:
+      /srv/scality/my-solution-1.0.0:
+        alt_device: /dev/sda1
+        fstype: xfs
+        root: /usr/share/scality/my-solution
+    configured:
+      /usr/share/scality/my-solution: my-solution-1.0.0
+      /tmp/other-solution-1.0.0.iso: other-solution-1.0.0
+    archive_infos:
+      name: my-solution
+      version: 1.0.0
+      display_name: My Solution
+      id: my-solution-1.0.0
+    result:
+      my-solution:
+        - name: My Solution
+          id: my-solution-1.0.0
+          mountpoint: /srv/scality/my-solution-1.0.0
+          archive: /usr/share/scality/my-solution
+          version: 1.0.0
+          manifest: null
+  # Ok - bind-mounted directory no longer configured: reported by its mountpoint
+  - mountpoints:
+      /srv/scality/my-solution-1.0.0:
+        alt_device: /dev/sda1
+        fstype: xfs
+        root: /usr/share/scality/my-solution
+    configured:
+      /usr/share/scality/broken: null
+    archive_infos:
+      name: my-solution
+      version: 1.0.0
+      display_name: My Solution
+      id: my-solution-1.0.0
+    result:
+      my-solution:
+        - name: My Solution
+          id: my-solution-1.0.0
+          mountpoint: /srv/scality/my-solution-1.0.0
+          archive: /srv/scality/my-solution-1.0.0
+          version: 1.0.0
+          manifest: null
+  # Ok - bind-mounted directory, unreadable Solutions configuration
+  - mountpoints:
+      /srv/scality/my-solution-1.0.0:
+        alt_device: /dev/sda1
+        fstype: xfs
+        root: /usr/share/scality/my-solution
+    config_error: true
+    archive_infos:
+      name: my-solution
+      version: 1.0.0
+      display_name: My Solution
+      id: my-solution-1.0.0
+    result:
+      my-solution:
+        - name: My Solution
+          id: my-solution-1.0.0
+          mountpoint: /srv/scality/my-solution-1.0.0
+          archive: /srv/scality/my-solution-1.0.0
+          version: 1.0.0
+          manifest: null
 
 operator_roles_from_manifest:
   # Ok -valid manifest

@@ -1,0 +1,9 @@
+kind: Added
+body: |-
+    Solutions can be imported from a directory holding the extracted contents of
+    their ISO (`solutions.sh import --archive <directory>`), which is bind-mounted
+    read-only under `/srv/scality`. This lets image-based hosts ship Solutions as
+    regular files, so that an OS image update only carries the Solutions that changed
+time: 2026-11-23T12:00:00.000000001Z
+custom:
+    Pull: "0000"
