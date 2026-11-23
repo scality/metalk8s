@@ -2,7 +2,10 @@ import ApiClient from '../../services/ApiClient';
 import { unreadable } from '../monitoringTools';
 import type { MetalK8sSelfConfiguration, ToolContext } from '../types';
 
-type QueryParams = { query: string; range?: { minutes: number; step?: string } };
+type QueryParams = { query: string; range?: { start: string; end?: string; step?: string } };
+
+/** A time as Prometheus takes it — RFC 3339 or unix seconds — in seconds, or NaN when it is neither. */
+const toSeconds = (time: string) => (/^\d+(\.\d+)?$/.test(time) ? Number(time) : Date.parse(time) / 1000);
 
 /**
  * READ-ONLY: one PromQL query against the platform's Prometheus, answered with Prometheus's own JSON.
@@ -22,7 +25,8 @@ export function createExecutePrometheusQueryTool(context: ToolContext) {
       "Runs one PromQL query against the platform's Prometheus and returns Prometheus's own JSON, " +
       'untouched.\n' +
       'Without range it is an instant query, evaluated now (resultType "vector"). With range it ' +
-      'covers the last range.minutes up to now (resultType "matrix").\n' +
+      'covers range.start to range.end (resultType "matrix"): take the times from what you read — ' +
+      "an alert's startsAt, a log or event timestamp. end defaults to now.\n" +
       'Values are strings and timestamps are seconds, as Prometheus sends them.\n' +
       'A query Prometheus rejects comes back as its own error — { status: "error", errorType, ' +
       'error } — so fix the query and try again.\n' +
@@ -37,13 +41,18 @@ export function createExecutePrometheusQueryTool(context: ToolContext) {
           type: 'object',
           description: 'Leave out for the value now. Give it to see how the value moved over time.',
           properties: {
-            minutes: { type: 'integer', minimum: 1, description: 'How far back from now.' },
+            start: {
+              type: 'string',
+              description:
+                'Where the window starts, as Prometheus takes it: RFC 3339 ("2026-11-18T20:25:02Z") or unix seconds.',
+            },
+            end: { type: 'string', description: 'Where it ends, in the same forms. Defaults to now.' },
             step: {
               type: 'string',
               description: 'The resolution, as Prometheus takes it ("30s", "5m"). Defaults to about 200 points.',
             },
           },
-          required: ['minutes'],
+          required: ['start'],
         },
       },
       required: ['query'],
@@ -56,19 +65,39 @@ export function createExecutePrometheusQueryTool(context: ToolContext) {
         return { status: 'unavailable', message: 'This deployment does not expose Prometheus.' };
       }
 
+      // The window is checked before anything is sent: a date Prometheus cannot read would come back
+      // as its own error, but the default step needs the window's length first.
+      let window: { start: number; end: number } | undefined;
+      if (range) {
+        const start = toSeconds(String(range.start ?? ''));
+        const end = range.end ? toSeconds(String(range.end)) : Math.floor(Date.now() / 1000);
+        if (!Number.isFinite(start) || !Number.isFinite(end)) {
+          return {
+            status: 'malformed',
+            message: 'range.start and range.end are RFC 3339 dates ("2026-11-18T20:25:02Z") or unix seconds.',
+          };
+        }
+        if (start >= end) {
+          return {
+            status: 'malformed',
+            message: 'range.start has to be before range.end (now, when end is left out).',
+          };
+        }
+        window = { start, end };
+      }
+
       const token = await context.getToken();
       if (!token) return unreadable('Prometheus', 401);
 
       const prometheus = new ApiClient({ apiUrl: url_prometheus, headers: { Authorization: `Bearer ${token}` } });
-      const now = Math.floor(Date.now() / 1000);
 
       // query_range requires a step; without one asked for, about 200 points over the window.
-      const response = range
+      const response = window
         ? await prometheus.get('/api/v1/query_range', {
             query,
-            start: now - range.minutes * 60,
-            end: now,
-            step: range.step ?? Math.max(15, Math.ceil((range.minutes * 60) / 200)),
+            start: window.start,
+            end: window.end,
+            step: range?.step ?? Math.max(15, Math.ceil((window.end - window.start) / 200)),
           })
         : await prometheus.get('/api/v1/query', { query });
 

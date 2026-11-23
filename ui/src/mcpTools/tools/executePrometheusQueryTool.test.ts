@@ -14,8 +14,10 @@ const makeContext = (overrides: Partial<ToolContext> = {}): ToolContext =>
     ...overrides,
   }) as ToolContext;
 
-const run = (params: { query: string; range?: { minutes: number; step?: string } }, context = makeContext()) =>
-  createExecutePrometheusQueryTool(context).execute(params) as Promise<Record<string, unknown>>;
+const run = (
+  params: { query: string; range?: { start: string; end?: string; step?: string } },
+  context = makeContext(),
+) => createExecutePrometheusQueryTool(context).execute(params) as Promise<Record<string, unknown>>;
 
 const VECTOR = {
   status: 'success',
@@ -48,10 +50,11 @@ describe('executePrometheusQuery', () => {
     );
   });
 
-  it('runs a range query over the last N minutes, at about 200 points by default', async () => {
+  it('runs a range query from a given time up to now, at about 200 points by default', async () => {
     (axios as unknown as jest.Mock).mockResolvedValue({ data: VECTOR });
 
-    await run({ query: 'node_load1', range: { minutes: 180 } });
+    // An alert's startsAt, three hours before now, as RFC 3339.
+    await run({ query: 'node_load1', range: { start: '2025-11-05T06:32:00Z' } });
 
     expect(axios).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -61,10 +64,26 @@ describe('executePrometheusQuery', () => {
     );
   });
 
-  it('keeps the step it was given', async () => {
+  it('keeps the end and the step it was given, in RFC 3339 or unix seconds', async () => {
     (axios as unknown as jest.Mock).mockResolvedValue({ data: VECTOR });
-    await run({ query: 'node_load1', range: { minutes: 60, step: '5m' } });
-    expect(axios).toHaveBeenCalledWith(expect.objectContaining({ params: expect.objectContaining({ step: '5m' }) }));
+
+    await run({ query: 'node_load1', range: { start: '1762324320', end: '2025-11-05T08:32:00Z', step: '5m' } });
+
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: { query: 'node_load1', start: 1_762_335_120 - 180 * 60, end: 1_762_335_120 - 60 * 60, step: '5m' },
+      }),
+    );
+  });
+
+  it.each([
+    ['a start it cannot read', { start: 'yesterday' }],
+    ['a start after the end', { start: '2025-11-05T08:32:00Z', end: '2025-11-05T06:32:00Z' }],
+  ])('refuses %s without calling Prometheus', async (_, range) => {
+    const result = await run({ query: 'node_load1', range });
+
+    expect(result.status).toBe('malformed');
+    expect(axios).not.toHaveBeenCalled();
   });
 
   it("passes a rejected query back as Prometheus's own error, so it can be fixed", async () => {
