@@ -113,7 +113,7 @@ export function createGetPrometheusMetricsTool(context: ToolContext) {
   return {
     name: 'getPrometheusMetrics',
     description:
-      "call this tool when being asked to lists the metrics the platform's Prometheus holds, so you query real names instead of " +
+      "Lists the metrics the platform's Prometheus holds. Call it before writing PromQL, so you query real names instead of " +
       'guessing them: a wrong name returns an empty result, not an error.\n' +
       'Without search, returns this cluster\'s metric prefixes (the first word of each name: "node", ' +
       '"kube", "etcd"…) with how many metrics each holds. With search, returns every metric whose ' +
