@@ -67,10 +67,20 @@ _DEBUG_COMMANDS = (
         f"{KUBECTL} -n {VIP_NAMESPACE} get daemonset -o wide",
     ),
     ("virtual IP pool pods", f"{KUBECTL} -n {VIP_NAMESPACE} get pods -o wide"),
+    # keepalived moves a VIP to another node while the ingress health check of
+    # its assigned node fails, and back once it passes again, so a VIP can be
+    # refused for a few seconds after an ingress rollout. Collect the whole log
+    # of each keepalived Pod -- they are created with the pool, so this covers
+    # the scenario -- to follow every VIP move (state changes, priority
+    # adverts, health check results). Only drop the per-packet gratuitous ARP
+    # lines: each move logs one "Sending/queueing gratuitous ARPs ... for <VIP>"
+    # line, kept, followed by a burst of these, which otherwise fill the output.
     (
         "keepalived logs",
         f"{KUBECTL} -n {VIP_NAMESPACE} logs -l app.kubernetes.io/name=virtualippool"
-        " --tail=20 --timestamps --prefix --max-log-requests=20",
+        # `--tail` defaults to 10 lines when a selector is given: ask for all.
+        " --tail=-1 --timestamps --prefix --max-log-requests=20"
+        " | grep -v ': Sending gratuitous ARP on ' | tail -n 300",
     ),
     (
         "calico-node daemonset",
@@ -930,9 +940,15 @@ def server_request_returns_multiple_ips(
             )
             assert response.reason == reason
 
-        # The steps before this one reconfigure the VIPs, which restarts the
-        # Workload Plane Ingress controllers: give them time to converge
-        # instead of failing on the first request (MK8S-359).
+        # The steps before this one restart the Workload Plane Ingress
+        # controllers. keepalived adds 60 to a node's VIP priority while its
+        # local ingress health check passes (150 on the assigned node, 100 on
+        # the others, see `images/metalk8s-keepalived/keepalived.conf.j2`), so
+        # while an ingress Pod restarts its VIPs move to another node, and they
+        # only move back one or two 5s health checks after it is Ready again.
+        # The DaemonSet rollout, Pod readiness and VIP spreading steps can all
+        # pass before that, so retry instead of failing on the first refused
+        # request (MK8S-359).
         with _ingress_debug_on_failure(
             host, f"request on '{endpoint}'", ssh_config=ssh_config, vip=ip
         ):
