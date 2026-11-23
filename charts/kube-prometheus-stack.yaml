@@ -128,6 +128,10 @@ prometheus:
     image:
       registry: '__var__(repo.registry_endpoint)'
       repository: '__image_no_reg__(prometheus)'
+      # Ahead of the chart default (v3.12.0-distroless), for a release built
+      # with a Go that distrusts the compromised eMudhra intermediates
+      # (CVE-2026-111943). Keep in sync with `versions.py`.
+      tag: v3.13.5-distroless
 
     tolerations:
       - key: 'node-role.kubernetes.io/bootstrap'
