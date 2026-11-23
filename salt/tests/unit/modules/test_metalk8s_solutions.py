@@ -267,21 +267,79 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
             else:
                 self.assertEqual(metalk8s_solutions.manifest_from_iso(path), result)
 
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["manifest_from_archive"])
+    def test_manifest_from_archive(
+        self, is_dir, manifest=None, result=None, raises=False
+    ):
+        """
+        Tests the return of `manifest_from_archive` function
+        """
+        path = "/usr/share/scality/my-solution"
+        isdir_mock = MagicMock(return_value=is_dir)
+        isfile_mock = MagicMock(return_value=manifest is not None)
+        from_iso_mock = MagicMock(return_value={"name": "from-iso"})
+        with patch("os.path.isdir", isdir_mock), patch(
+            "os.path.isfile", isfile_mock
+        ), patch("salt.utils.files.fopen", mock_open(read_data=manifest)), patch.object(
+            metalk8s_solutions, "manifest_from_iso", from_iso_mock
+        ):
+            if raises:
+                self.assertRaisesRegex(
+                    CommandExecutionError,
+                    result,
+                    metalk8s_solutions.manifest_from_archive,
+                    path,
+                )
+            else:
+                self.assertEqual(metalk8s_solutions.manifest_from_archive(path), result)
+        if not is_dir:
+            from_iso_mock.assert_called_once_with(path)
+
     @utils.parameterized_from_cases(YAML_TESTS_CASES["list_available"])
-    def test_list_available(self, mountpoints=None, archive_infos=None, result=None):
+    def test_list_available(
+        self,
+        mountpoints=None,
+        archive_infos=None,
+        result=None,
+        realpaths=None,
+        configured=None,
+        config_error=False,
+    ):
         """
         Tests the return of `list_available` function
         """
+        configured = configured or {}
         mount_active_mock = MagicMock(return_value=mountpoints or {})
         read_solution_manifest_mock = MagicMock(return_value=(None, archive_infos))
         if archive_infos is None:
             read_solution_manifest_mock.side_effect = CommandExecutionError("Banana")
+        read_config_mock = MagicMock(return_value={"archives": list(configured)})
+        if config_error:
+            read_config_mock.side_effect = CommandExecutionError("Banana")
+
+        def _manifest_from_archive(path):
+            if configured[path] is None:
+                raise CommandExecutionError("Banana")
+            return {"id": configured[path]}
+
+        realpath_mock = MagicMock(side_effect=lambda p: (realpaths or {}).get(p, p))
+        isdir_mock = MagicMock(side_effect=lambda p: not p.endswith(".iso"))
 
         salt_dict_patch = {
             "mount.active": mount_active_mock,
         }
         with patch.dict(metalk8s_solutions.__salt__, salt_dict_patch), patch.object(
             metalk8s_solutions, "read_solution_manifest", read_solution_manifest_mock
+        ), patch.object(
+            metalk8s_solutions, "read_config", read_config_mock
+        ), patch.object(
+            metalk8s_solutions,
+            "manifest_from_archive",
+            MagicMock(side_effect=_manifest_from_archive),
+        ), patch(
+            "os.path.realpath", realpath_mock
+        ), patch(
+            "os.path.isdir", isdir_mock
         ):
             self.assertEqual(metalk8s_solutions.list_available(), result or {})
 

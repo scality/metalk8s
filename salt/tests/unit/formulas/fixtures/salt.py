@@ -437,6 +437,7 @@ register_basic("file.find")(MagicMock(return_value=[]))
 register_basic("file.join")(lambda *args: "/".join(args))
 register_basic("file.read")(MagicMock(return_value="<file contents>"))
 register_basic("file.file_exists")(MagicMock(return_value=False))
+register_basic("file.directory_exists")(lambda path: not path.endswith(".iso"))
 register_basic("cp.get_file_str")(MagicMock(return_value="<file contents>"))
 register_basic("hashutil.base64_b64decode")(lambda input_data: input_data)
 register_basic("hashutil.base64_encodefile")(
@@ -532,15 +533,16 @@ register_basic("metalk8s_solutions.list_available")(MagicMock(return_value={}))
 
 
 @register_basic("metalk8s_solutions.manifest_from_iso")
-def metalk8s_solutions_manifest_from_iso(path: str) -> Dict[str, Any]:
+@register_basic("metalk8s_solutions.manifest_from_archive")
+def metalk8s_solutions_manifest_from_archive(path: str) -> Dict[str, Any]:
     """Infer a mock manifest from the provided path.
 
     Expects the path to be of the form: /srv/scality/releases/<name>-<version>.iso
+    or, for an extracted archive, /srv/scality/releases/<name>-<version>
     """
     dirname, _, basename = path.rpartition("/")
     assert dirname == "/srv/scality/releases"
-    assert basename.endswith(".iso")
-    solution_id = basename[: -len(".iso")]
+    solution_id = basename.removesuffix(".iso")
     name, _, version = solution_id.rpartition("-")
     return {
         "id": solution_id,

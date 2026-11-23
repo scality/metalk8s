@@ -1417,6 +1417,15 @@ metalk8s:
                     - /srv/scality/releases/example-solution-1.0.0.iso
                     - /srv/scality/releases/example-solution-1.2.0.iso
 
+        "Extracted directory archive in config":
+          pillar_overrides:
+            metalk8s:
+              solutions:
+                available: {}
+                config:
+                  archives:
+                    - /srv/scality/releases/example-solution-1.3.0
+
         "Active archive removed from config":
           pillar_overrides:
             metalk8s:

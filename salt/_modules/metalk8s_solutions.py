@@ -17,6 +17,7 @@ from salt.exceptions import CommandExecutionError
 log = logging.getLogger(__name__)
 
 CONFIG_FILE = "/etc/metalk8s/solutions.yaml"
+SOLUTIONS_ROOT = "/srv/scality"
 CONFIG_KIND = "SolutionsConfiguration"
 SUPPORTED_CONFIG_VERSIONS = [
     f"solutions.metalk8s.scality.com/{version}" for version in ["v1alpha1"]
@@ -306,6 +307,59 @@ def manifest_from_iso(path):
     return _archive_info_from_manifest(manifest)
 
 
+def manifest_from_archive(path):
+    """Extract the manifest from a Solution archive, ISO or extracted directory
+
+    Arguments:
+        path (str): path to an ISO or to a directory holding the ISO contents
+    """
+    if not os.path.isdir(path):
+        return manifest_from_iso(path)
+
+    manifest_path = os.path.join(path, SOLUTION_MANIFEST)
+    if not os.path.isfile(manifest_path):
+        raise CommandExecutionError(
+            f"Solution directory at '{path}' must contain a '{SOLUTION_MANIFEST}' file"
+        )
+
+    with salt.utils.files.fopen(manifest_path, "r") as stream:
+        try:
+            manifest = yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            raise CommandExecutionError(
+                f"Failed to load YAML from Solution manifest {manifest_path}"
+            ) from exc
+
+    return _archive_info_from_manifest(manifest)
+
+
+def _solutions_mountpoint(mountpoint):
+    # The kernel reports resolved paths: when /srv is a symlink (e.g. to
+    # var/srv on image-based hosts), Solution mounts show up under it.
+    for root in (SOLUTIONS_ROOT, os.path.realpath(SOLUTIONS_ROOT)):
+        if mountpoint.startswith(root + "/"):
+            return SOLUTIONS_ROOT + mountpoint[len(root) :]
+    return None
+
+
+def _directory_archives():
+    try:
+        archives = read_config()["archives"]
+    except CommandExecutionError as exc:
+        log.info("Cannot read Solutions configuration: %s", exc)
+        return {}
+
+    result = {}
+    for archive in archives:
+        if not os.path.isdir(archive):
+            continue
+        try:
+            result[manifest_from_archive(archive)["id"]] = archive
+        except CommandExecutionError as exc:
+            log.info("Skipping Solution directory %s: %s", archive, exc)
+    return result
+
+
 def list_available():
     """Get a view of mounted Solution archives.
 
@@ -315,18 +369,21 @@ def list_available():
     result = collections.defaultdict(list)
 
     active_mounts = __salt__["mount.active"]()
+    directory_archives = None
 
     for mountpoint, mount_info in active_mounts.items():
         # Skip mountpoint not in `/srv/scality`
-        if not mountpoint.startswith("/srv/scality/"):
+        mountpoint = _solutions_mountpoint(mountpoint)
+        if mountpoint is None:
             continue
 
         # Skip MetalK8s mountpoint
-        if mountpoint.startswith("/srv/scality/metalk8s-"):
+        if mountpoint.startswith(f"{SOLUTIONS_ROOT}/metalk8s-"):
             continue
 
-        # Skip non ISO mountpoint
-        if mount_info["fstype"] != "iso9660":
+        # Keep ISO mounts and bind mounts of extracted Solution directories
+        is_iso = mount_info["fstype"] == "iso9660"
+        if not is_iso and mount_info.get("root", "/") == "/":
             continue
 
         try:
@@ -340,12 +397,19 @@ def list_available():
             )
             continue
 
+        if is_iso:
+            archive = mount_info["alt_device"]
+        else:
+            if directory_archives is None:
+                directory_archives = _directory_archives()
+            archive = directory_archives.get(info["id"], mountpoint)
+
         result[info["name"]].append(
             {
                 "name": info["display_name"],
                 "id": info["id"],
                 "mountpoint": mountpoint,
-                "archive": mount_info["alt_device"],
+                "archive": archive,
                 "version": info["version"],
                 "manifest": manifest,
             }
