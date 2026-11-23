@@ -71,7 +71,7 @@ describe('executePrometheusQuery', () => {
 
     expect(axios).toHaveBeenCalledWith(
       expect.objectContaining({
-        params: { query: 'node_load1', start: 1_762_335_120 - 180 * 60, end: 1_762_335_120 - 60 * 60, step: '5m' },
+        params: { query: 'node_load1', start: 1_762_335_120 - 180 * 60, end: 1_762_335_120 - 60 * 60, step: 300 },
       }),
     );
   });
@@ -86,22 +86,97 @@ describe('executePrometheusQuery', () => {
     expect(axios).not.toHaveBeenCalled();
   });
 
-  it('lists the first 100 series of a broad answer, with the real count and how to narrow it', async () => {
-    const result = Array.from({ length: 150 }, (_, i) => ({ metric: { pod: `pod-${i}` }, value: [1762335120, '1'] }));
+  it('raises a step finer than the window allows to the window / 200, and says so', async () => {
+    (axios as unknown as jest.Mock).mockResolvedValue({ data: VECTOR });
+
+    // 24 hours at 15s would be 5,760 points a series.
+    const answer = await run({ query: 'node_load1', range: { start: '1762248720', step: '15s' } });
+
+    expect(axios).toHaveBeenCalledWith(expect.objectContaining({ params: expect.objectContaining({ step: 432 }) }));
+    expect(answer).toMatchObject({ ...VECTOR, step: '432s' });
+    expect(answer.message).toMatch(/raised from 15s to 432s/);
+  });
+
+  it('keeps a coarser step, in any of the forms Prometheus reads', async () => {
+    (axios as unknown as jest.Mock).mockResolvedValue({ data: VECTOR });
+
+    const answer = await run({ query: 'node_load1', range: { start: '1762248720', step: '1h30m' } });
+
+    expect(axios).toHaveBeenCalledWith(expect.objectContaining({ params: expect.objectContaining({ step: 5400 }) }));
+    expect(answer).toEqual(VECTOR);
+  });
+
+  it('follows a short window down to 15s by default, and no finer', async () => {
+    (axios as unknown as jest.Mock).mockResolvedValue({ data: VECTOR });
+
+    await run({ query: 'node_load1', range: { start: String(1_762_335_120 - 10 * 60) } });
+
+    expect(axios).toHaveBeenCalledWith(expect.objectContaining({ params: expect.objectContaining({ step: 15 }) }));
+  });
+
+  it('refuses a step it cannot read, without calling Prometheus', async () => {
+    const result = await run({ query: 'node_load1', range: { start: '1762248720', step: 'often' } });
+
+    expect(result.status).toBe('malformed');
+    expect(axios).not.toHaveBeenCalled();
+  });
+
+  it('answers too_broad, with no data, past 400 KB, and says which labels tell the series apart', async () => {
+    // 148 containers over an hour: what a namespace answered on a lab cluster.
+    const result = Array.from({ length: 148 }, (_, i) => ({
+      metric: {
+        __name__: 'container_memory_working_set_bytes',
+        namespace: 'zenko',
+        pod: `pod-${i % 48}`,
+        container: `c-${i}`,
+      },
+      values: Array.from({ length: 201 }, (_, t) => [1762335120 + t * 18, '123456789']),
+    }));
+    (axios as unknown as jest.Mock).mockResolvedValue({
+      data: { status: 'success', data: { resultType: 'matrix', result } },
+    });
+
+    const answer = await run({
+      query: 'container_memory_working_set_bytes{namespace="zenko"}',
+      range: { start: '1762331520' },
+    });
+
+    expect(answer).toMatchObject({
+      status: 'too_broad',
+      series: 148,
+      pointsPerSeries: 201,
+      varies: { container: 148, pod: 48 },
+    });
+    expect(answer).not.toHaveProperty('data');
+    expect(Object.keys(answer.varies as object)).toEqual(['container', 'pod']);
+    expect(answer.message).toMatch(
+      /148 series × 201 points.*filter on a label that varies \({container="…"}\).*topk.*sum by.*longer step/,
+    );
+  });
+
+  it('names the metric as what varies when a query matches several, and no step on an instant query', async () => {
+    // Several disk metrics of one node: the series differ only by their name.
+    const result = Array.from({ length: 5000 }, (_, i) => ({
+      metric: { __name__: `node_disk_metric_${i}`, instance: 'node-1:9100', device: 'sda' },
+      value: [1762335120, '123456789'],
+    }));
     (axios as unknown as jest.Mock).mockResolvedValue({
       data: { status: 'success', data: { resultType: 'vector', result } },
     });
 
-    const answer = await run({ query: 'kube_pod_info' });
+    const answer = await run({ query: '{__name__=~"node_disk_.*"}' });
 
-    expect(answer).toMatchObject({ status: 'success', truncated: true, totalSeries: 150 });
-    expect((answer.data as { result: unknown[] }).result).toEqual(result.slice(0, 100));
-    expect(answer.message).toMatch(/first 100 of 150 series.*topk.*sum by/);
+    expect(answer).toMatchObject({ status: 'too_broad', series: 5000, pointsPerSeries: 1, varies: { __name__: 5000 } });
+    expect(answer.message).toMatch(/\({__name__="…"}\)/);
+    expect(answer.message).not.toMatch(/step/);
   });
 
-  it('leaves an answer under the cap untouched', async () => {
-    (axios as unknown as jest.Mock).mockResolvedValue({ data: VECTOR });
-    expect(await run({ query: 'up' })).toEqual(VECTOR);
+  it('returns every series of a broad query that fits', async () => {
+    const result = Array.from({ length: 150 }, (_, i) => ({ metric: { pod: `pod-${i}` }, value: [1762335120, '1'] }));
+    const broad = { status: 'success', data: { resultType: 'vector', result } };
+    (axios as unknown as jest.Mock).mockResolvedValue({ data: broad });
+
+    expect(await run({ query: 'kube_pod_info' })).toEqual(broad);
   });
 
   it("passes a rejected query back as Prometheus's own error, so it can be fixed", async () => {
