@@ -78,8 +78,6 @@ type ExtraColumn = { name: string; value: (object: never) => unknown };
 type KindEntry = {
   apiVersion: string;
   namespaced: boolean;
-  /** One object of this kind, as describeKubeResource reads it. */
-  read?: (clients: K8sApiClients, name: string, namespace?: string) => Promise<{ body?: unknown }>;
   /**
    * Sort key applied before the list is cut. The API returns items by namespace then name, so
    * without it the cut drops whole namespaces, however recent.
@@ -94,7 +92,7 @@ export const eventLastSeen = (event: V1Event): Date | string | undefined =>
   event.lastTimestamp ?? event.series?.lastObservedTime ?? event.eventTime ?? event.metadata?.creationTimestamp;
 
 /** eventLastSeen in milliseconds; an event with no usable date sorts as the oldest. */
-const eventLastSeenMillis = (event: V1Event): number => {
+export const eventLastSeenMillis = (event: V1Event): number => {
   const seen = eventLastSeen(event);
   const time = seen === undefined ? Number.NaN : new Date(seen).getTime();
   return Number.isNaN(time) ? 0 : time;
@@ -104,7 +102,6 @@ const eventLastSeenMillis = (event: V1Event): number => {
 const kind = <TItem = never>(entry: {
   apiVersion: string;
   namespaced: boolean;
-  read?: (clients: K8sApiClients, name: string, namespace?: string) => Promise<{ body?: unknown }>;
   newestFirst?: (item: TItem) => number;
   extraColumns?: { name: string; value: (object: TItem) => unknown }[];
 }): KindEntry => entry as unknown as KindEntry;
@@ -113,72 +110,24 @@ const kind = <TItem = never>(entry: {
  * The kinds listable by name alone. Any other kind in an API group is listed by passing its
  * apiVersion; core-group kinds are reachable only through this table.
  */
-export const KINDS: Record<string, KindEntry> = {
-  pods: kind({
-    apiVersion: 'v1',
-    namespaced: true,
-    read: (c, name, namespace) => c.coreV1.readNamespacedPod(name, namespace),
-  }),
-  nodes: kind({
-    apiVersion: 'v1',
-    namespaced: false,
-    read: (c, name) => c.coreV1.readNode(name),
-  }),
-  deployments: kind({
-    apiVersion: 'apps/v1',
-    namespaced: true,
-    read: (c, name, namespace) =>
-      c.customObjects.getNamespacedCustomObject('apps', 'v1', namespace, 'deployments', name),
-  }),
-  statefulsets: kind({
-    apiVersion: 'apps/v1',
-    namespaced: true,
-    read: (c, name, namespace) =>
-      c.customObjects.getNamespacedCustomObject('apps', 'v1', namespace, 'statefulsets', name),
-  }),
-  daemonsets: kind({
-    apiVersion: 'apps/v1',
-    namespaced: true,
-    read: (c, name, namespace) =>
-      c.customObjects.getNamespacedCustomObject('apps', 'v1', namespace, 'daemonsets', name),
-  }),
-  jobs: kind({
-    apiVersion: 'batch/v1',
-    namespaced: true,
-    read: (c, name, namespace) => c.customObjects.getNamespacedCustomObject('batch', 'v1', namespace, 'jobs', name),
-  }),
-  cronjobs: kind({
-    apiVersion: 'batch/v1',
-    namespaced: true,
-    read: (c, name, namespace) => c.customObjects.getNamespacedCustomObject('batch', 'v1', namespace, 'cronjobs', name),
-  }),
-  services: kind({
-    apiVersion: 'v1',
-    namespaced: true,
-    read: (c, name, namespace) => c.coreV1.readNamespacedService(name, namespace),
-  }),
-  persistentvolumeclaims: kind({
-    apiVersion: 'v1',
-    namespaced: true,
-    read: (c, name, namespace) => c.coreV1.readNamespacedPersistentVolumeClaim(name, namespace),
-  }),
-  persistentvolumes: kind({
-    apiVersion: 'v1',
-    namespaced: false,
-    read: (c, name) => c.coreV1.readPersistentVolume(name),
-  }),
+const KINDS: Record<string, KindEntry> = {
+  pods: kind({ apiVersion: 'v1', namespaced: true }),
+  nodes: kind({ apiVersion: 'v1', namespaced: false }),
+  deployments: kind({ apiVersion: 'apps/v1', namespaced: true }),
+  statefulsets: kind({ apiVersion: 'apps/v1', namespaced: true }),
+  daemonsets: kind({ apiVersion: 'apps/v1', namespaced: true }),
+  jobs: kind({ apiVersion: 'batch/v1', namespaced: true }),
+  cronjobs: kind({ apiVersion: 'batch/v1', namespaced: true }),
+  services: kind({ apiVersion: 'v1', namespaced: true }),
+  persistentvolumeclaims: kind({ apiVersion: 'v1', namespaced: true }),
+  persistentvolumes: kind({ apiVersion: 'v1', namespaced: false }),
   events: kind<V1Event>({
     apiVersion: 'v1',
     namespaced: true,
-    read: (c, name, namespace) => c.coreV1.readNamespacedEvent(name, namespace),
     newestFirst: eventLastSeenMillis,
   }),
   // kubectl prints the key count, never the values.
-  configmaps: kind({
-    apiVersion: 'v1',
-    namespaced: true,
-    read: (c, name, namespace) => c.coreV1.readNamespacedConfigMap(name, namespace),
-  }),
+  configmaps: kind({ apiVersion: 'v1', namespaced: true }),
   // kubectl prints name, type and key count, never a value. Only metadata is requested, and only its
   // namespace is read: its annotations can hold a copy of the data.
   secrets: kind({ apiVersion: 'v1', namespaced: true }),
@@ -187,8 +136,6 @@ export const KINDS: Record<string, KindEntry> = {
   customresourcedefinitions: kind<CustomResourceDefinition>({
     apiVersion: 'apiextensions.k8s.io/v1',
     namespaced: false,
-    read: (c, name) =>
-      c.customObjects.getClusterCustomObject('apiextensions.k8s.io', 'v1', 'customresourcedefinitions', name),
     extraColumns: [
       { name: 'plural', value: (crd: CustomResourceDefinition) => crd.spec?.names?.plural },
       {
@@ -201,11 +148,7 @@ export const KINDS: Record<string, KindEntry> = {
       },
     ],
   }),
-  namespaces: kind({
-    apiVersion: 'v1',
-    namespaced: false,
-    read: (c, name) => c.coreV1.readNamespace(name),
-  }),
+  namespaces: kind({ apiVersion: 'v1', namespaced: false }),
 };
 
 /** What a caller is shown when it names a kind this does not know. */
@@ -220,7 +163,7 @@ const ALIASES: Record<string, string> = {
 };
 
 /** The plural a caller meant: trimmed, lower-cased, short names resolved. Never throws. */
-const normalizeKind = (kind: unknown): string => {
+export const normalizeKind = (kind: unknown): string => {
   const spelled = String(kind ?? '')
     .trim()
     .toLowerCase();
@@ -228,7 +171,7 @@ const normalizeKind = (kind: unknown): string => {
 };
 
 /** A plural goes into the URL path, so anything that is not a DNS label is refused, not encoded. */
-const checkPlural = (kind: string, plural: string) => {
+export const checkPlural = (kind: string, plural: string) => {
   if (!/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/.test(plural)) {
     throw new K8sApiError(
       'malformed',
@@ -260,7 +203,7 @@ const parseApiVersion = (apiVersion: string): { group: string; version: string }
 };
 
 /** Where a kind's paths start: `/api/v1` for the core group, `/apis/{group}/{version}` otherwise. */
-const apiBaseFor = (apiVersion: string): string => {
+export const apiBaseFor = (apiVersion: string): string => {
   const { group, version } = parseApiVersion(apiVersion);
   return group ? `/apis/${group}/${version}` : `/api/${version}`;
 };
@@ -269,8 +212,6 @@ const apiBaseFor = (apiVersion: string): string => {
 export type KubeTarget = {
   kind: string;
   apiVersion: string;
-  /** The kind's scope, when it is in KINDS. */
-  namespaced?: boolean;
   /** The KINDS entry, when there is one. */
   entry?: KindEntry;
 };
@@ -294,7 +235,7 @@ export const resolveTarget = (kind: string, apiVersion?: string): KubeTarget => 
   }
 
   if (entry && (!apiVersion || apiVersion === entry.apiVersion)) {
-    return { kind: normalized, apiVersion: entry.apiVersion, namespaced: entry.namespaced, entry };
+    return { kind: normalized, apiVersion: entry.apiVersion, entry };
   }
 
   const { group } = parseApiVersion(apiVersion as string);
