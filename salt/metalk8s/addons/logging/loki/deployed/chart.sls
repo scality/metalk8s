@@ -14,7 +14,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: loki
     app.kubernetes.io/name: loki
-    app.kubernetes.io/version: 3.6.7
+    app.kubernetes.io/version: 3.6.22
     helm.sh/chart: loki-7.0.0
   name: loki
   namespace: metalk8s-logging
@@ -28,7 +28,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: loki
     app.kubernetes.io/name: loki
-    app.kubernetes.io/version: 3.6.7
+    app.kubernetes.io/version: 3.6.22
     helm.sh/chart: loki-7.0.0
   name: loki-runtime
   namespace: metalk8s-logging
@@ -39,7 +39,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: loki
     app.kubernetes.io/name: loki
-    app.kubernetes.io/version: 3.6.7
+    app.kubernetes.io/version: 3.6.22
     helm.sh/chart: loki-7.0.0
   name: loki-clusterrole
   namespace: metalk8s-logging
@@ -60,7 +60,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: loki
     app.kubernetes.io/name: loki
-    app.kubernetes.io/version: 3.6.7
+    app.kubernetes.io/version: 3.6.22
     helm.sh/chart: loki-7.0.0
   name: loki-clusterrolebinding
   namespace: metalk8s-logging
@@ -80,7 +80,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: loki
     app.kubernetes.io/name: loki
-    app.kubernetes.io/version: 3.6.7
+    app.kubernetes.io/version: 3.6.22
     helm.sh/chart: loki-7.0.0
   name: loki-memberlist
   namespace: metalk8s-logging
@@ -104,7 +104,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: loki
     app.kubernetes.io/name: loki
-    app.kubernetes.io/version: 3.6.7
+    app.kubernetes.io/version: 3.6.22
     helm.sh/chart: loki-7.0.0
     prometheus.io/service-monitor: 'false'
     variant: headless
@@ -128,7 +128,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: loki
     app.kubernetes.io/name: loki
-    app.kubernetes.io/version: 3.6.7
+    app.kubernetes.io/version: 3.6.22
     helm.sh/chart: loki-7.0.0
   name: loki
   namespace: metalk8s-logging
@@ -156,7 +156,7 @@ metadata:
     app.kubernetes.io/instance: loki
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: memberlist
-    app.kubernetes.io/version: 3.6.7
+    app.kubernetes.io/version: 3.6.22
     helm.sh/chart: loki-7.0.0
   name: loki
   namespace: metalk8s-logging
@@ -197,7 +197,7 @@ spec:
       - args:
         - -config.file=/etc/loki/config/config.yaml
         - -target=all,table-manager
-        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:3.6.7
+        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:3.6.22
         imagePullPolicy: IfNotPresent
         name: loki
         ports:
@@ -318,7 +318,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: loki
     app.kubernetes.io/name: loki
-    app.kubernetes.io/version: 3.6.7
+    app.kubernetes.io/version: 3.6.22
     helm.sh/chart: loki-7.0.0
     metalk8s.scality.com/monitor: ''
   name: loki

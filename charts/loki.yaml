@@ -7,6 +7,10 @@ loki:
   image:
     registry: ""
     repository: '__image__(loki)'
+    # Ahead of the chart default (3.6.7), for a release built with a Go that
+    # distrusts the compromised eMudhra intermediates (CVE-2026-111943).
+    # Keep in sync with `versions.py`.
+    tag: 3.6.22
 
   # needs to be removed asap when https://github.com/grafana/loki/issues/14497 is fixed
   schemaConfig:
