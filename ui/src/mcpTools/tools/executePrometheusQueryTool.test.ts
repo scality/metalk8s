@@ -79,6 +79,22 @@ describe('executePrometheusQuery', () => {
     expect((await run({ query: 'up' })).status).toBe('not_authorized');
   });
 
+  it('asks to sign in again when Prometheus answers 401', async () => {
+    (axios as unknown as jest.Mock).mockRejectedValue({ response: { status: 401, data: 'Unauthorized' } });
+    expect((await run({ query: 'up' })).status).toBe('session_expired');
+  });
+
+  it('asks to sign in again, without calling Prometheus, when there is no token', async () => {
+    const result = await run({ query: 'up' }, makeContext({ getToken: jest.fn().mockResolvedValue(null) }));
+    expect(result.status).toBe('session_expired');
+    expect(axios).not.toHaveBeenCalled();
+  });
+
+  it('is unavailable, rather than an empty result, when Prometheus does not answer at all', async () => {
+    (axios as unknown as jest.Mock).mockRejectedValue(new Error('Network Error'));
+    expect((await run({ query: 'up' })).status).toBe('unavailable');
+  });
+
   it('is unavailable when the deployment exposes no Prometheus', async () => {
     const result = await run({ query: 'up' }, makeContext({ selfConfiguration: { url: '/api/kubernetes' } }));
     expect(result.status).toBe('unavailable');
