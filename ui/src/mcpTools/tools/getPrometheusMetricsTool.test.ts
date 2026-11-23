@@ -133,6 +133,39 @@ describe('getPrometheusMetrics', () => {
     expect(axios).not.toHaveBeenCalled();
   });
 
+  it('lists the first 100 matches of a broad search, with the real count and how to narrow it', async () => {
+    const data = Object.fromEntries(
+      Array.from({ length: 150 }, (_, i) => [
+        `mongodb_metric_${String(i).padStart(3, '0')}`,
+        [{ type: 'gauge', unit: '', help: `Metric ${i}.` }],
+      ]),
+    );
+    (axios as unknown as jest.Mock).mockResolvedValue({ data: { status: 'success', data } });
+
+    const result = await run({ search: 'mongodb' });
+
+    expect(result).toMatchObject({ status: 'ok', count: 150, truncated: true });
+    expect(result.metrics).toHaveLength(100);
+    expect((result.metrics as { name: string }[])[0].name).toBe('mongodb_metric_000');
+    expect(result.message).toMatch(/first 100 of 150.*Add words/);
+  });
+
+  it('does not mark a search that fits as truncated', async () => {
+    expect(await run({ search: 'node' })).not.toHaveProperty('truncated');
+  });
+
+  it('keeps the metadata cached for as long as it is fresh, though no component observes it', async () => {
+    const context = makeContext();
+    await run({}, context);
+
+    const query = context.queryClient.getQueryCache().find(['prometheusMetadata', '/api/prometheus']);
+    expect(query?.cacheTime).toBe(10 * 60 * 1000);
+  });
+
+  it('treats an empty metric as absent, as a blank search is', async () => {
+    expect(await run({ metric: '' })).toMatchObject({ status: 'ok', count: 3, prefixes: expect.any(Array) });
+  });
+
   describe('with metric: its labels and their values', () => {
     const NOW_S = 1_762_335_120;
     const PODS = Array.from({ length: 25 }, (_, i) => `pod-${String(i).padStart(2, '0')}`);
