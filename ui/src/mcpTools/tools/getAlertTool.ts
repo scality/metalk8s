@@ -27,8 +27,8 @@ export function createGetAlertTool(context: ToolContext) {
       'Returns everything Alertmanager holds about ONE active alert, by its id: labels, ' +
       'annotations, startsAt and endsAt, status (silencedBy, inhibitedBy) and generatorURL — the ' +
       'link to the PromQL rule that fired it.\n' +
-      'expr is that rule, decoded: run it with executePrometheusQuery to see which series fire and ' +
-      'with what value, and search its metric names with getPrometheusMetrics.\n' +
+      'expr is that rule, decoded: you can run it, when needed, with executePrometheusQuery to see which series fire and ' +
+      'with what value, and search its metric names with getPrometheusMetrics when needed.\n' +
       'The id comes from getAlerts.\n' +
       'not_found means no active alert has that id: it has resolved, or the id is wrong. Any other ' +
       'status means you could not look — never report that as the alert being gone.',
