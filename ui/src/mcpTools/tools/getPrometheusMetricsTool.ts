@@ -164,22 +164,19 @@ export function createGetPrometheusMetricsTool(context: ToolContext) {
         };
       }
 
-      let metadata: Metadata;
-      try {
-        metadata = await readMetadata(context, url_prometheus);
-      } catch (error) {
-        return unreadable('Prometheus', (error as PrometheusFailure).httpStatus);
-      }
-
       if (metric) {
+        // The labels first, and the 2 MB of metadata beside them rather than before them: it only
+        // adds the type and help, which a recording rule does not have anyway, so its failing must
+        // not take a few-kilobyte label read down with it.
+        const described = readMetadata(context, url_prometheus).catch(() => undefined);
         let read: Awaited<ReturnType<typeof readLabels>>;
         try {
           read = await readLabels(context, url_prometheus, metric);
         } catch (error) {
           return unreadable('Prometheus', (error as PrometheusFailure).httpStatus);
         }
-        // A recording rule has no metadata, and still has labels.
-        const { type, help } = metadata[metric]?.[0] ?? { type: 'unknown', help: '' };
+        const metadata = await described;
+        const { type, help } = metadata?.[metric]?.[0] ?? { type: 'unknown', help: '' };
         // With no series, what the labels endpoint still answers is the labels the proxy adds to
         // every answer (prometheus, prometheus_replica…), for any name, real or not: not this metric's.
         if (!read.series) {
@@ -190,12 +187,21 @@ export function createGetPrometheusMetricsTool(context: ToolContext) {
             help,
             series: 0,
             labels: [],
-            message: metadata[metric]
-              ? `Prometheus knows ${metric} but holds no data for it right now. That is not a value of zero.`
-              : `No metric is named "${metric}". Search for it to get its exact name.`,
+            message: !metadata
+              ? `No series for ${metric} right now: either no metric has that name, or it holds no data. Search for it to tell which.`
+              : metadata[metric]
+                ? `Prometheus knows ${metric} but holds no data for it right now. That is not a value of zero.`
+                : `No metric is named "${metric}". Search for it to get its exact name.`,
           };
         }
         return { status: 'ok', metric, type, help, ...read };
+      }
+
+      let metadata: Metadata;
+      try {
+        metadata = await readMetadata(context, url_prometheus);
+      } catch (error) {
+        return unreadable('Prometheus', (error as PrometheusFailure).httpStatus);
       }
 
       const words = (search ?? '').toLowerCase().split(/\s+/).filter(Boolean);

@@ -259,6 +259,38 @@ describe('getPrometheusMetrics', () => {
       expect(result.message).toMatch(/Search for it/);
     });
 
+    it('still answers with the labels when the metadata cannot be read, only without type and help', async () => {
+      (axios as unknown as jest.Mock).mockImplementation(async ({ url }: { url: string }) => {
+        if (url === '/api/v1/metadata') throw { response: { status: 504 } };
+        if (url === '/api/v1/query')
+          return { data: { status: 'success', data: { result: [{ value: [NOW_S, '1'] }] } } };
+        if (url === '/api/v1/labels') return { data: { status: 'success', data: ['__name__', 'instance'] } };
+        return { data: { status: 'success', data: ['node-1'] } };
+      });
+
+      expect(await run({ metric: 'instance:node_cpu_utilisation:rate5m' })).toEqual({
+        status: 'ok',
+        metric: 'instance:node_cpu_utilisation:rate5m',
+        type: 'unknown',
+        help: '',
+        series: 1,
+        labels: [{ name: 'instance', count: 1, values: ['node-1'] }],
+      });
+    });
+
+    it('does not claim a metric does not exist when it could not read the metadata to tell', async () => {
+      (axios as unknown as jest.Mock).mockImplementation(async ({ url }: { url: string }) => {
+        if (url === '/api/v1/metadata') throw { response: { status: 504 } };
+        if (url === '/api/v1/query') return { data: { status: 'success', data: { result: [] } } };
+        return { data: { status: 'success', data: [] } };
+      });
+
+      const result = await run({ metric: 'etcd_server_has_leader' });
+
+      expect(result).toMatchObject({ status: 'ok', series: 0, labels: [] });
+      expect(result.message).toMatch(/either no metric has that name, or it holds no data/);
+    });
+
     it('refuses anything but a metric name, since it goes into a query', async () => {
       const result = await run({ metric: 'up) or vector(1' });
 

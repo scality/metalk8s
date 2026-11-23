@@ -1,6 +1,15 @@
 import { readAlerts } from '../monitoringTools';
 import type { ToolContext } from '../types';
 
+/** The PromQL of the rule that fired, which Prometheus puts in the generatorURL as `g0.expr`. */
+const ruleExpression = (generatorURL?: string) => {
+  try {
+    return new URL(generatorURL ?? '').searchParams.get('g0.expr') ?? undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 /**
  * READ-ONLY: everything Alertmanager holds about ONE active alert, as it holds it.
  *
@@ -12,14 +21,6 @@ import type { ToolContext } from '../types';
  * That rule also comes back decoded, as `expr`: the generatorURL points at Prometheus's address
  * inside the cluster, which the model cannot open, and its PromQL is only readable once decoded.
  */
-const ruleExpression = (generatorURL?: string) => {
-  try {
-    return new URL(generatorURL ?? '').searchParams.get('g0.expr') ?? undefined;
-  } catch {
-    return undefined;
-  }
-};
-
 export function createGetAlertTool(context: ToolContext) {
   return {
     name: 'getAlert',
