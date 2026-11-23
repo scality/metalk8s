@@ -5,7 +5,8 @@ import type { MetalK8sSelfConfiguration, ToolContext } from '../types';
 type QueryParams = { query: string; range?: { start: string; end?: string; step?: string } };
 
 /** A time as Prometheus takes it — RFC 3339 or unix seconds — in seconds, or NaN when it is neither. */
-const toSeconds = (time: string) => (/^\d+(\.\d+)?$/.test(time) ? Number(time) : Date.parse(time) / 1000);
+const toSeconds = (time: string) =>
+  /^\d+(\.\d+)?$/.test(time) ? Number(time) : /(Z|[+-]\d{2}:\d{2})$/i.test(time) ? Date.parse(time) / 1000 : NaN;
 
 /**
  * READ-ONLY: one PromQL query against the platform's Prometheus, answered with Prometheus's own JSON.
