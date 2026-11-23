@@ -1,5 +1,9 @@
 image:
   repository: '__image__(dex)'
+  # Ahead of the chart default (v2.44.0), for a release built with a Go that
+  # distrusts the compromised eMudhra intermediates (CVE-2026-111943).
+  # Keep in sync with `versions.py`.
+  tag: v2.46.1
 
 nodeSelector:
   node-role.kubernetes.io/infra: ''
