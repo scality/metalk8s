@@ -234,10 +234,13 @@ def _ingress_debug(host, ssh_config=None, vip=None):
 @contextlib.contextmanager
 def _ingress_debug_on_failure(host, label, ssh_config=None, vip=None):
     """Append live cluster ingress diagnostics to any assertion failure raised
-    inside the block, to complement the (later, possibly-stale) sosreport."""
+    inside the block, to complement the (later, possibly-stale) sosreport.
+
+    `utils.retry` reports its last failure through `pytest.fail`, which raises
+    `pytest.fail.Exception` rather than `AssertionError`: catch both."""
     try:
         yield
-    except AssertionError as exc:
+    except (AssertionError, pytest.fail.Exception) as exc:
         raise AssertionError(
             f"{exc}\n\n"
             f"=== Cluster ingress debug ({label}) ===\n"
@@ -913,18 +916,32 @@ def server_request_returns_multiple_ips(
         endpoint = "{proto}://{ip}:{port}/{path}".format(
             proto=protocol.lower(), ip=ip, port=port, path=path or ""
         )
-        with _ingress_debug_on_failure(
-            host, f"request on '{endpoint}'", ssh_config=ssh_config, vip=ip
-        ):
+
+        def _request(endpoint=endpoint):
             try:
-                response = requests.get(endpoint, verify=False)
-                context["response"] = response
+                response = requests.get(endpoint, verify=False, timeout=10)
             except Exception as exc:
                 raise AssertionError(f"Unable to reach ingress on '{endpoint}': {exc}")
 
-            assert response is not None
-            assert response.status_code == status_code
+            context["response"] = response
+            assert response.status_code == status_code, (
+                f"Expected {status_code} '{reason}' from '{endpoint}', "
+                f"got {response.status_code} '{response.reason}'"
+            )
             assert response.reason == reason
+
+        # The steps before this one reconfigure the VIPs, which restarts the
+        # Workload Plane Ingress controllers: give them time to converge
+        # instead of failing on the first request (MK8S-359).
+        with _ingress_debug_on_failure(
+            host, f"request on '{endpoint}'", ssh_config=ssh_config, vip=ip
+        ):
+            utils.retry(
+                _request,
+                times=24,
+                wait=5,
+                name=f"request on Workload Plane Ingress '{endpoint}'",
+            )
 
 
 @then(
