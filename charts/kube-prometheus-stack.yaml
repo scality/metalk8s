@@ -28,6 +28,11 @@ alertmanager:
     image:
       registry: '__var__(repo.registry_endpoint)'
       repository: '__image_no_reg__(alertmanager)'
+      # Ahead of the chart default (v0.33.0), for a release built with a Go
+      # that distrusts the compromised eMudhra intermediates (CVE-2026-111943).
+      # Keep in sync with `versions.py` and with the Alertmanager library of
+      # `images/metalk8s-alert-logger/go.mod`.
+      tag: v0.35.0
 
     nodeSelector:
       node-role.kubernetes.io/infra: ''

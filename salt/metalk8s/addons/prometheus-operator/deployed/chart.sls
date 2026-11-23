@@ -80704,7 +80704,7 @@ spec:
   automountServiceAccountToken: true
   externalUrl: {% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}{%- raw %}
   hostNetwork: false
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("alertmanager", False, False) }}{%- raw %}:v0.33.0
+  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("alertmanager", False, False) }}{%- raw %}:v0.35.0
   imagePullPolicy: IfNotPresent
   listenLocal: false
   logFormat: logfmt
@@ -80750,7 +80750,7 @@ spec:
   - effect: NoSchedule
     key: node-role.kubernetes.io/infra
     operator: Exists
-  version: v0.33.0
+  version: v0.35.0
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus

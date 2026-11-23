@@ -106,8 +106,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="alertmanager",
-        version="v0.33.0",
-        digest="sha256:af26fbe4dd1886ac0efd7bd55cd9027da262e105b137a376522b7c14c3626e4a",
+        version="v0.35.0",
+        digest="sha256:5f6e66c01bd610aef6dd671642a52eee775fd3a89bd8788ebada33efaf373d10",
     ),
     Image(
         name="calico-cni",
