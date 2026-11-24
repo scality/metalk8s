@@ -11,7 +11,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.18.0
+    controller-gen.kubebuilder.io/version: v0.23.0
   name: mirrorconfigs.metalk8s.scality.com
 spec:
   group: metalk8s.scality.com
@@ -27,7 +27,7 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: MirrorConfig is the Schema for the mirrorconfigs API.
+        description: MirrorConfig is the Schema for the mirrorconfigs API
         properties:
           apiVersion:
             description: |-
@@ -47,7 +47,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: MirrorConfigSpec defines the desired state of MirrorConfig.
+            description: spec defines the desired state of MirrorConfig
             properties:
               registries:
                 description: Registries lists the upstream registries the workload
@@ -65,7 +65,7 @@ spec:
                 type: array
             type: object
           status:
-            description: MirrorConfigStatus defines the observed state of MirrorConfig.
+            description: status defines the observed state of MirrorConfig
             properties:
               caSecretRef:
                 description: CASecretRef references the Secret the registry CA was
@@ -138,6 +138,9 @@ spec:
                   - type
                   type: object
                 type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
               observedRegistries:
                 description: ObservedRegistries lists the prefixes rendered into the
                   ConfigMap.
@@ -145,6 +148,8 @@ spec:
                   type: string
                 type: array
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true
@@ -155,7 +160,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.18.0
+    controller-gen.kubebuilder.io/version: v0.23.0
   name: registries.metalk8s.scality.com
 spec:
   group: metalk8s.scality.com
@@ -217,7 +222,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: RegistrySpec defines the desired state of Registry.
+            description: spec defines the desired state of Registry
             properties:
               agent:
                 description: Agent is the specification of the registry node agent.
@@ -599,7 +604,7 @@ spec:
             - server
             type: object
           status:
-            description: RegistryStatus defines the observed state of Registry.
+            description: status defines the observed state of Registry
             properties:
               agentAvailable:
                 description: Availability of the registry node agent.
@@ -672,6 +677,9 @@ spec:
                   - type
                   type: object
                 type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
               mirrorSyncAvailable:
                 description: Availability of the containerd mirror sync.
                 type: boolean
@@ -748,6 +756,8 @@ spec:
                   including availability and readiness of the registry server and node agent.
                 type: object
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true
@@ -758,7 +768,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.18.0
+    controller-gen.kubebuilder.io/version: v0.23.0
   name: solutionarchives.metalk8s.scality.com
 spec:
   group: metalk8s.scality.com
@@ -818,6 +828,7 @@ spec:
           metadata:
             type: object
           spec:
+            description: spec defines the desired state of SolutionArchive
             properties:
               name:
                 description: Name of the SolutionArchive
@@ -868,9 +879,10 @@ spec:
             - version
             type: object
           status:
-            description: SolutionArchiveStatus defines the observed state of SolutionArchive.
+            description: status defines the observed state of SolutionArchive
             properties:
               conditions:
+                description: Conditions of the SolutionArchive.
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.
@@ -926,6 +938,9 @@ spec:
                   - type
                   type: object
                 type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
               nodeSolutionArchives:
                 description: List of NodeSolutionArchive names
                 items:
@@ -957,6 +972,8 @@ spec:
                 description: Expected number of NodeSolutionArchive in Served status
                 type: integer
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true
@@ -1495,6 +1512,25 @@ metadata:
   labels:
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/name: metalk8s-registry-operator
+    control-plane: controller-manager
+  name: metalk8s-registry-operator-controller-manager-metrics-service
+  namespace: metalk8s-registry-system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app.kubernetes.io/name: metalk8s-registry-operator
+    control-plane: controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: metalk8s-registry-operator
   name: metalk8s-registry-operator-webhook-service
   namespace: metalk8s-registry-system
 spec:
@@ -1531,13 +1567,16 @@ spec:
     spec:
       containers:
       - args:
+        - --metrics-bind-address=:8443
         - --leader-elect
         - --health-probe-bind-address=:8081
+        - --metrics-cert-path=/tmp/k8s-metrics-server/metrics-certs
         - --webhook-cert-path=/tmp/k8s-webhook-server/serving-certs
+        - --webhook-port=9443
         command:
         - /manager
         image: '{% endraw -%}{{ build_image_name("metalk8s-registry-operator", False)
-          }}{%- raw %}:v0.0.1-alpha.6'
+          }}{%- raw %}:v0.0.1-alpha.7'
         livenessProbe:
           httpGet:
             path: /healthz
@@ -1546,6 +1585,9 @@ spec:
           periodSeconds: 20
         name: manager
         ports:
+        - containerPort: 8081
+          name: health
+          protocol: TCP
         - containerPort: 9443
           name: webhook-server
           protocol: TCP
@@ -1567,7 +1609,11 @@ spec:
           capabilities:
             drop:
             - ALL
+          readOnlyRootFilesystem: true
         volumeMounts:
+        - mountPath: /tmp/k8s-metrics-server/metrics-certs
+          name: metrics-certs
+          readOnly: true
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: webhook-certs
           readOnly: true
@@ -1593,9 +1639,37 @@ spec:
         key: node-role.kubernetes.io/etcd
         operator: Exists
       volumes:
+      - name: metrics-certs
+        secret:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          - key: tls.crt
+            path: tls.crt
+          - key: tls.key
+            path: tls.key
+          optional: false
+          secretName: metrics-server-cert
       - name: webhook-certs
         secret:
           secretName: webhook-server-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: metalk8s-registry-operator
+  name: metalk8s-registry-operator-metrics-certs
+  namespace: metalk8s-registry-system
+spec:
+  dnsNames:
+  - metalk8s-registry-operator-controller-manager-metrics-service.metalk8s-registry-system.svc
+  - metalk8s-registry-operator-controller-manager-metrics-service.metalk8s-registry-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: metalk8s-registry-operator-selfsigned-issuer
+  secretName: metrics-server-cert
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate

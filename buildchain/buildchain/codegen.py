@@ -382,18 +382,27 @@ def codegen_chart_cert_manager() -> types.TaskDict:
 
 
 def codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
-    """Generate the SLS file for the Registry Operator."""
+    """Generate the SLS files for the Registry Operator.
+
+    The Registry Operator is deployed as a core component, before
+    prometheus-operator installs the ServiceMonitor resource definition,
+    so its ServiceMonitor goes to a separate SLS applied once that
+    definition exists.
+    """
     kustomize_dir = constants.KUSTOMIZE_ROOT / "metalk8s-registry-operator"
-    target_sls = (
-        constants.ROOT
-        / "salt/metalk8s/addons/metalk8s-registry-operator/deployed/chart.sls"
+    deployed_dir = (
+        constants.ROOT / "salt/metalk8s/addons/metalk8s-registry-operator/deployed"
     )
-    cmd = [
-        *constants.KUSTOMIZE_RENDER_CMD,
-        str(kustomize_dir),
-        "--output",
-        str(target_sls),
+    target_sls = deployed_dir / "chart.sls"
+    sm_sls = deployed_dir / "servicemonitor.sls"
+    service_monitor = [
+        "ServiceMonitor",
+        "metalk8s-registry-operator-controller-manager-metrics-monitor",
     ]
+
+    render_cmd = [*constants.KUSTOMIZE_RENDER_CMD, str(kustomize_dir)]
+    chart_cmd = [*render_cmd, "--remove-manifest", *service_monitor]
+    sm_cmd = [*render_cmd, "--keep-manifest", *service_monitor]
 
     file_dep = list(utils.git_ls(kustomize_dir))
     file_dep.extend(constants.RENDER_SCRIPTS)
@@ -402,8 +411,16 @@ def codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
         "name": "kustomize_metalk8s-registry-operator",
         "title": utils.title_with_subtask_name("CODEGEN"),
         "doc": codegen_kustomize_metalk8s_registry_operator.__doc__,
-        "actions": [doit.action.CmdAction(shlex.join(cmd), cwd=constants.ROOT)],
-        "targets": [target_sls],
+        "actions": [
+            doit.action.CmdAction(
+                shlex.join([*chart_cmd, "--output", str(target_sls)]),
+                cwd=constants.ROOT,
+            ),
+            doit.action.CmdAction(
+                shlex.join([*sm_cmd, "--output", str(sm_sls)]), cwd=constants.ROOT
+            ),
+        ],
+        "targets": [target_sls, sm_sls],
         "file_dep": file_dep,
         "task_dep": ["_chart_render_env", "check_for:kustomize"],
     }
