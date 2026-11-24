@@ -42,6 +42,7 @@ export const askGuardianColumn = <Row,>(alertOf: (row: Row) => Alert) => ({
     flex: 0.5,
     minWidth: '3rem',
     textAlign: 'center',
+    order: 1,
   },
   Cell: ({ row }: { row: { original: Row } }) => <AskGuardianButton alert={alertOf(row.original)} />,
 });
