@@ -4,9 +4,7 @@
 """Useful global constants, used hither and yon."""
 
 from pathlib import Path
-import shlex
 import subprocess
-import sys
 from typing import List, Optional, FrozenSet
 
 from buildchain import ROOT  # Re-export ROOT through this module.
@@ -162,12 +160,10 @@ METALK8S_OPERATOR_SDK_GENERATE_CMDS: List[List[str]] = [
     [config.ExtCommand.MAKE.value, "metalk8s"],
 ]
 
-# Run with the buildchain interpreter, which provides PyYAML.
-RENDER_CMD: List[str] = [sys.executable, str(RENDER_ROOT)]
-CHART_RENDER_CMD: str = shlex.join(
-    [*RENDER_CMD, "helm", "--kube-version", versions.K8S_VERSION]
+CHART_RENDER_CMD: str = (
+    f"tox -e chart-render -- helm --kube-version {versions.K8S_VERSION}"
 )
-KUSTOMIZE_RENDER_CMD: List[str] = [*RENDER_CMD, "kustomize"]
+KUSTOMIZE_RENDER_CMD: List[str] = ["tox", "-e", "chart-render", "--", "kustomize"]
 
 # For mypy, see `--no-implicit-reexport` documentation.
 __all__ = ["ROOT"]
