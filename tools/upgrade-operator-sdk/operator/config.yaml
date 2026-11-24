@@ -5,7 +5,7 @@ operator_sdk_version: v1.42.3
 
 # Optional: pin versions. If absent, the script detects the latest
 # patch from the scaffold's go.mod and auto-pins them here.
-go_toolchain: go1.26.9
+go_toolchain: go1.27.4
 k8s_libs: v0.36.5
 # Optional: pins applied on top of the scaffold, needed when k8s_libs
 # is pinned past what operator-sdk scaffolds.

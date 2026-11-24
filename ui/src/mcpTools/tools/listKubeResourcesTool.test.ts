@@ -6,10 +6,14 @@ import { createListKubeResourcesTool } from './listKubeResourcesTool';
 
 jest.mock('../../services/k8s/clients', () => ({ k8sApi: jest.fn() }));
 
-const listPodForAllNamespaces = jest.fn();
-const listClusterCustomObject = jest.fn();
+const json = jest.fn();
 
-const ok = (items: unknown[]) => Promise.resolve({ response: { statusCode: 200 }, body: { items } });
+/** A meta.k8s.io Table of names, one row per [namespace, name] given. */
+const table = (rows: [string | undefined, string][], columns = ['Name'], cells = (name: string) => [name]) => ({
+  kind: 'Table',
+  columnDefinitions: columns.map((name) => ({ name })),
+  rows: rows.map(([namespace, name]) => ({ cells: cells(name), object: { metadata: { name, namespace } } })),
+});
 
 const makeContext = (overrides: Partial<ToolContext> = {}): ToolContext =>
   ({
@@ -26,10 +30,7 @@ const run = (args: { kind: string; apiVersion?: string }, context = makeContext(
 
 beforeEach(() => {
   jest.clearAllMocks();
-  (k8sApi as jest.Mock).mockReturnValue({
-    coreV1: { listPodForAllNamespaces },
-    customObjects: { listClusterCustomObject },
-  });
+  (k8sApi as jest.Mock).mockReturnValue({ json });
 });
 
 describe('listKubeResources', () => {
@@ -44,46 +45,57 @@ describe('listKubeResources', () => {
     expect(result.allowedKinds).toContain('pods');
     expect(result.message).toMatch(/apiVersion/);
     expect(k8sApi).not.toHaveBeenCalled();
-    expect(listPodForAllNamespaces).not.toHaveBeenCalled();
+    expect(json).not.toHaveBeenCalled();
   });
 
   it.each([
     ['on its own', { kind: 'secrets' }],
     ['with a core apiVersion', { kind: 'secrets', apiVersion: 'v1' }],
-    ['with a group, which would route around the allowlist', { kind: 'secrets', apiVersion: 'example.com/v1' }],
-    ['capitalised and singular', { kind: 'Secret' }],
-  ])('refuses secrets %s, before any request is made', async (_, args) => {
+    ['capitalised', { kind: 'Secrets' }],
+  ])('lists secrets %s as kubectl prints them — name, type and key count, never a value', async (_, args) => {
+    json.mockResolvedValue({
+      kind: 'Table',
+      columnDefinitions: [{ name: 'Name' }, { name: 'Type' }, { name: 'Data' }, { name: 'Age' }],
+      rows: [
+        {
+          cells: ['db-credentials', 'Opaque', 2, '3d'],
+          // What the API server sends beside a row: metadata only, whose annotations can hold a
+          // copy of the data. None of it may reach the answer.
+          object: {
+            metadata: {
+              name: 'db-credentials',
+              namespace: 'default',
+              annotations: { 'kubectl.kubernetes.io/last-applied-configuration': '{"data":{"pw":"aHVudGVyMg=="}}' },
+            },
+          },
+        },
+      ],
+    });
+
     const result = await run(args);
 
-    expect(result.status).toBe('not_authorized');
-    expect(result.message).toMatch(/never listed or read/i);
-    // And nothing about RBAC in front of it: this is our policy, not the cluster's answer, and
-    // saying both leaves the caller to tell the user their permissions are the problem.
-    expect(result.message).not.toMatch(/RBAC/i);
-    expect(k8sApi).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      status: 'ok',
+      kind: 'secrets',
+      apiVersion: 'v1',
+      items: [{ namespace: 'default', name: 'db-credentials', type: 'Opaque', data: 2, age: '3d' }],
+    });
+    // Never the whole object, which is where the values are.
+    expect(json).toHaveBeenCalledWith('/api/v1/secrets', { includeObject: 'Metadata' }, expect.any(Object));
+    expect(JSON.stringify(result)).not.toContain('aHVudGVyMg==');
+    expect(JSON.stringify(result)).not.toContain('last-applied');
   });
 
-  it.each([
-    ['signingkeies', 'dex.coreos.com/v1'],
-    ['oauth2clients', 'dex.coreos.com/v1'],
-    ['passwords', 'dex.coreos.com/v1'],
-    // The group is matched however it is cased, as the kind already was.
-    ['SigningKeies', 'DEX.CoreOS.com/v1'],
-    // Any kind at all in that group, including one invented to get past a name check.
-    ['whatever-they-add-next', 'dex.coreos.com/v1'],
-  ])('refuses %s, which is a Secret under another name', async (kind, apiVersion) => {
-    // Dex runs with storage.type kubernetes, so its OIDC signing keys, client secrets, LDAP bind
-    // config and password hashes live in this group. Refusing the kind `secrets` guards the core
-    // kind and nothing else; the apiVersion route reaches these by name.
-    const result = await run({ kind, apiVersion });
+  it("lists Dex's resources like any other group's, by the columns kubectl prints", async () => {
+    json.mockResolvedValue(table([['dex', 'signing-key']]));
 
-    expect(result.status).toBe('not_authorized');
-    expect(result.message).toMatch(/never listed or read/i);
-    expect(k8sApi).not.toHaveBeenCalled();
+    const result = await run({ kind: 'signingkeies', apiVersion: 'dex.coreos.com/v1' });
+
+    expect(result).toMatchObject({ status: 'ok', items: [{ namespace: 'dex', name: 'signing-key' }] });
   });
 
   it('still allows other custom resources in other groups', async () => {
-    listClusterCustomObject.mockReturnValue(ok([{ metadata: { name: 'volume-1' } }]));
+    json.mockResolvedValue(table([[undefined, 'volume-1']]));
 
     expect((await run({ kind: 'volumes', apiVersion: 'storage.metalk8s.scality.com/v1alpha1' })).status).toBe('ok');
   });
@@ -122,22 +134,16 @@ describe('listKubeResources', () => {
   });
 
   it('builds the clients from the configured URL and a freshly fetched token', async () => {
-    listPodForAllNamespaces.mockReturnValue(ok([]));
+    json.mockResolvedValue(table([]));
 
     await run({ kind: 'pods' });
 
     expect(k8sApi).toHaveBeenCalledWith('/api/kubernetes', 'a-fresh-token');
   });
 
-  it('returns the list with no message to restate it', async () => {
-    listPodForAllNamespaces.mockReturnValue(
-      ok([
-        {
-          metadata: { name: 'coredns-abc', namespace: 'kube-system' },
-          spec: { nodeName: 'node-1', containers: [{ name: 'coredns' }] },
-          status: { phase: 'Running', containerStatuses: [{ name: 'coredns', ready: true, restartCount: 0 }] },
-        },
-      ]),
+  it('returns the list as kubectl prints it, with no message to restate it', async () => {
+    json.mockResolvedValue(
+      table([['kube-system', 'coredns-abc']], ['Name', 'Ready', 'Status'], (name) => [name, '1/1', 'Running']),
     );
 
     const result = await run({ kind: 'pods' });
@@ -145,31 +151,17 @@ describe('listKubeResources', () => {
     expect(result).toEqual({
       status: 'ok',
       kind: 'pods',
+      apiVersion: 'v1',
       namespace: 'all',
+      items: [{ namespace: 'kube-system', name: 'coredns-abc', ready: '1/1', status: 'Running' }],
       returned: 1,
       truncated: false,
-      items: [
-        {
-          name: 'coredns-abc',
-          namespace: 'kube-system',
-          spec: { nodeName: 'node-1' },
-          status: { phase: 'Running', containerStatuses: [{ name: 'coredns', ready: true, restartCount: 0 }] },
-        },
-      ],
     });
     expect(result).not.toHaveProperty('message');
   });
 
   it('explains a cut list, which the data cannot show on its own', async () => {
-    listPodForAllNamespaces.mockReturnValue(
-      ok(
-        Array.from({ length: MAX_ITEMS + 1 }, (_, i) => ({
-          metadata: { name: `pod-${i}`, namespace: 'default' },
-          spec: { containers: [] },
-          status: { phase: 'Running' },
-        })),
-      ),
-    );
+    json.mockResolvedValue(table(Array.from({ length: MAX_ITEMS + 1 }, (_, i) => ['default', `pod-${i}`])));
 
     const result = await run({ kind: 'pods' });
 
@@ -178,36 +170,8 @@ describe('listKubeResources', () => {
     expect(result.message).toMatch(/no way\s+to ask for the rest/i);
   });
 
-  it('withholds env values from a kind that keeps its whole object', async () => {
-    // An allowlisted kind keeps only the spec keys its entry names, so no pod template reaches the
-    // caller. A kind reached by apiVersion keeps everything it came with — and a ReplicaSet, a
-    // ControllerRevision or an operator's own resource carries one, passwords included.
-    listClusterCustomObject.mockReturnValue(
-      ok([
-        {
-          metadata: { name: 'web-rs', namespace: 'default' },
-          spec: { template: { spec: { containers: [{ name: 'web', env: [{ name: 'PW', value: 'hunter2' }] }] } } },
-        },
-      ]),
-    );
-
-    const result = await run({ kind: 'replicasets', apiVersion: 'apps/v1' });
-
-    expect(JSON.stringify(result)).not.toContain('hunter2');
-    expect(JSON.stringify(result)).toContain('"PW"');
-    expect(result.omitted).toEqual(['env values (names kept)']);
-  });
-
-  it('says nothing was withheld when nothing was', async () => {
-    listPodForAllNamespaces.mockReturnValue(
-      ok([{ metadata: { name: 'web', namespace: 'default' }, spec: {}, status: { phase: 'Running' } }]),
-    );
-
-    expect(await run({ kind: 'pods' })).not.toHaveProperty('omitted');
-  });
-
   it('keeps a forbidden list apart from an empty one', async () => {
-    listPodForAllNamespaces.mockRejectedValue({ response: { statusCode: 403 } });
+    json.mockRejectedValue({ response: { statusCode: 403 } });
 
     const result = await run({ kind: 'pods' });
 
@@ -218,20 +182,24 @@ describe('listKubeResources', () => {
   });
 
   it('keeps an expired session apart from a forbidden one', async () => {
-    listPodForAllNamespaces.mockRejectedValue({ response: { statusCode: 401 } });
+    json.mockRejectedValue({ response: { statusCode: 401 } });
 
     expect((await run({ kind: 'pods' })).status).toBe('session_expired');
   });
 
   it('reaches a custom resource through its group and version', async () => {
-    listClusterCustomObject.mockReturnValue(ok([{ metadata: { name: 'volume-1' } }]));
+    json.mockResolvedValue(table([[undefined, 'volume-1']]));
 
     const result = await run({
       kind: 'volumes',
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
     });
 
-    expect(listClusterCustomObject).toHaveBeenCalledWith('storage.metalk8s.scality.com', 'v1alpha1', 'volumes');
+    expect(json).toHaveBeenCalledWith(
+      '/apis/storage.metalk8s.scality.com/v1alpha1/volumes',
+      expect.any(Object),
+      expect.any(Object),
+    );
     expect(result.status).toBe('ok');
     expect(result.apiVersion).toBe('storage.metalk8s.scality.com/v1alpha1');
   });
@@ -245,9 +213,8 @@ describe('listKubeResources', () => {
     expect(description).not.toContain(ALLOWED_KINDS.join(', '));
     expect(inputSchema.properties.kind).not.toHaveProperty('enum');
     expect(inputSchema.properties.kind.description).not.toContain('pods');
-    // The way out of not knowing a custom resource's version stays, because it is a mechanism
-    // rather than a constraint.
-    expect(description).toMatch(/customresourcedefinitions first/i);
+    // What it returns is kubectl's own output, which the model already knows how to read.
+    expect(description).toMatch(/kubectl get <kind> -A -o wide/);
     expect(inputSchema.required).toEqual(['kind']);
   });
 });

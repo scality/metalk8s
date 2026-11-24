@@ -1,3 +1,4 @@
+import { WATCHDOG_ALERT_NAME } from '../constants';
 import { useEffect } from 'react';
 import AlertProvider, { useAlerts } from '../containers/AlertProvider';
 import { Alert } from '../services/alertUtils';
@@ -13,7 +14,6 @@ type Notification = {
   createdOn: Date;
 };
 
-const WATCHDOG_ALERT_NAME = 'Watchdog';
 const CRITICAL_NOTIFICATION_ID = 'CriticalNotification';
 const WARNING_NOTIFICATION_ID = 'WarningNotification';
 

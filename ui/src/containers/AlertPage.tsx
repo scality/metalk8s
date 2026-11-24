@@ -48,11 +48,17 @@ const Title = styled(HeaderSegment)`
 `;
 const SecondaryTitle = styled(HeaderSegment)`
   justify-content: center;
+  gap: ${spacing.r4};
   font-size: ${fontSize.base};
 `;
 const TertiaryTitle = styled(HeaderSegment)`
   justify-content: space-around;
   font-size: ${fontSize.base};
+`;
+const LabelWithBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.r4};
 `;
 const AlertStatusIcon = styled.div`
   font-size: 2rem;
@@ -123,14 +129,14 @@ function AlertPageHeader({
         </SecondaryTitle>
 
         <TertiaryTitle>
-          <div>
+          <LabelWithBadge>
             Critical
             <TextBadge variant="statusCritical" text={`${critical}`} />
-          </div>
-          <div>
+          </LabelWithBadge>
+          <LabelWithBadge>
             Warning
             <TextBadge variant="statusWarning" text={`${warning}`} />
-          </div>
+          </LabelWithBadge>
         </TertiaryTitle>
       </Stack>
       {canConfigureEmailNotification ? (

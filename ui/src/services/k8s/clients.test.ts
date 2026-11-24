@@ -58,4 +58,60 @@ describe('k8sApi().text', () => {
       body: 'upstream connect error',
     });
   });
+  it("sends a caller's headers, but never lets one replace the token", async () => {
+    fetchMock.mockReturnValue(answer(200, '{}'));
+
+    await k8sApi('/api/kubernetes', 'a-token').text(
+      '/api/v1/x',
+      {},
+      {
+        accept: 'application/json;as=Table',
+        authorization: 'Bearer someone-else',
+      },
+    );
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init.headers.accept).toBe('application/json;as=Table');
+    expect(init.headers.authorization).toBe('Bearer a-token');
+  });
+});
+
+describe('k8sApi().json', () => {
+  const fetchMock = jest.fn();
+  beforeEach(() => {
+    fetchMock.mockReset();
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+  });
+
+  const answer = (status: number, body: string) =>
+    Promise.resolve({ ok: status < 400, status, text: () => Promise.resolve(body) });
+
+  it('parses a JSON body, with the query and headers it was given', async () => {
+    fetchMock.mockReturnValue(answer(200, JSON.stringify({ kind: 'Table', rows: [] })));
+
+    const body = await k8sApi('/api/kubernetes', 'a-token').json(
+      '/api/v1/pods',
+      { includeObject: 'Metadata' },
+      { accept: 'application/json;as=Table' },
+    );
+
+    expect(body).toEqual({ kind: 'Table', rows: [] });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('/api/kubernetes/api/v1/pods?includeObject=Metadata');
+    expect(init.headers.accept).toBe('application/json;as=Table');
+  });
+
+  it('rejects a 200 whose body is not JSON with a SyntaxError', async () => {
+    fetchMock.mockReturnValue(answer(200, '<html>login</html>'));
+
+    await expect(k8sApi('/api/kubernetes', 'a-token').json('/api/v1/pods')).rejects.toBeInstanceOf(SyntaxError);
+  });
+
+  it('keeps the status of a plain-text 404, as the API server answers a path it does not route', async () => {
+    fetchMock.mockReturnValue(answer(404, '404 page not found'));
+
+    await expect(
+      k8sApi('/api/kubernetes', 'a-token').json('/apis/x.io/v1/namespaces/a/things/b'),
+    ).rejects.toMatchObject({ response: { statusCode: 404 }, body: '404 page not found' });
+  });
 });

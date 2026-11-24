@@ -156,6 +156,10 @@ jobs:
         uses: ./.github/actions/bastion-tests
       # }}}
 
+      - name: Check no image was pulled from the internet
+        if: always()
+        uses: ./.github/actions/check-external-image-pulls
+
       ## Collect logs {{
       - name: Generate and Collect sosreport
         if: always()

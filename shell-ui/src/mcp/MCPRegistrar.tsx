@@ -22,9 +22,10 @@ import {
   useHostGetTaskStatusTool,
 } from './tasks';
 import { traceToolActivity } from './toolActivity';
+import { type GuardianHints, rememberGuardianHints } from './toolMeta';
 import type { ToolContext } from './types';
 
-interface MCPToolDescriptor extends ToolDescriptor {
+interface MCPToolDescriptor extends ToolDescriptor, GuardianHints {
   getTaskStatus?: () => Promise<TaskStatusReport>;
 }
 
@@ -148,6 +149,7 @@ export const _InternalMCPRegistrar = ({
         },
         { signal: controller.signal },
       );
+      rememberGuardianHints(tool.name, tool, controller.signal);
 
       // Track within this registration pass so the same name appearing twice in
       // one tools array doesn't throw either.
