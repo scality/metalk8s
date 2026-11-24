@@ -19,6 +19,21 @@ def task_codegen() -> Iterator[types.TaskDict]:
         yield create_codegen_task()
 
 
+def task__chart_render_env() -> types.TaskDict:
+    """Create the chart-render tox env used by the render tasks.
+
+    The render tasks run in parallel: if the env does not exist yet, they would
+    all create it at the same time and fail.
+    """
+    return {
+        "title": lambda _: f"{'TOX ENV': <{constants.CMD_WIDTH}} chart-render",
+        "actions": [
+            doit.action.CmdAction("tox -e chart-render --notest", cwd=constants.ROOT)
+        ],
+        "task_dep": ["check_for:tox"],
+    }
+
+
 def codegen_metalk8s_operator() -> types.TaskDict:
     """Generate Go code for the MetalK8s Operator using the Operator SDK Makefile."""
     cwd = constants.METALK8S_OPERATOR_ROOT
@@ -76,7 +91,7 @@ def codegen_chart_dex() -> types.TaskDict:
         "doc": codegen_chart_dex.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["_chart_render_env", "check_for:helm"],
     }
 
 
@@ -105,7 +120,7 @@ def codegen_chart_fluent_bit() -> types.TaskDict:
         "doc": codegen_chart_fluent_bit.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["_chart_render_env", "check_for:helm"],
     }
 
 
@@ -159,7 +174,7 @@ def codegen_chart_ingress_nginx() -> types.TaskDict:
         "doc": codegen_chart_ingress_nginx.__doc__,
         "actions": actions,
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["_chart_render_env", "check_for:helm"],
     }
 
 
@@ -206,7 +221,7 @@ def codegen_chart_kube_prometheus_stack() -> types.TaskDict:
         "doc": codegen_chart_kube_prometheus_stack.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["_chart_render_env", "check_for:helm"],
     }
 
 
@@ -235,7 +250,7 @@ def codegen_chart_loki() -> types.TaskDict:
         "doc": codegen_chart_loki.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["_chart_render_env", "check_for:helm"],
     }
 
 
@@ -262,7 +277,7 @@ def codegen_chart_node_problem_detector() -> types.TaskDict:
         "doc": codegen_chart_node_problem_detector.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["_chart_render_env", "check_for:helm"],
     }
 
 
@@ -289,7 +304,7 @@ def codegen_chart_prometheus_adapter() -> types.TaskDict:
         "doc": codegen_chart_prometheus_adapter.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["_chart_render_env", "check_for:helm"],
     }
 
 
@@ -320,7 +335,7 @@ def codegen_chart_thanos() -> types.TaskDict:
         "doc": codegen_chart_thanos.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["_chart_render_env", "check_for:helm"],
     }
 
 
@@ -362,7 +377,7 @@ def codegen_chart_cert_manager() -> types.TaskDict:
         ],
         "targets": [target_sls, sm_sls],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
+        "task_dep": ["_chart_render_env", "check_for:helm"],
     }
 
 
@@ -390,7 +405,7 @@ def codegen_kustomize_metalk8s_registry_operator() -> types.TaskDict:
         "actions": [doit.action.CmdAction(shlex.join(cmd), cwd=constants.ROOT)],
         "targets": [target_sls],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:kustomize"],
+        "task_dep": ["_chart_render_env", "check_for:kustomize"],
     }
 
 
@@ -420,7 +435,7 @@ def codegen_kustomize_crl_operator() -> types.TaskDict:
         "actions": [doit.action.CmdAction(shlex.join(cmd), cwd=constants.ROOT)],
         "targets": [target_sls],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:kustomize"],
+        "task_dep": ["_chart_render_env", "check_for:kustomize"],
     }
 
 
@@ -456,7 +471,7 @@ def codegen_kustomize_disk_management_agent() -> types.TaskDict:
         "actions": [doit.action.CmdAction(shlex.join(cmd), cwd=constants.ROOT)],
         "targets": [target_sls],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:kustomize"],
+        "task_dep": ["_chart_render_env", "check_for:kustomize"],
     }
 
 
@@ -488,7 +503,7 @@ def codegen_kustomize_node_warden_operator() -> types.TaskDict:
         "actions": [doit.action.CmdAction(shlex.join(cmd), cwd=constants.ROOT)],
         "targets": [target_sls],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:kustomize"],
+        "task_dep": ["_chart_render_env", "check_for:kustomize"],
     }
 
 
@@ -520,7 +535,7 @@ def codegen_kustomize_image_cache_agent() -> types.TaskDict:
         "actions": [doit.action.CmdAction(shlex.join(cmd), cwd=constants.ROOT)],
         "targets": [target_sls],
         "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:kustomize"],
+        "task_dep": ["_chart_render_env", "check_for:kustomize"],
     }
 
 
