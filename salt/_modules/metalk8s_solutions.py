@@ -368,7 +368,7 @@ def list_available():
     """
     result = collections.defaultdict(list)
 
-    active_mounts = __salt__["mount.active"]()
+    active_mounts = __salt__["mount.active"](extended=True)
     directory_archives = None
 
     for mountpoint, mount_info in active_mounts.items():

@@ -342,6 +342,8 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
             "os.path.isdir", isdir_mock
         ):
             self.assertEqual(metalk8s_solutions.list_available(), result or {})
+            # Only the mountinfo view (extended) reports the root of bind mounts
+            mount_active_mock.assert_called_once_with(extended=True)
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["operator_roles_from_manifest"])
     def test_operator_roles_from_manifest(
