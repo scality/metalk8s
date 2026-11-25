@@ -1,0 +1,10 @@
+kind: Enhanced
+body: |-
+    The `describeKubeResource` WebMCP tool can describe any kind
+    `listKubeResources` lists, from its kind and apiVersion. Credentials keep their
+    key names with each value replaced by `hidden`: Secret data, and any field or
+    env variable named like a credential.
+time: 2026-11-18T17:35:26.586673001Z
+custom:
+    CommentId: "6957016146"
+    Pull: "5258"

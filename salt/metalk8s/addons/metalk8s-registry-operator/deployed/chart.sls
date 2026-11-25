@@ -1,7 +1,12 @@
 #!jinja | metalk8s_kubernetes
+
+{%- from "metalk8s/map.jinja" import repo with context %}
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
-{%- raw %}
+
+
+{% raw %}
+
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -1715,4 +1720,4 @@ webhooks:
     - solutionarchives
   sideEffects: None
 
-{%- endraw %}
+{% endraw %}

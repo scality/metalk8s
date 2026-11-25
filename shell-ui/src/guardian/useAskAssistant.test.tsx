@@ -48,3 +48,23 @@ it('ignores a blank question', () => {
   expect(result.current.isAvailable).toBe(true); // or this would pass for the wrong reason
   expect(result.current.drawer.isOpen).toBe(false);
 });
+
+it('holds the tools the page wants the assistant to start with', () => {
+  const { result } = setup();
+
+  act(() => result.current.ask('Why did it fail?', 'id-1', ['diagnoseOsUpdate']));
+
+  expect(result.current.drawer.pendingPrompt).toEqual({
+    prompt: 'Why did it fail?',
+    promptId: 'id-1',
+    preferredTools: ['diagnoseOsUpdate'],
+  });
+});
+
+it('leaves preferredTools out when the page names none', () => {
+  const { result } = setup();
+
+  act(() => result.current.ask('Why did it fail?', 'id-1', []));
+
+  expect(result.current.drawer.pendingPrompt).toEqual({ prompt: 'Why did it fail?', promptId: 'id-1' });
+});
