@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Build metalk8s-alert-logger against Alertmanager [v0.35.0](https://github.com/prometheus/alertmanager/releases/tag/v0.35.0), matching the Alertmanager now deployed with the kube-prometheus-stack chart
+time: 2026-11-25T06:56:06.868773827Z
+custom:
+    CommentId: "7155306102"
+    Pull: "5274"
