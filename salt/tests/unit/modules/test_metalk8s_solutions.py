@@ -56,7 +56,13 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["configure_archive"])
     def test_configure_archive(
-        self, archive, removed=None, config=None, result=None, raises=False
+        self,
+        archive,
+        removed=None,
+        config=None,
+        result=None,
+        raises=False,
+        realpaths=None,
     ):
         """
         Tests the return of `configure_archive` function
@@ -72,7 +78,11 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
             "_write_config_file": MagicMock(side_effect=_write_config_file_mock),
         }
 
-        with patch.multiple(metalk8s_solutions, **module_mocks):
+        realpath_mock = MagicMock(side_effect=lambda p: (realpaths or {}).get(p, p))
+
+        with patch.multiple(metalk8s_solutions, **module_mocks), patch(
+            "os.path.realpath", realpath_mock
+        ):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,
