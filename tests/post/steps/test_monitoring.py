@@ -418,7 +418,7 @@ def check_service_monitor_targets(k8s_client, prometheus_api, name, namespace, h
         try:
             response = prometheus_api.get_targets(params={"state": "active"})
         except utils.PrometheusApiError as exc:
-            pytest.fail(str(exc))
+            raise AssertionError(f"Prometheus API error: {exc}") from exc
 
         for scrape_pool in scrape_pools:
             targets = [
