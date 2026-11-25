@@ -1,5 +1,5 @@
 import { CoreUITheme, coreUIAvailableThemes, coreUIAvailableThemesNames } from '@scality/core-ui/dist/style/theme';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useShellConfig } from './ShellConfigProvider';
 type ThemeMode = 'dark' | 'light';
 type ThemeContextValues = {
@@ -63,6 +63,13 @@ export function ShellThemeSelectorProvider({
   const assets = {
     logoPath: themeDescription.logoPath,
   };
+
+  // Takes over from the inline script in index-template.html, so <html> follows runtime theme switches
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.backgroundColor = selectedTheme.backgroundLevel1;
+    root.style.colorScheme = themeMode;
+  }, [selectedTheme, themeMode]);
 
   const changeThemeMode = (themeMode: ThemeMode) => {
     setThemeMode(themeMode);

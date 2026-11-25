@@ -51,6 +51,11 @@ def test_pull_registry_ha(host, teardown):
     pass
 
 
+@scenario("../features/registry.feature", "Repositories do not list directories")
+def test_repositories_no_listing(host):
+    pass
+
+
 # }}}
 # When {{{
 
@@ -141,6 +146,14 @@ def stop_repo_pod(context, ssh_config, k8s_client, node_name):
     utils.retry(_wait_repo_stopped, times=24, wait=5)
 
 
+@when(parsers.parse("we request '{path}' on the repositories"))
+def request_repositories(context, control_plane_ip, version, path):
+    url = "http://{}:8080{}".format(
+        control_plane_ip, path.format(saltenv="metalk8s-{}".format(version))
+    )
+    context["response"] = utils.requests_retry_session().get(url)
+
+
 # }}}
 # Then {{{
 
@@ -172,6 +185,15 @@ def reach_registry(utils_pod, host, registry_address):
     assert output.exit_status == 0, (
         f"Unable to reach '{registry_address}' from container:"
         f"\nout: {output.stdout}\nerr: {output.stderr}"
+    )
+
+
+@then(parsers.parse("the repositories answer '{status_code:d}'"))
+def repositories_answer(context, status_code):
+    response = context["response"]
+    assert response.status_code == status_code, (
+        f"{response.request.url} answered {response.status_code}, "
+        f"expected {status_code}:\n{response.text[:500]}"
     )
 
 
