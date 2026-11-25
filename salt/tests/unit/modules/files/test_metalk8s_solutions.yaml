@@ -81,6 +81,30 @@ configure_archive:
     result:
       archives:
         - /tmp/my-other-solution.iso
+  # Ok - another path to a configured archive is not added again
+  - archive: /srv/releases/my-solution.iso
+    realpaths:
+      /srv/releases/my-solution.iso: /usr/share/releases/my-solution
+      /var/lib/releases/my-solution: /usr/share/releases/my-solution
+    config:
+      archives:
+        - /var/lib/releases/my-solution
+    result:
+      archives:
+        - /var/lib/releases/my-solution
+  # Ok - removing through another path removes the configured archive
+  - archive: /srv/releases/my-solution.iso
+    removed: True
+    realpaths:
+      /srv/releases/my-solution.iso: /usr/share/releases/my-solution
+      /var/lib/releases/my-solution: /usr/share/releases/my-solution
+    config:
+      archives:
+        - /var/lib/releases/my-solution
+        - /tmp/my-other-solution.iso
+    result:
+      archives:
+        - /tmp/my-other-solution.iso
   # Nok - solution config is not writable
   - archive: /tmp/my-solution.iso
     raises: True

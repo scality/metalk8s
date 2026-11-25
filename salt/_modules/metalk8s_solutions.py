@@ -111,14 +111,15 @@ def configure_archive(archive, create_config=False, removed=False):
     """Add (or remove) a Solution archive in the config file."""
     config = read_config(create=create_config)
 
+    # Several paths can name one archive (e.g. symlinks to a release shipped
+    # in the node image): compare where they lead.
+    target = os.path.realpath(archive)
+    same = [a for a in config["archives"] if os.path.realpath(a) == target]
+
     if removed:
-        try:
-            config["archives"].remove(archive)
-        except ValueError:
-            pass
-    else:
-        if archive not in config["archives"]:
-            config["archives"].append(archive)
+        config["archives"] = [a for a in config["archives"] if a not in same]
+    elif not same:
+        config["archives"].append(archive)
 
     _write_config_file(config)
     return True
