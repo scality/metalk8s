@@ -10,6 +10,7 @@ import {
   type TaskStatusReport,
   useHostGetTaskStatusTool,
 } from './tasks';
+import { withToolMeta } from './toolMeta';
 import type { ToolContext } from './types';
 
 const renderWithQueryClient = (ui: ReactElement) => {
@@ -257,6 +258,35 @@ describe('_InternalMCPRegistrar', () => {
       );
       const listed = mockModelContext.listTools();
       expect(listed[0].annotations).toEqual({ readOnlyHint: true, openWorldHint: true });
+    });
+
+    it("announces a tool's Guardian hints as _meta and forgets them on unmount", () => {
+      const tool = { ...makeTool({ name: 'diagnose' }), entrypoint: true, reveals: ['readLog'] };
+      const moduleExports = {
+        [MODULE_KEY]: { createTools: () => [tool, makeTool({ name: 'plain' })] },
+      };
+
+      const { unmount } = renderWithQueryClient(
+        <_InternalMCPRegistrar
+          moduleExports={moduleExports}
+          mcpToolsModuleInfo={mcpToolsModuleInfo}
+          selfConfiguration={selfConfiguration}
+          navigate={mockNavigate}
+        />,
+      );
+
+      const announced = withToolMeta([{ name: 'diagnose' }, { name: 'plain' }]);
+      expect(announced).toEqual([
+        {
+          name: 'diagnose',
+          _meta: { 'scality.guardian/entrypoint': true, 'scality.guardian/reveals': ['readLog'] },
+        },
+        { name: 'plain' },
+      ]);
+
+      unmount();
+
+      expect(withToolMeta([{ name: 'diagnose' }])).toEqual([{ name: 'diagnose' }]);
     });
 
     it('registers multiple tools', () => {

@@ -1,0 +1,6 @@
+kind: Added
+body: webmcp to get the prometheus metrics
+time: 2026-11-23T08:58:46.17216265Z
+custom:
+    CommentId: "7096064391"
+    Pull: "5267"

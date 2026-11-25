@@ -4,7 +4,8 @@ import { useShellConfig } from '../initFederation/ShellConfigProvider';
 // Fallback Guardian origin for local development when shell config omits it.
 const GUARDIAN_ORIGIN_FALLBACK = 'http://localhost:8080';
 
-export type PendingPrompt = { prompt: string; promptId: string };
+/** `preferredTools`: the tools the asking page expects the assistant to start with. */
+export type PendingPrompt = { prompt: string; promptId: string; preferredTools?: string[] };
 
 type GuardianDrawerContextValue = {
   isOpen: boolean;
@@ -81,11 +82,15 @@ export const useAskAssistant = () => {
   const isAvailable = Boolean(config.guardianOrigin && config.canUseGuardian);
 
   const ask = useCallback(
-    (prompt: string, promptId?: string) => {
+    (prompt: string, promptId?: string, preferredTools?: string[]) => {
       const asked = prompt.trim();
       if (!isAvailable || !asked) return;
       open();
-      setPendingPrompt({ prompt: asked, promptId: promptId || asked });
+      setPendingPrompt({
+        prompt: asked,
+        promptId: promptId || asked,
+        ...(preferredTools && preferredTools.length > 0 && { preferredTools }),
+      });
     },
     [isAvailable, open, setPendingPrompt],
   );

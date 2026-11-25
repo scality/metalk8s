@@ -11,6 +11,19 @@ Feature: Registry is up and running
     And pods with label 'app.kubernetes.io/name=repositories' are 'Ready'
     Then we can reach registry from inside a container
 
+  Scenario Outline: Repositories do not list directories
+    Given the Kubernetes API is available
+    And pods with label 'app.kubernetes.io/name=repositories' are 'Ready'
+    When we request '<path>' on the repositories
+    Then the repositories answer '<status>'
+
+    Examples:
+      | path               | status |
+      | /                  | 200    |
+      | /{saltenv}/        | 200    |
+      | /metalk8s-0.0.0/   | 404    |
+      | /{saltenv}/redhat/ | 403    |
+
   @registry_ha
   Scenario: Pull container image from registry (HA)
     Given the Kubernetes API is available

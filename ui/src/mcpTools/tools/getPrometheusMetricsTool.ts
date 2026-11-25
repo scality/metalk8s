@@ -34,7 +34,9 @@ const readMetadata = (context: ToolContext, url: string) =>
       if (response?.error) throw new PrometheusFailure(response.error.response?.status);
       return (response?.data ?? {}) as Metadata;
     },
-    { staleTime: METADATA_STALE_MS, retry: false },
+    // cacheTime as long as staleTime: fetchQuery leaves no observer, so the default 5 minutes would
+    // drop the 2 MB before it ever goes stale and the next call would fetch it again.
+    { staleTime: METADATA_STALE_MS, cacheTime: METADATA_STALE_MS, retry: false },
   );
 
 /** The first word of each name, and how many metrics share it, largest first. */
@@ -51,6 +53,13 @@ const prefixesOf = (names: string[]) => {
 
 /** How many values of one label come back; `count` says how many there are. */
 const MAX_LABEL_VALUES = 20;
+
+/**
+ * How many metrics one search returns; `count` says how many matched. A broad word matches
+ * thousands — "mongodb" alone is 5,479 metrics and 1.1 MB on a lab cluster, more than the model's
+ * context — while 100 with their help is about 15 KB.
+ */
+const MAX_SEARCH_RESULTS = 100;
 
 /** Labels are read over the last hour, so a pod long gone does not come back as a value. */
 const LABELS_WINDOW_S = 60 * 60;
@@ -104,7 +113,7 @@ export function createGetPrometheusMetricsTool(context: ToolContext) {
   return {
     name: 'getPrometheusMetrics',
     description:
-      "call this tool when being asked to lists the metrics the platform's Prometheus holds, so you query real names instead of " +
+      "Lists the metrics the platform's Prometheus holds. Call it before writing PromQL, so you query real names instead of " +
       'guessing them: a wrong name returns an empty result, not an error.\n' +
       'Without search, returns this cluster\'s metric prefixes (the first word of each name: "node", ' +
       '"kube", "etcd"…) with how many metrics each holds. With search, returns every metric whose ' +
@@ -115,6 +124,8 @@ export function createGetPrometheusMetricsTool(context: ToolContext) {
       "from the metric names in getAlert's expr.\n" +
       'Metrics made by recording rules (names with a colon) are not listed by search: pass them as ' +
       'metric.\n' +
+      `At most ${MAX_SEARCH_RESULTS} metrics come back: truncated means count matched and only the ` +
+      'first ones are listed, so add words to narrow the search.\n' +
       'count 0 means no name contains those words — try fewer words, or no search. series 0 means ' +
       'the metric has no data right now, not that its value is zero. not_authorized means you ' +
       'could not look — never report that as "no such metric".',
@@ -145,29 +156,27 @@ export function createGetPrometheusMetricsTool(context: ToolContext) {
       if (!url_prometheus) {
         return { status: 'unavailable', message: 'This deployment does not expose Prometheus.' };
       }
-      if (metric !== undefined && !METRIC_NAME.test(metric)) {
+      // Empty is absent, as a blank search is: models send "" for an optional field they leave out.
+      if (metric && !METRIC_NAME.test(metric)) {
         return {
           status: 'malformed',
           message: `"${metric}" is not a metric name. Pass one name exactly as a search returned it.`,
         };
       }
 
-      let metadata: Metadata;
-      try {
-        metadata = await readMetadata(context, url_prometheus);
-      } catch (error) {
-        return unreadable('Prometheus', (error as PrometheusFailure).httpStatus);
-      }
-
       if (metric) {
+        // The labels first, and the 2 MB of metadata beside them rather than before them: it only
+        // adds the type and help, which a recording rule does not have anyway, so its failing must
+        // not take a few-kilobyte label read down with it.
+        const described = readMetadata(context, url_prometheus).catch(() => undefined);
         let read: Awaited<ReturnType<typeof readLabels>>;
         try {
           read = await readLabels(context, url_prometheus, metric);
         } catch (error) {
           return unreadable('Prometheus', (error as PrometheusFailure).httpStatus);
         }
-        // A recording rule has no metadata, and still has labels.
-        const { type, help } = metadata[metric]?.[0] ?? { type: 'unknown', help: '' };
+        const metadata = await described;
+        const { type, help } = metadata?.[metric]?.[0] ?? { type: 'unknown', help: '' };
         // With no series, what the labels endpoint still answers is the labels the proxy adds to
         // every answer (prometheus, prometheus_replica…), for any name, real or not: not this metric's.
         if (!read.series) {
@@ -178,12 +187,21 @@ export function createGetPrometheusMetricsTool(context: ToolContext) {
             help,
             series: 0,
             labels: [],
-            message: metadata[metric]
-              ? `Prometheus knows ${metric} but holds no data for it right now. That is not a value of zero.`
-              : `No metric is named "${metric}". Search for it to get its exact name.`,
+            message: !metadata
+              ? `No series for ${metric} right now: either no metric has that name, or it holds no data. Search for it to tell which.`
+              : metadata[metric]
+                ? `Prometheus knows ${metric} but holds no data for it right now. That is not a value of zero.`
+                : `No metric is named "${metric}". Search for it to get its exact name.`,
           };
         }
         return { status: 'ok', metric, type, help, ...read };
+      }
+
+      let metadata: Metadata;
+      try {
+        metadata = await readMetadata(context, url_prometheus);
+      } catch (error) {
+        return unreadable('Prometheus', (error as PrometheusFailure).httpStatus);
       }
 
       const words = (search ?? '').toLowerCase().split(/\s+/).filter(Boolean);
@@ -208,6 +226,18 @@ export function createGetPrometheusMetricsTool(context: ToolContext) {
           count: 0,
           metrics,
           message: `No metric name contains every word of "${search}". Try fewer words, or call without search to see the prefixes.`,
+        };
+      }
+      if (metrics.length > MAX_SEARCH_RESULTS) {
+        return {
+          status: 'ok',
+          search,
+          count: metrics.length,
+          metrics: metrics.slice(0, MAX_SEARCH_RESULTS),
+          truncated: true,
+          message:
+            `Showing the first ${MAX_SEARCH_RESULTS} of ${metrics.length} metrics matching "${search}". ` +
+            'Add words to narrow the search, or call without search to see how the prefixes split.',
         };
       }
       return { status: 'ok', search, count: metrics.length, metrics };

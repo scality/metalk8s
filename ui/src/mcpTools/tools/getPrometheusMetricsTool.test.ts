@@ -133,6 +133,39 @@ describe('getPrometheusMetrics', () => {
     expect(axios).not.toHaveBeenCalled();
   });
 
+  it('lists the first 100 matches of a broad search, with the real count and how to narrow it', async () => {
+    const data = Object.fromEntries(
+      Array.from({ length: 150 }, (_, i) => [
+        `mongodb_metric_${String(i).padStart(3, '0')}`,
+        [{ type: 'gauge', unit: '', help: `Metric ${i}.` }],
+      ]),
+    );
+    (axios as unknown as jest.Mock).mockResolvedValue({ data: { status: 'success', data } });
+
+    const result = await run({ search: 'mongodb' });
+
+    expect(result).toMatchObject({ status: 'ok', count: 150, truncated: true });
+    expect(result.metrics).toHaveLength(100);
+    expect((result.metrics as { name: string }[])[0].name).toBe('mongodb_metric_000');
+    expect(result.message).toMatch(/first 100 of 150.*Add words/);
+  });
+
+  it('does not mark a search that fits as truncated', async () => {
+    expect(await run({ search: 'node' })).not.toHaveProperty('truncated');
+  });
+
+  it('keeps the metadata cached for as long as it is fresh, though no component observes it', async () => {
+    const context = makeContext();
+    await run({}, context);
+
+    const query = context.queryClient.getQueryCache().find(['prometheusMetadata', '/api/prometheus']);
+    expect(query?.cacheTime).toBe(10 * 60 * 1000);
+  });
+
+  it('treats an empty metric as absent, as a blank search is', async () => {
+    expect(await run({ metric: '' })).toMatchObject({ status: 'ok', count: 3, prefixes: expect.any(Array) });
+  });
+
   describe('with metric: its labels and their values', () => {
     const NOW_S = 1_762_335_120;
     const PODS = Array.from({ length: 25 }, (_, i) => `pod-${String(i).padStart(2, '0')}`);
@@ -224,6 +257,38 @@ describe('getPrometheusMetrics', () => {
 
       expect(result).toMatchObject({ series: 0, labels: [] });
       expect(result.message).toMatch(/Search for it/);
+    });
+
+    it('still answers with the labels when the metadata cannot be read, only without type and help', async () => {
+      (axios as unknown as jest.Mock).mockImplementation(async ({ url }: { url: string }) => {
+        if (url === '/api/v1/metadata') throw { response: { status: 504 } };
+        if (url === '/api/v1/query')
+          return { data: { status: 'success', data: { result: [{ value: [NOW_S, '1'] }] } } };
+        if (url === '/api/v1/labels') return { data: { status: 'success', data: ['__name__', 'instance'] } };
+        return { data: { status: 'success', data: ['node-1'] } };
+      });
+
+      expect(await run({ metric: 'instance:node_cpu_utilisation:rate5m' })).toEqual({
+        status: 'ok',
+        metric: 'instance:node_cpu_utilisation:rate5m',
+        type: 'unknown',
+        help: '',
+        series: 1,
+        labels: [{ name: 'instance', count: 1, values: ['node-1'] }],
+      });
+    });
+
+    it('does not claim a metric does not exist when it could not read the metadata to tell', async () => {
+      (axios as unknown as jest.Mock).mockImplementation(async ({ url }: { url: string }) => {
+        if (url === '/api/v1/metadata') throw { response: { status: 504 } };
+        if (url === '/api/v1/query') return { data: { status: 'success', data: { result: [] } } };
+        return { data: { status: 'success', data: [] } };
+      });
+
+      const result = await run({ metric: 'etcd_server_has_leader' });
+
+      expect(result).toMatchObject({ status: 'ok', series: 0, labels: [] });
+      expect(result.message).toMatch(/either no metric has that name, or it holds no data/);
     });
 
     it('refuses anything but a metric name, since it goes into a query', async () => {

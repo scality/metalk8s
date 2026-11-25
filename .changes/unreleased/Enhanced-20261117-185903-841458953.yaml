@@ -1,0 +1,9 @@
+kind: Enhanced
+body: |-
+    The `listKubeResources` WebMCP tool returns each resource as
+    `kubectl get -A -o wide` prints it, which makes its answer much lighter
+    (27 kB instead of 174 kB for 116 pods).
+time: 2026-11-17T18:59:03.841458953Z
+custom:
+    CommentId: "6956936192"
+    Pull: "5257"
