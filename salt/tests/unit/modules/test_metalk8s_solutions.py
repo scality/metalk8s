@@ -382,6 +382,18 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
             # Only the mountinfo view (extended) reports the root of bind mounts
             mount_active_mock.assert_called_once_with(extended=True)
 
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["stale_fstab_entries"])
+    def test_stale_fstab_entries(self, result, fstab=None, existing=None):
+        """
+        Tests the return of `stale_fstab_entries` function
+        """
+        existing = existing or []
+        with patch.dict(
+            metalk8s_solutions.__salt__,
+            {"mount.fstab": MagicMock(return_value=fstab or {})},
+        ), patch("os.path.exists", MagicMock(side_effect=lambda p: p in existing)):
+            self.assertEqual(metalk8s_solutions.stale_fstab_entries(), result)
+
     @utils.parameterized_from_cases(YAML_TESTS_CASES["operator_roles_from_manifest"])
     def test_operator_roles_from_manifest(
         self, manifest=None, result=None, raises=False

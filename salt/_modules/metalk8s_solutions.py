@@ -502,6 +502,26 @@ def list_available():
     return dict(result)
 
 
+def stale_fstab_entries():
+    """List the fstab entries of Solution mounts whose source no longer exists.
+
+    Such an entry is left behind when the source vanishes before the archive is
+    unimported, e.g. a release shipped by an image deployment that got pruned:
+    it can never be mounted again, and unimporting it is impossible.
+
+    Returns a dict of mount point to source.
+    """
+    result = {}
+    for mountpoint, info in __salt__["mount.fstab"]().items():
+        if not mountpoint.startswith(f"{SOLUTIONS_ROOT}/"):
+            continue
+        if mountpoint.startswith(f"{SOLUTIONS_ROOT}/metalk8s-"):
+            continue
+        if not os.path.exists(info["device"]):
+            result[mountpoint] = info["device"]
+    return result
+
+
 OPERATOR_ROLES_MANIFEST = "operator/deploy/role.yaml"
 
 

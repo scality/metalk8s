@@ -155,4 +155,14 @@ Clean mountpoint for Solution {{ display_name }}:
       {%- endif %}
     {%- endfor %}
   {%- endfor %}
+
+  {#- An archive whose source vanished before it was unimported can neither be
+      mounted nor unimported anymore: drop its fstab entry #}
+  {%- for mountpoint, device in salt['metalk8s_solutions.stale_fstab_entries']().items() %}
+Remove stale fstab entry for {{ mountpoint }}:
+  mount.unmounted:
+    - name: {{ mountpoint }}
+    - device: {{ device }}
+    - persist: True
+  {%- endfor %}
 {%- endif %}

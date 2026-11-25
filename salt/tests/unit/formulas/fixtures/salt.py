@@ -530,6 +530,13 @@ register_basic("metalk8s_service_configuration.get_pod_affinity")(
 
 # Used in metalk8s.salt.master.installed to mount Solution ISOs in the salt-master Pod.
 register_basic("metalk8s_solutions.list_available")(MagicMock(return_value={}))
+register_basic("metalk8s_solutions.stale_fstab_entries")(
+    MagicMock(
+        return_value={
+            "/srv/scality/example-solution-0.9.0": "/srv/scality/releases/example-solution-0.9.0"
+        }
+    )
+)
 
 
 @register_basic("metalk8s_solutions.manifest_from_iso")

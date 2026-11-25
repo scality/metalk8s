@@ -1,0 +1,10 @@
+kind: Fix
+body: |-
+    Unimport cleanly Solutions served from image-based hosts: an unimported
+    Solution is unmounted when `/srv` is a symlink, its fstab entry keeps the
+    options the state sets instead of those of the image mount, and an archive
+    whose source vanished (pruned image deployment) can still be unimported, its
+    stale fstab entry being dropped
+time: 2026-11-25T16:00:00.000000003Z
+custom:
+    Pull: "0000"

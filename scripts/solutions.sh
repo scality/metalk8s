@@ -142,11 +142,7 @@ while :; do
     case $1 in
         -a|--archive)
             shift
-            if [ ! -e "$1" ]; then
-                echo 1>&2 "No such file or directory '$1'"
-                exit 1
-            fi
-            ARCHIVES+=("$(realpath -s "$1")")
+            ARCHIVES+=("$(realpath -ms "$1")")
             ;;
         -d|--description)
             shift
@@ -274,7 +270,13 @@ configure_archives() {
     local removed=${1:-False}
 
     for archive in "${ARCHIVES[@]}"; do
-        if [ -d "$archive" ]; then
+        # An archive whose source vanished can still be unimported
+        if [ "$removed" = True ]; then
+            :
+        elif [ ! -e "$archive" ]; then
+            echo "No such file or directory '$archive'" 1>&2
+            return 1
+        elif [ -d "$archive" ]; then
             if [ ! -f "$archive/manifest.yaml" ]; then
                 echo "Directory '$archive' is not an extracted Solution archive" 1>&2
                 return 1

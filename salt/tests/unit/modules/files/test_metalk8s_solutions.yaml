@@ -640,3 +640,32 @@ operator_roles_from_manifest:
       kind: Node
     result: Forbidden object kind 'Node' provided in '.*'
     raises: True
+
+stale_fstab_entries:
+  # Solution mount whose source vanished (pruned image deployment)
+  - fstab:
+      /srv/scality/my-solution-1.0.0:
+        device: /var/lib/artesca/releases/my-solution-1.0.0
+      /srv/scality/my-solution-1.1.0:
+        device: /var/lib/artesca/releases/my-solution-1.1.0
+    existing:
+      - /var/lib/artesca/releases/my-solution-1.1.0
+    result:
+      /srv/scality/my-solution-1.0.0: /var/lib/artesca/releases/my-solution-1.0.0
+  # MetalK8s archives and mounts outside /srv/scality are never reported
+  - fstab:
+      /srv/scality/metalk8s-1.2.3:
+        device: /srv/scality/releases/metalk8s-1.2.3.iso
+      /mnt/data:
+        device: /dev/sdb1
+      /srv/scality-other/x:
+        device: /nowhere/x
+    result: {}
+  # Nothing stale
+  - fstab:
+      /srv/scality/my-solution-1.0.0:
+        device: /srv/scality/releases/my-solution-1.0.0.iso
+    existing:
+      - /srv/scality/releases/my-solution-1.0.0.iso
+    result: {}
+  - result: {}
