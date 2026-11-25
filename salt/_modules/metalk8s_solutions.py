@@ -6,6 +6,9 @@ for the K8s operations in the virtual `metalk8s_solutions` module.
 
 import collections
 import errno
+import functools
+import hashlib
+import json
 import os
 import logging
 import re
@@ -185,6 +188,85 @@ def list_solution_images(mountpoint):
             )
 
     return solution_images
+
+
+def registry_config(name, *solution_ids):
+    """Render the registry configuration exposing the images of several
+    versions of the Solution `name` under the `name` prefix, without version.
+
+    A tag shipped by several versions is the same image, the newest version
+    serves it.
+
+    CLI Examples:
+
+    .. code-block:: bash
+
+        salt-call metalk8s_solutions.registry_config \
+            example-solution example-solution-1.0.0 example-solution-1.1.0
+    """
+    versions = sorted(
+        (solution_id[len(name) + 1 :] for solution_id in solution_ids),
+        key=functools.cmp_to_key(__salt__["pkg.version_cmp"]),
+        reverse=True,
+    )
+
+    images = {}
+    for version in versions:
+        solution_id = f"{name}-{version}"
+        mountpoint = os.path.join(SOLUTIONS_ROOT, solution_id)
+        for image in list_solution_images(mountpoint):
+            image_name, _, tag = image.partition(":")
+            images.setdefault(image_name, {}).setdefault(tag, solution_id)
+
+    config = []
+    for image_name, tags in sorted(images.items()):
+        tag_list = json.dumps({"name": image_name, "tags": sorted(tags)})
+        config.append(f"""
+location = /v2/{name}/{image_name}/tags/list {{
+    types {{ }} default_type "application/json";
+    return 200 '{tag_list}';
+}}
+""")
+
+        seen_digests = set()
+        for tag, solution_id in sorted(tags.items()):
+            image_dir = os.path.join(
+                SOLUTIONS_ROOT, solution_id, "images", image_name, tag
+            )
+            with salt.utils.files.fopen(
+                os.path.join(image_dir, "manifest.json"), "rb"
+            ) as fd:
+                digest = hashlib.sha256(fd.read()).hexdigest()
+
+            references = [tag]
+            if digest not in seen_digests:
+                references.append(f"sha256:{digest}")
+            seen_digests.add(digest)
+
+            for reference in references:
+                config.append(f"""
+location = "/v2/{name}/{image_name}/manifests/{reference}" {{
+    alias {image_dir}/;
+    types {{ }} default_type "application/vnd.docker.distribution.manifest.v2+json";
+    add_header 'Docker-Content-Digest' 'sha256:{digest}';
+    try_files manifest.json =404;
+    error_page 404 @404_tag;
+}}
+""")
+
+        # Blobs are looked up in every version still exposing a tag
+        paths = " ".join(
+            f"{solution_id}/images/{image_name}/{tag}/$1"
+            for tag, solution_id in sorted(tags.items())
+        )
+        config.append(f"""
+location ~ "/v2/{name}/{image_name}/blobs/sha256:([a-f0-9]{{64}})" {{
+    alias {SOLUTIONS_ROOT}/;
+    try_files {paths} =404;
+}}
+""")
+
+    return "".join(config)
 
 
 def _default_solution_manifest(mountpoint, name, version):

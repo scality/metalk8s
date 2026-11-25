@@ -57,6 +57,9 @@ Install repositories manifest:
       - {{ salt.file.join(repo.config.directory, '99-' ~ env ~ '-registry.inc') }}
       {%- endif %}
     {%- endfor %}
+    {%- for name in solutions.keys() | sort %}
+      - {{ salt.file.join(repo.config.directory, name ~ '-registry-config.inc') }}
+    {%- endfor %}
     - context:
         container_port: {{ repo.port }}
         image: {{ image_fullname }}

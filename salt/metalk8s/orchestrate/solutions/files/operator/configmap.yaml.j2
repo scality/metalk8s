@@ -17,7 +17,7 @@ data:
     repositories:
 {%- for version_info in pillar.metalk8s.solutions.available.get(solution, []) %}
       {{ version_info.version }}:
-        - endpoint: {{ registry }}/{{ version_info.id }}
+        - endpoint: {{ registry }}/{{ solution }}
           images:
             {{ version_info.manifest.spec.images | yaml(False) | indent(12) }}
 {%- endfor %}
