@@ -146,7 +146,7 @@ while :; do
                 echo 1>&2 "No such file or directory '$1'"
                 exit 1
             fi
-            ARCHIVES+=("$(readlink -f "$1")")
+            ARCHIVES+=("$(realpath -s "$1")")
             ;;
         -d|--description)
             shift
