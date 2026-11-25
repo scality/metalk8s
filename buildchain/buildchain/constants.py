@@ -84,7 +84,13 @@ UI_ASSETS: Path = UI_BRANDING / "assets"
 
 # Path to the chart files
 CHART_ROOT: Path = ROOT / "charts"
-CHART_RENDER_SCRIPT: Path = CHART_ROOT / "render.py"
+
+# Path to the kustomize files
+KUSTOMIZE_ROOT: Path = ROOT / "kustomizes"
+
+# Path to the render tool, for Helm charts and kustomize directories
+RENDER_ROOT: Path = ROOT / "buildchain/render"
+RENDER_SCRIPTS: List[Path] = sorted(RENDER_ROOT.glob("*.py"))
 
 # }}}
 # Vagrant parameters {{{
@@ -154,7 +160,10 @@ METALK8S_OPERATOR_SDK_GENERATE_CMDS: List[List[str]] = [
     [config.ExtCommand.MAKE.value, "metalk8s"],
 ]
 
-CHART_RENDER_CMD: str = f"tox -e chart-render -- --kube-version {versions.K8S_VERSION}"
+CHART_RENDER_CMD: str = (
+    f"tox -e chart-render -- helm --kube-version {versions.K8S_VERSION}"
+)
+KUSTOMIZE_RENDER_CMD: List[str] = ["tox", "-e", "chart-render", "--", "kustomize"]
 
 # For mypy, see `--no-implicit-reexport` documentation.
 __all__ = ["ROOT"]

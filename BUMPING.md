@@ -168,17 +168,17 @@ Target versions are pinned in `tools/upgrade-operator-sdk/<name>/config.yaml`:
 
 ```yaml
 operator_sdk_version: v1.42.3    # target operator-sdk release
-go_toolchain: go1.26.9           # pin Go toolchain (for GOTOOLCHAIN)
-k8s_libs: v0.36.5                # pin k8s.io libs version
-# Optional: pins applied on top of the scaffold, needed when k8s_libs
-# is pinned past what operator-sdk scaffolds.
-controller_runtime: v0.24.1      # pin sigs.k8s.io/controller-runtime
-controller_tools: v0.21.0        # pin CONTROLLER_TOOLS_VERSION in the Makefile
+go_toolchain: go1.27.4           # pin Go toolchain (for GOTOOLCHAIN)
+k8s_libs: v0.33.13               # pin k8s.io libs version
+# Optional: pins applied on top of the scaffold, needed when go_toolchain
+# or k8s_libs is pinned past what operator-sdk scaffolds.
+# controller_runtime: v0.21.0    # pin sigs.k8s.io/controller-runtime
+# controller_tools: v0.18.0      # pin CONTROLLER_TOOLS_VERSION in the Makefile
 golangci_lint: v2.14.0           # pin GOLANGCI_LINT_VERSION in the Makefile
 ```
 
-The Dockerfile builder image follows `go_toolchain` (e.g. `go1.26.9` gives
-`golang:1.26`).
+The Dockerfile builder image follows `go_toolchain` (e.g. `go1.27.4` gives
+`golang:1.27`).
 
 After scaffolding, the script detects the latest available versions (operator-sdk
 from GitHub, Go and k8s.io patches from go.dev / module proxy) and compares with

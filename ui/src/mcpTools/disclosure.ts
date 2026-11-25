@@ -2,11 +2,12 @@
 //
 // This is policy, not Kubernetes: it lives here rather than in services/k8s because the service has
 // other callers. A panel rendering a pod for the administrator whose cluster it is may want the
-// environment values withheld here, and it should not have to argue with the service about it.
+// values withheld here, and it should not have to argue with the service about it.
 //
-// Two reasons to withhold. Credentials: excluding Secret is necessary and not sufficient, because a
-// pod spec and a ConfigMap carry them just as readily. And bulk: a single object normally fits
-// whole, but some arrive outsized on their own, and a model's context is not free.
+// Two reasons to withhold. Credentials: a Secret's values, a ConfigMap's, and any field or env
+// variable named like a credential, whatever its kind. And
+// bulk: a single object normally fits whole, but some arrive outsized, and a model's context is not
+// free.
 
 /** Whatever the API returned. Only the keys this file touches are named. */
 type KubeObject = {
@@ -34,22 +35,29 @@ const LAST_APPLIED = 'kubectl.kubernetes.io/last-applied-configuration';
 /** Wherever a pod template puts its containers, these are the arrays holding them. */
 const CONTAINER_KEYS = new Set(['containers', 'initContainers', 'ephemeralContainers']);
 
-const withoutEnvValues = (container: unknown, dropped: { any: boolean }): unknown => {
+const withoutEnvCredentials = (container: unknown, hidden: { any: boolean }): unknown => {
   const env = (container as { env?: { name?: string; value?: string }[] })?.env;
   if (!Array.isArray(env)) return container;
 
   return {
     ...(container as object),
     env: env.map((variable) => {
-      const { value, ...withoutValue } = variable ?? {};
-      if (value !== undefined) dropped.any = true;
-      return withoutValue;
+      if (typeof variable?.value !== 'string' || variable.value === HIDDEN) return variable;
+      const value =
+        typeof variable.name === 'string' && isCredentialName(variable.name)
+          ? HIDDEN
+          : withoutCredentialText(variable.value);
+      if (value === variable.value) return variable;
+      hidden.any = true;
+      return { ...variable, value };
     }),
   };
 };
 
 /**
- * Environment values dropped, their names kept — wherever in the object the containers are.
+ * Environment values named like a credential, hidden, their names kept — wherever in the object the
+ * containers are, or whose value is one (a private key, a URL with a password). The others stay: a
+ * port, a host or a feature flag is what a diagnosis reads.
  *
  * It walks rather than reaching for a path, because every kind puts its pod template somewhere
  * different: a Pod at `spec.containers`, a ReplicaSet or Job at `spec.template.spec.containers`, a
@@ -57,20 +65,20 @@ const withoutEnvValues = (container: unknown, dropped: { any: boolean }): unknow
  * wherever its author chose. Reaching for a path covers the kinds someone wrote down, and a kind
  * reached by apiVersion is by definition one nobody did.
  *
- * Excluding Secret is necessary and not sufficient: a pod spec holds a password just as readily.
- * The names and any `valueFrom` reference survive, which is what a diagnosis reads — that a variable
- * is set, and where it comes from.
+ * A Secret's values are not the only credentials: a pod spec holds a password just as readily, but
+ * as `{ name, value }`, so the name matched against the credential words is the variable's. Any
+ * `valueFrom` reference survives: it says where the variable comes from, not what it is.
  */
-export const withoutEnvironmentValues = (value: unknown, dropped: { any: boolean }): unknown => {
-  if (Array.isArray(value)) return value.map((nested) => withoutEnvironmentValues(nested, dropped));
+const withoutEnvironmentCredentials = (value: unknown, hidden: { any: boolean }): unknown => {
+  if (Array.isArray(value)) return value.map((nested) => withoutEnvironmentCredentials(nested, hidden));
   // A Date survives only by being returned as it is: entries() on one gives nothing back.
   if (value === null || typeof value !== 'object' || value instanceof Date) return value;
 
   return Object.fromEntries(
     Object.entries(value as Record<string, unknown>).map(([key, nested]) =>
       CONTAINER_KEYS.has(key) && Array.isArray(nested)
-        ? [key, nested.map((container) => withoutEnvValues(container, dropped))]
-        : [key, withoutEnvironmentValues(nested, dropped)],
+        ? [key, nested.map((container) => withoutEnvCredentials(container, hidden))]
+        : [key, withoutEnvironmentCredentials(nested, hidden)],
     ),
   );
 };
@@ -93,8 +101,262 @@ const withoutConfigMapValues = (kind: string, object: KubeObject, omitted: strin
   return { ...rest, dataKeys: [...Object.keys(data ?? {}), ...Object.keys(binaryData ?? {})] };
 };
 
+/** What a withheld value is replaced with: the key stays, so the model knows the value exists. */
+const HIDDEN = 'hidden';
+
 /**
- * The annotation `kubectl apply` writes: a verbatim JSON copy of the applied spec, env values and
+ * A Secret with each key kept and its value hidden. `stringData` is write-only and never comes back
+ * from the API, so it is dropped if present.
+ */
+const withoutSecretValues = (kind: string, object: KubeObject, omitted: string[]): KubeObject => {
+  if (kind !== 'secrets') return object;
+
+  const { data, stringData, ...rest } = object as KubeObject & {
+    data?: Record<string, string>;
+    stringData?: Record<string, string>;
+  };
+  if (!data && !stringData) return object;
+
+  omitted.push('Secret values (keys kept)');
+  return { ...rest, data: Object.fromEntries(Object.keys(data ?? {}).map((key) => [key, HIDDEN])) };
+};
+
+/**
+ * The words a credential's name is made of, matched in any field or env variable name outside
+ * `metadata`, on any kind: `adminPassword`, `PGPASSWORD`, `secretAccessKey`, `refreshToken`,
+ * `client_secret`. Names are split on case and separators; the first four words are also matched
+ * inside a word, for names written as one (`PGPASSWORD`).
+ *
+ * Gathered from the kinds deployed on an ARTESCA cluster and from Dex and Keycloak. A field holding a
+ * Secret's NAME under such a name is hidden too, which is the cost of a rule that does not know every
+ * kind.
+ */
+const CREDENTIAL_WORDS = new Set([
+  'password',
+  'passwd',
+  'secret',
+  'token',
+  'pass',
+  'pwd',
+  'pw',
+  'credential',
+  'credentials',
+  'hmac',
+  'kubeconfig',
+  'authorization',
+  // Two words that make a credential only together: `accessKey`, `ACCESS_KEY`, `user_code`.
+  'accesskey',
+  'secretkey',
+  'privatekey',
+  'apikey',
+  'hmackey',
+  'devicecode',
+  'usercode',
+  'connectordata',
+  'encryptionkey',
+  'signingkey',
+  'masterkey',
+  'sessionkey',
+  'cookiekey',
+  'sshkey',
+  'accesskeys',
+  'privatekeys',
+  'apikeys',
+]);
+const CREDENTIAL_WORD_PARTS = ['password', 'passwd', 'passphrase', 'secret', 'token'];
+
+/** Too common a word to match inside a longer name (`pod-template-hash`), so only on its own. */
+const CREDENTIAL_NAMES = new Set(['hash']);
+
+/**
+ * A last word that makes the name a reference or a setting, not a credential: `secretName`,
+ * `secretKeyRef`, `bearerTokenFile`, `passwordSecretRef`, `encryptionKeyVersion`. `key` is one only after a word it does not
+ * make a credential with: `passwordKey` names a key in a Secret, `secretKey` is the key itself.
+ */
+const REFERENCE_WORDS = new Set([
+  'name',
+  'names',
+  'ref',
+  'file',
+  'path',
+  'dir',
+  'namespace',
+  'selector',
+  'version',
+  'key',
+]);
+
+/**
+ * Credentials recognised by the value whatever the name: a PEM private key (`tlsKey`, `caKey`), also
+ * base64-encoded (`client-key-data` in a kubeconfig), and a URL carrying a password
+ * (`DATABASE_URL=postgres://user:pass@host`).
+ */
+const PRIVATE_KEY = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
+/** `-----BEGIN` in base64, and the run that follows it. */
+const ENCODED_PEM = /LS0tLS1CRUdJTi[A-Za-z0-9+/=]+/g;
+const URL_WITH_PASSWORD = /:\/\/[^/\s:@]+:[^/\s@]+@/;
+
+const decodesToPrivateKey = (run: string) => {
+  try {
+    return PRIVATE_KEY.test(atob(run.slice(0, run.length - (run.length % 4))));
+  } catch {
+    return false;
+  }
+};
+
+const isCredentialText = (text: string) =>
+  PRIVATE_KEY.test(text) || URL_WITH_PASSWORD.test(text) || (text.match(ENCODED_PEM) ?? []).some(decodesToPrivateKey);
+
+/** A command-line flag, as `--db-password=value` or `--db-password` followed by its value. */
+const FLAG_WITH_VALUE = /^(-{1,2}([A-Za-z0-9_.-]+)=)./;
+const BARE_FLAG = /^-{1,2}([A-Za-z0-9_.-]+)$/;
+
+/**
+ * Text, or a list of it, with its credentials hidden item by item, so a container's other `args`
+ * stay readable: a credential text, the value of a credential flag (`--db-password=hidden`), and the
+ * item after a bare one (`--token`, `hidden`). The same value comes back when nothing is hidden.
+ */
+const withoutCredentialText = <T extends string | string[]>(value: T): T => {
+  const items: string[] = Array.isArray(value) ? value : [value];
+  let changed = false;
+  const kept = items.map((item, i) => {
+    const flag = FLAG_WITH_VALUE.exec(item);
+    const previousFlag = i > 0 ? BARE_FLAG.exec(items[i - 1])?.[1] : undefined;
+    let next = item;
+    if (flag) {
+      if (isCredentialName(flag[2]) || isCredentialText(item)) next = `${flag[1]}${HIDDEN}`;
+    } else if ((previousFlag && isCredentialName(previousFlag) && !item.startsWith('-')) || isCredentialText(item)) {
+      next = HIDDEN;
+    }
+    if (next !== item) changed = true;
+    return next;
+  });
+  if (!changed) return value;
+  return (Array.isArray(value) ? kept : kept[0]) as T;
+};
+
+const wordsOf = (name: string) =>
+  name
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+
+const isCredentialName = (name: string): boolean => {
+  if (CREDENTIAL_NAMES.has(name.toLowerCase())) return true;
+  const words = wordsOf(name);
+  const joined = (i: number) => (i > 0 ? words[i - 1] + words[i] : '');
+  const last = words.length - 1;
+  if (REFERENCE_WORDS.has(words[last])) return words[last] === 'key' && CREDENTIAL_WORDS.has(joined(last));
+  return words.some(
+    (word, i) =>
+      CREDENTIAL_WORDS.has(word) ||
+      CREDENTIAL_WORDS.has(joined(i)) ||
+      CREDENTIAL_WORD_PARTS.some((part) => word.includes(part)),
+  );
+};
+
+/**
+ * Inside a map named like a credential (`secrets: { db: '…' }`), what is kept: a reference such as
+ * `secretName`, or a bare `key` naming a Secret's key. `AWS_KEY` there is the credential itself.
+ */
+const isReferenceName = (name: string): boolean => {
+  const words = wordsOf(name);
+  const last = words[words.length - 1];
+  return REFERENCE_WORDS.has(last) && (last !== 'key' || words.length === 1);
+};
+
+/** Credential fields whose value is an object or a list of objects: hidden whole, whatever it holds. */
+const CREDENTIAL_OBJECTS = new Set(['mfaSecrets', 'webauthnCredentials'].map((name) => name.toLowerCase()));
+
+/** The private parts of a JSON Web Key; `kty`, `kid`, `n` and `e` are public. */
+const JWK_PRIVATE_FIELDS = new Set(['d', 'p', 'q', 'dp', 'dq', 'qi', 'k']);
+
+const isText = (value: unknown) =>
+  typeof value === 'string' ||
+  (Array.isArray(value) && value.length > 0 && value.every((item) => typeof item === 'string'));
+
+/**
+ * Every credential in `value` hidden, everything else kept, any `metadata` (its labels and
+ * annotations hold hashes, never credentials) left alone. Besides the names and values above,
+ * four shapes:
+ * the private parts of a JSON Web Key (any object with a `kty`), the `value` of a `credentials`
+ * list item (a Keycloak user's password), the `value` of any `{ name, value }` item whose name
+ * is a credential's, as env is written outside a container (`additionalOptions`, `extraEnv`), and
+ * every text in a map of credentials but its references.
+ *
+ * A map of credentials is named in the plural (`secrets: { db: '…' }`, `credentials: { … }`). A
+ * singular one describes a single credential instead — `serviceAccountToken: { audience, path }`,
+ * `secret: { secretName, defaultMode }`, `privateKey: { algorithm, size }` — and is only walked into.
+ * Nor is a CRD schema's `properties`: `properties.secrets` describes the field, it holds none.
+ */
+const withoutCredentialFields = (
+  value: unknown,
+  hidden: { any: boolean },
+  within?: 'credentials' | 'credentialMap' | 'schema',
+): unknown => {
+  if (Array.isArray(value)) return value.map((item) => withoutCredentialFields(item, hidden, within));
+  if (value === null || typeof value !== 'object' || value instanceof Date) return value;
+
+  const isKey = 'kty' in (value as Record<string, unknown>);
+  const itemName = (value as { name?: unknown }).name;
+  const isNamedCredential = typeof itemName === 'string' && isCredentialName(itemName);
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([key, nested]) => {
+      if (key === 'metadata') return [key, nested];
+      const name = key.toLowerCase();
+      const isCredential =
+        CREDENTIAL_OBJECTS.has(name) ||
+        // A number counts under its own credential name only (`pin: 1234`), not as a setting in a map.
+        ((isText(nested) || typeof nested === 'number') && isCredentialName(key)) ||
+        (isText(nested) &&
+          (((within === 'credentials' || isNamedCredential) && name === 'value') ||
+            (within === 'credentialMap' && !isReferenceName(key)))) ||
+        (isKey && JWK_PRIVATE_FIELDS.has(key));
+      // Already hidden (a Secret's data): nothing left to withhold, and nothing to report twice.
+      if (isCredential && nested !== undefined && nested !== HIDDEN) {
+        hidden.any = true;
+        return [key, HIDDEN];
+      }
+      if (isText(nested)) {
+        const kept = withoutCredentialText(nested as string | string[]);
+        if (kept !== nested) hidden.any = true;
+        return [key, kept];
+      }
+      // A JSON Web Key keeps its own rule: its public parts stay readable.
+      const isMap = nested !== null && typeof nested === 'object' && !Array.isArray(nested) && !('kty' in nested);
+      const isCredentialMap =
+        isMap && within !== 'schema' && isCredentialName(key) && wordsOf(key).pop()?.endsWith('s');
+      const scope = isCredentialMap
+        ? 'credentialMap'
+        : name === 'credentials'
+          ? 'credentials'
+          : key === 'properties'
+            ? 'schema'
+            : undefined;
+      return [key, withoutCredentialFields(nested, hidden, scope)];
+    }),
+  );
+};
+
+/**
+ * The object with its credentials hidden. Dex's `config` — a connector's settings, LDAP password
+ * included — is too common a name for the list, so it is matched on Dex's group only.
+ */
+const withoutCredentials = (object: KubeObject, omitted: string[]): KubeObject => {
+  const hidden = { any: false };
+  const isDex = String(object.apiVersion ?? '').startsWith('dex.coreos.com/');
+  const body = isDex && object.config !== undefined ? { ...object, config: HIDDEN } : object;
+  if (body !== object) hidden.any = true;
+  const kept = withoutCredentialFields(body, hidden) as KubeObject;
+
+  if (!hidden.any) return object;
+  omitted.push('credentials (fields kept)');
+  return kept;
+};
+
+/**
+ * The annotation `kubectl apply` writes: a verbatim JSON copy of the applied spec, credentials and
  * all. Dropped every time rather than only when the object is outsized — redacting the spec and
  * leaving its copy behind would hand the values over anyway — and it says nothing `spec` does not.
  */
@@ -164,12 +426,15 @@ const sizeDown = (object: KubeObject, omitted: string[]): KubeObject => {
 export const disclose = (kind: string, object: KubeObject): { resource: KubeObject; omitted: string[] } => {
   const omitted: string[] = [];
 
-  const dropped = { any: false };
-  const redacted = withoutEnvironmentValues(object, dropped) as KubeObject;
-  if (dropped.any) omitted.push('env values (names kept)');
+  const hidden = { any: false };
+  let resource = withoutEnvironmentCredentials(object, hidden) as KubeObject;
+  if (hidden.any) omitted.push('credential env values (names kept)');
 
-  return {
-    resource: sizeDown(withoutConfigMapValues(kind, withoutLastApplied(redacted, omitted), omitted), omitted),
-    omitted,
-  };
+  resource = withoutLastApplied(resource, omitted);
+  resource = withoutConfigMapValues(kind, resource, omitted);
+  resource = withoutSecretValues(kind, resource, omitted);
+  resource = withoutCredentials(resource, omitted);
+  resource = sizeDown(resource, omitted);
+
+  return { resource, omitted };
 };
