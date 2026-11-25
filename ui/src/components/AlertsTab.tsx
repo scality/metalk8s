@@ -88,7 +88,9 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
         return <FormattedDateTime value={new Date(value)} format="date-time-second" />;
       },
     },
-    ...(canAskGuardian ? [askGuardianColumn<{ alert: Alert }>((row) => row.alert)] : []),
+    ...(canAskGuardian
+      ? [askGuardianColumn<{ alert: Alert }>((row) => row.alert, { alignItems: 'flex-end', marginRight: spacing.r16 })]
+      : []),
   ];
   return (
     <Box display="flex" flexDirection="column" height="100%" width="100%">
