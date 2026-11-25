@@ -34,6 +34,7 @@ priorityClassName: {{ . }}
         (and .Values.sidecar.alerts.enabled .Values.sidecar.alerts.initAlerts)
         (and .Values.sidecar.datasources.enabled .Values.sidecar.datasources.initDatasources)
         (and .Values.sidecar.notifiers.enabled .Values.sidecar.notifiers.initNotifiers)
+        (and .Values.sidecar.plugins.enabled .Values.sidecar.plugins.initPlugins)
         (and .Values.sidecar.dashboards.enabled .Values.sidecar.dashboards.initDashboards)) }}
 initContainers:
 {{- end }}
@@ -76,7 +77,7 @@ initContainers:
     {{- end }}
     imagePullPolicy: {{ .Values.downloadDashboardsImage.pullPolicy }}
     command: ["/bin/sh"]
-    args: [ "-c", "mkdir -p /var/lib/grafana/dashboards/default && /bin/sh -x /etc/grafana/download_dashboards.sh" ]
+    args: [ "/etc/grafana/download_dashboards.sh" ]
     {{- with .Values.downloadDashboards.resources }}
     resources:
       {{- toYaml . | nindent 6 }}
@@ -446,6 +447,76 @@ initContainers:
       {{- toYaml . | trim | nindent 6 }}
       {{- end }}
 {{- end}}
+{{- if and .Values.sidecar.plugins.enabled .Values.sidecar.plugins.initPlugins }}
+  - name: {{ include "grafana.name" . }}-init-sc-plugins
+    {{- $registry := .Values.global.imageRegistry | default .Values.sidecar.image.registry -}}
+    {{- if .Values.sidecar.image.sha }}
+    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
+    {{- else }}
+    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+    {{- end }}
+    imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+    env:
+      {{- range $key, $value := .Values.sidecar.plugins.env }}
+      - name: "{{ $key }}"
+        value: "{{ $value }}"
+      {{- end }}
+      {{- if .Values.sidecar.plugins.ignoreAlreadyProcessed }}
+      - name: IGNORE_ALREADY_PROCESSED
+        value: "true"
+      {{- end }}
+      - name: METHOD
+        value: LIST
+      - name: LABEL
+        value: "{{ tpl .Values.sidecar.plugins.label $root }}"
+      {{- if .Values.sidecar.plugins.labelValue }}
+      - name: LABEL_VALUE
+        value: {{ quote (tpl .Values.sidecar.plugins.labelValue $) }}
+      {{- end }}
+      {{- if or .Values.sidecar.logLevel .Values.sidecar.plugins.logLevel }}
+      - name: LOG_LEVEL
+        value: {{ default .Values.sidecar.logLevel .Values.sidecar.plugins.logLevel }}
+      {{- end }}
+      - name: FOLDER
+        value: "/etc/grafana/provisioning/plugins"
+      - name: RESOURCE
+        value: {{ quote .Values.sidecar.plugins.resource }}
+      {{- if .Values.sidecar.plugins.resourceName }}
+      - name: RESOURCE_NAME
+        value: {{ quote .Values.sidecar.plugins.resourceName }}
+      {{- end }}
+      {{- with .Values.sidecar.enableUniqueFilenames }}
+      - name: UNIQUE_FILENAMES
+        value: "{{ . }}"
+      {{- end }}
+      {{- with .Values.sidecar.plugins.searchNamespace }}
+      - name: NAMESPACE
+        value: "{{ tpl (. | join ",") $root }}"
+      {{- end }}
+      {{- $skipTlsVerify := ternary .Values.sidecar.plugins.skipTlsVerify .Values.sidecar.skipTlsVerify (kindIs "bool" .Values.sidecar.plugins.skipTlsVerify) }}
+      {{- if $skipTlsVerify }}
+      - name: SKIP_TLS_VERIFY
+        value: "true"
+      {{- end }}
+      {{- with .Values.sidecar.plugins.script }}
+      - name: SCRIPT
+        value: {{ quote . }}
+      {{- end }}
+    {{- with .Values.sidecar.resources }}
+    resources:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.sidecar.securityContext }}
+    securityContext:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    volumeMounts:
+      - name: sc-plugins-volume
+        mountPath: "/etc/grafana/provisioning/plugins"
+      {{- with .Values.sidecar.plugins.extraMounts }}
+      {{- toYaml . | trim | nindent 6 }}
+      {{- end }}
+{{- end }}
 {{- if and .Values.sidecar.dashboards.enabled .Values.sidecar.dashboards.initDashboards }}
   - name: {{ include "grafana.name" . }}-init-sc-dashboard
     {{- $registry := .Values.global.imageRegistry | default .Values.sidecar.image.registry -}}
@@ -1242,12 +1313,146 @@ containers:
       {{- toYaml . | trim | nindent 6 }}
       {{- end }}
 {{- end}}
+{{- if .Values.sidecar.repositories.enabled }}
+  - name: {{ include "grafana.name" . }}-sc-repositories
+    {{- $registry := .Values.global.imageRegistry | default .Values.sidecar.image.registry -}}
+    {{- if .Values.sidecar.image.sha }}
+    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}@sha256:{{ .Values.sidecar.image.sha }}"
+    {{- else }}
+    image: "{{ $registry }}/{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+    {{- end }}
+    imagePullPolicy: {{ .Values.sidecar.imagePullPolicy }}
+    env:
+      {{- range $key, $value := .Values.sidecar.repositories.env }}
+      - name: "{{ $key }}"
+        value: "{{ $value }}"
+      {{- end }}
+      {{- range $key, $value := .Values.sidecar.repositories.envValueFrom }}
+      - name: {{ $key | quote }}
+        valueFrom:
+          {{- tpl (toYaml $value) $ | nindent 10 }}
+      {{- end }}
+      - name: HEALTH_PORT
+        value: {{ .Values.sidecar.repositories.healthPort | quote }}
+      {{- if .Values.sidecar.repositories.ignoreAlreadyProcessed }}
+      - name: IGNORE_ALREADY_PROCESSED
+        value: "true"
+      {{- end }}
+      - name: METHOD
+        value: {{ .Values.sidecar.repositories.watchMethod }}
+      - name: LABEL
+        value: "{{ tpl .Values.sidecar.repositories.label $root }}"
+      {{- if .Values.sidecar.repositories.labelValue }}
+      - name: LABEL_VALUE
+        value: {{ quote (tpl .Values.sidecar.repositories.labelValue $) }}
+      {{- end }}
+      {{- if or .Values.sidecar.logLevel .Values.sidecar.repositories.logLevel }}
+      - name: LOG_LEVEL
+        value: {{ default .Values.sidecar.logLevel .Values.sidecar.repositories.logLevel }}
+      {{- end }}
+      - name: FOLDER
+        value: "/tmp/repositories"
+      - name: RESOURCE
+        value: {{ quote .Values.sidecar.repositories.resource }}
+      {{- if .Values.sidecar.repositories.resourceName }}
+      - name: RESOURCE_NAME
+        value: {{ quote .Values.sidecar.repositories.resourceName }}
+      {{- end }}
+      {{- with .Values.sidecar.enableUniqueFilenames }}
+      - name: UNIQUE_FILENAMES
+        value: "{{ . }}"
+      {{- end }}
+      {{- with .Values.sidecar.repositories.searchNamespace }}
+      - name: NAMESPACE
+        value: "{{ tpl (. | join ",") $root }}"
+      {{- end }}
+      - name: SCRIPT
+        value: "/opt/repository-sync/repository-sync.py"
+      - name: REPOSITORY_SYNC_API_URL
+        value: {{ tpl .Values.sidecar.repositories.apiURL $root | quote }}
+      - name: REPOSITORY_SYNC_NAMESPACE
+        value: {{ .Values.sidecar.repositories.apiNamespace | quote }}
+      - name: REPOSITORY_SYNC_TIMEOUT
+        value: {{ .Values.sidecar.repositories.apiTimeout | quote }}
+      - name: REPOSITORY_SYNC_SKIP_TLS_VERIFY
+        value: {{ .Values.sidecar.repositories.apiSkipTlsVerify | quote }}
+      {{- $skipTlsVerify := ternary .Values.sidecar.repositories.skipTlsVerify .Values.sidecar.skipTlsVerify (kindIs "bool" .Values.sidecar.repositories.skipTlsVerify) }}
+      {{- if $skipTlsVerify }}
+      - name: SKIP_TLS_VERIFY
+        value: "true"
+      {{- end }}
+      {{- if and (not .Values.env.GF_SECURITY_ADMIN_USER) (not .Values.env.GF_SECURITY_ADMIN_USER__FILE) (not .Values.env.GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION) }}
+      - name: REQ_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: {{ (tpl .Values.admin.existingSecret .) | default (include "grafana.fullname" .) }}
+            key: {{ .Values.admin.userKey | default "admin-user" }}
+      {{- end }}
+      {{- if and (not .Values.env.GF_SECURITY_ADMIN_PASSWORD) (not .Values.env.GF_SECURITY_ADMIN_PASSWORD__FILE) (not .Values.env.GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION) }}
+      - name: REQ_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: {{ (tpl .Values.admin.existingSecret .) | default (include "grafana.fullname" .) }}
+            key: {{ .Values.admin.passwordKey | default "admin-password" }}
+      {{- end }}
+      {{- if .Values.sidecar.repositories.watchServerTimeout }}
+      {{- if ne .Values.sidecar.repositories.watchMethod "WATCH" }}
+        {{- fail (printf "Cannot use .Values.sidecar.repositories.watchServerTimeout with .Values.sidecar.repositories.watchMethod %s" .Values.sidecar.repositories.watchMethod) }}
+      {{- end }}
+      - name: WATCH_SERVER_TIMEOUT
+        value: "{{ .Values.sidecar.repositories.watchServerTimeout }}"
+      {{- end }}
+      {{- if .Values.sidecar.repositories.watchClientTimeout }}
+      {{- if ne .Values.sidecar.repositories.watchMethod "WATCH" }}
+        {{- fail (printf "Cannot use .Values.sidecar.repositories.watchClientTimeout with .Values.sidecar.repositories.watchMethod %s" .Values.sidecar.repositories.watchMethod) }}
+      {{- end }}
+      - name: WATCH_CLIENT_TIMEOUT
+        value: "{{ .Values.sidecar.repositories.watchClientTimeout }}"
+      {{- end }}
+      {{- if .Values.sidecar.repositories.maxTotalRetries }}
+      - name: REQ_RETRY_TOTAL
+        value: "{{ .Values.sidecar.repositories.maxTotalRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.repositories.maxConnectRetries }}
+      - name: REQ_RETRY_CONNECT
+        value: "{{ .Values.sidecar.repositories.maxConnectRetries }}"
+      {{- end }}
+      {{- if .Values.sidecar.repositories.maxReadRetries }}
+      - name: REQ_RETRY_READ
+        value: "{{ .Values.sidecar.repositories.maxReadRetries }}"
+      {{- end }}
+    {{- with .Values.sidecar.livenessProbe }}
+    livenessProbe:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.sidecar.readinessProbe }}
+    readinessProbe:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.sidecar.resources }}
+    resources:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.sidecar.securityContext }}
+    securityContext:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    volumeMounts:
+      - name: sc-repositories-volume
+        mountPath: "/tmp/repositories"
+      - name: sc-repositories-script
+        mountPath: "/opt/repository-sync"
+        readOnly: true
+      {{- with .Values.sidecar.repositories.extraMounts }}
+      {{- toYaml . | trim | nindent 6 }}
+      {{- end }}
+{{- end}}
   - name: grafana
     {{- $registry := .Values.global.imageRegistry | default .Values.image.registry -}}
     {{- if .Values.image.sha }}
-    image: "{{ $registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}@sha256:{{ .Values.image.sha }}"
+    image: "{{ $registry }}/{{ .Values.image.repository }}:{{ (tpl (toString .Values.image.tag) .) | default .Chart.AppVersion }}@sha256:{{ .Values.image.sha }}"
     {{- else }}
-    image: "{{ $registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+    image: "{{ $registry }}/{{ .Values.image.repository }}:{{ (tpl (toString .Values.image.tag) .) | default .Chart.AppVersion }}"
     {{- end }}
     imagePullPolicy: {{ .Values.image.pullPolicy }}
     {{- if .Values.command }}
@@ -1267,6 +1472,8 @@ containers:
       {{- toYaml . | nindent 6 }}
     {{- end }}
     volumeMounts:
+      - name: tmp
+        mountPath: "/tmp"
       - name: config
         mountPath: "/etc/grafana/grafana.ini"
         subPath: grafana.ini
@@ -1479,12 +1686,20 @@ containers:
         value: {{ (get .Values "grafana.ini").paths.provisioning }}
       - name: GF_UNIFIED_STORAGE_INDEX_PATH
         value: {{ (get .Values "grafana.ini").unified_storage.index_path }}
-      {{- if (.Values.resources.limits).memory }}
+      {{- if and .Values.goMemLimit.enabled ((.Values.resources.limits).memory) }}
+        {{- $hasGomemlimit := false }}
+        {{- range $key, $value := .Values.envValueFrom }}
+          {{- if eq $key "GOMEMLIMIT" }}{{- $hasGomemlimit = true }}{{- end }}
+        {{- end }}
+        {{- range $key, $value := .Values.env }}
+          {{- if eq (tpl $key $) "GOMEMLIMIT" }}{{- $hasGomemlimit = true }}{{- end }}
+        {{- end }}
+        {{- if not $hasGomemlimit }}
+          {{- $mib := include "grafana.memoryToMiB" .Values.resources.limits.memory | int }}
+          {{- $goMemMib := mulf ($mib | float64) (.Values.goMemLimit.factor | default 0.9 | float64) | int }}
       - name: GOMEMLIMIT
-        valueFrom:
-          resourceFieldRef:
-            divisor: "1"
-            resource: limits.memory
+        value: {{ printf "%dMiB" $goMemMib | quote }}
+        {{- end }}
       {{- end }}
       {{- range $key, $value := .Values.envValueFrom }}
       - name: {{ $key | quote }}
@@ -1522,6 +1737,10 @@ containers:
         {{- end }}
       {{- end }}
     {{- end }}
+    {{- with .Values.startupProbe }}
+    startupProbe:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
     {{- with .Values.livenessProbe }}
     livenessProbe:
       {{- toYaml . | nindent 6 }}
@@ -1539,7 +1758,11 @@ containers:
       {{- toYaml . | nindent 6 }}
     {{- end }}
 {{- with .Values.extraContainers }}
-  {{- tpl . $ | nindent 2 }}
+  {{- if kindIs "string" . }}
+  {{- tpl . $root | nindent 2 }}
+  {{- else }}
+  {{- tpl (toYaml .) $root | nindent 2 }}
+  {{- end }}
 {{- end }}
 {{- with .Values.nodeSelector }}
 nodeSelector:
@@ -1558,6 +1781,8 @@ tolerations:
   {{- toYaml . | nindent 2 }}
 {{- end }}
 volumes:
+  - name: tmp
+    emptyDir: {}
   - name: config
     configMap:
       name: {{ include "grafana.fullname" . }}
@@ -1684,6 +1909,21 @@ volumes:
     {{- else }}
     emptyDir: {}
     {{- end }}
+  {{- end }}
+  {{- if .Values.sidecar.repositories.enabled }}
+  - name: sc-repositories-volume
+    {{- if .Values.sidecar.repositories.sizeLimit }}
+    emptyDir:
+      {{- with .Values.sidecar.repositories.sizeLimit }}
+      sizeLimit: {{ . }}
+      {{- end }}
+    {{- else }}
+    emptyDir: {}
+    {{- end }}
+  - name: sc-repositories-script
+    configMap:
+      name: {{ include "grafana.fullname" . }}-repository-sync
+      defaultMode: 0555
   {{- end }}
   {{- range .Values.extraSecretMounts }}
   {{- if .secretName }}
