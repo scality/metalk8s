@@ -512,6 +512,81 @@ replace_object:
             service:
               name: my_service
 
+  # Replace service account token Secret (special case we need to keep the
+  # data filled by the token controller)
+  - manifest:
+      apiVersion: v1
+      kind: Secret
+      type: kubernetes.io/service-account-token
+      metadata:
+        name: my_token
+        namespace: my_namespace
+        annotations:
+          kubernetes.io/service-account.name: my_service_account
+    old_object:
+      apiVersion: v1
+      kind: Secret
+      type: kubernetes.io/service-account-token
+      metadata:
+        name: my_token
+        namespace: my_namespace
+        resourceVersion: "123456"
+        annotations:
+          kubernetes.io/service-account.name: my_service_account
+      data:
+        ca.crt: bXktY2E=
+        namespace: bXlfbmFtZXNwYWNl
+        token: bXktdG9rZW4=
+    result:
+      apiVersion: v1
+      kind: Secret
+      type: kubernetes.io/service-account-token
+      metadata:
+        name: my_token
+        namespace: my_namespace
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+        annotations:
+          kubernetes.io/service-account.name: my_service_account
+      data:
+        ca.crt: bXktY2E=
+        namespace: bXlfbmFtZXNwYWNl
+        token: bXktdG9rZW4=
+
+  # Replace an Opaque Secret (data of the old object is not kept)
+  - manifest:
+      apiVersion: v1
+      kind: Secret
+      type: Opaque
+      metadata:
+        name: my_secret
+        namespace: my_namespace
+    old_object:
+      apiVersion: v1
+      kind: Secret
+      type: Opaque
+      metadata:
+        name: my_secret
+        namespace: my_namespace
+        resourceVersion: "123456"
+      data:
+        password: c2VjcmV0
+    result:
+      apiVersion: v1
+      kind: Secret
+      type: Opaque
+      metadata:
+        name: my_secret
+        namespace: my_namespace
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+
   # Error when replacing object
   - manifest:
       apiVersion: v1
