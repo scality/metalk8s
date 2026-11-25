@@ -1,5 +1,6 @@
 import { Icon } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
+import type { CSSProperties } from 'react';
 import { useAskAssistant } from '../hooks';
 import type { Alert } from '../services/alertUtils';
 
@@ -34,7 +35,7 @@ export function AskGuardianButton({ alert }: { alert: Alert }) {
 }
 
 /** The last column of an alert table. Add it only when Guardian is available: no column beats an empty one. */
-export const askGuardianColumn = <Row,>(alertOf: (row: Row) => Alert) => ({
+export const askGuardianColumn = <Row,>(alertOf: (row: Row) => Alert, cellStyle: CSSProperties = {}) => ({
   Header: '',
   id: 'askGuardian',
   disableSortBy: true,
@@ -43,6 +44,7 @@ export const askGuardianColumn = <Row,>(alertOf: (row: Row) => Alert) => ({
     minWidth: '3rem',
     textAlign: 'center',
     order: 1,
+    ...cellStyle,
   },
   Cell: ({ row }: { row: { original: Row } }) => <AskGuardianButton alert={alertOf(row.original)} />,
 });

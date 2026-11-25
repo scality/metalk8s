@@ -271,7 +271,9 @@ export default function AlertPage() {
         },
         Cell: (cell) => <FormattedDateTime value={new Date(cell.value)} format="date-time-second" />,
       },
-      ...(canAskGuardian ? [askGuardianColumn<Alert>((alert) => alert)] : []),
+      ...(canAskGuardian
+        ? [askGuardianColumn<Alert>((alert) => alert, { alignItems: 'flex-end', marginRight: spacing.r12 })]
+        : []),
     ],
     [canAskGuardian],
   );
