@@ -46,6 +46,9 @@ Archive of Solution {{ display_name }} is mounted at {{ mount_path }}:
       - bind
       - ro
       - nofail
+    {#- The source may itself be a mount (an image tree under composefs): its
+        options must not end up in fstab #}
+    - bind_mount_copy_active_opts: false
     {%- else %}
     - fstype: iso9660
     - opts:
