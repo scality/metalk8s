@@ -129,18 +129,27 @@ Remove container images for Solution {{ display_name }}:
   file.absent:
     - name: {{ repo.config.directory }}/{{ info.id }}-registry-config.inc
 
+{#- The kernel reports the mount under the resolved path when /srv is a
+    symlink, while fstab holds the /srv path #}
 Unmount Solution {{ display_name }}:
+  mount.unmounted:
+    - name: {{ info.mounted_at | d(info.mountpoint) }}
+    - persist: False
+    - require:
+      - file: Remove container images for Solution {{ display_name }}
+
+Remove Solution {{ display_name }} from fstab:
   mount.unmounted:
     - name: {{ info.mountpoint }}
     - persist: True
     - require:
-      - file: Remove container images for Solution {{ display_name }}
+      - mount: Unmount Solution {{ display_name }}
 
 Clean mountpoint for Solution {{ display_name }}:
   file.absent:
     - name: {{ info.mountpoint }}
     - require:
-      - mount: Unmount Solution {{ display_name }}
+      - mount: Remove Solution {{ display_name }} from fstab
 
         {%- endif %}
       {%- endif %}

@@ -454,9 +454,9 @@ def list_available():
     active_mounts = __salt__["mount.active"](extended=True)
     directory_archives = None
 
-    for mountpoint, mount_info in active_mounts.items():
+    for mounted_at, mount_info in active_mounts.items():
         # Skip mountpoint not in `/srv/scality`
-        mountpoint = _solutions_mountpoint(mountpoint)
+        mountpoint = _solutions_mountpoint(mounted_at)
         if mountpoint is None:
             continue
 
@@ -492,6 +492,7 @@ def list_available():
                 "name": info["display_name"],
                 "id": info["id"],
                 "mountpoint": mountpoint,
+                "mounted_at": mounted_at,
                 "archive": archive,
                 "version": info["version"],
                 "manifest": manifest,

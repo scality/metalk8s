@@ -496,6 +496,7 @@ list_available:
         - name: My Solution
           id: my-solution-1.0.0
           mountpoint: /srv/scality/my-solution
+          mounted_at: /srv/scality/my-solution
           archive: /tmp/my-solution-1.0.0.iso
           version: 1.0.0
           manifest: null
@@ -532,6 +533,7 @@ list_available:
         - name: My Solution
           id: my-solution-1.0.0
           mountpoint: /srv/scality/my-solution
+          mounted_at: /var/srv/scality/my-solution
           archive: /tmp/my-solution-1.0.0.iso
           version: 1.0.0
           manifest: null
@@ -566,6 +568,7 @@ list_available:
         - name: My Solution
           id: my-solution-1.0.0
           mountpoint: /srv/scality/my-solution-1.0.0
+          mounted_at: /srv/scality/my-solution-1.0.0
           archive: /usr/share/scality/my-solution
           version: 1.0.0
           manifest: null
@@ -587,6 +590,7 @@ list_available:
         - name: My Solution
           id: my-solution-1.0.0
           mountpoint: /srv/scality/my-solution-1.0.0
+          mounted_at: /srv/scality/my-solution-1.0.0
           archive: /srv/scality/my-solution-1.0.0
           version: 1.0.0
           manifest: null
@@ -607,6 +611,7 @@ list_available:
         - name: My Solution
           id: my-solution-1.0.0
           mountpoint: /srv/scality/my-solution-1.0.0
+          mounted_at: /srv/scality/my-solution-1.0.0
           archive: /srv/scality/my-solution-1.0.0
           version: 1.0.0
           manifest: null
