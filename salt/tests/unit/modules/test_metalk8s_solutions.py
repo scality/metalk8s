@@ -224,6 +224,33 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     metalk8s_solutions.list_solution_images(mountpoint), result
                 )
 
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["registry_config"])
+    def test_registry_config(self, name, solution_ids, images, manifests, result):
+        """
+        Tests the return of `registry_config` function
+        """
+
+        def _version_cmp(left, right):
+            left, right = (list(map(int, v.split("."))) for v in (left, right))
+            return (left > right) - (left < right)
+
+        def _fopen_mock(path, _mode):
+            return mock_open(read_data=manifests[path].encode())()
+
+        with patch.dict(
+            metalk8s_solutions.__salt__,
+            {"pkg.version_cmp": MagicMock(side_effect=_version_cmp)},
+        ), patch.object(
+            metalk8s_solutions,
+            "list_solution_images",
+            MagicMock(side_effect=lambda mountpoint: images[mountpoint]),
+        ), patch(
+            "salt.utils.files.fopen", MagicMock(side_effect=_fopen_mock)
+        ):
+            self.assertEqual(
+                metalk8s_solutions.registry_config(name, *solution_ids), result
+            )
+
     @utils.parameterized_from_cases(YAML_TESTS_CASES["read_solution_manifest"])
     def test_read_solution_manifest(self, manifest=None, result=None, raises=False):
         """

@@ -19,9 +19,12 @@ No Solution found in configuration:
   test.succeed_without_changes
 
 {%- else %}
+  {%- set configured_by_name = {} %}
+
   {#- Mount configured #}
   {%- for archive_path in configured %}
     {%- set solution = salt['metalk8s_solutions.manifest_from_archive'](archive_path) %}
+    {%- do configured_by_name.setdefault(solution.name, []).append(solution) %}
     {%- set is_directory = salt['file.directory_exists'](archive_path) %}
     {%- set display_name = solution.display_name ~ ' ' ~ solution.version %}
     {%- set mount_path = "/srv/scality/" ~ solution.id -%}
@@ -84,9 +87,32 @@ Expose container images for Solution {{ display_name }}:
 
   {%- endfor %} {# Configured solutions are all mounted and images exposed #}
 
+  {#- Expose the images of all configured versions of a Solution under its
+      name, so that unchanged images keep the same reference across upgrades #}
+  {%- for name, solutions in configured_by_name.items() | sort(attribute='0') %}
+
+Expose container images for Solution {{ name }} without version:
+  file.managed:
+    - name: {{ repo.config.directory }}/{{ name }}-registry-config.inc
+    - contents: __slot__:salt:metalk8s_solutions.registry_config(
+        {{ ([name] + solutions | map(attribute='id') | list) | join(', ') }})
+    - makedirs: true
+    - require:
+    {%- for solution in solutions %}
+      - file: Container images for Solution {{ solution.display_name ~ ' ' ~ solution.version }} exist
+    {%- endfor %}
+
+  {%- endfor %}
+
   {#- Unmount all Solution ISOs mounted in /srv/scality not referenced in
       the configuration file #}
   {%- for machine_name, versions in available.items() %}
+    {%- if machine_name not in configured_by_name %}
+Remove container images for Solution {{ machine_name }} without version:
+  file.absent:
+    - name: {{ repo.config.directory }}/{{ machine_name }}-registry-config.inc
+
+    {%- endif %}
     {%- for info in versions %}
       {%- if info.archive not in configured %}
         {%- set display_name = info.name ~ ' ' ~ info.version %}

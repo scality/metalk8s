@@ -216,6 +216,93 @@ list_solution_images:
   - raises: True
     result: .* does not exist or is not a directory
 
+registry_config:
+  # Ok - union of tags, the newest version serves a shared tag
+  - name: my-solution
+    solution_ids:
+      - my-solution-1.10.0
+      - my-solution-1.9.0
+    images:
+      /srv/scality/my-solution-1.9.0:
+        - my-solution-ui:1.0.0
+        - my-solution-operator:1.9.0
+      /srv/scality/my-solution-1.10.0:
+        - my-solution-ui:1.0.0
+        - my-solution-operator:1.10.0
+    manifests:
+      /srv/scality/my-solution-1.10.0/images/my-solution-ui/1.0.0/manifest.json: ui
+      /srv/scality/my-solution-1.10.0/images/my-solution-operator/1.10.0/manifest.json: operator-new
+      /srv/scality/my-solution-1.9.0/images/my-solution-operator/1.9.0/manifest.json: operator-old
+    result: |
+
+      location = /v2/my-solution/my-solution-operator/tags/list {
+          types { } default_type "application/json";
+          return 200 '{"name": "my-solution-operator", "tags": ["1.10.0", "1.9.0"]}';
+      }
+
+      location = "/v2/my-solution/my-solution-operator/manifests/1.10.0" {
+          alias /srv/scality/my-solution-1.10.0/images/my-solution-operator/1.10.0/;
+          types { } default_type "application/vnd.docker.distribution.manifest.v2+json";
+          add_header 'Docker-Content-Digest' 'sha256:a527ba39f1cfbe7e94824fa6df4e88f1760b26ec2e5bb53ece47d900eff56d23';
+          try_files manifest.json =404;
+          error_page 404 @404_tag;
+      }
+
+      location = "/v2/my-solution/my-solution-operator/manifests/sha256:a527ba39f1cfbe7e94824fa6df4e88f1760b26ec2e5bb53ece47d900eff56d23" {
+          alias /srv/scality/my-solution-1.10.0/images/my-solution-operator/1.10.0/;
+          types { } default_type "application/vnd.docker.distribution.manifest.v2+json";
+          add_header 'Docker-Content-Digest' 'sha256:a527ba39f1cfbe7e94824fa6df4e88f1760b26ec2e5bb53ece47d900eff56d23';
+          try_files manifest.json =404;
+          error_page 404 @404_tag;
+      }
+
+      location = "/v2/my-solution/my-solution-operator/manifests/1.9.0" {
+          alias /srv/scality/my-solution-1.9.0/images/my-solution-operator/1.9.0/;
+          types { } default_type "application/vnd.docker.distribution.manifest.v2+json";
+          add_header 'Docker-Content-Digest' 'sha256:21c56db36404e8c9461c60ace5580f03cd71fb64ffee6746844a81bdb79a7d29';
+          try_files manifest.json =404;
+          error_page 404 @404_tag;
+      }
+
+      location = "/v2/my-solution/my-solution-operator/manifests/sha256:21c56db36404e8c9461c60ace5580f03cd71fb64ffee6746844a81bdb79a7d29" {
+          alias /srv/scality/my-solution-1.9.0/images/my-solution-operator/1.9.0/;
+          types { } default_type "application/vnd.docker.distribution.manifest.v2+json";
+          add_header 'Docker-Content-Digest' 'sha256:21c56db36404e8c9461c60ace5580f03cd71fb64ffee6746844a81bdb79a7d29';
+          try_files manifest.json =404;
+          error_page 404 @404_tag;
+      }
+
+      location ~ "/v2/my-solution/my-solution-operator/blobs/sha256:([a-f0-9]{64})" {
+          alias /srv/scality/;
+          try_files my-solution-1.10.0/images/my-solution-operator/1.10.0/$1 my-solution-1.9.0/images/my-solution-operator/1.9.0/$1 =404;
+      }
+
+      location = /v2/my-solution/my-solution-ui/tags/list {
+          types { } default_type "application/json";
+          return 200 '{"name": "my-solution-ui", "tags": ["1.0.0"]}';
+      }
+
+      location = "/v2/my-solution/my-solution-ui/manifests/1.0.0" {
+          alias /srv/scality/my-solution-1.10.0/images/my-solution-ui/1.0.0/;
+          types { } default_type "application/vnd.docker.distribution.manifest.v2+json";
+          add_header 'Docker-Content-Digest' 'sha256:d3ef7de562f9a4a34a9a0b05a112955fdecdd0102c3faae5eeb03a195091a5e4';
+          try_files manifest.json =404;
+          error_page 404 @404_tag;
+      }
+
+      location = "/v2/my-solution/my-solution-ui/manifests/sha256:d3ef7de562f9a4a34a9a0b05a112955fdecdd0102c3faae5eeb03a195091a5e4" {
+          alias /srv/scality/my-solution-1.10.0/images/my-solution-ui/1.0.0/;
+          types { } default_type "application/vnd.docker.distribution.manifest.v2+json";
+          add_header 'Docker-Content-Digest' 'sha256:d3ef7de562f9a4a34a9a0b05a112955fdecdd0102c3faae5eeb03a195091a5e4';
+          try_files manifest.json =404;
+          error_page 404 @404_tag;
+      }
+
+      location ~ "/v2/my-solution/my-solution-ui/blobs/sha256:([a-f0-9]{64})" {
+          alias /srv/scality/;
+          try_files my-solution-1.10.0/images/my-solution-ui/1.0.0/$1 =404;
+      }
+
 read_solution_manifest:
   # Ok - full manifest
   - manifest: |-
