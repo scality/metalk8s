@@ -67,20 +67,19 @@ _DEBUG_COMMANDS = (
         f"{KUBECTL} -n {VIP_NAMESPACE} get daemonset -o wide",
     ),
     ("virtual IP pool pods", f"{KUBECTL} -n {VIP_NAMESPACE} get pods -o wide"),
+    # Fine tune the logs to analyse them in case of failure at this step.
     # keepalived moves a VIP to another node while the ingress health check of
     # its assigned node fails, and back once it passes again, so a VIP can be
     # refused for a few seconds after an ingress rollout. Collect the whole log
-    # of each keepalived Pod -- they are created with the pool, so this covers
-    # the scenario -- to follow every VIP move (state changes, priority
-    # adverts, health check results). Only drop the per-packet gratuitous ARP
-    # lines: each move logs one "Sending/queueing gratuitous ARPs ... for <VIP>"
-    # line, kept, followed by a burst of these, which otherwise fill the output.
+    # of each keepalived Pod to follow every VIP move (state changes, priority
+    # adverts, health check results). Dropping the per-packet gratuitous ARP
+    # lines: they would fill the output.
     (
         "keepalived logs",
         f"{KUBECTL} -n {VIP_NAMESPACE} logs -l app.kubernetes.io/name=virtualippool"
-        # `--tail` defaults to 10 lines when a selector is given: ask for all.
         " --tail=-1 --timestamps --prefix --max-log-requests=20"
-        " | grep -v ': Sending gratuitous ARP on ' | tail -n 300",
+        " | grep -v ': Sending gratuitous ARP on '"
+        " | sort -s -k2,2 | tail -n 300",
     ),
     (
         "calico-node daemonset",
