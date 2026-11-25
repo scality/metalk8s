@@ -47,4 +47,6 @@ export type ToolContext = {
 export type MetalK8sSelfConfiguration = {
   /** Base URL of the Kubernetes API proxy — `/api/kubernetes`. */
   url: string;
+  /** Base URL of the Prometheus proxy — `/api/prometheus`. */
+  url_prometheus?: string;
 };
