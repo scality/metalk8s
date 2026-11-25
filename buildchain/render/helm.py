@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
-
 """
-This script takes a Helm release name, a namespace name, a Helm chart
-`values` file and a chart, and turns it into a YAML document that can be
-deployed in a Kubernetes cluster as part of MetalK8s.
+Render a Helm chart into a SLS file.
+
+This takes a Helm release name, a namespace name, a Helm chart `values` file
+and a chart, and turns it into a YAML document that can be deployed in a
+Kubernetes cluster as part of MetalK8s.
 
 It performs the following tasks:
 
@@ -34,14 +34,14 @@ import argparse
 import copy
 import io
 import json
-import pathlib
 import re
-import sys
 import subprocess
 
 import yaml
 from yaml.dumper import SafeDumper
 from yaml.representer import SafeRepresenter
+
+import common
 
 # Needed to load some yaml value
 # ```
@@ -49,22 +49,6 @@ from yaml.representer import SafeRepresenter
 # yaml.safe_load("- =")
 # ```
 yaml.SafeLoader.add_constructor("tag:yaml.org,2002:value", lambda _, n: n.value)
-
-
-START_BLOCK = """
-#!jinja | metalk8s_kubernetes
-
-{{%- from "metalk8s/map.jinja" import repo with context %}}
-{{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}}
-{csc_defaults}
-{configlines}
-
-{{% raw %}}
-"""
-
-END_BLOCK = """
-{% endraw %}
-"""
 
 
 def fixup_metadata(namespace, doc):
@@ -137,31 +121,6 @@ def fixup_doc(doc):
         return fixup_string(doc)
     else:
         return doc
-
-
-def remove_doc(doc, remove_manifests):
-    for to_remove in remove_manifests or []:
-        if (
-            doc.get("kind") == to_remove[0]
-            and doc.get("metadata").get("name") == to_remove[1]
-        ):
-            return True
-
-    return False
-
-
-def should_keep_doc(doc, keep_manifests):
-    if not keep_manifests:
-        return True
-
-    for to_keep in keep_manifests:
-        if (
-            doc.get("kind") == to_keep[0]
-            and doc.get("metadata").get("name") == to_keep[1]
-        ):
-            return True
-
-    return False
 
 
 def keep_doc(doc):
@@ -259,9 +218,7 @@ def remove_prometheus_rules(template, drop_rules):
     return updated_template
 
 
-DASHBOARD_PATCHES_FILE = (
-    pathlib.Path(__file__).parent / "grafana_dashboard_patches.json"
-)
+DASHBOARD_PATCHES_FILE = common.REPO_ROOT / "charts" / "grafana_dashboard_patches.json"
 DASHBOARD_PATCHES = json.loads(DASHBOARD_PATCHES_FILE.read_text())
 
 
@@ -358,16 +315,12 @@ def get_patches(arg_patch):
     return patches
 
 
-def main():
-    parser = argparse.ArgumentParser()
+def add_arguments(parser):
     parser.add_argument("name", help="Denotes the name of the chart")
     parser.add_argument(
         "-n", "--namespace", default="default", help="Namespace to deploy this chart in"
     )
     parser.add_argument("values", help="Our custom chart values")
-    parser.add_argument(
-        "-o", "--output", default="", help="Output file for SLS, default to stdout"
-    )
 
     class ActionServiceConfigArgs(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
@@ -420,22 +373,6 @@ def main():
         help="YAML formatted file to drop some pre-defined Prometheus rules",
     )
     parser.add_argument(
-        "--remove-manifest",
-        action="append",
-        nargs=2,
-        dest="remove_manifests",
-        metavar=("KIND", "NAME"),
-        help="Remove a given manifest from the resulting chart",
-    )
-    parser.add_argument(
-        "--keep-manifest",
-        action="append",
-        nargs=2,
-        dest="keep_manifests",
-        metavar=("KIND", "NAME"),
-        help="Keep only specified manifests in the resulting chart (if set, all others are removed)",
-    )
-    parser.add_argument(
         "--kube-version",
         help="Override default kube-version used by helm",
     )
@@ -451,8 +388,9 @@ def main():
     )
 
     parser.add_argument("path", help="Path to the chart directory")
-    args = parser.parse_args()
 
+
+def render(args):
     api_versions = [
         # Used by APIService (available since Kubernetes 1.10)
         "apiregistration.k8s.io/v1",
@@ -538,21 +476,16 @@ def main():
             )
         )
 
-    out = START_BLOCK.format(
-        csc_defaults="\n".join(import_csc_yaml), configlines="\n".join(config)
-    ).lstrip()
-    out += "\n"
-
-    manifests = []
+    docs = []
     for doc in yaml.safe_load_all(template):
         if keep_doc(doc):
             doc = fixup(doc, patches)
-        if (
-            doc
-            and not remove_doc(doc, args.remove_manifests)
-            and should_keep_doc(doc, args.keep_manifests)
-        ):
-            manifests.append(doc)
+        if doc:
+            docs.append(doc)
+
+    manifests = common.select_manifests(
+        docs, args.keep_manifests, args.remove_manifests
+    )
 
     stream = io.StringIO()
     yaml.safe_dump_all(
@@ -562,16 +495,8 @@ def main():
     )
     stream.seek(0)
 
-    out += replace_magic_strings(stream.read())
-
-    out += END_BLOCK
-
-    if args.output:
-        with open(args.output, "w") as fd:
-            fd.write(out)
-    else:
-        sys.stdout.write(out)
-
-
-if __name__ == "__main__":
-    main()
+    return common.render_sls(
+        replace_magic_strings(stream.read()),
+        csc_defaults="\n".join(import_csc_yaml),
+        configlines="\n".join(config),
+    )

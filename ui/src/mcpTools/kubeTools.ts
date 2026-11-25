@@ -1,25 +1,14 @@
-// What every Kubernetes tool needs before it can ask the cluster anything: a worded failure, the
-// refusal of Secrets, and a set of clients carrying the signed-in user's token.
-//
-// This lives in mcpTools/ rather than services/k8s/ on purpose. It depends on ToolContext, and the
-// service layer should not know that tools exist — nor should it refuse Secrets on their behalf,
-// since a caller that is not a tool may legitimately need to read one.
+// What every Kubernetes tool shares: worded failures and clients carrying the signed-in user's
+// token. In mcpTools/ because it depends on ToolContext.
 
 import { type K8sApiClients, k8sApi } from '../services/k8s/clients';
 import { ALLOWED_KINDS, K8sApiError, type K8sFailureKind } from '../services/k8s/resources';
 import type { MetalK8sSelfConfiguration, ToolContext } from './types';
 
-/**
- * What a caller is told, per failure. One sentence each, because each needs a different next step —
- * and one copy, so the same failure is worded the same way whichever tool hit it.
- *
- * Used when a failure arrives with no detail of its own — an HTTP status and nothing more. A
- * failure that carries a detail says something more specific, and that text is used instead.
- */
+/** What a caller is told per failure, when the failure carries no detail of its own. */
 const EXPLAIN: Record<K8sFailureKind, string> = {
   session_expired: 'Your session has expired. Sign in again, then retry once.',
-  // Spelled out because the two are easy to conflate in a summary, and conflating them turns a
-  // permissions problem into a wrong diagnosis.
+  // Spelled out: reported as "nothing there", a permissions problem becomes a wrong diagnosis.
   not_authorized:
     'Your Kubernetes permissions (RBAC) do not allow this. This does NOT mean the resources are ' +
     'absent — say you could not look, never that there was nothing there.',
@@ -29,70 +18,23 @@ const EXPLAIN: Record<K8sFailureKind, string> = {
 };
 
 /** The shape a tool returns when it could not answer. */
-export const refusal = (error: K8sApiError) => ({
+export const refusal = (error: K8sApiError, { allowedKinds = true }: { allowedKinds?: boolean } = {}) => ({
   status: error.status,
-  // The detail alone when there is one. EXPLAIN says what SORT of thing went wrong, and in front of
-  // a detail that already names the specific thing it contradicts it — "your RBAC does not allow
-  // this" ahead of "Secrets are never read whatever your permissions allow" blames the cluster for
+  // The detail alone when there is one: EXPLAIN in front of it could contradict it, blaming RBAC for
   // a policy of ours.
   message: error.detail ?? EXPLAIN[error.status],
-  // Attached to every not_found, which is either a kind these tools do not know or an object the
-  // cluster does not have. Either way the next call is a better one if the caller can see what is on
-  // offer — one turn instead of a guessing loop.
-  ...(error.status === 'not_found' ? { allowedKinds: ALLOWED_KINDS } : {}),
+  // For a tool with a fixed set of kinds: the next call can pick from them instead of guessing.
+  ...(allowedKinds && error.status === 'not_found' ? { allowedKinds: ALLOWED_KINDS } : {}),
 });
 
-/**
- * Refused by describeKubeResource, as a policy of the tool rather than of the cluster.
- * listKubeResources lists them: kubectl's columns hold no value.
- */
-const SECRET_KINDS = ['secret', 'secrets'];
-
-/**
- * Groups whose every kind is a Secret under another name.
- *
- * Dex runs with `storage.type: kubernetes`, so its OIDC signing keys, OAuth client secrets, LDAP
- * bind configuration and password hashes are custom resources in this group rather than Secrets.
- * Refusing the kind guards the core kind and nothing else, and an apiVersion reaches these by name.
- */
-const SECRET_GROUPS = ['dex.coreos.com'];
-
-const normalise = (value: unknown) =>
-  String(value ?? '')
-    .trim()
-    .toLowerCase();
-
-/** The group of an apiVersion, which is empty for a core one — `v1` names no group. */
-const groupOf = (apiVersion?: string) => {
-  const parts = normalise(apiVersion).split('/');
-  return parts.length === 2 ? parts[0] : '';
-};
-
-// String(), for the same reason resolveTarget coerces: a guard that throws on the input it exists to
-// catch is not a guard.
-export const isSecretKind = (kind: string, apiVersion?: string) =>
-  SECRET_KINDS.includes(normalise(kind)) || SECRET_GROUPS.includes(groupOf(apiVersion));
-
-export const secretRefusal = () =>
-  new K8sApiError(
-    'not_authorized',
-    'Secrets are never read by this tool, whatever your permissions allow — listKubeResources shows their names, types and key counts. If what a Secret holds matters, ask the user to look at it themselves.',
-  );
-
-/**
- * The clients, built from the tool's own context — no store and no hook in the path.
- *
- * Throws rather than returning a failure, so a tool keeps one error path: everything from here to
- * the answer raises K8sApiError, and the tool turns it into a refusal in one place.
- */
+/** The clients, built from the tool's context. Throws K8sApiError, so a tool has one error path. */
 export const kubeClients = async (context: ToolContext): Promise<K8sApiClients> => {
   const { url } = (context.selfConfiguration ?? {}) as MetalK8sSelfConfiguration;
   if (!url) {
     throw new K8sApiError('unavailable', 'This deployment does not expose the Kubernetes API.');
   }
 
-  // Read per call, not at registration: getToken returns the current token, which may have been
-  // renewed in the background since the tools were registered.
+  // Per call: the token may have been renewed since the tools were registered.
   const token = await context.getToken();
   if (!token) throw new K8sApiError('session_expired');
 
