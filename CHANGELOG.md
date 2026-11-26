@@ -1,6 +1,16 @@
 # CHANGELOG
 
 
+## Release 134.0.6
+
+### Bug Fixes
+
+- The bootstrap and restore scripts now fail early, with a clear error, when
+  the Salt minion ID is longer than 52 characters. Such an ID makes the
+  certificate Common Names built from it (`system:node:<ID>`,
+  `salt-master-<ID>`) exceed the 64 characters limit of X.509
+  (Issue[#3431](https://github.com/scality/metalk8s/issues/3431))
+
 ## Release 134.0.5
 
 ### Enhancements
