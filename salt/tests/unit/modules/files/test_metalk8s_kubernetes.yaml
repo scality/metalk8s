@@ -533,6 +533,7 @@ replace_object:
         resourceVersion: "123456"
         annotations:
           kubernetes.io/service-account.name: my_service_account
+          kubernetes.io/service-account.uid: 0d3c0ad5-7a21-4f0e-9b1c-2f5e6a7b8c9d
       data:
         ca.crt: bXktY2E=
         namespace: bXlfbmFtZXNwYWNl
@@ -551,10 +552,46 @@ replace_object:
         resourceVersion: "123456"
         annotations:
           kubernetes.io/service-account.name: my_service_account
+          kubernetes.io/service-account.uid: 0d3c0ad5-7a21-4f0e-9b1c-2f5e6a7b8c9d
       data:
         ca.crt: bXktY2E=
         namespace: bXlfbmFtZXNwYWNl
         token: bXktdG9rZW4=
+
+  # Replace a service account token Secret not filled yet (nothing to keep)
+  - manifest:
+      apiVersion: v1
+      kind: Secret
+      type: kubernetes.io/service-account-token
+      metadata:
+        name: my_token
+        namespace: my_namespace
+        annotations:
+          kubernetes.io/service-account.name: my_service_account
+    old_object:
+      apiVersion: v1
+      kind: Secret
+      type: kubernetes.io/service-account-token
+      metadata:
+        name: my_token
+        namespace: my_namespace
+        resourceVersion: "123456"
+        annotations:
+          kubernetes.io/service-account.name: my_service_account
+    result:
+      apiVersion: v1
+      kind: Secret
+      type: kubernetes.io/service-account-token
+      metadata:
+        name: my_token
+        namespace: my_namespace
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+        annotations:
+          kubernetes.io/service-account.name: my_service_account
 
   # Replace an Opaque Secret (data of the old object is not kept)
   - manifest:

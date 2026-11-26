@@ -249,6 +249,8 @@ def _object_manipulation_function(action):
             # in the body. The token controller fills it, and replacing it
             # with a new token immediately invalidates the old one, which
             # its consumers (e.g. Prometheus scraping) still use.
+            # Keep the service account UID annotation the controller sets
+            # along with it, which ties the token to that service account.
             if (
                 api.api_version == "v1"
                 and api.kind == "Secret"
@@ -260,6 +262,14 @@ def _object_manipulation_function(action):
                     body_data.setdefault(key, value)
                 if body_data:
                     call_kwargs["body"]["data"] = body_data
+                old_uid = (old_object["metadata"].get("annotations") or {}).get(
+                    "kubernetes.io/service-account.uid"
+                )
+                if old_uid:
+                    call_kwargs["body"]["metadata"].setdefault("annotations", {})
+                    call_kwargs["body"]["metadata"]["annotations"].setdefault(
+                        "kubernetes.io/service-account.uid", old_uid
+                    )
 
         log.debug("Running '%s' with: %s", action, call_kwargs)
 
