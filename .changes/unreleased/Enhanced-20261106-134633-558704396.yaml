@@ -1,0 +1,12 @@
+kind: Enhanced
+body: |-
+    Prometheus now scrapes the metrics of the `metalk8s-registry-operator`. Its
+    ServiceMonitor is applied once prometheus-operator has installed the
+    ServiceMonitor CRD, so the bootstrap does not depend on it.
+    Bump metalk8s-registry-operator to [v0.0.1-alpha.7](https://github.com/scality/metalk8s-registry-operator/releases/tag/v0.0.1-alpha.7),
+    static-oci-registry to [v0.1.0-beta.5](https://github.com/scality/static-oci-registry/releases/tag/v0.1.0-beta.5)
+    and file-reflector to [v0.3.0](https://github.com/scality/file-reflector/releases/tag/v0.3.0)
+time: 2026-11-06T13:46:33.558704396Z
+custom:
+    CommentId: "6661361803"
+    Pull: "5225"

@@ -53,10 +53,17 @@ runs:
       shell: bash
       env:
         K8S_VERSION: v${{ steps.get-k8s-full-version.outputs.RESULT }}
+        UNPULLABLE_IMAGES: '^(invalid\.registry\.k8s\.io|gcr\.io/k8s-authenticated-test)/'
       run: |
-        ./sonobuoy images pull --kubernetes-version "$K8S_VERSION"
-        ./sonobuoy images download --kubernetes-version "$K8S_VERSION"
-        echo "CONFORMANCE_IMAGES=kubernetes_e2e_images_$K8S_VERSION.tar" >> $GITHUB_ENV
+        # The e2e image list holds images that cannot be pulled on purpose, used by no [Conformance] test
+        all_images=$(./sonobuoy images list --kubernetes-version "$K8S_VERSION")
+        mapfile -t images < <(grep -Ev "$UNPULLABLE_IMAGES" <<< "$all_images")
+        for image in "${images[@]}"; do
+          docker pull --quiet "$image"
+        done
+        CONFORMANCE_IMAGES="kubernetes_e2e_images_$K8S_VERSION.tar"
+        docker save --output "$CONFORMANCE_IMAGES" "${images[@]}"
+        echo "CONFORMANCE_IMAGES=$CONFORMANCE_IMAGES" >> "$GITHUB_ENV"
     ## Here we cannot use the ssh-command action as we need to run this in a loop
     ## that is generated at the runtime.
     - name: Preload the conformance images on every node
