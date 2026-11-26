@@ -22,6 +22,14 @@ jest.mock('./guardianPostMessageHooks', () => ({
   usePromptEmitter: () => {},
 }));
 
+beforeAll(() => {
+  global.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+});
+
 const renderDrawer = (productName: string) => {
   mockConfig.value = { productName };
   render(
