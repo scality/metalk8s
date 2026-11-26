@@ -22,6 +22,16 @@ unit-tests-ui: &ui
 unit-tests-shell-ui: &shell-ui
   - shell-ui/**
 
+eval-mcp-tools:
+  # The tools themselves: their name, description and inputSchema are the whole of what a model
+  # reads when it decides what to call, and no unit test looks at any of them.
+  - ui/src/mcpTools/tools/**
+  # The eval's own material: a scenario, a mock or the agent changing is worth noticing, and none
+  # of it lives under tools/. The job skips when only these changed — see the guard in the scope
+  # step — so this is about having a reason to state, not about running.
+  - ui/src/mcpTools/evals/**
+  - ui/src/mcpTools/mcpTools.eval.test.ts
+
 unit-tests-crd-client-generator:
   - tools/crd-client-generator-js/**
 
