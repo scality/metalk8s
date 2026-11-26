@@ -7,8 +7,9 @@ import type { Alert } from '../services/alertUtils';
 /**
  * The Guardian button on an alert's row: asks the assistant to diagnose that alert.
  *
- * The prompt carries the alert's id, which getAlert takes, and its name, which the assistant's tool
- * search matches on. Everything else about the alert is the assistant's to read.
+ * The question says what the row shows — severity, name, start and description — and no id, which
+ * means nothing to the user. The assistant finds the alert in getAlerts by those same fields, which
+ * that tool returns as the row does. Everything else about the alert is the assistant's to read.
  *
  * The table renders it only when Guardian is available (useAskAssistant's isAvailable), so it does
  * not check again here.
@@ -28,7 +29,12 @@ export function AskGuardianButton({ alert }: { alert: Alert }) {
         // The id only has to be stable across the shell's retries of ONE ask: the assistant drops
         // a repeat of an id it has already seen, so a fixed id would silently swallow the second
         // click on the same alert.
-        ask(`Diagnose the alert ${alert.labels.alertname} (id ${alert.id})`, `alert:${alert.id}:${Date.now()}`);
+        const description = alert.description || alert.summary;
+        ask(
+          `Diagnose the ${alert.severity} alert ${alert.labels.alertname}, active since ${alert.startsAt}` +
+            (description ? `: ${description}` : ''),
+          `alert:${alert.id}:${Date.now()}`,
+        );
       }}
     />
   );
