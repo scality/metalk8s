@@ -73,6 +73,7 @@ export const useDrawerWidth = (drawerRef: RefObject<HTMLElement | null>): Drawer
   );
 
   const onHandlePointerDown = useCallback((event: React.PointerEvent<HTMLElement>) => {
+    if (event.button !== 0) return;
     event.preventDefault();
     setIsDragging(true);
   }, []);

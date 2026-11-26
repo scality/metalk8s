@@ -56,7 +56,9 @@ it('keeps to the window-share cap on a window too narrow for the floor', () => {
 it('follows the pointer from the drawer edge and remembers the width on release', () => {
   const { result } = renderHook(() => useDrawerWidth(drawerEndingAt(1600)));
 
-  act(() => result.current.onHandlePointerDown({ preventDefault: () => {} } as React.PointerEvent<HTMLElement>));
+  act(() =>
+    result.current.onHandlePointerDown({ button: 0, preventDefault: () => {} } as React.PointerEvent<HTMLElement>),
+  );
   act(() => {
     window.dispatchEvent(Object.assign(new Event('pointermove'), { clientX: 1000 }));
   });
@@ -68,6 +70,15 @@ it('follows the pointer from the drawer edge and remembers the width on release'
   });
   expect(result.current.isDragging).toBe(false);
   expect(window.localStorage.getItem(STORAGE_KEY)).toBe('600');
+});
+
+it('does not start a drag on a non-primary button', () => {
+  const { result } = renderHook(() => useDrawerWidth(drawerEndingAt(1600)));
+
+  act(() =>
+    result.current.onHandlePointerDown({ button: 2, preventDefault: () => {} } as React.PointerEvent<HTMLElement>),
+  );
+  expect(result.current.isDragging).toBe(false);
 });
 
 it('widens with the left arrow, narrows with the right one, and resets on demand', () => {

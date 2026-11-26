@@ -13,22 +13,38 @@ const NAVBAR_SELECTOR = '.sc-navbar';
 export const useNavbarHeightEmitter = (iframeRef: RefObject<HTMLIFrameElement | null>, origin: string) => {
   useEffect(() => {
     const iframe = iframeRef.current;
-    const navbar = document.querySelector<HTMLElement>(NAVBAR_SELECTOR);
-    if (!iframe || !navbar) return;
+    if (!iframe) return;
 
-    const postNavbarHeight = () =>
+    let navbar: HTMLElement | null = null;
+
+    const postNavbarHeight = () => {
+      if (!navbar) return;
       iframe.contentWindow?.postMessage(
         { type: HOST_NAVBAR_HEIGHT_MESSAGE, height: navbar.getBoundingClientRect().height },
         origin,
       );
+    };
 
-    postNavbarHeight();
+    const resizeObserver = new ResizeObserver(postNavbarHeight);
+
+    const locateNavbar = () => {
+      const found = document.querySelector<HTMLElement>(NAVBAR_SELECTOR);
+      if (found === navbar) return;
+      navbar = found;
+      resizeObserver.disconnect();
+      if (!navbar) return;
+      resizeObserver.observe(navbar);
+      postNavbarHeight();
+    };
+
+    locateNavbar();
     iframe.addEventListener('load', postNavbarHeight);
-    const observer = new ResizeObserver(postNavbarHeight);
-    observer.observe(navbar);
+    const mutationObserver = new MutationObserver(locateNavbar);
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
     return () => {
       iframe.removeEventListener('load', postNavbarHeight);
-      observer.disconnect();
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
     };
   }, [iframeRef, origin]);
 };
