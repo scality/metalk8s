@@ -1,0 +1,6 @@
+kind: Added
+body: The `executePrometheusQuery` WebMCP tool runs one PromQL query against the platform's Prometheus.
+time: 2026-11-19T15:17:05.579572901Z
+custom:
+    CommentId: "6831509730"
+    Pull: "5249"

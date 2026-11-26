@@ -1,8 +1,8 @@
 // What the monitoring tools share: reading the alerts the console already holds, and what to say
 // when they could not look.
 //
-// Kept apart from kubeTools: Alertmanager sits behind its own proxy, not the Kubernetes API, so
-// kubeTools' wording about RBAC and resource kinds would be wrong here.
+// Kept apart from kubeTools: Alertmanager and Prometheus sit behind their own proxies, not the
+// Kubernetes API, so kubeTools' wording about RBAC and resource kinds would be wrong here.
 
 import type { Alert } from '../services/alertUtils';
 import type { ToolContext } from './types';
@@ -11,7 +11,7 @@ import type { ToolContext } from './types';
  * One wording per failure. The point of all three is the same: a tool that could not look must say
  * so, because an empty answer reads as "nothing is wrong".
  */
-export const unreadable = (source: 'Alertmanager', httpStatus?: number) => {
+export const unreadable = (source: 'Alertmanager' | 'Prometheus', httpStatus?: number) => {
   if (httpStatus === 401) {
     return { status: 'session_expired', message: 'Your session has expired. Sign in again, then retry once.' };
   }
