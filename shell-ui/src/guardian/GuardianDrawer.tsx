@@ -1,8 +1,20 @@
+import type { RefObject } from 'react';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
+import { ArtescaGuardianDrawer } from './artesca/ArtescaGuardianDrawer';
 import { useGuardianDrawer } from './GuardianContext';
 import { useDiscoveryEmitter, useMcpCallHandler, usePromptEmitter } from './guardianPostMessageHooks';
 
 const DRAWER_WIDTH = 500;
+
+const ARTESCA_GUARDIAN_SOURCE = 'artesca_ui';
+
+/** What every drawer variant sets on the iframe; the variant owns its size and style. */
+export type GuardianFrameProps = {
+  ref: RefObject<HTMLIFrameElement | null>;
+  src: string;
+  title: string;
+  allow: string;
+};
 
 // Maps the shell product to the `source` value Guardian filters agents by:
 // the lowercased product name with a `_ui` suffix (ARTESCA -> artesca_ui,
@@ -23,6 +35,17 @@ export const GuardianDrawer = () => {
   useMcpCallHandler(iframeRef, guardianOrigin);
   usePromptEmitter(iframeRef, guardianOrigin, pendingPrompt, clearPendingPrompt);
 
+  const frameProps: GuardianFrameProps = {
+    ref: iframeRef,
+    src: iframeSrc,
+    title: 'Guardian AI Assistant',
+    allow: 'clipboard-write',
+  };
+
+  if (guardianSource === ARTESCA_GUARDIAN_SOURCE) {
+    return <ArtescaGuardianDrawer isOpen={isOpen} frameProps={frameProps} guardianOrigin={guardianOrigin} />;
+  }
+
   return (
     <div
       style={{
@@ -35,13 +58,7 @@ export const GuardianDrawer = () => {
         isolation: 'isolate',
       }}
     >
-      <iframe
-        ref={iframeRef}
-        src={iframeSrc}
-        title="Guardian AI Assistant"
-        style={{ width: DRAWER_WIDTH, height: '100%', border: 'none', background: '#000' }}
-        allow="clipboard-write"
-      />
+      <iframe {...frameProps} style={{ width: DRAWER_WIDTH, height: '100%', border: 'none', background: '#000' }} />
     </div>
   );
 };
