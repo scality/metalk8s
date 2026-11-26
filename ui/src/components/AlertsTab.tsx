@@ -30,7 +30,7 @@ const AlertsTab = ({ alerts, status }: { alerts: Alert[]; status: 'idle' | 'load
           severity: alert.labels.severity,
           alertDescription: alert.description || alert.summary,
           activeSince: alert.startsAt,
-          // The whole alert, for the Guardian button: the prompt needs its id.
+          // The whole alert, for the Guardian button: the prompt is built from its fields.
           alert,
         };
       })
