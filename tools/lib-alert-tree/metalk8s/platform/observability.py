@@ -66,6 +66,7 @@ ALERTING_WARNING, ALERTING_CRITICAL = severity_pair(
     summary_name="The alerting service",
     relationship=Relationship.ANY,
     warning_children=[
+        Existing.warning("AlertmanagerClusterFailedPeers"),
         Existing.warning("AlertmanagerClusterFailedToSendAlerts"),
         Existing.warning("AlertmanagerFailedToSendAlerts"),
         *statefulset_alerts(
