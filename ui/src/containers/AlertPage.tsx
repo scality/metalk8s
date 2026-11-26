@@ -14,10 +14,11 @@ import isEqual from 'lodash.isequal';
 import React, { useMemo } from 'react';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
+import { askGuardianColumn } from '../components/AskGuardianButton';
 import CircleStatus from '../components/CircleStatus';
 import StatusIcon from '../components/StatusIcon';
 import { STATUS_CRITICAL, STATUS_HEALTH, STATUS_WARNING } from '../constants';
-import { useUserAccessRight } from '../hooks';
+import { useAskAssistant, useUserAccessRight } from '../hooks';
 import { compareHealth } from '../services/utils';
 import { useAlerts } from './AlertProvider';
 import type { Alert } from '../services/alertUtils';
@@ -225,6 +226,8 @@ export default function AlertPage() {
   );
   const criticalAlerts = leafAlerts.filter((alert) => alert.severity === 'critical');
   const wariningAlerts = leafAlerts.filter((alert) => alert.severity === 'warning');
+  // Without Guardian on this platform there is no column at all, rather than an empty one.
+  const { isAvailable: canAskGuardian } = useAskAssistant();
   const columns = React.useMemo(
     () => [
       {
@@ -268,8 +271,11 @@ export default function AlertPage() {
         },
         Cell: (cell) => <FormattedDateTime value={new Date(cell.value)} format="date-time-second" />,
       },
+      ...(canAskGuardian
+        ? [askGuardianColumn<Alert>((alert) => alert, { alignItems: 'flex-end', marginRight: spacing.r12 })]
+        : []),
     ],
-    [],
+    [canAskGuardian],
   );
   return (
     <AppContainer>
