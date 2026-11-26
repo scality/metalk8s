@@ -64,7 +64,7 @@
     "react-router-dom": "7.18.2",
     "styled-components": "6.5.1",
     "typescript": "^5.6.3",
-    "zod": "^4.0.17"
+    "zod": "^4.6.6"
   },
   "optionalDependencies": {
     "@rspack/binding-linux-x64-gnu": "1.6.8",
