@@ -58,6 +58,8 @@ jobs:
     needs:
       - get-dev-artifacts-url
     uses: ./.github/workflows/downgrade-test.yaml
+    # Downgrade is not supported from 136 to 134
+    if: ${{ ! startsWith(inputs.dev-branch, 'development/134') }}
     secrets: inherit
     with:
       from-artifacts-url: ${{ inputs.artifacts-url }}

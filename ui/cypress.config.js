@@ -21,7 +21,6 @@ module.exports = defineConfig({
   viewportHeight: 900,
   defaultCommandTimeout: 30000,
   experimentalFetchPolyfill: true,
-  experimentalMemoryManagement: true,
   e2e: {
     // Nous avons importé vos anciens plugins Cypress ici.
     // Vous pouvez éventuellement nettoyer cela plus tard.
