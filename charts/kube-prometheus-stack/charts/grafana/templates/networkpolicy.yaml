@@ -38,6 +38,14 @@ spec:
       to:
         {{- toYaml . | nindent 12 }}
       {{- end }}
+    {{- if .Values.networkPolicy.natsCluster.enabled }}
+    - ports:
+        - port: {{ include "grafana.natsClusterPort" . }}
+      to:
+        - podSelector:
+            matchLabels:
+              {{- include "grafana.selectorLabels" . | nindent 14 }}
+    {{- end }}
   {{- end }}
   {{- if .Values.networkPolicy.ingress }}
   ingress:
@@ -61,5 +69,13 @@ spec:
               {{- include "grafana.labels" . | nindent 14 }}
               role: read
       {{- end }}
+    {{- if .Values.networkPolicy.natsCluster.enabled }}
+    - ports:
+        - port: {{ include "grafana.natsClusterPort" . }}
+      from:
+        - podSelector:
+            matchLabels:
+              {{- include "grafana.selectorLabels" . | nindent 14 }}
+    {{- end }}
   {{- end }}
 {{- end }}

@@ -4,11 +4,14 @@ repos:
     hooks:
       - id: black
         name: Formatting Python
+        # Vendored upstream charts are kept unmodified (see BUMPING.md).
+        exclude: ^charts/[^/]+/
       - id: black
         # We want this hook to be part of "pylint" so that if we run
         # `pre-commit run pylint` we include this hook
         alias: pylint
         name: Checking Python formatting
+        exclude: ^charts/[^/]+/
         args:
           - --check
           - --diff

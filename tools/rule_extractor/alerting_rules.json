@@ -92,7 +92,7 @@
     {
         "message": "The alerting service is degraded.",
         "name": "AlertingServiceDegraded",
-        "query": "sum(ALERTS{alertname=\"AlertmanagerClusterFailedToSendAlerts\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"AlertmanagerFailedToSendAlerts\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeStatefulSetReplicasMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"alertmanager-prometheus-operator-alertmanager\"} or ALERTS{alertname=\"KubeStatefulSetGenerationMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"alertmanager-prometheus-operator-alertmanager\"} or ALERTS{alertname=\"KubeStatefulSetUpdateNotRolledOut\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"alertmanager-prometheus-operator-alertmanager\"}) >= 1",
+        "query": "sum(ALERTS{alertname=\"AlertmanagerClusterFailedPeers\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"AlertmanagerClusterFailedToSendAlerts\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"AlertmanagerFailedToSendAlerts\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeStatefulSetReplicasMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"alertmanager-prometheus-operator-alertmanager\"} or ALERTS{alertname=\"KubeStatefulSetGenerationMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"alertmanager-prometheus-operator-alertmanager\"} or ALERTS{alertname=\"KubeStatefulSetUpdateNotRolledOut\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"alertmanager-prometheus-operator-alertmanager\"}) >= 1",
         "severity": "warning"
     },
     {
@@ -334,6 +334,12 @@
         "name": "AlertmanagerClusterCrashlooping",
         "query": "(count by (namespace, service, cluster) (changes(process_start_time_seconds{container=\"alertmanager\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[10m]) > 4) / count by (namespace, service, cluster) (up{container=\"alertmanager\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
         "severity": "critical"
+    },
+    {
+        "message": "An Alertmanager instance has failed peers in the cluster.",
+        "name": "AlertmanagerClusterFailedPeers",
+        "query": "max_over_time(alertmanager_cluster_failed_peers{container=\"alertmanager\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
+        "severity": "warning"
     },
     {
         "message": "Half or more of the Alertmanager instances within the same cluster are down.",
@@ -590,7 +596,7 @@
     {
         "message": "PDB does not have enough healthy pods.",
         "name": "KubePdbNotEnoughHealthyPods",
-        "query": "(kube_poddisruptionbudget_status_desired_healthy{job=\"kube-state-metrics\",namespace=~\".*\"} - kube_poddisruptionbudget_status_current_healthy{job=\"kube-state-metrics\",namespace=~\".*\"}) > 0",
+        "query": "(kube_poddisruptionbudget_status_desired_healthy{job=\"kube-state-metrics\",namespace=~\".*\"} - kube_poddisruptionbudget_status_current_healthy{job=\"kube-state-metrics\",namespace=~\".*\"}) > 0 and kube_poddisruptionbudget_status_expected_pods{job=\"kube-state-metrics\",namespace=~\".*\"} > 0",
         "severity": "warning"
     },
     {
@@ -602,7 +608,7 @@
     {
         "message": "Pod has been in a non-ready state for more than 15 minutes.",
         "name": "KubePodNotReady",
-        "query": "sum by (namespace, pod, job, cluster) (max by (namespace, pod, job, cluster) (kube_pod_status_phase{job=\"kube-state-metrics\",namespace=~\".*\",phase=~\"Pending|Unknown\"} or (kube_pod_status_phase{job=\"kube-state-metrics\",namespace=~\".*\",phase=\"Running\"} == 1 and on (namespace, pod, cluster) kube_pod_status_ready{condition=\"true\",job=\"kube-state-metrics\",namespace=~\".*\"} == 0)) * on (namespace, pod, cluster) group_left () topk by (namespace, pod, cluster) (1, max by (namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!=\"Job\"}))) > 0",
+        "query": "sum by (namespace, pod, job, cluster) (max by (namespace, pod, job, cluster) (kube_pod_status_phase{job=\"kube-state-metrics\",namespace=~\".*\",phase=~\"Pending|Unknown\"} or (kube_pod_status_phase{job=\"kube-state-metrics\",namespace=~\".*\",phase=\"Running\"} == 1 and on (namespace, pod, cluster) kube_pod_status_ready{condition=\"true\",job=\"kube-state-metrics\",namespace=~\".*\"} == 0)) * on (namespace, pod, cluster) group_left () topk by (namespace, pod, cluster) (1, max by (namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!=\"Job\"}))) > 0 unless on (namespace, pod, cluster) kube_pod_status_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"SchedulingGated\"} == 1",
         "severity": "warning"
     },
     {

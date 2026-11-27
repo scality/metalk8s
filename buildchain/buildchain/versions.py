@@ -106,8 +106,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="alertmanager",
-        version="v0.33.0",
-        digest="sha256:af26fbe4dd1886ac0efd7bd55cd9027da262e105b137a376522b7c14c3626e4a",
+        version="v0.35.0",
+        digest="sha256:5f6e66c01bd610aef6dd671642a52eee775fd3a89bd8788ebada33efaf373d10",
     ),
     Image(
         name="calico-cni",
@@ -141,13 +141,13 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="grafana",
-        version="13.0.2",
-        digest="sha256:5dad0df181cb644a14e13617b913b261a54f7d4fd4510721dba420929f35bea2",
+        version="13.3.1-distroless",
+        digest="sha256:54e297ac67e2b72572f926892f4e06074dc4f79f2a56ed9a9ca9a88a46f28733",
     ),
     Image(
         name="k8s-sidecar",
-        version="2.7.3",
-        digest="sha256:694950d736c8b532eba4006527ccbdac98fefc9f30b3346ba2de50b6cad91c94",
+        version="2.14.3",
+        digest="sha256:52d311dcedd587421a236c4d6c621f05614c40a51386e955e0699dca97ec0880",
     ),
     Image(
         name="kube-apiserver",
@@ -171,8 +171,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="kube-state-metrics",
-        version="v2.19.1",
-        digest="sha256:85108987d044b18a098126732f98602df408888c0f7d456241f5abefb9744bc1",
+        version="v2.20.0",
+        digest="sha256:42cfe3723a5f058171c627537fb57a3ea0f26e4380fa18555a95cb1a1b4cfc5b",
     ),
     Image(
         name="nginx",
@@ -188,8 +188,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="node-exporter",
-        version="v1.11.1-distroless",
-        digest="sha256:6112664fd761bb964d8a2d3d0119d6c8402618a89edbb3a43c8f7b4090fb53c9",
+        version="v1.13.1-distroless",
+        digest="sha256:dbc46b5381ae47c5634a6ad16d7b4862191979b0ba4f4cfbdee85e5aa2fcd1e3",
     ),
     Image(
         name="node-problem-detector",
@@ -210,8 +210,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus",
-        version="v3.12.0-distroless",
-        digest="sha256:f39df5334dee301b885f77e0ff1159f5d8a43bf9db518f885544594799a1e3c2",
+        version="v3.16.0-distroless",
+        digest="sha256:9764044e09eb2c9e1abdb12d0f0188d4efb7384b0262d3c080f0fc59045c89ba",
     ),
     Image(
         name="prometheus-adapter",
@@ -220,18 +220,18 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus-config-reloader",
-        version="v0.91.0",
-        digest="sha256:7d9e4eea5f1139e602508871f422b0116c60e87c662f3dcd234d5ab60cd0d8c1",
+        version="v0.95.2",
+        digest="sha256:cc74ddedad4ab1c49446971f6d51302ad4303d8660a2018af925c7f62c114304",
     ),
     Image(
         name="prometheus-operator",
-        version="v0.91.0",
-        digest="sha256:9e53e13139218aca79ee000172de73355e9174ef2904585bfad9497fc71aae2d",
+        version="v0.95.2",
+        digest="sha256:7986c2afa118c9dea07d01c5e1a29555824582e92f6ee8607591d1a7178acf29",
     ),
     Image(
         name="thanos",
-        version="v0.41.0",
-        digest="sha256:cf3e9b292e4302ad4a4955b56379703aea39516607d382a57604a3d003c35d10",
+        version="v0.42.5",
+        digest="sha256:0a546b98a8dd47735456ab389983675ee363d68127e334937a9fceeea10da5e7",
     ),
     # Local images
     Image(
