@@ -5,6 +5,7 @@ import re
 import requests
 import requests.exceptions
 import time
+import yaml
 
 import pytest
 from pytest_bdd import given, parsers, scenario, then, when
@@ -67,10 +68,19 @@ _DEBUG_COMMANDS = (
         f"{KUBECTL} -n {VIP_NAMESPACE} get daemonset -o wide",
     ),
     ("virtual IP pool pods", f"{KUBECTL} -n {VIP_NAMESPACE} get pods -o wide"),
+    # Fine tune the logs to analyse them in case of failure at this step.
+    # keepalived moves a VIP to another node while the ingress health check of
+    # its assigned node fails, and back once it passes again, so a VIP can be
+    # refused for a few seconds after an ingress rollout. Collect the whole log
+    # of each keepalived Pod to follow every VIP move (state changes, priority
+    # adverts, health check results). Dropping the per-packet gratuitous ARP
+    # lines: they would fill the output.
     (
         "keepalived logs",
         f"{KUBECTL} -n {VIP_NAMESPACE} logs -l app.kubernetes.io/name=virtualippool"
-        " --tail=20 --timestamps --prefix --max-log-requests=20",
+        " --tail=-1 --timestamps --prefix --max-log-requests=20"
+        " | grep -v ': Sending gratuitous ARP on '"
+        " | sort -s -k2,2 | tail -n 300",
     ),
     (
         "calico-node daemonset",
@@ -917,13 +927,15 @@ def server_request_returns_multiple_ips(
             host, f"request on '{endpoint}'", ssh_config=ssh_config, vip=ip
         ):
             try:
-                response = requests.get(endpoint, verify=False)
-                context["response"] = response
+                response = requests.get(endpoint, verify=False, timeout=10)
             except Exception as exc:
                 raise AssertionError(f"Unable to reach ingress on '{endpoint}': {exc}")
 
-            assert response is not None
-            assert response.status_code == status_code
+            context["response"] = response
+            assert response.status_code == status_code, (
+                f"Expected {status_code} '{reason}' from '{endpoint}', "
+                f"got {response.status_code} '{response.reason}'"
+            )
             assert response.reason == reason
 
 
@@ -962,6 +974,56 @@ def server_request_not_returns_multiple_ips(
 @then(_SPREAD_IPS_PARSER)
 def then_check_vips_spreading(host, ssh_config, context, ips):
     check_vips_spreading(host, ssh_config, context, ips)
+
+
+@then(parsers.parse("the '{ips}' IPs sit on their assigned node"))
+def check_vips_on_assigned_node(host, ssh_config, context, k8s_client, ips):
+    """Wait for keepalived to hand every VIP back to its assigned node.
+
+    keepalived gives a VIP priority 150 on its assigned node and 100 on the
+    others, plus 60 while the local Ingress health check passes (see
+    `images/metalk8s-keepalived/keepalived.conf.j2`). While an Ingress Pod
+    restarts, its node's VIPs move to another node, and only move back one or
+    two 5s health checks after the Pod is Ready again: the DaemonSet rollout
+    and readiness steps can pass before that (MK8S-359).
+
+    With all Ingress Pods Ready, a VIP sits on its assigned node only once that
+    node's health check passes (210 against 160), so this is the point where
+    keepalived is settled and a single request on the VIP must succeed.
+    """
+    ips = ips.format(**context).split(",")
+
+    assigned = {}
+    configmaps = k8s_client.resources.get(api_version="v1", kind="ConfigMap")
+    for cm in configmaps.get(namespace=VIP_NAMESPACE).items:
+        content = (cm.data or {}).get("hl-config.yaml")
+        if not content:
+            continue
+        for addr in yaml.safe_load(content).get("addresses") or []:
+            assigned[addr["ip"]] = addr.get("node")
+
+    missing = [ip for ip in ips if not assigned.get(ip)]
+    assert not missing, f"No node assigned to {', '.join(missing)} in {VIP_NAMESPACE}"
+
+    def _check_on_assigned_node():
+        node_ips = get_node_ips(host, ssh_config)
+        wrong = []
+        for ip in ips:
+            holders = sorted(
+                node for node, ip_list in node_ips.items() if ip in ip_list
+            )
+            if holders != [assigned[ip]]:
+                wrong.append(
+                    f"  - {ip}: assigned to '{assigned[ip]}', held by {holders or 'no node'}"
+                )
+        assert not wrong, "VIPs not on their assigned node:\n" + "\n".join(wrong)
+
+    utils.retry(
+        _check_on_assigned_node,
+        times=24,
+        wait=5,
+        name="wait for WP VIPs to sit on their assigned node",
+    )
 
 
 @then(parsers.parse("the '{ips}' IPs should no longer sit on the node '{node_name}'"))
