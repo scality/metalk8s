@@ -13,6 +13,7 @@ from buildchain.targets.remote_image import (
     ImageSaveFormat,
     RemoteImage,
     SaveAsLayers,
+    SaveAsOCILayout,
     SaveAsTar,
 )
 from buildchain.targets.repository import (
@@ -47,6 +48,7 @@ __all__ = [
     "ImageSaveFormat",
     "RemoteImage",
     "SaveAsLayers",
+    "SaveAsOCILayout",
     "SaveAsTar",
     "MKDIR_ARCH_TASK_NAME",
     "Repository",

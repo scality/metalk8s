@@ -29,8 +29,9 @@ Overview:
 """
 
 import datetime
+import subprocess
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from buildchain import builder
 from buildchain import config
@@ -120,7 +121,86 @@ def task__image_dedup_layers() -> types.TaskDict:
     return task
 
 
+def task_check_image_pins() -> types.TaskDict:
+    """Check that the pinned image digests match their tags upstream.
+
+    With `--base <revision>`, only the images whose pin changed since that git
+    revision are checked: a tag re-pushed upstream must not fail the check of
+    an unrelated change, since the build pulls the pinned digest anyway.
+    """
+    return {
+        "title": lambda _: f"{'CHECK PINS': <{constants.CMD_WIDTH}} images",
+        "actions": [_check_image_pins],
+        "params": [
+            {
+                "name": "base",
+                "long": "base",
+                "type": str,
+                "default": "",
+                "help": "only check the images whose pin changed since this revision",
+            }
+        ],
+        "task_dep": ["check_for:git", "check_for:skopeo"],
+        "uptodate": [False],
+        "verbosity": 2,
+    }
+
+
 # Helpers {{{
+def _check_image_pins(base: str) -> bool:
+    """Check that the tag of each image points to its pinned digest upstream."""
+    to_check = list(TO_PULL.values())
+    if base:
+        previous = _image_pins_at(base)
+        to_check = [
+            img
+            for img in to_check
+            if previous.get(img.name) != (img.version, img.digest)
+        ]
+        if not to_check:
+            print(f"No image pin changed since {base}.")
+    mismatches = 0
+    for img in to_check:
+        upstream = img.digest_of_tag()
+        if upstream == img.digest:
+            print(f"OK        {img.remote_fullname}")
+        else:
+            mismatches += 1
+            print(
+                f"MISMATCH  {img.remote_fullname} points to {upstream}, "
+                f"but {img.digest} is pinned"
+            )
+    return mismatches == 0
+
+
+def _image_pins_at(revision: str) -> Dict[str, Tuple[str, Optional[str]]]:
+    """Return the version and digest of each image at a git revision.
+
+    `versions.py` is kept valid in a standalone context, so its copy at that
+    revision runs as is.
+    """
+    path = Path(versions.__file__).resolve().relative_to(constants.ROOT)
+    result = subprocess.run(
+        [config.ExtCommand.GIT.value, "show", f"{revision}:{path}"],
+        capture_output=True,
+        check=False,
+        cwd=constants.ROOT,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"cannot read {path} at {revision}: {result.stderr}")
+    namespace: Dict[str, Any] = {
+        "__name__": "versions_at_revision",
+        "__file__": versions.__file__,
+    }
+    # pylint: disable-next=exec-used
+    exec(compile(result.stdout, f"{revision}:{path}", "exec"), namespace)
+    return {
+        image.name: (image.version, image.digest)
+        for image in namespace["CONTAINER_IMAGES"]
+    }
+
+
 def _get_image_info(name: str) -> versions.Image:
     """Retrieve an `Image` information by name from the versions listing."""
     try:
@@ -241,6 +321,7 @@ def _local_image(name: str, **kwargs: Any) -> targets.LocalImage:
     kwargs.setdefault("destination", constants.ISO_IMAGE_ROOT)
     kwargs.setdefault("dockerfile", constants.ROOT / "images" / name / "Dockerfile")
     kwargs.setdefault("save_on_disk", True)
+    kwargs.setdefault("repository", constants.METALK8S_REPOSITORY)
     kwargs.setdefault("task_dep", []).append("_image_mkdir_root")
 
     return targets.LocalImage(
@@ -341,8 +422,8 @@ REMOTE_NAMES: Dict[str, str] = {
 }
 
 SAVE_AS: Dict[str, List[targets.ImageSaveFormat]] = {
-    "pause": [targets.SaveAsTar(), targets.SaveAsLayers()],
-    "nginx": [targets.SaveAsTar(), targets.SaveAsLayers()],
+    "pause": [targets.SaveAsTar(), targets.SaveAsLayers(), targets.SaveAsOCILayout()],
+    "nginx": [targets.SaveAsTar(), targets.SaveAsLayers(), targets.SaveAsOCILayout()],
 }
 
 for repo, images in IMGS_PER_REPOSITORY.items():
