@@ -1,7 +1,6 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 
 
@@ -690,8 +689,7 @@ spec:
         - --webhook-cert-path=/tmp/k8s-webhook-server/serving-certs
         command:
         - /manager
-        image: '{% endraw -%}{{ build_image_name("node-warden-operator", False) }}{%-
-          raw %}:v1.0.0'
+        image: ghcr.io/scality/node-warden-operator:v1.0.0
         livenessProbe:
           httpGet:
             path: /healthz

@@ -1,7 +1,6 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- set grafana_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/grafana.yaml.j2', saltenv=saltenv) %}
 {%- set prometheus_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/prometheus.yaml', saltenv=saltenv) %}
 {%- set alertmanager_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/alertmanager.yaml', saltenv=saltenv) %}

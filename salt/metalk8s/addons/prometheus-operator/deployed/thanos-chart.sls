@@ -1,7 +1,6 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- set thanos_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/thanos.yaml', saltenv=saltenv) %}
 {%- set thanos = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-thanos-config', thanos_defaults) %}
 

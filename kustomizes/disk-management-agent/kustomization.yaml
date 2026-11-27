@@ -5,7 +5,7 @@ resources:
 
 images:
   - name: controller
-    newName: '{% endraw -%}{{ build_image_name("disk-management-agent", False) }}{%- raw %}'
+    newName: ghcr.io/scality/disk-management-agent
     newTag: v0.2.0
 
 patches:

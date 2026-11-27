@@ -5,7 +5,7 @@ resources:
 
 images:
   - name: controller
-    newName: '{% endraw -%}{{ build_image_name("node-warden-operator", False) }}{%- raw %}'
+    newName: ghcr.io/scality/node-warden-operator
     newTag: v1.0.0
 
 patches:
