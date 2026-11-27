@@ -189,7 +189,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        image: {% endraw -%}{{ build_image_name("node-problem-detector", False) }}{%- raw %}:v1.35.1
+        image: registry.k8s.io/node-problem-detector/node-problem-detector:v1.35.1
         imagePullPolicy: IfNotPresent
         name: node-problem-detector
         ports:

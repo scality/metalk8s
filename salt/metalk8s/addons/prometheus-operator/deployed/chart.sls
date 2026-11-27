@@ -82100,7 +82100,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: status.hostIP
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("node-exporter", False, False) }}{%- raw %}:v1.12.1-distroless
+        image: quay.io/prometheus/node-exporter:v1.12.1-distroless
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -82239,7 +82239,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/dashboards/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:2.14.1
+        image: quay.io/kiwigrid/k8s-sidecar:2.14.1
         imagePullPolicy: IfNotPresent
         name: grafana-sc-dashboard
         securityContext:
@@ -82278,7 +82278,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/datasources/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:2.14.1
+        image: quay.io/kiwigrid/k8s-sidecar:2.14.1
         imagePullPolicy: IfNotPresent
         name: grafana-sc-datasources
         securityContext:
@@ -82317,7 +82317,7 @@ spec:
           value: /etc/grafana/provisioning
         - name: GF_UNIFIED_STORAGE_INDEX_PATH
           value: /var/lib/grafana-search/bleve
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:13.2.4-distroless
+        image: docker.io/grafana/grafana:13.2.4-distroless
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -82447,7 +82447,7 @@ spec:
         - --port=8080
         - --resources=certificatesigningrequests,configmaps,cronjobs,daemonsets,deployments,endpointslices,horizontalpodautoscalers,ingresses,jobs,leases,limitranges,mutatingwebhookconfigurations,namespaces,networkpolicies,nodes,persistentvolumeclaims,persistentvolumes,poddisruptionbudgets,pods,replicasets,replicationcontrollers,resourcequotas,secrets,services,statefulsets,storageclasses,validatingwebhookconfigurations,volumeattachments
         - --metric-labels-allowlist=persistentvolumeclaims=[excluded-from-alerts]
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("kube-state-metrics", False, False) }}{%- raw %}:v2.20.0
+        image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.20.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -82548,19 +82548,19 @@ spec:
         - --kubelet-endpoints=true
         - --kubelet-endpointslice=false
         - --localhost=127.0.0.1
-        - --prometheus-config-reloader={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-config-reloader", False, False) }}{%- raw %}:v0.94.1
+        - --prometheus-config-reloader=quay.io/prometheus-operator/prometheus-config-reloader:v0.94.1
         - --config-reloader-cpu-request=0
         - --config-reloader-cpu-limit=0
         - --config-reloader-memory-request=0
         - --config-reloader-memory-limit=0
-        - --thanos-default-base-image={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("thanos", False, False) }}{%- raw %}:v0.42.4
+        - --thanos-default-base-image=quay.io/thanos/thanos:v0.42.4
         - --secret-field-selector=type!=kubernetes.io/dockercfg,type!=helm.sh/release.v1
         - --web.enable-tls=false
         - --web.listen-address=:8080
         env:
         - name: GOGC
           value: '30'
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-operator", False, False) }}{%- raw %}:v0.94.1
+        image: quay.io/prometheus-operator/prometheus-operator:v0.94.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -82678,7 +82678,7 @@ spec:
   alertmanagerConfigSelector: {}
   automountServiceAccountToken: true
   externalUrl: {% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}{%- raw %}
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("alertmanager", False, False) }}{%- raw %}:v0.34.1
+  image: quay.io/prometheus/alertmanager:v0.34.1
   imagePullPolicy: IfNotPresent
   listenLocal: false
   logFormat: logfmt
@@ -82772,7 +82772,7 @@ spec:
   enableOTLPReceiver: false
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
   hostNetwork: false
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v3.15.0-distroless
+  image: quay.io/prometheus/prometheus:v3.15.0-distroless
   imagePullPolicy: IfNotPresent
   listenLocal: false
   logFormat: logfmt
@@ -82829,7 +82829,7 @@ spec:
             app.kubernetes.io/name: prometheus-operator-prometheus
         storageClassName: metalk8s
   thanos:
-    image: {% endraw -%}{{ build_image_name("thanos") }}{%- raw %}
+    image: quay.io/thanos/thanos:v0.42.4
   tolerations:
   - effect: NoSchedule
     key: node-role.kubernetes.io/bootstrap

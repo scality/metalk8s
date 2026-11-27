@@ -194,7 +194,7 @@ spec:
         env:
         - name: KUBERNETES_POD_NAMESPACE
           value: metalk8s-auth
-        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.46.0
+        image: ghcr.io/dexidp/dex:v2.46.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

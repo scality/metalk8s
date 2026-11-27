@@ -20,14 +20,6 @@ It performs the following tasks:
   appropriate Jinja syntax. Supports:
     - "__var__(<varname>)", to replace with "{{ <varname> }}" (useful when
       retrieving variables from service configuration ConfigMaps)
-    - "__image__(<imgname>)", to replace with
-      "{{ build_image_name("<imgname>", False) }}"
-    - "__full_image__(<imgname>)", to replace with
-      "{{ build_image_name("<imgname>") }}"
-    - "__image_no_reg__(<imgname>)", to replace with
-      "{{ build_image_name("<imgname>", False, False) }}"
-    - "__full_image_no_reg__(<imgname>)", to replace with
-      "{{ build_image_name("<imgname>", True, False) }}"
 """
 
 import argparse
@@ -161,34 +153,6 @@ def replace_magic_strings(rendered_yaml):
     result = re.sub(
         r"__escape__\((?P<varname>.*)\)",
         r'"{% endraw -%}\g<varname>{%- raw %}"',
-        result,
-    )
-
-    # Handle __image__
-    result = re.sub(
-        r"__image__\((?P<imgname>[\w\-]+)\)",
-        r'{% endraw -%}{{ build_image_name("\g<imgname>", False) }}{%- raw %}',
-        result,
-    )
-
-    # Handle __full_image__ (include version tag in the rendered name)
-    result = re.sub(
-        r"__full_image__\((?P<imgname>[\w\-]+)\)",
-        r'{% endraw -%}{{ build_image_name("\g<imgname>") }}{%- raw %}',
-        result,
-    )
-
-    # Handle __image_no_reg__
-    result = re.sub(
-        r"__image_no_reg__\((?P<imgname>[\w\-]+)\)",
-        r'{% endraw -%}{{ build_image_name("\g<imgname>", False, False) }}{%- raw %}',
-        result,
-    )
-
-    # Handle __full_image_no_reg__ (include version tag in the rendered name)
-    result = re.sub(
-        r"__full_image_no_reg__\((?P<imgname>[\w\-]+)\)",
-        r'{% endraw -%}{{ build_image_name("\g<imgname>", True, False) }}{%- raw %}',
         result,
     )
 

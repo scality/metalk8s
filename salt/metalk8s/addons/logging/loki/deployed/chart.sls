@@ -197,7 +197,7 @@ spec:
       - args:
         - -config.file=/etc/loki/config/config.yaml
         - -target=all,table-manager
-        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:3.6.11
+        image: docker.io/grafana/loki:3.6.11
         imagePullPolicy: IfNotPresent
         name: loki
         ports:
@@ -252,7 +252,7 @@ spec:
           value: '60'
         - name: LOG_LEVEL
           value: INFO
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:2.14.1
+        image: quay.io/kiwigrid/k8s-sidecar:2.14.1
         imagePullPolicy: IfNotPresent
         name: loki-sc-rules
         securityContext:

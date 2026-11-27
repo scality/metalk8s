@@ -403,8 +403,7 @@ spec:
         - --metrics-relist-interval=1m
         - --v=4
         - --config=/etc/adapter/config.yaml
-        image: '{%- endraw -%}{{ build_image_name("prometheus-adapter", False) }}{%-
-          raw -%}:v0.12.0'
+        image: registry.k8s.io/prometheus-adapter/prometheus-adapter:v0.12.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

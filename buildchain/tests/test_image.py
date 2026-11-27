@@ -2,9 +2,10 @@
 
 """Unit tests for the tasks of `buildchain.image`."""
 
+import re
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 import pytest
 
@@ -232,6 +233,57 @@ class TestSaltImageNames:
         saved = {img.name for img in TestOCILayouts.saved_images()}
         unknown = sorted(set(self.SALT_IMAGES) - saved)
         assert not unknown, f"not on the ISO: {unknown}"
+
+
+class TestManifestImages:
+    """What Salt deploys only names images the ISO serves.
+
+    Offline CI only catches the images a scenario pulls, not those passed in
+    arguments for later, like the cert-manager ACME solver.
+    """
+
+    SALT_ROOT = constants.ROOT / "salt"
+    SERVED: Dict[str, Optional[str]] = {
+        f"{img['image']}:{img['version']}": versions.CONTAINER_IMAGES_MAP[name].digest
+        for name, img in versions.SALT_VERSIONS_JSON["images"].items()
+    }
+    HOSTS = sorted({ref.split("/", 1)[0] for ref in SERVED})
+    REFERENCE = re.compile(
+        r"(?<![\w./:-])((?:{})/[\w./-]+(?::[\w.-]+)?(?:@sha256:[0-9a-f]{{64}})?)".format(
+            "|".join(map(re.escape, HOSTS))
+        )
+    )
+    IMAGE_FIELD = re.compile(r"^[ \t]*(?:-[ \t]*)?image:[ \t]*['\"]?([^\s'\"]+)", re.M)
+
+    @classmethod
+    def salt_files(cls) -> Iterator[Tuple[Path, str]]:
+        for path in sorted(cls.SALT_ROOT.rglob("*")):
+            if path.is_file() and cls.SALT_ROOT / "tests" not in path.parents:
+                yield path, path.read_text(errors="ignore")
+
+    @classmethod
+    def unserved(cls, ref: str) -> bool:
+        name, _, digest = ref.partition("@")
+        return name not in cls.SERVED or bool(digest) and cls.SERVED[name] != digest
+
+    def test_references_on_a_known_host_are_served(self) -> None:
+        found = [
+            f"{path.relative_to(constants.ROOT)}: {ref}"
+            for path, text in self.salt_files()
+            for ref in self.REFERENCE.findall(text)
+        ]
+        assert found, "the scan found no image at all"
+        unserved = [line for line in found if self.unserved(line.split(": ")[1])]
+        assert not unserved, f"not served by the ISO: {unserved}"
+
+    def test_literal_image_fields_are_served(self) -> None:
+        unserved = [
+            f"{path.relative_to(constants.ROOT)}: {ref}"
+            for path, text in self.salt_files()
+            for ref in self.IMAGE_FIELD.findall(text)
+            if "{" not in ref and self.unserved(ref)
+        ]
+        assert not unserved, f"not served by the ISO: {unserved}"
 
 
 class TestCheckImagePins:
