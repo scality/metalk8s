@@ -145,6 +145,9 @@ image_cache:
   # Platform passed to `ctr images import`. The archives on the ISO are
   # built for amd64 only.
   platform: "linux/amd64"
+  # Time limit, in seconds, of the import at boot. Past it, the import is
+  # stopped and the kubelet starts. Must be positive.
+  preload_timeout: 300
 
 ca:
   cert:
