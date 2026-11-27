@@ -507,7 +507,9 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          # Cypress requires Node.js 22, and npm silently skips an optional
+          # dependency whose engines do not match
+          node-version: "22"
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v5
@@ -524,12 +526,17 @@ jobs:
       - name: Install Cypress and its dependencies
         run: |
           cd ui
-          PKGS="har-validator cypress cypress-wait-until @testing-library/cypress querystring"
-          for pkg in $PKGS; do
-            npm install --no-save --no-package-lock --legacy-peer-deps $pkg@$(node -p \
-              -e "require('./package-lock.json').dependencies['$pkg'].version" \
+          # Install them at once, at their package-lock.json versions: a later
+          # `npm install` would resolve again the ones installed before it
+          PKGS=()
+          for pkg in har-validator cypress cypress-wait-until @testing-library/cypress querystring; do
+            version=$(node -p -e \
+              "require('./package-lock.json').packages['node_modules/$pkg'].version" \
             ) || exit 1
+            PKGS+=("$pkg@$version")
           done
+          npm install --no-save --no-package-lock --legacy-peer-deps "${PKGS[@]}"
+          npx cypress --version
       - name: Wait for application to be available
         run: |
           bash -c '
