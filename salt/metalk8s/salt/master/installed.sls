@@ -7,6 +7,13 @@
 
 {%- set salt_ip = grains['metalk8s']['control_plane_ip'] -%}
 
+{%- set archives = salt.metalk8s.get_archives() %}
+{#- The registry node agent mounts the ISOs again after a reboot, once the
+    salt-master runs already: watch the directory holding them, so their
+    mounts propagate into the container. #}
+{%- set iso_roots = archives.values() | selectattr("iso") | map(attribute="path")
+                    | map("regex_replace", "/[^/]+$", "") | unique | list %}
+
 {%- set solution_archives = {} %}
 {%- set solutions_available = salt.metalk8s_solutions.list_available() %}
 {%- for versions in solutions_available.values() %}
@@ -41,7 +48,8 @@ Install and start salt master manifest:
         debug: {{ metalk8s.debug }}
         image: {{ image_name }}
         version: {{ image_version }}
-        archives: {{ salt.metalk8s.get_archives() | tojson }}
+        archives: {{ archives | tojson }}
+        iso_roots: {{ iso_roots | tojson }}
         solution_archives: {{ solution_archives | tojson }}
         salt_ip: "{{ salt_ip }}"
     - require:

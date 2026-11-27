@@ -158,6 +158,9 @@ jobs:
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   lifecycle-promoted:
+    # Upgrades and downgrades do not move a cluster to the cluster registry
+    # yet: only a fresh install pulls from it.
+    if: false
     uses: ./.github/workflows/lifecycle-promoted.yaml
     secrets: inherit
     needs:
@@ -173,6 +176,9 @@ jobs:
       enable-debug-when-failure: ${{ inputs.enable-debug-when-failure }}
 
   lifecycle-dev:
+    # Upgrades and downgrades do not move a cluster to the cluster registry
+    # yet: only a fresh install pulls from it.
+    if: false
     uses: ./.github/workflows/lifecycle-dev.yaml
     secrets: inherit
     needs:

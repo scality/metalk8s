@@ -1,7 +1,6 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- set dex_defaults = salt.slsutil.renderer('salt://metalk8s/addons/dex/config/dex.yaml.j2', saltenv=saltenv) %}
 {%- set dex = salt.metalk8s_service_configuration.get_service_conf('metalk8s-auth', 'metalk8s-dex-config', dex_defaults) %}
 
@@ -194,7 +193,7 @@ spec:
         env:
         - name: KUBERNETES_POD_NAMESPACE
           value: metalk8s-auth
-        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.46.0
+        image: ghcr.io/dexidp/dex:v2.46.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

@@ -1,6 +1,3 @@
-image:
-  repository: '__image__(dex)'
-
 nodeSelector:
   node-role.kubernetes.io/infra: ''
 

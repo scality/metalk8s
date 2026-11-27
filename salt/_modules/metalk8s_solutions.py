@@ -321,8 +321,9 @@ def list_available():
         if not mountpoint.startswith("/srv/scality/"):
             continue
 
-        # Skip MetalK8s mountpoint
-        if mountpoint.startswith("/srv/scality/metalk8s-"):
+        # Skip MetalK8s mountpoints, and the archives the registry node agent
+        # mounts: the registry serves those, not the Solution tooling.
+        if mountpoint.startswith(("/srv/scality/metalk8s-", "/srv/scality/metalk8s/")):
             continue
 
         # Skip non ISO mountpoint

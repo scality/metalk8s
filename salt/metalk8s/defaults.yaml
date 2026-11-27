@@ -154,6 +154,9 @@ image_cache:
   # Platform passed to `ctr images import`. The archives on the ISO are
   # built for amd64 only.
   platform: "linux/amd64"
+  # CA of the cluster registry, for `imagecachectl` to pull a boot cache
+  # on a joining node, before the registry mirror configuration lands there.
+  registry_ca: "/etc/metalk8s/pki/registry-ca.crt"
 
 ca:
   cert:

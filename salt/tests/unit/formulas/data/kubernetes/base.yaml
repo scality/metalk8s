@@ -435,10 +435,43 @@ items:
         systemUUID: EB0EB251-7413-4A0A-867E-0E129650C679
 
 ---
-# Default configmaps list (empty)
+# Default configmaps list: the containerd mirror configuration the registry
+# operator publishes
 apiVersion: v1
 objectKind: ConfigMap
-items: []
+items:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: metalk8s-registry-containerd-mirror
+      namespace: metalk8s-registry
+    data:
+      hosts.toml: |
+        [host."https://10.96.0.50:5000"]
+          capabilities = ["pull", "resolve"]
+          ca = "ca.crt"
+        [host."https://192.168.2.12:5000"]
+          capabilities = ["pull", "resolve"]
+          ca = "ca.crt"
+      ca.crt: |
+        -----BEGIN CERTIFICATE-----
+        <registry CA>
+        -----END CERTIFICATE-----
+
+---
+# Default registries list (the bootstrap node serves the cluster registry)
+apiVersion: metalk8s.scality.com/v1alpha1
+objectKind: Registry
+items:
+  - apiVersion: metalk8s.scality.com/v1alpha1
+    kind: Registry
+    metadata:
+      name: main
+    status:
+      selectedNodes:
+        - bootstrap
+      nodeIPs:
+        - 192.168.2.12
 
 ---
 # Default prometheus rules list (empty)

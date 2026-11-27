@@ -4,6 +4,7 @@ include:
   - .chart
   - .registry-namespace
   - .registry-certs
+  - .archive
   - .registry
 
 Wait for Operator Webhook Certificate:
@@ -35,6 +36,7 @@ Wait for Registry Operator to be Ready:
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.chart
       - test: Wait for Operator Webhook Certificate
     - require_in:
+      - sls: metalk8s.addons.metalk8s-registry-operator.deployed.archive
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.registry
 
 # The API server rejects the Registry CR until cainjector injects the webhook CA bundles
@@ -51,6 +53,7 @@ Wait for Operator Mutating Webhook CA Bundle:
     - require:
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.chart
     - require_in:
+      - sls: metalk8s.addons.metalk8s-registry-operator.deployed.archive
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.registry
 
 Wait for Operator Validating Webhook CA Bundle:
@@ -66,6 +69,7 @@ Wait for Operator Validating Webhook CA Bundle:
     - require:
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.chart
     - require_in:
+      - sls: metalk8s.addons.metalk8s-registry-operator.deployed.archive
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.registry
 
 # The operator's validating webhook rejects the Registry CR at create time if
@@ -77,6 +81,7 @@ Wait for Operator Validating Webhook CA Bundle:
 Registry CR prerequisites in place:
   test.nop:
     - require:
+      - sls: metalk8s.addons.metalk8s-registry-operator.deployed.archive
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.registry-namespace
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.registry-certs.registry
       - test: Wait for CA Certificate
@@ -95,3 +100,18 @@ Wait for the Registry to be Ready:
         attempts: 30
     - require:
       - sls: metalk8s.addons.metalk8s-registry-operator.deployed.registry
+
+# The Registry is Ready once every node holds its containerd mirror
+# configuration: whatever is not in a boot cache can now come from it.
+Wait for the MetalK8s archive to be served:
+  test.configurable_test_state:
+    - changes: False
+    - result: __slot__:salt:metalk8s_kubernetes.check_object_ready(
+        apiVersion='metalk8s.scality.com/v1alpha1', kind=SolutionArchive,
+        name="{{ saltenv }}")
+    - comment: Wait for the registry to serve the MetalK8s archive
+    - retry:
+        attempts: 30
+    - require:
+      - sls: metalk8s.addons.metalk8s-registry-operator.deployed.archive
+      - test: Wait for the Registry to be Ready

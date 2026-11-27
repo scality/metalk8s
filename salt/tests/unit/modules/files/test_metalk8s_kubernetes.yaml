@@ -1185,6 +1185,38 @@ check_object_ready:
     raises: True
     result: "The CustomResourceDefinition is not yet Established"
 
+  # SolutionArchive served
+  - obj:
+      apiVersion: metalk8s.scality.com/v1alpha1
+      kind: SolutionArchive
+      metadata:
+        name: metalk8s-1.2.3
+        generation: 1
+      status:
+        served: true
+        servedReplicas: 1
+    result: True
+
+  # SolutionArchive not yet served, or with no status yet
+  - obj:
+      apiVersion: metalk8s.scality.com/v1alpha1
+      kind: SolutionArchive
+      metadata:
+        name: metalk8s-1.2.3
+        generation: 1
+      status:
+        served: false
+    raises: True
+    result: "The SolutionArchive is not yet served"
+  - obj:
+      apiVersion: metalk8s.scality.com/v1alpha1
+      kind: SolutionArchive
+      metadata:
+        name: metalk8s-1.2.3
+        generation: 1
+    raises: True
+    result: "The SolutionArchive is not yet served"
+
   # Object with ObservedGeneration no match
   - obj:
       apiVersion: custom/v1

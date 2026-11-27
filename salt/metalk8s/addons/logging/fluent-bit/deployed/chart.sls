@@ -1,7 +1,6 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- set fluent_bit_defaults = salt.slsutil.renderer('salt://metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml.j2', saltenv=saltenv) %}
 {%- set fluent_bit = salt.metalk8s_service_configuration.get_service_conf('metalk8s-logging', 'metalk8s-fluent-bit-config', fluent_bit_defaults) %}
 
@@ -1714,7 +1713,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: {% endraw -%}{{ build_image_name("fluent-bit", False) }}{%- raw %}:5.1.5
+        image: cr.fluentbit.io/fluent/fluent-bit:5.1.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

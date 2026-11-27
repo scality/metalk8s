@@ -1,7 +1,6 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 
 
@@ -289,7 +288,7 @@ spec:
       - args:
         - --metrics-bind-address=:8443
         - --health-probe-bind-address=:8081
-        - --plain-http
+        - --ca-file=/etc/image-cache/registry-ca/ca.crt
         command:
         - /manager
         env:
@@ -297,8 +296,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: '{% endraw -%}{{ build_image_name("image-cache-agent", False) }}{%-
-          raw %}:v0.1.0-alpha.2'
+        image: ghcr.io/scality/image-cache-agent:v0.1.0-alpha.2
         livenessProbe:
           httpGet:
             path: /healthz
@@ -334,6 +332,9 @@ spec:
         volumeMounts:
         - mountPath: /var/lib/image-cache
           name: image-cache
+        - mountPath: /etc/image-cache/registry-ca
+          name: registry-ca
+          readOnly: true
       nodeSelector:
         kubernetes.io/arch: amd64
       securityContext:
@@ -350,5 +351,18 @@ spec:
           path: /var/lib/image-cache
           type: DirectoryOrCreate
         name: image-cache
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: registry-ca
+        name: registry-ca
+---
+apiVersion: metalk8s.scality.com/v1alpha1
+kind: MirrorConfig
+metadata:
+  name: registry-ca
+  namespace: metalk8s-image-cache
+spec: {}
 
 {% endraw %}

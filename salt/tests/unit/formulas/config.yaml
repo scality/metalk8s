@@ -72,15 +72,6 @@ metalk8s:
           _cases:
             "Render from the master (orchestrate)":
               mode: master
-            "Endpoints as a dict":
-              mode: master
-              pillar_overrides:
-                metalk8s:
-                  endpoints:
-                    repositories:
-                      ip: 10.0.0.2
-                      ports:
-                        http: 8081
       post-upgrade.sls:
         _cases:
           "Render from the master (orchestrate)":
@@ -108,6 +99,10 @@ metalk8s:
 
     metalk8s-registry-operator:
       deployed:
+        archive.sls:
+          _cases:
+            "Render from the master (orchestrate)":
+              mode: master
         registry.sls:
           _cases:
             "No ServiceMonitor CRD (default)":
@@ -324,26 +319,34 @@ metalk8s:
 
     pulled.sls:
       _cases:
-        "Containerd, endpoints as a list (default)": {}
-        "Containerd, endpoints as a dict":
+        # The registry is passed by `orchestrate/deploy_node.sls`
+        "Containerd, one registry node":
           pillar_overrides:
             metalk8s:
-              endpoints:
-                repositories:
-                  ip: 10.0.0.2
-                  ports:
-                    http: 8081
-        "Containerd, several endpoints":
+              registry: &pulled_registry
+                addresses:
+                  - 10.0.0.2:5000
+                ca: |
+                  -----BEGIN CERTIFICATE-----
+                  <registry CA>
+                  -----END CERTIFICATE-----
+        "Containerd, several registry nodes":
           pillar_overrides:
             metalk8s:
-              endpoints:
-                repositories:
-                  - ip: 10.0.0.2
-                    ports:
-                      http: 8080
-                  - ip: 10.0.0.3
-                    ports:
-                      http: 8080
+              registry:
+                <<: *pulled_registry
+                addresses:
+                  - 10.0.0.2:5000
+                  - 10.0.0.3:5000
+        "Containerd, an etcd node":
+          pillar_overrides:
+            metalk8s:
+              registry: *pulled_registry
+              nodes:
+                bootstrap:
+                  roles:
+                    - etcd
+                  version: 2.7.1
         "Without any container engine":
           pillar_overrides:
             kubelet:
@@ -1277,22 +1280,19 @@ metalk8s:
 
   repo:
     files:
-      metalk8s-registry-config.inc.j2:
-        _cases:
-          "From metalk8s.repo.configured":
-            extra_context:
-              archives: &example_archives
-                metalk8s-2.7.1:
-                  iso: /archives/metalk8s.iso
-                  path: /srv/scality/metalk8s-2.7.1
-                  version: "2.7.1"
-
       nginx.conf.j2:
         _cases:
           "From metalk8s.repo.configured":
             extra_context:
               listening_address: "10.0.0.1"
               listening_port: 8080
+              archives: &example_archives
+                metalk8s-2.7.1:
+                  iso: /archives/metalk8s.iso
+                  archive: /srv/scality/metalk8s/archives/metalk8s-2.7.1.iso
+                  path: /srv/scality/metalk8s/solutions/metalk8s/2.7.1
+                  version: "2.7.1"
+              package_path: /packages
 
       repositories-manifest.yaml.j2:
         _cases:
@@ -1304,9 +1304,10 @@ metalk8s:
               name: repositories
               version: "1.0.0"
               archives: *example_archives
+              iso_roots:
+                - /srv/scality/metalk8s/solutions/metalk8s
               solutions: {}
               package_path: /packages
-              image_path: /images/
               nginx_confd_path: /var/lib/metalk8s/repositories/conf.d
               probe_host: "10.0.0.1"
               metalk8s_version: "2.7.1"
@@ -1371,9 +1372,17 @@ metalk8s:
                 version: "3002.2"
                 archives:
                   metalk8s-2.7.1:
-                    path: /srv/scality/metalk8s-2.7.1
+                    path: /srv/scality/metalk8s/solutions/metalk8s/2.7.1
                     iso: /archives/metalk8s-2.7.1
+                    archive: /srv/scality/metalk8s/archives/metalk8s-2.7.1.iso
                     version: "2.7.1"
+                  metalk8s-2.7.0:
+                    path: /directory-archive
+                    iso: null
+                    archive: null
+                    version: "2.7.0"
+                iso_roots:
+                  - /srv/scality/metalk8s/solutions/metalk8s
                 solution_archives:
                   example-solution-1-2-3: /srv/scality/example-solution-1.2.3
                 salt_ip: "10.0.0.1"

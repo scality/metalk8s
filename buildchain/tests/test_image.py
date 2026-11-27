@@ -2,9 +2,10 @@
 
 """Unit tests for the tasks of `buildchain.image`."""
 
+import re
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 import pytest
 
@@ -18,8 +19,8 @@ variants = pytest.mark.parametrize("variant", VARIANTS)
 
 
 def members_of(variant: str) -> List[Any]:
-    """The images a variant caches, as pulled image targets."""
-    return [image.TO_PULL[name] for name in image.BOOT_CACHE_VARIANTS[variant]]
+    """The images a variant caches, as image targets."""
+    return [image.CACHEABLE_IMAGES[name] for name in image.BOOT_CACHE_VARIANTS[variant]]
 
 
 def command_actions(task: dict) -> List[str]:
@@ -34,10 +35,16 @@ def command_actions(task: dict) -> List[str]:
 class TestBootCacheVariants:
     """The manifest itself: every declared name must stay resolvable."""
 
-    def test_members_are_pulled_images(self) -> None:
+    def test_members_are_saved_on_the_iso(self) -> None:
         for variant, members in image.BOOT_CACHE_VARIANTS.items():
-            missing = [name for name in members if name not in image.TO_PULL]
+            missing = [name for name in members if name not in image.CACHEABLE_IMAGES]
             assert not missing, f"variant {variant} lists unknown images: {missing}"
+
+    def test_boot_cache_images_are_not_cacheable(self) -> None:
+        # A boot cache made of boot caches would never be built.
+        assert not any(
+            name.startswith("metalk8s-boot-cache-") for name in image.CACHEABLE_IMAGES
+        )
 
     def test_every_variant_is_built(self) -> None:
         built = {img.name for img in image.TO_BUILD}
@@ -52,10 +59,19 @@ class TestBootCacheVariants:
 
 
 class TestNodeImageFullname:
-    def test_matches_the_registry_layout(self) -> None:
-        prefix = f"{config.PROJECT_NAME.lower()}-{versions.VERSION}"
+    def test_remote_images_keep_their_upstream_name(self) -> None:
         assert image._node_image_fullname("etcd", "1.2.3") == (
-            f"{constants.NODE_REGISTRY_ENDPOINT}/{prefix}/etcd:1.2.3"
+            "registry.k8s.io/etcd:1.2.3"
+        )
+
+    def test_remote_names_are_used(self) -> None:
+        assert image._node_image_fullname("calico-node", "1.2.3") == (
+            "docker.io/calico/node:1.2.3"
+        )
+
+    def test_built_images_are_named_after_the_metalk8s_repository(self) -> None:
+        assert image._node_image_fullname("salt-master", "1.2.3") == (
+            f"{constants.METALK8S_REPOSITORY}/salt-master:1.2.3"
         )
 
 
@@ -80,8 +96,8 @@ class TestBootCacheContextTask:
     def test_unknown_image_is_a_clear_error(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        monkeypatch.setitem(image.BOOT_CACHE_VARIANTS, "broken", ["not-pulled"])
-        with pytest.raises(ValueError, match="not-pulled"):
+        monkeypatch.setitem(image.BOOT_CACHE_VARIANTS, "broken", ["not-saved"])
+        with pytest.raises(ValueError, match="not-saved"):
             image._boot_cache_context_task("broken")
 
     @variants
@@ -97,7 +113,7 @@ class TestBootCacheContextTask:
         assert task["targets"] == expected
 
     @variants
-    def test_archives_depend_on_the_pulled_layers(self, variant: str) -> None:
+    def test_archives_depend_on_the_saved_layers(self, variant: str) -> None:
         task = image._boot_cache_context_task(variant)
         assert task["file_dep"] == [
             member.dirname / "manifest.json" for member in members_of(variant)
@@ -201,6 +217,73 @@ class TestOCILayouts:
         layer_dirs = {img.dest_dir / img.name for img in self.saved_images()}
         for img in self.saved_images():
             assert not layer_dirs.intersection(img.layout_dirname.parents)
+
+
+class TestSaltImageNames:
+    """Salt refers to an image by the name its OCI layout is served under."""
+
+    SALT_IMAGES = versions.SALT_VERSIONS_JSON["images"]
+
+    def test_every_image_is_named_after_its_layout(self) -> None:
+        for img in TestOCILayouts.saved_images():
+            layout = img.layout_dirname.relative_to(constants.ISO_IMAGE_ROOT)
+            assert self.SALT_IMAGES[img.name]["image"] == str(layout), img.name
+
+    def test_every_image_known_to_salt_is_on_the_iso(self) -> None:
+        saved = {img.name for img in TestOCILayouts.saved_images()}
+        unknown = sorted(set(self.SALT_IMAGES) - saved)
+        assert not unknown, f"not on the ISO: {unknown}"
+
+
+class TestManifestImages:
+    """What Salt deploys only names images the ISO serves.
+
+    Offline CI only catches the images a scenario pulls, not those passed in
+    arguments for later, like the cert-manager ACME solver.
+    """
+
+    SALT_ROOT = constants.ROOT / "salt"
+    SERVED: Dict[str, Optional[str]] = {
+        f"{img['image']}:{img['version']}": versions.CONTAINER_IMAGES_MAP[name].digest
+        for name, img in versions.SALT_VERSIONS_JSON["images"].items()
+    }
+    HOSTS = sorted({ref.split("/", 1)[0] for ref in SERVED})
+    REFERENCE = re.compile(
+        r"(?<![\w./:-])((?:{})/[\w./-]+(?::[\w.-]+)?(?:@sha256:[0-9a-f]{{64}})?)".format(
+            "|".join(map(re.escape, HOSTS))
+        )
+    )
+    IMAGE_FIELD = re.compile(r"^[ \t]*(?:-[ \t]*)?image:[ \t]*['\"]?([^\s'\"]+)", re.M)
+
+    @classmethod
+    def salt_files(cls) -> Iterator[Tuple[Path, str]]:
+        for path in sorted(cls.SALT_ROOT.rglob("*")):
+            if path.is_file() and cls.SALT_ROOT / "tests" not in path.parents:
+                yield path, path.read_text(errors="ignore")
+
+    @classmethod
+    def unserved(cls, ref: str) -> bool:
+        name, _, digest = ref.partition("@")
+        return name not in cls.SERVED or bool(digest) and cls.SERVED[name] != digest
+
+    def test_references_on_a_known_host_are_served(self) -> None:
+        found = [
+            f"{path.relative_to(constants.ROOT)}: {ref}"
+            for path, text in self.salt_files()
+            for ref in self.REFERENCE.findall(text)
+        ]
+        assert found, "the scan found no image at all"
+        unserved = [line for line in found if self.unserved(line.split(": ")[1])]
+        assert not unserved, f"not served by the ISO: {unserved}"
+
+    def test_literal_image_fields_are_served(self) -> None:
+        unserved = [
+            f"{path.relative_to(constants.ROOT)}: {ref}"
+            for path, text in self.salt_files()
+            for ref in self.IMAGE_FIELD.findall(text)
+            if "{" not in ref and self.unserved(ref)
+        ]
+        assert not unserved, f"not served by the ISO: {unserved}"
 
 
 class TestCheckImagePins:

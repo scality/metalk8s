@@ -8,7 +8,6 @@ import itertools
 import logging
 import os.path
 import re
-import six
 import socket
 import tempfile
 import textwrap
@@ -27,6 +26,12 @@ log = logging.getLogger(__name__)
 __virtualname__ = "metalk8s"
 
 BOOTSTRAP_CONFIG = "/etc/metalk8s/bootstrap.yaml"
+
+# The registry node agent mounts each archive file it holds in `ARCHIVES_DIR`
+# under `SOLUTIONS_DIR`, where the registry serves its images from: MetalK8s
+# reads its own ISO from there too.
+ARCHIVES_DIR = "/srv/scality/metalk8s/archives"
+SOLUTIONS_DIR = "/srv/scality/metalk8s/solutions"
 
 # The apiserver-proxy, reachable on every node, as used by the orchestrate
 # states that poll the apiserver's health endpoints.
@@ -278,6 +283,7 @@ def archive_info_from_product_txt(archive):
         info.update(
             {
                 "iso": None,
+                "archive": None,
                 "path": archive,
             }
         )
@@ -286,7 +292,8 @@ def archive_info_from_product_txt(archive):
         info.update(
             {
                 "iso": archive,
-                "path": f"/srv/scality/metalk8s-{info['version']}",
+                "archive": f"{ARCHIVES_DIR}/metalk8s-{info['version']}.iso",
+                "path": f"{SOLUTIONS_DIR}/metalk8s/{info['version']}",
             }
         )
     else:
@@ -353,12 +360,12 @@ def archive_info_from_iso(path):
 
 
 def get_mounted_archives():
-    """List the MetalK8s ISOs mounted under /srv/scality."""
+    """List the MetalK8s ISOs mounted for the registry."""
     archives = {}
     active_mounts = __salt__["mount.active"]()
 
     for mountpoint, mount_info in active_mounts.items():
-        if not mountpoint.startswith("/srv/scality/metalk8s-"):
+        if not mountpoint.startswith(f"{SOLUTIONS_DIR}/metalk8s/"):
             continue
 
         archive = mount_info["alt_device"]
@@ -388,7 +395,7 @@ def get_archives(archives=None):
     if not archives:
         archives = __pillar__.get("metalk8s", {}).get("archives", [])
 
-    if isinstance(archives, six.string_types):
+    if isinstance(archives, str):
         archives = [str(archives)]
     elif not isinstance(archives, list):
         raise CommandExecutionError(
@@ -492,7 +499,7 @@ def format_slots(data):
     if isinstance(data, dict):
         return {key: format_slots(value) for key, value in data.items()}
 
-    if isinstance(data, six.string_types) and data.startswith("__slot__:"):
+    if isinstance(data, str) and data.startswith("__slot__:"):
         fmt = data.split(":", 2)
         if len(fmt) != 3:
             log.warning(

@@ -47,6 +47,26 @@ def test_registry_ready(host):
     pass
 
 
+@scenario("../features/sanity.feature", "The registry serves the MetalK8s archive")
+def test_metalk8s_archive_served(host):
+    pass
+
+
+@scenario(
+    "../features/sanity.feature",
+    "The MetalK8s ISO is mounted from the registry archives",
+)
+def test_metalk8s_iso_mounted(host):
+    pass
+
+
+@scenario(
+    "../features/sanity.feature", "No container uses the legacy MetalK8s registry"
+)
+def test_no_legacy_registry(host):
+    pass
+
+
 @scenario("../features/sanity.feature", "Package is installed on every node")
 def test_package_installed(host):
     pass
@@ -284,6 +304,102 @@ def check_registry_ready(k8s_client, name):
     )
 
 
+@then("the SolutionArchive of this MetalK8s version is served")
+def check_metalk8s_archive_served(k8s_client, version):
+    name = f"metalk8s-{version}"
+
+    def _check_served():
+        try:
+            archive = k8s_client.resources.get(
+                api_version="metalk8s.scality.com/v1alpha1", kind="SolutionArchive"
+            ).get(name=name)
+        except ApiException as exc:
+            if exc.status == 404:
+                pytest.fail(f"SolutionArchive '{name}' does not exist")
+            raise
+
+        status = archive.to_dict().get("status") or {}
+        assert (
+            status.get("served") is True
+        ), f"SolutionArchive '{name}' is not served yet: {status}"
+
+    utils.retry(_check_served, times=10, wait=6, name=f"wait for '{name}' served")
+
+
+@then("the MetalK8s ISO is mounted from the registry archives only")
+def check_metalk8s_iso_mounted(host, version):
+    mountpoint = f"/srv/scality/metalk8s/solutions/metalk8s/{version}"
+    archive = f"/archives/metalk8s-{version}.iso"
+
+    with host.sudo():
+        targets = host.check_output("findmnt --raw --noheadings --output TARGET")
+        legacy = [
+            target
+            for target in targets.splitlines()
+            if target.startswith("/srv/scality/metalk8s-")
+        ]
+        assert not legacy, f"the ISO is still mounted at {', '.join(legacy)}"
+
+        result = host.run(
+            "findmnt --noheadings --output SOURCE --mountpoint %s", mountpoint
+        )
+        assert result.rc == 0, f"nothing is mounted at '{mountpoint}'"
+        device = result.stdout.strip()
+
+        # Seen from the host, a loop the agent set up shows the path inside
+        # its container, and one Salt set up shows the host path.
+        backing_file = host.check_output(
+            "losetup --noheadings --output BACK-FILE %s", device
+        )
+    assert backing_file.endswith(
+        archive
+    ), f"'{mountpoint}' is backed by '{backing_file}', not by '{archive}'"
+
+
+# Prefix of the images served by the nginx `repositories` Pod for the MetalK8s ISO
+# itself, Solutions have their own `<registry>/<solution>-<version>/`.
+LEGACY_METALK8S_IMAGE_PREFIX = "metalk8s-registry-from-config.invalid/metalk8s-"
+
+IMAGE_PULL_FAILURES = {"ErrImagePull", "ImagePullBackOff", "InvalidImageName"}
+
+
+def _all_pods(k8s_client):
+    return k8s_client.resources.get(api_version="v1", kind="Pod").get().items
+
+
+@then("no container references the legacy MetalK8s registry")
+def check_no_legacy_registry(k8s_client):
+    legacy = sorted(
+        f"{pod.metadata.namespace}/{pod.metadata.name}: {container.image}"
+        for pod in _all_pods(k8s_client)
+        for container in [
+            *(pod.spec.initContainers or []),
+            *(pod.spec.containers or []),
+        ]
+        if container.image.startswith(LEGACY_METALK8S_IMAGE_PREFIX)
+    )
+    assert not legacy, "legacy MetalK8s images:\n" + "\n".join(legacy)
+
+
+@then("no container fails to pull its image")
+def check_no_image_pull_failure(k8s_client):
+    def _check_pulls():
+        failing = sorted(
+            f"{pod.metadata.namespace}/{pod.metadata.name}: {status.image} "
+            f"({status.state.waiting.reason})"
+            for pod in _all_pods(k8s_client)
+            for status in [
+                *(pod.status.initContainerStatuses or []),
+                *(pod.status.containerStatuses or []),
+            ]
+            if status.state.waiting
+            and status.state.waiting.reason in IMAGE_PULL_FAILURES
+        )
+        assert not failing, "image pull failures:\n" + "\n".join(failing)
+
+    utils.retry(_check_pulls, times=6, wait=10, name="check image pulls")
+
+
 @then(parsers.parse("the package '{name}' is installed on every node"))
 def check_package_installed(host, ssh_config, k8s_client, name):
     def _check_package():
@@ -351,6 +467,7 @@ IMAGE_CACHE_ROLES = {
     "control-plane": "node-role.kubernetes.io/master",
     "etcd": "node-role.kubernetes.io/etcd",
     "registry": "node-role.kubernetes.io/registry",
+    "bootstrap": "node-role.kubernetes.io/bootstrap",
 }
 
 

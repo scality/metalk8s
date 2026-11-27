@@ -8,20 +8,21 @@ server {
         default_type text/plain;
         return 200 'OK';
     }
+{%- for env, archive in archives.items() | sort(attribute='0') %}
 
-    location ~ ^/metalk8s-[^/]+/$ {
-        root   /var/www/repositories;
-        if (!-d $request_filename) {
+    location = /{{ env }}/ {
+        if (!-d {{ archive.path ~ package_path }}) {
             return 404;
         }
         default_type text/plain;
         return 200 'OK';
     }
 
-    location / {
-        root   /var/www/repositories;
+    location /{{ env }}/ {
+        alias {{ archive.path ~ package_path }}/;
         autoindex off;
     }
+{%- endfor %}
 
     include conf.d/*.inc;
 }

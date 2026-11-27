@@ -1,7 +1,6 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 
 
@@ -189,7 +188,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        image: {% endraw -%}{{ build_image_name("node-problem-detector", False) }}{%- raw %}:v1.35.1
+        image: registry.k8s.io/node-problem-detector/node-problem-detector:v1.35.1
         imagePullPolicy: IfNotPresent
         name: node-problem-detector
         ports:

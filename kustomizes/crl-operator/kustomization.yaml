@@ -5,7 +5,7 @@ resources:
 
 images:
   - name: controller 
-    newName: '{% endraw -%}{{ build_image_name("crl-operator", False) }}{%- raw %}'
+    newName: ghcr.io/scality/crl-operator
     newTag: v1.0.0
 
 patches:
