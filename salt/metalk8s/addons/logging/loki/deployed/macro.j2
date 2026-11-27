@@ -54,7 +54,7 @@ template:
                   echo "Pod loki-$i is now running"
                 fi
                 echo "Cleaning loki-$i chunks older than $MAX_AGE days"
-                kubectl exec -t loki-$i -- find "$LOKI_DIR/chunks/" -type f -mtime +"$MAX_AGE" ! -name '*.json' -delete
+                kubectl exec -t loki-$i -c loki -- find "$LOKI_DIR/chunks/" -type f -mtime +"$MAX_AGE" ! -name '*.json' -delete
                 echo "Cleaning of loki-$i done"
               done
 

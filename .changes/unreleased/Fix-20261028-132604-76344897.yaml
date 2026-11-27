@@ -1,0 +1,6 @@
+kind: Fix
+body: Disable HTTP directory listing (`autoindex`) on the repositories nginx (port 8080), which exposed the RPM repository tree and was flagged by customer security scans. `/` and `/metalk8s-<version>/` still answer 200 for the pod probes and the Salt readiness check
+time: 2026-10-28T13:26:04.076344897Z
+custom:
+    CommentId: "6470198768"
+    Pull: "5211"

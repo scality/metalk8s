@@ -227,7 +227,7 @@ Wait minion available:
     {%- if salt_minion_version %}
     # Also wait for the detached salt-minion package upgrade (if any) launched
     # by the state above to complete, by checking the installed version
-    - expected_salt_version: {{ salt_minion_version }}
+    - expected_salt_version: "{{ salt_minion_version }}"
     {%- endif %}
     # After the restart the minion re-authenticates quickly but its
     # subscription to the salt-master publish channel can take a few minutes

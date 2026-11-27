@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Build the metalk8s-operator and storage operator with Go 1.27.4 through upgrade-operator-sdk
+time: 2026-11-17T10:34:05.204146025Z
+custom:
+    CommentId: "6945548457"
+    Pull: "5261"

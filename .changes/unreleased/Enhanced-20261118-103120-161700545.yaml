@@ -1,0 +1,6 @@
+kind: Enhanced
+body: Forward each webmcp tool's Guardian metadata (`_meta`) to the Guardian assistant, and let "Ask Guardian" name the tool to start with
+time: 2026-11-18T10:31:20.161700545Z
+custom:
+    CommentId: "6975895651"
+    Pull: "5263"

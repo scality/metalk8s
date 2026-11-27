@@ -139,6 +139,7 @@ jobs:
           RELEASE_TAG: ${{ env.RELEASE_TAG }}
           SHORT_VERSION: ${{ env.SHORT_VERSION }}
         with:
+          github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const pr = await github.rest.pulls.create({
               owner: context.repo.owner,

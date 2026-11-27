@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { GuardianDrawerProvider, useGuardianDrawer } from './GuardianContext';
-import { usePromptEmitter } from './guardianPostMessageHooks';
+import { rememberGuardianHints } from '../mcp/toolMeta';
+import { useDiscoveryEmitter, usePromptEmitter } from './guardianPostMessageHooks';
 
 jest.mock('../initFederation/ShellConfigProvider', () => ({
   useShellConfig: () => ({ config: { guardianOrigin: 'https://assistant.example', canUseGuardian: true } }),
@@ -81,4 +82,45 @@ it('clears the pending question when it changes, so the old one stops being post
   jest.advanceTimersByTime(5_000);
 
   expect(postMessage).toHaveBeenCalledTimes(posted);
+});
+
+describe('tool discovery', () => {
+  let registration: AbortController;
+
+  beforeEach(() => {
+    registration = new AbortController();
+  });
+
+  afterEach(() => {
+    registration.abort();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (document as any).modelContext;
+  });
+
+  it("announces each tool with the _meta its app's hints map to, which listTools drops", () => {
+    const { postMessage, iframeRef } = emitter();
+    rememberGuardianHints('diagnose', { reveals: ['readLog'] }, registration.signal);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (document as any).modelContext = { listTools: () => [{ name: 'diagnose' }, { name: 'readLog' }] };
+
+    renderHook(() => useDiscoveryEmitter(iframeRef, ORIGIN));
+    jest.advanceTimersByTime(3_000);
+
+    expect(postMessage).toHaveBeenCalledWith(
+      {
+        type: 'MCP_DISCOVERY',
+        tools: [{ name: 'diagnose', _meta: { 'scality.guardian/reveals': ['readLog'] } }, { name: 'readLog' }],
+      },
+      ORIGIN,
+    );
+  });
+});
+
+it('carries the tools the asking page wants the assistant to start with', () => {
+  const { postMessage, iframeRef } = emitter();
+  const asked = { ...prompt, preferredTools: ['diagnoseSoftwareUpgrade'] };
+
+  renderHook(() => usePromptEmitter(iframeRef, ORIGIN, asked, jest.fn()));
+
+  expect(postMessage).toHaveBeenCalledWith({ type: 'GUARDIAN_PROMPT', ...asked }, ORIGIN);
 });
