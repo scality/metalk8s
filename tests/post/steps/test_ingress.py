@@ -5,6 +5,7 @@ import re
 import requests
 import requests.exceptions
 import time
+import yaml
 
 import pytest
 from pytest_bdd import given, parsers, scenario, then, when
@@ -243,13 +244,10 @@ def _ingress_debug(host, ssh_config=None, vip=None):
 @contextlib.contextmanager
 def _ingress_debug_on_failure(host, label, ssh_config=None, vip=None):
     """Append live cluster ingress diagnostics to any assertion failure raised
-    inside the block, to complement the (later, possibly-stale) sosreport.
-
-    `utils.retry` reports its last failure through `pytest.fail`, which raises
-    `pytest.fail.Exception` rather than `AssertionError`: catch both."""
+    inside the block, to complement the (later, possibly-stale) sosreport."""
     try:
         yield
-    except (AssertionError, pytest.fail.Exception) as exc:
+    except AssertionError as exc:
         raise AssertionError(
             f"{exc}\n\n"
             f"=== Cluster ingress debug ({label}) ===\n"
@@ -925,8 +923,9 @@ def server_request_returns_multiple_ips(
         endpoint = "{proto}://{ip}:{port}/{path}".format(
             proto=protocol.lower(), ip=ip, port=port, path=path or ""
         )
-
-        def _request(endpoint=endpoint):
+        with _ingress_debug_on_failure(
+            host, f"request on '{endpoint}'", ssh_config=ssh_config, vip=ip
+        ):
             try:
                 response = requests.get(endpoint, verify=False, timeout=10)
             except Exception as exc:
@@ -938,25 +937,6 @@ def server_request_returns_multiple_ips(
                 f"got {response.status_code} '{response.reason}'"
             )
             assert response.reason == reason
-
-        # The steps before this one restart the Workload Plane Ingress
-        # controllers. keepalived adds 60 to a node's VIP priority while its
-        # local ingress health check passes (150 on the assigned node, 100 on
-        # the others, see `images/metalk8s-keepalived/keepalived.conf.j2`), so
-        # while an ingress Pod restarts its VIPs move to another node, and they
-        # only move back one or two 5s health checks after it is Ready again.
-        # The DaemonSet rollout, Pod readiness and VIP spreading steps can all
-        # pass before that, so retry instead of failing on the first refused
-        # request (MK8S-359).
-        with _ingress_debug_on_failure(
-            host, f"request on '{endpoint}'", ssh_config=ssh_config, vip=ip
-        ):
-            utils.retry(
-                _request,
-                times=24,
-                wait=5,
-                name=f"request on Workload Plane Ingress '{endpoint}'",
-            )
 
 
 @then(
@@ -994,6 +974,56 @@ def server_request_not_returns_multiple_ips(
 @then(_SPREAD_IPS_PARSER)
 def then_check_vips_spreading(host, ssh_config, context, ips):
     check_vips_spreading(host, ssh_config, context, ips)
+
+
+@then(parsers.parse("the '{ips}' IPs sit on their assigned node"))
+def check_vips_on_assigned_node(host, ssh_config, context, k8s_client, ips):
+    """Wait for keepalived to hand every VIP back to its assigned node.
+
+    keepalived gives a VIP priority 150 on its assigned node and 100 on the
+    others, plus 60 while the local Ingress health check passes (see
+    `images/metalk8s-keepalived/keepalived.conf.j2`). While an Ingress Pod
+    restarts, its node's VIPs move to another node, and only move back one or
+    two 5s health checks after the Pod is Ready again: the DaemonSet rollout
+    and readiness steps can pass before that (MK8S-359).
+
+    With all Ingress Pods Ready, a VIP sits on its assigned node only once that
+    node's health check passes (210 against 160), so this is the point where
+    keepalived is settled and a single request on the VIP must succeed.
+    """
+    ips = ips.format(**context).split(",")
+
+    assigned = {}
+    configmaps = k8s_client.resources.get(api_version="v1", kind="ConfigMap")
+    for cm in configmaps.get(namespace=VIP_NAMESPACE).items:
+        content = (cm.data or {}).get("hl-config.yaml")
+        if not content:
+            continue
+        for addr in yaml.safe_load(content).get("addresses") or []:
+            assigned[addr["ip"]] = addr.get("node")
+
+    missing = [ip for ip in ips if not assigned.get(ip)]
+    assert not missing, f"No node assigned to {', '.join(missing)} in {VIP_NAMESPACE}"
+
+    def _check_on_assigned_node():
+        node_ips = get_node_ips(host, ssh_config)
+        wrong = []
+        for ip in ips:
+            holders = sorted(
+                node for node, ip_list in node_ips.items() if ip in ip_list
+            )
+            if holders != [assigned[ip]]:
+                wrong.append(
+                    f"  - {ip}: assigned to '{assigned[ip]}', held by {holders or 'no node'}"
+                )
+        assert not wrong, "VIPs not on their assigned node:\n" + "\n".join(wrong)
+
+    utils.retry(
+        _check_on_assigned_node,
+        times=24,
+        wait=5,
+        name="wait for WP VIPs to sit on their assigned node",
+    )
 
 
 @then(parsers.parse("the '{ips}' IPs should no longer sit on the node '{node_name}'"))
